@@ -1,5 +1,5 @@
 {
-  "name": "@repo/ui",
+  "name": "@coin-archive/ui",
   "version": "0.0.0",
   "private": true,
   "exports": {
@@ -10,7 +10,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/tsconfig": "workspace:*",
+    "@coin-archive/tsconfig": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",

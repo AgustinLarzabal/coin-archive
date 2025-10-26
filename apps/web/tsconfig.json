@@ -1,6 +1,11 @@
 {
   "extends": "@coin-archive/tsconfig/nextjs.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@coin-archive/design-system/*": ["../../packages/design-system/src/*"]
+    },
     "plugins": [
       {
         "name": "next"

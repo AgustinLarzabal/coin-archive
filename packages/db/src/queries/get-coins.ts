@@ -8,9 +8,9 @@ export type GetCoinsOptions = {
   limit?: number;
 };
 
-export async function getCoins(
-  { limit = defaultGetCoinsLimit }: GetCoinsOptions = {},
-) {
+export async function getCoins(options: GetCoinsOptions = {}) {
+  const { limit = defaultGetCoinsLimit } = options;
+
   return db
     .select()
     .from(coin)

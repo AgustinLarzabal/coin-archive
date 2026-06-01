@@ -109,10 +109,8 @@ test("database package owns Drizzle foundation for Coin records", async () => {
   assert.match(queryText, /import \{ coin \} from "\.\.\/schema\/coin";/);
   assert.match(queryText, /const defaultGetCoinsLimit = 10;/);
   assert.match(queryText, /type GetCoinsOptions = \{\s*limit\?: number;\s*\};/);
-  assert.match(
-    queryText,
-    /export async function getCoins\([\s\S]*limit = defaultGetCoinsLimit[\s\S]*: GetCoinsOptions = \{\},[\s\S]*\)/,
-  );
+  assert.match(queryText, /export async function getCoins\(options: GetCoinsOptions = \{\}\)/);
+  assert.match(queryText, /const \{ limit = defaultGetCoinsLimit \} = options;/);
   assert.match(queryText, /return db[\s\S]*\.select\(\)[\s\S]*\.from\(coin\)/);
   assert.match(queryText, /orderBy\(desc\(coin\.createdAt\), desc\(coin\.id\)\)/);
   assert.match(queryText, /limit\(limit\);/);

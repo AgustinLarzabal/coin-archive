@@ -47,7 +47,7 @@ const SANDBOX_CODEX_SESSIONS_DIR = `${CODEX_HOME}/sessions`
 const HOST_CODEX_SESSIONS_DIR = ".sandcastle/codex-home/sessions"
 
 const models = {
-  planner: "gpt-5.8",
+  planner: "gpt-5.5",
   implementer: "gpt-5.4",
   reviewer: "gpt-5.4",
   merger: "gpt-5.4",

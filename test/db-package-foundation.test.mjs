@@ -11,6 +11,7 @@ const dbFiles = {
   schema: `${dbPackageDir}/src/schema/coin.ts`,
   client: `${dbPackageDir}/src/client.ts`,
   index: `${dbPackageDir}/src/index.ts`,
+  query: `${dbPackageDir}/src/queries/get-coins.ts`,
   migration: `${dbPackageDir}/migration/0000_initial_coin.sql`,
 };
 
@@ -27,6 +28,7 @@ test("database package owns Drizzle foundation for Coin records", async () => {
     schemaText,
     clientText,
     indexText,
+    queryText,
     migrationSqlText,
     adrText,
   ] = await Promise.all([
@@ -37,6 +39,7 @@ test("database package owns Drizzle foundation for Coin records", async () => {
     readTextFile(dbFiles.schema),
     readTextFile(dbFiles.client),
     readTextFile(dbFiles.index),
+    readTextFile(dbFiles.query),
     readTextFile(dbFiles.migration),
     readTextFile("docs/adr/0001-postgresql-drizzle-db-package.md"),
   ]);
@@ -97,7 +100,22 @@ test("database package owns Drizzle foundation for Coin records", async () => {
 
   assert.match(indexText, /export \{ db \} from "\.\/client";/);
   assert.match(indexText, /export \{ coin \} from "\.\/schema\/coin";/);
+  assert.match(indexText, /export \{ getCoins \} from "\.\/queries\/get-coins";/);
   assert.match(indexText, /export type Coin = typeof coin\.\$inferSelect;/);
+  assert.match(indexText, /export type \{ GetCoinsOptions \} from "\.\/queries\/get-coins";/);
+
+  assert.match(queryText, /import \{ desc \} from "drizzle-orm";/);
+  assert.match(queryText, /import \{ db \} from "\.\.\/client";/);
+  assert.match(queryText, /import \{ coin \} from "\.\.\/schema\/coin";/);
+  assert.match(queryText, /const defaultGetCoinsLimit = 10;/);
+  assert.match(queryText, /type GetCoinsOptions = \{\s*limit\?: number;\s*\};/);
+  assert.match(
+    queryText,
+    /export async function getCoins\([\s\S]*limit = defaultGetCoinsLimit[\s\S]*: GetCoinsOptions = \{\},[\s\S]*\)/,
+  );
+  assert.match(queryText, /return db[\s\S]*\.select\(\)[\s\S]*\.from\(coin\)/);
+  assert.match(queryText, /orderBy\(desc\(coin\.createdAt\), desc\(coin\.id\)\)/);
+  assert.match(queryText, /limit\(limit\);/);
 
   assert.match(migrationSqlText, /create extension if not exists pgcrypto;/i);
   assert.match(migrationSqlText, /create table .*"coin"/i);

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "db:reset": "docker compose down --volumes",
+    "db:seed": "pnpm --filter @workspace/db run seed",
     "db:start": "docker compose up -d --wait postgres",
     "db:stop": "docker compose stop postgres",
     "dev": "turbo dev",

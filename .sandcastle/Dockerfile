@@ -24,6 +24,21 @@ ARG AGENT_GID=1000
 # Rename the base image's "node" user to "agent" and align UID/GID.
 RUN groupmod -o -g $AGENT_GID node && usermod -o -u $AGENT_UID -g $AGENT_GID -d /home/agent -m -l agent node
 
+# Enable Corepack so pnpm (pinned via the repo's packageManager field) is available.
+# Must run as root because corepack writes shims into /usr/local/bin.
+# Keep this in sync with the `packageManager` field in package.json.
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+
+# Skip Corepack's interactive download confirmation prompt. If the repo's
+# pinned pnpm drifts from the version baked above, Corepack will fetch it
+# silently instead of failing the sandbox install hook.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
+# Tell pnpm we're in a non-interactive environment so it skips the
+# "confirm modules purge" prompt that aborts `pnpm install` on a
+# pre-populated node_modules (which copyToWorktree brings in).
+ENV CI=true
+
 # Install Codex CLI (run as root before USER agent)
 RUN npm install -g @openai/codex
 

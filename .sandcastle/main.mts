@@ -21,9 +21,9 @@
 // Or add to package.json:
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { z } from "zod";
+import * as sandcastle from "@ai-hero/sandcastle"
+import { docker } from "@ai-hero/sandcastle/sandboxes/docker"
+import { z } from "zod"
 
 // The planner emits its plan as JSON inside <plan> tags; Output.object extracts
 // and validates it against this schema. We use Zod here, but any Standard
@@ -31,9 +31,9 @@ import { z } from "zod";
 // https://standardschema.dev.
 const planSchema = z.object({
   issues: z.array(
-    z.object({ id: z.string(), title: z.string(), branch: z.string() }),
+    z.object({ id: z.string(), title: z.string(), branch: z.string() })
   ),
-});
+})
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -41,25 +41,50 @@ const planSchema = z.object({
 
 // Maximum number of plan→execute→merge cycles before stopping.
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
-const MAX_ITERATIONS = 10;
+const MAX_ITERATIONS = 10
+
+const sandboxConfig = {
+  env: {
+    GIT_CONFIG_GLOBAL: "/home/agent/workspace/.sandcastle/.gitconfig",
+    CODEX_HOME: "/home/agent/workspace/.sandcastle/codex-home",
+  },
+  mounts: [
+    {
+      hostPath: "~/.codex/auth.json",
+      sandboxPath: "/home/agent/codex-auth/auth.json",
+      readonly: true,
+    },
+  ],
+}
 
 // Hooks run inside the sandbox before the agent starts each iteration.
-// npm install ensures the sandbox always has fresh dependencies.
+// pnpm install ensures the sandbox always has fresh dependencies and
+// recreates per-package node_modules symlinks that copyToWorktree skips.
 const hooks = {
-  sandbox: { onSandboxReady: [{ command: "npm install" }] },
-};
+  sandbox: {
+    onSandboxReady: [
+      {
+        command:
+          'pnpm install --frozen-lockfile --store-dir .pnpm-store && mkdir -p "$CODEX_HOME" && cp /home/agent/codex-auth/auth.json "$CODEX_HOME/auth.json"',
+        // First-time install in a fresh worktree resolves the full graph and
+        // can comfortably exceed the 60s default; give it room.
+        timeoutMs: 10 * 60 * 1000,
+      },
+    ],
+  },
+}
 
 // Copy node_modules from the host into the worktree before each sandbox
 // starts. Avoids a full npm install from scratch; the hook above handles
 // platform-specific binaries and any packages added since the last copy.
-const copyToWorktree = ["node_modules"];
+const copyToWorktree = ["node_modules"]
 
 // ---------------------------------------------------------------------------
 // Main loop
 // ---------------------------------------------------------------------------
 
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-  console.log(`\n=== Iteration ${iteration}/${MAX_ITERATIONS} ===\n`);
+  console.log(`\n=== Iteration ${iteration}/${MAX_ITERATIONS} ===\n`)
 
   // -------------------------------------------------------------------------
   // Phase 1: Plan
@@ -72,7 +97,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // -------------------------------------------------------------------------
   const plan = await sandcastle.run({
     hooks,
-    sandbox: docker(),
+    sandbox: docker(sandboxConfig),
     name: "planner",
     // One iteration is enough: the planner just needs to read and reason,
     // not write code. (Structured output requires maxIterations: 1.)
@@ -84,21 +109,21 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // StructuredOutputError if the tag is missing, the JSON is malformed, or
     // validation fails — which aborts the loop.
     output: sandcastle.Output.object({ tag: "plan", schema: planSchema }),
-  });
+  })
 
-  const issues = plan.output.issues;
+  const issues = plan.output.issues
 
   if (issues.length === 0) {
     // No unblocked work — either everything is done or everything is blocked.
-    console.log("No unblocked issues to work on. Exiting.");
-    break;
+    console.log("No unblocked issues to work on. Exiting.")
+    break
   }
 
   console.log(
-    `Planning complete. ${issues.length} issue(s) to work in parallel:`,
-  );
+    `Planning complete. ${issues.length} issue(s) to work in parallel:`
+  )
   for (const issue of issues) {
-    console.log(`  ${issue.id}: ${issue.title} → ${issue.branch}`);
+    console.log(`  ${issue.id}: ${issue.title} → ${issue.branch}`)
   }
 
   // -------------------------------------------------------------------------
@@ -115,10 +140,10 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     issues.map(async (issue) => {
       const sandbox = await sandcastle.createSandbox({
         branch: issue.branch,
-        sandbox: docker(),
+        sandbox: docker(sandboxConfig),
         hooks,
         copyToWorktree,
-      });
+      })
 
       try {
         // Run the implementer
@@ -132,7 +157,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
             ISSUE_TITLE: issue.title,
             BRANCH: issue.branch,
           },
-        });
+        })
 
         // Only review if the implementer produced commits
         if (implement.commits.length > 0) {
@@ -144,29 +169,29 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
             promptArgs: {
               BRANCH: issue.branch,
             },
-          });
+          })
 
           // Merge commits from both runs so the merge phase sees all of them.
           // Each sandbox.run() only returns commits from its own run.
           return {
             ...review,
             commits: [...implement.commits, ...review.commits],
-          };
+          }
         }
 
-        return implement;
+        return implement
       } finally {
-        await sandbox.close();
+        await sandbox.close()
       }
-    }),
-  );
+    })
+  )
 
   // Log any agents that threw (network error, sandbox crash, etc.).
   for (const [i, outcome] of settled.entries()) {
     if (outcome.status === "rejected") {
       console.error(
-        `  ✗ ${issues[i]!.id} (${issues[i]!.branch}) failed: ${outcome.reason}`,
-      );
+        `  ✗ ${issues[i]!.id} (${issues[i]!.branch}) failed: ${outcome.reason}`
+      )
     }
   }
 
@@ -177,23 +202,23 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     .filter(
       (entry) =>
         entry.outcome.status === "fulfilled" &&
-        entry.outcome.value.commits.length > 0,
+        entry.outcome.value.commits.length > 0
     )
-    .map((entry) => entry.issue);
+    .map((entry) => entry.issue)
 
-  const completedBranches = completedIssues.map((i) => i.branch);
+  const completedBranches = completedIssues.map((i) => i.branch)
 
   console.log(
-    `\nExecution complete. ${completedBranches.length} branch(es) with commits:`,
-  );
+    `\nExecution complete. ${completedBranches.length} branch(es) with commits:`
+  )
   for (const branch of completedBranches) {
-    console.log(`  ${branch}`);
+    console.log(`  ${branch}`)
   }
 
   if (completedBranches.length === 0) {
     // All agents ran but none made commits — nothing to merge this cycle.
-    console.log("No commits produced. Nothing to merge.");
-    continue;
+    console.log("No commits produced. Nothing to merge.")
+    continue
   }
 
   // -------------------------------------------------------------------------
@@ -207,7 +232,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // -------------------------------------------------------------------------
   await sandcastle.run({
     hooks,
-    sandbox: docker(),
+    sandbox: docker(sandboxConfig),
     name: "merger",
     maxIterations: 1,
     agent: sandcastle.codex("gpt-5.4-mini"),
@@ -218,9 +243,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       // A markdown list of issue IDs and titles, one per line.
       ISSUES: completedIssues.map((i) => `- ${i.id}: ${i.title}`).join("\n"),
     },
-  });
+  })
 
-  console.log("\nBranches merged.");
+  console.log("\nBranches merged.")
 }
 
-console.log("\nAll done.");
+console.log("\nAll done.")

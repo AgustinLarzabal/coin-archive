@@ -3,6 +3,16 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const rootDir = new URL("../", import.meta.url);
+const dbPackageDir = "packages/db";
+const dbFiles = {
+  packageJson: `${dbPackageDir}/package.json`,
+  tsconfig: `${dbPackageDir}/tsconfig.json`,
+  drizzleConfig: `${dbPackageDir}/drizzle.config.ts`,
+  schema: `${dbPackageDir}/src/schema/coin.ts`,
+  client: `${dbPackageDir}/src/client.ts`,
+  index: `${dbPackageDir}/src/index.ts`,
+  migration: `${dbPackageDir}/migration/0000_initial_coin.sql`,
+};
 
 async function readTextFile(path) {
   return readFile(new URL(path, rootDir), "utf8");
@@ -21,13 +31,13 @@ test("database package owns Drizzle foundation for Coin records", async () => {
     adrText,
   ] = await Promise.all([
     readTextFile("package.json"),
-    readTextFile("packages/db/package.json"),
-    readTextFile("packages/db/tsconfig.json"),
-    readTextFile("packages/db/drizzle.config.ts"),
-    readTextFile("packages/db/src/schema/coin.ts"),
-    readTextFile("packages/db/src/client.ts"),
-    readTextFile("packages/db/src/index.ts"),
-    readTextFile("packages/db/migration/0000_initial_coin.sql"),
+    readTextFile(dbFiles.packageJson),
+    readTextFile(dbFiles.tsconfig),
+    readTextFile(dbFiles.drizzleConfig),
+    readTextFile(dbFiles.schema),
+    readTextFile(dbFiles.client),
+    readTextFile(dbFiles.index),
+    readTextFile(dbFiles.migration),
     readTextFile("docs/adr/0001-postgresql-drizzle-db-package.md"),
   ]);
 
@@ -64,19 +74,24 @@ test("database package owns Drizzle foundation for Coin records", async () => {
   assert.match(clientText, /export const db = drizzle\(client/);
 
   assert.match(schemaText, /pgTable\("coin"/);
+  assert.match(schemaText, /const coinRecentCreatedAtIdIndexName = "coin_recent_created_at_id_idx";/);
+  assert.match(
+    schemaText,
+    /const timestamptzDateColumn = \{\s*withTimezone: true,\s*mode: "date",\s*\} as const;/,
+  );
   assert.match(schemaText, /id:\s*uuid\("id"\)\.primaryKey\(\)\.default\(sql`uuidv7\(\)`\)/);
   assert.match(schemaText, /title:\s*varchar\("title",\s*\{\s*length:\s*255\s*\}\)\.notNull\(\)/);
   assert.match(
     schemaText,
-    /createdAt:\s*timestamp\("created_at",\s*\{\s*withTimezone:\s*true,\s*mode:\s*"date",\s*\}\)\s*\.notNull\(\)\s*\.defaultNow\(\)/,
+    /createdAt:\s*timestamp\("created_at",\s*timestamptzDateColumn\)\s*\.notNull\(\)\s*\.defaultNow\(\)/,
   );
   assert.match(
     schemaText,
-    /updatedAt:\s*timestamp\("updated_at",\s*\{\s*withTimezone:\s*true,\s*mode:\s*"date",\s*\}\)\s*\.notNull\(\)\s*\.defaultNow\(\)/,
+    /updatedAt:\s*timestamp\("updated_at",\s*timestamptzDateColumn\)\s*\.notNull\(\)\s*\.defaultNow\(\)/,
   );
   assert.match(
     schemaText,
-    /index\("coin_recent_created_at_id_idx"\)\.on\(\s*coin\.createdAt\.desc\(\),\s*coin\.id\.desc\(\),?\s*\)/,
+    /index\(coinRecentCreatedAtIdIndexName\)\.on\(\s*coin\.createdAt\.desc\(\),\s*coin\.id\.desc\(\),?\s*\)/,
   );
   assert.doesNotMatch(schemaText, /trigger/i);
 

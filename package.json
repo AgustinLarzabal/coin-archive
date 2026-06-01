@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "db:reset": "docker compose down --volumes",
+    "db:start": "docker compose up -d --wait postgres",
+    "db:stop": "docker compose stop postgres",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck",
+    "test": "node --test",
+    "typecheck": "turbo typecheck --cache-dir .turbo/cache",
     "sandcastle": "pnpm exec tsx .sandcastle/main.mts"
   },
   "devDependencies": {

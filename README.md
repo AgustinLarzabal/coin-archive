@@ -7,9 +7,9 @@ This is a TanStack Start monorepo template with shadcn/ui.
 Use the root `db:*` scripts to manage the local PostgreSQL 18 container:
 
 ```bash
-npm run db:start
-npm run db:stop
-npm run db:reset
+pnpm db:start
+pnpm db:stop
+pnpm db:reset
 ```
 
 Copy the root `.env.example` value into your local env file when the database package is added:

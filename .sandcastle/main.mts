@@ -42,11 +42,21 @@ const planSchema = z.object({
 // Maximum number of plan→execute→merge cycles before stopping.
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
 const MAX_ITERATIONS = 10
+const CODEX_HOME = "/home/agent/workspace/.sandcastle/codex-home"
+const SANDBOX_CODEX_SESSIONS_DIR = `${CODEX_HOME}/sessions`
+const HOST_CODEX_SESSIONS_DIR = ".sandcastle/codex-home/sessions"
+
+const models = {
+  planner: "gpt-5.8",
+  implementer: "gpt-5.4",
+  reviewer: "gpt-5.4",
+  merger: "gpt-5.4",
+}
 
 const sandboxConfig = {
   env: {
     GIT_CONFIG_GLOBAL: "/home/agent/workspace/.sandcastle/.gitconfig",
-    CODEX_HOME: "/home/agent/workspace/.sandcastle/codex-home",
+    CODEX_HOME,
   },
   mounts: [
     {
@@ -79,6 +89,14 @@ const hooks = {
 // platform-specific binaries and any packages added since the last copy.
 const copyToWorktree = ["node_modules"]
 
+const codexAgent = (model: string) =>
+  sandcastle.codex(model, {
+    sessionStorage: {
+      hostSessionsDir: HOST_CODEX_SESSIONS_DIR,
+      sandboxSessionsDir: SANDBOX_CODEX_SESSIONS_DIR,
+    },
+  })
+
 // ---------------------------------------------------------------------------
 // Main loop
 // ---------------------------------------------------------------------------
@@ -103,7 +121,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // not write code. (Structured output requires maxIterations: 1.)
     maxIterations: 1,
     // Opus for planning: dependency analysis benefits from deeper reasoning.
-    agent: sandcastle.codex("gpt-5.4-mini"),
+    agent: codexAgent(models.planner),
     promptFile: "./.sandcastle/plan-prompt.md",
     // Extract and validate the <plan> JSON into a typed object. Throws
     // StructuredOutputError if the tag is missing, the JSON is malformed, or
@@ -150,7 +168,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         const implement = await sandbox.run({
           name: "implementer",
           maxIterations: 100,
-          agent: sandcastle.codex("gpt-5.4-mini"),
+          agent: codexAgent(models.implementer),
           promptFile: "./.sandcastle/implement-prompt.md",
           promptArgs: {
             TASK_ID: issue.id,
@@ -164,7 +182,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
           const review = await sandbox.run({
             name: "reviewer",
             maxIterations: 1,
-            agent: sandcastle.codex("gpt-5.4-mini"),
+            agent: codexAgent(models.reviewer),
             promptFile: "./.sandcastle/review-prompt.md",
             promptArgs: {
               BRANCH: issue.branch,
@@ -235,7 +253,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     sandbox: docker(sandboxConfig),
     name: "merger",
     maxIterations: 1,
-    agent: sandcastle.codex("gpt-5.4-mini"),
+    agent: codexAgent(models.merger),
     promptFile: "./.sandcastle/merge-prompt.md",
     promptArgs: {
       // A markdown list of branch names, one per line.

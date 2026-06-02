@@ -9,5 +9,5 @@ export const Route = createFileRoute("/")({
 function App() {
   const coins = Route.useLoaderData()
 
-  return <pre>{JSON.stringify(coins, null, 2)}</pre>
+  return <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
 }

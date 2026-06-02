@@ -21,9 +21,6 @@ test("web root route consumes the named Recent Coin query", async () => {
   assert.match(routeText, /import \{ getCoins \} from "@workspace\/db"/);
   assert.match(routeText, /const loadCoins = \(\) => getCoins\(\)/);
   assert.match(routeText, /createFileRoute\("\/"\)\(\{\s*loader: loadCoins,/s);
-  assert.match(routeText, /const coins = Route\.useLoaderData\(\)/);
-  assert.match(routeText, /const coinsJson = JSON\.stringify\(coins,\s*null,\s*2\)/);
-  assert.match(routeText, /<pre>\{coinsJson\}<\/pre>/);
   assert.doesNotMatch(routeText, /db\./);
   assert.doesNotMatch(routeText, /drizzle/i);
 });

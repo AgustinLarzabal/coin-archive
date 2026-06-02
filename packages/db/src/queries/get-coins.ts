@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
 import { coin } from "../schema/coin";
@@ -20,18 +20,40 @@ const getCoinsSelection = {
 
 export type GetCoinsOptions = {
   limit?: number;
+  issuerCode?: string;
 };
 
-export function buildGetCoinsQuery(database: typeof db, options: GetCoinsOptions = {}) {
-  const { limit = defaultGetCoinsLimit } = options;
+function getIssuerCodeFilter(issuerCode: string) {
+  return sql`
+    ${coin.issuerId} in (
+      with recursive issuer_tree(id) as (
+        select "issuer"."id"
+        from "issuer"
+        where "issuer"."code" = ${issuerCode}
+        union all
+        select "child_issuer"."id"
+        from "issuer" as "child_issuer"
+        inner join issuer_tree on "child_issuer"."parent_issuer_id" = issuer_tree.id
+      )
+      select issuer_tree.id
+      from issuer_tree
+    )
+  `;
+}
 
-  return database
+export function buildGetCoinsQuery(database: typeof db, options: GetCoinsOptions = {}) {
+  const { limit = defaultGetCoinsLimit, issuerCode } = options;
+
+  const query = database
     .select(getCoinsSelection)
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
-    .orderBy(desc(coin.createdAt), desc(coin.id))
-    .limit(limit);
+    .orderBy(desc(coin.createdAt), desc(coin.id));
+
+  return issuerCode
+    ? query.where(getIssuerCodeFilter(issuerCode)).limit(limit)
+    : query.limit(limit);
 }
 
 export async function getCoins(options: GetCoinsOptions = {}) {

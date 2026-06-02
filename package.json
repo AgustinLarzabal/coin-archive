@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --cache-dir .turbo/cache",
     "db:generate": "pnpm exec drizzle-kit generate --config packages/db/drizzle.config.ts",
     "db:migrate": "pnpm exec drizzle-kit migrate --config packages/db/drizzle.config.ts",
     "db:reset": "docker compose down --volumes",
     "db:seed": "pnpm --filter @workspace/db run seed",
+    "db:smoke": "node ./scripts/db-smoke.mjs",
     "db:start": "docker compose up -d --wait postgres",
     "db:studio": "pnpm exec drizzle-kit studio --config packages/db/drizzle.config.ts",
     "db:stop": "docker compose stop postgres",

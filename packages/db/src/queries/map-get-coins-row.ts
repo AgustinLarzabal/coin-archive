@@ -1,18 +1,23 @@
-type GetCoinsRowIssuerColumns = {
+type GetCoinsIssuerColumns = {
   issuerCode: string;
   issuerName: string;
   parentIssuerCode: string | null;
   parentIssuerName: string | null;
 };
 
-type BaseCoinRecord = {
+type GetCoinsBaseColumns = {
   id: string;
   title: string;
   createdAt: Date;
   updatedAt: Date;
 };
 
-export type GetCoinsRow = BaseCoinRecord & GetCoinsRowIssuerColumns;
+type GetCoinsParentIssuerColumns = Pick<
+  GetCoinsIssuerColumns,
+  "parentIssuerCode" | "parentIssuerName"
+>;
+
+export type GetCoinsRow = GetCoinsBaseColumns & GetCoinsIssuerColumns;
 
 export type CoinIssuerParent = {
   code: string;
@@ -25,14 +30,14 @@ export type CoinIssuer = {
   parent: CoinIssuerParent | null;
 };
 
-export type CoinRecord = BaseCoinRecord & {
+export type CoinRecord = Omit<GetCoinsRow, keyof GetCoinsIssuerColumns> & {
   issuer: CoinIssuer;
 };
 
 function getParentIssuer({
   parentIssuerCode,
   parentIssuerName,
-}: Pick<GetCoinsRow, "parentIssuerCode" | "parentIssuerName">): CoinIssuerParent | null {
+}: GetCoinsParentIssuerColumns): CoinIssuerParent | null {
   if (!parentIssuerCode || !parentIssuerName) {
     return null;
   }

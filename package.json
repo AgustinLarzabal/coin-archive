@@ -8,7 +8,6 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "test": "node --test",
     "typecheck": "turbo typecheck --cache-dir .turbo/cache",
     "db:reset": "docker compose down --volumes",
     "db:start": "docker compose up -d --wait postgres",

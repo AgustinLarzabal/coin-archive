@@ -21,7 +21,7 @@ test("web root route renders the returned Coin array as plain JSON", async () =>
 
   assert.match(
     renderCoinJsonText,
-    /export function renderCoinJson\(coins: unknown\) \{\s*return JSON\.stringify\(coins,\s*null,\s*2\)\s*\}/,
+    /import type \{ Coin \} from "@workspace\/db"\s*export function renderCoinJson\(coins: Coin\[]\) \{\s*return JSON\.stringify\(coins,\s*null,\s*2\)\s*\}/,
   );
   assert.equal(JSON.stringify([], null, 2), "[]");
   assert.equal(

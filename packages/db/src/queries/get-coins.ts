@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
 import { coin } from "../schema/coin";
@@ -23,7 +23,7 @@ export type GetCoinsOptions = {
   issuerCode?: string;
 };
 
-function getIssuerCodeFilter(issuerCode: string) {
+function buildIssuerTreeFilter(issuerCode: string): SQL {
   return sql`
     ${coin.issuerId} in (
       with recursive issuer_tree(id) as (
@@ -51,9 +51,11 @@ export function buildGetCoinsQuery(database: typeof db, options: GetCoinsOptions
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .orderBy(desc(coin.createdAt), desc(coin.id));
 
-  return issuerCode
-    ? query.where(getIssuerCodeFilter(issuerCode)).limit(limit)
-    : query.limit(limit);
+  if (issuerCode) {
+    return query.where(buildIssuerTreeFilter(issuerCode)).limit(limit);
+  }
+
+  return query.limit(limit);
 }
 
 export async function getCoins(options: GetCoinsOptions = {}) {

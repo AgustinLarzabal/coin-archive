@@ -6,7 +6,7 @@
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
-    "seed": "node --import tsx ./src/seed.ts",
+    "seed": "node --import tsx ./src/seed/index.ts",
     "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
   },

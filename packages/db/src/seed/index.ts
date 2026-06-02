@@ -1,6 +1,6 @@
 import { inArray } from "drizzle-orm";
-import { closeDb, db } from "./client";
-import { coin } from "./schema/coin";
+import { closeDb, db } from "../client";
+import { coin } from "../schema/coin";
 import { seededCoins } from "./seed-data";
 
 async function seedCoins() {

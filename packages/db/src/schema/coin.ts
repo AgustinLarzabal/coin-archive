@@ -23,3 +23,5 @@ export const coin = pgTable("coin", {
     coin.id.desc(),
   ),
 ]);
+
+export type Coin = typeof coin.$inferSelect;

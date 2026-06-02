@@ -1,5 +1,6 @@
 .env
 .gitconfig
-codex-home/
+codex-home/*
+!codex-home/.gitkeep
 logs/
 worktrees/

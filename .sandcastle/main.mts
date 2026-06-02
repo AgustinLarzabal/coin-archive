@@ -75,7 +75,7 @@ const hooks = {
     onSandboxReady: [
       {
         command:
-          'pnpm install --frozen-lockfile --store-dir .pnpm-store && mkdir -p "$CODEX_HOME" && cp /home/agent/codex-auth/auth.json "$CODEX_HOME/auth.json"',
+          'mkdir -p "$CODEX_HOME" && cp /home/agent/codex-auth/auth.json "$CODEX_HOME/auth.json" && pnpm install --frozen-lockfile --store-dir .pnpm-store',
         // First-time install in a fresh worktree resolves the full graph and
         // can comfortably exceed the 60s default; give it room.
         timeoutMs: 10 * 60 * 1000,

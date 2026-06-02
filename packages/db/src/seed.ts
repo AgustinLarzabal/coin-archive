@@ -1,5 +1,5 @@
 import { inArray } from "drizzle-orm";
-import { db } from "./client";
+import { closeDb, db } from "./client";
 import { coin } from "./schema/coin";
 import { seededCoins } from "./seed-data";
 
@@ -9,4 +9,8 @@ async function seedCoins() {
   await db.insert(coin).values(seededCoins);
 }
 
-void seedCoins();
+try {
+  await seedCoins();
+} finally {
+  await closeDb();
+}

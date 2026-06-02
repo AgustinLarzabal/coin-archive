@@ -18,7 +18,7 @@ const seedBoundaryDates = [
 ];
 const seedFileImportPatterns = [
   /import \{ inArray \} from "drizzle-orm";/,
-  /import \{ db \} from "\.\/client";/,
+  /import \{ closeDb, db \} from "\.\/client";/,
   /import \{ coin \} from "\.\/schema\/coin";/,
   /import \{ seededCoins \} from "\.\/seed-data";/,
 ];
@@ -75,7 +75,8 @@ test("database package exposes a deterministic internal Coin seed workflow", asy
   }
   assert.match(seedText, /await db\.delete\(coin\)\.where\(inArray\(coin\.title,\s*seededCoins\.map\(\(\{ title \}\) => title\)\)\);/);
   assert.match(seedText, /await db\.insert\(coin\)\.values\(seededCoins\);/);
-  assert.match(seedText, /void seedCoins\(\);/);
+  assert.match(seedText, /await seedCoins\(\);/);
+  assert.match(seedText, /await closeDb\(\);/);
   assert.doesNotMatch(seedText, /process\.argv|seedCount|batch/i);
 
   assert.doesNotMatch(dbIndexText, /seed/i);

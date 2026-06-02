@@ -7,12 +7,11 @@ const databaseName = "coin_archive";
 const databaseUser = "coin_archive";
 const databasePassword = "coin_archive";
 const databaseUrl = `postgresql://${databaseUser}:${databasePassword}@localhost:5432/${databaseName}`;
-const drizzleConfigPath = "packages/db/drizzle.config.ts";
 const dbScripts = {
-  "db:generate": `pnpm exec drizzle-kit generate --config ${drizzleConfigPath}`,
-  "db:migrate": `pnpm exec drizzle-kit migrate --config ${drizzleConfigPath}`,
+  "db:generate": "pnpm --filter @workspace/db run generate",
+  "db:migrate": "pnpm --filter @workspace/db run migrate",
   "db:start": "docker compose up -d --wait postgres",
-  "db:studio": `pnpm exec drizzle-kit studio --config ${drizzleConfigPath}`,
+  "db:studio": "pnpm --filter @workspace/db run studio",
   "db:stop": "docker compose stop postgres",
   "db:reset": "docker compose down --volumes",
 };

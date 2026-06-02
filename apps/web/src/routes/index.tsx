@@ -1,18 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { getCoins } from "@workspace/db"
-import { renderCoinJson } from "./render-coin-json"
-
-const loadCoins = () => getCoins()
 
 export const Route = createFileRoute("/")({
-  loader: loadCoins,
+  loader: () => getCoins(),
   component: App,
 })
 
 function App() {
   const coins = Route.useLoaderData()
 
-  return (
-    <pre>{renderCoinJson(coins)}</pre>
-  )
+  return <pre>{JSON.stringify(coins, null, 2)}</pre>
 }

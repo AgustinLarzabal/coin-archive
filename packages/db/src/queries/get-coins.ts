@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { db } from "../client";
 import { coin } from "../schema/coin";
 import { issuer } from "../schema/issuer";
+import { mapGetCoinsRowToCoinRecord } from "./map-get-coins-row";
 
 const defaultGetCoinsLimit = 10;
 const parentIssuer = alias(issuer, "parent_issuer");
@@ -33,41 +34,8 @@ export function buildGetCoinsQuery(database: typeof db, options: GetCoinsOptions
     .limit(limit);
 }
 
-type GetCoinsRow = Awaited<ReturnType<typeof buildGetCoinsQuery>>[number];
-
-function getParentIssuer({
-  parentIssuerCode,
-  parentIssuerName,
-}: Pick<GetCoinsRow, "parentIssuerCode" | "parentIssuerName">) {
-  if (!parentIssuerCode || !parentIssuerName) {
-    return null;
-  }
-
-  return {
-    code: parentIssuerCode,
-    name: parentIssuerName,
-  };
-}
-
-function toCoinWithIssuer({
-  issuerCode,
-  issuerName,
-  parentIssuerCode,
-  parentIssuerName,
-  ...coinRecord
-}: GetCoinsRow) {
-  return {
-    ...coinRecord,
-    issuer: {
-      code: issuerCode,
-      name: issuerName,
-      parent: getParentIssuer({ parentIssuerCode, parentIssuerName }),
-    },
-  };
-}
-
 export async function getCoins(options: GetCoinsOptions = {}) {
   const coins = await buildGetCoinsQuery(db, options);
 
-  return coins.map(toCoinWithIssuer);
+  return coins.map(mapGetCoinsRowToCoinRecord);
 }

@@ -8,6 +8,13 @@
       "when": 1780404152190,
       "tag": "0000_gigantic_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780431300873,
+      "tag": "0001_add_issuers_to_coin_catalogue",
+      "breakpoints": true
     }
   ]
 }

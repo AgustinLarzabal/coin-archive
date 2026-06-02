@@ -4,15 +4,41 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = fileURLToPath(new URL("../", import.meta.url));
 const webDir = fileURLToPath(new URL("../apps/web", import.meta.url));
+const defaultDatabaseUrl = "postgresql://coin_archive:coin_archive@localhost:5432/coin_archive";
 const databaseUrl = process.env.DATABASE_URL
-  ?? "postgresql://coin_archive:coin_archive@localhost:5432/coin_archive";
+  ?? defaultDatabaseUrl;
 const smokeRouteUrl = "http://127.0.0.1:3000/";
+const routePollIntervalMs = 500;
+const gracefulShutdownTimeoutMs = 5_000;
+const expectedCoinTitles = [
+  "Seed Coin 10",
+  "Seed Coin 09",
+  "Seed Coin 08",
+  "Seed Coin 07",
+  "Seed Coin 06",
+  "Seed Coin 05",
+  "Seed Coin 04",
+  "Seed Coin 03",
+  "Seed Coin 02",
+  "Seed Coin 01",
+];
+const smokeSetupScripts = [
+  "db:reset",
+  "db:start",
+  "db:migrate",
+  "db:seed",
+  "build",
+];
 
 function getSmokeEnv() {
   return {
     ...process.env,
     DATABASE_URL: databaseUrl,
   };
+}
+
+function formatCommand(command, args) {
+  return `${command} ${args.join(" ")}`;
 }
 
 function decodeHtmlEntities(html) {
@@ -33,6 +59,8 @@ function extractPreJson(html) {
 }
 
 async function runCommand(command, args, { cwd = rootDir, env = getSmokeEnv(), timeoutMs = 120_000 } = {}) {
+  const commandLabel = formatCommand(command, args);
+
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -49,7 +77,7 @@ async function runCommand(command, args, { cwd = rootDir, env = getSmokeEnv(), t
 
       settled = true;
       child.kill("SIGKILL");
-      reject(new Error(`Command timed out: ${command} ${args.join(" ")}`));
+      reject(new Error(`Command timed out: ${commandLabel}`));
     }, timeoutMs);
 
     child.on("error", (error) => {
@@ -75,7 +103,7 @@ async function runCommand(command, args, { cwd = rootDir, env = getSmokeEnv(), t
         return;
       }
 
-      reject(new Error(`Command failed: ${command} ${args.join(" ")}`));
+      reject(new Error(`Command failed: ${commandLabel}`));
     });
   });
 }
@@ -87,6 +115,10 @@ async function hasDocker() {
   } catch {
     return false;
   }
+}
+
+function delay(timeoutMs) {
+  return new Promise((resolve) => setTimeout(resolve, timeoutMs));
 }
 
 async function waitForRoute(url, { timeoutMs = 60_000 } = {}) {
@@ -101,7 +133,7 @@ async function waitForRoute(url, { timeoutMs = 60_000 } = {}) {
       }
     } catch {}
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await delay(routePollIntervalMs);
   }
 
   throw new Error(`Timed out waiting for ${url}`);
@@ -115,7 +147,7 @@ async function stopProcess(child) {
   await new Promise((resolve) => {
     const killTimer = setTimeout(() => {
       child.kill("SIGKILL");
-    }, 5_000);
+    }, gracefulShutdownTimeoutMs);
 
     child.once("exit", () => {
       clearTimeout(killTimer);
@@ -126,6 +158,28 @@ async function stopProcess(child) {
   });
 }
 
+async function runSmokeSetup() {
+  for (const scriptName of smokeSetupScripts) {
+    await runCommand("npm", ["run", scriptName]);
+  }
+}
+
+function startWebServer() {
+  return spawn("npm", ["run", "dev", "--", "--host", "127.0.0.1"], {
+    cwd: webDir,
+    env: getSmokeEnv(),
+    stdio: "inherit",
+  });
+}
+
+function assertExpectedCoins(coins) {
+  assert.equal(coins.length, expectedCoinTitles.length);
+  assert.deepEqual(
+    coins.map(({ title }) => title),
+    expectedCoinTitles,
+  );
+}
+
 async function runSmoke() {
   if (!await hasDocker()) {
     throw new Error("docker with docker compose is required for npm run db:smoke");
@@ -134,37 +188,12 @@ async function runSmoke() {
   let appProcess;
 
   try {
-    await runCommand("npm", ["run", "db:reset"]);
-    await runCommand("npm", ["run", "db:start"]);
-    await runCommand("npm", ["run", "db:migrate"]);
-    await runCommand("npm", ["run", "db:seed"]);
-    await runCommand("npm", ["run", "build"]);
+    await runSmokeSetup();
 
-    appProcess = spawn("npm", ["run", "dev", "--", "--host", "127.0.0.1"], {
-      cwd: webDir,
-      env: getSmokeEnv(),
-      stdio: "inherit",
-    });
+    appProcess = startWebServer();
 
     const html = await waitForRoute(smokeRouteUrl);
-    const coins = extractPreJson(html);
-
-    assert.equal(coins.length, 10);
-    assert.deepEqual(
-      coins.map(({ title }) => title),
-      [
-        "Seed Coin 10",
-        "Seed Coin 09",
-        "Seed Coin 08",
-        "Seed Coin 07",
-        "Seed Coin 06",
-        "Seed Coin 05",
-        "Seed Coin 04",
-        "Seed Coin 03",
-        "Seed Coin 02",
-        "Seed Coin 01",
-      ],
-    );
+    assertExpectedCoins(extractPreJson(html));
   } finally {
     await stopProcess(appProcess);
     await runCommand("npm", ["run", "db:reset"]).catch(() => {});

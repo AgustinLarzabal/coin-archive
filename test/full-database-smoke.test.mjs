@@ -6,12 +6,23 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = fileURLToPath(new URL("../", import.meta.url));
 const verificationNotesPath = "docs/verification/issue-7-full-database-smoke.md";
+const requiredVerificationCommands = [
+  /npm run db:reset/,
+  /npm run db:start/,
+  /npm run db:migrate/,
+  /npm run db:seed/,
+  /npm run build/,
+  /npm run dev -- --host 127\.0\.0\.1/,
+  /npm run db:smoke/,
+];
 
 async function readTextFile(path) {
   return readFile(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
 async function runCommand(command, args, { cwd = rootDir, timeoutMs = 240_000 } = {}) {
+  const commandLabel = `${command} ${args.join(" ")}`;
+
   await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -30,7 +41,7 @@ async function runCommand(command, args, { cwd = rootDir, timeoutMs = 240_000 } 
 
       settled = true;
       child.kill("SIGKILL");
-      reject(new Error(`Command timed out: ${command} ${args.join(" ")}\n${stdout}\n${stderr}`));
+      reject(new Error(`Command timed out: ${commandLabel}\n${stdout}\n${stderr}`));
     }, timeoutMs);
 
     child.stdout.on("data", (chunk) => {
@@ -64,7 +75,7 @@ async function runCommand(command, args, { cwd = rootDir, timeoutMs = 240_000 } 
         return;
       }
 
-      reject(new Error(`Command failed: ${command} ${args.join(" ")}\n${stdout}\n${stderr}`));
+      reject(new Error(`Command failed: ${commandLabel}\n${stdout}\n${stderr}`));
     });
   });
 }
@@ -87,13 +98,9 @@ test("workspace exposes a full local database smoke script and verification note
   const packageJson = JSON.parse(packageJsonText);
 
   assert.equal(packageJson.scripts["db:smoke"], "node ./scripts/db-smoke.mjs");
-  assert.match(verificationNotesText, /npm run db:reset/);
-  assert.match(verificationNotesText, /npm run db:start/);
-  assert.match(verificationNotesText, /npm run db:migrate/);
-  assert.match(verificationNotesText, /npm run db:seed/);
-  assert.match(verificationNotesText, /npm run build/);
-  assert.match(verificationNotesText, /npm run dev -- --host 127\.0\.0\.1/);
-  assert.match(verificationNotesText, /npm run db:smoke/);
+  for (const commandPattern of requiredVerificationCommands) {
+    assert.match(verificationNotesText, commandPattern);
+  }
 
   if (!await hasDocker()) {
     t.skip("docker is required to execute the full database smoke script");

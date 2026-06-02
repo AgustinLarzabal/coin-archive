@@ -51,7 +51,7 @@ export function buildGetCoinsQuery(database: typeof db, options: GetCoinsOptions
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .orderBy(desc(coin.createdAt), desc(coin.id));
 
-  if (issuerCode) {
+  if (issuerCode !== undefined) {
     return query.where(buildIssuerTreeFilter(issuerCode)).limit(limit);
   }
 

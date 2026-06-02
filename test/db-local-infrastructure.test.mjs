@@ -54,6 +54,7 @@ test("workspace exposes local PostgreSQL infrastructure", async () => {
       "m",
     ),
   );
+  assert.match(composeText, /volumes:\n\s*-\s*postgres_data:\/var\/lib\/postgresql\b/m);
 
   assert.match(envExampleText, new RegExp(`^DATABASE_URL=${databaseUrl}$`, "m"));
 });

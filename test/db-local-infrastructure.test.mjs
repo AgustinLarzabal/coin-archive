@@ -8,7 +8,10 @@ const databaseUser = "coin_archive";
 const databasePassword = "coin_archive";
 const databaseUrl = `postgresql://${databaseUser}:${databasePassword}@localhost:5432/${databaseName}`;
 const dbScripts = {
+  "db:generate": "pnpm exec drizzle-kit generate --config packages/db/drizzle.config.ts",
+  "db:migrate": "pnpm exec drizzle-kit migrate --config packages/db/drizzle.config.ts",
   "db:start": "docker compose up -d --wait postgres",
+  "db:studio": "pnpm exec drizzle-kit studio --config packages/db/drizzle.config.ts",
   "db:stop": "docker compose stop postgres",
   "db:reset": "docker compose down --volumes",
 };
@@ -28,7 +31,10 @@ test("workspace exposes local PostgreSQL infrastructure", async () => {
 
   assert.deepEqual(
     {
+      "db:generate": packageJson.scripts["db:generate"],
+      "db:migrate": packageJson.scripts["db:migrate"],
       "db:start": packageJson.scripts["db:start"],
+      "db:studio": packageJson.scripts["db:studio"],
       "db:stop": packageJson.scripts["db:stop"],
       "db:reset": packageJson.scripts["db:reset"],
     },

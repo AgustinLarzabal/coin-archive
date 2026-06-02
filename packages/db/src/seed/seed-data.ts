@@ -1,4 +1,19 @@
-export const seededIssuers = [
+type SeededIssuer = {
+  displayName: string;
+  code: string;
+  parentCode?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type SeededCoin = {
+  title: string;
+  issuerCode: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export const seededIssuers: SeededIssuer[] = [
   {
     displayName: "Argentina",
     code: "argentina",
@@ -20,7 +35,7 @@ export const seededIssuers = [
   },
 ];
 
-export const seededCoins = [
+export const seededCoins: SeededCoin[] = [
   {
     title: "Seed Coin 01",
     issuerCode: "argentina",

@@ -4,6 +4,8 @@ import { coin } from "../schema/coin";
 import { issuer } from "../schema/issuer";
 import { seededCoins, seededIssuers } from "./seed-data";
 
+type IssuerIdsByCode = Map<string, string>;
+
 function getIssuerId(issuerIdsByCode: Map<string, string>, issuerCode: string) {
   const issuerId = issuerIdsByCode.get(issuerCode);
 
@@ -14,40 +16,62 @@ function getIssuerId(issuerIdsByCode: Map<string, string>, issuerCode: string) {
   return issuerId;
 }
 
-async function seedIssuers() {
-  const issuerIdsByCode = new Map<string, string>();
-  const remainingIssuers = [...seededIssuers];
-
+async function deleteSeededIssuers() {
   for (const seededIssuer of [...seededIssuers].reverse()) {
     await db.delete(issuer).where(eq(issuer.code, seededIssuer.code));
   }
+}
+
+function getIssuersReadyToInsert(remainingIssuers: typeof seededIssuers, issuerIdsByCode: IssuerIdsByCode) {
+  return remainingIssuers.filter(
+    ({ parentCode }) => parentCode === undefined || issuerIdsByCode.has(parentCode),
+  );
+}
+
+async function insertSeededIssuer(
+  issuerIdsByCode: IssuerIdsByCode,
+  seededIssuer: (typeof seededIssuers)[number],
+) {
+  const parentIssuerId = seededIssuer.parentCode
+    ? getIssuerId(issuerIdsByCode, seededIssuer.parentCode)
+    : undefined;
+
+  const [insertedIssuer] = await db.insert(issuer).values({
+    displayName: seededIssuer.displayName,
+    code: seededIssuer.code,
+    parentIssuerId,
+    createdAt: seededIssuer.createdAt,
+    updatedAt: seededIssuer.updatedAt,
+  }).returning({ id: issuer.id });
+
+  issuerIdsByCode.set(seededIssuer.code, insertedIssuer.id);
+}
+
+function removeSeededIssuer(
+  remainingIssuers: typeof seededIssuers,
+  seededIssuerCode: string,
+) {
+  const seededIssuerIndex = remainingIssuers.findIndex(({ code }) => code === seededIssuerCode);
+
+  remainingIssuers.splice(seededIssuerIndex, 1);
+}
+
+async function seedIssuers() {
+  const issuerIdsByCode: IssuerIdsByCode = new Map();
+  const remainingIssuers = [...seededIssuers];
+
+  await deleteSeededIssuers();
 
   while (remainingIssuers.length > 0) {
-    const issuersReadyToInsert = remainingIssuers.filter(
-      ({ parentCode }) => parentCode === undefined || issuerIdsByCode.has(parentCode),
-    );
+    const issuersReadyToInsert = getIssuersReadyToInsert(remainingIssuers, issuerIdsByCode);
 
     if (issuersReadyToInsert.length === 0) {
       throw new Error("Unable to resolve seeded issuer parents");
     }
 
     for (const seededIssuer of issuersReadyToInsert) {
-      const [insertedIssuer] = await db.insert(issuer).values({
-        displayName: seededIssuer.displayName,
-        code: seededIssuer.code,
-        parentIssuerId: seededIssuer.parentCode
-          ? issuerIdsByCode.get(seededIssuer.parentCode)
-          : undefined,
-        createdAt: seededIssuer.createdAt,
-        updatedAt: seededIssuer.updatedAt,
-      }).returning({ id: issuer.id });
-
-      issuerIdsByCode.set(seededIssuer.code, insertedIssuer.id);
-
-      const seededIssuerIndex = remainingIssuers.findIndex(
-        ({ code }) => code === seededIssuer.code,
-      );
-      remainingIssuers.splice(seededIssuerIndex, 1);
+      await insertSeededIssuer(issuerIdsByCode, seededIssuer);
+      removeSeededIssuer(remainingIssuers, seededIssuer.code);
     }
   }
 

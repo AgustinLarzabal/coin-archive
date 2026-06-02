@@ -7,17 +7,22 @@ const databaseName = "coin_archive";
 const databaseUser = "coin_archive";
 const databasePassword = "coin_archive";
 const databaseUrl = `postgresql://${databaseUser}:${databasePassword}@localhost:5432/${databaseName}`;
+const drizzleConfigPath = "packages/db/drizzle.config.ts";
 const dbScripts = {
-  "db:generate": "pnpm exec drizzle-kit generate --config packages/db/drizzle.config.ts",
-  "db:migrate": "pnpm exec drizzle-kit migrate --config packages/db/drizzle.config.ts",
+  "db:generate": `pnpm exec drizzle-kit generate --config ${drizzleConfigPath}`,
+  "db:migrate": `pnpm exec drizzle-kit migrate --config ${drizzleConfigPath}`,
   "db:start": "docker compose up -d --wait postgres",
-  "db:studio": "pnpm exec drizzle-kit studio --config packages/db/drizzle.config.ts",
+  "db:studio": `pnpm exec drizzle-kit studio --config ${drizzleConfigPath}`,
   "db:stop": "docker compose stop postgres",
   "db:reset": "docker compose down --volumes",
 };
 
 async function readTextFile(path) {
   return readFile(new URL(path, rootDir), "utf8");
+}
+
+function getScriptsByName(scripts, scriptNames) {
+  return Object.fromEntries(scriptNames.map((scriptName) => [scriptName, scripts[scriptName]]));
 }
 
 test("workspace exposes local PostgreSQL infrastructure", async () => {
@@ -30,14 +35,7 @@ test("workspace exposes local PostgreSQL infrastructure", async () => {
   const packageJson = JSON.parse(packageJsonText);
 
   assert.deepEqual(
-    {
-      "db:generate": packageJson.scripts["db:generate"],
-      "db:migrate": packageJson.scripts["db:migrate"],
-      "db:start": packageJson.scripts["db:start"],
-      "db:studio": packageJson.scripts["db:studio"],
-      "db:stop": packageJson.scripts["db:stop"],
-      "db:reset": packageJson.scripts["db:reset"],
-    },
+    getScriptsByName(packageJson.scripts, Object.keys(dbScripts)),
     dbScripts,
   );
 

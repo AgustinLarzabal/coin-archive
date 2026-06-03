@@ -4,6 +4,51 @@ import { mapGetCoinsRowToCoinRecord } from "./map-get-coins-row"
 import { createCoin, createIssuer } from "../testing/fixtures"
 import { useTestDatabase } from "../testing/test-database"
 
+const selectedIssuerCode = "ancient-greece"
+const unrelatedIssuerCode = "sparta"
+
+const issuerFixture = {
+  parent: {
+    code: selectedIssuerCode,
+    name: "Ancient Greece",
+  },
+  child: {
+    code: "athens",
+    name: "Athens",
+  },
+  grandchild: {
+    code: "athens-classical",
+    name: "Athens Classical",
+  },
+  unrelated: {
+    code: unrelatedIssuerCode,
+    name: "Sparta",
+  },
+} as const
+
+const issuerFilterFixtureCoins = [
+  {
+    issuer: "parent",
+    title: "Greek Union Coin",
+    createdAt: new Date("2026-03-01T00:00:00.000Z"),
+  },
+  {
+    issuer: "child",
+    title: "Athenian Owl",
+    createdAt: new Date("2026-03-02T00:00:00.000Z"),
+  },
+  {
+    issuer: "grandchild",
+    title: "Classical Athena",
+    createdAt: new Date("2026-03-03T00:00:00.000Z"),
+  },
+  {
+    issuer: "unrelated",
+    title: "Spartan Shield",
+    createdAt: new Date("2026-03-04T00:00:00.000Z"),
+  },
+] as const
+
 describe("getCoins issuer filter integration", () => {
   const testDb = useTestDatabase()
 
@@ -16,81 +61,67 @@ describe("getCoins issuer filter integration", () => {
   async function createIssuerFilterFixture() {
     const parentIssuer = await createIssuer({
       database: testDb,
-      input: {
-        code: "ancient-greece",
-        name: "Ancient Greece",
-      },
+      input: issuerFixture.parent,
     })
     const childIssuer = await createIssuer({
       database: testDb,
       input: {
-        code: "athens",
-        name: "Athens",
+        ...issuerFixture.child,
         parentIssuerId: parentIssuer.id,
       },
     })
     const grandchildIssuer = await createIssuer({
       database: testDb,
       input: {
-        code: "athens-classical",
-        name: "Athens Classical",
+        ...issuerFixture.grandchild,
         parentIssuerId: childIssuer.id,
       },
     })
     const unrelatedIssuer = await createIssuer({
       database: testDb,
-      input: {
-        code: "sparta",
-        name: "Sparta",
-      },
+      input: issuerFixture.unrelated,
     })
 
-    await createCoin({
-      database: testDb,
-      input: {
-        title: "Greek Union Coin",
-        issuerId: parentIssuer.id,
-        createdAt: new Date("2026-03-01T00:00:00.000Z"),
-      },
+    const issuerIds = {
+      parent: parentIssuer.id,
+      child: childIssuer.id,
+      grandchild: grandchildIssuer.id,
+      unrelated: unrelatedIssuer.id,
+    } as const
+
+    for (const fixtureCoin of issuerFilterFixtureCoins) {
+      await createCoin({
+        database: testDb,
+        input: {
+          title: fixtureCoin.title,
+          issuerId: issuerIds[fixtureCoin.issuer],
+          createdAt: fixtureCoin.createdAt,
+        },
+      })
+    }
+  }
+
+  async function getCoinsForSelectedIssuer() {
+    return getCoins({
+      issuerCode: selectedIssuerCode,
     })
-    await createCoin({
-      database: testDb,
-      input: {
-        title: "Athenian Owl",
-        issuerId: childIssuer.id,
-        createdAt: new Date("2026-03-02T00:00:00.000Z"),
-      },
-    })
-    await createCoin({
-      database: testDb,
-      input: {
-        title: "Classical Athena",
-        issuerId: grandchildIssuer.id,
-        createdAt: new Date("2026-03-03T00:00:00.000Z"),
-      },
-    })
-    await createCoin({
-      database: testDb,
-      input: {
-        title: "Spartan Shield",
-        issuerId: unrelatedIssuer.id,
-        createdAt: new Date("2026-03-04T00:00:00.000Z"),
-      },
-    })
+  }
+
+  function mapCoinSummaries(coins: Awaited<ReturnType<typeof getCoins>>) {
+    return coins.map(({ title, issuer }) => ({
+      title,
+      issuerCode: issuer.code,
+    }))
   }
 
   it("returns coins linked directly to the selected issuer", async () => {
     await createIssuerFilterFixture()
 
-    await expect(
-      getCoins({
-        issuerCode: "ancient-greece",
-      })
-    ).resolves.toContainEqual(
+    await expect(getCoinsForSelectedIssuer()).resolves.toContainEqual(
       expect.objectContaining({
         title: "Greek Union Coin",
         issuer: expect.objectContaining({
-          code: "ancient-greece",
+          code: selectedIssuerCode,
         }),
       })
     )
@@ -99,22 +130,18 @@ describe("getCoins issuer filter integration", () => {
   it("returns coins linked to descendant issuers of the selected issuer", async () => {
     await createIssuerFilterFixture()
 
-    await expect(
-      getCoins({
-        issuerCode: "ancient-greece",
-      })
-    ).resolves.toEqual(
+    await expect(getCoinsForSelectedIssuer()).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           title: "Athenian Owl",
           issuer: expect.objectContaining({
-            code: "athens",
+            code: issuerFixture.child.code,
           }),
         }),
         expect.objectContaining({
           title: "Classical Athena",
           issuer: expect.objectContaining({
-            code: "athens-classical",
+            code: issuerFixture.grandchild.code,
           }),
         }),
       ])
@@ -124,30 +151,23 @@ describe("getCoins issuer filter integration", () => {
   it("excludes unrelated issuers from filtered results", async () => {
     await createIssuerFilterFixture()
 
-    const filteredCoins = await getCoins({
-      issuerCode: "ancient-greece",
-    })
+    const filteredCoins = await getCoinsForSelectedIssuer()
 
     expect(
-      filteredCoins.find(({ issuer }) => issuer.code === "sparta")
+      filteredCoins.find(({ issuer }) => issuer.code === unrelatedIssuerCode)
     ).toBeUndefined()
-    expect(
-      filteredCoins.map(({ title, issuer }) => ({
-        title,
-        issuerCode: issuer.code,
-      }))
-    ).toStrictEqual([
+    expect(mapCoinSummaries(filteredCoins)).toStrictEqual([
       {
         title: "Classical Athena",
-        issuerCode: "athens-classical",
+        issuerCode: issuerFixture.grandchild.code,
       },
       {
         title: "Athenian Owl",
-        issuerCode: "athens",
+        issuerCode: issuerFixture.child.code,
       },
       {
         title: "Greek Union Coin",
-        issuerCode: "ancient-greece",
+        issuerCode: selectedIssuerCode,
       },
     ])
   })

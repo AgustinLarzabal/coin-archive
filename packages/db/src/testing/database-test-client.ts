@@ -14,6 +14,7 @@ const migrationsFolder = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "../../migrations"
 )
+type DatabaseClient = ReturnType<typeof createDatabaseClient>
 
 export function createTestDatabase() {
   return createDatabase(requireSafeDatabaseTestUrl())
@@ -36,16 +37,11 @@ export async function prepareDatabaseIntegrationTests() {
   try {
     await migrate(db, { migrationsFolder })
   } catch (error) {
-    await client.end().catch(() => undefined)
-    throw new Error(
-      `Failed to apply database migrations for integration tests: ${formatDatabaseError(
-        error
-      )}`,
-      { cause: error }
-    )
+    await closeDatabaseClientQuietly(client)
+    throw createMigrationFailureError(error)
   }
 
-  await client.end()
+  await closeDatabaseClient(client)
 }
 
 async function ensureDatabaseExists(databaseUrl: string) {
@@ -53,22 +49,17 @@ async function ensureDatabaseExists(databaseUrl: string) {
 
   try {
     await client`select 1`
-    await client.end()
+    await closeDatabaseClient(client)
     return
   } catch (error) {
-    await client.end().catch(() => undefined)
+    await closeDatabaseClientQuietly(client)
 
     if (isMissingDatabaseError(error)) {
       await createMissingDatabase(databaseUrl)
       return
     }
 
-    throw new Error(
-      `PostgreSQL is unavailable for integration tests. Start it explicitly with npm run db:start, then retry. ${formatDatabaseError(
-        error
-      )}`,
-      { cause: error }
-    )
+    throw createDatabaseUnavailableError(error)
   }
 }
 
@@ -83,20 +74,50 @@ async function createMissingDatabase(databaseUrl: string) {
       `create database ${escapePostgresIdentifier(databaseName)}`
     )
   } catch (error) {
-    await maintenanceClient.end().catch(() => undefined)
-    throw new Error(
-      `Failed to create integration test database "${databaseName}": ${formatDatabaseError(
-        error
-      )}`,
-      { cause: error }
-    )
+    await closeDatabaseClientQuietly(maintenanceClient)
+    throw createDatabaseCreationError(databaseName, error)
   }
 
-  await maintenanceClient.end()
+  await closeDatabaseClient(maintenanceClient)
 }
 
 function escapePostgresIdentifier(identifier: string) {
   return `"${identifier.replaceAll('"', '""')}"`
+}
+
+function closeDatabaseClient(client: DatabaseClient) {
+  return client.end()
+}
+
+function closeDatabaseClientQuietly(client: DatabaseClient) {
+  return closeDatabaseClient(client).catch(() => undefined)
+}
+
+function createMigrationFailureError(error: unknown) {
+  return new Error(
+    `Failed to apply database migrations for integration tests: ${formatDatabaseError(
+      error
+    )}`,
+    { cause: error }
+  )
+}
+
+function createDatabaseUnavailableError(error: unknown) {
+  return new Error(
+    `PostgreSQL is unavailable for integration tests. Start it explicitly with npm run db:start, then retry. ${formatDatabaseError(
+      error
+    )}`,
+    { cause: error }
+  )
+}
+
+function createDatabaseCreationError(databaseName: string, error: unknown) {
+  return new Error(
+    `Failed to create integration test database "${databaseName}": ${formatDatabaseError(
+      error
+    )}`,
+    { cause: error }
+  )
 }
 
 function isMissingDatabaseError(error: unknown) {

@@ -9,11 +9,38 @@ if (existsSync(rootEnvPath)) {
   loadEnvFile(rootEnvPath);
 }
 
-export function getDatabaseUrl() {
-  const databaseUrl = process.env.DATABASE_URL;
+function getRequiredEnv(name: string) {
+  const value = process.env[name];
 
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+
+  return value;
+}
+
+function getDatabaseName(databaseUrl: string) {
+  const databaseName = new URL(databaseUrl).pathname.slice(1);
+
+  if (!databaseName) {
+    throw new Error("Database URL must include a database name");
+  }
+
+  return databaseName;
+}
+
+export function getDatabaseUrl() {
+  return getRequiredEnv("DATABASE_URL");
+}
+
+export function getDatabaseTestUrl() {
+  const databaseUrl = getRequiredEnv("DATABASE_TEST_URL");
+  const databaseName = getDatabaseName(databaseUrl);
+
+  if (!/(^|[-_])test($|[-_])/.test(databaseName)) {
+    throw new Error(
+      `DATABASE_TEST_URL must point to a dedicated test database, received "${databaseName}"`
+    );
   }
 
   return databaseUrl;

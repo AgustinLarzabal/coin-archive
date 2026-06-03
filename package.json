@@ -8,6 +8,7 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "test": "turbo test",
+    "test:db": "pnpm --filter @workspace/db run test:db",
     "typecheck": "turbo typecheck",
     "db:reset": "docker compose down --volumes",
     "db:start": "docker compose up -d --wait postgres",

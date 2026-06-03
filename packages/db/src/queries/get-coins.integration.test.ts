@@ -45,12 +45,16 @@ describe("getCoins integration", () => {
       name: "Carthage",
     })
 
-    for (let index = 0; index < 12; index += 1) {
+    for (let coinNumber = 1; coinNumber <= 12; coinNumber += 1) {
+      const isRomanCoin = coinNumber % 2 === 1
+      const issuerId = isRomanCoin ? rome.id : carthage.id
+      const issuerLabel = isRomanCoin ? "Roman" : "Carthaginian"
+
       await createCoin({
-        title: `Roman Test Coin ${index + 1}`,
+        title: `${issuerLabel} Test Coin ${coinNumber}`,
         issuerId: rome.id,
         createdAt: new Date(
-          `2026-02-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`
+          `2026-02-${String(coinNumber).padStart(2, "0")}T00:00:00.000Z`
         ),
       })
     }

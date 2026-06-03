@@ -40,6 +40,10 @@ describe("getCoins integration", () => {
       code: "rome",
       name: "Rome",
     })
+    const carthage = await createIssuer({
+      code: "carthage",
+      name: "Carthage",
+    })
 
     for (let index = 0; index < 12; index += 1) {
       await createCoin({
@@ -55,15 +59,15 @@ describe("getCoins integration", () => {
 
     expect(recentCoins).toHaveLength(10)
     expect(recentCoins.map(({ title }) => title)).toStrictEqual([
-      "Roman Test Coin 12",
+      "Carthaginian Test Coin 12",
       "Roman Test Coin 11",
-      "Roman Test Coin 10",
+      "Carthaginian Test Coin 10",
       "Roman Test Coin 9",
-      "Roman Test Coin 8",
+      "Carthaginian Test Coin 8",
       "Roman Test Coin 7",
-      "Roman Test Coin 6",
+      "Carthaginian Test Coin 6",
       "Roman Test Coin 5",
-      "Roman Test Coin 4",
+      "Carthaginian Test Coin 4",
       "Roman Test Coin 3",
     ])
   })

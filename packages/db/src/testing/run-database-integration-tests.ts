@@ -11,9 +11,8 @@ function runVitest() {
       [
         "./node_modules/vitest/vitest.mjs",
         "run",
-        "src/**/*.integration.test.ts",
-        "--no-file-parallelism",
-        "--maxWorkers=1",
+        "--config",
+        "vitest.integration.config.ts",
       ],
       {
         cwd: new URL("../../", import.meta.url),

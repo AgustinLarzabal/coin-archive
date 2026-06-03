@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { buildGetCoinsQuery, type GetCoinsOptions } from "./get-coins"
 import { mapGetCoinsRowToCoinRecord } from "./map-get-coins-row"
+import { db } from "../index"
 import { createCoin, createIssuer } from "../testing/fixtures"
-import { useTestDatabase } from "../testing/test-database"
+import { useTestDatabaseIsolation } from "../testing/test-database"
 
 const selectedIssuerCode = "ancient-greece"
 const unrelatedIssuerCode = "sparta"
@@ -50,37 +51,25 @@ const issuerFilterFixtureCoins = [
 ] as const
 
 describe("getCoins issuer filter integration", () => {
-  const testDb = useTestDatabase()
+  useTestDatabaseIsolation(db)
 
   async function getCoins(options: GetCoinsOptions = {}) {
-    const rows = await buildGetCoinsQuery(testDb, options)
+    const rows = await buildGetCoinsQuery(db, options)
 
     return rows.map(mapGetCoinsRowToCoinRecord)
   }
 
   async function createIssuerFilterFixture() {
-    const parentIssuer = await createIssuer({
-      database: testDb,
-      input: issuerFixture.parent,
-    })
+    const parentIssuer = await createIssuer(issuerFixture.parent)
     const childIssuer = await createIssuer({
-      database: testDb,
-      input: {
-        ...issuerFixture.child,
-        parentIssuerId: parentIssuer.id,
-      },
+      ...issuerFixture.child,
+      parentIssuerId: parentIssuer.id,
     })
     const grandchildIssuer = await createIssuer({
-      database: testDb,
-      input: {
-        ...issuerFixture.grandchild,
-        parentIssuerId: childIssuer.id,
-      },
+      ...issuerFixture.grandchild,
+      parentIssuerId: childIssuer.id,
     })
-    const unrelatedIssuer = await createIssuer({
-      database: testDb,
-      input: issuerFixture.unrelated,
-    })
+    const unrelatedIssuer = await createIssuer(issuerFixture.unrelated)
 
     const issuerIds = {
       parent: parentIssuer.id,
@@ -91,12 +80,9 @@ describe("getCoins issuer filter integration", () => {
 
     for (const fixtureCoin of issuerFilterFixtureCoins) {
       await createCoin({
-        database: testDb,
-        input: {
-          title: fixtureCoin.title,
-          issuerId: issuerIds[fixtureCoin.issuer],
-          createdAt: fixtureCoin.createdAt,
-        },
+        title: fixtureCoin.title,
+        issuerId: issuerIds[fixtureCoin.issuer],
+        createdAt: fixtureCoin.createdAt,
       })
     }
   }
@@ -174,20 +160,14 @@ describe("getCoins issuer filter integration", () => {
 
   it("returns an empty list for an unknown issuer code without falling back to unfiltered results", async () => {
     const carthage = await createIssuer({
-      database: testDb,
-      input: {
-        code: "carthage",
-        name: "Carthage",
-      },
+      code: "carthage",
+      name: "Carthage",
     })
 
     await createCoin({
-      database: testDb,
-      input: {
-        title: "Punic Bronze",
-        issuerId: carthage.id,
-        createdAt: new Date("2026-04-01T00:00:00.000Z"),
-      },
+      title: "Punic Bronze",
+      issuerId: carthage.id,
+      createdAt: new Date("2026-04-01T00:00:00.000Z"),
     })
 
     await expect(getCoins()).resolves.toHaveLength(1)

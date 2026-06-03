@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process"
 import postgres from "postgres"
-import { getDatabaseNameFromUrl, getDatabaseTestUrl } from "../env"
+import { getDatabaseTestUrl } from "../env"
+import { getDatabaseName } from "./database-test-env"
 
 function quoteIdentifier(identifier: string) {
   return `"${identifier.replaceAll('"', '""')}"`
@@ -22,7 +23,7 @@ function runCommand(command: string, args: string[], env: NodeJS.ProcessEnv) {
 }
 
 async function ensureTestDatabaseExists(databaseUrl: string) {
-  const databaseName = getDatabaseNameFromUrl(databaseUrl)
+  const databaseName = getDatabaseName(databaseUrl)
   const adminUrl = new URL(databaseUrl)
   adminUrl.pathname = "/postgres"
 

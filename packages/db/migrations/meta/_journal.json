@@ -15,6 +15,13 @@
       "when": 1780431300873,
       "tag": "0001_add_issuers_to_coin_catalogue",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780471811351,
+      "tag": "0002_plain_energizer",
+      "breakpoints": true
     }
   ]
 }

@@ -1,39 +1,39 @@
 type SeededIssuer = {
-  displayName: string;
-  code: string;
-  parentCode?: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  name: string
+  code: string
+  parentCode?: string
+  createdAt: Date
+  updatedAt: Date
+}
 
 type SeededCoin = {
-  title: string;
-  issuerCode: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  title: string
+  issuerCode: string
+  createdAt: Date
+  updatedAt: Date
+}
 
 export const seededIssuers: SeededIssuer[] = [
   {
-    displayName: "Argentina",
+    name: "Argentina",
     code: "argentina",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
   {
-    displayName: "Buenos Aires",
+    name: "Buenos Aires",
     code: "buenos-aires",
     parentCode: "argentina",
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
   {
-    displayName: "United States of America",
+    name: "United States of America",
     code: "united-states",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
-];
+]
 
 export const seededCoins: SeededCoin[] = [
   {
@@ -96,4 +96,4 @@ export const seededCoins: SeededCoin[] = [
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
   },
-];
+]

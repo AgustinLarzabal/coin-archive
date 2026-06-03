@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { db, issuer } from "../index"
 import { useTestDatabaseIsolation } from "../testing/test-database"
+import { issuerSchemaNames } from "./issuer"
 
 async function expectConstraintError(
   promise: Promise<unknown>,
@@ -26,7 +27,7 @@ describe("issuer schema constraints", () => {
         code: "Roman Empire",
         name: "Roman Empire",
       }),
-      "issuer_code_slug_check",
+      issuerSchemaNames.codeSlugCheck,
       "23514"
     )
   })
@@ -42,7 +43,7 @@ describe("issuer schema constraints", () => {
         code: "roman-empire",
         name: "Duplicate Roman Empire",
       }),
-      "issuer_code_unique_idx",
+      issuerSchemaNames.codeUniqueIndex,
       "23505"
     )
   })
@@ -51,13 +52,13 @@ describe("issuer schema constraints", () => {
     const issuerId = randomUUID()
 
     await expectConstraintError(
-      testDb.insert(issuer).values({
+      db.insert(issuer).values({
         id: issuerId,
         code: "self-parented-issuer",
         name: "Self Parented Issuer",
         parentIssuerId: issuerId,
       }),
-      "issuer_parent_issuer_id_self_check",
+      issuerSchemaNames.parentIssuerIdSelfCheck,
       "23514"
     )
   })

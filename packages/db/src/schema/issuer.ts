@@ -10,10 +10,12 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
-const issuerCodeUniqueIndexName = "issuer_code_unique_idx"
-const issuerParentIssuerIdIndexName = "issuer_parent_issuer_id_idx"
-const issuerParentIssuerIdSelfCheckName = "issuer_parent_issuer_id_self_check"
-const issuerCodeSlugCheckName = "issuer_code_slug_check"
+export const issuerSchemaNames = {
+  codeSlugCheck: "issuer_code_slug_check",
+  codeUniqueIndex: "issuer_code_unique_idx",
+  parentIssuerIdIndex: "issuer_parent_issuer_id_idx",
+  parentIssuerIdSelfCheck: "issuer_parent_issuer_id_self_check",
+} as const
 
 const timestamptzDateColumn = {
   withTimezone: true,
@@ -42,14 +44,14 @@ export const issuer = pgTable(
       .defaultNow(),
   },
   (issuer) => [
-    uniqueIndex(issuerCodeUniqueIndexName).on(issuer.code),
-    index(issuerParentIssuerIdIndexName).on(issuer.parentIssuerId),
+    uniqueIndex(issuerSchemaNames.codeUniqueIndex).on(issuer.code),
+    index(issuerSchemaNames.parentIssuerIdIndex).on(issuer.parentIssuerId),
     check(
-      issuerParentIssuerIdSelfCheckName,
+      issuerSchemaNames.parentIssuerIdSelfCheck,
       sql`${issuer.parentIssuerId} is null or ${issuer.parentIssuerId} <> ${issuer.id}`
     ),
     check(
-      issuerCodeSlugCheckName,
+      issuerSchemaNames.codeSlugCheck,
       sql`${issuer.code} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`
     ),
   ]

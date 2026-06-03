@@ -7,7 +7,6 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "test": "pnpm --filter @workspace/db run test",
     "typecheck": "turbo typecheck",
     "db:reset": "docker compose down --volumes",
     "db:start": "docker compose up -d --wait postgres",

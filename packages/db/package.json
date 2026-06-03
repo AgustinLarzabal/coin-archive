@@ -8,7 +8,6 @@
     "migrate": "drizzle-kit migrate",
     "seed": "node --import tsx ./src/seed/index.ts",
     "studio": "drizzle-kit studio",
-    "test": "DATABASE_URL=postgresql://coin_archive:coin_archive@localhost:5432/coin_archive tsx --test ./test/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

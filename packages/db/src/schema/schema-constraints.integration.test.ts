@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { db, issuer } from "../index"
@@ -43,6 +44,21 @@ describe("issuer schema constraints", () => {
       }),
       "issuer_code_unique_idx",
       "23505"
+    )
+  })
+
+  it("rejects an issuer grouping where the issuer is its own parent", async () => {
+    const issuerId = randomUUID()
+
+    await expectConstraintError(
+      testDb.insert(issuer).values({
+        id: issuerId,
+        code: "self-parented-issuer",
+        name: "Self Parented Issuer",
+        parentIssuerId: issuerId,
+      }),
+      "issuer_parent_issuer_id_self_check",
+      "23514"
     )
   })
 })

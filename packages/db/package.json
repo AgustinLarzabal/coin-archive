@@ -9,7 +9,7 @@
     "seed": "node --import tsx ./src/seed/index.ts",
     "studio": "drizzle-kit studio",
     "test": "vitest run --exclude '**/*.integration.test.ts'",
-    "test:db": "node --import tsx ./src/testing/run-db-tests.ts",
+    "test:db": "node --import tsx ./src/testing/run-database-integration-tests.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

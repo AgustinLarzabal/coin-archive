@@ -1,15 +1,11 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { getDatabaseUrl } from "./env";
+import { createDatabase } from "./database"
+import { getDatabaseUrl } from "./env"
 
-const databaseUrl = getDatabaseUrl();
+const databaseUrl = getDatabaseUrl()
+const { client, db } = createDatabase(databaseUrl)
 
-const client = postgres(databaseUrl, {
-  prepare: false,
-});
-
-export const db = drizzle(client);
+export { db }
 
 export function closeDb() {
-  return client.end();
+  return client.end()
 }

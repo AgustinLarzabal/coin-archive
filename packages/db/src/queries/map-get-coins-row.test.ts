@@ -5,12 +5,15 @@ import {
 } from "./map-get-coins-row"
 
 describe("mapGetCoinsRowToCoinRecord", () => {
-  it("maps a query row into the exact catalogue record shape", () => {
+  const createdAt = new Date("2026-06-01T12:00:00.000Z")
+  const updatedAt = new Date("2026-06-02T12:00:00.000Z")
+
+  it("maps a query row into the exact coin record shape", () => {
     const row: GetCoinsRow = {
       id: "coin-1",
       title: "Silver Test Crown",
-      createdAt: new Date("2026-06-01T12:00:00.000Z"),
-      updatedAt: new Date("2026-06-02T12:00:00.000Z"),
+      createdAt,
+      updatedAt,
       issuerCode: "roman-empire",
       issuerName: "Roman Empire",
       parentIssuerCode: "ancient-world",
@@ -20,8 +23,8 @@ describe("mapGetCoinsRowToCoinRecord", () => {
     expect(mapGetCoinsRowToCoinRecord(row)).toStrictEqual({
       id: "coin-1",
       title: "Silver Test Crown",
-      createdAt: new Date("2026-06-01T12:00:00.000Z"),
-      updatedAt: new Date("2026-06-02T12:00:00.000Z"),
+      createdAt,
+      updatedAt,
       issuer: {
         code: "roman-empire",
         name: "Roman Empire",
@@ -29,6 +32,31 @@ describe("mapGetCoinsRowToCoinRecord", () => {
           code: "ancient-world",
           name: "Ancient World",
         },
+      },
+    })
+  })
+
+  it("sets issuer parent to null when the query row has no parent issuer", () => {
+    const row: GetCoinsRow = {
+      id: "coin-2",
+      title: "Bronze Test Coin",
+      createdAt,
+      updatedAt,
+      issuerCode: "athens",
+      issuerName: "Athens",
+      parentIssuerCode: null,
+      parentIssuerName: null,
+    }
+
+    expect(mapGetCoinsRowToCoinRecord(row)).toStrictEqual({
+      id: "coin-2",
+      title: "Bronze Test Coin",
+      createdAt,
+      updatedAt,
+      issuer: {
+        code: "athens",
+        name: "Athens",
+        parent: null,
       },
     })
   })

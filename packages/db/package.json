@@ -8,6 +8,7 @@
     "migrate": "drizzle-kit migrate",
     "seed": "node --import tsx ./src/seed/index.ts",
     "studio": "drizzle-kit studio",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +19,8 @@
     "@types/node": "^22",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
-    "typescript": "^6"
+    "typescript": "^6",
+    "vitest": "^3.2.4"
   },
   "exports": {
     ".": "./src/index.ts"

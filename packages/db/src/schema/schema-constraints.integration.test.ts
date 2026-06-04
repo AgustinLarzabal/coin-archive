@@ -1,15 +1,28 @@
 import { randomUUID } from "node:crypto"
 import { sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { coin, coinRuler, db, issuer, ruler, rulerGroup } from "../index"
 import {
+  catalogue,
+  coin,
+  coinReference,
+  coinRuler,
+  db,
+  issuer,
+  ruler,
+  rulerGroup,
+} from "../index"
+import {
+  createCatalogue,
   createCoin,
+  createCoinReference,
   createCoinRuler,
   createIssuer,
   createRuler,
   createRulerGroup,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
+import { catalogueSchemaNames } from "./catalogue"
+import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { issuerSchemaNames } from "./issuer"
 import { rulerSchemaNames } from "./ruler"
@@ -89,6 +102,55 @@ describe("coin schema constraints", () => {
         column_name: "issuer_id",
       }),
     })
+  })
+})
+
+describe("catalogue schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("requires catalogue codes", async () => {
+    await expect(
+      db.execute(sql`
+        insert into "catalogue" ("code", "title")
+        values (${null}, ${"Standard Catalog of World Coins"})
+      `)
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23502",
+        column_name: "code",
+      }),
+    })
+  })
+
+  it("rejects duplicate catalogue codes ignoring case", async () => {
+    await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+
+    await expectConstraintError(
+      db.insert(catalogue).values({
+        code: "km",
+        title: "Duplicate Standard Catalog of World Coins",
+      }),
+      catalogueSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("allows duplicate catalogue titles", async () => {
+    await expect(
+      db.insert(catalogue).values([
+        {
+          code: "KM",
+          title: "Shared Title",
+        },
+        {
+          code: "RIC",
+          title: "Shared Title",
+        },
+      ])
+    ).resolves.toBeDefined()
   })
 })
 
@@ -411,6 +473,174 @@ describe("coin ruler schema constraints", () => {
         .select()
         .from(coinRuler)
         .where(sql`${coinRuler.coinId} = ${civicCoin.id}`)
+    ).resolves.toStrictEqual([])
+  })
+})
+
+describe("coin reference schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects equivalent duplicate catalogue references on the same coin", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const km = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const civicCoin = await createCoin({
+      title: "Catalogue Duplicate Test Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-06T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: civicCoin.id,
+      catalogueId: km.id,
+      number: "1338 A",
+    })
+
+    await expectConstraintError(
+      db.insert(coinReference).values({
+        coinId: civicCoin.id,
+        catalogueId: km.id,
+        number: " 1338   a ",
+      }),
+      coinReferenceSchemaNames.coinIdCatalogueIdNormalizedNumberUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("allows the same catalogue reference number on different coins", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const km = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const firstCoin = await createCoin({
+      title: "First Shared Reference Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-07T00:00:00.000Z"),
+    })
+    const secondCoin = await createCoin({
+      title: "Second Shared Reference Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-08T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: firstCoin.id,
+      catalogueId: km.id,
+      number: "1338",
+    })
+
+    await expect(
+      createCoinReference({
+        coinId: secondCoin.id,
+        catalogueId: km.id,
+        number: "1338",
+      })
+    ).resolves.toMatchObject({
+      coinId: secondCoin.id,
+      catalogueId: km.id,
+      number: "1338",
+    })
+  })
+
+  it("allows multiple distinct references from the same catalogue on one coin", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const km = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const civicCoin = await createCoin({
+      title: "Multiple Catalogue Reference Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-09T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: civicCoin.id,
+      catalogueId: km.id,
+      number: "1338",
+    })
+
+    await expect(
+      createCoinReference({
+        coinId: civicCoin.id,
+        catalogueId: km.id,
+        number: "1338A",
+      })
+    ).resolves.toMatchObject({
+      coinId: civicCoin.id,
+      catalogueId: km.id,
+      number: "1338A",
+    })
+  })
+
+  it("restricts deleting a catalogue while a coin reference still uses it", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const km = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const civicCoin = await createCoin({
+      title: "Catalogue Restrict Delete Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-10T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: civicCoin.id,
+      catalogueId: km.id,
+      number: "1338",
+    })
+
+    await expectConstraintError(
+      db.delete(catalogue).where(sql`${catalogue.id} = ${km.id}`),
+      "coin_reference_catalogue_id_catalogue_id_fk",
+      "23503"
+    )
+  })
+
+  it("deletes coin references when the coin is deleted", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const km = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const civicCoin = await createCoin({
+      title: "Catalogue Cascade Delete Coin",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-11T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: civicCoin.id,
+      catalogueId: km.id,
+      number: "1338",
+    })
+
+    await db.delete(coin).where(sql`${coin.id} = ${civicCoin.id}`)
+
+    await expect(
+      db
+        .select()
+        .from(coinReference)
+        .where(sql`${coinReference.coinId} = ${civicCoin.id}`)
     ).resolves.toStrictEqual([])
   })
 })

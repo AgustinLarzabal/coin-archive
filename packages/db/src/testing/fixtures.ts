@@ -1,4 +1,6 @@
 import { coin } from "../schema/coin"
+import { coinReference } from "../schema/coin-reference"
+import { catalogue } from "../schema/catalogue"
 import { coinRuler } from "../schema/coin-ruler"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -23,6 +25,11 @@ type CreateRulerGroupInput = {
   name: string
 }
 
+type CreateCatalogueInput = {
+  code: string
+  title: string
+}
+
 type CreateRulerInput = {
   code: string
   name: string
@@ -33,6 +40,12 @@ type CreateCoinRulerInput = {
   coinId: string
   rulerId: string
   rulerOrder: number
+}
+
+type CreateCoinReferenceInput = {
+  catalogueId: string
+  coinId: string
+  number: string
 }
 
 export async function createIssuer({
@@ -83,6 +96,18 @@ export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
   return createdRulerGroup
 }
 
+export async function createCatalogue({ code, title }: CreateCatalogueInput) {
+  const [createdCatalogue] = await db
+    .insert(catalogue)
+    .values({
+      code,
+      title,
+    })
+    .returning()
+
+  return createdCatalogue
+}
+
 export async function createRuler({
   code,
   name,
@@ -115,4 +140,21 @@ export async function createCoinRuler({
     .returning()
 
   return createdCoinRuler
+}
+
+export async function createCoinReference({
+  catalogueId,
+  coinId,
+  number,
+}: CreateCoinReferenceInput) {
+  const [createdCoinReference] = await db
+    .insert(coinReference)
+    .values({
+      catalogueId,
+      coinId,
+      number,
+    })
+    .returning()
+
+  return createdCoinReference
 }

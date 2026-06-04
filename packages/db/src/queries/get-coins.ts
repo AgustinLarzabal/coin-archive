@@ -1,7 +1,9 @@
 import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
+import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -36,6 +38,16 @@ const getCoinsSelection = {
   rulerGroupName: rulerGroup.name,
   rulerGroupCreatedAt: rulerGroup.createdAt,
   rulerGroupUpdatedAt: rulerGroup.updatedAt,
+  referenceId: coinReference.id,
+  referenceType: sql<"catalogue" | null>`case when ${coinReference.id} is null then null else 'catalogue' end`,
+  referenceNumber: coinReference.number,
+  referenceCreatedAt: coinReference.createdAt,
+  referenceUpdatedAt: coinReference.updatedAt,
+  referenceCatalogueId: catalogue.id,
+  referenceCatalogueCode: catalogue.code,
+  referenceCatalogueTitle: catalogue.title,
+  referenceCatalogueCreatedAt: catalogue.createdAt,
+  referenceCatalogueUpdatedAt: catalogue.updatedAt,
 }
 
 export type GetCoinsOptions = {
@@ -133,11 +145,16 @@ export function buildGetCoinsQuery(
     .leftJoin(coinRuler, eq(coin.id, coinRuler.coinId))
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(rulerGroup, eq(ruler.rulerGroupId, rulerGroup.id))
+    .leftJoin(coinReference, eq(coin.id, coinReference.coinId))
+    .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))
     .orderBy(
       desc(coin.createdAt),
       desc(coin.id),
       asc(coinRuler.rulerOrder),
-      asc(ruler.id)
+      asc(ruler.id),
+      asc(catalogue.title),
+      asc(coinReference.number),
+      asc(coinReference.id)
     )
 }
 

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
 import {
+  createCatalogue,
   createCoin,
+  createCoinReference,
   createCoinRuler,
   createIssuer,
   createRuler,
@@ -119,7 +121,88 @@ describe("getCoins integration", () => {
             updatedAt: ancientWorld.updatedAt,
           },
         },
+        references: [],
         rulers: [],
+      },
+    ])
+  })
+
+  it("returns typed catalogue references sorted by catalogue title", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const standardCatalog = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const romanImperialCoinage = await createCatalogue({
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+    const createdAt = new Date("2026-05-01T00:00:00.000Z")
+    const coin = await createCoin({
+      title: "Catalogue Reference Test Issue",
+      issuerId: spain.id,
+      createdAt,
+    })
+
+    const romanReference = await createCoinReference({
+      coinId: coin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "K-12",
+    })
+    const kmReference = await createCoinReference({
+      coinId: coin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+      {
+        id: coin.id,
+        title: "Catalogue Reference Test Issue",
+        createdAt,
+        updatedAt: createdAt,
+        issuer: {
+          id: spain.id,
+          code: "spain",
+          name: "Spain",
+          createdAt: spain.createdAt,
+          updatedAt: spain.updatedAt,
+          parent: null,
+        },
+        rulers: [],
+        references: [
+          {
+            id: romanReference.id,
+            type: "catalogue",
+            number: "K-12",
+            createdAt: romanReference.createdAt,
+            updatedAt: romanReference.updatedAt,
+            catalogue: {
+              id: romanImperialCoinage.id,
+              code: "RIC",
+              title: "Roman Imperial Coinage",
+              createdAt: romanImperialCoinage.createdAt,
+              updatedAt: romanImperialCoinage.updatedAt,
+            },
+          },
+          {
+            id: kmReference.id,
+            type: "catalogue",
+            number: "1338A",
+            createdAt: kmReference.createdAt,
+            updatedAt: kmReference.updatedAt,
+            catalogue: {
+              id: standardCatalog.id,
+              code: "KM",
+              title: "Standard Catalog of World Coins",
+              createdAt: standardCatalog.createdAt,
+              updatedAt: standardCatalog.updatedAt,
+            },
+          },
+        ],
       },
     ])
   })

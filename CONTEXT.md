@@ -52,6 +52,34 @@ _Avoid_: Ruler group filter, issuer-style descendant filter
 The display order of multiple ruler attributions on a single coin. The order is meaningful only within that coin's ruler attributions.
 _Avoid_: Ruler creation date, ruler update date, global ruler rank
 
+**Catalogue**:
+A named external reference work or numbering system that assigns identifiers to coin types or issues. A catalogue is shared across many coins and has both a display title and a catalogue code used when displaying catalogue references. Catalogue titles do not need to be globally unique.
+_Avoid_: Coin Archive, citation source, issuer
+
+**Catalogue Code**:
+The required, globally unique short label used to identify a catalogue in a catalogue reference, such as KM. It identifies the external catalogue, not the coin's number within that catalogue. Casing differences alone do not make two catalogue codes distinct, but the preferred casing should be preserved for display.
+_Avoid_: Reference number, coin code, issuer code
+
+**Reference**:
+An external identifier, citation, or source note attached to a catalogued coin type or issue. Catalogue references are one kind of reference.
+_Avoid_: Internal object reference, Coin Archive id
+
+**Catalogue Reference**:
+A catalogued coin type or issue's identifier within a specific external catalogue, not an individual specimen's identifier. A coin may have multiple catalogue references from the same catalogue when the catalogue assigns distinct numbers, but repeated equivalent catalogue references are not meaningful. Catalogue references are displayed alphabetically by catalogue title.
+_Avoid_: Generic reference, citation-only source, internal coin identity
+
+**Catalogue Filter**:
+A catalogue reference filter that returns coins with at least one catalogue reference from the selected catalogue.
+_Avoid_: Exact reference number filter, issuer filter
+
+**Catalogue Reference Filter**:
+A catalogue reference filter that returns coins matching the selected catalogue and reference number prefix when both are present. If only one part is present, it filters by that part alone.
+_Avoid_: Broad OR filter, contains search, citation search
+
+**Reference Number**:
+The opaque identifier text assigned to a coin by a specific catalogue. A reference number is meaningful only together with its catalogue and should not be parsed as a numeric value, but casing differences and insignificant whitespace alone do not make two reference numbers distinct.
+_Avoid_: Catalogue code, Coin Archive id, globally unique coin id
+
 **Recent Coin**:
 A coin record recently added to Coin Archive. Recency refers to when the archive record was created, not when the physical coin was minted or historically used.
 _Avoid_: Historically recent coin

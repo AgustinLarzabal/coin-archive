@@ -5,11 +5,17 @@ import { catalogue } from "../schema/catalogue"
 import type { Catalogue } from "../schema/catalogue"
 
 const getCataloguesSelection = {
+  createdAt: catalogue.createdAt,
   code: catalogue.code,
+  id: catalogue.id,
   title: catalogue.title,
+  updatedAt: catalogue.updatedAt,
 }
 
-export type CatalogueOption = Pick<Catalogue, "code" | "title">
+export type CatalogueOption = Pick<
+  Catalogue,
+  "code" | "createdAt" | "id" | "title" | "updatedAt"
+>
 
 export async function getCatalogues(): Promise<CatalogueOption[]> {
   return db

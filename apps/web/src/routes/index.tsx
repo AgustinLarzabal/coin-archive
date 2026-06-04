@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import { z } from "zod"
 import type { CatalogueOption, IssuerOption, RulerOption } from "@workspace/db"
 import {
+  coinListInputSchema,
+  coinSearchSchema,
+  findSelectedCatalogueOption,
   getCatalogueOptionLabel,
+  getCoinListLoaderDeps,
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
@@ -18,20 +21,6 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 import { Input } from "@workspace/ui/components/input"
-
-const optionalStringSchema = z.string().optional()
-const coinSearchSchema = z.object({
-  catalogue: optionalStringSchema,
-  issuer: optionalStringSchema,
-  referenceNumber: optionalStringSchema,
-  ruler: optionalStringSchema,
-})
-const coinListInputSchema = z.object({
-  catalogueCode: optionalStringSchema,
-  issuerCode: optionalStringSchema,
-  referenceNumber: optionalStringSchema,
-  rulerCode: optionalStringSchema,
-})
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -57,12 +46,7 @@ const getCoinListData = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/")({
   validateSearch: coinSearchSchema,
-  loaderDeps: ({ search }) => ({
-    catalogueCode: search.catalogue,
-    issuerCode: search.issuer,
-    referenceNumber: search.referenceNumber,
-    rulerCode: search.ruler,
-  }),
+  loaderDeps: ({ search }) => getCoinListLoaderDeps(search),
   loader: ({ deps }) => getCoinListData({ data: deps }),
   component: App,
 })
@@ -77,11 +61,10 @@ function App() {
   } = Route.useSearch()
   const navigate = Route.useNavigate()
 
-  const selectedCatalogue =
-    catalogues.find(
-      (catalogue) =>
-        catalogue.code.toLowerCase() === selectedCatalogueCode?.toLowerCase()
-    ) ?? null
+  const selectedCatalogue = findSelectedCatalogueOption(
+    catalogues,
+    selectedCatalogueCode
+  )
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
   const selectedRuler =

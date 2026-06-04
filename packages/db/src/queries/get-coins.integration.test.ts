@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
-import { createCoin, createIssuer } from "../testing/fixtures"
+import {
+  createCoin,
+  createCoinRuler,
+  createIssuer,
+  createRuler,
+  createRulerGroup,
+} from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getCoins integration", () => {
@@ -73,6 +79,150 @@ describe("getCoins integration", () => {
       "Roman Test Coin 5",
       "Carthaginian Test Coin 4",
       "Roman Test Coin 3",
+    ])
+  })
+
+  it("returns full issuer data and an empty rulers array when a coin has no ruler attributions", async () => {
+    const ancientWorld = await createIssuer({
+      code: "ancient-world",
+      name: "Ancient World",
+    })
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+      parentIssuerId: ancientWorld.id,
+    })
+    const createdAt = new Date("2026-05-01T00:00:00.000Z")
+    const coin = await createCoin({
+      title: "Ungrouped Civic Issue",
+      issuerId: athens.id,
+      createdAt,
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+      {
+        id: coin.id,
+        title: "Ungrouped Civic Issue",
+        createdAt,
+        updatedAt: createdAt,
+        issuer: {
+          id: athens.id,
+          code: "athens",
+          name: "Athens",
+          createdAt: athens.createdAt,
+          updatedAt: athens.updatedAt,
+          parent: {
+            id: ancientWorld.id,
+            code: "ancient-world",
+            name: "Ancient World",
+            createdAt: ancientWorld.createdAt,
+            updatedAt: ancientWorld.updatedAt,
+          },
+        },
+        rulers: [],
+      },
+    ])
+  })
+
+  it("returns full linked ruler data in ruler attribution order", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const juanCarlos = await createRuler({
+      code: "juan-carlos-i",
+      name: "Juan Carlos I",
+      rulerGroupId: bourbon.id,
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+    const liberty = await createRuler({
+      code: "liberty",
+      name: "Liberty",
+    })
+    const createdAt = new Date("2026-05-02T00:00:00.000Z")
+    const coin = await createCoin({
+      title: "Attribution Test Issue",
+      issuerId: spain.id,
+      createdAt,
+    })
+
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: felipe.id,
+      rulerOrder: 2,
+    })
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: juanCarlos.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: liberty.id,
+      rulerOrder: 3,
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+      {
+        id: coin.id,
+        title: "Attribution Test Issue",
+        createdAt,
+        updatedAt: createdAt,
+        issuer: {
+          id: spain.id,
+          code: "spain",
+          name: "Spain",
+          createdAt: spain.createdAt,
+          updatedAt: spain.updatedAt,
+          parent: null,
+        },
+        rulers: [
+          {
+            id: juanCarlos.id,
+            code: "juan-carlos-i",
+            name: "Juan Carlos I",
+            createdAt: juanCarlos.createdAt,
+            updatedAt: juanCarlos.updatedAt,
+            group: {
+              id: bourbon.id,
+              code: "house-of-bourbon",
+              name: "House of Bourbon",
+              createdAt: bourbon.createdAt,
+              updatedAt: bourbon.updatedAt,
+            },
+          },
+          {
+            id: felipe.id,
+            code: "felipe-vi",
+            name: "Felipe VI",
+            createdAt: felipe.createdAt,
+            updatedAt: felipe.updatedAt,
+            group: {
+              id: bourbon.id,
+              code: "house-of-bourbon",
+              name: "House of Bourbon",
+              createdAt: bourbon.createdAt,
+              updatedAt: bourbon.updatedAt,
+            },
+          },
+          {
+            id: liberty.id,
+            code: "liberty",
+            name: "Liberty",
+            createdAt: liberty.createdAt,
+            updatedAt: liberty.updatedAt,
+            group: null,
+          },
+        ],
+      },
     ])
   })
 })

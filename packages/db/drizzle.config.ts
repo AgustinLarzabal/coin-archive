@@ -4,7 +4,13 @@ import { getDatabaseUrl } from "./src/env"
 const databaseUrl = getDatabaseUrl()
 
 export default defineConfig({
-  schema: ["./src/schema/coin.ts", "./src/schema/issuer.ts"],
+  schema: [
+    "./src/schema/coin.ts",
+    "./src/schema/issuer.ts",
+    "./src/schema/ruler-group.ts",
+    "./src/schema/ruler.ts",
+    "./src/schema/coin-ruler.ts",
+  ],
   out: "./migrations",
   dialect: "postgresql",
   dbCredentials: {

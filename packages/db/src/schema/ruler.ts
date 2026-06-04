@@ -1,0 +1,52 @@
+import { sql } from "drizzle-orm"
+import {
+  check,
+  index,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+  pgTable,
+} from "drizzle-orm/pg-core"
+import { rulerGroup } from "./ruler-group"
+
+export const rulerSchemaNames = {
+  codeSlugCheck: "ruler_code_slug_check",
+  codeUniqueIndex: "ruler_code_unique_idx",
+  rulerGroupIdIndex: "ruler_ruler_group_id_idx",
+} as const
+
+const timestamptzDateColumn = {
+  withTimezone: true,
+  mode: "date",
+} as const
+
+export const ruler = pgTable(
+  "ruler",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    name: varchar("name", { length: 255 }).notNull(),
+    code: varchar("code", { length: 255 }).notNull(),
+    rulerGroupId: uuid("ruler_group_id").references(() => rulerGroup.id, {
+      onDelete: "restrict",
+    }),
+    createdAt: timestamp("created_at", timestamptzDateColumn)
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", timestamptzDateColumn)
+      .notNull()
+      .defaultNow(),
+  },
+  (ruler) => [
+    uniqueIndex(rulerSchemaNames.codeUniqueIndex).on(ruler.code),
+    index(rulerSchemaNames.rulerGroupIdIndex).on(ruler.rulerGroupId),
+    check(
+      rulerSchemaNames.codeSlugCheck,
+      sql`${ruler.code} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`
+    ),
+  ]
+)
+
+export type Ruler = typeof ruler.$inferSelect

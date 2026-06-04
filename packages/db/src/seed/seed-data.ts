@@ -13,6 +13,27 @@ type SeededCoin = {
   updatedAt: Date
 }
 
+type SeededRulerGroup = {
+  name: string
+  code: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededRuler = {
+  name: string
+  code: string
+  rulerGroupCode?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCoinRuler = {
+  coinTitle: string
+  rulerCode: string
+  rulerOrder: number
+}
+
 export const seededIssuers: SeededIssuer[] = [
   {
     name: "Argentina",
@@ -95,5 +116,43 @@ export const seededCoins: SeededCoin[] = [
     issuerCode: "argentina",
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
+  },
+]
+
+export const seededRulerGroups: SeededRulerGroup[] = [
+  {
+    name: "House of Bourbon",
+    code: "house-of-bourbon",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+]
+
+export const seededRulers: SeededRuler[] = [
+  {
+    name: "Felipe VI",
+    code: "felipe-vi",
+    rulerGroupCode: "house-of-bourbon",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    name: "Liberty",
+    code: "liberty",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinRulers: SeededCoinRuler[] = [
+  {
+    coinTitle: "Seed Coin 06",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Seed Coin 09",
+    rulerCode: "liberty",
+    rulerOrder: 1,
   },
 ]

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { buildGetCoinsQuery, type GetCoinsOptions } from "./get-coins"
-import { mapGetCoinsRowToCoinRecord } from "./map-get-coins-row"
+import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 import { db } from "../index"
 import { createCoin, createIssuer } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -56,7 +56,7 @@ describe("getCoins issuer filter integration", () => {
   async function getCoins(options: GetCoinsOptions = {}) {
     const rows = await buildGetCoinsQuery(db, options)
 
-    return rows.map(mapGetCoinsRowToCoinRecord)
+    return mapGetCoinsRowsToCoinRecords(rows)
   }
 
   async function createIssuerFilterFixture() {

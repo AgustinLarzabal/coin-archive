@@ -4,6 +4,8 @@ import { migrate } from "drizzle-orm/postgres-js/migrator"
 import { createDatabase, createDatabaseClient } from "../database"
 import { coin } from "../schema/coin"
 import { issuer } from "../schema/issuer"
+import { ruler } from "../schema/ruler"
+import { rulerGroup } from "../schema/ruler-group"
 import {
   getDatabaseName,
   getMaintenanceDatabaseUrl,
@@ -24,6 +26,8 @@ export async function clearDatabaseTables(
   database: ReturnType<typeof createTestDatabase>["db"]
 ) {
   await database.delete(coin)
+  await database.delete(ruler)
+  await database.delete(rulerGroup)
   await database.delete(issuer)
 }
 

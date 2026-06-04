@@ -1,11 +1,15 @@
+import type { RulerOption } from "@workspace/db"
+
 export type CoinSearch = {
   issuer?: string
   ruler?: string
 }
 
+export type CoinSearchFilterName = keyof CoinSearch
+
 export function updateCoinSearchFilter(
   currentSearch: CoinSearch,
-  filterName: keyof CoinSearch,
+  filterName: CoinSearchFilterName,
   filterValue: string | undefined
 ): CoinSearch {
   const nextSearch = { ...currentSearch }
@@ -21,9 +25,8 @@ export function updateCoinSearchFilter(
   return nextSearch
 }
 
-export function getRulerOptionLabel(ruler: {
-  name: string
-  group: { name: string } | null
-}) {
+type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+
+export function getRulerOptionLabel(ruler: RulerOptionLabel) {
   return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name
 }

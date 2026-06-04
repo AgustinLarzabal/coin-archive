@@ -3,6 +3,8 @@ import { asc, eq } from "drizzle-orm"
 import { db } from "../client"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import type { Ruler } from "../schema/ruler"
+import type { RulerGroup } from "../schema/ruler-group"
 
 const getRulersSelection = {
   code: ruler.code,
@@ -11,13 +13,10 @@ const getRulersSelection = {
   groupName: rulerGroup.name,
 }
 
-export type RulerOption = {
-  code: string
-  name: string
-  group: {
-    code: string
-    name: string
-  } | null
+type RulerGroupOption = Pick<RulerGroup, "code" | "name">
+
+export type RulerOption = Pick<Ruler, "code" | "name"> & {
+  group: RulerGroupOption | null
 }
 
 function buildRulerGroupOption(

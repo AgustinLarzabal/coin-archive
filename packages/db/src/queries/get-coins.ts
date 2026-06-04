@@ -43,36 +43,27 @@ export type GetCoinsOptions = {
   rulerCode?: string
 }
 
+type CoinFilterOptions = Pick<GetCoinsOptions, "issuerCode" | "rulerCode">
+
 function buildCoinFilter({
   issuerCode,
   rulerCode,
-}: Pick<GetCoinsOptions, "issuerCode" | "rulerCode">): SQL | undefined {
-  const filters: SQL[] = []
+}: CoinFilterOptions): SQL | undefined {
+  const issuerFilter =
+    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode)
+  const rulerFilter =
+    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode)
 
-  if (issuerCode !== undefined) {
-    filters.push(buildIssuerTreeFilter(issuerCode))
+  if (issuerFilter !== undefined && rulerFilter !== undefined) {
+    return and(issuerFilter, rulerFilter)
   }
 
-  if (rulerCode !== undefined) {
-    filters.push(buildRulerFilter(rulerCode))
-  }
-
-  if (filters.length === 0) {
-    return undefined
-  }
-
-  if (filters.length === 1) {
-    return filters[0]
-  }
-
-  return and(...filters)
+  return issuerFilter ?? rulerFilter
 }
 
 function buildLimitedCoinsQuery(
   database: typeof db,
-  limit: number,
-  issuerCode?: string,
-  rulerCode?: string
+  { limit, issuerCode, rulerCode }: { limit: number } & CoinFilterOptions
 ) {
   const filter = buildCoinFilter({ issuerCode, rulerCode })
 
@@ -126,12 +117,11 @@ export function buildGetCoinsQuery(
 ) {
   const { limit = defaultGetCoinsLimit, issuerCode, rulerCode } = options
 
-  const limitedCoins = buildLimitedCoinsQuery(
-    database,
+  const limitedCoins = buildLimitedCoinsQuery(database, {
     limit,
     issuerCode,
-    rulerCode
-  )
+    rulerCode,
+  })
 
   return database
     .select(getCoinsSelection)

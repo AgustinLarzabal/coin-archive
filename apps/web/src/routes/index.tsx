@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import type { IssuerOption, RulerOption } from "@workspace/db"
 import {
+  type CoinSearchFilterName,
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
@@ -63,7 +64,7 @@ function App() {
     rulers.find((ruler) => ruler.code === selectedRulerCode) ?? null
 
   async function updateSearchFilter(
-    filterName: "issuer" | "ruler",
+    filterName: CoinSearchFilterName,
     filterValue: string | undefined
   ) {
     await navigate({

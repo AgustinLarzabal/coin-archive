@@ -91,20 +91,10 @@ function buildCoinFilter({
 
 function buildLimitedCoinsQuery(
   database: typeof db,
-  {
-    limit,
-    issuerCode,
-    rulerCode,
-    catalogueCode,
-    referenceNumber,
-  }: { limit: number } & CoinFilterOptions
+  options: { limit: number } & CoinFilterOptions
 ) {
-  const filter = buildCoinFilter({
-    issuerCode,
-    rulerCode,
-    catalogueCode,
-    referenceNumber,
-  })
+  const { limit, ...filterOptions } = options
+  const filter = buildCoinFilter(filterOptions)
 
   const baseQuery = database
     .select({
@@ -159,14 +149,12 @@ function buildCatalogueReferenceFilter({
   catalogueCode,
   referenceNumber,
 }: CatalogueReferenceFilterOptions): SQL | undefined {
-  const normalizedCatalogueCode = normalizeFilterValue(catalogueCode)
+  const normalizedCatalogueCode = normalizeCatalogueCode(catalogueCode)
   const normalizedReferenceNumber = normalizeReferenceNumberPrefix(referenceNumber)
   const referenceFilters: SQL[] = []
 
   if (normalizedCatalogueCode !== undefined) {
-    referenceFilters.push(
-      sql`lower(${catalogue.code}) = ${normalizedCatalogueCode.toLowerCase()}`
-    )
+    referenceFilters.push(sql`lower(${catalogue.code}) = ${normalizedCatalogueCode}`)
   }
 
   if (normalizedReferenceNumber !== undefined) {
@@ -199,6 +187,10 @@ function normalizeFilterValue(value: string | undefined) {
   return normalizedValue ? normalizedValue : undefined
 }
 
+function normalizeCatalogueCode(value: string | undefined) {
+  return normalizeFilterValue(value)?.toLowerCase()
+}
+
 function normalizeReferenceNumberPrefix(value: string | undefined) {
   const normalizedValue = normalizeFilterValue(value)
 
@@ -209,20 +201,11 @@ export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
 ) {
-  const {
-    limit = defaultGetCoinsLimit,
-    issuerCode,
-    rulerCode,
-    catalogueCode,
-    referenceNumber,
-  } = options
+  const { limit = defaultGetCoinsLimit, ...filterOptions } = options
 
   const limitedCoins = buildLimitedCoinsQuery(database, {
     limit,
-    issuerCode,
-    rulerCode,
-    catalogueCode,
-    referenceNumber,
+    ...filterOptions,
   })
 
   return database

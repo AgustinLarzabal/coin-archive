@@ -1,7 +1,9 @@
-import type { RulerOption } from "@workspace/db"
+import type { CatalogueOption, RulerOption } from "@workspace/db"
 
 export type CoinSearch = {
+  catalogue?: string
   issuer?: string
+  referenceNumber?: string
   ruler?: string
 }
 
@@ -26,6 +28,11 @@ export function updateCoinSearchFilter(
 }
 
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
+
+export function getCatalogueOptionLabel(catalogue: CatalogueOptionLabel) {
+  return `${catalogue.title} · ${catalogue.code}`
+}
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {
   return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name

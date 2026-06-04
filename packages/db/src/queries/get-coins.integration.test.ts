@@ -207,6 +207,127 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters coins by catalogue code and reference number prefix using the same matching reference", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const standardCatalog = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const romanImperialCoinage = await createCatalogue({
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+
+    const matchingCoin = await createCoin({
+      title: "Spanish Matching KM Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    const referenceOnlyMatchCoin = await createCoin({
+      title: "French Reference Prefix Match",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const catalogueOnlyMatchCoin = await createCoin({
+      title: "Spanish KM Other Number",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    const splitMatchCoin = await createCoin({
+      title: "Split Reference Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const nonPrefixCoin = await createCoin({
+      title: "Non Prefix Number Coin",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: matchingCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "  1338 A ",
+    })
+    await createCoinReference({
+      coinId: referenceOnlyMatchCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "1338b",
+    })
+    await createCoinReference({
+      coinId: catalogueOnlyMatchCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1400",
+    })
+    await createCoinReference({
+      coinId: splitMatchCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "2000",
+    })
+    await createCoinReference({
+      coinId: splitMatchCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "1338c",
+    })
+    await createCoinReference({
+      coinId: nonPrefixCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "21338",
+    })
+
+    await expect(getCoins({ catalogueCode: "km" })).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Spanish Matching KM Issue",
+          "Spanish KM Other Number",
+          "Split Reference Coin",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        referenceNumber: "1338 a",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Spanish Matching KM Issue"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        referenceNumber: "1338",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Spanish Matching KM Issue",
+          "French Reference Prefix Match",
+          "Split Reference Coin",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        catalogueCode: "km",
+        referenceNumber: "1338 a",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Spanish Matching KM Issue"].join("|")
+    )
+  })
+
   it("returns full linked ruler data in ruler attribution order", async () => {
     const spain = await createIssuer({
       code: "spain",
@@ -458,5 +579,95 @@ describe("getCoins integration", () => {
         ],
       },
     ])
+  })
+
+  it("composes catalogue reference filters with issuer and ruler filters", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const standardCatalog = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+    const louis = await createRuler({
+      code: "louis-xiv",
+      name: "Louis XIV",
+      rulerGroupId: bourbon.id,
+    })
+
+    const matchingCoin = await createCoin({
+      title: "Spanish Felipe KM 1338",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-07T00:00:00.000Z"),
+    })
+    const wrongIssuerCoin = await createCoin({
+      title: "French Felipe KM 1338",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    const wrongRulerCoin = await createCoin({
+      title: "Spanish Louis KM 1338",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: matchingCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: wrongIssuerCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: wrongRulerCoin.id,
+      rulerId: louis.id,
+      rulerOrder: 1,
+    })
+
+    await createCoinReference({
+      coinId: matchingCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: wrongIssuerCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338B",
+    })
+    await createCoinReference({
+      coinId: wrongRulerCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338C",
+    })
+
+    await expect(
+      getCoins({
+        catalogueCode: "km",
+        issuerCode: "spain",
+        referenceNumber: "1338",
+        rulerCode: "felipe-vi",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Spanish Felipe KM 1338"].join("|")
+    )
   })
 })

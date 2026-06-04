@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
-import type { IssuerOption, RulerOption } from "@workspace/db"
-import { getRulerOptionLabel, updateCoinSearchFilter } from "../lib/coin-search"
+import type { CatalogueOption, IssuerOption, RulerOption } from "@workspace/db"
+import {
+  getCatalogueOptionLabel,
+  getRulerOptionLabel,
+  updateCoinSearchFilter,
+} from "../lib/coin-search"
 import type { CoinSearchFilterName } from "../lib/coin-search"
 
 import {
@@ -13,36 +17,53 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
+import { Input } from "@workspace/ui/components/input"
 
+const optionalCatalogueCodeSchema = z.string().optional()
 const optionalIssuerCodeSchema = z.string().optional()
+const optionalReferenceNumberSchema = z.string().optional()
 const optionalRulerCodeSchema = z.string().optional()
 const coinSearchSchema = z.object({
+  catalogue: optionalCatalogueCodeSchema,
   issuer: optionalIssuerCodeSchema,
+  referenceNumber: optionalReferenceNumberSchema,
   ruler: optionalRulerCodeSchema,
 })
 const coinListInputSchema = z.object({
+  catalogueCode: optionalCatalogueCodeSchema,
   issuerCode: optionalIssuerCodeSchema,
+  referenceNumber: optionalReferenceNumberSchema,
   rulerCode: optionalRulerCodeSchema,
 })
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const { getCoins, getIssuers, getRulers } = await import("@workspace/db")
+    const { getCatalogues, getCoins, getIssuers, getRulers } = await import(
+      "@workspace/db"
+    )
 
-    const [coins, issuers, rulers] = await Promise.all([
-      getCoins({ issuerCode: data.issuerCode, rulerCode: data.rulerCode }),
+    const [coins, catalogues, issuers, rulers] = await Promise.all([
+      getCoins({
+        catalogueCode: data.catalogueCode,
+        issuerCode: data.issuerCode,
+        referenceNumber: data.referenceNumber,
+        rulerCode: data.rulerCode,
+      }),
+      getCatalogues(),
       getIssuers(),
       getRulers(),
     ])
 
-    return { coins, issuers, rulers }
+    return { coins, catalogues, issuers, rulers }
   })
 
 export const Route = createFileRoute("/")({
   validateSearch: coinSearchSchema,
   loaderDeps: ({ search }) => ({
+    catalogueCode: search.catalogue,
     issuerCode: search.issuer,
+    referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
   }),
   loader: ({ deps }) => getCoinListData({ data: deps }),
@@ -50,11 +71,20 @@ export const Route = createFileRoute("/")({
 })
 
 function App() {
-  const { coins, issuers, rulers } = Route.useLoaderData()
-  const { issuer: selectedIssuerCode, ruler: selectedRulerCode } =
-    Route.useSearch()
+  const { coins, catalogues, issuers, rulers } = Route.useLoaderData()
+  const {
+    catalogue: selectedCatalogueCode,
+    issuer: selectedIssuerCode,
+    referenceNumber: selectedReferenceNumber,
+    ruler: selectedRulerCode,
+  } = Route.useSearch()
   const navigate = Route.useNavigate()
 
+  const selectedCatalogue =
+    catalogues.find(
+      (catalogue) =>
+        catalogue.code.toLowerCase() === selectedCatalogueCode?.toLowerCase()
+    ) ?? null
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
   const selectedRuler =
@@ -74,6 +104,10 @@ function App() {
     await updateSearchFilter("issuer", issuer?.code)
   }
 
+  async function selectCatalogue(catalogue: CatalogueOption | null) {
+    await updateSearchFilter("catalogue", catalogue?.code)
+  }
+
   async function selectRuler(ruler: RulerOption | null) {
     await updateSearchFilter("ruler", ruler?.code)
   }
@@ -81,6 +115,37 @@ function App() {
   return (
     <div>
       <div className="flex w-full max-w-4xl flex-col gap-4 md:flex-row">
+        <Combobox<CatalogueOption>
+          items={catalogues}
+          value={selectedCatalogue}
+          itemToStringLabel={getCatalogueOptionLabel}
+          isItemEqualToValue={(catalogue, value) => catalogue.code === value.code}
+          onValueChange={selectCatalogue}
+        >
+          <ComboboxInput placeholder="Filter by catalogue" showClear />
+          <ComboboxContent>
+            <ComboboxEmpty>No catalogues found.</ComboboxEmpty>
+            <ComboboxList>
+              {(catalogue: CatalogueOption) => (
+                <ComboboxItem key={catalogue.code} value={catalogue}>
+                  <span>{catalogue.title}</span>
+                  <span className="text-muted-foreground">{catalogue.code}</span>
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+
+        <Input
+          aria-label="Filter by reference number"
+          className="md:max-w-40"
+          onChange={async (event) => {
+            await updateSearchFilter("referenceNumber", event.target.value)
+          }}
+          placeholder="Reference number"
+          value={selectedReferenceNumber ?? ""}
+        />
+
         <Combobox<IssuerOption>
           items={issuers}
           value={selectedIssuer}

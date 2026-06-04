@@ -54,31 +54,57 @@ export type GetCoinsOptions = {
   limit?: number
   issuerCode?: string
   rulerCode?: string
+  catalogueCode?: string
+  referenceNumber?: string
 }
 
-type CoinFilterOptions = Pick<GetCoinsOptions, "issuerCode" | "rulerCode">
+type CoinFilterOptions = Pick<
+  GetCoinsOptions,
+  "issuerCode" | "rulerCode" | "catalogueCode" | "referenceNumber"
+>
 
 function buildCoinFilter({
   issuerCode,
   rulerCode,
+  catalogueCode,
+  referenceNumber,
 }: CoinFilterOptions): SQL | undefined {
-  const issuerFilter =
-    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode)
-  const rulerFilter =
-    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode)
+  const filters = [
+    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
+    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
+    buildCatalogueReferenceFilter({
+      catalogueCode,
+      referenceNumber,
+    }),
+  ].filter((filter): filter is SQL => filter !== undefined)
 
-  if (issuerFilter !== undefined && rulerFilter !== undefined) {
-    return and(issuerFilter, rulerFilter)
+  if (filters.length === 0) {
+    return undefined
   }
 
-  return issuerFilter ?? rulerFilter
+  if (filters.length === 1) {
+    return filters[0]
+  }
+
+  return and(...filters)
 }
 
 function buildLimitedCoinsQuery(
   database: typeof db,
-  { limit, issuerCode, rulerCode }: { limit: number } & CoinFilterOptions
+  {
+    limit,
+    issuerCode,
+    rulerCode,
+    catalogueCode,
+    referenceNumber,
+  }: { limit: number } & CoinFilterOptions
 ) {
-  const filter = buildCoinFilter({ issuerCode, rulerCode })
+  const filter = buildCoinFilter({
+    issuerCode,
+    rulerCode,
+    catalogueCode,
+    referenceNumber,
+  })
 
   const baseQuery = database
     .select({
@@ -124,16 +150,79 @@ function buildRulerFilter(rulerCode: string): SQL {
   `
 }
 
+type CatalogueReferenceFilterOptions = Pick<
+  GetCoinsOptions,
+  "catalogueCode" | "referenceNumber"
+>
+
+function buildCatalogueReferenceFilter({
+  catalogueCode,
+  referenceNumber,
+}: CatalogueReferenceFilterOptions): SQL | undefined {
+  const normalizedCatalogueCode = normalizeFilterValue(catalogueCode)
+  const normalizedReferenceNumber = normalizeReferenceNumberPrefix(referenceNumber)
+  const referenceFilters: SQL[] = []
+
+  if (normalizedCatalogueCode !== undefined) {
+    referenceFilters.push(
+      sql`lower(${catalogue.code}) = ${normalizedCatalogueCode.toLowerCase()}`
+    )
+  }
+
+  if (normalizedReferenceNumber !== undefined) {
+    referenceFilters.push(
+      sql`${buildNormalizedReferenceNumberExpression()} like ${`${normalizedReferenceNumber}%`}`
+    )
+  }
+
+  if (referenceFilters.length === 0) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.id} in (
+      select ${coinReference.coinId}
+      from "coin_reference"
+      inner join "catalogue" on ${coinReference.catalogueId} = ${catalogue.id}
+      where ${sql.join(referenceFilters, sql` and `)}
+    )
+  `
+}
+
+function buildNormalizedReferenceNumberExpression(): SQL {
+  return sql`lower(regexp_replace(btrim(${coinReference.number}), '\s+', ' ', 'g'))`
+}
+
+function normalizeFilterValue(value: string | undefined) {
+  const normalizedValue = value?.trim()
+
+  return normalizedValue ? normalizedValue : undefined
+}
+
+function normalizeReferenceNumberPrefix(value: string | undefined) {
+  const normalizedValue = normalizeFilterValue(value)
+
+  return normalizedValue?.replace(/\s+/g, " ").toLowerCase()
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
 ) {
-  const { limit = defaultGetCoinsLimit, issuerCode, rulerCode } = options
+  const {
+    limit = defaultGetCoinsLimit,
+    issuerCode,
+    rulerCode,
+    catalogueCode,
+    referenceNumber,
+  } = options
 
   const limitedCoins = buildLimitedCoinsQuery(database, {
     limit,
     issuerCode,
     rulerCode,
+    catalogueCode,
+    referenceNumber,
   })
 
   return database

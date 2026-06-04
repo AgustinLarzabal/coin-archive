@@ -185,6 +185,34 @@ describe("ruler schema constraints", () => {
 describe("coin ruler schema constraints", () => {
   useTestDatabaseIsolation(db)
 
+  it("requires ruler attribution order", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const civicCoin = await createCoin({
+      title: "Civic Fraction",
+      issuerId: athens.id,
+      createdAt: new Date("2026-05-31T00:00:00.000Z"),
+    })
+    const liberty = await createRuler({
+      code: "liberty",
+      name: "Liberty",
+    })
+
+    await expect(
+      db.execute(sql`
+        insert into "coin_ruler" ("coin_id", "ruler_id", "ruler_order")
+        values (${civicCoin.id}, ${liberty.id}, ${null})
+      `)
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23502",
+        column_name: "ruler_order",
+      }),
+    })
+  })
+
   it("rejects duplicate coin-ruler attributions for the same coin", async () => {
     const athens = await createIssuer({
       code: "athens",
@@ -277,6 +305,54 @@ describe("coin ruler schema constraints", () => {
       coinRulerSchemaNames.rulerOrderPositiveCheck,
       "23514"
     )
+  })
+
+  it("allows the same ruler to use different attribution orders on different coins", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const civicFirstCoin = await createCoin({
+      title: "Civic Stater",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    const civicSecondCoin = await createCoin({
+      title: "Civic Obol",
+      issuerId: athens.id,
+      createdAt: new Date("2026-06-03T12:00:00.000Z"),
+    })
+    const liberty = await createRuler({
+      code: "liberty",
+      name: "Liberty",
+    })
+    const athena = await createRuler({
+      code: "athena",
+      name: "Athena",
+    })
+
+    await createCoinRuler({
+      coinId: civicFirstCoin.id,
+      rulerId: liberty.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: civicSecondCoin.id,
+      rulerId: athena.id,
+      rulerOrder: 1,
+    })
+
+    await expect(
+      createCoinRuler({
+        coinId: civicSecondCoin.id,
+        rulerId: liberty.id,
+        rulerOrder: 2,
+      })
+    ).resolves.toMatchObject({
+      coinId: civicSecondCoin.id,
+      rulerId: liberty.id,
+      rulerOrder: 2,
+    })
   })
 
   it("rejects deleting a ruler while coin attributions still reference it", async () => {

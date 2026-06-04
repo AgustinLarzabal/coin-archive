@@ -25,6 +25,7 @@ const getCoinsSelection = {
   parentIssuerName: parentIssuer.name,
   parentIssuerCreatedAt: parentIssuer.createdAt,
   parentIssuerUpdatedAt: parentIssuer.updatedAt,
+  rulerOrder: coinRuler.rulerOrder,
   rulerId: ruler.id,
   rulerCode: ruler.code,
   rulerName: ruler.name,

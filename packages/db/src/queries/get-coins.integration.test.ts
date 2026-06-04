@@ -325,4 +325,55 @@ describe("getCoins integration", () => {
       })
     ).resolves.toStrictEqual([])
   })
+
+  it("returns all ordered ruler attributions for a coin filtered by one matching ruler", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const juanCarlos = await createRuler({
+      code: "juan-carlos-i",
+      name: "Juan Carlos I",
+      rulerGroupId: bourbon.id,
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+    const coin = await createCoin({
+      title: "Spanish Transitional Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: felipe.id,
+      rulerOrder: 2,
+    })
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: juanCarlos.id,
+      rulerOrder: 1,
+    })
+
+    await expect(getCoins({ rulerCode: "felipe-vi" })).resolves.toMatchObject([
+      {
+        title: "Spanish Transitional Issue",
+        rulers: [
+          {
+            code: "juan-carlos-i",
+          },
+          {
+            code: "felipe-vi",
+          },
+        ],
+      },
+    ])
+  })
 })

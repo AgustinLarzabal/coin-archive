@@ -12,6 +12,7 @@ type GetCoinsIssuerColumns = {
 }
 
 type GetCoinsRulerColumns = {
+  rulerOrder: number | null
   rulerId: string | null
   rulerCode: string | null
   rulerName: string | null
@@ -84,6 +85,11 @@ export type CoinRuler = {
   group: CoinRulerGroup | null
 }
 
+type CoinRulerAttribution = {
+  order: number
+  ruler: CoinRuler
+}
+
 type CoinRecordBase = Pick<
   GetCoinsRow,
   "id" | "title" | "createdAt" | "updatedAt"
@@ -148,25 +154,47 @@ function mapRulerGroup({
 
 type GetCoinsRulerBaseColumns = Pick<
   GetCoinsRow,
-  "rulerId" | "rulerCode" | "rulerName" | "rulerCreatedAt" | "rulerUpdatedAt"
+  | "rulerOrder"
+  | "rulerId"
+  | "rulerCode"
+  | "rulerName"
+  | "rulerCreatedAt"
+  | "rulerUpdatedAt"
 >
 
 function mapRuler(
   row: GetCoinsRulerBaseColumns & GetCoinsRulerGroupColumns
-): CoinRuler | null {
-  const { rulerId, rulerCode, rulerName, rulerCreatedAt, rulerUpdatedAt } = row
+): CoinRulerAttribution | null {
+  const {
+    rulerOrder,
+    rulerId,
+    rulerCode,
+    rulerName,
+    rulerCreatedAt,
+    rulerUpdatedAt,
+  } = row
 
-  if (!rulerId || !rulerCode || !rulerName || !rulerCreatedAt || !rulerUpdatedAt) {
+  if (
+    rulerOrder === null ||
+    !rulerId ||
+    !rulerCode ||
+    !rulerName ||
+    !rulerCreatedAt ||
+    !rulerUpdatedAt
+  ) {
     return null
   }
 
   return {
-    id: rulerId,
-    code: rulerCode,
-    name: rulerName,
-    createdAt: rulerCreatedAt,
-    updatedAt: rulerUpdatedAt,
-    group: mapRulerGroup(row),
+    order: rulerOrder,
+    ruler: {
+      id: rulerId,
+      code: rulerCode,
+      name: rulerName,
+      createdAt: rulerCreatedAt,
+      updatedAt: rulerUpdatedAt,
+      group: mapRulerGroup(row),
+    },
   }
 }
 
@@ -191,22 +219,40 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
 export function mapGetCoinsRowsToCoinRecords(
   rows: GetCoinsRow[]
 ): CoinRecord[] {
-  const coinsById = new Map<string, CoinRecord>()
+  const coinsById = new Map<
+    string,
+    {
+      coin: CoinRecord
+      rulerAttributions: CoinRulerAttribution[]
+    }
+  >()
 
   for (const row of rows) {
-    const existingCoin = coinsById.get(row.id)
-    const coinRecord = existingCoin ?? mapCoinRecord(row)
-
-    if (!existingCoin) {
-      coinsById.set(row.id, coinRecord)
+    const existingEntry = coinsById.get(row.id)
+    const coinEntry = existingEntry ?? {
+      coin: mapCoinRecord(row),
+      rulerAttributions: [],
     }
 
-    const mappedRuler = mapRuler(row)
+    if (!existingEntry) {
+      coinsById.set(row.id, coinEntry)
+    }
 
-    if (mappedRuler) {
-      coinRecord.rulers.push(mappedRuler)
+    const mappedRulerAttribution = mapRuler(row)
+
+    if (mappedRulerAttribution) {
+      coinEntry.rulerAttributions.push(mappedRulerAttribution)
     }
   }
 
-  return [...coinsById.values()]
+  return [...coinsById.values()].map(({ coin, rulerAttributions }) => ({
+    ...coin,
+    rulers: rulerAttributions
+      .sort(
+        (left, right) =>
+          left.order - right.order ||
+          left.ruler.id.localeCompare(right.ruler.id)
+      )
+      .map(({ ruler }) => ruler),
+  }))
 }

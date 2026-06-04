@@ -21,6 +21,7 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 import { Input } from "@workspace/ui/components/input"
+import { CoinList } from "../components/coin-list"
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -97,8 +98,17 @@ function App() {
   }
 
   return (
-    <div>
-      <div className="flex w-full max-w-4xl flex-col gap-4 md:flex-row">
+    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-4 py-8">
+      <header className="space-y-2">
+        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          Coin Archive
+        </p>
+        <h1 className="max-w-3xl text-3xl font-medium tracking-tight">
+          Browse coins by catalogue reference, issuer, and ruler.
+        </h1>
+      </header>
+
+      <div className="grid gap-4 rounded-[2rem] border border-border/70 bg-card/70 p-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <Combobox<CatalogueOption>
           items={catalogues}
           value={selectedCatalogue}
@@ -170,7 +180,8 @@ function App() {
           </ComboboxContent>
         </Combobox>
       </div>
-      <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
+
+      <CoinList coins={coins} />
     </div>
   )
 }

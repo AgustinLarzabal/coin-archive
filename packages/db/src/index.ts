@@ -11,6 +11,14 @@ export { issuer } from "./schema/issuer"
 export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
 export type { GetCoinsOptions } from "./queries/get-coins"
+export type {
+  CoinCatalogue,
+  CoinCatalogueReference,
+  CoinIssuer,
+  CoinIssuerParent,
+  CoinRecord,
+  CoinRulerGroup,
+} from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
 export type { CatalogueOption } from "./queries/get-catalogues"
 export type { IssuerOption } from "./queries/get-issuers"

@@ -2,6 +2,10 @@ import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import type { IssuerOption, RulerOption } from "@workspace/db"
+import {
+  getRulerOptionLabel,
+  updateCoinSearchFilter,
+} from "../lib/coin-search"
 
 import {
   Combobox,
@@ -47,10 +51,6 @@ export const Route = createFileRoute("/")({
   component: App,
 })
 
-function getRulerOptionLabel(ruler: RulerOption) {
-  return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name
-}
-
 function App() {
   const { coins, issuers, rulers } = Route.useLoaderData()
   const { issuer: selectedIssuerCode, ruler: selectedRulerCode } =
@@ -67,10 +67,8 @@ function App() {
     filterValue: string | undefined
   ) {
     await navigate({
-      search: (currentSearch) => ({
-        ...currentSearch,
-        [filterName]: filterValue,
-      }),
+      search: (currentSearch) =>
+        updateCoinSearchFilter(currentSearch, filterName, filterValue),
     })
   }
 

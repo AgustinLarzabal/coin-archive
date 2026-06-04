@@ -225,4 +225,104 @@ describe("getCoins integration", () => {
       },
     ])
   })
+
+  it("filters coins by exact ruler and combines issuer and ruler filters with AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+    const juanCarlos = await createRuler({
+      code: "juan-carlos-i",
+      name: "Juan Carlos I",
+      rulerGroupId: bourbon.id,
+    })
+    const louis = await createRuler({
+      code: "louis-xiv",
+      name: "Louis XIV",
+      rulerGroupId: bourbon.id,
+    })
+
+    const spanishFelipeCoin = await createCoin({
+      title: "Spanish Felipe Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const spanishJuanCarlosCoin = await createCoin({
+      title: "Spanish Juan Carlos Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    const frenchLouisCoin = await createCoin({
+      title: "French Louis Issue",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: spanishFelipeCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: spanishJuanCarlosCoin.id,
+      rulerId: juanCarlos.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: frenchLouisCoin.id,
+      rulerId: louis.id,
+      rulerOrder: 1,
+    })
+
+    await expect(getCoins({ rulerCode: "felipe-vi" })).resolves.toMatchObject([
+      {
+        title: "Spanish Felipe Issue",
+        issuer: {
+          code: "spain",
+        },
+        rulers: [
+          {
+            code: "felipe-vi",
+          },
+        ],
+      },
+    ])
+
+    await expect(
+      getCoins({
+        issuerCode: "spain",
+        rulerCode: "felipe-vi",
+      })
+    ).resolves.toMatchObject([
+      {
+        title: "Spanish Felipe Issue",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        issuerCode: "france",
+        rulerCode: "felipe-vi",
+      })
+    ).resolves.toStrictEqual([])
+
+    await expect(
+      getCoins({
+        rulerCode: "unknown-ruler",
+      })
+    ).resolves.toStrictEqual([])
+  })
 })

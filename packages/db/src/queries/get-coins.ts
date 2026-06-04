@@ -1,4 +1,4 @@
-import { asc, desc, eq, sql, type SQL } from "drizzle-orm"
+import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
 import { coin } from "../schema/coin"
@@ -40,13 +40,25 @@ const getCoinsSelection = {
 export type GetCoinsOptions = {
   limit?: number
   issuerCode?: string
+  rulerCode?: string
 }
 
 function buildLimitedCoinsQuery(
   database: typeof db,
   limit: number,
-  issuerCode?: string
+  issuerCode?: string,
+  rulerCode?: string
 ) {
+  const filters: SQL[] = []
+
+  if (issuerCode !== undefined) {
+    filters.push(buildIssuerTreeFilter(issuerCode))
+  }
+
+  if (rulerCode !== undefined) {
+    filters.push(buildRulerFilter(rulerCode))
+  }
+
   const baseQuery = database
     .select({
       id: coin.id,
@@ -55,11 +67,13 @@ function buildLimitedCoinsQuery(
     .orderBy(desc(coin.createdAt), desc(coin.id))
     .limit(limit)
 
-  if (issuerCode === undefined) {
+  if (filters.length === 0) {
     return baseQuery.as("limited_coins")
   }
 
-  return baseQuery.where(buildIssuerTreeFilter(issuerCode)).as("limited_coins")
+  const filter = filters.length === 1 ? filters[0] : and(...filters)
+
+  return baseQuery.where(filter).as("limited_coins")
 }
 
 function buildIssuerTreeFilter(issuerCode: string): SQL {
@@ -80,13 +94,29 @@ function buildIssuerTreeFilter(issuerCode: string): SQL {
   `
 }
 
+function buildRulerFilter(rulerCode: string): SQL {
+  return sql`
+    ${coin.id} in (
+      select "coin_ruler"."coin_id"
+      from "coin_ruler"
+      inner join "ruler" on "coin_ruler"."ruler_id" = "ruler"."id"
+      where "ruler"."code" = ${rulerCode}
+    )
+  `
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
 ) {
-  const { limit = defaultGetCoinsLimit, issuerCode } = options
+  const { limit = defaultGetCoinsLimit, issuerCode, rulerCode } = options
 
-  const limitedCoins = buildLimitedCoinsQuery(database, limit, issuerCode)
+  const limitedCoins = buildLimitedCoinsQuery(
+    database,
+    limit,
+    issuerCode,
+    rulerCode
+  )
 
   return database
     .select(getCoinsSelection)

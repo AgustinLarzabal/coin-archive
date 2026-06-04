@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
-import type { IssuerOption } from "@workspace/db"
+import type { IssuerOption, RulerOption } from "@workspace/db"
 
 import {
   Combobox,
@@ -13,42 +13,54 @@ import {
 } from "@workspace/ui/components/combobox"
 
 const optionalIssuerCodeSchema = z.string().optional()
-const issuerSearchSchema = z.object({
+const optionalRulerCodeSchema = z.string().optional()
+const coinSearchSchema = z.object({
   issuer: optionalIssuerCodeSchema,
+  ruler: optionalRulerCodeSchema,
 })
 const coinListInputSchema = z.object({
   issuerCode: optionalIssuerCodeSchema,
+  rulerCode: optionalRulerCodeSchema,
 })
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const { getCoins, getIssuers } = await import("@workspace/db")
+    const { getCoins, getIssuers, getRulers } = await import("@workspace/db")
 
-    const [coins, issuers] = await Promise.all([
-      getCoins({ issuerCode: data.issuerCode }),
+    const [coins, issuers, rulers] = await Promise.all([
+      getCoins({ issuerCode: data.issuerCode, rulerCode: data.rulerCode }),
       getIssuers(),
+      getRulers(),
     ])
 
-    return { coins, issuers }
+    return { coins, issuers, rulers }
   })
 
 export const Route = createFileRoute("/")({
-  validateSearch: issuerSearchSchema,
+  validateSearch: coinSearchSchema,
   loaderDeps: ({ search }) => ({
     issuerCode: search.issuer,
+    rulerCode: search.ruler,
   }),
   loader: ({ deps }) => getCoinListData({ data: deps }),
   component: App,
 })
 
+function getRulerOptionLabel(ruler: RulerOption) {
+  return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name
+}
+
 function App() {
-  const { coins, issuers } = Route.useLoaderData()
-  const { issuer: selectedIssuerCode } = Route.useSearch()
+  const { coins, issuers, rulers } = Route.useLoaderData()
+  const { issuer: selectedIssuerCode, ruler: selectedRulerCode } =
+    Route.useSearch()
   const navigate = Route.useNavigate()
 
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
+  const selectedRuler =
+    rulers.find((ruler) => ruler.code === selectedRulerCode) ?? null
 
   async function selectIssuer(issuer: IssuerOption | null) {
     await navigate({
@@ -59,9 +71,18 @@ function App() {
     })
   }
 
+  async function selectRuler(ruler: RulerOption | null) {
+    await navigate({
+      search: (currentSearch) => ({
+        ...currentSearch,
+        ruler: ruler?.code,
+      }),
+    })
+  }
+
   return (
     <div>
-      <div className="w-full max-w-md">
+      <div className="flex w-full max-w-4xl flex-col gap-4 md:flex-row">
         <Combobox<IssuerOption>
           items={issuers}
           value={selectedIssuer}
@@ -77,6 +98,26 @@ function App() {
                 <ComboboxItem key={issuer.code} value={issuer}>
                   <span>{issuer.name}</span>
                   <span className="text-muted-foreground">{issuer.code}</span>
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        <Combobox<RulerOption>
+          items={rulers}
+          value={selectedRuler}
+          itemToStringLabel={getRulerOptionLabel}
+          isItemEqualToValue={(ruler, value) => ruler.code === value.code}
+          onValueChange={selectRuler}
+        >
+          <ComboboxInput placeholder="Filter by ruler" showClear />
+          <ComboboxContent>
+            <ComboboxEmpty>No rulers found.</ComboboxEmpty>
+            <ComboboxList>
+              {(ruler: RulerOption) => (
+                <ComboboxItem key={ruler.code} value={ruler}>
+                  <span>{getRulerOptionLabel(ruler)}</span>
+                  <span className="text-muted-foreground">{ruler.code}</span>
                 </ComboboxItem>
               )}
             </ComboboxList>

@@ -6,7 +6,15 @@ import { CoinList } from "./coin-list"
 const createdAt = new Date("2026-06-04T12:00:00.000Z")
 const catalogueCreatedAt = new Date("2026-05-04T12:00:00.000Z")
 
-function buildCoin(overrides: Partial<CoinRecord>): CoinRecord {
+type CoinOverrides = Partial<
+  Omit<CoinRecord, "issuer" | "references" | "rulers">
+> & {
+  issuer?: CoinRecord["issuer"]
+  references?: CoinRecord["references"]
+  rulers?: CoinRecord["rulers"]
+}
+
+function buildCoin(overrides: CoinOverrides = {}): CoinRecord {
   return {
     id: "coin-1",
     title: "Seed Coin 06",

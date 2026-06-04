@@ -1,10 +1,11 @@
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { migrate } from "drizzle-orm/postgres-js/migrator"
-import { catalogue } from "../schema/catalogue"
 import { createDatabase, createDatabaseClient } from "../database"
+import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
+import { coinRuler } from "../schema/coin-ruler"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
@@ -27,11 +28,12 @@ export function createTestDatabase() {
 export async function clearDatabaseTables(
   database: ReturnType<typeof createTestDatabase>["db"]
 ) {
-  await database.delete(coin)
   await database.delete(coinReference)
-  await database.delete(catalogue)
+  await database.delete(coinRuler)
+  await database.delete(coin)
   await database.delete(ruler)
   await database.delete(rulerGroup)
+  await database.delete(catalogue)
   await database.delete(issuer)
 }
 

@@ -1,6 +1,6 @@
+import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
-import { catalogue } from "../schema/catalogue"
 import { coinRuler } from "../schema/coin-ruler"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"

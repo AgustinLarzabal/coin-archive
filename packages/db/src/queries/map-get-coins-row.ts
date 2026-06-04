@@ -65,6 +65,15 @@ type GetCoinsRulerGroupColumns = Pick<
   | "rulerGroupUpdatedAt"
 >
 
+type GetCoinsCatalogueColumns = Pick<
+  GetCoinsRow,
+  | "referenceCatalogueId"
+  | "referenceCatalogueCode"
+  | "referenceCatalogueTitle"
+  | "referenceCatalogueCreatedAt"
+  | "referenceCatalogueUpdatedAt"
+>
+
 export type CoinIssuerParent = {
   id: string
   code: string
@@ -125,6 +134,8 @@ type CoinEntry = {
   coin: CoinRecord
   rulerAttributions: CoinRulerAttribution[]
   catalogueReferences: CoinCatalogueReference[]
+  seenRulerAttributionKeys: Set<string>
+  seenCatalogueReferenceIds: Set<string>
 }
 
 type CoinRecordBase = Pick<
@@ -187,6 +198,32 @@ function mapRulerGroup({
     name: rulerGroupName,
     createdAt: rulerGroupCreatedAt,
     updatedAt: rulerGroupUpdatedAt,
+  }
+}
+
+function mapCatalogue({
+  referenceCatalogueId,
+  referenceCatalogueCode,
+  referenceCatalogueTitle,
+  referenceCatalogueCreatedAt,
+  referenceCatalogueUpdatedAt,
+}: GetCoinsCatalogueColumns): CoinCatalogue | null {
+  if (
+    !referenceCatalogueId ||
+    !referenceCatalogueCode ||
+    !referenceCatalogueTitle ||
+    !referenceCatalogueCreatedAt ||
+    !referenceCatalogueUpdatedAt
+  ) {
+    return null
+  }
+
+  return {
+    id: referenceCatalogueId,
+    code: referenceCatalogueCode,
+    title: referenceCatalogueTitle,
+    createdAt: referenceCatalogueCreatedAt,
+    updatedAt: referenceCatalogueUpdatedAt,
   }
 }
 
@@ -269,7 +306,7 @@ function mapCoinEntry({
 }
 
 function mapCatalogueReference(
-  row: GetCoinsReferenceColumns
+  row: GetCoinsReferenceColumns & GetCoinsCatalogueColumns
 ): CoinCatalogueReference | null {
   const {
     referenceId,
@@ -277,12 +314,8 @@ function mapCatalogueReference(
     referenceNumber,
     referenceCreatedAt,
     referenceUpdatedAt,
-    referenceCatalogueId,
-    referenceCatalogueCode,
-    referenceCatalogueTitle,
-    referenceCatalogueCreatedAt,
-    referenceCatalogueUpdatedAt,
   } = row
+  const mappedCatalogue = mapCatalogue(row)
 
   if (
     !referenceId ||
@@ -290,11 +323,7 @@ function mapCatalogueReference(
     !referenceNumber ||
     !referenceCreatedAt ||
     !referenceUpdatedAt ||
-    !referenceCatalogueId ||
-    !referenceCatalogueCode ||
-    !referenceCatalogueTitle ||
-    !referenceCatalogueCreatedAt ||
-    !referenceCatalogueUpdatedAt
+    !mappedCatalogue
   ) {
     return null
   }
@@ -305,13 +334,7 @@ function mapCatalogueReference(
     number: referenceNumber,
     createdAt: referenceCreatedAt,
     updatedAt: referenceUpdatedAt,
-    catalogue: {
-      id: referenceCatalogueId,
-      code: referenceCatalogueCode,
-      title: referenceCatalogueTitle,
-      createdAt: referenceCatalogueCreatedAt,
-      updatedAt: referenceCatalogueUpdatedAt,
-    },
+    catalogue: mappedCatalogue,
   }
 }
 
@@ -334,48 +357,67 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
   }
 }
 
+function createCoinEntry(row: GetCoinsRow): CoinEntry {
+  return {
+    coin: mapCoinRecord(row),
+    rulerAttributions: [],
+    catalogueReferences: [],
+    seenRulerAttributionKeys: new Set<string>(),
+    seenCatalogueReferenceIds: new Set<string>(),
+  }
+}
+
+function getRulerAttributionKey({ order, ruler }: CoinRulerAttribution): string {
+  return `${order}:${ruler.id}`
+}
+
+function addRulerAttribution(row: GetCoinsRow, coinEntry: CoinEntry) {
+  const mappedRulerAttribution = mapRulerAttribution(row)
+
+  if (!mappedRulerAttribution) {
+    return
+  }
+
+  const rulerAttributionKey = getRulerAttributionKey(mappedRulerAttribution)
+
+  if (coinEntry.seenRulerAttributionKeys.has(rulerAttributionKey)) {
+    return
+  }
+
+  coinEntry.seenRulerAttributionKeys.add(rulerAttributionKey)
+  coinEntry.rulerAttributions.push(mappedRulerAttribution)
+}
+
+function addCatalogueReference(row: GetCoinsRow, coinEntry: CoinEntry) {
+  const mappedCatalogueReference = mapCatalogueReference(row)
+
+  if (!mappedCatalogueReference) {
+    return
+  }
+
+  if (coinEntry.seenCatalogueReferenceIds.has(mappedCatalogueReference.id)) {
+    return
+  }
+
+  coinEntry.seenCatalogueReferenceIds.add(mappedCatalogueReference.id)
+  coinEntry.catalogueReferences.push(mappedCatalogueReference)
+}
+
 export function mapGetCoinsRowsToCoinRecords(
   rows: GetCoinsRow[]
 ): CoinRecord[] {
   const coinsById = new Map<string, CoinEntry>()
 
   for (const row of rows) {
-    const existingEntry = coinsById.get(row.id)
-    const coinEntry = existingEntry ?? {
-      coin: mapCoinRecord(row),
-      rulerAttributions: [],
-      catalogueReferences: [],
-    }
+    let coinEntry = coinsById.get(row.id)
 
-    if (!existingEntry) {
+    if (!coinEntry) {
+      coinEntry = createCoinEntry(row)
       coinsById.set(row.id, coinEntry)
     }
 
-    const mappedRulerAttribution = mapRulerAttribution(row)
-
-    if (mappedRulerAttribution) {
-      const hasMatchingRuler = coinEntry.rulerAttributions.some(
-        ({ order, ruler }) =>
-          order === mappedRulerAttribution.order &&
-          ruler.id === mappedRulerAttribution.ruler.id
-      )
-
-      if (!hasMatchingRuler) {
-        coinEntry.rulerAttributions.push(mappedRulerAttribution)
-      }
-    }
-
-    const mappedCatalogueReference = mapCatalogueReference(row)
-
-    if (mappedCatalogueReference) {
-      const hasMatchingReference = coinEntry.catalogueReferences.some(
-        ({ id }) => id === mappedCatalogueReference.id
-      )
-
-      if (!hasMatchingReference) {
-        coinEntry.catalogueReferences.push(mappedCatalogueReference)
-      }
-    }
+    addRulerAttribution(row, coinEntry)
+    addCatalogueReference(row, coinEntry)
   }
 
   return [...coinsById.values()].map(mapCoinEntry)

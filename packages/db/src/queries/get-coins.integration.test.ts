@@ -60,7 +60,7 @@ describe("getCoins integration", () => {
 
       await createCoin({
         title: `${issuerLabel} Test Coin ${coinNumber}`,
-        issuerId: rome.id,
+        issuerId,
         createdAt: new Date(
           `2026-02-${String(coinNumber).padStart(2, "0")}T00:00:00.000Z`
         ),

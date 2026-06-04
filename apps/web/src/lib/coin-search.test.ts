@@ -17,4 +17,34 @@ describe("updateCoinSearchFilter", () => {
       ruler: "felipe-vi",
     })
   })
+
+  it("clears the ruler filter without removing the issuer filter", () => {
+    expect(
+      updateCoinSearchFilter(
+        {
+          issuer: "spain",
+          ruler: "felipe-vi",
+        },
+        "ruler",
+        undefined
+      )
+    ).toStrictEqual({
+      issuer: "spain",
+    })
+  })
+
+  it("treats an empty filter value as clearing that filter", () => {
+    expect(
+      updateCoinSearchFilter(
+        {
+          issuer: "spain",
+          ruler: "felipe-vi",
+        },
+        "ruler",
+        ""
+      )
+    ).toStrictEqual({
+      issuer: "spain",
+    })
+  })
 })

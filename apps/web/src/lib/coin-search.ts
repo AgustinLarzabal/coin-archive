@@ -14,7 +14,7 @@ export function updateCoinSearchFilter(
 ): CoinSearch {
   const nextSearch = { ...currentSearch }
 
-  if (filterValue === undefined) {
+  if (filterValue === undefined || filterValue.length === 0) {
     delete nextSearch[filterName]
 
     return nextSearch

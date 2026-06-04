@@ -90,6 +90,11 @@ type CoinRulerAttribution = {
   ruler: CoinRuler
 }
 
+type CoinEntry = {
+  coin: CoinRecord
+  rulerAttributions: CoinRulerAttribution[]
+}
+
 type CoinRecordBase = Pick<
   GetCoinsRow,
   "id" | "title" | "createdAt" | "updatedAt"
@@ -152,7 +157,7 @@ function mapRulerGroup({
   }
 }
 
-type GetCoinsRulerBaseColumns = Pick<
+type GetCoinsRulerAttributionColumns = Pick<
   GetCoinsRow,
   | "rulerOrder"
   | "rulerId"
@@ -162,8 +167,8 @@ type GetCoinsRulerBaseColumns = Pick<
   | "rulerUpdatedAt"
 >
 
-function mapRuler(
-  row: GetCoinsRulerBaseColumns & GetCoinsRulerGroupColumns
+function mapRulerAttribution(
+  row: GetCoinsRulerAttributionColumns & GetCoinsRulerGroupColumns
 ): CoinRulerAttribution | null {
   const {
     rulerOrder,
@@ -198,6 +203,22 @@ function mapRuler(
   }
 }
 
+function compareRulerAttributions(
+  left: CoinRulerAttribution,
+  right: CoinRulerAttribution
+): number {
+  return left.order - right.order || left.ruler.id.localeCompare(right.ruler.id)
+}
+
+function mapCoinEntry({ coin, rulerAttributions }: CoinEntry): CoinRecord {
+  return {
+    ...coin,
+    rulers: rulerAttributions
+      .sort(compareRulerAttributions)
+      .map(({ ruler }) => ruler),
+  }
+}
+
 function mapCoinRecord(row: GetCoinsRow): CoinRecord {
   return {
     id: row.id,
@@ -219,13 +240,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
 export function mapGetCoinsRowsToCoinRecords(
   rows: GetCoinsRow[]
 ): CoinRecord[] {
-  const coinsById = new Map<
-    string,
-    {
-      coin: CoinRecord
-      rulerAttributions: CoinRulerAttribution[]
-    }
-  >()
+  const coinsById = new Map<string, CoinEntry>()
 
   for (const row of rows) {
     const existingEntry = coinsById.get(row.id)
@@ -238,21 +253,12 @@ export function mapGetCoinsRowsToCoinRecords(
       coinsById.set(row.id, coinEntry)
     }
 
-    const mappedRulerAttribution = mapRuler(row)
+    const mappedRulerAttribution = mapRulerAttribution(row)
 
     if (mappedRulerAttribution) {
       coinEntry.rulerAttributions.push(mappedRulerAttribution)
     }
   }
 
-  return [...coinsById.values()].map(({ coin, rulerAttributions }) => ({
-    ...coin,
-    rulers: rulerAttributions
-      .sort(
-        (left, right) =>
-          left.order - right.order ||
-          left.ruler.id.localeCompare(right.ruler.id)
-      )
-      .map(({ ruler }) => ruler),
-  }))
+  return [...coinsById.values()].map(mapCoinEntry)
 }

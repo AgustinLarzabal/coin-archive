@@ -115,6 +115,10 @@ function removeSeededIssuer(
     ({ code }) => code === seededIssuerCode
   )
 
+  if (seededIssuerIndex < 0) {
+    throw new Error(`Missing seeded issuer ${seededIssuerCode}`)
+  }
+
   remainingIssuers.splice(seededIssuerIndex, 1)
 }
 
@@ -206,14 +210,14 @@ async function seedCatalogues() {
   return catalogueIdsByCode
 }
 
-export async function seedDatabase() {
+async function seedCoins(issuerIdsByCode: IssuerIdsByCode) {
   await db.delete(coin).where(
     inArray(
       coin.title,
       seededCoins.map(({ title }) => title)
     )
   )
-  const issuerIdsByCode = await seedIssuers()
+
   const insertedCoins = await db
     .insert(coin)
     .values(
@@ -226,9 +230,14 @@ export async function seedDatabase() {
   const coinIdsByTitle: CoinIdsByTitle = new Map(
     insertedCoins.map((insertedCoin) => [insertedCoin.title, insertedCoin.id])
   )
-  const rulerIdsByCode = await seedRulers()
-  const catalogueIdsByCode = await seedCatalogues()
 
+  return coinIdsByTitle
+}
+
+async function seedCoinRulers(
+  coinIdsByTitle: CoinIdsByTitle,
+  rulerIdsByCode: RulerIdsByCode
+) {
   await db.insert(coinRuler).values(
     seededCoinRulers.map((seededCoinRuler) => ({
       coinId: getRequiredSeededId(
@@ -244,7 +253,12 @@ export async function seedDatabase() {
       rulerOrder: seededCoinRuler.rulerOrder,
     }))
   )
+}
 
+async function seedCoinReferences(
+  coinIdsByTitle: CoinIdsByTitle,
+  catalogueIdsByCode: CatalogueIdsByCode
+) {
   await db.insert(coinReference).values(
     seededCoinReferences.map((seededCoinReference) => ({
       coinId: getRequiredSeededId(
@@ -262,6 +276,16 @@ export async function seedDatabase() {
       updatedAt: seededCoinReference.updatedAt,
     }))
   )
+}
+
+export async function seedDatabase() {
+  const issuerIdsByCode = await seedIssuers()
+  const coinIdsByTitle = await seedCoins(issuerIdsByCode)
+  const rulerIdsByCode = await seedRulers()
+  const catalogueIdsByCode = await seedCatalogues()
+
+  await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
+  await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
 }
 
 function isExecutedDirectly() {

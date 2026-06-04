@@ -18,34 +18,48 @@ type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
 
-function getIssuerId(issuerIdsByCode: Map<string, string>, issuerCode: string) {
-  const issuerId = issuerIdsByCode.get(issuerCode)
+function getRequiredSeededId(
+  idsByKey: Map<string, string>,
+  key: string,
+  entityName: string
+) {
+  const id = idsByKey.get(key)
 
-  if (!issuerId) {
-    throw new Error(`Missing seeded issuer ID for ${issuerCode}`)
+  if (!id) {
+    throw new Error(`Missing seeded ${entityName} ID for ${key}`)
   }
 
-  return issuerId
+  return id
+}
+
+async function deleteSeededRecords(
+  values: readonly string[],
+  deleteRecord: (value: string) => Promise<unknown>
+) {
+  for (const value of [...values].reverse()) {
+    await deleteRecord(value)
+  }
 }
 
 async function deleteSeededIssuers() {
-  for (const seededIssuer of [...seededIssuers].reverse()) {
-    await db.delete(issuer).where(eq(issuer.code, seededIssuer.code))
-  }
+  await deleteSeededRecords(
+    seededIssuers.map(({ code }) => code),
+    (code) => db.delete(issuer).where(eq(issuer.code, code))
+  )
 }
 
 async function deleteSeededRulers() {
-  for (const seededRuler of [...seededRulers].reverse()) {
-    await db.delete(ruler).where(eq(ruler.code, seededRuler.code))
-  }
+  await deleteSeededRecords(
+    seededRulers.map(({ code }) => code),
+    (code) => db.delete(ruler).where(eq(ruler.code, code))
+  )
 }
 
 async function deleteSeededRulerGroups() {
-  for (const seededRulerGroup of [...seededRulerGroups].reverse()) {
-    await db
-      .delete(rulerGroup)
-      .where(eq(rulerGroup.code, seededRulerGroup.code))
-  }
+  await deleteSeededRecords(
+    seededRulerGroups.map(({ code }) => code),
+    (code) => db.delete(rulerGroup).where(eq(rulerGroup.code, code))
+  )
 }
 
 function getIssuersReadyToInsert(
@@ -63,7 +77,7 @@ async function insertSeededIssuer(
   seededIssuer: (typeof seededIssuers)[number]
 ) {
   const parentIssuerId = seededIssuer.parentCode
-    ? getIssuerId(issuerIdsByCode, seededIssuer.parentCode)
+    ? getRequiredSeededId(issuerIdsByCode, seededIssuer.parentCode, "issuer")
     : undefined
 
   const [insertedIssuer] = await db
@@ -116,19 +130,6 @@ async function seedIssuers() {
   return issuerIdsByCode
 }
 
-function getRulerGroupId(
-  rulerGroupIdsByCode: RulerGroupIdsByCode,
-  rulerGroupCode: string
-) {
-  const rulerGroupId = rulerGroupIdsByCode.get(rulerGroupCode)
-
-  if (!rulerGroupId) {
-    throw new Error(`Missing seeded ruler group ID for ${rulerGroupCode}`)
-  }
-
-  return rulerGroupId
-}
-
 async function seedRulerGroups() {
   const rulerGroupIdsByCode: RulerGroupIdsByCode = new Map()
 
@@ -160,7 +161,11 @@ async function seedRulers() {
       .values({
         ...seededRulerValues,
         rulerGroupId: rulerGroupCode
-          ? getRulerGroupId(rulerGroupIdsByCode, rulerGroupCode)
+          ? getRequiredSeededId(
+              rulerGroupIdsByCode,
+              rulerGroupCode,
+              "ruler group"
+            )
           : undefined,
       })
       .returning({ id: ruler.id })
@@ -169,26 +174,6 @@ async function seedRulers() {
   }
 
   return rulerIdsByCode
-}
-
-function getCoinId(coinIdsByTitle: CoinIdsByTitle, coinTitle: string) {
-  const coinId = coinIdsByTitle.get(coinTitle)
-
-  if (!coinId) {
-    throw new Error(`Missing seeded coin ID for ${coinTitle}`)
-  }
-
-  return coinId
-}
-
-function getRulerId(rulerIdsByCode: RulerIdsByCode, rulerCode: string) {
-  const rulerId = rulerIdsByCode.get(rulerCode)
-
-  if (!rulerId) {
-    throw new Error(`Missing seeded ruler ID for ${rulerCode}`)
-  }
-
-  return rulerId
 }
 
 async function seedCoins() {
@@ -204,7 +189,7 @@ async function seedCoins() {
     .values(
       seededCoins.map(({ issuerCode, ...seededCoin }) => ({
         ...seededCoin,
-        issuerId: getIssuerId(issuerIdsByCode, issuerCode),
+        issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
       }))
     )
     .returning({ id: coin.id, title: coin.title })
@@ -215,8 +200,16 @@ async function seedCoins() {
 
   await db.insert(coinRuler).values(
     seededCoinRulers.map((seededCoinRuler) => ({
-      coinId: getCoinId(coinIdsByTitle, seededCoinRuler.coinTitle),
-      rulerId: getRulerId(rulerIdsByCode, seededCoinRuler.rulerCode),
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinRuler.coinTitle,
+        "coin"
+      ),
+      rulerId: getRequiredSeededId(
+        rulerIdsByCode,
+        seededCoinRuler.rulerCode,
+        "ruler"
+      ),
       rulerOrder: seededCoinRuler.rulerOrder,
     }))
   )

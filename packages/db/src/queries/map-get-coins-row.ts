@@ -94,7 +94,7 @@ export type CoinRecord = CoinRecordBase & {
   rulers: CoinRuler[]
 }
 
-function getParentIssuer({
+function mapParentIssuer({
   parentIssuerId,
   parentIssuerCode,
   parentIssuerName,
@@ -120,7 +120,7 @@ function getParentIssuer({
   }
 }
 
-function getRulerGroup({
+function mapRulerGroup({
   rulerGroupId,
   rulerGroupCode,
   rulerGroupName,
@@ -146,28 +146,31 @@ function getRulerGroup({
   }
 }
 
-function getRuler(row: GetCoinsRow): CoinRuler | null {
-  if (
-    !row.rulerId ||
-    !row.rulerCode ||
-    !row.rulerName ||
-    !row.rulerCreatedAt ||
-    !row.rulerUpdatedAt
-  ) {
+type GetCoinsRulerBaseColumns = Pick<
+  GetCoinsRow,
+  "rulerId" | "rulerCode" | "rulerName" | "rulerCreatedAt" | "rulerUpdatedAt"
+>
+
+function mapRuler(
+  row: GetCoinsRulerBaseColumns & GetCoinsRulerGroupColumns
+): CoinRuler | null {
+  const { rulerId, rulerCode, rulerName, rulerCreatedAt, rulerUpdatedAt } = row
+
+  if (!rulerId || !rulerCode || !rulerName || !rulerCreatedAt || !rulerUpdatedAt) {
     return null
   }
 
   return {
-    id: row.rulerId,
-    code: row.rulerCode,
-    name: row.rulerName,
-    createdAt: row.rulerCreatedAt,
-    updatedAt: row.rulerUpdatedAt,
-    group: getRulerGroup(row),
+    id: rulerId,
+    code: rulerCode,
+    name: rulerName,
+    createdAt: rulerCreatedAt,
+    updatedAt: rulerUpdatedAt,
+    group: mapRulerGroup(row),
   }
 }
 
-function getCoinRecordBase(row: GetCoinsRow): CoinRecord {
+function mapCoinRecord(row: GetCoinsRow): CoinRecord {
   return {
     id: row.id,
     title: row.title,
@@ -179,7 +182,7 @@ function getCoinRecordBase(row: GetCoinsRow): CoinRecord {
       name: row.issuerName,
       createdAt: row.issuerCreatedAt,
       updatedAt: row.issuerUpdatedAt,
-      parent: getParentIssuer(row),
+      parent: mapParentIssuer(row),
     },
     rulers: [],
   }
@@ -192,13 +195,13 @@ export function mapGetCoinsRowsToCoinRecords(
 
   for (const row of rows) {
     const existingCoin = coinsById.get(row.id)
-    const coinRecord = existingCoin ?? getCoinRecordBase(row)
+    const coinRecord = existingCoin ?? mapCoinRecord(row)
 
     if (!existingCoin) {
       coinsById.set(row.id, coinRecord)
     }
 
-    const mappedRuler = getRuler(row)
+    const mappedRuler = mapRuler(row)
 
     if (mappedRuler) {
       coinRecord.rulers.push(mappedRuler)

@@ -42,6 +42,26 @@ export type GetCoinsOptions = {
   issuerCode?: string
 }
 
+function buildLimitedCoinsQuery(
+  database: typeof db,
+  limit: number,
+  issuerCode?: string
+) {
+  const baseQuery = database
+    .select({
+      id: coin.id,
+    })
+    .from(coin)
+    .orderBy(desc(coin.createdAt), desc(coin.id))
+    .limit(limit)
+
+  if (issuerCode === undefined) {
+    return baseQuery.as("limited_coins")
+  }
+
+  return baseQuery.where(buildIssuerTreeFilter(issuerCode)).as("limited_coins")
+}
+
 function buildIssuerTreeFilter(issuerCode: string): SQL {
   return sql`
     ${coin.issuerId} in (
@@ -66,20 +86,7 @@ export function buildGetCoinsQuery(
 ) {
   const { limit = defaultGetCoinsLimit, issuerCode } = options
 
-  const limitedCoinsQuery = database
-    .select({
-      id: coin.id,
-    })
-    .from(coin)
-    .orderBy(desc(coin.createdAt), desc(coin.id))
-    .limit(limit)
-
-  const limitedCoins =
-    issuerCode !== undefined
-      ? limitedCoinsQuery
-          .where(buildIssuerTreeFilter(issuerCode))
-          .as("limited_coins")
-      : limitedCoinsQuery.as("limited_coins")
+  const limitedCoins = buildLimitedCoinsQuery(database, limit, issuerCode)
 
   return database
     .select(getCoinsSelection)

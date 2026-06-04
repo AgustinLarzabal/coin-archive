@@ -34,6 +34,21 @@ type SeededCoinRuler = {
   rulerOrder: number
 }
 
+type SeededCatalogue = {
+  code: string
+  title: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCoinReference = {
+  coinTitle: string
+  catalogueCode: string
+  number: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export const seededIssuers: SeededIssuer[] = [
   {
     name: "Argentina",
@@ -154,5 +169,24 @@ export const seededCoinRulers: SeededCoinRuler[] = [
     coinTitle: "Seed Coin 09",
     rulerCode: "liberty",
     rulerOrder: 1,
+  },
+]
+
+export const seededCatalogues: SeededCatalogue[] = [
+  {
+    code: "KM",
+    title: "Standard Catalog of World Coins",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinReferences: SeededCoinReference[] = [
+  {
+    coinTitle: "Seed Coin 06",
+    catalogueCode: "KM",
+    number: "1338A",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
   },
 ]

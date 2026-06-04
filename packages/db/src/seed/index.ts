@@ -1,11 +1,16 @@
+import { pathToFileURL } from "node:url"
 import { eq, inArray } from "drizzle-orm"
 import { closeDb, db } from "../client"
+import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import {
+  seededCatalogues,
+  seededCoinReferences,
   seededCoinRulers,
   seededCoins,
   seededIssuers,
@@ -17,6 +22,7 @@ type IssuerIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
+type CatalogueIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -59,6 +65,13 @@ async function deleteSeededRulerGroups() {
   await deleteSeededRecords(
     seededRulerGroups.map(({ code }) => code),
     (code) => db.delete(rulerGroup).where(eq(rulerGroup.code, code))
+  )
+}
+
+async function deleteSeededCatalogues() {
+  await deleteSeededRecords(
+    seededCatalogues.map(({ code }) => code),
+    (code) => db.delete(catalogue).where(eq(catalogue.code, code))
   )
 }
 
@@ -176,7 +189,24 @@ async function seedRulers() {
   return rulerIdsByCode
 }
 
-async function seedCoins() {
+async function seedCatalogues() {
+  const catalogueIdsByCode: CatalogueIdsByCode = new Map()
+
+  await deleteSeededCatalogues()
+
+  for (const seededCatalogue of seededCatalogues) {
+    const [insertedCatalogue] = await db
+      .insert(catalogue)
+      .values(seededCatalogue)
+      .returning({ id: catalogue.id })
+
+    catalogueIdsByCode.set(seededCatalogue.code, insertedCatalogue.id)
+  }
+
+  return catalogueIdsByCode
+}
+
+export async function seedDatabase() {
   await db.delete(coin).where(
     inArray(
       coin.title,
@@ -197,6 +227,7 @@ async function seedCoins() {
     insertedCoins.map((insertedCoin) => [insertedCoin.title, insertedCoin.id])
   )
   const rulerIdsByCode = await seedRulers()
+  const catalogueIdsByCode = await seedCatalogues()
 
   await db.insert(coinRuler).values(
     seededCoinRulers.map((seededCoinRuler) => ({
@@ -213,10 +244,39 @@ async function seedCoins() {
       rulerOrder: seededCoinRuler.rulerOrder,
     }))
   )
+
+  await db.insert(coinReference).values(
+    seededCoinReferences.map((seededCoinReference) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinReference.coinTitle,
+        "coin"
+      ),
+      catalogueId: getRequiredSeededId(
+        catalogueIdsByCode,
+        seededCoinReference.catalogueCode,
+        "catalogue"
+      ),
+      number: seededCoinReference.number,
+      createdAt: seededCoinReference.createdAt,
+      updatedAt: seededCoinReference.updatedAt,
+    }))
+  )
 }
 
-try {
-  await seedCoins()
-} finally {
-  await closeDb()
+function isExecutedDirectly() {
+  const entrypointPath = process.argv[1]
+
+  return (
+    entrypointPath !== undefined &&
+    import.meta.url === pathToFileURL(entrypointPath).href
+  )
+}
+
+if (isExecutedDirectly()) {
+  try {
+    await seedDatabase()
+  } finally {
+    await closeDb()
+  }
 }

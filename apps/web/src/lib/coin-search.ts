@@ -1,15 +1,6 @@
 import type { CatalogueOption, RulerOption } from "@workspace/db"
 import { z } from "zod"
 
-export type CoinSearch = {
-  catalogue?: string
-  issuer?: string
-  referenceNumber?: string
-  ruler?: string
-}
-
-export type CoinSearchFilterName = keyof CoinSearch
-
 const optionalStringSchema = z.string().optional()
 
 export const coinSearchSchema = z.object({
@@ -26,7 +17,15 @@ export const coinListInputSchema = z.object({
   rulerCode: optionalStringSchema,
 })
 
-export function getCoinListLoaderDeps(search: CoinSearch) {
+export type CoinSearch = z.infer<typeof coinSearchSchema>
+export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
+export type CoinSearchFilterName = keyof CoinSearch
+
+type CatalogueOptionWithCode = Pick<CatalogueOption, "code">
+type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
+type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+
+export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,
     issuerCode: search.issuer,
@@ -35,18 +34,20 @@ export function getCoinListLoaderDeps(search: CoinSearch) {
   }
 }
 
-export function findSelectedCatalogueOption(
-  catalogues: CatalogueOption[],
+export function findSelectedCatalogueOption<T extends CatalogueOptionWithCode>(
+  catalogues: T[],
   selectedCatalogueCode: string | undefined
-) {
+): T | null {
   if (!selectedCatalogueCode) {
     return null
   }
 
+  const normalizedSelectedCatalogueCode = selectedCatalogueCode.toLowerCase()
+
   return (
     catalogues.find(
       (catalogue) =>
-        catalogue.code.toLowerCase() === selectedCatalogueCode.toLowerCase()
+        catalogue.code.toLowerCase() === normalizedSelectedCatalogueCode
     ) ?? null
   )
 }
@@ -68,9 +69,6 @@ export function updateCoinSearchFilter(
 
   return nextSearch
 }
-
-type RulerOptionLabel = Pick<RulerOption, "name" | "group">
-type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 
 export function getCatalogueOptionLabel(catalogue: CatalogueOptionLabel) {
   return `${catalogue.title} · ${catalogue.code}`

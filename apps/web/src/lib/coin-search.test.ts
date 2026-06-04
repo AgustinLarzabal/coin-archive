@@ -103,11 +103,8 @@ describe("getCatalogueOptionLabel", () => {
 describe("findSelectedCatalogueOption", () => {
   it("matches the selected catalogue code case-insensitively", () => {
     const standardCatalog = {
-      id: "catalogue-id",
       code: "KM",
       title: "Standard Catalog of World Coins",
-      createdAt: new Date("2026-06-04T00:00:00.000Z"),
-      updatedAt: new Date("2026-06-04T00:00:00.000Z"),
     }
 
     expect(findSelectedCatalogueOption([standardCatalog], "km")).toStrictEqual(

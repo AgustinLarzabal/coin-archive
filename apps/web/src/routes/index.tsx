@@ -62,22 +62,24 @@ function App() {
   const selectedRuler =
     rulers.find((ruler) => ruler.code === selectedRulerCode) ?? null
 
-  async function selectIssuer(issuer: IssuerOption | null) {
+  async function updateSearchFilter(
+    filterName: "issuer" | "ruler",
+    filterValue: string | undefined
+  ) {
     await navigate({
       search: (currentSearch) => ({
         ...currentSearch,
-        issuer: issuer?.code,
+        [filterName]: filterValue,
       }),
     })
   }
 
+  async function selectIssuer(issuer: IssuerOption | null) {
+    await updateSearchFilter("issuer", issuer?.code)
+  }
+
   async function selectRuler(ruler: RulerOption | null) {
-    await navigate({
-      search: (currentSearch) => ({
-        ...currentSearch,
-        ruler: ruler?.code,
-      }),
-    })
+    await updateSearchFilter("ruler", ruler?.code)
   }
 
   return (

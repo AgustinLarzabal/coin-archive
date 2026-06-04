@@ -20,6 +20,20 @@ export type RulerOption = {
   } | null
 }
 
+function buildRulerGroupOption(
+  groupCode: string | null,
+  groupName: string | null
+): RulerOption["group"] {
+  if (groupCode === null || groupName === null) {
+    return null
+  }
+
+  return {
+    code: groupCode,
+    name: groupName,
+  }
+}
+
 export async function getRulers(): Promise<RulerOption[]> {
   const rows = await db
     .select(getRulersSelection)
@@ -30,12 +44,6 @@ export async function getRulers(): Promise<RulerOption[]> {
   return rows.map(({ code, name, groupCode, groupName }) => ({
     code,
     name,
-    group:
-      groupCode && groupName
-        ? {
-            code: groupCode,
-            name: groupName,
-          }
-        : null,
+    group: buildRulerGroupOption(groupCode, groupName),
   }))
 }

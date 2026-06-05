@@ -51,6 +51,8 @@ export type GetCoinsRow = {
   title: string
   createdAt: Date
   updatedAt: Date
+  minYear: number | null
+  maxYear: number | null
 } & GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
@@ -97,6 +99,11 @@ export type CoinDistribution = {
   name: string
   createdAt: Date
   updatedAt: Date
+}
+
+export type CoinIssueYearRange = {
+  minYear: number
+  maxYear: number
 }
 
 export type CoinIssuer = {
@@ -161,6 +168,7 @@ type CoinRecordBase = Pick<
 >
 
 export type CoinRecord = CoinRecordBase & {
+  issueYearRange: CoinIssueYearRange | null
   distribution: CoinDistribution
   issuer: CoinIssuer
   rulers: CoinRuler[]
@@ -396,6 +404,13 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    issueYearRange:
+      row.minYear === null || row.maxYear === null
+        ? null
+        : {
+            minYear: row.minYear,
+            maxYear: row.maxYear,
+          },
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
     rulers: [],

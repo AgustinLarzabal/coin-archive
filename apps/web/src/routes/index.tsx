@@ -31,6 +31,20 @@ import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
 
+function formatIssueYearRange(
+  issueYearRange: { minYear: number; maxYear: number } | null
+) {
+  if (!issueYearRange) {
+    return "Issue years unknown"
+  }
+
+  if (issueYearRange.minYear === issueYearRange.maxYear) {
+    return `Issue year ${issueYearRange.minYear}`
+  }
+
+  return `Issue years ${issueYearRange.minYear} to ${issueYearRange.maxYear}`
+}
+
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
@@ -218,6 +232,9 @@ function App() {
             <p className="font-medium">{coin.title}</p>
             <p className="text-sm text-muted-foreground">
               {coin.issuer.name} · {coin.distribution.name}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {formatIssueYearRange(coin.issueYearRange)}
             </p>
           </li>
         ))}

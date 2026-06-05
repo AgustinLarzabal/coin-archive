@@ -18,6 +18,8 @@ const getCoinsSelection = {
   title: coin.title,
   createdAt: coin.createdAt,
   updatedAt: coin.updatedAt,
+  minYear: coin.minYear,
+  maxYear: coin.maxYear,
   distributionId: distribution.id,
   distributionCode: distribution.code,
   distributionName: distribution.name,

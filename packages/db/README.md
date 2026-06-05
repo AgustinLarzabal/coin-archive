@@ -35,7 +35,7 @@ Important model notes:
 
 The current core relationships map to these tables:
 
-- `coin`: Coin record with `title` and required direct `issuer_id`
+- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
@@ -61,6 +61,10 @@ erDiagram
 These are enforced by the current PostgreSQL schema and exercised by package tests:
 
 - every Coin must have exactly one direct Issuer because `coin.issuer_id` is `NOT NULL` and references `issuer.id`
+- every Coin must have exactly one Distribution because `coin.distribution_id` is `NOT NULL` and references `distribution.id`
+- Coin Issue Year Range may be unknown with both `min_year` and `max_year` null
+- Coin Issue Year Range must be closed when present; half-entered ranges are rejected
+- Coin Issue Year Range must satisfy `min_year <= max_year`
 - Issuer Code, Ruler Code, and Ruler Group Code must be unique and lowercase slug-style text
 - Catalogue Code is required and unique ignoring case; preferred display casing is still preserved in `catalogue.code`
 - an Issuer cannot be its own direct parent

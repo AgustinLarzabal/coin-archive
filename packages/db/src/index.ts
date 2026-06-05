@@ -17,6 +17,7 @@ export type {
   CoinCatalogue,
   CoinCatalogueReference,
   CoinDistribution,
+  CoinIssueYearRange,
   CoinIssuer,
   CoinIssuerParent,
   CoinRecord,

@@ -140,6 +140,31 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("returns the stored issue year range through the shared coin listing", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const coin = await createCoin({
+      title: "Denarius of Caesar",
+      issuerId: rome.id,
+      minYear: -43,
+      maxYear: -43,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
+      {
+        id: coin.id,
+        title: "Denarius of Caesar",
+        issueYearRange: {
+          minYear: -43,
+          maxYear: -43,
+        },
+      },
+    ])
+  })
+
   it("returns typed catalogue references sorted by catalogue title", async () => {
     const spain = await createIssuer({
       code: "spain",

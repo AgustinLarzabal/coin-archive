@@ -1,11 +1,24 @@
 import { sql } from "drizzle-orm"
-import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import {
+  check,
+  index,
+  integer,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core"
 import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
-const coinRecentCreatedAtIdIndexName = "coin_recent_created_at_id_idx"
-const coinIssuerIdIndexName = "coin_issuer_id_idx"
-const coinDistributionIdIndexName = "coin_distribution_id_idx"
+export const coinSchemaNames = {
+  distributionIdIndex: "coin_distribution_id_idx",
+  issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
+  issueYearRangeIndex: "coin_issue_year_range_idx",
+  issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
+  issuerIdIndex: "coin_issuer_id_idx",
+  recentCreatedAtIdIndex: "coin_recent_created_at_id_idx",
+} as const
 
 const timestamptzDateColumn = {
   withTimezone: true,
@@ -29,6 +42,8 @@ export const coin = pgTable(
       .references(() => distribution.id, {
         onDelete: "restrict",
       }),
+    minYear: integer("min_year"),
+    maxYear: integer("max_year"),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -37,12 +52,21 @@ export const coin = pgTable(
       .defaultNow(),
   },
   (coin) => [
-    index(coinRecentCreatedAtIdIndexName).on(
+    index(coinSchemaNames.recentCreatedAtIdIndex).on(
       coin.createdAt.desc(),
       coin.id.desc()
     ),
-    index(coinIssuerIdIndexName).on(coin.issuerId),
-    index(coinDistributionIdIndexName).on(coin.distributionId),
+    index(coinSchemaNames.issuerIdIndex).on(coin.issuerId),
+    index(coinSchemaNames.distributionIdIndex).on(coin.distributionId),
+    index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),
+    check(
+      coinSchemaNames.issueYearRangeClosedCheck,
+      sql`(${coin.minYear} is null and ${coin.maxYear} is null) or (${coin.minYear} is not null and ${coin.maxYear} is not null)`
+    ),
+    check(
+      coinSchemaNames.issueYearRangeOrderCheck,
+      sql`${coin.minYear} is null or ${coin.maxYear} is null or ${coin.minYear} <= ${coin.maxYear}`
+    ),
   ]
 )
 

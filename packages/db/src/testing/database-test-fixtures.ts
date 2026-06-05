@@ -43,6 +43,8 @@ export async function insertIssuer(input: {
 export async function insertCoin(input: {
   distributionId?: string
   issuerId: string
+  maxYear?: number
+  minYear?: number
   title: string
   createdAt: Date
 }) {
@@ -54,6 +56,8 @@ export async function insertCoin(input: {
     .values({
       distributionId,
       issuerId: input.issuerId,
+      maxYear: input.maxYear,
+      minYear: input.minYear,
       title: input.title,
       createdAt: input.createdAt,
       updatedAt: input.createdAt,

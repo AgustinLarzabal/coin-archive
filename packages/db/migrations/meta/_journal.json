@@ -43,6 +43,13 @@
       "when": 1780657294275,
       "tag": "0005_lowly_machine_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780667426160,
+      "tag": "0006_public_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

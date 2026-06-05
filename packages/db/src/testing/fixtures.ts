@@ -19,6 +19,8 @@ type CreateCoinInput = {
   createdAt: Date
   distributionId?: string
   issuerId: string
+  maxYear?: number
+  minYear?: number
   title: string
   updatedAt?: Date
 }
@@ -77,6 +79,8 @@ export async function createCoin({
   createdAt,
   distributionId,
   issuerId,
+  maxYear,
+  minYear,
   title,
   updatedAt = createdAt,
 }: CreateCoinInput) {
@@ -89,6 +93,8 @@ export async function createCoin({
       createdAt,
       distributionId: resolvedDistributionId,
       issuerId,
+      maxYear,
+      minYear,
       title,
       updatedAt,
     })

@@ -27,6 +27,7 @@ import { catalogueSchemaNames } from "./catalogue"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { distributionSchemaNames } from "./distribution"
+import { coinSchemaNames } from "./coin"
 import { issuerSchemaNames } from "./issuer"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
@@ -133,6 +134,154 @@ describe("coin schema constraints", () => {
         column_name: "distribution_id",
       }),
     })
+  })
+
+  it("allows coins with an unknown issue year range", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expect(
+      createCoin({
+        title: "Unknown Issue Year Range Coin",
+        issuerId: athens.id,
+        distributionId: standardCirculation.id,
+        createdAt: new Date("2026-06-01T00:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+  })
+
+  it("allows coins with a closed issue year range, including astronomical integer years", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expect(
+      createCoin({
+        title: "Single Year Range Coin",
+        issuerId: athens.id,
+        distributionId: standardCirculation.id,
+        minYear: 1900,
+        maxYear: 1900,
+        createdAt: new Date("2026-06-02T00:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+  })
+
+  it("allows negative and zero astronomical issue years when the range is otherwise valid", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expect(
+      createCoin({
+        title: "Astronomical Year Range Coin",
+        issuerId: athens.id,
+        distributionId: standardCirculation.id,
+        minYear: -1,
+        maxYear: 0,
+        createdAt: new Date("2026-06-02T12:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+  })
+
+  it("rejects coins with only min_year present", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expectConstraintError(
+      db.execute(sql`
+        insert into "coin" (
+          "title",
+          "issuer_id",
+          "distribution_id",
+          "min_year"
+        )
+        values (
+          ${"Half Entered Range Coin"},
+          ${athens.id},
+          ${standardCirculation.id},
+          ${1900}
+        )
+      `),
+      coinSchemaNames.issueYearRangeClosedCheck,
+      "23514"
+    )
+  })
+
+  it("rejects coins with only max_year present", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expectConstraintError(
+      db.execute(sql`
+        insert into "coin" (
+          "title",
+          "issuer_id",
+          "distribution_id",
+          "max_year"
+        )
+        values (
+          ${"Half Entered Max Range Coin"},
+          ${athens.id},
+          ${standardCirculation.id},
+          ${1900}
+        )
+      `),
+      coinSchemaNames.issueYearRangeClosedCheck,
+      "23514"
+    )
+  })
+
+  it("rejects coins whose issue year range runs backwards", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expectConstraintError(
+      createCoin({
+        title: "Backwards Range Coin",
+        issuerId: athens.id,
+        distributionId: standardCirculation.id,
+        minYear: 1901,
+        maxYear: 1900,
+        createdAt: new Date("2026-06-03T00:00:00.000Z"),
+      }),
+      coinSchemaNames.issueYearRangeOrderCheck,
+      "23514"
+    )
   })
 })
 

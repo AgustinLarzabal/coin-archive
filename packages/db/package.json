@@ -17,11 +17,11 @@
     "postgres": "^3.4.7"
   },
   "devDependencies": {
-    "@types/node": "^22",
+    "@types/node": "catalog:",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
-    "typescript": "^6",
-    "vitest": "^3.2.4"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts"

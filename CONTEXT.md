@@ -12,6 +12,14 @@ _Avoid_: Coina, specimen, item
 The human-readable display label for a coin. It is not structured catalogue data and should not be parsed to infer historical, geographic, minting, material, inscription, image, or reference information.
 _Avoid_: Name, generated catalogue data
 
+**Issue Year Range**:
+The closed earliest and latest known years in which a coin type or issue is understood to have been minted or issued, represented as astronomical integer years when structured. The range describes the coin type or issue itself, not the issuer's lifetime, a ruler's reign, catalogue publication date, or archive record creation date.
+_Avoid_: Creation date, open-ended date qualification, ruler reign, issuer period, catalogue year, era text
+
+**Issue Year Range Filter**:
+A catalogue filter that returns coins whose Issue Year Range overlaps the requested year or year range. Coins without an Issue Year Range are excluded when an issue year filter is applied.
+_Avoid_: Contained-within filter, exact year-only filter, archive creation date filter
+
 **Issuer**:
 The historical or legal authority whose name, sovereignty, or authorization a coin was issued under. An issuer has a display name and a globally unique issuer code. The display name does not need to be globally unique. An issuer is distinct from the mint that physically produced the coin.
 _Avoid_: Mint, any named entity associated with a coin, globally unique display name

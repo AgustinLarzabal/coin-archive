@@ -5,6 +5,32 @@ import { describe, expect, it } from "vitest"
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const readmePath = resolve(packageRoot, "README.md")
+const requiredReadmeSnippets = [
+  "maintainers and coding agents",
+  "Coin has exactly one direct Issuer",
+  "Coin may have zero or more Ruler attributions",
+  "Ruler Attribution Order",
+  "Coin may have zero or more Catalogue References",
+  "Issuer Grouping",
+  "Ruler Group",
+  "coin",
+  "issuer",
+  "coin_ruler",
+  "coin_reference",
+  "ruler_group",
+  "```mermaid",
+  "Current database-enforced invariants",
+  "Known gaps and future schema work",
+  "arbitrary Issuer Grouping cycles are not yet prevented",
+  "Coin Titles are display labels and should not be parsed into structured catalogue data",
+  "consume shared database behavior from the database package",
+  "DATABASE_URL",
+  "DATABASE_TEST_URL",
+  "npm run db:start",
+  "npm run db:migrate",
+  "npm run db:seed",
+  "npm run db:test",
+] as const
 
 function readReadme() {
   return readFileSync(readmePath, "utf8")
@@ -14,33 +40,8 @@ describe("database package README", () => {
   it("documents the current database architecture and workflow for maintainers", () => {
     const readme = readReadme()
 
-    expect(readme).toContain("maintainers and coding agents")
-    expect(readme).toContain("Coin has exactly one direct Issuer")
-    expect(readme).toContain("Coin may have zero or more Ruler attributions")
-    expect(readme).toContain("Ruler Attribution Order")
-    expect(readme).toContain("Coin may have zero or more Catalogue References")
-    expect(readme).toContain("Issuer Grouping")
-    expect(readme).toContain("Ruler Group")
-    expect(readme).toContain("coin")
-    expect(readme).toContain("issuer")
-    expect(readme).toContain("coin_ruler")
-    expect(readme).toContain("coin_reference")
-    expect(readme).toContain("ruler_group")
-    expect(readme).toContain("```mermaid")
-    expect(readme).toContain("Current database-enforced invariants")
-    expect(readme).toContain("Known gaps and future schema work")
-    expect(readme).toContain("arbitrary Issuer Grouping cycles are not yet prevented")
-    expect(readme).toContain(
-      "Coin Titles are display labels and should not be parsed into structured catalogue data"
-    )
-    expect(readme).toContain(
-      "consume shared database behavior from the database package"
-    )
-    expect(readme).toContain("DATABASE_URL")
-    expect(readme).toContain("DATABASE_TEST_URL")
-    expect(readme).toContain("npm run db:start")
-    expect(readme).toContain("npm run db:migrate")
-    expect(readme).toContain("npm run db:seed")
-    expect(readme).toContain("npm run db:test")
+    for (const snippet of requiredReadmeSnippets) {
+      expect(readme).toContain(snippet)
+    }
   })
 })

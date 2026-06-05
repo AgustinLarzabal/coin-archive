@@ -1,5 +1,6 @@
 import type {
   CatalogueOption,
+  CoinIssueYearRange,
   DistributionOption,
   RulerOption,
 } from "@workspace/db"
@@ -179,4 +180,33 @@ export function getDistributionOptionLabel(
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {
   return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name
+}
+
+function formatAstronomicalYear(year: number) {
+  if (year > 0) {
+    return `${year} CE`
+  }
+
+  if (year === 0) {
+    return "1 BCE"
+  }
+
+  return `${Math.abs(year) + 1} BCE`
+}
+
+export function formatIssueYearRangeLabel(
+  issueYearRange: CoinIssueYearRange | null
+) {
+  if (!issueYearRange) {
+    return "Issue years unknown"
+  }
+
+  const minYearLabel = formatAstronomicalYear(issueYearRange.minYear)
+  const maxYearLabel = formatAstronomicalYear(issueYearRange.maxYear)
+
+  if (issueYearRange.minYear === issueYearRange.maxYear) {
+    return `Issue year ${minYearLabel}`
+  }
+
+  return `Issue years ${minYearLabel} to ${maxYearLabel}`
 }

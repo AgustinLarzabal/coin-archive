@@ -3,7 +3,6 @@ import { createServerFn } from "@tanstack/react-start"
 import type { FormEvent } from "react"
 import type {
   CatalogueOption,
-  CoinIssueYearRange,
   DistributionOption,
   IssuerOption,
   RulerOption,
@@ -14,6 +13,7 @@ import {
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
+  formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
@@ -33,18 +33,6 @@ import {
 import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
-
-function formatIssueYearRange(issueYearRange: CoinIssueYearRange | null) {
-  if (!issueYearRange) {
-    return "Issue years unknown"
-  }
-
-  if (issueYearRange.minYear === issueYearRange.maxYear) {
-    return `Issue year ${issueYearRange.minYear}`
-  }
-
-  return `Issue years ${issueYearRange.minYear} to ${issueYearRange.maxYear}`
-}
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -281,15 +269,11 @@ function App() {
               {coin.issuer.name} · {coin.distribution.name}
             </p>
             <p className="text-sm text-muted-foreground">
-              {formatIssueYearRange(coin.issueYearRange)}
+              {formatIssueYearRangeLabel(coin.issueYearRange)}
             </p>
           </li>
         ))}
       </ul>
-
-      {/* Keep JSON */}
-
-      <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
     </div>
   )
 }

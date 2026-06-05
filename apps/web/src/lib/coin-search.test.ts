@@ -5,6 +5,7 @@ import {
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
+  formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
@@ -253,6 +254,35 @@ describe("getCoinListLoaderDeps", () => {
       rulerCode: "felipe-vi",
       toYear: 1902,
     })
+  })
+})
+
+describe("formatIssueYearRangeLabel", () => {
+  it("formats astronomical issue years into human-readable BCE and CE labels", () => {
+    expect(
+      formatIssueYearRangeLabel({
+        minYear: -43,
+        maxYear: -43,
+      })
+    ).toBe("Issue year 44 BCE")
+
+    expect(
+      formatIssueYearRangeLabel({
+        minYear: -1,
+        maxYear: 0,
+      })
+    ).toBe("Issue years 2 BCE to 1 BCE")
+
+    expect(
+      formatIssueYearRangeLabel({
+        minYear: 1898,
+        maxYear: 1902,
+      })
+    ).toBe("Issue years 1898 CE to 1902 CE")
+  })
+
+  it("keeps the unknown issue year copy when no range is stored", () => {
+    expect(formatIssueYearRangeLabel(null)).toBe("Issue years unknown")
   })
 })
 

@@ -78,6 +78,13 @@ async function deleteSeededCatalogues() {
   )
 }
 
+async function deleteSeededCoins() {
+  await deleteSeededRecords(
+    seededCoins.map(({ title }) => title),
+    (title) => db.delete(coin).where(eq(coin.title, title))
+  )
+}
+
 function getIssuersReadyToInsert(
   remainingIssuers: typeof seededIssuers,
   issuerIdsByCode: IssuerIdsByCode
@@ -224,8 +231,8 @@ async function seedDistributions() {
       ) values (
         ${seededDistribution.code},
         ${seededDistribution.name},
-        ${seededDistribution.createdAt},
-        ${seededDistribution.updatedAt}
+        ${sql.param(seededDistribution.createdAt, distribution.createdAt)},
+        ${sql.param(seededDistribution.updatedAt, distribution.updatedAt)}
       )
       on conflict ((lower("code"))) do update
       set
@@ -332,6 +339,8 @@ async function seedCoinReferences(
 }
 
 export async function seedDatabase() {
+  await deleteSeededCoins()
+
   const issuerIdsByCode = await seedIssuers()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(issuerIdsByCode, distributionIdsByCode)

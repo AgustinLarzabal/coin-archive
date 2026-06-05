@@ -45,7 +45,9 @@ const getCoinsSelection = {
   rulerGroupCreatedAt: rulerGroup.createdAt,
   rulerGroupUpdatedAt: rulerGroup.updatedAt,
   referenceId: coinReference.id,
-  referenceType: sql<"catalogue" | null>`case when ${coinReference.id} is null then null else 'catalogue' end`,
+  referenceType: sql<
+    "catalogue" | null
+  >`case when ${coinReference.id} is null then null else 'catalogue' end`,
   referenceNumber: coinReference.number,
   referenceCreatedAt: coinReference.createdAt,
   referenceUpdatedAt: coinReference.updatedAt,
@@ -81,17 +83,28 @@ function buildCoinFilter({
   catalogueCode,
   referenceNumber,
 }: CoinFilterOptions): SQL | undefined {
-  const filters = [
-    distributionCode === undefined
-      ? undefined
-      : buildDistributionFilter(distributionCode),
-    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
-    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
-    buildCatalogueReferenceFilter({
-      catalogueCode,
-      referenceNumber,
-    }),
-  ].filter((filter): filter is SQL => filter !== undefined)
+  const filters: SQL[] = []
+
+  if (distributionCode !== undefined) {
+    filters.push(buildDistributionFilter(distributionCode))
+  }
+
+  if (issuerCode !== undefined) {
+    filters.push(buildIssuerTreeFilter(issuerCode))
+  }
+
+  if (rulerCode !== undefined) {
+    filters.push(buildRulerFilter(rulerCode))
+  }
+
+  const catalogueReferenceFilter = buildCatalogueReferenceFilter({
+    catalogueCode,
+    referenceNumber,
+  })
+
+  if (catalogueReferenceFilter !== undefined) {
+    filters.push(catalogueReferenceFilter)
+  }
 
   if (filters.length === 0) {
     return undefined
@@ -127,11 +140,13 @@ function buildLimitedCoinsQuery(
 }
 
 function buildDistributionFilter(distributionCode: string): SQL {
+  const normalizedDistributionCode = normalizeDistributionCode(distributionCode)
+
   return sql`
     ${coin.distributionId} in (
       select ${distribution.id}
       from "distribution"
-      where lower(${distribution.code}) = ${distributionCode.trim().toLowerCase()}
+      where lower(${distribution.code}) = ${normalizedDistributionCode}
     )
   `
 }
@@ -175,11 +190,14 @@ function buildCatalogueReferenceFilter({
   referenceNumber,
 }: CatalogueReferenceFilterOptions): SQL | undefined {
   const normalizedCatalogueCode = normalizeCatalogueCode(catalogueCode)
-  const normalizedReferenceNumber = normalizeReferenceNumberPrefix(referenceNumber)
+  const normalizedReferenceNumber =
+    normalizeReferenceNumberPrefix(referenceNumber)
   const referenceFilters: SQL[] = []
 
   if (normalizedCatalogueCode !== undefined) {
-    referenceFilters.push(sql`lower(${catalogue.code}) = ${normalizedCatalogueCode}`)
+    referenceFilters.push(
+      sql`lower(${catalogue.code}) = ${normalizedCatalogueCode}`
+    )
   }
 
   if (normalizedReferenceNumber !== undefined) {
@@ -214,6 +232,10 @@ function normalizeFilterValue(value: string | undefined) {
 
 function normalizeCatalogueCode(value: string | undefined) {
   return normalizeFilterValue(value)?.toLowerCase()
+}
+
+function normalizeDistributionCode(value: string) {
+  return value.trim().toLowerCase()
 }
 
 function normalizeReferenceNumberPrefix(value: string | undefined) {

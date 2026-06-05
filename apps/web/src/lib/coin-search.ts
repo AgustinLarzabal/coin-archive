@@ -27,8 +27,7 @@ export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
 
-type CatalogueOptionWithCode = Pick<CatalogueOption, "code">
-type DistributionOptionWithCode = Pick<DistributionOption, "code">
+type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
@@ -43,40 +42,35 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   }
 }
 
-export function findSelectedCatalogueOption<T extends CatalogueOptionWithCode>(
-  catalogues: T[],
-  selectedCatalogueCode: string | undefined
+function findSelectedCodeOption<T extends OptionWithCode>(
+  options: T[],
+  selectedCode: string | undefined
 ): T | null {
-  if (!selectedCatalogueCode) {
+  if (!selectedCode) {
     return null
   }
 
-  const normalizedSelectedCatalogueCode = selectedCatalogueCode.toLowerCase()
+  const normalizedSelectedCode = selectedCode.toLowerCase()
 
   return (
-    catalogues.find(
-      (catalogue) =>
-        catalogue.code.toLowerCase() === normalizedSelectedCatalogueCode
+    options.find(
+      (option) => option.code.toLowerCase() === normalizedSelectedCode
     ) ?? null
   )
 }
 
-export function findSelectedDistributionOption<
-  T extends DistributionOptionWithCode,
->(distributions: T[], selectedDistributionCode: string | undefined): T | null {
-  if (!selectedDistributionCode) {
-    return null
-  }
+export function findSelectedCatalogueOption<T extends OptionWithCode>(
+  catalogues: T[],
+  selectedCatalogueCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(catalogues, selectedCatalogueCode)
+}
 
-  const normalizedSelectedDistributionCode =
-    selectedDistributionCode.toLowerCase()
-
-  return (
-    distributions.find(
-      (distribution) =>
-        distribution.code.toLowerCase() === normalizedSelectedDistributionCode
-    ) ?? null
-  )
+export function findSelectedDistributionOption<T extends OptionWithCode>(
+  distributions: T[],
+  selectedDistributionCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(distributions, selectedDistributionCode)
 }
 
 export function updateCoinSearchFilter(

@@ -29,6 +29,8 @@ import {
 } from "@workspace/ui/components/combobox"
 import { Input } from "@workspace/ui/components/input"
 
+type OptionWithCode = { code: string }
+
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
@@ -37,18 +39,18 @@ const getCoinListData = createServerFn({ method: "GET" })
 
     const [coins, catalogues, distributions, issuers, rulers] =
       await Promise.all([
-      getCoins({
-        catalogueCode: data.catalogueCode,
-        distributionCode: data.distributionCode,
-        issuerCode: data.issuerCode,
-        referenceNumber: data.referenceNumber,
-        rulerCode: data.rulerCode,
-      }),
-      getCatalogues(),
-      getDistributions(),
-      getIssuers(),
-      getRulers(),
-    ])
+        getCoins({
+          catalogueCode: data.catalogueCode,
+          distributionCode: data.distributionCode,
+          issuerCode: data.issuerCode,
+          referenceNumber: data.referenceNumber,
+          rulerCode: data.rulerCode,
+        }),
+        getCatalogues(),
+        getDistributions(),
+        getIssuers(),
+        getRulers(),
+      ])
 
     return { coins, catalogues, distributions, issuers, rulers }
   })
@@ -95,24 +97,21 @@ function App() {
     })
   }
 
-  async function selectIssuer(issuer: IssuerOption | null) {
-    await updateSearchFilter("issuer", issuer?.code)
+  function createSelectHandler<T extends OptionWithCode>(
+    filterName: CoinSearchFilterName
+  ) {
+    return async (option: T | null) =>
+      updateSearchFilter(filterName, option?.code)
   }
 
-  async function selectCatalogue(catalogue: CatalogueOption | null) {
-    await updateSearchFilter("catalogue", catalogue?.code)
-  }
-
-  async function selectDistribution(distribution: DistributionOption | null) {
-    await updateSearchFilter("distribution", distribution?.code)
-  }
+  const selectIssuer = createSelectHandler<IssuerOption>("issuer")
+  const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
+  const selectDistribution =
+    createSelectHandler<DistributionOption>("distribution")
+  const selectRuler = createSelectHandler<RulerOption>("ruler")
 
   async function updateReferenceNumber(referenceNumber: string) {
     await updateSearchFilter("referenceNumber", referenceNumber)
-  }
-
-  async function selectRuler(ruler: RulerOption | null) {
-    await updateSearchFilter("ruler", ruler?.code)
   }
 
   return (
@@ -215,7 +214,7 @@ function App() {
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => (
-          <li className="border-border border-b pb-4" key={coin.id}>
+          <li className="border-b border-border pb-4" key={coin.id}>
             <p className="font-medium">{coin.title}</p>
             <p className="text-sm text-muted-foreground">
               {coin.issuer.name} · {coin.distribution.name}

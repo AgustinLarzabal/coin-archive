@@ -1,8 +1,12 @@
 import { existsSync, readFileSync } from "node:fs"
+import { dirname, resolve } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
-const rootReadmePath = new URL("../../../README.md", import.meta.url)
-const rootPackageJsonPath = new URL("../../../package.json", import.meta.url)
+const packageSourceDir = dirname(fileURLToPath(import.meta.url))
+const workspaceRoot = resolve(packageSourceDir, "../../..")
+const rootReadmePath = resolve(workspaceRoot, "README.md")
+const rootPackageJsonPath = resolve(workspaceRoot, "package.json")
 
 const requiredRootReadmeSnippets = [
   "Coin Archive is a catalog of physical coins from across history.",
@@ -39,21 +43,23 @@ const requiredRootScripts = [
   "db:seed",
 ] as const
 
-const requiredRootReadmeLinks = [
-  "../../../CONTEXT.md",
-  "../../../packages/db/README.md",
-  "../../../docs/testing.md",
-  "../../../docs/adr",
+const requiredRootDocumentationPaths = [
+  "CONTEXT.md",
+  "packages/db/README.md",
+  "docs/testing.md",
+  "docs/adr",
 ] as const
+
+type RootPackageJson = {
+  scripts?: Record<string, string>
+}
 
 function readRootReadme() {
   return readFileSync(rootReadmePath, "utf8")
 }
 
 function readRootPackageJson() {
-  return JSON.parse(readFileSync(rootPackageJsonPath, "utf8")) as {
-    scripts: Record<string, string>
-  }
+  return JSON.parse(readFileSync(rootPackageJsonPath, "utf8")) as RootPackageJson
 }
 
 describe("root README", () => {
@@ -66,16 +72,16 @@ describe("root README", () => {
   })
 
   it("points to real documentation and current root scripts", () => {
-    const packageJson = readRootPackageJson()
+    const { scripts = {} } = readRootPackageJson()
 
     for (const scriptName of requiredRootScripts) {
-      expect(packageJson.scripts[scriptName]).toBeTruthy()
+      expect(scripts[scriptName]).toBeTruthy()
     }
 
-    for (const relativePath of requiredRootReadmeLinks) {
+    for (const documentationPath of requiredRootDocumentationPaths) {
       expect(
-        existsSync(new URL(relativePath, import.meta.url)),
-        `${relativePath} should exist`,
+        existsSync(resolve(workspaceRoot, documentationPath)),
+        `${documentationPath} should exist`,
       ).toBe(true)
     }
   })

@@ -168,6 +168,8 @@ function App() {
         value={selectedReferenceNumber ?? ""}
       />
 
+      {/* Keep JSON */}
+
       <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
     </div>
   )

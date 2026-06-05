@@ -2,7 +2,7 @@
 
 This README is for maintainers and coding agents changing the database layer. It explains the current Coin Archive database architecture from the package that owns schema, migrations, seed logic, client setup, database tests, and shared queries.
 
-Use the glossary in [`/CONTEXT.md`](/home/agent/workspace/CONTEXT.md) for canonical catalogue language and the ADRs in [`/docs/adr`](/home/agent/workspace/docs/adr) for architectural rationale. This document describes the current database package boundary and behavior; it does not restate the full glossary or ADR history.
+Use the glossary in [`/CONTEXT.md`](/CONTEXT.md) for canonical catalogue language and the ADRs in [`/docs/adr`](/docs/adr) for architectural rationale. This document describes the current database package boundary and behavior; it does not restate the full glossary or ADR history.
 
 ## Package boundary
 
@@ -94,8 +94,8 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 ### Schema and migrations
 
 - add or update schema modules in `packages/db/src/schema`
-- generate migrations from schema changes with `npm run db:generate`
-- apply migrations to the development database with `npm run db:migrate`
+- generate migrations from schema changes with `pnpm db:generate`
+- apply migrations to the development database with `pnpm db:migrate`
 - commit the schema change and generated migration together
 
 ### Shared queries
@@ -113,29 +113,29 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 ### Database tests
 
 - fast package tests run with `pnpm --filter @workspace/db test`
-- PostgreSQL integration tests run with `npm run db:test`
+- PostgreSQL integration tests run with `pnpm db:test`
 - integration tests use `DATABASE_TEST_URL`, apply migrations before running, and clear known tables between tests
-- PostgreSQL must already be running before database tests; if it is not, start it explicitly with `npm run db:start`
+- PostgreSQL must already be running before database tests; if it is not, start it explicitly with `pnpm db:start`
 
 ## Environment
 
 - `DATABASE_URL`: development database used by the package client, migrations, seed command, and local database workflows
 - `DATABASE_TEST_URL`: dedicated PostgreSQL database for integration tests only; test helpers reject URLs that are not clearly test-specific
 
-See [`.env.example`](/home/agent/workspace/.env.example) for the current local variable names and example values.
+See [`.env.example`](/.env.example) for the current local variable names and example values.
 
 ## Root database commands
 
 Run these from the repository root:
 
-- `npm run db:start`: start the PostgreSQL service with Docker Compose
-- `npm run db:stop`: stop the PostgreSQL service
-- `npm run db:reset`: remove PostgreSQL containers and volumes
-- `npm run db:generate`: generate Drizzle migrations from schema changes
-- `npm run db:migrate`: apply migrations to `DATABASE_URL`
-- `npm run db:seed`: load demo seed data into `DATABASE_URL`
-- `npm run db:studio`: open Drizzle Studio
-- `npm run db:test`: run PostgreSQL-backed integration tests against `DATABASE_TEST_URL`
+- `pnpm db:start`: start the PostgreSQL service with Docker Compose
+- `pnpm db:stop`: stop the PostgreSQL service
+- `pnpm db:reset`: remove PostgreSQL containers and volumes
+- `pnpm db:generate`: generate Drizzle migrations from schema changes
+- `pnpm db:migrate`: apply migrations to `DATABASE_URL`
+- `pnpm db:seed`: load demo seed data into `DATABASE_URL`
+- `pnpm db:studio`: open Drizzle Studio
+- `pnpm db:test`: run PostgreSQL-backed integration tests against `DATABASE_TEST_URL`
 
 ## Package-local commands
 

@@ -1,6 +1,6 @@
 # Coin Archive
 
-Coin Archive is a catalog of physical coins from across history. It catalogs coin types and issues rather than individual owned specimens, and it uses the glossary in [`CONTEXT.md`](/home/agent/workspace/CONTEXT.md) as the canonical source for catalogue language such as Coin, Issuer, Ruler, Catalogue, and Catalogue Reference.
+Coin Archive is a catalog of physical coins from across history. It catalogs coin types and issues rather than individual owned specimens, and it uses the glossary in [`CONTEXT.md`](/CONTEXT.md) as the canonical source for catalogue language such as Coin, Issuer, Ruler, Catalogue, and Catalogue Reference.
 
 Use this README as the repository entry point. It explains the workspace at a useful maintainer level, gives the shortest path to a running local setup, and points to the deeper documents that own glossary, database architecture, testing strategy, and architectural decisions.
 
@@ -41,35 +41,35 @@ From the repository root:
 
 1. `pnpm install`
 2. `cp .env.example .env`
-3. `npm run db:start`
-4. `npm run db:migrate`
-5. `npm run db:seed`
-6. `npm run dev`
+3. `pnpm db:start`
+4. `pnpm db:migrate`
+5. `pnpm db:seed`
+6. `pnpm dev`
 
 That gets PostgreSQL running, applies the current schema, loads demo catalogue data, and starts the TanStack Start app.
 
 Useful verification commands:
 
-- `npm run typecheck`
-- `npm run test`
-- `npm run db:test`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm db:test`
 
 Useful database maintenance commands:
 
-- `npm run db:stop`
-- `npm run db:reset`
-- `npm run db:generate`
-- `npm run db:studio`
+- `pnpm db:stop`
+- `pnpm db:reset`
+- `pnpm db:generate`
+- `pnpm db:studio`
 
 ## Where to go next
 
-- [Catalogue glossary](/home/agent/workspace/CONTEXT.md)
-- [Database architecture](/home/agent/workspace/packages/db/README.md)
-- [Testing strategy](/home/agent/workspace/docs/testing.md)
-- [Architectural decision records](/home/agent/workspace/docs/adr)
+- [Catalogue glossary](/CONTEXT.md)
+- [Database architecture](/packages/db/README.md)
+- [Testing strategy](/docs/testing.md)
+- [Architectural decision records](/docs/adr)
 
 ## Maintainer notes
 
 Applications should consume shared database behavior from `@workspace/db` rather than duplicating schema ownership or database query logic in app code.
 
-Database architecture stays in [`packages/db/README.md`](/home/agent/workspace/packages/db/README.md). This root README intentionally keeps database detail to a pointer so the database package remains the single maintainer-facing source for schema workflow, current invariants, and operational database commands.
+Database architecture stays in [`packages/db/README.md`](/packages/db/README.md). This root README intentionally keeps database detail to a pointer so the database package remains the single maintainer-facing source for schema workflow, current invariants, and operational database commands.

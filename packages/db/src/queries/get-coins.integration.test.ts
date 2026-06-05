@@ -475,6 +475,37 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("ignores a blank distribution code filter instead of returning an empty result set", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+
+    await createCoin({
+      title: "Spanish Standard Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-11T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Standard Issue",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        distributionCode: "   ",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Standard Issue", "French Standard Issue"].join("|")
+    )
+  })
+
   it("returns full linked ruler data in ruler attribution order", async () => {
     const spain = await createIssuer({
       code: "spain",

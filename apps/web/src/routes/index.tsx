@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
+import type { FormEvent } from "react"
 import type {
   CatalogueOption,
   CoinIssueYearRange,
@@ -44,6 +45,24 @@ function formatIssueYearRange(issueYearRange: CoinIssueYearRange | null) {
   return `Issue years ${issueYearRange.minYear} to ${issueYearRange.maxYear}`
 }
 
+function parseYearFilterValue(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmedValue = value.trim()
+
+  if (trimmedValue === "") {
+    return undefined
+  }
+
+  if (!/^-?\d+$/.test(trimmedValue)) {
+    return null
+  }
+
+  return Number.parseInt(trimmedValue, 10)
+}
+
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
@@ -55,9 +74,11 @@ const getCoinListData = createServerFn({ method: "GET" })
         getCoins({
           catalogueCode: data.catalogueCode,
           distributionCode: data.distributionCode,
+          fromYear: data.fromYear,
           issuerCode: data.issuerCode,
           referenceNumber: data.referenceNumber,
           rulerCode: data.rulerCode,
+          toYear: data.toYear,
         }),
         getCatalogues(),
         getDistributions(),
@@ -81,9 +102,11 @@ function App() {
   const {
     catalogue: selectedCatalogueCode,
     distribution: selectedDistributionCode,
+    fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
+    toYear: selectedToYear,
   } = Route.useSearch()
   const navigate = Route.useNavigate()
 
@@ -125,6 +148,34 @@ function App() {
 
   async function updateReferenceNumber(referenceNumber: string) {
     await updateSearchFilter("referenceNumber", referenceNumber)
+  }
+
+  async function updateIssueYearRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const parsedFromYear = parseYearFilterValue(formData.get("fromYear"))
+    const parsedToYear = parseYearFilterValue(formData.get("toYear"))
+
+    await navigate({
+      search: (currentSearch) => {
+        let nextSearch = currentSearch
+
+        if (parsedFromYear !== null) {
+          nextSearch = updateCoinSearchFilter(
+            nextSearch,
+            "fromYear",
+            parsedFromYear
+          )
+        }
+
+        if (parsedToYear !== null) {
+          nextSearch = updateCoinSearchFilter(nextSearch, "toYear", parsedToYear)
+        }
+
+        return nextSearch
+      },
+    })
   }
 
   return (
@@ -224,6 +275,28 @@ function App() {
         placeholder="Reference number"
         value={selectedReferenceNumber ?? ""}
       />
+
+      <form className="flex items-end gap-2 py-2" onSubmit={updateIssueYearRange}>
+        <Input
+          aria-label="Filter from issue year"
+          defaultValue={selectedFromYear?.toString() ?? ""}
+          key={`from-year-${selectedFromYear ?? ""}`}
+          name="fromYear"
+          placeholder="From year"
+          type="number"
+        />
+        <Input
+          aria-label="Filter to issue year"
+          defaultValue={selectedToYear?.toString() ?? ""}
+          key={`to-year-${selectedToYear ?? ""}`}
+          name="toYear"
+          placeholder="To year"
+          type="number"
+        />
+        <button className="rounded border border-border px-3 py-2" type="submit">
+          Apply years
+        </button>
+      </form>
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => (

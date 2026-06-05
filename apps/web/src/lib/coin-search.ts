@@ -6,21 +6,32 @@ import type {
 import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
+const optionalIntegerSchema = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined
+  }
+
+  return value
+}, z.coerce.number().int().optional())
 
 export const coinSearchSchema = z.object({
   catalogue: optionalStringSchema,
   distribution: optionalStringSchema,
+  fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
+  toYear: optionalIntegerSchema,
 })
 
 export const coinListInputSchema = z.object({
   catalogueCode: optionalStringSchema,
   distributionCode: optionalStringSchema,
+  fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
+  toYear: optionalIntegerSchema,
 })
 
 export type CoinSearch = z.infer<typeof coinSearchSchema>
@@ -36,9 +47,11 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,
     distributionCode: search.distribution,
+    fromYear: search.fromYear,
     issuerCode: search.issuer,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
+    toYear: search.toYear,
   }
 }
 
@@ -73,10 +86,10 @@ export function findSelectedDistributionOption<T extends OptionWithCode>(
   return findSelectedCodeOption(distributions, selectedDistributionCode)
 }
 
-export function updateCoinSearchFilter(
+export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
   currentSearch: CoinSearch,
-  filterName: CoinSearchFilterName,
-  filterValue: string | undefined
+  filterName: K,
+  filterValue: CoinSearch[K] | "" | undefined
 ): CoinSearch {
   const nextSearch = { ...currentSearch }
 

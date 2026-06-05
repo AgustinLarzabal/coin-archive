@@ -61,29 +61,35 @@ const getCoinsSelection = {
 }
 
 export type GetCoinsOptions = {
-  limit?: number
-  distributionCode?: string
-  issuerCode?: string
-  rulerCode?: string
   catalogueCode?: string
+  distributionCode?: string
+  fromYear?: number
+  issuerCode?: string
+  limit?: number
   referenceNumber?: string
+  rulerCode?: string
+  toYear?: number
 }
 
 type CoinFilterOptions = Pick<
   GetCoinsOptions,
   | "distributionCode"
+  | "fromYear"
   | "issuerCode"
   | "rulerCode"
   | "catalogueCode"
   | "referenceNumber"
+  | "toYear"
 >
 
 function buildCoinFilter({
   distributionCode,
+  fromYear,
   issuerCode,
   rulerCode,
   catalogueCode,
   referenceNumber,
+  toYear,
 }: CoinFilterOptions): SQL | undefined {
   const filters: SQL[] = []
   const distributionFilter = buildDistributionFilter(distributionCode)
@@ -107,6 +113,15 @@ function buildCoinFilter({
 
   if (catalogueReferenceFilter !== undefined) {
     filters.push(catalogueReferenceFilter)
+  }
+
+  const issueYearRangeFilter = buildIssueYearRangeFilter({
+    fromYear,
+    toYear,
+  })
+
+  if (issueYearRangeFilter !== undefined) {
+    filters.push(issueYearRangeFilter)
   }
 
   if (filters.length === 0) {
@@ -194,6 +209,8 @@ type CatalogueReferenceFilterOptions = Pick<
   "catalogueCode" | "referenceNumber"
 >
 
+type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
+
 function buildCatalogueReferenceFilter({
   catalogueCode,
   referenceNumber,
@@ -251,6 +268,30 @@ function normalizeReferenceNumberPrefix(value: string | undefined) {
   const normalizedValue = normalizeFilterValue(value)
 
   return normalizedValue?.replace(/\s+/g, " ").toLowerCase()
+}
+
+function buildIssueYearRangeFilter({
+  fromYear,
+  toYear,
+}: IssueYearRangeFilterOptions): SQL | undefined {
+  if (fromYear === undefined && toYear === undefined) {
+    return undefined
+  }
+
+  const filters = [
+    sql`${coin.minYear} is not null`,
+    sql`${coin.maxYear} is not null`,
+  ]
+
+  if (fromYear !== undefined) {
+    filters.push(sql`${coin.maxYear} >= ${fromYear}`)
+  }
+
+  if (toYear !== undefined) {
+    filters.push(sql`${coin.minYear} <= ${toYear}`)
+  }
+
+  return and(...filters)!
 }
 
 export function buildGetCoinsQuery(

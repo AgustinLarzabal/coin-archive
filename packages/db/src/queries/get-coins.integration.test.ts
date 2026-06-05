@@ -165,6 +165,141 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters coins by a requested single issue year using overlap semantics and excludes unknown ranges", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+
+    await createCoin({
+      title: "Exact Year Match",
+      issuerId: rome.id,
+      minYear: 1900,
+      maxYear: 1900,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Overlapping Multi Year Match",
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Non Overlapping Range",
+      issuerId: rome.id,
+      minYear: 1901,
+      maxYear: 1903,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unknown Issue Years",
+      issuerId: rome.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        fromYear: 1900,
+        toYear: 1900,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Exact Year Match", "Overlapping Multi Year Match"].join("|")
+    )
+  })
+
+  it("filters coins by open-ended issue year bounds", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+
+    await createCoin({
+      title: "Earlier Range",
+      issuerId: rome.id,
+      minYear: 1800,
+      maxYear: 1850,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Later Range",
+      issuerId: rome.id,
+      minYear: 1900,
+      maxYear: 1950,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Crossing Range",
+      issuerId: rome.id,
+      minYear: 1850,
+      maxYear: 1905,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        fromYear: 1900,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Later Range", "Crossing Range"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        toYear: 1850,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Earlier Range", "Crossing Range"].join("|")
+    )
+  })
+
+  it("combines issue year range filtering with existing homepage filters using AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+
+    await createCoin({
+      title: "Spanish Overlapping Match",
+      issuerId: spain.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Non Overlapping",
+      issuerId: spain.id,
+      minYear: 1903,
+      maxYear: 1904,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Overlapping",
+      issuerId: france.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        fromYear: 1900,
+        toYear: 1900,
+        issuerCode: "spain",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Overlapping Match"].join("|")
+    )
+  })
+
   it("returns typed catalogue references sorted by catalogue title", async () => {
     const spain = await createIssuer({
       code: "spain",

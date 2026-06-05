@@ -14,9 +14,11 @@ describe("updateCoinSearchFilter", () => {
   const currentSearch = {
     catalogue: "km",
     distribution: "circulating-commemorative",
+    fromYear: 1898,
     issuer: "spain",
     referenceNumber: "1338",
     ruler: "felipe-vi",
+    toYear: 1902,
   }
 
   it("clears only the selected filter and preserves unrelated search params", () => {
@@ -25,8 +27,10 @@ describe("updateCoinSearchFilter", () => {
     ).toStrictEqual({
       catalogue: "km",
       distribution: "circulating-commemorative",
+      fromYear: 1898,
       referenceNumber: "1338",
       ruler: "felipe-vi",
+      toYear: 1902,
     })
   })
 
@@ -37,9 +41,11 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "distribution", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        fromYear: 1898,
         issuer: "spain",
         referenceNumber: "1338",
         ruler: "felipe-vi",
+        toYear: 1902,
       })
     }
   )
@@ -52,8 +58,10 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         distribution: "circulating-commemorative",
+        fromYear: 1898,
         issuer: "spain",
         referenceNumber: "1338",
+        toYear: 1902,
       })
     }
   )
@@ -66,49 +74,75 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         distribution: "circulating-commemorative",
+        fromYear: 1898,
         issuer: "spain",
         ruler: "felipe-vi",
+        toYear: 1902,
+      })
+    }
+  )
+
+  it.each<["" | undefined]>([[undefined], [""]])(
+    "clears the fromYear filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "fromYear", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        distribution: "circulating-commemorative",
+        issuer: "spain",
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
       })
     }
   )
 })
 
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue and reference number search params", () => {
+  it("accepts homepage catalogue, issue year range, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
         distribution: "circulating-commemorative",
+        fromYear: "1898",
         issuer: "spain",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
+        toYear: "1902",
       })
     ).toStrictEqual({
       catalogue: "km",
       distribution: "circulating-commemorative",
+      fromYear: 1898,
       issuer: "spain",
       referenceNumber: "1338A",
       ruler: "felipe-vi",
+      toYear: 1902,
     })
   })
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage issue year, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         catalogue: "km",
         distribution: "circulating-commemorative",
+        fromYear: 1898,
         issuer: "spain",
         referenceNumber: "1338",
         ruler: "felipe-vi",
+        toYear: 1902,
       })
     ).toStrictEqual({
       catalogueCode: "km",
       distributionCode: "circulating-commemorative",
+      fromYear: 1898,
       issuerCode: "spain",
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
+      toYear: 1902,
     })
   })
 })

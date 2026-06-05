@@ -500,10 +500,10 @@ describe("getCoins integration", () => {
       getCoins({
         distributionCode: "   ",
       })
-    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
-      coins.map(({ title }) => title).join("|") ===
-      ["Spanish Standard Issue", "French Standard Issue"].join("|")
-    )
+    ).resolves.toMatchObject([
+      { title: "Spanish Standard Issue" },
+      { title: "French Standard Issue" },
+    ])
   })
 
   it("returns full linked ruler data in ruler attribution order", async () => {

@@ -84,12 +84,10 @@ function buildCoinFilter({
   referenceNumber,
 }: CoinFilterOptions): SQL | undefined {
   const filters: SQL[] = []
+  const distributionFilter = buildDistributionFilter(distributionCode)
 
-  const normalizedDistributionCode =
-    normalizeDistributionCode(distributionCode)
-
-  if (normalizedDistributionCode !== undefined) {
-    filters.push(buildDistributionFilter(normalizedDistributionCode))
+  if (distributionFilter !== undefined) {
+    filters.push(distributionFilter)
   }
 
   if (issuerCode !== undefined) {
@@ -142,7 +140,15 @@ function buildLimitedCoinsQuery(
   return baseQuery.where(filter).as("limited_coins")
 }
 
-function buildDistributionFilter(normalizedDistributionCode: string): SQL {
+function buildDistributionFilter(
+  distributionCode: string | undefined
+): SQL | undefined {
+  const normalizedDistributionCode = normalizeCodeFilter(distributionCode)
+
+  if (normalizedDistributionCode === undefined) {
+    return undefined
+  }
+
   return sql`
     ${coin.distributionId} in (
       select ${distribution.id}
@@ -231,12 +237,12 @@ function normalizeFilterValue(value: string | undefined) {
   return normalizedValue ? normalizedValue : undefined
 }
 
-function normalizeCatalogueCode(value: string | undefined) {
+function normalizeCodeFilter(value: string | undefined) {
   return normalizeFilterValue(value)?.toLowerCase()
 }
 
-function normalizeDistributionCode(value: string | undefined) {
-  return normalizeFilterValue(value)?.toLowerCase()
+function normalizeCatalogueCode(value: string | undefined) {
+  return normalizeCodeFilter(value)
 }
 
 function normalizeReferenceNumberPrefix(value: string | undefined) {

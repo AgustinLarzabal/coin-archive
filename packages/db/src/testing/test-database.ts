@@ -5,6 +5,7 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
@@ -30,6 +31,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(rulerGroup)
   await database.delete(catalogue)
   await database.delete(issuer)
+  await database.delete(distribution)
 }
 
 export function useTestDatabaseIsolation(database: TestDatabase) {

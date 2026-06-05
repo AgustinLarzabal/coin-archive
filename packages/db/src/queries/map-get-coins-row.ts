@@ -209,6 +209,24 @@ function mapParentIssuer({
   }
 }
 
+function mapIssuer({
+  issuerId,
+  issuerCode,
+  issuerName,
+  issuerCreatedAt,
+  issuerUpdatedAt,
+  ...row
+}: GetCoinsIssuerColumns): CoinIssuer {
+  return {
+    id: issuerId,
+    code: issuerCode,
+    name: issuerName,
+    createdAt: issuerCreatedAt,
+    updatedAt: issuerUpdatedAt,
+    parent: mapParentIssuer(row),
+  }
+}
+
 function mapRulerGroup({
   rulerGroupId,
   rulerGroupCode,
@@ -379,14 +397,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     distribution: mapDistribution(row),
-    issuer: {
-      id: row.issuerId,
-      code: row.issuerCode,
-      name: row.issuerName,
-      createdAt: row.issuerCreatedAt,
-      updatedAt: row.issuerUpdatedAt,
-      parent: mapParentIssuer(row),
-    },
+    issuer: mapIssuer(row),
     rulers: [],
     references: [],
   }
@@ -402,7 +413,10 @@ function createCoinEntry(row: GetCoinsRow): CoinEntry {
   }
 }
 
-function getRulerAttributionKey({ order, ruler }: CoinRulerAttribution): string {
+function getRulerAttributionKey({
+  order,
+  ruler,
+}: CoinRulerAttribution): string {
   return `${order}:${ruler.id}`
 }
 

@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm"
 import { coin } from "../schema/coin"
-import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { createTestDatabase } from "./database-test-client"
+import { getOrCreateDefaultDistribution } from "./default-distribution"
 
 const { client, db: testDb } = createTestDatabase()
 
@@ -64,23 +64,5 @@ export async function insertCoin(input: {
 }
 
 async function insertDefaultDistribution() {
-  const [existingDistribution] = await testDb
-    .select()
-    .from(distribution)
-    .where(eq(distribution.code, "standard-circulation"))
-    .limit(1)
-
-  if (existingDistribution) {
-    return existingDistribution
-  }
-
-  const [insertedDistribution] = await testDb
-    .insert(distribution)
-    .values({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
-    .returning()
-
-  return insertedDistribution
+  return getOrCreateDefaultDistribution(testDb)
 }

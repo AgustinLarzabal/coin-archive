@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
@@ -8,6 +7,7 @@ import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { db } from "../index"
+import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
 
 type CreateIssuerInput = {
   code: string
@@ -188,18 +188,5 @@ export async function createCoinReference({
 }
 
 async function getOrCreateDefaultDistribution() {
-  const [existingDistribution] = await db
-    .select()
-    .from(distribution)
-    .where(eq(distribution.code, "standard-circulation"))
-    .limit(1)
-
-  if (existingDistribution) {
-    return existingDistribution
-  }
-
-  return createDistribution({
-    code: "standard-circulation",
-    name: "Standard circulation",
-  })
+  return getDefaultDistribution(db)
 }

@@ -8,6 +8,7 @@ export default defineConfig({
     "./src/schema/catalogue.ts",
     "./src/schema/coin.ts",
     "./src/schema/coin-reference.ts",
+    "./src/schema/distribution.ts",
     "./src/schema/issuer.ts",
     "./src/schema/ruler-group.ts",
     "./src/schema/ruler.ts",

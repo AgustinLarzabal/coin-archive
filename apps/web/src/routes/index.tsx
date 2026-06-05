@@ -168,6 +168,17 @@ function App() {
         value={selectedReferenceNumber ?? ""}
       />
 
+      <ul className="space-y-4 py-4">
+        {coins.map((coin) => (
+          <li className="border-border border-b pb-4" key={coin.id}>
+            <p className="font-medium">{coin.title}</p>
+            <p className="text-sm text-muted-foreground">
+              {coin.issuer.name} · {coin.distribution.name}
+            </p>
+          </li>
+        ))}
+      </ul>
+
       {/* Keep JSON */}
 
       <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>

@@ -7,6 +7,7 @@ export { catalogue } from "./schema/catalogue"
 export { coin } from "./schema/coin"
 export { coinReference } from "./schema/coin-reference"
 export { coinRuler } from "./schema/coin-ruler"
+export { distribution } from "./schema/distribution"
 export { issuer } from "./schema/issuer"
 export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
@@ -14,6 +15,7 @@ export type { GetCoinsOptions } from "./queries/get-coins"
 export type {
   CoinCatalogue,
   CoinCatalogueReference,
+  CoinDistribution,
   CoinIssuer,
   CoinIssuerParent,
   CoinRecord,
@@ -26,6 +28,7 @@ export type { RulerOption } from "./queries/get-rulers"
 export type { Coin } from "./schema/coin"
 export type { CoinReference } from "./schema/coin-reference"
 export type { CoinRuler } from "./schema/coin-ruler"
+export type { Distribution } from "./schema/distribution"
 export type { Issuer } from "./schema/issuer"
 export type { Ruler } from "./schema/ruler"
 export type { RulerGroup } from "./schema/ruler-group"

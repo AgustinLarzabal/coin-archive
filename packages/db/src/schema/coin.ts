@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm"
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
 const coinRecentCreatedAtIdIndexName = "coin_recent_created_at_id_idx"
 const coinIssuerIdIndexName = "coin_issuer_id_idx"
+const coinDistributionIdIndexName = "coin_distribution_id_idx"
 
 const timestamptzDateColumn = {
   withTimezone: true,
@@ -22,6 +24,11 @@ export const coin = pgTable(
       .references(() => issuer.id, {
         onDelete: "restrict",
       }),
+    distributionId: uuid("distribution_id")
+      .notNull()
+      .references(() => distribution.id, {
+        onDelete: "restrict",
+      }),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -35,6 +42,7 @@ export const coin = pgTable(
       coin.id.desc()
     ),
     index(coinIssuerIdIndexName).on(coin.issuerId),
+    index(coinDistributionIdIndexName).on(coin.distributionId),
   ]
 )
 

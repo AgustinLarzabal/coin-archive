@@ -1,7 +1,9 @@
+import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
@@ -15,9 +17,15 @@ type CreateIssuerInput = {
 
 type CreateCoinInput = {
   createdAt: Date
+  distributionId?: string
   issuerId: string
   title: string
   updatedAt?: Date
+}
+
+type CreateDistributionInput = {
+  code: string
+  name: string
 }
 
 type CreateRulerGroupInput = {
@@ -67,14 +75,19 @@ export async function createIssuer({
 
 export async function createCoin({
   createdAt,
+  distributionId,
   issuerId,
   title,
   updatedAt = createdAt,
 }: CreateCoinInput) {
+  const resolvedDistributionId =
+    distributionId ?? (await getOrCreateDefaultDistribution()).id
+
   const [createdCoin] = await db
     .insert(coin)
     .values({
       createdAt,
+      distributionId: resolvedDistributionId,
       issuerId,
       title,
       updatedAt,
@@ -82,6 +95,21 @@ export async function createCoin({
     .returning()
 
   return createdCoin
+}
+
+export async function createDistribution({
+  code,
+  name,
+}: CreateDistributionInput) {
+  const [createdDistribution] = await db
+    .insert(distribution)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdDistribution
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
@@ -157,4 +185,21 @@ export async function createCoinReference({
     .returning()
 
   return createdCoinReference
+}
+
+async function getOrCreateDefaultDistribution() {
+  const [existingDistribution] = await db
+    .select()
+    .from(distribution)
+    .where(eq(distribution.code, "standard-circulation"))
+    .limit(1)
+
+  if (existingDistribution) {
+    return existingDistribution
+  }
+
+  return createDistribution({
+    code: "standard-circulation",
+    name: "Standard circulation",
+  })
 }

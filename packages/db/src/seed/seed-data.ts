@@ -8,6 +8,7 @@ type SeededIssuer = {
 
 type SeededCoin = {
   title: string
+  distributionCode: string
   issuerCode: string
   createdAt: Date
   updatedAt: Date
@@ -37,6 +38,13 @@ type SeededCoinRuler = {
 type SeededCatalogue = {
   code: string
   title: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededDistribution = {
+  code: string
+  name: string
   createdAt: Date
   updatedAt: Date
 }
@@ -74,63 +82,88 @@ export const seededIssuers: SeededIssuer[] = [
 export const seededCoins: SeededCoin[] = [
   {
     title: "Seed Coin 01",
+    distributionCode: "standard-circulation",
     issuerCode: "argentina",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 02",
+    distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 03",
+    distributionCode: "standard-circulation",
     issuerCode: "united-states",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 04",
+    distributionCode: "standard-circulation",
     issuerCode: "argentina",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 05",
+    distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     createdAt: new Date("2026-01-05T00:00:00.000Z"),
     updatedAt: new Date("2026-01-05T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 06",
+    distributionCode: "standard-circulation",
     issuerCode: "united-states",
     createdAt: new Date("2026-01-06T00:00:00.000Z"),
     updatedAt: new Date("2026-01-06T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 07",
+    distributionCode: "standard-circulation",
     issuerCode: "argentina",
     createdAt: new Date("2026-01-07T00:00:00.000Z"),
     updatedAt: new Date("2026-01-07T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 08",
+    distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     createdAt: new Date("2026-01-08T00:00:00.000Z"),
     updatedAt: new Date("2026-01-08T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 09",
+    distributionCode: "standard-circulation",
     issuerCode: "united-states",
     createdAt: new Date("2026-01-09T00:00:00.000Z"),
     updatedAt: new Date("2026-01-09T00:00:00.000Z"),
   },
   {
     title: "Seed Coin 10",
+    distributionCode: "standard-circulation",
     issuerCode: "argentina",
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
+  },
+]
+
+export const seededDistributions: SeededDistribution[] = [
+  {
+    code: "standard-circulation",
+    name: "Standard circulation",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "circulating-commemorative",
+    name: "Circulating commemorative",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
 ]
 

@@ -1,10 +1,11 @@
 import { pathToFileURL } from "node:url"
-import { eq, inArray } from "drizzle-orm"
+import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
@@ -13,6 +14,7 @@ import {
   seededCoinReferences,
   seededCoinRulers,
   seededCoins,
+  seededDistributions,
   seededIssuers,
   seededRulerGroups,
   seededRulers,
@@ -23,6 +25,7 @@ type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
 type CatalogueIdsByCode = Map<string, string>
+type DistributionIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -210,7 +213,52 @@ async function seedCatalogues() {
   return catalogueIdsByCode
 }
 
-async function seedCoins(issuerIdsByCode: IssuerIdsByCode) {
+async function seedDistributions() {
+  for (const seededDistribution of seededDistributions) {
+    await db.execute(sql`
+      insert into "distribution" (
+        "code",
+        "name",
+        "created_at",
+        "updated_at"
+      ) values (
+        ${seededDistribution.code},
+        ${seededDistribution.name},
+        ${seededDistribution.createdAt},
+        ${seededDistribution.updatedAt}
+      )
+      on conflict ((lower("code"))) do update
+      set
+        "name" = excluded."name",
+        "updated_at" = excluded."updated_at"
+    `)
+  }
+
+  const insertedDistributions = await db
+    .select({
+      id: distribution.id,
+      code: distribution.code,
+    })
+    .from(distribution)
+    .where(
+      inArray(
+        distribution.code,
+        seededDistributions.map(({ code }) => code)
+      )
+    )
+
+  return new Map(
+    insertedDistributions.map((insertedDistribution) => [
+      insertedDistribution.code,
+      insertedDistribution.id,
+    ])
+  ) satisfies DistributionIdsByCode
+}
+
+async function seedCoins(
+  issuerIdsByCode: IssuerIdsByCode,
+  distributionIdsByCode: DistributionIdsByCode
+) {
   await db.delete(coin).where(
     inArray(
       coin.title,
@@ -221,8 +269,13 @@ async function seedCoins(issuerIdsByCode: IssuerIdsByCode) {
   const insertedCoins = await db
     .insert(coin)
     .values(
-      seededCoins.map(({ issuerCode, ...seededCoin }) => ({
+      seededCoins.map(({ issuerCode, distributionCode, ...seededCoin }) => ({
         ...seededCoin,
+        distributionId: getRequiredSeededId(
+          distributionIdsByCode,
+          distributionCode,
+          "distribution"
+        ),
         issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
       }))
     )
@@ -280,7 +333,8 @@ async function seedCoinReferences(
 
 export async function seedDatabase() {
   const issuerIdsByCode = await seedIssuers()
-  const coinIdsByTitle = await seedCoins(issuerIdsByCode)
+  const distributionIdsByCode = await seedDistributions()
+  const coinIdsByTitle = await seedCoins(issuerIdsByCode, distributionIdsByCode)
   const rulerIdsByCode = await seedRulers()
   const catalogueIdsByCode = await seedCatalogues()
 

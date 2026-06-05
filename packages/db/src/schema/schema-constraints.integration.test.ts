@@ -7,6 +7,7 @@ import {
   coinReference,
   coinRuler,
   db,
+  distribution,
   issuer,
   ruler,
   rulerGroup,
@@ -16,6 +17,7 @@ import {
   createCoin,
   createCoinReference,
   createCoinRuler,
+  createDistribution,
   createIssuer,
   createRuler,
   createRulerGroup,
@@ -24,6 +26,7 @@ import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
+import { distributionSchemaNames } from "./distribution"
 import { issuerSchemaNames } from "./issuer"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
@@ -91,10 +94,19 @@ describe("coin schema constraints", () => {
   useTestDatabaseIsolation(db)
 
   it("requires every coin to have exactly one direct issuer", async () => {
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
     await expect(
       db.execute(sql`
-        insert into "coin" ("title", "issuer_id")
-        values (${"Issuerless Test Coin"}, ${null})
+        insert into "coin" ("title", "issuer_id", "distribution_id")
+        values (
+          ${"Issuerless Test Coin"},
+          ${null},
+          ${standardCirculation.id}
+        )
       `)
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
@@ -102,6 +114,71 @@ describe("coin schema constraints", () => {
         column_name: "issuer_id",
       }),
     })
+  })
+
+  it("requires every coin to have exactly one distribution", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+
+    await expect(
+      db.execute(sql`
+        insert into "coin" ("title", "issuer_id", "distribution_id")
+        values (${ "Distributionless Test Coin" }, ${athens.id}, ${null})
+      `)
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23502",
+        column_name: "distribution_id",
+      }),
+    })
+  })
+})
+
+describe("distribution schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects duplicate distribution codes ignoring case", async () => {
+    await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expectConstraintError(
+      db.insert(distribution).values({
+        code: "STANDARD-CIRCULATION",
+        name: "Duplicate Standard circulation",
+      }),
+      distributionSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("rejects deleting a distribution while a coin still references it", async () => {
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await createCoin({
+      title: "Distribution Restrict Delete Coin",
+      issuerId: athens.id,
+      distributionId: standardCirculation.id,
+      createdAt: new Date("2026-05-31T00:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db
+        .delete(distribution)
+        .where(sql`${distribution.id} = ${standardCirculation.id}`),
+      "coin_distribution_id_distribution_id_fk",
+      "23503"
+    )
   })
 })
 

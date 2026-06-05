@@ -5,6 +5,7 @@ import {
   createCoin,
   createCoinReference,
   createCoinRuler,
+  createDistribution,
   createIssuer,
   createRuler,
   createRulerGroup,
@@ -94,9 +95,14 @@ describe("getCoins integration", () => {
       name: "Athens",
       parentIssuerId: ancientWorld.id,
     })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
     const createdAt = new Date("2026-05-01T00:00:00.000Z")
     const coin = await createCoin({
       title: "Ungrouped Civic Issue",
+      distributionId: standardCirculation.id,
       issuerId: athens.id,
       createdAt,
     })
@@ -107,6 +113,13 @@ describe("getCoins integration", () => {
         title: "Ungrouped Civic Issue",
         createdAt,
         updatedAt: createdAt,
+        distribution: {
+          id: standardCirculation.id,
+          code: "standard-circulation",
+          name: "Standard circulation",
+          createdAt: standardCirculation.createdAt,
+          updatedAt: standardCirculation.updatedAt,
+        },
         issuer: {
           id: athens.id,
           code: "athens",
@@ -132,6 +145,10 @@ describe("getCoins integration", () => {
       code: "spain",
       name: "Spain",
     })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
     const standardCatalog = await createCatalogue({
       code: "KM",
       title: "Standard Catalog of World Coins",
@@ -143,6 +160,7 @@ describe("getCoins integration", () => {
     const createdAt = new Date("2026-05-01T00:00:00.000Z")
     const coin = await createCoin({
       title: "Catalogue Reference Test Issue",
+      distributionId: standardCirculation.id,
       issuerId: spain.id,
       createdAt,
     })
@@ -164,6 +182,13 @@ describe("getCoins integration", () => {
         title: "Catalogue Reference Test Issue",
         createdAt,
         updatedAt: createdAt,
+        distribution: {
+          id: standardCirculation.id,
+          code: "standard-circulation",
+          name: "Standard circulation",
+          createdAt: standardCirculation.createdAt,
+          updatedAt: standardCirculation.updatedAt,
+        },
         issuer: {
           id: spain.id,
           code: "spain",
@@ -333,6 +358,10 @@ describe("getCoins integration", () => {
       code: "spain",
       name: "Spain",
     })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
     const bourbon = await createRulerGroup({
       code: "house-of-bourbon",
       name: "House of Bourbon",
@@ -354,6 +383,7 @@ describe("getCoins integration", () => {
     const createdAt = new Date("2026-05-02T00:00:00.000Z")
     const coin = await createCoin({
       title: "Attribution Test Issue",
+      distributionId: standardCirculation.id,
       issuerId: spain.id,
       createdAt,
     })
@@ -380,6 +410,13 @@ describe("getCoins integration", () => {
         title: "Attribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        distribution: {
+          id: standardCirculation.id,
+          code: "standard-circulation",
+          name: "Standard circulation",
+          createdAt: standardCirculation.createdAt,
+          updatedAt: standardCirculation.updatedAt,
+        },
         issuer: {
           id: spain.id,
           code: "spain",
@@ -669,5 +706,49 @@ describe("getCoins integration", () => {
         coins.map(({ title }) => title).join("|") ===
         ["Spanish Felipe KM 1338"].join("|")
     )
+  })
+
+  it("returns the required nested distribution for each coin", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const createdAt = new Date("2026-05-01T00:00:00.000Z")
+    const coin = await createCoin({
+      title: "Distribution Test Issue",
+      issuerId: spain.id,
+      distributionId: standardCirculation.id,
+      createdAt,
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+      {
+        id: coin.id,
+        title: "Distribution Test Issue",
+        createdAt,
+        updatedAt: createdAt,
+        distribution: {
+          id: standardCirculation.id,
+          code: "standard-circulation",
+          name: "Standard circulation",
+          createdAt: standardCirculation.createdAt,
+          updatedAt: standardCirculation.updatedAt,
+        },
+        issuer: {
+          id: spain.id,
+          code: "spain",
+          name: "Spain",
+          createdAt: spain.createdAt,
+          updatedAt: spain.updatedAt,
+          parent: null,
+        },
+        references: [],
+        rulers: [],
+      },
+    ])
   })
 })

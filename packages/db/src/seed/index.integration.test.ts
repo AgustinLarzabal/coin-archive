@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
+import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { seedDatabase } from "./index"
 
@@ -21,9 +22,19 @@ describe("seed integration", () => {
       .select({ count: count() })
       .from(coinReference)
       .where(eq(coinReference.number, "1338A"))
+    const [standardCirculationCount] = await db
+      .select({ count: count() })
+      .from(distribution)
+      .where(eq(distribution.code, "standard-circulation"))
+    const [circulatingCommemorativeCount] = await db
+      .select({ count: count() })
+      .from(distribution)
+      .where(eq(distribution.code, "circulating-commemorative"))
 
     expect(kmCatalogueCount?.count).toBe(1)
     expect(kmReferenceCount?.count).toBe(1)
+    expect(standardCirculationCount?.count).toBe(1)
+    expect(circulatingCommemorativeCount?.count).toBe(1)
 
     const seededCoin = (await getCoins({ limit: 10 })).find(
       ({ title }) => title === "Seed Coin 06"
@@ -31,6 +42,10 @@ describe("seed integration", () => {
 
     expect(seededCoin).toMatchObject({
       title: "Seed Coin 06",
+      distribution: {
+        code: "standard-circulation",
+        name: "Standard circulation",
+      },
       references: [
         {
           type: "catalogue",

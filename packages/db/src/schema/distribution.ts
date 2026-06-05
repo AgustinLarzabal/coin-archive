@@ -1,0 +1,52 @@
+import { sql } from "drizzle-orm"
+import {
+  check,
+  index,
+  pgTable,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core"
+
+export const distributionSchemaNames = {
+  codeLowerUniqueIndex: "distribution_code_lower_unique_idx",
+  codeLookupIndex: "distribution_code_lookup_idx",
+  codeSlugCheck: "distribution_code_slug_check",
+} as const
+
+const timestamptzDateColumn = {
+  withTimezone: true,
+  mode: "date",
+} as const
+
+export const distribution = pgTable(
+  "distribution",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    code: varchar("code", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", timestamptzDateColumn)
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", timestamptzDateColumn)
+      .notNull()
+      .defaultNow(),
+  },
+  (distribution) => [
+    uniqueIndex(distributionSchemaNames.codeLowerUniqueIndex).on(
+      sql`lower(${distribution.code})`
+    ),
+    index(distributionSchemaNames.codeLookupIndex).on(
+      sql`lower(${distribution.code})`
+    ),
+    check(
+      distributionSchemaNames.codeSlugCheck,
+      sql`${distribution.code} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`
+    ),
+  ]
+)
+
+export type Distribution = typeof distribution.$inferSelect

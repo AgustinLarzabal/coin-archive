@@ -1,3 +1,11 @@
+type GetCoinsDistributionColumns = {
+  distributionId: string
+  distributionCode: string
+  distributionName: string
+  distributionCreatedAt: Date
+  distributionUpdatedAt: Date
+}
+
 type GetCoinsIssuerColumns = {
   issuerId: string
   issuerCode: string
@@ -43,7 +51,8 @@ export type GetCoinsRow = {
   title: string
   createdAt: Date
   updatedAt: Date
-} & GetCoinsIssuerColumns &
+} & GetCoinsDistributionColumns &
+  GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
   GetCoinsReferenceColumns
 
@@ -75,6 +84,14 @@ type GetCoinsCatalogueColumns = Pick<
 >
 
 export type CoinIssuerParent = {
+  id: string
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type CoinDistribution = {
   id: string
   code: string
   name: string
@@ -144,9 +161,26 @@ type CoinRecordBase = Pick<
 >
 
 export type CoinRecord = CoinRecordBase & {
+  distribution: CoinDistribution
   issuer: CoinIssuer
   rulers: CoinRuler[]
   references: CoinCatalogueReference[]
+}
+
+function mapDistribution({
+  distributionId,
+  distributionCode,
+  distributionName,
+  distributionCreatedAt,
+  distributionUpdatedAt,
+}: GetCoinsDistributionColumns): CoinDistribution {
+  return {
+    id: distributionId,
+    code: distributionCode,
+    name: distributionName,
+    createdAt: distributionCreatedAt,
+    updatedAt: distributionUpdatedAt,
+  }
 }
 
 function mapParentIssuer({
@@ -344,6 +378,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    distribution: mapDistribution(row),
     issuer: {
       id: row.issuerId,
       code: row.issuerCode,

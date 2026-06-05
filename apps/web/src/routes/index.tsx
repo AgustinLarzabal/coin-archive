@@ -19,7 +19,7 @@ import {
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
-import type { CoinSearchFilterName } from "../lib/coin-search"
+import type { CoinSearch, TextCoinSearchFilterName } from "../lib/coin-search"
 
 import {
   Combobox,
@@ -61,6 +61,18 @@ function parseYearFilterValue(value: FormDataEntryValue | null) {
   }
 
   return Number.parseInt(trimmedValue, 10)
+}
+
+function updateParsedYearFilter(
+  currentSearch: CoinSearch,
+  filterName: "fromYear" | "toYear",
+  filterValue: number | undefined | null
+) {
+  if (filterValue === null) {
+    return currentSearch
+  }
+
+  return updateCoinSearchFilter(currentSearch, filterName, filterValue)
 }
 
 const getCoinListData = createServerFn({ method: "GET" })
@@ -124,7 +136,7 @@ function App() {
     rulers.find((ruler) => ruler.code === selectedRulerCode) ?? null
 
   async function updateSearchFilter(
-    filterName: CoinSearchFilterName,
+    filterName: TextCoinSearchFilterName,
     filterValue: string | undefined
   ) {
     await navigate({
@@ -134,7 +146,7 @@ function App() {
   }
 
   function createSelectHandler<T extends OptionWithCode>(
-    filterName: CoinSearchFilterName
+    filterName: TextCoinSearchFilterName
   ) {
     return async (option: T | null) =>
       updateSearchFilter(filterName, option?.code)
@@ -158,23 +170,12 @@ function App() {
     const parsedToYear = parseYearFilterValue(formData.get("toYear"))
 
     await navigate({
-      search: (currentSearch) => {
-        let nextSearch = currentSearch
-
-        if (parsedFromYear !== null) {
-          nextSearch = updateCoinSearchFilter(
-            nextSearch,
-            "fromYear",
-            parsedFromYear
-          )
-        }
-
-        if (parsedToYear !== null) {
-          nextSearch = updateCoinSearchFilter(nextSearch, "toYear", parsedToYear)
-        }
-
-        return nextSearch
-      },
+      search: (currentSearch) =>
+        updateParsedYearFilter(
+          updateParsedYearFilter(currentSearch, "fromYear", parsedFromYear),
+          "toYear",
+          parsedToYear
+        ),
     })
   }
 
@@ -276,7 +277,10 @@ function App() {
         value={selectedReferenceNumber ?? ""}
       />
 
-      <form className="flex items-end gap-2 py-2" onSubmit={updateIssueYearRange}>
+      <form
+        className="flex items-end gap-2 py-2"
+        onSubmit={updateIssueYearRange}
+      >
         <Input
           aria-label="Filter from issue year"
           defaultValue={selectedFromYear?.toString() ?? ""}
@@ -293,7 +297,10 @@ function App() {
           placeholder="To year"
           type="number"
         />
-        <button className="rounded border border-border px-3 py-2" type="submit">
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
           Apply years
         </button>
       </form>

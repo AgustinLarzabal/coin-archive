@@ -6,13 +6,19 @@ import type {
 import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
-const optionalIntegerSchema = z.preprocess((value) => {
+
+function normalizeOptionalIntegerInput(value: unknown) {
   if (typeof value === "string" && value.trim() === "") {
     return undefined
   }
 
   return value
-}, z.coerce.number().int().optional())
+}
+
+const optionalIntegerSchema = z.preprocess(
+  normalizeOptionalIntegerInput,
+  z.coerce.number().int().optional()
+)
 
 export const coinSearchSchema = z.object({
   catalogue: optionalStringSchema,
@@ -37,6 +43,10 @@ export const coinListInputSchema = z.object({
 export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
+export type TextCoinSearchFilterName = Exclude<
+  CoinSearchFilterName,
+  "fromYear" | "toYear"
+>
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">

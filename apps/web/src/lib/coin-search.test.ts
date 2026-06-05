@@ -97,6 +97,22 @@ describe("updateCoinSearchFilter", () => {
       })
     }
   )
+
+  it.each<["" | undefined]>([[undefined], [""]])(
+    "clears the toYear filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "toYear", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        distribution: "circulating-commemorative",
+        fromYear: 1898,
+        issuer: "spain",
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+      })
+    }
+  )
 })
 
 describe("coinSearchSchema", () => {
@@ -119,6 +135,18 @@ describe("coinSearchSchema", () => {
       referenceNumber: "1338A",
       ruler: "felipe-vi",
       toYear: 1902,
+    })
+  })
+
+  it("treats blank issue year params as undefined", () => {
+    expect(
+      coinSearchSchema.parse({
+        fromYear: "",
+        toYear: "  ",
+      })
+    ).toStrictEqual({
+      fromYear: undefined,
+      toYear: undefined,
     })
   })
 })

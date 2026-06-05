@@ -82,6 +82,10 @@ type CoinFilterOptions = Pick<
   | "toYear"
 >
 
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined
+}
+
 function buildCoinFilter({
   distributionCode,
   fromYear,
@@ -91,38 +95,19 @@ function buildCoinFilter({
   referenceNumber,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
-  const filters: SQL[] = []
-  const distributionFilter = buildDistributionFilter(distributionCode)
-
-  if (distributionFilter !== undefined) {
-    filters.push(distributionFilter)
-  }
-
-  if (issuerCode !== undefined) {
-    filters.push(buildIssuerTreeFilter(issuerCode))
-  }
-
-  if (rulerCode !== undefined) {
-    filters.push(buildRulerFilter(rulerCode))
-  }
-
-  const catalogueReferenceFilter = buildCatalogueReferenceFilter({
-    catalogueCode,
-    referenceNumber,
-  })
-
-  if (catalogueReferenceFilter !== undefined) {
-    filters.push(catalogueReferenceFilter)
-  }
-
-  const issueYearRangeFilter = buildIssueYearRangeFilter({
-    fromYear,
-    toYear,
-  })
-
-  if (issueYearRangeFilter !== undefined) {
-    filters.push(issueYearRangeFilter)
-  }
+  const filters = [
+    buildDistributionFilter(distributionCode),
+    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
+    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
+    buildCatalogueReferenceFilter({
+      catalogueCode,
+      referenceNumber,
+    }),
+    buildIssueYearRangeFilter({
+      fromYear,
+      toYear,
+    }),
+  ].filter(isDefined)
 
   if (filters.length === 0) {
     return undefined
@@ -281,15 +266,9 @@ function buildIssueYearRangeFilter({
   const filters = [
     sql`${coin.minYear} is not null`,
     sql`${coin.maxYear} is not null`,
-  ]
-
-  if (fromYear !== undefined) {
-    filters.push(sql`${coin.maxYear} >= ${fromYear}`)
-  }
-
-  if (toYear !== undefined) {
-    filters.push(sql`${coin.minYear} <= ${toYear}`)
-  }
+    fromYear === undefined ? undefined : sql`${coin.maxYear} >= ${fromYear}`,
+    toYear === undefined ? undefined : sql`${coin.minYear} <= ${toYear}`,
+  ].filter(isDefined)
 
   return and(...filters)!
 }

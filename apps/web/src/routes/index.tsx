@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import type {
   CatalogueOption,
+  CoinIssueYearRange,
   DistributionOption,
   IssuerOption,
   RulerOption,
@@ -31,9 +32,7 @@ import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
 
-function formatIssueYearRange(
-  issueYearRange: { minYear: number; maxYear: number } | null
-) {
+function formatIssueYearRange(issueYearRange: CoinIssueYearRange | null) {
   if (!issueYearRange) {
     return "Issue years unknown"
   }

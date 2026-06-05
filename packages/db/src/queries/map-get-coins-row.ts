@@ -175,6 +175,20 @@ export type CoinRecord = CoinRecordBase & {
   references: CoinCatalogueReference[]
 }
 
+function mapIssueYearRange({
+  minYear,
+  maxYear,
+}: Pick<GetCoinsRow, "minYear" | "maxYear">): CoinIssueYearRange | null {
+  if (minYear === null || maxYear === null) {
+    return null
+  }
+
+  return {
+    minYear,
+    maxYear,
+  }
+}
+
 function mapDistribution({
   distributionId,
   distributionCode,
@@ -404,13 +418,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    issueYearRange:
-      row.minYear === null || row.maxYear === null
-        ? null
-        : {
-            minYear: row.minYear,
-            maxYear: row.maxYear,
-          },
+    issueYearRange: mapIssueYearRange(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
     rulers: [],

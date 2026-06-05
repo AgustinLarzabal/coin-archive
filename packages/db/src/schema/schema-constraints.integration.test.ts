@@ -45,6 +45,49 @@ async function expectConstraintError(
   })
 }
 
+async function createCoinDependencies() {
+  const [createdIssuer, createdDistribution] = await Promise.all([
+    createIssuer({
+      code: "athens",
+      name: "Athens",
+    }),
+    createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    }),
+  ])
+
+  return {
+    distributionId: createdDistribution.id,
+    issuerId: createdIssuer.id,
+  }
+}
+
+function insertCoinWithPartialIssueYearRange(input: {
+  distributionId: string
+  issuerId: string
+  minYear?: number
+  maxYear?: number
+  title: string
+}) {
+  return db.execute(sql`
+    insert into "coin" (
+      "title",
+      "issuer_id",
+      "distribution_id",
+      "min_year",
+      "max_year"
+    )
+    values (
+      ${input.title},
+      ${input.issuerId},
+      ${input.distributionId},
+      ${input.minYear ?? null},
+      ${input.maxYear ?? null}
+    )
+  `)
+}
+
 describe("issuer schema constraints", () => {
   useTestDatabaseIsolation(db)
 
@@ -137,40 +180,26 @@ describe("coin schema constraints", () => {
   })
 
   it("allows coins with an unknown issue year range", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expect(
       createCoin({
         title: "Unknown Issue Year Range Coin",
-        issuerId: athens.id,
-        distributionId: standardCirculation.id,
+        issuerId,
+        distributionId,
         createdAt: new Date("2026-06-01T00:00:00.000Z"),
       })
     ).resolves.toBeDefined()
   })
 
   it("allows coins with a closed issue year range, including astronomical integer years", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expect(
       createCoin({
         title: "Single Year Range Coin",
-        issuerId: athens.id,
-        distributionId: standardCirculation.id,
+        issuerId,
+        distributionId,
         minYear: 1900,
         maxYear: 1900,
         createdAt: new Date("2026-06-02T00:00:00.000Z"),
@@ -179,20 +208,13 @@ describe("coin schema constraints", () => {
   })
 
   it("allows negative and zero astronomical issue years when the range is otherwise valid", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expect(
       createCoin({
         title: "Astronomical Year Range Coin",
-        issuerId: athens.id,
-        distributionId: standardCirculation.id,
+        issuerId,
+        distributionId,
         minYear: -1,
         maxYear: 0,
         createdAt: new Date("2026-06-02T12:00:00.000Z"),
@@ -201,80 +223,43 @@ describe("coin schema constraints", () => {
   })
 
   it("rejects coins with only min_year present", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expectConstraintError(
-      db.execute(sql`
-        insert into "coin" (
-          "title",
-          "issuer_id",
-          "distribution_id",
-          "min_year"
-        )
-        values (
-          ${"Half Entered Range Coin"},
-          ${athens.id},
-          ${standardCirculation.id},
-          ${1900}
-        )
-      `),
+      insertCoinWithPartialIssueYearRange({
+        title: "Half Entered Range Coin",
+        issuerId,
+        distributionId,
+        minYear: 1900,
+      }),
       coinSchemaNames.issueYearRangeClosedCheck,
       "23514"
     )
   })
 
   it("rejects coins with only max_year present", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expectConstraintError(
-      db.execute(sql`
-        insert into "coin" (
-          "title",
-          "issuer_id",
-          "distribution_id",
-          "max_year"
-        )
-        values (
-          ${"Half Entered Max Range Coin"},
-          ${athens.id},
-          ${standardCirculation.id},
-          ${1900}
-        )
-      `),
+      insertCoinWithPartialIssueYearRange({
+        title: "Half Entered Max Range Coin",
+        issuerId,
+        distributionId,
+        maxYear: 1900,
+      }),
       coinSchemaNames.issueYearRangeClosedCheck,
       "23514"
     )
   })
 
   it("rejects coins whose issue year range runs backwards", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const { distributionId, issuerId } = await createCoinDependencies()
 
     await expectConstraintError(
       createCoin({
         title: "Backwards Range Coin",
-        issuerId: athens.id,
-        distributionId: standardCirculation.id,
+        issuerId,
+        distributionId,
         minYear: 1901,
         maxYear: 1900,
         createdAt: new Date("2026-06-03T00:00:00.000Z"),

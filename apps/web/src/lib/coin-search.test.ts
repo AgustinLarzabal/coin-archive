@@ -11,17 +11,17 @@ import {
   updateCoinSearchFilter,
 } from "./coin-search"
 
-describe("updateCoinSearchFilter", () => {
-  const currentSearch = {
-    catalogue: "km",
-    distribution: "circulating-commemorative",
-    fromYear: 1898,
-    issuer: "spain",
-    referenceNumber: "1338",
-    ruler: "felipe-vi",
-    toYear: 1902,
-  }
+const currentSearch = {
+  catalogue: "km",
+  distribution: "circulating-commemorative",
+  fromYear: 1898,
+  issuer: "spain",
+  referenceNumber: "1338",
+  ruler: "felipe-vi",
+  toYear: 1902,
+}
 
+describe("updateCoinSearchFilter", () => {
   it("clears only the selected filter and preserves unrelated search params", () => {
     expect(
       updateCoinSearchFilter(currentSearch, "issuer", undefined)
@@ -117,16 +117,6 @@ describe("updateCoinSearchFilter", () => {
 })
 
 describe("applyIssueYearRangeSearch", () => {
-  const currentSearch = {
-    catalogue: "km",
-    distribution: "circulating-commemorative",
-    fromYear: 1898,
-    issuer: "spain",
-    referenceNumber: "1338",
-    ruler: "felipe-vi",
-    toYear: 1902,
-  }
-
   it("applies open and full issue year windows while preserving unrelated filters", () => {
     expect(
       applyIssueYearRangeSearch(currentSearch, {

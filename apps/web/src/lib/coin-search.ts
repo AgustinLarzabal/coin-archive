@@ -43,16 +43,18 @@ export const coinListInputSchema = z.object({
 export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
+export type IssueYearFilterName = keyof Pick<CoinSearch, "fromYear" | "toYear">
 export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
   "fromYear" | "toYear"
 >
-export type RawIssueYearFilterValue =
-  | File
-  | number
-  | string
+export type IssueYearFilterValue =
+  | CoinSearch[IssueYearFilterName]
+  | FormDataEntryValue
   | null
   | undefined
+
+const issueYearFilterNames = ["fromYear", "toYear"] as const
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
@@ -120,7 +122,7 @@ export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
   return nextSearch
 }
 
-function parseIssueYearFilterValue(value: RawIssueYearFilterValue) {
+function parseIssueYearFilterValue(value: IssueYearFilterValue) {
   if (typeof value === "number") {
     return Number.isInteger(value) ? value : null
   }
@@ -144,21 +146,22 @@ function parseIssueYearFilterValue(value: RawIssueYearFilterValue) {
 
 export function applyIssueYearRangeSearch(
   currentSearch: CoinSearch,
-  yearRange: {
-    fromYear: RawIssueYearFilterValue
-    toYear: RawIssueYearFilterValue
-  }
-) {
-  const parsedFromYear = parseIssueYearFilterValue(yearRange.fromYear)
-  const parsedToYear = parseIssueYearFilterValue(yearRange.toYear)
+  yearRange: Record<IssueYearFilterName, IssueYearFilterValue>
+): CoinSearch {
   let nextSearch = currentSearch
 
-  if (parsedFromYear !== null) {
-    nextSearch = updateCoinSearchFilter(nextSearch, "fromYear", parsedFromYear)
-  }
+  for (const filterName of issueYearFilterNames) {
+    const parsedFilterValue = parseIssueYearFilterValue(yearRange[filterName])
 
-  if (parsedToYear !== null) {
-    nextSearch = updateCoinSearchFilter(nextSearch, "toYear", parsedToYear)
+    if (parsedFilterValue === null) {
+      continue
+    }
+
+    nextSearch = updateCoinSearchFilter(
+      nextSearch,
+      filterName,
+      parsedFilterValue
+    )
   }
 
   return nextSearch

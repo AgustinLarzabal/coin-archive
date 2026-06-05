@@ -183,15 +183,11 @@ export function getRulerOptionLabel(ruler: RulerOptionLabel) {
 }
 
 function formatAstronomicalYear(year: number) {
-  if (year > 0) {
-    return `${year} CE`
-  }
+  const isCommonEra = year > 0
+  const yearLabel = isCommonEra ? year : 1 - year
+  const eraLabel = isCommonEra ? "CE" : "BCE"
 
-  if (year === 0) {
-    return "1 BCE"
-  }
-
-  return `${Math.abs(year) + 1} BCE`
+  return `${yearLabel} ${eraLabel}`
 }
 
 export function formatIssueYearRangeLabel(
@@ -201,10 +197,11 @@ export function formatIssueYearRangeLabel(
     return "Issue years unknown"
   }
 
-  const minYearLabel = formatAstronomicalYear(issueYearRange.minYear)
-  const maxYearLabel = formatAstronomicalYear(issueYearRange.maxYear)
+  const { minYear, maxYear } = issueYearRange
+  const minYearLabel = formatAstronomicalYear(minYear)
+  const maxYearLabel = formatAstronomicalYear(maxYear)
 
-  if (issueYearRange.minYear === issueYearRange.maxYear) {
+  if (minYear === maxYear) {
     return `Issue year ${minYearLabel}`
   }
 

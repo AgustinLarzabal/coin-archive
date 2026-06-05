@@ -258,28 +258,29 @@ describe("getCoinListLoaderDeps", () => {
 })
 
 describe("formatIssueYearRangeLabel", () => {
-  it("formats astronomical issue years into human-readable BCE and CE labels", () => {
-    expect(
-      formatIssueYearRangeLabel({
-        minYear: -43,
-        maxYear: -43,
-      })
-    ).toBe("Issue year 44 BCE")
-
-    expect(
-      formatIssueYearRangeLabel({
-        minYear: -1,
-        maxYear: 0,
-      })
-    ).toBe("Issue years 2 BCE to 1 BCE")
-
-    expect(
-      formatIssueYearRangeLabel({
-        minYear: 1898,
-        maxYear: 1902,
-      })
-    ).toBe("Issue years 1898 CE to 1902 CE")
-  })
+  it.each([
+    [
+      { minYear: -43, maxYear: -43 },
+      "Issue year 44 BCE",
+    ],
+    [
+      { minYear: -1, maxYear: 0 },
+      "Issue years 2 BCE to 1 BCE",
+    ],
+    [
+      { minYear: 1, maxYear: 1 },
+      "Issue year 1 CE",
+    ],
+    [
+      { minYear: 1898, maxYear: 1902 },
+      "Issue years 1898 CE to 1902 CE",
+    ],
+  ])(
+    "formats astronomical issue years into human-readable BCE and CE labels for %j",
+    (issueYearRange, expectedLabel) => {
+      expect(formatIssueYearRangeLabel(issueYearRange)).toBe(expectedLabel)
+    }
+  )
 
   it("keeps the unknown issue year copy when no range is stored", () => {
     expect(formatIssueYearRangeLabel(null)).toBe("Issue years unknown")

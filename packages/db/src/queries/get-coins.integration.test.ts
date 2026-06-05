@@ -353,6 +353,128 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters coins by exact distribution code and composes with issuer, ruler, catalogue, and reference number filters", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const circulatingCommemorative = await createDistribution({
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    })
+    const standardCatalog = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+    })
+
+    const matchingCoin = await createCoin({
+      title: "Spanish Circulating Commemorative Match",
+      distributionId: circulatingCommemorative.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    const wrongDistributionCoin = await createCoin({
+      title: "Spanish Standard Circulation",
+      distributionId: standardCirculation.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    const wrongIssuerCoin = await createCoin({
+      title: "French Circulating Commemorative",
+      distributionId: circulatingCommemorative.id,
+      issuerId: france.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+    const wrongRulerCoin = await createCoin({
+      title: "Spanish Commemorative Without Ruler",
+      distributionId: circulatingCommemorative.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-07T00:00:00.000Z"),
+    })
+    const wrongReferenceCoin = await createCoin({
+      title: "Spanish Commemorative Wrong Reference",
+      distributionId: circulatingCommemorative.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: matchingCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: wrongDistributionCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+
+    await createCoinReference({
+      coinId: matchingCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: wrongDistributionCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: wrongIssuerCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: wrongRulerCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: wrongReferenceCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "2000",
+    })
+
+    await expect(
+      getCoins({
+        distributionCode: "circulating-commemorative",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      [
+        "Spanish Circulating Commemorative Match",
+        "French Circulating Commemorative",
+        "Spanish Commemorative Without Ruler",
+        "Spanish Commemorative Wrong Reference",
+      ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        distributionCode: "circulating-commemorative",
+        issuerCode: "spain",
+        rulerCode: "felipe-vi",
+        catalogueCode: "km",
+        referenceNumber: "1338",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Circulating Commemorative Match"].join("|")
+    )
+  })
+
   it("returns full linked ruler data in ruler attribution order", async () => {
     const spain = await createIssuer({
       code: "spain",

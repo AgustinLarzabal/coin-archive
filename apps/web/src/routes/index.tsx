@@ -1,11 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import type { CatalogueOption, IssuerOption, RulerOption } from "@workspace/db"
+import type {
+  CatalogueOption,
+  DistributionOption,
+  IssuerOption,
+  RulerOption,
+} from "@workspace/db"
 import {
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
+  findSelectedDistributionOption,
   getCatalogueOptionLabel,
+  getDistributionOptionLabel,
   getCoinListLoaderDeps,
   getRulerOptionLabel,
   updateCoinSearchFilter,
@@ -25,22 +32,25 @@ import { Input } from "@workspace/ui/components/input"
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const { getCatalogues, getCoins, getIssuers, getRulers } =
+    const { getCatalogues, getCoins, getDistributions, getIssuers, getRulers } =
       await import("@workspace/db")
 
-    const [coins, catalogues, issuers, rulers] = await Promise.all([
+    const [coins, catalogues, distributions, issuers, rulers] =
+      await Promise.all([
       getCoins({
         catalogueCode: data.catalogueCode,
+        distributionCode: data.distributionCode,
         issuerCode: data.issuerCode,
         referenceNumber: data.referenceNumber,
         rulerCode: data.rulerCode,
       }),
       getCatalogues(),
+      getDistributions(),
       getIssuers(),
       getRulers(),
     ])
 
-    return { coins, catalogues, issuers, rulers }
+    return { coins, catalogues, distributions, issuers, rulers }
   })
 
 export const Route = createFileRoute("/")({
@@ -51,9 +61,11 @@ export const Route = createFileRoute("/")({
 })
 
 function App() {
-  const { coins, catalogues, issuers, rulers } = Route.useLoaderData()
+  const { coins, catalogues, distributions, issuers, rulers } =
+    Route.useLoaderData()
   const {
     catalogue: selectedCatalogueCode,
+    distribution: selectedDistributionCode,
     issuer: selectedIssuerCode,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
@@ -63,6 +75,10 @@ function App() {
   const selectedCatalogue = findSelectedCatalogueOption(
     catalogues,
     selectedCatalogueCode
+  )
+  const selectedDistribution = findSelectedDistributionOption(
+    distributions,
+    selectedDistributionCode
   )
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
@@ -85,6 +101,10 @@ function App() {
 
   async function selectCatalogue(catalogue: CatalogueOption | null) {
     await updateSearchFilter("catalogue", catalogue?.code)
+  }
+
+  async function selectDistribution(distribution: DistributionOption | null) {
+    await updateSearchFilter("distribution", distribution?.code)
   }
 
   async function updateReferenceNumber(referenceNumber: string) {
@@ -154,6 +174,31 @@ function App() {
               <ComboboxItem key={catalogue.code} value={catalogue}>
                 <span>{catalogue.title}</span>
                 <span className="text-muted-foreground">{catalogue.code}</span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+
+      <Combobox<DistributionOption>
+        items={distributions}
+        value={selectedDistribution}
+        itemToStringLabel={getDistributionOptionLabel}
+        isItemEqualToValue={(distribution, value) =>
+          distribution.code === value.code
+        }
+        onValueChange={selectDistribution}
+      >
+        <ComboboxInput placeholder="Filter by distribution" showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No distributions found.</ComboboxEmpty>
+          <ComboboxList>
+            {(distribution: DistributionOption) => (
+              <ComboboxItem key={distribution.code} value={distribution}>
+                <span>{distribution.name}</span>
+                <span className="text-muted-foreground">
+                  {distribution.code}
+                </span>
               </ComboboxItem>
             )}
           </ComboboxList>

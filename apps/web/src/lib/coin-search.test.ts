@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest"
 import {
   coinSearchSchema,
   findSelectedCatalogueOption,
+  findSelectedDistributionOption,
   getCatalogueOptionLabel,
+  getDistributionOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "./coin-search"
@@ -11,6 +13,7 @@ import {
 describe("updateCoinSearchFilter", () => {
   const currentSearch = {
     catalogue: "km",
+    distribution: "circulating-commemorative",
     issuer: "spain",
     referenceNumber: "1338",
     ruler: "felipe-vi",
@@ -21,10 +24,25 @@ describe("updateCoinSearchFilter", () => {
       updateCoinSearchFilter(currentSearch, "issuer", undefined)
     ).toStrictEqual({
       catalogue: "km",
+      distribution: "circulating-commemorative",
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
   })
+
+  it.each([undefined, ""])(
+    "clears the distribution filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "distribution", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        issuer: "spain",
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+      })
+    }
+  )
 
   it.each([undefined, ""])(
     "clears the ruler filter without removing the issuer filter when the value is %p",
@@ -33,6 +51,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "ruler", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        distribution: "circulating-commemorative",
         issuer: "spain",
         referenceNumber: "1338",
       })
@@ -46,6 +65,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "referenceNumber", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        distribution: "circulating-commemorative",
         issuer: "spain",
         ruler: "felipe-vi",
       })
@@ -58,12 +78,14 @@ describe("coinSearchSchema", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
+        distribution: "circulating-commemorative",
         issuer: "spain",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
       })
     ).toStrictEqual({
       catalogue: "km",
+      distribution: "circulating-commemorative",
       issuer: "spain",
       referenceNumber: "1338A",
       ruler: "felipe-vi",
@@ -72,16 +94,18 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         catalogue: "km",
+        distribution: "circulating-commemorative",
         issuer: "spain",
         referenceNumber: "1338",
         ruler: "felipe-vi",
       })
     ).toStrictEqual({
       catalogueCode: "km",
+      distributionCode: "circulating-commemorative",
       issuerCode: "spain",
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
@@ -100,6 +124,17 @@ describe("getCatalogueOptionLabel", () => {
   })
 })
 
+describe("getDistributionOptionLabel", () => {
+  it("includes distribution name and code so combobox search can match both", () => {
+    expect(
+      getDistributionOptionLabel({
+        code: "circulating-commemorative",
+        name: "Circulating commemorative",
+      })
+    ).toBe("Circulating commemorative · circulating-commemorative")
+  })
+})
+
 describe("findSelectedCatalogueOption", () => {
   it("matches the selected catalogue code case-insensitively", () => {
     const standardCatalog = {
@@ -110,5 +145,21 @@ describe("findSelectedCatalogueOption", () => {
     expect(findSelectedCatalogueOption([standardCatalog], "km")).toStrictEqual(
       standardCatalog
     )
+  })
+})
+
+describe("findSelectedDistributionOption", () => {
+  it("matches the selected distribution code case-insensitively", () => {
+    const circulatingCommemorative = {
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    }
+
+    expect(
+      findSelectedDistributionOption(
+        [circulatingCommemorative],
+        "CIRCULATING-COMMEMORATIVE"
+      )
+    ).toStrictEqual(circulatingCommemorative)
   })
 })

@@ -58,6 +58,7 @@ const getCoinsSelection = {
 
 export type GetCoinsOptions = {
   limit?: number
+  distributionCode?: string
   issuerCode?: string
   rulerCode?: string
   catalogueCode?: string
@@ -66,16 +67,24 @@ export type GetCoinsOptions = {
 
 type CoinFilterOptions = Pick<
   GetCoinsOptions,
-  "issuerCode" | "rulerCode" | "catalogueCode" | "referenceNumber"
+  | "distributionCode"
+  | "issuerCode"
+  | "rulerCode"
+  | "catalogueCode"
+  | "referenceNumber"
 >
 
 function buildCoinFilter({
+  distributionCode,
   issuerCode,
   rulerCode,
   catalogueCode,
   referenceNumber,
 }: CoinFilterOptions): SQL | undefined {
   const filters = [
+    distributionCode === undefined
+      ? undefined
+      : buildDistributionFilter(distributionCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
     rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
@@ -115,6 +124,16 @@ function buildLimitedCoinsQuery(
   }
 
   return baseQuery.where(filter).as("limited_coins")
+}
+
+function buildDistributionFilter(distributionCode: string): SQL {
+  return sql`
+    ${coin.distributionId} in (
+      select ${distribution.id}
+      from "distribution"
+      where lower(${distribution.code}) = ${distributionCode.trim().toLowerCase()}
+    )
+  `
 }
 
 function buildIssuerTreeFilter(issuerCode: string): SQL {

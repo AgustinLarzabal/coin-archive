@@ -9,6 +9,7 @@ import type {
   RulerOption,
 } from "@workspace/db"
 import {
+  applyIssueYearRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
@@ -19,7 +20,7 @@ import {
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
-import type { CoinSearch, TextCoinSearchFilterName } from "../lib/coin-search"
+import type { TextCoinSearchFilterName } from "../lib/coin-search"
 
 import {
   Combobox,
@@ -43,36 +44,6 @@ function formatIssueYearRange(issueYearRange: CoinIssueYearRange | null) {
   }
 
   return `Issue years ${issueYearRange.minYear} to ${issueYearRange.maxYear}`
-}
-
-function parseYearFilterValue(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return undefined
-  }
-
-  const trimmedValue = value.trim()
-
-  if (trimmedValue === "") {
-    return undefined
-  }
-
-  if (!/^-?\d+$/.test(trimmedValue)) {
-    return null
-  }
-
-  return Number.parseInt(trimmedValue, 10)
-}
-
-function updateParsedYearFilter(
-  currentSearch: CoinSearch,
-  filterName: "fromYear" | "toYear",
-  filterValue: number | undefined | null
-) {
-  if (filterValue === null) {
-    return currentSearch
-  }
-
-  return updateCoinSearchFilter(currentSearch, filterName, filterValue)
 }
 
 const getCoinListData = createServerFn({ method: "GET" })
@@ -166,16 +137,13 @@ function App() {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
-    const parsedFromYear = parseYearFilterValue(formData.get("fromYear"))
-    const parsedToYear = parseYearFilterValue(formData.get("toYear"))
 
     await navigate({
       search: (currentSearch) =>
-        updateParsedYearFilter(
-          updateParsedYearFilter(currentSearch, "fromYear", parsedFromYear),
-          "toYear",
-          parsedToYear
-        ),
+        applyIssueYearRangeSearch(currentSearch, {
+          fromYear: formData.get("fromYear"),
+          toYear: formData.get("toYear"),
+        }),
     })
   }
 

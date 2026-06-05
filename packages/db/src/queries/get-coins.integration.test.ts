@@ -256,6 +256,68 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters issue year windows across astronomical years including negative years and 0", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+
+    await createCoin({
+      title: "Late Republic Range",
+      issuerId: rome.id,
+      minYear: -43,
+      maxYear: -40,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "BCE To CE Transition Range",
+      issuerId: rome.id,
+      minYear: -2,
+      maxYear: 1,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Early Empire Range",
+      issuerId: rome.id,
+      minYear: 5,
+      maxYear: 10,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unknown Issue Years",
+      issuerId: rome.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        fromYear: -1,
+        toYear: 0,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["BCE To CE Transition Range"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        fromYear: 0,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["BCE To CE Transition Range", "Early Empire Range"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        toYear: -40,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Late Republic Range", "BCE To CE Transition Range"].join("|")
+    )
+  })
+
   it("combines issue year range filtering with existing homepage filters using AND semantics", async () => {
     const spain = await createIssuer({
       code: "spain",
@@ -297,6 +359,220 @@ describe("getCoins integration", () => {
     ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
       coins.map(({ title }) => title).join("|") ===
       ["Spanish Overlapping Match"].join("|")
+    )
+  })
+
+  it("combines issue year range filtering with ruler filters using AND semantics", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const augustus = await createRuler({
+      code: "augustus",
+      name: "Augustus",
+    })
+    const tiberius = await createRuler({
+      code: "tiberius",
+      name: "Tiberius",
+    })
+
+    const augustusMatch = await createCoin({
+      title: "Augustus Overlapping Match",
+      issuerId: rome.id,
+      minYear: -5,
+      maxYear: 5,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    const augustusMiss = await createCoin({
+      title: "Augustus Non Overlapping",
+      issuerId: rome.id,
+      minYear: 6,
+      maxYear: 8,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const tiberiusMatch = await createCoin({
+      title: "Tiberius Overlapping",
+      issuerId: rome.id,
+      minYear: -5,
+      maxYear: 5,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: augustusMatch.id,
+      rulerId: augustus.id,
+      rulerOrder: 0,
+    })
+    await createCoinRuler({
+      coinId: augustusMiss.id,
+      rulerId: augustus.id,
+      rulerOrder: 0,
+    })
+    await createCoinRuler({
+      coinId: tiberiusMatch.id,
+      rulerId: tiberius.id,
+      rulerOrder: 0,
+    })
+
+    await expect(
+      getCoins({
+        fromYear: 0,
+        toYear: 0,
+        rulerCode: "augustus",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Augustus Overlapping Match"].join("|")
+    )
+  })
+
+  it("combines issue year range filtering with distribution filters using AND semantics", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const commemorative = await createDistribution({
+      code: "commemorative",
+      name: "Commemorative",
+    })
+
+    await createCoin({
+      title: "Circulation Overlapping Match",
+      distributionId: standardCirculation.id,
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Circulation Non Overlapping",
+      distributionId: standardCirculation.id,
+      issuerId: rome.id,
+      minYear: 1903,
+      maxYear: 1904,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Commemorative Overlapping",
+      distributionId: commemorative.id,
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        fromYear: 1900,
+        toYear: 1900,
+        distributionCode: "standard-circulation",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Circulation Overlapping Match"].join("|")
+    )
+  })
+
+  it("combines issue year range filtering with catalogue and reference number filters using AND semantics", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const romanImperialCoinage = await createCatalogue({
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+    const standardCatalog = await createCatalogue({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+
+    const matchingRicCoin = await createCoin({
+      title: "RIC Overlapping Match",
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    const nonMatchingYearRicCoin = await createCoin({
+      title: "RIC Non Overlapping",
+      issuerId: rome.id,
+      minYear: 1903,
+      maxYear: 1904,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const matchingKmCoin = await createCoin({
+      title: "KM Overlapping",
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    const referenceMatch = await createCoin({
+      title: "Reference Overlapping Match",
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const referenceMiss = await createCoin({
+      title: "Reference Different Prefix",
+      issuerId: rome.id,
+      minYear: 1898,
+      maxYear: 1902,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: matchingRicCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "12A",
+    })
+    await createCoinReference({
+      coinId: nonMatchingYearRicCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "12B",
+    })
+    await createCoinReference({
+      coinId: matchingKmCoin.id,
+      catalogueId: standardCatalog.id,
+      number: "12A",
+    })
+    await createCoinReference({
+      coinId: referenceMatch.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "1338A",
+    })
+    await createCoinReference({
+      coinId: referenceMiss.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "1444",
+    })
+
+    await expect(
+      getCoins({
+        catalogueCode: "RIC",
+        fromYear: 1900,
+        toYear: 1900,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["RIC Overlapping Match"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        fromYear: 1900,
+        toYear: 1900,
+        referenceNumber: "1338",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Reference Overlapping Match"].join("|")
     )
   })
 

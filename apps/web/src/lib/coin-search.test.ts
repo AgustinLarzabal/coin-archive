@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  applyIssueYearRangeSearch,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
@@ -113,6 +114,96 @@ describe("updateCoinSearchFilter", () => {
       })
     }
   )
+})
+
+describe("applyIssueYearRangeSearch", () => {
+  const currentSearch = {
+    catalogue: "km",
+    distribution: "circulating-commemorative",
+    fromYear: 1898,
+    issuer: "spain",
+    referenceNumber: "1338",
+    ruler: "felipe-vi",
+    toYear: 1902,
+  }
+
+  it("applies open and full issue year windows while preserving unrelated filters", () => {
+    expect(
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: "-43",
+        toYear: "0",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: -43,
+      issuer: "spain",
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 0,
+    })
+
+    expect(
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: "1900",
+        toYear: "",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1900,
+      issuer: "spain",
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+    })
+  })
+
+  it("clears either requested year bound without removing unrelated filters or the other bound", () => {
+    expect(
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: "",
+        toYear: "1902",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      issuer: "spain",
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: "1898",
+        toYear: " ",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+    })
+  })
+
+  it("ignores invalid requested year inputs instead of dropping the current bounds", () => {
+    expect(
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: "nineteen hundred",
+        toYear: "1900",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1900,
+    })
+  })
 })
 
 describe("coinSearchSchema", () => {

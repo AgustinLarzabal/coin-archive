@@ -47,6 +47,12 @@ export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
   "fromYear" | "toYear"
 >
+export type RawIssueYearFilterValue =
+  | File
+  | number
+  | string
+  | null
+  | undefined
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
@@ -110,6 +116,50 @@ export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
   }
 
   nextSearch[filterName] = filterValue
+
+  return nextSearch
+}
+
+function parseIssueYearFilterValue(value: RawIssueYearFilterValue) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? value : null
+  }
+
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmedValue = value.trim()
+
+  if (trimmedValue === "") {
+    return undefined
+  }
+
+  if (!/^-?\d+$/.test(trimmedValue)) {
+    return null
+  }
+
+  return Number.parseInt(trimmedValue, 10)
+}
+
+export function applyIssueYearRangeSearch(
+  currentSearch: CoinSearch,
+  yearRange: {
+    fromYear: RawIssueYearFilterValue
+    toYear: RawIssueYearFilterValue
+  }
+) {
+  const parsedFromYear = parseIssueYearFilterValue(yearRange.fromYear)
+  const parsedToYear = parseIssueYearFilterValue(yearRange.toYear)
+  let nextSearch = currentSearch
+
+  if (parsedFromYear !== null) {
+    nextSearch = updateCoinSearchFilter(nextSearch, "fromYear", parsedFromYear)
+  }
+
+  if (parsedToYear !== null) {
+    nextSearch = updateCoinSearchFilter(nextSearch, "toYear", parsedToYear)
+  }
 
   return nextSearch
 }

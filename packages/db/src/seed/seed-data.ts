@@ -10,6 +10,8 @@ type SeededCoin = {
   title: string
   distributionCode: string
   issuerCode: string
+  minYear?: number
+  maxYear?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -91,6 +93,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 02",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
+    minYear: 1813,
+    maxYear: 1813,
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
@@ -98,6 +102,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 03",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
+    minYear: 1909,
+    maxYear: 1909,
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
@@ -105,6 +111,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 04",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
+    minYear: 1896,
+    maxYear: 1898,
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
@@ -112,6 +120,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 05",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
+    minYear: 1822,
+    maxYear: 1823,
     createdAt: new Date("2026-01-05T00:00:00.000Z"),
     updatedAt: new Date("2026-01-05T00:00:00.000Z"),
   },
@@ -119,6 +129,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 06",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
+    minYear: 2014,
+    maxYear: 2026,
     createdAt: new Date("2026-01-06T00:00:00.000Z"),
     updatedAt: new Date("2026-01-06T00:00:00.000Z"),
   },
@@ -133,6 +145,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 08",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
+    minYear: -2,
+    maxYear: 0,
     createdAt: new Date("2026-01-08T00:00:00.000Z"),
     updatedAt: new Date("2026-01-08T00:00:00.000Z"),
   },
@@ -140,6 +154,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 09",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
+    minYear: 1793,
+    maxYear: 1795,
     createdAt: new Date("2026-01-09T00:00:00.000Z"),
     updatedAt: new Date("2026-01-09T00:00:00.000Z"),
   },
@@ -147,6 +163,8 @@ export const seededCoins: SeededCoin[] = [
     title: "Seed Coin 10",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
+    minYear: 2001,
+    maxYear: 2001,
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
   },

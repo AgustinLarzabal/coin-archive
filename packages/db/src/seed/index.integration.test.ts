@@ -42,6 +42,10 @@ describe("seed integration", () => {
 
     expect(seededCoin).toMatchObject({
       title: "Seed Coin 06",
+      issueYearRange: {
+        minYear: 2014,
+        maxYear: 2026,
+      },
       distribution: {
         code: "standard-circulation",
         name: "Standard circulation",
@@ -56,6 +60,18 @@ describe("seed integration", () => {
           },
         },
       ],
+    })
+
+    const ancientSeedCoin = (await getCoins({ limit: 10 })).find(
+      ({ title }) => title === "Seed Coin 08"
+    )
+
+    expect(ancientSeedCoin).toMatchObject({
+      title: "Seed Coin 08",
+      issueYearRange: {
+        minYear: -2,
+        maxYear: 0,
+      },
     })
   })
 })

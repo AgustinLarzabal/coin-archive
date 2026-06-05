@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs"
-import { dirname, resolve } from "node:path"
-import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
-const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..")
-const rootReadmePath = resolve(packageRoot, "..", "..", "README.md")
+const rootReadmePath = new URL("../../../README.md", import.meta.url)
 
 const requiredRootReadmeSnippets = [
   "Coin Archive is a catalog of physical coins from across history.",

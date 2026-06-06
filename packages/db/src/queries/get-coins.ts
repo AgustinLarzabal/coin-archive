@@ -69,6 +69,8 @@ export type GetCoinsOptions = {
   fromYear?: number
   issuerCode?: string
   limit?: number
+  maxDiameter?: number
+  minDiameter?: number
   referenceNumber?: string
   rulerCode?: string
   toYear?: number
@@ -79,6 +81,8 @@ type CoinFilterOptions = Pick<
   | "distributionCode"
   | "fromYear"
   | "issuerCode"
+  | "maxDiameter"
+  | "minDiameter"
   | "rulerCode"
   | "catalogueCode"
   | "referenceNumber"
@@ -93,6 +97,8 @@ function buildCoinFilter({
   distributionCode,
   fromYear,
   issuerCode,
+  maxDiameter,
+  minDiameter,
   rulerCode,
   catalogueCode,
   referenceNumber,
@@ -105,6 +111,10 @@ function buildCoinFilter({
     buildCatalogueReferenceFilter({
       catalogueCode,
       referenceNumber,
+    }),
+    buildDiameterRangeFilter({
+      maxDiameter,
+      minDiameter,
     }),
     buildIssueYearRangeFilter({
       fromYear,
@@ -197,6 +207,11 @@ type CatalogueReferenceFilterOptions = Pick<
   "catalogueCode" | "referenceNumber"
 >
 
+type DiameterRangeFilterOptions = Pick<
+  GetCoinsOptions,
+  "maxDiameter" | "minDiameter"
+>
+
 type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
 
 function buildCatalogueReferenceFilter({
@@ -271,6 +286,27 @@ function buildIssueYearRangeFilter({
     sql`${coin.maxYear} is not null`,
     fromYear === undefined ? undefined : sql`${coin.maxYear} >= ${fromYear}`,
     toYear === undefined ? undefined : sql`${coin.minYear} <= ${toYear}`,
+  ].filter(isDefined)
+
+  return and(...filters)!
+}
+
+function buildDiameterRangeFilter({
+  maxDiameter,
+  minDiameter,
+}: DiameterRangeFilterOptions): SQL | undefined {
+  if (minDiameter === undefined && maxDiameter === undefined) {
+    return undefined
+  }
+
+  const filters = [
+    sql`${coin.diameter} is not null`,
+    minDiameter === undefined
+      ? undefined
+      : sql`${coin.diameter} >= ${minDiameter}`,
+    maxDiameter === undefined
+      ? undefined
+      : sql`${coin.diameter} <= ${maxDiameter}`,
   ].filter(isDefined)
 
   return and(...filters)!

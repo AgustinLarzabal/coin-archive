@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
   coinSearchSchema,
   findSelectedCatalogueOption,
@@ -18,6 +19,8 @@ const currentSearch = {
   distribution: "circulating-commemorative",
   fromYear: 1898,
   issuer: "spain",
+  maxDiameter: 28.75,
+  minDiameter: 25.5,
   referenceNumber: "1338",
   ruler: "felipe-vi",
   toYear: 1902,
@@ -31,6 +34,8 @@ describe("updateCoinSearchFilter", () => {
       catalogue: "km",
       distribution: "circulating-commemorative",
       fromYear: 1898,
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -46,6 +51,8 @@ describe("updateCoinSearchFilter", () => {
         catalogue: "km",
         fromYear: 1898,
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -63,6 +70,8 @@ describe("updateCoinSearchFilter", () => {
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         referenceNumber: "1338",
         toYear: 1902,
       })
@@ -79,6 +88,8 @@ describe("updateCoinSearchFilter", () => {
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         ruler: "felipe-vi",
         toYear: 1902,
       })
@@ -94,6 +105,8 @@ describe("updateCoinSearchFilter", () => {
         catalogue: "km",
         distribution: "circulating-commemorative",
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -111,8 +124,46 @@ describe("updateCoinSearchFilter", () => {
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
+      })
+    }
+  )
+
+  it.each<["" | undefined]>([[undefined], [""]])(
+    "clears the minDiameter filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "minDiameter", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        distribution: "circulating-commemorative",
+        fromYear: 1898,
+        issuer: "spain",
+        maxDiameter: 28.75,
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
+      })
+    }
+  )
+
+  it.each<["" | undefined]>([[undefined], [""]])(
+    "clears the maxDiameter filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "maxDiameter", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        distribution: "circulating-commemorative",
+        fromYear: 1898,
+        issuer: "spain",
+        minDiameter: 25.5,
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
       })
     }
   )
@@ -130,6 +181,8 @@ describe("applyIssueYearRangeSearch", () => {
       distribution: "circulating-commemorative",
       fromYear: -43,
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 0,
@@ -145,6 +198,8 @@ describe("applyIssueYearRangeSearch", () => {
       distribution: "circulating-commemorative",
       fromYear: 1900,
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -160,6 +215,8 @@ describe("applyIssueYearRangeSearch", () => {
       catalogue: "km",
       distribution: "circulating-commemorative",
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -175,6 +232,8 @@ describe("applyIssueYearRangeSearch", () => {
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -191,6 +250,8 @@ describe("applyIssueYearRangeSearch", () => {
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1900,
@@ -198,14 +259,106 @@ describe("applyIssueYearRangeSearch", () => {
   })
 })
 
+describe("applyDiameterRangeSearch", () => {
+  it("applies exact and open diameter windows while preserving unrelated filters", () => {
+    expect(
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: "28.75",
+        minDiameter: "25.50",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: "",
+        minDiameter: "27",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      minDiameter: 27,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("clears either requested diameter bound without removing unrelated filters or the other bound", () => {
+    expect(
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: "28.75",
+        minDiameter: "",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: " ",
+        minDiameter: "25.50",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      minDiameter: 25.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("ignores invalid requested diameter inputs instead of dropping the current bounds", () => {
+    expect(
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: "28.75",
+        minDiameter: "twenty-five",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+})
+
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, issue year range, and reference number search params", () => {
+  it("accepts homepage catalogue, issue year range, diameter range, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
         distribution: "circulating-commemorative",
         fromYear: "1898",
         issuer: "spain",
+        maxDiameter: "28.75",
+        minDiameter: "25.50",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
         toYear: "1902",
@@ -215,33 +368,41 @@ describe("coinSearchSchema", () => {
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
       toYear: 1902,
     })
   })
 
-  it("treats blank issue year params as undefined", () => {
+  it("treats blank issue year and diameter params as undefined", () => {
     expect(
       coinSearchSchema.parse({
         fromYear: "",
+        maxDiameter: "",
+        minDiameter: "  ",
         toYear: "  ",
       })
     ).toStrictEqual({
       fromYear: undefined,
+      maxDiameter: undefined,
+      minDiameter: undefined,
       toYear: undefined,
     })
   })
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage issue year, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage issue year, diameter, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         catalogue: "km",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
+        maxDiameter: 28.75,
+        minDiameter: 25.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -251,6 +412,8 @@ describe("getCoinListLoaderDeps", () => {
       distributionCode: "circulating-commemorative",
       fromYear: 1898,
       issuerCode: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
       toYear: 1902,
@@ -260,22 +423,10 @@ describe("getCoinListLoaderDeps", () => {
 
 describe("formatIssueYearRangeLabel", () => {
   it.each([
-    [
-      { minYear: -43, maxYear: -43 },
-      "Issue year 44 BCE",
-    ],
-    [
-      { minYear: -1, maxYear: 0 },
-      "Issue years 2 BCE to 1 BCE",
-    ],
-    [
-      { minYear: 1, maxYear: 1 },
-      "Issue year 1 CE",
-    ],
-    [
-      { minYear: 1898, maxYear: 1902 },
-      "Issue years 1898 CE to 1902 CE",
-    ],
+    [{ minYear: -43, maxYear: -43 }, "Issue year 44 BCE"],
+    [{ minYear: -1, maxYear: 0 }, "Issue years 2 BCE to 1 BCE"],
+    [{ minYear: 1, maxYear: 1 }, "Issue year 1 CE"],
+    [{ minYear: 1898, maxYear: 1902 }, "Issue years 1898 CE to 1902 CE"],
   ])(
     "formats astronomical issue years into human-readable BCE and CE labels for %j",
     (issueYearRange, expectedLabel) => {
@@ -318,53 +469,25 @@ describe("formatCoinMeasurementsLabel", () => {
   })
 })
 
-describe("getCatalogueOptionLabel", () => {
-  it("includes catalogue title and code so combobox search can match both", () => {
+describe("option labels", () => {
+  it("formats catalogue, distribution, and lookup selections consistently", () => {
+    expect(
+      findSelectedCatalogueOption([{ code: "KM", id: "1" }], "km")
+    ).toStrictEqual({ code: "KM", id: "1" })
+    expect(
+      findSelectedDistributionOption([{ code: "COM", id: "1" }], "com")
+    ).toStrictEqual({ code: "COM", id: "1" })
     expect(
       getCatalogueOptionLabel({
         code: "KM",
         title: "Standard Catalog of World Coins",
       })
     ).toBe("Standard Catalog of World Coins · KM")
-  })
-})
-
-describe("getDistributionOptionLabel", () => {
-  it("includes distribution name and code so combobox search can match both", () => {
     expect(
       getDistributionOptionLabel({
-        code: "circulating-commemorative",
-        name: "Circulating commemorative",
+        code: "COM",
+        name: "Commemorative",
       })
-    ).toBe("Circulating commemorative · circulating-commemorative")
-  })
-})
-
-describe("findSelectedCatalogueOption", () => {
-  it("matches the selected catalogue code case-insensitively", () => {
-    const standardCatalog = {
-      code: "KM",
-      title: "Standard Catalog of World Coins",
-    }
-
-    expect(findSelectedCatalogueOption([standardCatalog], "km")).toStrictEqual(
-      standardCatalog
-    )
-  })
-})
-
-describe("findSelectedDistributionOption", () => {
-  it("matches the selected distribution code case-insensitively", () => {
-    const circulatingCommemorative = {
-      code: "circulating-commemorative",
-      name: "Circulating commemorative",
-    }
-
-    expect(
-      findSelectedDistributionOption(
-        [circulatingCommemorative],
-        "CIRCULATING-COMMEMORATIVE"
-      )
-    ).toStrictEqual(circulatingCommemorative)
+    ).toBe("Commemorative · COM")
   })
 })

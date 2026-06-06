@@ -8,6 +8,7 @@ import type {
   RulerOption,
 } from "@workspace/db"
 import {
+  applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
@@ -48,6 +49,8 @@ const getCoinListData = createServerFn({ method: "GET" })
           distributionCode: data.distributionCode,
           fromYear: data.fromYear,
           issuerCode: data.issuerCode,
+          maxDiameter: data.maxDiameter,
+          minDiameter: data.minDiameter,
           referenceNumber: data.referenceNumber,
           rulerCode: data.rulerCode,
           toYear: data.toYear,
@@ -76,6 +79,8 @@ function App() {
     distribution: selectedDistributionCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
+    maxDiameter: selectedMaxDiameter,
+    minDiameter: selectedMinDiameter,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
     toYear: selectedToYear,
@@ -132,6 +137,20 @@ function App() {
         applyIssueYearRangeSearch(currentSearch, {
           fromYear: formData.get("fromYear"),
           toYear: formData.get("toYear"),
+        }),
+    })
+  }
+
+  async function updateDiameterRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+
+    await navigate({
+      search: (currentSearch) =>
+        applyDiameterRangeSearch(currentSearch, {
+          maxDiameter: formData.get("maxDiameter"),
+          minDiameter: formData.get("minDiameter"),
         }),
     })
   }
@@ -262,6 +281,34 @@ function App() {
         </button>
       </form>
 
+      <form
+        className="flex items-end gap-2 py-2"
+        onSubmit={updateDiameterRange}
+      >
+        <Input
+          aria-label="Filter minimum diameter in millimeters"
+          defaultValue={selectedMinDiameter?.toString() ?? ""}
+          key={`min-diameter-${selectedMinDiameter ?? ""}`}
+          name="minDiameter"
+          placeholder="Min diameter (mm)"
+          type="number"
+        />
+        <Input
+          aria-label="Filter maximum diameter in millimeters"
+          defaultValue={selectedMaxDiameter?.toString() ?? ""}
+          key={`max-diameter-${selectedMaxDiameter ?? ""}`}
+          name="maxDiameter"
+          placeholder="Max diameter (mm)"
+          type="number"
+        />
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
+          Apply diameter
+        </button>
+      </form>
+
       <ul className="space-y-4 py-4">
         {coins.map((coin) => (
           <CoinListItem coin={coin} key={coin.id} />
@@ -271,7 +318,9 @@ function App() {
   )
 }
 
-type CoinListItemCoin = Awaited<ReturnType<typeof getCoinListData>>["coins"][number]
+type CoinListItemCoin = Awaited<
+  ReturnType<typeof getCoinListData>
+>["coins"][number]
 
 type CoinListItemProps = {
   coin: CoinListItemCoin

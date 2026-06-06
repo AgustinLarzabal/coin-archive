@@ -134,6 +134,12 @@ describe("getCoins integration", () => {
             updatedAt: ancientWorld.updatedAt,
           },
         },
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
         references: [],
         rulers: [],
       },
@@ -190,6 +196,91 @@ describe("getCoins integration", () => {
         },
       },
     ])
+  })
+
+  it("filters coins by exact and open-ended weight ranges, excluding only unknown weight values", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    await createCoin({
+      title: "Exact Weight Match",
+      issuerId: rome.id,
+      weight: "3.90",
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Within Weight Range",
+      issuerId: rome.id,
+      weight: "4.00",
+      diameter: "18.75",
+      thickness: "2.10",
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Weight With Unknown Diameter And Thickness",
+      issuerId: rome.id,
+      weight: "4.10",
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unknown Weight",
+      issuerId: rome.id,
+      diameter: "18.50",
+      thickness: "1.90",
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Other Issuer Weight Match",
+      issuerId: spain.id,
+      weight: "4.00",
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        minWeight: 3.9,
+        maxWeight: 4,
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Exact Weight Match",
+          "Within Weight Range",
+          "Other Issuer Weight Match",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        minWeight: 4,
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Within Weight Range",
+          "Weight With Unknown Diameter And Thickness",
+          "Other Issuer Weight Match",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        maxWeight: 4,
+        issuerCode: "rome",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Exact Weight Match", "Within Weight Range"].join("|")
+    )
   })
 
   it("filters coins by exact and open-ended diameter ranges, excluding only unknown diameter values", async () => {
@@ -517,7 +608,7 @@ describe("getCoins integration", () => {
     ).resolves.toSatisfy(
       (coins: Array<{ title: string }>) =>
         coins.map(({ title }) => title).join("|") ===
-        ["Late Republic Range", "BCE To CE Transition Range"].join("|")
+        ["Late Republic Range"].join("|")
     )
   })
 
@@ -605,17 +696,17 @@ describe("getCoins integration", () => {
     await createCoinRuler({
       coinId: augustusMatch.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: augustusMiss.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: tiberiusMatch.id,
       rulerId: tiberius.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
 
     await expect(
@@ -768,7 +859,11 @@ describe("getCoins integration", () => {
     ).resolves.toSatisfy(
       (coins: Array<{ title: string }>) =>
         coins.map(({ title }) => title).join("|") ===
-        ["RIC Overlapping Match"].join("|")
+        [
+          "RIC Overlapping Match",
+          "Reference Overlapping Match",
+          "Reference Different Prefix",
+        ].join("|")
     )
 
     await expect(
@@ -840,6 +935,12 @@ describe("getCoins integration", () => {
           createdAt: spain.createdAt,
           updatedAt: spain.updatedAt,
           parent: null,
+        },
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
         },
         rulers: [],
         references: [
@@ -1224,6 +1325,13 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
+        references: [],
         rulers: [
           {
             id: juanCarlos.id,
@@ -1544,6 +1652,12 @@ describe("getCoins integration", () => {
           createdAt: spain.createdAt,
           updatedAt: spain.updatedAt,
           parent: null,
+        },
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
         },
         references: [],
         rulers: [],

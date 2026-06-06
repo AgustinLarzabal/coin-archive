@@ -69,8 +69,10 @@ export type GetCoinsOptions = {
   fromYear?: number
   issuerCode?: string
   limit?: number
+  maxWeight?: number
   maxDiameter?: number
   maxThickness?: number
+  minWeight?: number
   minDiameter?: number
   minThickness?: number
   referenceNumber?: string
@@ -83,8 +85,10 @@ type CoinFilterOptions = Pick<
   | "distributionCode"
   | "fromYear"
   | "issuerCode"
+  | "maxWeight"
   | "maxDiameter"
   | "maxThickness"
+  | "minWeight"
   | "minDiameter"
   | "minThickness"
   | "rulerCode"
@@ -101,8 +105,10 @@ function buildCoinFilter({
   distributionCode,
   fromYear,
   issuerCode,
+  maxWeight,
   maxDiameter,
   maxThickness,
+  minWeight,
   minDiameter,
   minThickness,
   rulerCode,
@@ -117,6 +123,10 @@ function buildCoinFilter({
     buildCatalogueReferenceFilter({
       catalogueCode,
       referenceNumber,
+    }),
+    buildWeightRangeFilter({
+      maxWeight,
+      minWeight,
     }),
     buildDiameterRangeFilter({
       maxDiameter,
@@ -221,6 +231,7 @@ type DiameterRangeFilterOptions = Pick<
   GetCoinsOptions,
   "maxDiameter" | "minDiameter"
 >
+type WeightRangeFilterOptions = Pick<GetCoinsOptions, "maxWeight" | "minWeight">
 
 type ThicknessRangeFilterOptions = Pick<
   GetCoinsOptions,
@@ -307,6 +318,27 @@ function buildIssueYearRangeFilter({
 
   if (toYear !== undefined) {
     filters.push(sql`${coin.minYear} <= ${toYear}`)
+  }
+
+  return and(...filters)!
+}
+
+function buildWeightRangeFilter({
+  maxWeight,
+  minWeight,
+}: WeightRangeFilterOptions): SQL | undefined {
+  if (minWeight === undefined && maxWeight === undefined) {
+    return undefined
+  }
+
+  const filters = [sql`${coin.weight} is not null`]
+
+  if (minWeight !== undefined) {
+    filters.push(sql`${coin.weight} >= ${minWeight}`)
+  }
+
+  if (maxWeight !== undefined) {
+    filters.push(sql`${coin.weight} <= ${maxWeight}`)
   }
 
   return and(...filters)!

@@ -4,6 +4,7 @@ import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
   applyThicknessRangeSearch,
+  applyWeightRangeSearch,
   type CoinSearchFilterName,
   coinSearchSchema,
   findSelectedCatalogueOption,
@@ -21,9 +22,11 @@ const currentSearch = {
   distribution: "circulating-commemorative",
   fromYear: 1898,
   issuer: "spain",
+  maxWeight: 28.75,
+  minWeight: 25.5,
   maxDiameter: 28.75,
-  maxThickness: 3.4,
   minDiameter: 25.5,
+  maxThickness: 3.4,
   minThickness: 1.25,
   referenceNumber: "1338",
   ruler: "felipe-vi",
@@ -41,90 +44,28 @@ function searchWithout(...filterNames: CoinSearchFilterName[]) {
 }
 
 describe("updateCoinSearchFilter", () => {
-  it("clears only the selected filter and preserves unrelated search params", () => {
-    expect(
-      updateCoinSearchFilter(currentSearch, "issuer", undefined)
-    ).toStrictEqual(searchWithout("issuer"))
-  })
-
-  it.each([undefined, ""] as const)(
-    "clears the distribution filter without removing the other filters when the value is %p",
-    (filterValue) => {
+  it.each([
+    "issuer",
+    "distribution",
+    "ruler",
+    "referenceNumber",
+    "fromYear",
+    "toYear",
+    "minWeight",
+    "maxWeight",
+    "minDiameter",
+    "maxDiameter",
+    "minThickness",
+    "maxThickness",
+  ] as const)(
+    "clears only the %s filter when the value is empty",
+    (filterName) => {
       expect(
-        updateCoinSearchFilter(currentSearch, "distribution", filterValue)
-      ).toStrictEqual(searchWithout("distribution"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the ruler filter without removing the issuer filter when the value is %p",
-    (filterValue) => {
+        updateCoinSearchFilter(currentSearch, filterName, undefined)
+      ).toStrictEqual(searchWithout(filterName))
       expect(
-        updateCoinSearchFilter(currentSearch, "ruler", filterValue)
-      ).toStrictEqual(searchWithout("ruler"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the reference number filter without removing the other filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "referenceNumber", filterValue)
-      ).toStrictEqual(searchWithout("referenceNumber"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the fromYear filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "fromYear", filterValue)
-      ).toStrictEqual(searchWithout("fromYear"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the toYear filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "toYear", filterValue)
-      ).toStrictEqual(searchWithout("toYear"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the minDiameter filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "minDiameter", filterValue)
-      ).toStrictEqual(searchWithout("minDiameter"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the maxDiameter filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "maxDiameter", filterValue)
-      ).toStrictEqual(searchWithout("maxDiameter"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the minThickness filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "minThickness", filterValue)
-      ).toStrictEqual(searchWithout("minThickness"))
-    }
-  )
-
-  it.each([undefined, ""] as const)(
-    "clears the maxThickness filter without removing unrelated filters when the value is %p",
-    (filterValue) => {
-      expect(
-        updateCoinSearchFilter(currentSearch, "maxThickness", filterValue)
-      ).toStrictEqual(searchWithout("maxThickness"))
+        updateCoinSearchFilter(currentSearch, filterName, "")
+      ).toStrictEqual(searchWithout(filterName))
     }
   )
 })
@@ -137,16 +78,8 @@ describe("applyIssueYearRangeSearch", () => {
         toYear: "0",
       })
     ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
+      ...currentSearch,
       fromYear: -43,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
       toYear: 0,
     })
 
@@ -156,16 +89,8 @@ describe("applyIssueYearRangeSearch", () => {
         toYear: "",
       })
     ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
+      ...searchWithout("toYear"),
       fromYear: 1900,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
     })
   })
 
@@ -175,36 +100,14 @@ describe("applyIssueYearRangeSearch", () => {
         fromYear: "",
         toYear: "1902",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("fromYear"))
 
     expect(
       applyIssueYearRangeSearch(currentSearch, {
         fromYear: "1898",
         toYear: " ",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-    })
+    ).toStrictEqual(searchWithout("toYear"))
   })
 
   it("ignores invalid requested year inputs instead of dropping the current bounds", () => {
@@ -214,18 +117,55 @@ describe("applyIssueYearRangeSearch", () => {
         toYear: "1900",
       })
     ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
+      ...currentSearch,
       toYear: 1900,
     })
+  })
+})
+
+describe("applyWeightRangeSearch", () => {
+  it("applies exact and open weight windows while preserving unrelated filters", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "25.50",
+      })
+    ).toStrictEqual(currentSearch)
+
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "",
+        minWeight: "27",
+      })
+    ).toStrictEqual({
+      ...searchWithout("maxWeight"),
+      minWeight: 27,
+    })
+  })
+
+  it("clears either requested weight bound without removing unrelated filters or the other bound", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "",
+      })
+    ).toStrictEqual(searchWithout("minWeight"))
+
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: " ",
+        minWeight: "25.50",
+      })
+    ).toStrictEqual(searchWithout("maxWeight"))
+  })
+
+  it("ignores invalid requested weight inputs instead of dropping the current bounds", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "twenty-five",
+      })
+    ).toStrictEqual(currentSearch)
   })
 })
 
@@ -236,19 +176,7 @@ describe("applyDiameterRangeSearch", () => {
         maxDiameter: "28.75",
         minDiameter: "25.50",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(currentSearch)
 
     expect(
       applyDiameterRangeSearch(currentSearch, {
@@ -256,16 +184,8 @@ describe("applyDiameterRangeSearch", () => {
         minDiameter: "27",
       })
     ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
+      ...searchWithout("maxDiameter"),
       minDiameter: 27,
-      maxThickness: 3.4,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
     })
   })
 
@@ -275,36 +195,14 @@ describe("applyDiameterRangeSearch", () => {
         maxDiameter: "28.75",
         minDiameter: "",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("minDiameter"))
 
     expect(
       applyDiameterRangeSearch(currentSearch, {
         maxDiameter: " ",
         minDiameter: "25.50",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      minDiameter: 25.5,
-      maxThickness: 3.4,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("maxDiameter"))
   })
 
   it("ignores invalid requested diameter inputs instead of dropping the current bounds", () => {
@@ -313,19 +211,7 @@ describe("applyDiameterRangeSearch", () => {
         maxDiameter: "28.75",
         minDiameter: "twenty-five",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(currentSearch)
   })
 })
 
@@ -344,16 +230,8 @@ describe("applyThicknessRangeSearch", () => {
         minThickness: "2",
       })
     ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      minDiameter: 25.5,
+      ...searchWithout("maxThickness"),
       minThickness: 2,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
     })
   })
 
@@ -363,36 +241,14 @@ describe("applyThicknessRangeSearch", () => {
         maxThickness: "3.40",
         minThickness: "",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      maxThickness: 3.4,
-      minDiameter: 25.5,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("minThickness"))
 
     expect(
       applyThicknessRangeSearch(currentSearch, {
         maxThickness: " ",
         minThickness: "1.25",
       })
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 28.75,
-      minDiameter: 25.5,
-      minThickness: 1.25,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("maxThickness"))
   })
 
   it("ignores invalid requested thickness inputs instead of dropping the current bounds", () => {
@@ -406,16 +262,18 @@ describe("applyThicknessRangeSearch", () => {
 })
 
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, issue year range, diameter range, thickness range, and reference number search params", () => {
+  it("accepts homepage catalogue, issue year, measurement range, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
         distribution: "circulating-commemorative",
         fromYear: "1898",
         issuer: "spain",
+        maxWeight: "28.75",
+        minWeight: "25.50",
         maxDiameter: "28.75",
-        maxThickness: "3.40",
         minDiameter: "25.50",
+        maxThickness: "3.40",
         minThickness: "1.25",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
@@ -426,9 +284,11 @@ describe("coinSearchSchema", () => {
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
+      maxWeight: 28.75,
+      minWeight: 25.5,
       maxDiameter: 28.75,
-      maxThickness: 3.4,
       minDiameter: 25.5,
+      maxThickness: 3.4,
       minThickness: 1.25,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
@@ -436,21 +296,25 @@ describe("coinSearchSchema", () => {
     })
   })
 
-  it("treats blank issue year, diameter, and thickness params as undefined", () => {
+  it("treats blank numeric params as undefined", () => {
     expect(
       coinSearchSchema.parse({
         fromYear: "",
+        maxWeight: "",
+        minWeight: "  ",
         maxDiameter: "",
-        maxThickness: " ",
         minDiameter: "  ",
+        maxThickness: " ",
         minThickness: "",
         toYear: "  ",
       })
     ).toStrictEqual({
       fromYear: undefined,
+      maxWeight: undefined,
+      minWeight: undefined,
       maxDiameter: undefined,
-      maxThickness: undefined,
       minDiameter: undefined,
+      maxThickness: undefined,
       minThickness: undefined,
       toYear: undefined,
     })
@@ -458,29 +322,17 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage issue year, diameter, thickness, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
-    expect(
-      getCoinListLoaderDeps({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        maxThickness: 3.4,
-        minDiameter: 25.5,
-        minThickness: 1.25,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
-    ).toStrictEqual({
+  it("passes homepage filters to the coin listing boundary", () => {
+    expect(getCoinListLoaderDeps(currentSearch)).toStrictEqual({
       catalogueCode: "km",
       distributionCode: "circulating-commemorative",
       fromYear: 1898,
       issuerCode: "spain",
+      maxWeight: 28.75,
+      minWeight: 25.5,
       maxDiameter: 28.75,
-      maxThickness: 3.4,
       minDiameter: 25.5,
+      maxThickness: 3.4,
       minThickness: 1.25,
       referenceNumber: "1338",
       rulerCode: "felipe-vi",

@@ -32,8 +32,10 @@ export const coinSearchSchema = z.object({
   distribution: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
+  maxWeight: optionalDecimalSchema,
   maxDiameter: optionalDecimalSchema,
   maxThickness: optionalDecimalSchema,
+  minWeight: optionalDecimalSchema,
   minDiameter: optionalDecimalSchema,
   minThickness: optionalDecimalSchema,
   referenceNumber: optionalStringSchema,
@@ -46,8 +48,10 @@ export const coinListInputSchema = z.object({
   distributionCode: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
+  maxWeight: optionalDecimalSchema,
   maxDiameter: optionalDecimalSchema,
   maxThickness: optionalDecimalSchema,
+  minWeight: optionalDecimalSchema,
   minDiameter: optionalDecimalSchema,
   minThickness: optionalDecimalSchema,
   referenceNumber: optionalStringSchema,
@@ -59,6 +63,7 @@ export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
 export type IssueYearFilterName = keyof Pick<CoinSearch, "fromYear" | "toYear">
+export type WeightFilterName = keyof Pick<CoinSearch, "minWeight" | "maxWeight">
 export type DiameterFilterName = keyof Pick<
   CoinSearch,
   "minDiameter" | "maxDiameter"
@@ -71,6 +76,8 @@ export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
   | "fromYear"
   | "toYear"
+  | "minWeight"
+  | "maxWeight"
   | "minDiameter"
   | "maxDiameter"
   | "minThickness"
@@ -81,12 +88,13 @@ type NumericFilterValue<FilterName extends CoinSearchFilterName> =
   | FormDataEntryValue
   | null
   | undefined
-
 export type IssueYearFilterValue = NumericFilterValue<IssueYearFilterName>
+export type WeightFilterValue = NumericFilterValue<WeightFilterName>
 export type DiameterFilterValue = NumericFilterValue<DiameterFilterName>
 export type ThicknessFilterValue = NumericFilterValue<ThicknessFilterName>
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
+const weightFilterNames = ["minWeight", "maxWeight"] as const
 const diameterFilterNames = ["minDiameter", "maxDiameter"] as const
 const thicknessFilterNames = ["minThickness", "maxThickness"] as const
 const decimalFilterPattern = /^-?(?:\d+\.?\d*|\.\d+)$/
@@ -114,8 +122,10 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     distributionCode: search.distribution,
     fromYear: search.fromYear,
     issuerCode: search.issuer,
+    maxWeight: search.maxWeight,
     maxDiameter: search.maxDiameter,
     maxThickness: search.maxThickness,
+    minWeight: search.minWeight,
     minDiameter: search.minDiameter,
     minThickness: search.minThickness,
     referenceNumber: search.referenceNumber,
@@ -191,6 +201,14 @@ function parseDecimalFilterValue(
   })
 }
 
+function parseWeightFilterValue(value: WeightFilterValue) {
+  return parseNumericFilterValue(value, {
+    isValidNumber: Number.isFinite,
+    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
+    pattern: decimalFilterPattern,
+  })
+}
+
 function parseNumericFilterValue(
   value: number | FormDataEntryValue | null | undefined,
   {
@@ -257,6 +275,18 @@ export function applyThicknessRangeSearch(
     thicknessFilterNames,
     thicknessRange,
     parseDecimalFilterValue
+  )
+}
+
+export function applyWeightRangeSearch(
+  currentSearch: CoinSearch,
+  weightRange: Record<WeightFilterName, WeightFilterValue>
+): CoinSearch {
+  return applyRangeSearchFilters(
+    currentSearch,
+    weightFilterNames,
+    weightRange,
+    parseWeightFilterValue
   )
 }
 

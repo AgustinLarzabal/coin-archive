@@ -11,6 +11,7 @@ import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
   applyThicknessRangeSearch,
+  applyWeightRangeSearch,
   type CoinSearch,
   coinListInputSchema,
   coinSearchSchema,
@@ -51,8 +52,10 @@ const getCoinListData = createServerFn({ method: "GET" })
           distributionCode: data.distributionCode,
           fromYear: data.fromYear,
           issuerCode: data.issuerCode,
+          maxWeight: data.maxWeight,
           maxDiameter: data.maxDiameter,
           maxThickness: data.maxThickness,
+          minWeight: data.minWeight,
           minDiameter: data.minDiameter,
           minThickness: data.minThickness,
           referenceNumber: data.referenceNumber,
@@ -83,8 +86,10 @@ function App() {
     distribution: selectedDistributionCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
+    maxWeight: selectedMaxWeight,
     maxDiameter: selectedMaxDiameter,
     maxThickness: selectedMaxThickness,
+    minWeight: selectedMinWeight,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
     referenceNumber: selectedReferenceNumber,
@@ -168,6 +173,14 @@ function App() {
       applyThicknessRangeSearch(currentSearch, {
         maxThickness: formData.get("maxThickness"),
         minThickness: formData.get("minThickness"),
+      })
+  )
+
+  const updateWeightRange = createRangeSubmitHandler(
+    (currentSearch, formData) =>
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: formData.get("maxWeight"),
+        minWeight: formData.get("minWeight"),
       })
   )
 
@@ -294,6 +307,31 @@ function App() {
           type="submit"
         >
           Apply years
+        </button>
+      </form>
+
+      <form className="flex items-end gap-2 py-2" onSubmit={updateWeightRange}>
+        <Input
+          aria-label="Filter minimum weight in grams"
+          defaultValue={selectedMinWeight?.toString() ?? ""}
+          key={`min-weight-${selectedMinWeight ?? ""}`}
+          name="minWeight"
+          placeholder="Min weight (g)"
+          type="number"
+        />
+        <Input
+          aria-label="Filter maximum weight in grams"
+          defaultValue={selectedMaxWeight?.toString() ?? ""}
+          key={`max-weight-${selectedMaxWeight ?? ""}`}
+          name="maxWeight"
+          placeholder="Max weight (g)"
+          type="number"
+        />
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
+          Apply weight
         </button>
       </form>
 

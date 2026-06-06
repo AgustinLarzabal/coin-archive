@@ -284,9 +284,15 @@ function buildIssueYearRangeFilter({
   const filters = [
     sql`${coin.minYear} is not null`,
     sql`${coin.maxYear} is not null`,
-    fromYear === undefined ? undefined : sql`${coin.maxYear} >= ${fromYear}`,
-    toYear === undefined ? undefined : sql`${coin.minYear} <= ${toYear}`,
-  ].filter(isDefined)
+  ]
+
+  if (fromYear !== undefined) {
+    filters.push(sql`${coin.maxYear} >= ${fromYear}`)
+  }
+
+  if (toYear !== undefined) {
+    filters.push(sql`${coin.minYear} <= ${toYear}`)
+  }
 
   return and(...filters)!
 }
@@ -299,15 +305,15 @@ function buildDiameterRangeFilter({
     return undefined
   }
 
-  const filters = [
-    sql`${coin.diameter} is not null`,
-    minDiameter === undefined
-      ? undefined
-      : sql`${coin.diameter} >= ${minDiameter}`,
-    maxDiameter === undefined
-      ? undefined
-      : sql`${coin.diameter} <= ${maxDiameter}`,
-  ].filter(isDefined)
+  const filters = [sql`${coin.diameter} is not null`]
+
+  if (minDiameter !== undefined) {
+    filters.push(sql`${coin.diameter} >= ${minDiameter}`)
+  }
+
+  if (maxDiameter !== undefined) {
+    filters.push(sql`${coin.diameter} <= ${maxDiameter}`)
+  }
 
   return and(...filters)!
 }

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
+  type CoinSearchFilterName,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
@@ -26,145 +27,83 @@ const currentSearch = {
   toYear: 1902,
 }
 
+function searchWithout(...filterNames: CoinSearchFilterName[]) {
+  const nextSearch = { ...currentSearch }
+
+  for (const filterName of filterNames) {
+    delete nextSearch[filterName]
+  }
+
+  return nextSearch
+}
+
 describe("updateCoinSearchFilter", () => {
   it("clears only the selected filter and preserves unrelated search params", () => {
     expect(
       updateCoinSearchFilter(currentSearch, "issuer", undefined)
-    ).toStrictEqual({
-      catalogue: "km",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      maxDiameter: 28.75,
-      minDiameter: 25.5,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
+    ).toStrictEqual(searchWithout("issuer"))
   })
 
-  it.each([undefined, ""])(
+  it.each([undefined, ""] as const)(
     "clears the distribution filter without removing the other filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "distribution", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        minDiameter: 25.5,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("distribution"))
     }
   )
 
-  it.each([undefined, ""])(
+  it.each([undefined, ""] as const)(
     "clears the ruler filter without removing the issuer filter when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "ruler", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        minDiameter: 25.5,
-        referenceNumber: "1338",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("ruler"))
     }
   )
 
-  it.each([undefined, ""])(
+  it.each([undefined, ""] as const)(
     "clears the reference number filter without removing the other filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "referenceNumber", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        minDiameter: 25.5,
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("referenceNumber"))
     }
   )
 
-  it.each<["" | undefined]>([[undefined], [""]])(
+  it.each([undefined, ""] as const)(
     "clears the fromYear filter without removing unrelated filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "fromYear", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        issuer: "spain",
-        maxDiameter: 28.75,
-        minDiameter: 25.5,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("fromYear"))
     }
   )
 
-  it.each<["" | undefined]>([[undefined], [""]])(
+  it.each([undefined, ""] as const)(
     "clears the toYear filter without removing unrelated filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "toYear", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        minDiameter: 25.5,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-      })
+      ).toStrictEqual(searchWithout("toYear"))
     }
   )
 
-  it.each<["" | undefined]>([[undefined], [""]])(
+  it.each([undefined, ""] as const)(
     "clears the minDiameter filter without removing unrelated filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "minDiameter", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        maxDiameter: 28.75,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("minDiameter"))
     }
   )
 
-  it.each<["" | undefined]>([[undefined], [""]])(
+  it.each([undefined, ""] as const)(
     "clears the maxDiameter filter without removing unrelated filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(currentSearch, "maxDiameter", filterValue)
-      ).toStrictEqual({
-        catalogue: "km",
-        distribution: "circulating-commemorative",
-        fromYear: 1898,
-        issuer: "spain",
-        minDiameter: 25.5,
-        referenceNumber: "1338",
-        ruler: "felipe-vi",
-        toYear: 1902,
-      })
+      ).toStrictEqual(searchWithout("maxDiameter"))
     }
   )
 })

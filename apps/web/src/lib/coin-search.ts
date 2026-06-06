@@ -9,7 +9,7 @@ import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
 
-function normalizeOptionalIntegerInput(value: unknown) {
+function normalizeOptionalNumericInput(value: unknown) {
   if (typeof value === "string" && value.trim() === "") {
     return undefined
   }
@@ -18,20 +18,12 @@ function normalizeOptionalIntegerInput(value: unknown) {
 }
 
 const optionalIntegerSchema = z.preprocess(
-  normalizeOptionalIntegerInput,
+  normalizeOptionalNumericInput,
   z.coerce.number().int().optional()
 )
 
-function normalizeOptionalDecimalInput(value: unknown) {
-  if (typeof value === "string" && value.trim() === "") {
-    return undefined
-  }
-
-  return value
-}
-
 const optionalDecimalSchema = z.preprocess(
-  normalizeOptionalDecimalInput,
+  normalizeOptionalNumericInput,
   z.coerce.number().finite().optional()
 )
 
@@ -84,6 +76,8 @@ export type DiameterFilterValue =
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
 const diameterFilterNames = ["minDiameter", "maxDiameter"] as const
+const decimalFilterPattern = /^-?(?:\d+\.?\d*|\.\d+)$/
+const integerFilterPattern = /^-?\d+$/
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
@@ -165,30 +159,35 @@ export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
 }
 
 function parseIssueYearFilterValue(value: IssueYearFilterValue) {
-  if (typeof value === "number") {
-    return Number.isInteger(value) ? value : null
-  }
-
-  if (typeof value !== "string") {
-    return undefined
-  }
-
-  const trimmedValue = value.trim()
-
-  if (trimmedValue === "") {
-    return undefined
-  }
-
-  if (!/^-?\d+$/.test(trimmedValue)) {
-    return null
-  }
-
-  return Number.parseInt(trimmedValue, 10)
+  return parseNumericFilterValue(value, {
+    isValidNumber: Number.isInteger,
+    parseString: (trimmedValue) => Number.parseInt(trimmedValue, 10),
+    pattern: integerFilterPattern,
+  })
 }
 
 function parseDiameterFilterValue(value: DiameterFilterValue) {
+  return parseNumericFilterValue(value, {
+    isValidNumber: Number.isFinite,
+    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
+    pattern: decimalFilterPattern,
+  })
+}
+
+function parseNumericFilterValue(
+  value: number | FormDataEntryValue | null | undefined,
+  {
+    isValidNumber,
+    parseString,
+    pattern,
+  }: {
+    isValidNumber: (value: number) => boolean
+    parseString: (value: string) => number
+    pattern: RegExp
+  }
+) {
   if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null
+    return isValidNumber(value) ? value : null
   }
 
   if (typeof value !== "string") {
@@ -201,46 +200,50 @@ function parseDiameterFilterValue(value: DiameterFilterValue) {
     return undefined
   }
 
-  if (!/^-?(?:\d+\.?\d*|\.\d+)$/.test(trimmedValue)) {
+  if (!pattern.test(trimmedValue)) {
     return null
   }
 
-  return Number.parseFloat(trimmedValue)
+  return parseString(trimmedValue)
 }
 
 export function applyIssueYearRangeSearch(
   currentSearch: CoinSearch,
   yearRange: Record<IssueYearFilterName, IssueYearFilterValue>
 ): CoinSearch {
-  let nextSearch = currentSearch
-
-  for (const filterName of issueYearFilterNames) {
-    const parsedFilterValue = parseIssueYearFilterValue(yearRange[filterName])
-
-    if (parsedFilterValue === null) {
-      continue
-    }
-
-    nextSearch = updateCoinSearchFilter(
-      nextSearch,
-      filterName,
-      parsedFilterValue
-    )
-  }
-
-  return nextSearch
+  return applyRangeSearchFilters(
+    currentSearch,
+    issueYearFilterNames,
+    yearRange,
+    parseIssueYearFilterValue
+  )
 }
 
 export function applyDiameterRangeSearch(
   currentSearch: CoinSearch,
   diameterRange: Record<DiameterFilterName, DiameterFilterValue>
 ): CoinSearch {
+  return applyRangeSearchFilters(
+    currentSearch,
+    diameterFilterNames,
+    diameterRange,
+    parseDiameterFilterValue
+  )
+}
+
+function applyRangeSearchFilters<
+  FilterName extends CoinSearchFilterName,
+  FilterValue,
+>(
+  currentSearch: CoinSearch,
+  filterNames: readonly FilterName[],
+  range: Record<FilterName, FilterValue>,
+  parseFilterValue: (value: FilterValue) => CoinSearch[FilterName] | null
+): CoinSearch {
   let nextSearch = currentSearch
 
-  for (const filterName of diameterFilterNames) {
-    const parsedFilterValue = parseDiameterFilterValue(
-      diameterRange[filterName]
-    )
+  for (const filterName of filterNames) {
+    const parsedFilterValue = parseFilterValue(range[filterName])
 
     if (parsedFilterValue === null) {
       continue

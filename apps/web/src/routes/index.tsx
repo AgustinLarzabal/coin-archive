@@ -10,6 +10,7 @@ import type {
 import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
+  type CoinSearch,
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
@@ -127,33 +128,35 @@ function App() {
     await updateSearchFilter("referenceNumber", referenceNumber)
   }
 
-  async function updateIssueYearRange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function createRangeSubmitHandler(
+    getNextSearch: (currentSearch: CoinSearch, formData: FormData) => CoinSearch
+  ) {
+    return async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
 
-    const formData = new FormData(event.currentTarget)
+      const formData = new FormData(event.currentTarget)
 
-    await navigate({
-      search: (currentSearch) =>
-        applyIssueYearRangeSearch(currentSearch, {
-          fromYear: formData.get("fromYear"),
-          toYear: formData.get("toYear"),
-        }),
-    })
+      await navigate({
+        search: (currentSearch) => getNextSearch(currentSearch, formData),
+      })
+    }
   }
 
-  async function updateDiameterRange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  const updateIssueYearRange = createRangeSubmitHandler(
+    (currentSearch, formData) =>
+      applyIssueYearRangeSearch(currentSearch, {
+        fromYear: formData.get("fromYear"),
+        toYear: formData.get("toYear"),
+      })
+  )
 
-    const formData = new FormData(event.currentTarget)
-
-    await navigate({
-      search: (currentSearch) =>
-        applyDiameterRangeSearch(currentSearch, {
-          maxDiameter: formData.get("maxDiameter"),
-          minDiameter: formData.get("minDiameter"),
-        }),
-    })
-  }
+  const updateDiameterRange = createRangeSubmitHandler(
+    (currentSearch, formData) =>
+      applyDiameterRangeSearch(currentSearch, {
+        maxDiameter: formData.get("maxDiameter"),
+        minDiameter: formData.get("minDiameter"),
+      })
+  )
 
   return (
     <div>

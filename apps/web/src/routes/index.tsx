@@ -271,8 +271,10 @@ function App() {
   )
 }
 
+type CoinListItemCoin = Awaited<ReturnType<typeof getCoinListData>>["coins"][number]
+
 type CoinListItemProps = {
-  coin: Awaited<ReturnType<typeof getCoinListData>>["coins"][number]
+  coin: CoinListItemCoin
 }
 
 function CoinListItem({ coin }: CoinListItemProps) {

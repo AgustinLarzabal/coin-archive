@@ -62,6 +62,17 @@ type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+type CoinMeasurementField = keyof CoinMeasurements
+
+const coinMeasurementDefinitions: ReadonlyArray<{
+  field: CoinMeasurementField
+  label: string
+  unit: string
+}> = [
+  { field: "weight", label: "Weight", unit: "g" },
+  { field: "diameter", label: "Diameter", unit: "mm" },
+  { field: "thickness", label: "Thickness", unit: "mm" },
+]
 
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
@@ -209,16 +220,18 @@ export function formatIssueYearRangeLabel(
   return `Issue years ${minYearLabel} to ${maxYearLabel}`
 }
 
-export function formatCoinMeasurementsLabel(measurements: CoinMeasurements) {
-  const measurementLabels = [
-    measurements.weight === null ? null : `Weight ${measurements.weight} g`,
-    measurements.diameter === null
-      ? null
-      : `Diameter ${measurements.diameter} mm`,
-    measurements.thickness === null
-      ? null
-      : `Thickness ${measurements.thickness} mm`,
-  ].filter((measurementLabel) => measurementLabel !== null)
+export function formatCoinMeasurementsLabel(
+  measurements: CoinMeasurements
+): string | null {
+  const measurementLabels: string[] = []
+
+  for (const { field, label, unit } of coinMeasurementDefinitions) {
+    const value = measurements[field]
+
+    if (value !== null) {
+      measurementLabels.push(`${label} ${value} ${unit}`)
+    }
+  }
 
   if (measurementLabels.length === 0) {
     return null

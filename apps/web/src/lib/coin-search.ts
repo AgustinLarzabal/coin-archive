@@ -33,7 +33,9 @@ export const coinSearchSchema = z.object({
   fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
   maxDiameter: optionalDecimalSchema,
+  maxThickness: optionalDecimalSchema,
   minDiameter: optionalDecimalSchema,
+  minThickness: optionalDecimalSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -45,7 +47,9 @@ export const coinListInputSchema = z.object({
   fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
   maxDiameter: optionalDecimalSchema,
+  maxThickness: optionalDecimalSchema,
   minDiameter: optionalDecimalSchema,
+  minThickness: optionalDecimalSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -59,9 +63,18 @@ export type DiameterFilterName = keyof Pick<
   CoinSearch,
   "minDiameter" | "maxDiameter"
 >
+export type ThicknessFilterName = keyof Pick<
+  CoinSearch,
+  "minThickness" | "maxThickness"
+>
 export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
-  "fromYear" | "toYear" | "minDiameter" | "maxDiameter"
+  | "fromYear"
+  | "toYear"
+  | "minDiameter"
+  | "maxDiameter"
+  | "minThickness"
+  | "maxThickness"
 >
 export type IssueYearFilterValue =
   | CoinSearch[IssueYearFilterName]
@@ -73,9 +86,15 @@ export type DiameterFilterValue =
   | FormDataEntryValue
   | null
   | undefined
+export type ThicknessFilterValue =
+  | CoinSearch[ThicknessFilterName]
+  | FormDataEntryValue
+  | null
+  | undefined
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
 const diameterFilterNames = ["minDiameter", "maxDiameter"] as const
+const thicknessFilterNames = ["minThickness", "maxThickness"] as const
 const decimalFilterPattern = /^-?(?:\d+\.?\d*|\.\d+)$/
 const integerFilterPattern = /^-?\d+$/
 
@@ -102,7 +121,9 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     fromYear: search.fromYear,
     issuerCode: search.issuer,
     maxDiameter: search.maxDiameter,
+    maxThickness: search.maxThickness,
     minDiameter: search.minDiameter,
+    minThickness: search.minThickness,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
     toYear: search.toYear,
@@ -174,6 +195,14 @@ function parseDiameterFilterValue(value: DiameterFilterValue) {
   })
 }
 
+function parseThicknessFilterValue(value: ThicknessFilterValue) {
+  return parseNumericFilterValue(value, {
+    isValidNumber: Number.isFinite,
+    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
+    pattern: decimalFilterPattern,
+  })
+}
+
 function parseNumericFilterValue(
   value: number | FormDataEntryValue | null | undefined,
   {
@@ -228,6 +257,18 @@ export function applyDiameterRangeSearch(
     diameterFilterNames,
     diameterRange,
     parseDiameterFilterValue
+  )
+}
+
+export function applyThicknessRangeSearch(
+  currentSearch: CoinSearch,
+  thicknessRange: Record<ThicknessFilterName, ThicknessFilterValue>
+): CoinSearch {
+  return applyRangeSearchFilters(
+    currentSearch,
+    thicknessFilterNames,
+    thicknessRange,
+    parseThicknessFilterValue
   )
 }
 

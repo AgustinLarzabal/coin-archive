@@ -277,6 +277,91 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters coins by exact and open-ended thickness ranges, excluding only unknown thickness values and preserving newest-first ordering", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    await createCoin({
+      title: "Exact Thickness Match",
+      issuerId: rome.id,
+      thickness: "1.25",
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Within Thickness Range",
+      issuerId: rome.id,
+      diameter: "18.75",
+      thickness: "2.10",
+      weight: "3.90",
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Thickness With Unknown Weight And Diameter",
+      issuerId: rome.id,
+      thickness: "2.50",
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unknown Thickness",
+      issuerId: rome.id,
+      diameter: "19.00",
+      weight: "4.10",
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Other Issuer Thickness Match",
+      issuerId: spain.id,
+      thickness: "2.10",
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        minThickness: 1.25,
+        maxThickness: 2.1,
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Exact Thickness Match",
+          "Within Thickness Range",
+          "Other Issuer Thickness Match",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        minThickness: 2.1,
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        [
+          "Within Thickness Range",
+          "Thickness With Unknown Weight And Diameter",
+          "Other Issuer Thickness Match",
+        ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        maxThickness: 2.1,
+        issuerCode: "rome",
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Exact Thickness Match", "Within Thickness Range"].join("|")
+    )
+  })
+
   it("filters coins by a requested single issue year using overlap semantics and excludes unknown ranges", async () => {
     const rome = await createIssuer({
       code: "rome",

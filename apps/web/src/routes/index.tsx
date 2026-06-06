@@ -10,6 +10,7 @@ import type {
 import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
+  applyThicknessRangeSearch,
   type CoinSearch,
   coinListInputSchema,
   coinSearchSchema,
@@ -51,7 +52,9 @@ const getCoinListData = createServerFn({ method: "GET" })
           fromYear: data.fromYear,
           issuerCode: data.issuerCode,
           maxDiameter: data.maxDiameter,
+          maxThickness: data.maxThickness,
           minDiameter: data.minDiameter,
+          minThickness: data.minThickness,
           referenceNumber: data.referenceNumber,
           rulerCode: data.rulerCode,
           toYear: data.toYear,
@@ -81,7 +84,9 @@ function App() {
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
     maxDiameter: selectedMaxDiameter,
+    maxThickness: selectedMaxThickness,
     minDiameter: selectedMinDiameter,
+    minThickness: selectedMinThickness,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
     toYear: selectedToYear,
@@ -155,6 +160,14 @@ function App() {
       applyDiameterRangeSearch(currentSearch, {
         maxDiameter: formData.get("maxDiameter"),
         minDiameter: formData.get("minDiameter"),
+      })
+  )
+
+  const updateThicknessRange = createRangeSubmitHandler(
+    (currentSearch, formData) =>
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: formData.get("maxThickness"),
+        minThickness: formData.get("minThickness"),
       })
   )
 
@@ -309,6 +322,34 @@ function App() {
           type="submit"
         >
           Apply diameter
+        </button>
+      </form>
+
+      <form
+        className="flex items-end gap-2 py-2"
+        onSubmit={updateThicknessRange}
+      >
+        <Input
+          aria-label="Filter minimum thickness in millimeters"
+          defaultValue={selectedMinThickness?.toString() ?? ""}
+          key={`min-thickness-${selectedMinThickness ?? ""}`}
+          name="minThickness"
+          placeholder="Min thickness (mm)"
+          type="number"
+        />
+        <Input
+          aria-label="Filter maximum thickness in millimeters"
+          defaultValue={selectedMaxThickness?.toString() ?? ""}
+          key={`max-thickness-${selectedMaxThickness ?? ""}`}
+          name="maxThickness"
+          placeholder="Max thickness (mm)"
+          type="number"
+        />
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
+          Apply thickness
         </button>
       </form>
 

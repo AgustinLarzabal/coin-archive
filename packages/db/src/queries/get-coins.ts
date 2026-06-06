@@ -70,7 +70,9 @@ export type GetCoinsOptions = {
   issuerCode?: string
   limit?: number
   maxDiameter?: number
+  maxThickness?: number
   minDiameter?: number
+  minThickness?: number
   referenceNumber?: string
   rulerCode?: string
   toYear?: number
@@ -82,7 +84,9 @@ type CoinFilterOptions = Pick<
   | "fromYear"
   | "issuerCode"
   | "maxDiameter"
+  | "maxThickness"
   | "minDiameter"
+  | "minThickness"
   | "rulerCode"
   | "catalogueCode"
   | "referenceNumber"
@@ -98,7 +102,9 @@ function buildCoinFilter({
   fromYear,
   issuerCode,
   maxDiameter,
+  maxThickness,
   minDiameter,
+  minThickness,
   rulerCode,
   catalogueCode,
   referenceNumber,
@@ -115,6 +121,10 @@ function buildCoinFilter({
     buildDiameterRangeFilter({
       maxDiameter,
       minDiameter,
+    }),
+    buildThicknessRangeFilter({
+      maxThickness,
+      minThickness,
     }),
     buildIssueYearRangeFilter({
       fromYear,
@@ -210,6 +220,11 @@ type CatalogueReferenceFilterOptions = Pick<
 type DiameterRangeFilterOptions = Pick<
   GetCoinsOptions,
   "maxDiameter" | "minDiameter"
+>
+
+type ThicknessRangeFilterOptions = Pick<
+  GetCoinsOptions,
+  "maxThickness" | "minThickness"
 >
 
 type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
@@ -313,6 +328,27 @@ function buildDiameterRangeFilter({
 
   if (maxDiameter !== undefined) {
     filters.push(sql`${coin.diameter} <= ${maxDiameter}`)
+  }
+
+  return and(...filters)!
+}
+
+function buildThicknessRangeFilter({
+  maxThickness,
+  minThickness,
+}: ThicknessRangeFilterOptions): SQL | undefined {
+  if (minThickness === undefined && maxThickness === undefined) {
+    return undefined
+  }
+
+  const filters = [sql`${coin.thickness} is not null`]
+
+  if (minThickness !== undefined) {
+    filters.push(sql`${coin.thickness} >= ${minThickness}`)
+  }
+
+  if (maxThickness !== undefined) {
+    filters.push(sql`${coin.thickness} <= ${maxThickness}`)
   }
 
   return and(...filters)!

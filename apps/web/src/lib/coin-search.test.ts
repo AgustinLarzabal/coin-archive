@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   applyDiameterRangeSearch,
   applyIssueYearRangeSearch,
+  applyThicknessRangeSearch,
   type CoinSearchFilterName,
   coinSearchSchema,
   findSelectedCatalogueOption,
@@ -21,7 +22,9 @@ const currentSearch = {
   fromYear: 1898,
   issuer: "spain",
   maxDiameter: 28.75,
+  maxThickness: 3.4,
   minDiameter: 25.5,
+  minThickness: 1.25,
   referenceNumber: "1338",
   ruler: "felipe-vi",
   toYear: 1902,
@@ -106,6 +109,24 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual(searchWithout("maxDiameter"))
     }
   )
+
+  it.each([undefined, ""] as const)(
+    "clears the minThickness filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "minThickness", filterValue)
+      ).toStrictEqual(searchWithout("minThickness"))
+    }
+  )
+
+  it.each([undefined, ""] as const)(
+    "clears the maxThickness filter without removing unrelated filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "maxThickness", filterValue)
+      ).toStrictEqual(searchWithout("maxThickness"))
+    }
+  )
 })
 
 describe("applyIssueYearRangeSearch", () => {
@@ -121,7 +142,9 @@ describe("applyIssueYearRangeSearch", () => {
       fromYear: -43,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 0,
@@ -138,7 +161,9 @@ describe("applyIssueYearRangeSearch", () => {
       fromYear: 1900,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -155,7 +180,9 @@ describe("applyIssueYearRangeSearch", () => {
       distribution: "circulating-commemorative",
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -172,7 +199,9 @@ describe("applyIssueYearRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -190,7 +219,9 @@ describe("applyIssueYearRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1900,
@@ -211,7 +242,9 @@ describe("applyDiameterRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -228,6 +261,8 @@ describe("applyDiameterRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       minDiameter: 27,
+      maxThickness: 3.4,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -246,6 +281,8 @@ describe("applyDiameterRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -262,6 +299,8 @@ describe("applyDiameterRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       minDiameter: 25.5,
+      maxThickness: 3.4,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -280,7 +319,9 @@ describe("applyDiameterRangeSearch", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -288,8 +329,84 @@ describe("applyDiameterRangeSearch", () => {
   })
 })
 
+describe("applyThicknessRangeSearch", () => {
+  it("applies exact and open thickness windows while preserving unrelated filters", () => {
+    expect(
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: "3.40",
+        minThickness: "1.25",
+      })
+    ).toStrictEqual(currentSearch)
+
+    expect(
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: "",
+        minThickness: "2",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
+      minThickness: 2,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("clears either requested thickness bound without removing unrelated filters or the other bound", () => {
+    expect(
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: "3.40",
+        minThickness: "",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      maxThickness: 3.4,
+      minDiameter: 25.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: " ",
+        minThickness: "1.25",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 28.75,
+      minDiameter: 25.5,
+      minThickness: 1.25,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("ignores invalid requested thickness inputs instead of dropping the current bounds", () => {
+    expect(
+      applyThicknessRangeSearch(currentSearch, {
+        maxThickness: "3.40",
+        minThickness: "thick",
+      })
+    ).toStrictEqual(currentSearch)
+  })
+})
+
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, issue year range, diameter range, and reference number search params", () => {
+  it("accepts homepage catalogue, issue year range, diameter range, thickness range, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
@@ -297,7 +414,9 @@ describe("coinSearchSchema", () => {
         fromYear: "1898",
         issuer: "spain",
         maxDiameter: "28.75",
+        maxThickness: "3.40",
         minDiameter: "25.50",
+        minThickness: "1.25",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
         toYear: "1902",
@@ -308,32 +427,38 @@ describe("coinSearchSchema", () => {
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
       toYear: 1902,
     })
   })
 
-  it("treats blank issue year and diameter params as undefined", () => {
+  it("treats blank issue year, diameter, and thickness params as undefined", () => {
     expect(
       coinSearchSchema.parse({
         fromYear: "",
         maxDiameter: "",
+        maxThickness: " ",
         minDiameter: "  ",
+        minThickness: "",
         toYear: "  ",
       })
     ).toStrictEqual({
       fromYear: undefined,
       maxDiameter: undefined,
+      maxThickness: undefined,
       minDiameter: undefined,
+      minThickness: undefined,
       toYear: undefined,
     })
   })
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage issue year, diameter, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage issue year, diameter, thickness, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         catalogue: "km",
@@ -341,7 +466,9 @@ describe("getCoinListLoaderDeps", () => {
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 28.75,
+        maxThickness: 3.4,
         minDiameter: 25.5,
+        minThickness: 1.25,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -352,7 +479,9 @@ describe("getCoinListLoaderDeps", () => {
       fromYear: 1898,
       issuerCode: "spain",
       maxDiameter: 28.75,
+      maxThickness: 3.4,
       minDiameter: 25.5,
+      minThickness: 1.25,
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
       toYear: 1902,

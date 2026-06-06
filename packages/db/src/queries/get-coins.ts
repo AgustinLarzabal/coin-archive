@@ -232,6 +232,10 @@ type DiameterRangeFilterOptions = Pick<
   "maxDiameter" | "minDiameter"
 >
 type WeightRangeFilterOptions = Pick<GetCoinsOptions, "maxWeight" | "minWeight">
+type MeasurementRangeFilterOptions = {
+  maximumValue: number | undefined
+  minimumValue: number | undefined
+}
 
 type ThicknessRangeFilterOptions = Pick<
   GetCoinsOptions,
@@ -358,13 +362,7 @@ function buildMeasurementRangeFilter(
     | typeof coin.weight
     | typeof coin.diameter
     | typeof coin.thickness,
-  {
-    minimumValue,
-    maximumValue,
-  }: {
-    minimumValue: number | undefined
-    maximumValue: number | undefined
-  }
+  { minimumValue, maximumValue }: MeasurementRangeFilterOptions
 ): SQL | undefined {
   if (minimumValue === undefined && maximumValue === undefined) {
     return undefined

@@ -72,6 +72,10 @@ export type ThicknessFilterName = keyof Pick<
   CoinSearch,
   "minThickness" | "maxThickness"
 >
+type DecimalFilterName =
+  | WeightFilterName
+  | DiameterFilterName
+  | ThicknessFilterName
 export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
   | "fromYear"
@@ -93,6 +97,7 @@ export type IssueYearFilterValue = SearchFilterValue<IssueYearFilterName>
 export type WeightFilterValue = SearchFilterValue<WeightFilterName>
 export type DiameterFilterValue = SearchFilterValue<DiameterFilterName>
 export type ThicknessFilterValue = SearchFilterValue<ThicknessFilterName>
+type DecimalFilterValue = SearchFilterValue<DecimalFilterName>
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
 const weightFilterNames = ["minWeight", "maxWeight"] as const
@@ -192,9 +197,7 @@ function parseIssueYearFilterValue(value: IssueYearFilterValue) {
   })
 }
 
-function parseDecimalFilterValue(
-  value: DiameterFilterValue | ThicknessFilterValue | WeightFilterValue
-) {
+function parseDecimalFilterValue(value: DecimalFilterValue) {
   return parseNumericFilterValue(value, {
     isValidNumber: Number.isFinite,
     parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
@@ -251,11 +254,10 @@ export function applyDiameterRangeSearch(
   currentSearch: CoinSearch,
   diameterRange: Record<DiameterFilterName, DiameterFilterValue>
 ): CoinSearch {
-  return applyRangeSearchFilters(
+  return applyDecimalRangeSearch(
     currentSearch,
     diameterFilterNames,
-    diameterRange,
-    parseDecimalFilterValue
+    diameterRange
   )
 }
 
@@ -263,11 +265,10 @@ export function applyThicknessRangeSearch(
   currentSearch: CoinSearch,
   thicknessRange: Record<ThicknessFilterName, ThicknessFilterValue>
 ): CoinSearch {
-  return applyRangeSearchFilters(
+  return applyDecimalRangeSearch(
     currentSearch,
     thicknessFilterNames,
-    thicknessRange,
-    parseDecimalFilterValue
+    thicknessRange
   )
 }
 
@@ -275,10 +276,22 @@ export function applyWeightRangeSearch(
   currentSearch: CoinSearch,
   weightRange: Record<WeightFilterName, WeightFilterValue>
 ): CoinSearch {
-  return applyRangeSearchFilters(
+  return applyDecimalRangeSearch(
     currentSearch,
     weightFilterNames,
-    weightRange,
+    weightRange
+  )
+}
+
+function applyDecimalRangeSearch<FilterName extends DecimalFilterName>(
+  currentSearch: CoinSearch,
+  filterNames: readonly FilterName[],
+  range: Record<FilterName, DecimalFilterValue>
+): CoinSearch {
+  return applyRangeSearchFilters(
+    currentSearch,
+    filterNames,
+    range,
     parseDecimalFilterValue
   )
 }

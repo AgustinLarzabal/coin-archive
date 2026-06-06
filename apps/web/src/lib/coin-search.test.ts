@@ -5,6 +5,7 @@ import {
   applyIssueYearRangeSearch,
   applyThicknessRangeSearch,
   applyWeightRangeSearch,
+  type CoinSearch,
   type CoinSearchFilterName,
   coinListInputSchema,
   coinSearchSchema,
@@ -18,7 +19,7 @@ import {
   updateCoinSearchFilter,
 } from "./coin-search"
 
-const currentSearch = {
+const currentSearch: CoinSearch = {
   catalogue: "km",
   distribution: "circulating-commemorative",
   fromYear: 1898,
@@ -32,6 +33,13 @@ const currentSearch = {
   referenceNumber: "1338",
   ruler: "felipe-vi",
   toYear: 1902,
+}
+
+function searchWith(overrides: Partial<CoinSearch>): CoinSearch {
+  return {
+    ...currentSearch,
+    ...overrides,
+  }
 }
 
 function searchWithout(...filterNames: CoinSearchFilterName[]) {
@@ -78,11 +86,12 @@ describe("applyIssueYearRangeSearch", () => {
         fromYear: "-43",
         toYear: "0",
       })
-    ).toStrictEqual({
-      ...currentSearch,
-      fromYear: -43,
-      toYear: 0,
-    })
+    ).toStrictEqual(
+      searchWith({
+        fromYear: -43,
+        toYear: 0,
+      })
+    )
 
     expect(
       applyIssueYearRangeSearch(currentSearch, {
@@ -117,56 +126,11 @@ describe("applyIssueYearRangeSearch", () => {
         fromYear: "nineteen hundred",
         toYear: "1900",
       })
-    ).toStrictEqual({
-      ...currentSearch,
-      toYear: 1900,
-    })
-  })
-})
-
-describe("applyWeightRangeSearch", () => {
-  it("applies exact and open weight windows while preserving unrelated filters", () => {
-    expect(
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: "28.75",
-        minWeight: "25.50",
+    ).toStrictEqual(
+      searchWith({
+        toYear: 1900,
       })
-    ).toStrictEqual(currentSearch)
-
-    expect(
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: "",
-        minWeight: "27",
-      })
-    ).toStrictEqual({
-      ...searchWithout("maxWeight"),
-      minWeight: 27,
-    })
-  })
-
-  it("clears either requested weight bound without removing unrelated filters or the other bound", () => {
-    expect(
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: "28.75",
-        minWeight: "",
-      })
-    ).toStrictEqual(searchWithout("minWeight"))
-
-    expect(
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: " ",
-        minWeight: "25.50",
-      })
-    ).toStrictEqual(searchWithout("maxWeight"))
-  })
-
-  it("ignores invalid requested weight inputs instead of dropping the current bounds", () => {
-    expect(
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: "28.75",
-        minWeight: "twenty-five",
-      })
-    ).toStrictEqual(currentSearch)
+    )
   })
 })
 
@@ -211,6 +175,52 @@ describe("applyDiameterRangeSearch", () => {
       applyDiameterRangeSearch(currentSearch, {
         maxDiameter: "28.75",
         minDiameter: "twenty-five",
+      })
+    ).toStrictEqual(currentSearch)
+  })
+})
+
+describe("applyWeightRangeSearch", () => {
+  it("applies exact and open weight windows while preserving unrelated filters", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "25.50",
+      })
+    ).toStrictEqual(currentSearch)
+
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "",
+        minWeight: "27",
+      })
+    ).toStrictEqual({
+      ...searchWithout("maxWeight"),
+      minWeight: 27,
+    })
+  })
+
+  it("clears either requested weight bound without removing unrelated filters or the other bound", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "",
+      })
+    ).toStrictEqual(searchWithout("minWeight"))
+
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: " ",
+        minWeight: "25.50",
+      })
+    ).toStrictEqual(searchWithout("maxWeight"))
+  })
+
+  it("ignores invalid requested weight inputs instead of dropping the current bounds", () => {
+    expect(
+      applyWeightRangeSearch(currentSearch, {
+        maxWeight: "28.75",
+        minWeight: "twenty-five",
       })
     ).toStrictEqual(currentSearch)
   })

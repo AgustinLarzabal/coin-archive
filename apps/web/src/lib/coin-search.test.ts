@@ -5,6 +5,7 @@ import {
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
+  formatCoinMeasurementsLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getDistributionOptionLabel,
@@ -284,6 +285,36 @@ describe("formatIssueYearRangeLabel", () => {
 
   it("keeps the unknown issue year copy when no range is stored", () => {
     expect(formatIssueYearRangeLabel(null)).toBe("Issue years unknown")
+  })
+})
+
+describe("formatCoinMeasurementsLabel", () => {
+  it("formats known measurements with units and omits unknown individual values", () => {
+    expect(
+      formatCoinMeasurementsLabel({
+        weight: "26.73",
+        diameter: "38.10",
+        thickness: null,
+      })
+    ).toBe("Weight 26.73 g · Diameter 38.10 mm")
+
+    expect(
+      formatCoinMeasurementsLabel({
+        weight: null,
+        diameter: null,
+        thickness: "2.40",
+      })
+    ).toBe("Thickness 2.40 mm")
+  })
+
+  it("returns null when all measurements are unknown", () => {
+    expect(
+      formatCoinMeasurementsLabel({
+        weight: null,
+        diameter: null,
+        thickness: null,
+      })
+    ).toBeNull()
   })
 })
 

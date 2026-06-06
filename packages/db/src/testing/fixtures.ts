@@ -17,12 +17,15 @@ type CreateIssuerInput = {
 
 type CreateCoinInput = {
   createdAt: Date
+  diameter?: string
   distributionId?: string
   issuerId: string
   maxYear?: number
   minYear?: number
+  thickness?: string
   title: string
   updatedAt?: Date
+  weight?: string
 }
 
 type CreateDistributionInput = {
@@ -77,12 +80,15 @@ export async function createIssuer({
 
 export async function createCoin({
   createdAt,
+  diameter,
   distributionId,
   issuerId,
   maxYear,
   minYear,
+  thickness,
   title,
   updatedAt = createdAt,
+  weight,
 }: CreateCoinInput) {
   const resolvedDistributionId =
     distributionId ?? (await getOrCreateDefaultDistribution()).id
@@ -92,11 +98,14 @@ export async function createCoin({
     .values({
       createdAt,
       distributionId: resolvedDistributionId,
+      diameter,
       issuerId,
       maxYear,
       minYear,
+      thickness,
       title,
       updatedAt,
+      weight,
     })
     .returning()
 

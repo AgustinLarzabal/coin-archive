@@ -53,6 +53,9 @@ export type GetCoinsRow = {
   updatedAt: Date
   minYear: number | null
   maxYear: number | null
+  weight: string | null
+  diameter: string | null
+  thickness: string | null
 } & GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
@@ -104,6 +107,12 @@ export type CoinDistribution = {
 export type CoinIssueYearRange = {
   minYear: number
   maxYear: number
+}
+
+export type CoinMeasurements = {
+  weight: string | null
+  diameter: string | null
+  thickness: string | null
 }
 
 export type CoinIssuer = {
@@ -169,6 +178,7 @@ type CoinRecordBase = Pick<
 
 export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
+  measurements: CoinMeasurements
   distribution: CoinDistribution
   issuer: CoinIssuer
   rulers: CoinRuler[]
@@ -186,6 +196,18 @@ function mapIssueYearRange({
   return {
     minYear,
     maxYear,
+  }
+}
+
+function mapMeasurements({
+  weight,
+  diameter,
+  thickness,
+}: Pick<GetCoinsRow, "weight" | "diameter" | "thickness">): CoinMeasurements {
+  return {
+    weight,
+    diameter,
+    thickness,
   }
 }
 
@@ -419,6 +441,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     issueYearRange: mapIssueYearRange(row),
+    measurements: mapMeasurements(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
     rulers: [],

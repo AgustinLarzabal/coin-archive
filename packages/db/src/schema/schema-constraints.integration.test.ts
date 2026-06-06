@@ -222,6 +222,50 @@ describe("coin schema constraints", () => {
     ).resolves.toBeDefined()
   })
 
+  it("allows optional positive coin measurements with two decimal places", async () => {
+    const { distributionId, issuerId } = await createCoinDependencies()
+
+    await expect(
+      createCoin({
+        title: "Measured Test Coin",
+        issuerId,
+        distributionId,
+        weight: "26.73",
+        diameter: "38.10",
+        thickness: "2.40",
+        createdAt: new Date("2026-06-02T18:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+  })
+
+  it("rejects zero and negative coin measurements when a value is present", async () => {
+    const { distributionId, issuerId } = await createCoinDependencies()
+
+    await expectConstraintError(
+      createCoin({
+        title: "Zero Weight Coin",
+        issuerId,
+        distributionId,
+        weight: "0.00",
+        createdAt: new Date("2026-06-02T19:00:00.000Z"),
+      }),
+      coinSchemaNames.weightPositiveCheck,
+      "23514"
+    )
+
+    await expectConstraintError(
+      createCoin({
+        title: "Negative Diameter Coin",
+        issuerId,
+        distributionId,
+        diameter: "-1.00",
+        createdAt: new Date("2026-06-02T20:00:00.000Z"),
+      }),
+      coinSchemaNames.diameterPositiveCheck,
+      "23514"
+    )
+  })
+
   it("rejects coins with only min_year present", async () => {
     const { distributionId, issuerId } = await createCoinDependencies()
 

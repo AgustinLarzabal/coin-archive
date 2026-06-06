@@ -1,6 +1,7 @@
 import type {
   CatalogueOption,
   CoinIssueYearRange,
+  CoinMeasurements,
   DistributionOption,
   RulerOption,
 } from "@workspace/db"
@@ -206,4 +207,22 @@ export function formatIssueYearRangeLabel(
   }
 
   return `Issue years ${minYearLabel} to ${maxYearLabel}`
+}
+
+export function formatCoinMeasurementsLabel(measurements: CoinMeasurements) {
+  const measurementLabels = [
+    measurements.weight === null ? null : `Weight ${measurements.weight} g`,
+    measurements.diameter === null
+      ? null
+      : `Diameter ${measurements.diameter} mm`,
+    measurements.thickness === null
+      ? null
+      : `Thickness ${measurements.thickness} mm`,
+  ].filter((measurementLabel) => measurementLabel !== null)
+
+  if (measurementLabels.length === 0) {
+    return null
+  }
+
+  return measurementLabels.join(" · ")
 }

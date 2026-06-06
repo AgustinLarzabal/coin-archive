@@ -13,6 +13,7 @@ import {
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
+  formatCoinMeasurementsLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getDistributionOptionLabel,
@@ -263,20 +264,32 @@ function App() {
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => (
-          <li className="border-b border-border pb-4" key={coin.id}>
-            <p className="font-medium">{coin.title}</p>
-            <p className="text-sm text-muted-foreground">
-              {coin.issuer.name} · {coin.distribution.name}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {formatIssueYearRangeLabel(coin.issueYearRange)}
-            </p>
-          </li>
+          <CoinListItem coin={coin} key={coin.id} />
         ))}
       </ul>
-
-      {/* Keep JSON - DO NOT REMOVE */}
-      <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
     </div>
+  )
+}
+
+type CoinListItemProps = {
+  coin: Awaited<ReturnType<typeof getCoinListData>>["coins"][number]
+}
+
+function CoinListItem({ coin }: CoinListItemProps) {
+  const measurementsLabel = formatCoinMeasurementsLabel(coin.measurements)
+
+  return (
+    <li className="border-b border-border pb-4">
+      <p className="font-medium">{coin.title}</p>
+      <p className="text-sm text-muted-foreground">
+        {coin.issuer.name} · {coin.distribution.name}
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {formatIssueYearRangeLabel(coin.issueYearRange)}
+      </p>
+      {measurementsLabel ? (
+        <p className="text-sm text-muted-foreground">{measurementsLabel}</p>
+      ) : null}
+    </li>
   )
 }

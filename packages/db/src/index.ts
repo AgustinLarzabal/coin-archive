@@ -20,6 +20,7 @@ export type {
   CoinIssueYearRange,
   CoinIssuer,
   CoinIssuerParent,
+  CoinMeasurements,
   CoinRecord,
   CoinRulerGroup,
 } from "./queries/map-get-coins-row"

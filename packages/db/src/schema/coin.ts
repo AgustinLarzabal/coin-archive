@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  numeric,
   pgTable,
   timestamp,
   uuid,
@@ -12,12 +13,15 @@ import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
 export const coinSchemaNames = {
+  diameterPositiveCheck: "coin_diameter_positive_check",
   distributionIdIndex: "coin_distribution_id_idx",
   issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
   issueYearRangeIndex: "coin_issue_year_range_idx",
   issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
   issuerIdIndex: "coin_issuer_id_idx",
   recentCreatedAtIdIndex: "coin_recent_created_at_id_idx",
+  thicknessPositiveCheck: "coin_thickness_positive_check",
+  weightPositiveCheck: "coin_weight_positive_check",
 } as const
 
 const timestamptzDateColumn = {
@@ -42,6 +46,9 @@ export const coin = pgTable(
       .references(() => distribution.id, {
         onDelete: "restrict",
       }),
+    weight: numeric("weight", { precision: 10, scale: 2 }),
+    diameter: numeric("diameter", { precision: 10, scale: 2 }),
+    thickness: numeric("thickness", { precision: 10, scale: 2 }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
     createdAt: timestamp("created_at", timestamptzDateColumn)
@@ -66,6 +73,18 @@ export const coin = pgTable(
     check(
       coinSchemaNames.issueYearRangeOrderCheck,
       sql`${coin.minYear} is null or ${coin.maxYear} is null or ${coin.minYear} <= ${coin.maxYear}`
+    ),
+    check(
+      coinSchemaNames.weightPositiveCheck,
+      sql`${coin.weight} is null or ${coin.weight} > 0`
+    ),
+    check(
+      coinSchemaNames.diameterPositiveCheck,
+      sql`${coin.diameter} is null or ${coin.diameter} > 0`
+    ),
+    check(
+      coinSchemaNames.thicknessPositiveCheck,
+      sql`${coin.thickness} is null or ${coin.thickness} > 0`
     ),
   ]
 )

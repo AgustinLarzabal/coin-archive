@@ -37,14 +37,19 @@ describe("seed integration", () => {
     expect(circulatingCommemorativeCount?.count).toBe(1)
 
     const seededCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "Seed Coin 06"
+      ({ title }) => title === "2014 Kennedy Half Dollar"
     )
 
     expect(seededCoin).toMatchObject({
-      title: "Seed Coin 06",
+      title: "2014 Kennedy Half Dollar",
       issueYearRange: {
         minYear: 2014,
         maxYear: 2026,
+      },
+      measurements: {
+        weight: "11.34",
+        diameter: "30.61",
+        thickness: "2.15",
       },
       distribution: {
         code: "standard-circulation",
@@ -62,15 +67,20 @@ describe("seed integration", () => {
       ],
     })
 
-    const ancientSeedCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "Seed Coin 08"
+    const earlyAmericanSeedCoin = (await getCoins({ limit: 10 })).find(
+      ({ title }) => title === "1793 Flowing Hair Cent"
     )
 
-    expect(ancientSeedCoin).toMatchObject({
-      title: "Seed Coin 08",
+    expect(earlyAmericanSeedCoin).toMatchObject({
+      title: "1793 Flowing Hair Cent",
       issueYearRange: {
-        minYear: -2,
-        maxYear: 0,
+        minYear: 1793,
+        maxYear: 1793,
+      },
+      measurements: {
+        weight: "13.48",
+        diameter: "27.50",
+        thickness: null,
       },
     })
   })

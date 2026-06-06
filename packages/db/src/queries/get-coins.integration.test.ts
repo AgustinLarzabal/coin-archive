@@ -165,6 +165,33 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("returns grouped nullable measurements through the shared coin listing", async () => {
+    const rome = await createIssuer({
+      code: "rome",
+      name: "Rome",
+    })
+
+    const coin = await createCoin({
+      title: "Measured Denarius",
+      issuerId: rome.id,
+      weight: "3.90",
+      diameter: "18.50",
+      createdAt: new Date("2026-05-02T12:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
+      {
+        id: coin.id,
+        title: "Measured Denarius",
+        measurements: {
+          weight: "3.90",
+          diameter: "18.50",
+          thickness: null,
+        },
+      },
+    ])
+  })
+
   it("filters coins by a requested single issue year using overlap semantics and excludes unknown ranges", async () => {
     const rome = await createIssuer({
       code: "rome",

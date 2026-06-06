@@ -35,7 +35,7 @@ Important model notes:
 
 The current core relationships map to these tables:
 
-- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, and optional closed Issue Year Range in `min_year`/`max_year`
+- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
@@ -65,6 +65,11 @@ These are enforced by the current PostgreSQL schema and exercised by package tes
 - Coin Issue Year Range may be unknown with both `min_year` and `max_year` null
 - Coin Issue Year Range must be closed when present; half-entered ranges are rejected
 - Coin Issue Year Range must satisfy `min_year <= max_year`
+- Coin measurements are optional exact decimals stored with two fractional digits
+- Weight is stored in grams; Diameter and Thickness are stored in millimeters
+- Diameter describes the largest width of the Coin when the Coin is not round
+- Coin measurements describe the Coin type or issue, not an individual specimen
+- each present Coin measurement must be strictly positive; zero and negative values are rejected
 - Issuer Code, Ruler Code, and Ruler Group Code must be unique and lowercase slug-style text
 - Catalogue Code is required and unique ignoring case; preferred display casing is still preserved in `catalogue.code`
 - an Issuer cannot be its own direct parent
@@ -112,6 +117,7 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 
 - keep demo seed data in `packages/db/src/seed/seed-data.ts`
 - keep seeding orchestration in `packages/db/src/seed/index.ts`
+- keep seeded Coin measurements realistic and varied so the homepage listing demonstrates known and unknown measurement states
 - treat seed data as local/demo setup, not as a dependency for behavior tests
 
 ### Database tests

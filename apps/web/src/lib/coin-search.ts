@@ -76,21 +76,15 @@ export type TextCoinSearchFilterName = Exclude<
   | "minThickness"
   | "maxThickness"
 >
-export type IssueYearFilterValue =
-  | CoinSearch[IssueYearFilterName]
+type NumericFilterValue<FilterName extends CoinSearchFilterName> =
+  | CoinSearch[FilterName]
   | FormDataEntryValue
   | null
   | undefined
-export type DiameterFilterValue =
-  | CoinSearch[DiameterFilterName]
-  | FormDataEntryValue
-  | null
-  | undefined
-export type ThicknessFilterValue =
-  | CoinSearch[ThicknessFilterName]
-  | FormDataEntryValue
-  | null
-  | undefined
+
+export type IssueYearFilterValue = NumericFilterValue<IssueYearFilterName>
+export type DiameterFilterValue = NumericFilterValue<DiameterFilterName>
+export type ThicknessFilterValue = NumericFilterValue<ThicknessFilterName>
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
 const diameterFilterNames = ["minDiameter", "maxDiameter"] as const
@@ -187,15 +181,9 @@ function parseIssueYearFilterValue(value: IssueYearFilterValue) {
   })
 }
 
-function parseDiameterFilterValue(value: DiameterFilterValue) {
-  return parseNumericFilterValue(value, {
-    isValidNumber: Number.isFinite,
-    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
-    pattern: decimalFilterPattern,
-  })
-}
-
-function parseThicknessFilterValue(value: ThicknessFilterValue) {
+function parseDecimalFilterValue(
+  value: DiameterFilterValue | ThicknessFilterValue
+) {
   return parseNumericFilterValue(value, {
     isValidNumber: Number.isFinite,
     parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
@@ -256,7 +244,7 @@ export function applyDiameterRangeSearch(
     currentSearch,
     diameterFilterNames,
     diameterRange,
-    parseDiameterFilterValue
+    parseDecimalFilterValue
   )
 }
 
@@ -268,7 +256,7 @@ export function applyThicknessRangeSearch(
     currentSearch,
     thicknessFilterNames,
     thicknessRange,
-    parseThicknessFilterValue
+    parseDecimalFilterValue
   )
 }
 

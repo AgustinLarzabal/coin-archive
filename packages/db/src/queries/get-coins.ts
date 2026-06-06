@@ -316,39 +316,44 @@ function buildDiameterRangeFilter({
   maxDiameter,
   minDiameter,
 }: DiameterRangeFilterOptions): SQL | undefined {
-  if (minDiameter === undefined && maxDiameter === undefined) {
-    return undefined
-  }
-
-  const filters = [sql`${coin.diameter} is not null`]
-
-  if (minDiameter !== undefined) {
-    filters.push(sql`${coin.diameter} >= ${minDiameter}`)
-  }
-
-  if (maxDiameter !== undefined) {
-    filters.push(sql`${coin.diameter} <= ${maxDiameter}`)
-  }
-
-  return and(...filters)!
+  return buildMeasurementRangeFilter(coin.diameter, {
+    maximum: maxDiameter,
+    minimum: minDiameter,
+  })
 }
 
 function buildThicknessRangeFilter({
   maxThickness,
   minThickness,
 }: ThicknessRangeFilterOptions): SQL | undefined {
-  if (minThickness === undefined && maxThickness === undefined) {
+  return buildMeasurementRangeFilter(coin.thickness, {
+    maximum: maxThickness,
+    minimum: minThickness,
+  })
+}
+
+function buildMeasurementRangeFilter(
+  measurementField: typeof coin.diameter | typeof coin.thickness,
+  {
+    maximum,
+    minimum,
+  }: {
+    maximum: number | undefined
+    minimum: number | undefined
+  }
+): SQL | undefined {
+  if (minimum === undefined && maximum === undefined) {
     return undefined
   }
 
-  const filters = [sql`${coin.thickness} is not null`]
+  const filters = [sql`${measurementField} is not null`]
 
-  if (minThickness !== undefined) {
-    filters.push(sql`${coin.thickness} >= ${minThickness}`)
+  if (minimum !== undefined) {
+    filters.push(sql`${measurementField} >= ${minimum}`)
   }
 
-  if (maxThickness !== undefined) {
-    filters.push(sql`${coin.thickness} <= ${maxThickness}`)
+  if (maximum !== undefined) {
+    filters.push(sql`${measurementField} <= ${maximum}`)
   }
 
   return and(...filters)!

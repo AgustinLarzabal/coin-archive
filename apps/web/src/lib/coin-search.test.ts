@@ -6,6 +6,7 @@ import {
   applyThicknessRangeSearch,
   applyWeightRangeSearch,
   type CoinSearchFilterName,
+  coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
@@ -338,6 +339,24 @@ describe("getCoinListLoaderDeps", () => {
       rulerCode: "felipe-vi",
       toYear: 1902,
     })
+  })
+
+  it("returns loader deps that satisfy the shared coin list input schema", () => {
+    const loaderDeps = getCoinListLoaderDeps({
+      catalogue: "km",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxWeight: 28.75,
+      maxDiameter: 28.75,
+      minWeight: 25.5,
+      minDiameter: 25.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(coinListInputSchema.parse(loaderDeps)).toStrictEqual(loaderDeps)
   })
 })
 

@@ -327,21 +327,10 @@ function buildWeightRangeFilter({
   maxWeight,
   minWeight,
 }: WeightRangeFilterOptions): SQL | undefined {
-  if (minWeight === undefined && maxWeight === undefined) {
-    return undefined
-  }
-
-  const filters = [sql`${coin.weight} is not null`]
-
-  if (minWeight !== undefined) {
-    filters.push(sql`${coin.weight} >= ${minWeight}`)
-  }
-
-  if (maxWeight !== undefined) {
-    filters.push(sql`${coin.weight} <= ${maxWeight}`)
-  }
-
-  return and(...filters)!
+  return buildMeasurementRangeFilter(coin.weight, {
+    minimumValue: minWeight,
+    maximumValue: maxWeight,
+  })
 }
 
 function buildDiameterRangeFilter({
@@ -349,8 +338,8 @@ function buildDiameterRangeFilter({
   minDiameter,
 }: DiameterRangeFilterOptions): SQL | undefined {
   return buildMeasurementRangeFilter(coin.diameter, {
-    maximum: maxDiameter,
-    minimum: minDiameter,
+    minimumValue: minDiameter,
+    maximumValue: maxDiameter,
   })
 }
 
@@ -359,33 +348,36 @@ function buildThicknessRangeFilter({
   minThickness,
 }: ThicknessRangeFilterOptions): SQL | undefined {
   return buildMeasurementRangeFilter(coin.thickness, {
-    maximum: maxThickness,
-    minimum: minThickness,
+    minimumValue: minThickness,
+    maximumValue: maxThickness,
   })
 }
 
 function buildMeasurementRangeFilter(
-  measurementField: typeof coin.diameter | typeof coin.thickness,
+  measurementColumn:
+    | typeof coin.weight
+    | typeof coin.diameter
+    | typeof coin.thickness,
   {
-    maximum,
-    minimum,
+    minimumValue,
+    maximumValue,
   }: {
-    maximum: number | undefined
-    minimum: number | undefined
+    minimumValue: number | undefined
+    maximumValue: number | undefined
   }
 ): SQL | undefined {
-  if (minimum === undefined && maximum === undefined) {
+  if (minimumValue === undefined && maximumValue === undefined) {
     return undefined
   }
 
-  const filters = [sql`${measurementField} is not null`]
+  const filters = [sql`${measurementColumn} is not null`]
 
-  if (minimum !== undefined) {
-    filters.push(sql`${measurementField} >= ${minimum}`)
+  if (minimumValue !== undefined) {
+    filters.push(sql`${measurementColumn} >= ${minimumValue}`)
   }
 
-  if (maximum !== undefined) {
-    filters.push(sql`${measurementField} <= ${maximum}`)
+  if (maximumValue !== undefined) {
+    filters.push(sql`${measurementColumn} <= ${maximumValue}`)
   }
 
   return and(...filters)!

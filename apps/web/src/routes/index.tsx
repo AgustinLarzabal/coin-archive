@@ -47,21 +47,7 @@ const getCoinListData = createServerFn({ method: "GET" })
 
     const [coins, catalogues, distributions, issuers, rulers] =
       await Promise.all([
-        getCoins({
-          catalogueCode: data.catalogueCode,
-          distributionCode: data.distributionCode,
-          fromYear: data.fromYear,
-          issuerCode: data.issuerCode,
-          maxWeight: data.maxWeight,
-          maxDiameter: data.maxDiameter,
-          maxThickness: data.maxThickness,
-          minWeight: data.minWeight,
-          minDiameter: data.minDiameter,
-          minThickness: data.minThickness,
-          referenceNumber: data.referenceNumber,
-          rulerCode: data.rulerCode,
-          toYear: data.toYear,
-        }),
+        getCoins(data),
         getCatalogues(),
         getDistributions(),
         getIssuers(),

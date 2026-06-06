@@ -83,15 +83,16 @@ export type TextCoinSearchFilterName = Exclude<
   | "minThickness"
   | "maxThickness"
 >
-type NumericFilterValue<FilterName extends CoinSearchFilterName> =
+type SearchFilterValue<FilterName extends CoinSearchFilterName> =
   | CoinSearch[FilterName]
   | FormDataEntryValue
   | null
   | undefined
-export type IssueYearFilterValue = NumericFilterValue<IssueYearFilterName>
-export type WeightFilterValue = NumericFilterValue<WeightFilterName>
-export type DiameterFilterValue = NumericFilterValue<DiameterFilterName>
-export type ThicknessFilterValue = NumericFilterValue<ThicknessFilterName>
+
+export type IssueYearFilterValue = SearchFilterValue<IssueYearFilterName>
+export type WeightFilterValue = SearchFilterValue<WeightFilterName>
+export type DiameterFilterValue = SearchFilterValue<DiameterFilterName>
+export type ThicknessFilterValue = SearchFilterValue<ThicknessFilterName>
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
 const weightFilterNames = ["minWeight", "maxWeight"] as const
@@ -192,16 +193,8 @@ function parseIssueYearFilterValue(value: IssueYearFilterValue) {
 }
 
 function parseDecimalFilterValue(
-  value: DiameterFilterValue | ThicknessFilterValue
+  value: DiameterFilterValue | ThicknessFilterValue | WeightFilterValue
 ) {
-  return parseNumericFilterValue(value, {
-    isValidNumber: Number.isFinite,
-    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
-    pattern: decimalFilterPattern,
-  })
-}
-
-function parseWeightFilterValue(value: WeightFilterValue) {
   return parseNumericFilterValue(value, {
     isValidNumber: Number.isFinite,
     parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
@@ -286,7 +279,7 @@ export function applyWeightRangeSearch(
     currentSearch,
     weightFilterNames,
     weightRange,
-    parseWeightFilterValue
+    parseDecimalFilterValue
   )
 }
 
@@ -297,7 +290,9 @@ function applyRangeSearchFilters<
   currentSearch: CoinSearch,
   filterNames: readonly FilterName[],
   range: Record<FilterName, FilterValue>,
-  parseFilterValue: (value: FilterValue) => CoinSearch[FilterName] | null
+  parseFilterValue: (
+    value: FilterValue
+  ) => CoinSearch[FilterName] | null | undefined
 ): CoinSearch {
   let nextSearch = currentSearch
 

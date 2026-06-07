@@ -7,6 +7,26 @@ import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { seedDatabase } from "./index"
 
+type SeededCoinListing = Awaited<ReturnType<typeof getCoins>>
+type SeededCoinListingItem = SeededCoinListing[number]
+
+const findSeededCoinByTitle = (
+  seededCoins: SeededCoinListing,
+  title: string
+): SeededCoinListingItem | undefined =>
+  seededCoins.find((seededCoin) => seededCoin.title === title)
+
+const expectSeededCoinMeasurements = (
+  seededCoins: SeededCoinListing,
+  title: string,
+  measurements: SeededCoinListingItem["measurements"]
+) => {
+  expect(findSeededCoinByTitle(seededCoins, title)).toMatchObject({
+    title,
+    measurements,
+  })
+}
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -36,8 +56,10 @@ describe("seed integration", () => {
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
 
-    const seededCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "2014 Kennedy Half Dollar"
+    const seededCoins = await getCoins({ limit: 10 })
+    const seededCoin = findSeededCoinByTitle(
+      seededCoins,
+      "2014 Kennedy Half Dollar"
     )
 
     expect(seededCoin).toMatchObject({
@@ -67,8 +89,9 @@ describe("seed integration", () => {
       ],
     })
 
-    const earlyAmericanSeedCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "1793 Flowing Hair Cent"
+    const earlyAmericanSeedCoin = findSeededCoinByTitle(
+      seededCoins,
+      "1793 Flowing Hair Cent"
     )
 
     expect(earlyAmericanSeedCoin).toMatchObject({
@@ -90,48 +113,25 @@ describe("seed integration", () => {
 
     const seededCoins = await getCoins({ limit: 20 })
 
-    expect(
-      seededCoins.find(({ title }) => title === "2001 Argentine 1 Peso")
-    ).toMatchObject({
-      title: "2001 Argentine 1 Peso",
-      measurements: {
-        weight: "6.35",
-        diameter: "23.00",
-        thickness: "2.00",
-      },
+    expectSeededCoinMeasurements(seededCoins, "2001 Argentine 1 Peso", {
+      weight: "6.35",
+      diameter: "23.00",
+      thickness: "2.00",
     })
-
-    expect(
-      seededCoins.find(({ title }) => title === "1896 Argentine 20 Centavos")
-    ).toMatchObject({
-      title: "1896 Argentine 20 Centavos",
-      measurements: {
-        weight: null,
-        diameter: "21.00",
-        thickness: "1.40",
-      },
+    expectSeededCoinMeasurements(seededCoins, "1896 Argentine 20 Centavos", {
+      weight: null,
+      diameter: "21.00",
+      thickness: "1.40",
     })
-
-    expect(
-      seededCoins.find(({ title }) => title === "1822 Buenos Aires Decimo")
-    ).toMatchObject({
-      title: "1822 Buenos Aires Decimo",
-      measurements: {
-        weight: "1.35",
-        diameter: null,
-        thickness: "0.90",
-      },
+    expectSeededCoinMeasurements(seededCoins, "1822 Buenos Aires Decimo", {
+      weight: "1.35",
+      diameter: null,
+      thickness: "0.90",
     })
-
-    expect(
-      seededCoins.find(({ title }) => title === "1793 Flowing Hair Cent")
-    ).toMatchObject({
-      title: "1793 Flowing Hair Cent",
-      measurements: {
-        weight: "13.48",
-        diameter: "27.50",
-        thickness: null,
-      },
+    expectSeededCoinMeasurements(seededCoins, "1793 Flowing Hair Cent", {
+      weight: "13.48",
+      diameter: "27.50",
+      thickness: null,
     })
   })
 })

@@ -13,6 +13,7 @@ import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
 export const coinSchemaNames = {
+  diameterIndex: "coin_diameter_idx",
   diameterPositiveCheck: "coin_diameter_positive_check",
   distributionIdIndex: "coin_distribution_id_idx",
   issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
@@ -20,13 +21,21 @@ export const coinSchemaNames = {
   issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
   issuerIdIndex: "coin_issuer_id_idx",
   recentCreatedAtIdIndex: "coin_recent_created_at_id_idx",
+  thicknessIndex: "coin_thickness_idx",
   thicknessPositiveCheck: "coin_thickness_positive_check",
+  weightIndex: "coin_weight_idx",
   weightPositiveCheck: "coin_weight_positive_check",
 } as const
 
 const timestamptzDateColumn = {
   withTimezone: true,
   mode: "date",
+} as const
+
+const measurementColumn = {
+  precision: 10,
+  scale: 2,
+  mode: "number",
 } as const
 
 export const coin = pgTable(
@@ -46,11 +55,11 @@ export const coin = pgTable(
       .references(() => distribution.id, {
         onDelete: "restrict",
       }),
-    weight: numeric("weight", { precision: 10, scale: 2 }),
-    diameter: numeric("diameter", { precision: 10, scale: 2 }),
-    thickness: numeric("thickness", { precision: 10, scale: 2 }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
+    weight: numeric("weight", measurementColumn),
+    diameter: numeric("diameter", measurementColumn),
+    thickness: numeric("thickness", measurementColumn),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -66,6 +75,9 @@ export const coin = pgTable(
     index(coinSchemaNames.issuerIdIndex).on(coin.issuerId),
     index(coinSchemaNames.distributionIdIndex).on(coin.distributionId),
     index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),
+    index(coinSchemaNames.weightIndex).on(coin.weight),
+    index(coinSchemaNames.diameterIndex).on(coin.diameter),
+    index(coinSchemaNames.thicknessIndex).on(coin.thickness),
     check(
       coinSchemaNames.issueYearRangeClosedCheck,
       sql`(${coin.minYear} is null and ${coin.maxYear} is null) or (${coin.minYear} is not null and ${coin.maxYear} is not null)`

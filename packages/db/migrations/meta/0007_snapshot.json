@@ -1,5 +1,5 @@
 {
-  "id": "c61e0947-237f-443f-b8bd-73acdcc2317f",
+  "id": "c1289eab-b1f4-4899-a891-51cc0f77668a",
   "prevId": "4c5dfe2e-2204-405b-9703-d7fb990bf501",
   "version": "7",
   "dialect": "postgresql",
@@ -110,6 +110,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "min_year": {
+          "name": "min_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_year": {
+          "name": "max_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "weight": {
           "name": "weight",
           "type": "numeric(10, 2)",
@@ -125,18 +137,6 @@
         "thickness": {
           "name": "thickness",
           "type": "numeric(10, 2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "min_year": {
-          "name": "min_year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "max_year": {
-          "name": "max_year",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -218,6 +218,51 @@
             },
             {
               "expression": "max_year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coin_weight_idx": {
+          "name": "coin_weight_idx",
+          "columns": [
+            {
+              "expression": "weight",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coin_diameter_idx": {
+          "name": "coin_diameter_idx",
+          "columns": [
+            {
+              "expression": "diameter",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coin_thickness_idx": {
+          "name": "coin_thickness_idx",
+          "columns": [
+            {
+              "expression": "thickness",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

@@ -1,7 +1,6 @@
 import type {
   CatalogueOption,
   CoinIssueYearRange,
-  CoinMeasurements,
   DistributionOption,
   RulerOption,
 } from "@workspace/db"
@@ -22,9 +21,9 @@ const optionalIntegerSchema = z.preprocess(
   z.coerce.number().int().optional()
 )
 
-const optionalDecimalSchema = z.preprocess(
+const optionalPositiveNumberSchema = z.preprocess(
   normalizeOptionalNumericInput,
-  z.coerce.number().finite().optional()
+  z.coerce.number().positive().optional()
 )
 
 export const coinSearchSchema = z.object({
@@ -32,12 +31,12 @@ export const coinSearchSchema = z.object({
   distribution: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
-  maxWeight: optionalDecimalSchema,
-  maxDiameter: optionalDecimalSchema,
-  maxThickness: optionalDecimalSchema,
-  minWeight: optionalDecimalSchema,
-  minDiameter: optionalDecimalSchema,
-  minThickness: optionalDecimalSchema,
+  maxDiameter: optionalPositiveNumberSchema,
+  maxThickness: optionalPositiveNumberSchema,
+  maxWeight: optionalPositiveNumberSchema,
+  minDiameter: optionalPositiveNumberSchema,
+  minThickness: optionalPositiveNumberSchema,
+  minWeight: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -48,12 +47,12 @@ export const coinListInputSchema = z.object({
   distributionCode: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
-  maxWeight: optionalDecimalSchema,
-  maxDiameter: optionalDecimalSchema,
-  maxThickness: optionalDecimalSchema,
-  minWeight: optionalDecimalSchema,
-  minDiameter: optionalDecimalSchema,
-  minThickness: optionalDecimalSchema,
+  maxDiameter: optionalPositiveNumberSchema,
+  maxThickness: optionalPositiveNumberSchema,
+  maxWeight: optionalPositiveNumberSchema,
+  minDiameter: optionalPositiveNumberSchema,
+  minThickness: optionalPositiveNumberSchema,
+  minWeight: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -63,23 +62,8 @@ export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
 export type IssueYearFilterName = keyof Pick<CoinSearch, "fromYear" | "toYear">
-export type WeightFilterName = keyof Pick<CoinSearch, "minWeight" | "maxWeight">
-export type DiameterFilterName = keyof Pick<
+export type MeasurementFilterName = keyof Pick<
   CoinSearch,
-  "minDiameter" | "maxDiameter"
->
-export type ThicknessFilterName = keyof Pick<
-  CoinSearch,
-  "minThickness" | "maxThickness"
->
-type DecimalFilterName =
-  | WeightFilterName
-  | DiameterFilterName
-  | ThicknessFilterName
-export type TextCoinSearchFilterName = Exclude<
-  CoinSearchFilterName,
-  | "fromYear"
-  | "toYear"
   | "minWeight"
   | "maxWeight"
   | "minDiameter"
@@ -87,40 +71,35 @@ export type TextCoinSearchFilterName = Exclude<
   | "minThickness"
   | "maxThickness"
 >
-type SearchFilterValue<FilterName extends CoinSearchFilterName> =
-  | CoinSearch[FilterName]
+export type TextCoinSearchFilterName = Exclude<
+  CoinSearchFilterName,
+  IssueYearFilterName | MeasurementFilterName
+>
+export type IssueYearFilterValue =
+  | CoinSearch[IssueYearFilterName]
+  | FormDataEntryValue
+  | null
+  | undefined
+export type MeasurementFilterValue =
+  | CoinSearch[MeasurementFilterName]
   | FormDataEntryValue
   | null
   | undefined
 
-export type IssueYearFilterValue = SearchFilterValue<IssueYearFilterName>
-export type WeightFilterValue = SearchFilterValue<WeightFilterName>
-export type DiameterFilterValue = SearchFilterValue<DiameterFilterName>
-export type ThicknessFilterValue = SearchFilterValue<ThicknessFilterName>
-type DecimalFilterValue = SearchFilterValue<DecimalFilterName>
-
 const issueYearFilterNames = ["fromYear", "toYear"] as const
-const weightFilterNames = ["minWeight", "maxWeight"] as const
-const diameterFilterNames = ["minDiameter", "maxDiameter"] as const
-const thicknessFilterNames = ["minThickness", "maxThickness"] as const
-const decimalFilterPattern = /^-?(?:\d+\.?\d*|\.\d+)$/
-const integerFilterPattern = /^-?\d+$/
+const measurementFilterNames = [
+  "minWeight",
+  "maxWeight",
+  "minDiameter",
+  "maxDiameter",
+  "minThickness",
+  "maxThickness",
+] as const
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
-type CoinMeasurementField = keyof CoinMeasurements
-
-const coinMeasurementDefinitions: ReadonlyArray<{
-  field: CoinMeasurementField
-  label: string
-  unit: string
-}> = [
-  { field: "weight", label: "Weight", unit: "g" },
-  { field: "diameter", label: "Diameter", unit: "mm" },
-  { field: "thickness", label: "Thickness", unit: "mm" },
-]
 
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
@@ -128,12 +107,12 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     distributionCode: search.distribution,
     fromYear: search.fromYear,
     issuerCode: search.issuer,
-    maxWeight: search.maxWeight,
     maxDiameter: search.maxDiameter,
     maxThickness: search.maxThickness,
-    minWeight: search.minWeight,
+    maxWeight: search.maxWeight,
     minDiameter: search.minDiameter,
     minThickness: search.minThickness,
+    minWeight: search.minWeight,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
     toYear: search.toYear,
@@ -190,35 +169,8 @@ export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
 }
 
 function parseIssueYearFilterValue(value: IssueYearFilterValue) {
-  return parseNumericFilterValue(value, {
-    isValidNumber: Number.isInteger,
-    parseString: (trimmedValue) => Number.parseInt(trimmedValue, 10),
-    pattern: integerFilterPattern,
-  })
-}
-
-function parseDecimalFilterValue(value: DecimalFilterValue) {
-  return parseNumericFilterValue(value, {
-    isValidNumber: Number.isFinite,
-    parseString: (trimmedValue) => Number.parseFloat(trimmedValue),
-    pattern: decimalFilterPattern,
-  })
-}
-
-function parseNumericFilterValue(
-  value: number | FormDataEntryValue | null | undefined,
-  {
-    isValidNumber,
-    parseString,
-    pattern,
-  }: {
-    isValidNumber: (value: number) => boolean
-    parseString: (value: string) => number
-    pattern: RegExp
-  }
-) {
   if (typeof value === "number") {
-    return isValidNumber(value) ? value : null
+    return Number.isInteger(value) ? value : null
   }
 
   if (typeof value !== "string") {
@@ -231,86 +183,70 @@ function parseNumericFilterValue(
     return undefined
   }
 
-  if (!pattern.test(trimmedValue)) {
+  if (!/^-?\d+$/.test(trimmedValue)) {
     return null
   }
 
-  return parseString(trimmedValue)
+  return Number.parseInt(trimmedValue, 10)
+}
+
+function parseMeasurementFilterValue(value: MeasurementFilterValue) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? value : null
+  }
+
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmedValue = value.trim()
+
+  if (trimmedValue === "") {
+    return undefined
+  }
+
+  if (!/^\d+(\.\d+)?$/.test(trimmedValue)) {
+    return null
+  }
+
+  const parsedValue = Number.parseFloat(trimmedValue)
+
+  return parsedValue > 0 ? parsedValue : null
 }
 
 export function applyIssueYearRangeSearch(
   currentSearch: CoinSearch,
   yearRange: Record<IssueYearFilterName, IssueYearFilterValue>
 ): CoinSearch {
-  return applyRangeSearchFilters(
-    currentSearch,
-    issueYearFilterNames,
-    yearRange,
-    parseIssueYearFilterValue
-  )
+  let nextSearch = currentSearch
+
+  for (const filterName of issueYearFilterNames) {
+    const parsedFilterValue = parseIssueYearFilterValue(yearRange[filterName])
+
+    if (parsedFilterValue === null) {
+      continue
+    }
+
+    nextSearch = updateCoinSearchFilter(
+      nextSearch,
+      filterName,
+      parsedFilterValue
+    )
+  }
+
+  return nextSearch
 }
 
-export function applyDiameterRangeSearch(
+export function applyMeasurementRangeSearch(
   currentSearch: CoinSearch,
-  diameterRange: Record<DiameterFilterName, DiameterFilterValue>
-): CoinSearch {
-  return applyDecimalRangeSearch(
-    currentSearch,
-    diameterFilterNames,
-    diameterRange
-  )
-}
-
-export function applyThicknessRangeSearch(
-  currentSearch: CoinSearch,
-  thicknessRange: Record<ThicknessFilterName, ThicknessFilterValue>
-): CoinSearch {
-  return applyDecimalRangeSearch(
-    currentSearch,
-    thicknessFilterNames,
-    thicknessRange
-  )
-}
-
-export function applyWeightRangeSearch(
-  currentSearch: CoinSearch,
-  weightRange: Record<WeightFilterName, WeightFilterValue>
-): CoinSearch {
-  return applyDecimalRangeSearch(
-    currentSearch,
-    weightFilterNames,
-    weightRange
-  )
-}
-
-function applyDecimalRangeSearch<FilterName extends DecimalFilterName>(
-  currentSearch: CoinSearch,
-  filterNames: readonly FilterName[],
-  range: Record<FilterName, DecimalFilterValue>
-): CoinSearch {
-  return applyRangeSearchFilters(
-    currentSearch,
-    filterNames,
-    range,
-    parseDecimalFilterValue
-  )
-}
-
-function applyRangeSearchFilters<
-  FilterName extends CoinSearchFilterName,
-  FilterValue,
->(
-  currentSearch: CoinSearch,
-  filterNames: readonly FilterName[],
-  range: Record<FilterName, FilterValue>,
-  parseFilterValue: (
-    value: FilterValue
-  ) => CoinSearch[FilterName] | null | undefined
+  measurementRange: Record<MeasurementFilterName, MeasurementFilterValue>
 ): CoinSearch {
   let nextSearch = currentSearch
 
-  for (const filterName of filterNames) {
-    const parsedFilterValue = parseFilterValue(range[filterName])
+  for (const filterName of measurementFilterNames) {
+    const parsedFilterValue = parseMeasurementFilterValue(
+      measurementRange[filterName]
+    )
 
     if (parsedFilterValue === null) {
       continue
@@ -366,22 +302,19 @@ export function formatIssueYearRangeLabel(
   return `Issue years ${minYearLabel} to ${maxYearLabel}`
 }
 
-export function formatCoinMeasurementsLabel(
-  measurements: CoinMeasurements
-): string | null {
-  const measurementLabels: string[] = []
+const measurementFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
 
-  for (const { field, label, unit } of coinMeasurementDefinitions) {
-    const value = measurements[field]
-
-    if (value !== null) {
-      measurementLabels.push(`${label} ${value} ${unit}`)
-    }
-  }
-
-  if (measurementLabels.length === 0) {
+export function formatMeasurementLabel(
+  label: string,
+  value: number | null,
+  unit: string
+) {
+  if (value === null) {
     return null
   }
 
-  return measurementLabels.join(" · ")
+  return `${label} ${measurementFormatter.format(value)} ${unit}`
 }

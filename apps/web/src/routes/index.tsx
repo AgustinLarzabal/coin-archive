@@ -8,16 +8,13 @@ import type {
   RulerOption,
 } from "@workspace/db"
 import {
-  applyDiameterRangeSearch,
+  applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
-  applyThicknessRangeSearch,
-  applyWeightRangeSearch,
-  type CoinSearch,
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedDistributionOption,
-  formatCoinMeasurementsLabel,
+  formatMeasurementLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getDistributionOptionLabel,
@@ -47,7 +44,21 @@ const getCoinListData = createServerFn({ method: "GET" })
 
     const [coins, catalogues, distributions, issuers, rulers] =
       await Promise.all([
-        getCoins(data),
+        getCoins({
+          catalogueCode: data.catalogueCode,
+          distributionCode: data.distributionCode,
+          fromYear: data.fromYear,
+          issuerCode: data.issuerCode,
+          maxDiameter: data.maxDiameter,
+          maxThickness: data.maxThickness,
+          maxWeight: data.maxWeight,
+          minDiameter: data.minDiameter,
+          minThickness: data.minThickness,
+          minWeight: data.minWeight,
+          referenceNumber: data.referenceNumber,
+          rulerCode: data.rulerCode,
+          toYear: data.toYear,
+        }),
         getCatalogues(),
         getDistributions(),
         getIssuers(),
@@ -72,12 +83,12 @@ function App() {
     distribution: selectedDistributionCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
-    maxWeight: selectedMaxWeight,
     maxDiameter: selectedMaxDiameter,
     maxThickness: selectedMaxThickness,
-    minWeight: selectedMinWeight,
+    maxWeight: selectedMaxWeight,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
+    minWeight: selectedMinWeight,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
     toYear: selectedToYear,
@@ -124,51 +135,37 @@ function App() {
     await updateSearchFilter("referenceNumber", referenceNumber)
   }
 
-  function createRangeSubmitHandler(
-    getNextSearch: (currentSearch: CoinSearch, formData: FormData) => CoinSearch
-  ) {
-    return async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
+  async function updateIssueYearRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
 
-      const formData = new FormData(event.currentTarget)
+    const formData = new FormData(event.currentTarget)
 
-      await navigate({
-        search: (currentSearch) => getNextSearch(currentSearch, formData),
-      })
-    }
+    await navigate({
+      search: (currentSearch) =>
+        applyIssueYearRangeSearch(currentSearch, {
+          fromYear: formData.get("fromYear"),
+          toYear: formData.get("toYear"),
+        }),
+    })
   }
 
-  const updateIssueYearRange = createRangeSubmitHandler(
-    (currentSearch, formData) =>
-      applyIssueYearRangeSearch(currentSearch, {
-        fromYear: formData.get("fromYear"),
-        toYear: formData.get("toYear"),
-      })
-  )
+  async function updateMeasurementRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
 
-  const updateDiameterRange = createRangeSubmitHandler(
-    (currentSearch, formData) =>
-      applyDiameterRangeSearch(currentSearch, {
-        maxDiameter: formData.get("maxDiameter"),
-        minDiameter: formData.get("minDiameter"),
-      })
-  )
+    const formData = new FormData(event.currentTarget)
 
-  const updateThicknessRange = createRangeSubmitHandler(
-    (currentSearch, formData) =>
-      applyThicknessRangeSearch(currentSearch, {
-        maxThickness: formData.get("maxThickness"),
-        minThickness: formData.get("minThickness"),
-      })
-  )
-
-  const updateWeightRange = createRangeSubmitHandler(
-    (currentSearch, formData) =>
-      applyWeightRangeSearch(currentSearch, {
-        maxWeight: formData.get("maxWeight"),
-        minWeight: formData.get("minWeight"),
-      })
-  )
+    await navigate({
+      search: (currentSearch) =>
+        applyMeasurementRangeSearch(currentSearch, {
+          minWeight: formData.get("minWeight"),
+          maxWeight: formData.get("maxWeight"),
+          minDiameter: formData.get("minDiameter"),
+          maxDiameter: formData.get("maxDiameter"),
+          minThickness: formData.get("minThickness"),
+          maxThickness: formData.get("maxThickness"),
+        }),
+    })
+  }
 
   return (
     <div>
@@ -296,119 +293,114 @@ function App() {
         </button>
       </form>
 
-      <form className="flex items-end gap-2 py-2" onSubmit={updateWeightRange}>
+      <form
+        className="flex flex-wrap items-end gap-2 py-2"
+        onSubmit={updateMeasurementRange}
+      >
         <Input
-          aria-label="Filter minimum weight in grams"
+          aria-label="Minimum weight in grams"
           defaultValue={selectedMinWeight?.toString() ?? ""}
           key={`min-weight-${selectedMinWeight ?? ""}`}
           name="minWeight"
           placeholder="Min weight (g)"
+          step="0.01"
           type="number"
         />
         <Input
-          aria-label="Filter maximum weight in grams"
+          aria-label="Maximum weight in grams"
           defaultValue={selectedMaxWeight?.toString() ?? ""}
           key={`max-weight-${selectedMaxWeight ?? ""}`}
           name="maxWeight"
           placeholder="Max weight (g)"
+          step="0.01"
           type="number"
         />
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply weight
-        </button>
-      </form>
-
-      <form
-        className="flex items-end gap-2 py-2"
-        onSubmit={updateDiameterRange}
-      >
         <Input
-          aria-label="Filter minimum diameter in millimeters"
+          aria-label="Minimum diameter in millimeters"
           defaultValue={selectedMinDiameter?.toString() ?? ""}
           key={`min-diameter-${selectedMinDiameter ?? ""}`}
           name="minDiameter"
           placeholder="Min diameter (mm)"
+          step="0.01"
           type="number"
         />
         <Input
-          aria-label="Filter maximum diameter in millimeters"
+          aria-label="Maximum diameter in millimeters"
           defaultValue={selectedMaxDiameter?.toString() ?? ""}
           key={`max-diameter-${selectedMaxDiameter ?? ""}`}
           name="maxDiameter"
           placeholder="Max diameter (mm)"
+          step="0.01"
           type="number"
         />
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply diameter
-        </button>
-      </form>
-
-      <form
-        className="flex items-end gap-2 py-2"
-        onSubmit={updateThicknessRange}
-      >
         <Input
-          aria-label="Filter minimum thickness in millimeters"
+          aria-label="Minimum thickness in millimeters"
           defaultValue={selectedMinThickness?.toString() ?? ""}
           key={`min-thickness-${selectedMinThickness ?? ""}`}
           name="minThickness"
           placeholder="Min thickness (mm)"
+          step="0.01"
           type="number"
         />
         <Input
-          aria-label="Filter maximum thickness in millimeters"
+          aria-label="Maximum thickness in millimeters"
           defaultValue={selectedMaxThickness?.toString() ?? ""}
           key={`max-thickness-${selectedMaxThickness ?? ""}`}
           name="maxThickness"
           placeholder="Max thickness (mm)"
+          step="0.01"
           type="number"
         />
         <button
           className="rounded border border-border px-3 py-2"
           type="submit"
         >
-          Apply thickness
+          Apply measurements
         </button>
       </form>
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => (
-          <CoinListItem coin={coin} key={coin.id} />
+          <li className="border-b border-border pb-4" key={coin.id}>
+            <p className="font-medium">{coin.title}</p>
+            <p className="text-sm text-muted-foreground">
+              {coin.issuer.name} · {coin.distribution.name}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {formatIssueYearRangeLabel(coin.issueYearRange)}
+            </p>
+            {(() => {
+              const measurementLabels = [
+                formatMeasurementLabel(
+                  "Weight",
+                  coin.measurements.weight,
+                  "g"
+                ),
+                formatMeasurementLabel(
+                  "Diameter",
+                  coin.measurements.diameter,
+                  "mm"
+                ),
+                formatMeasurementLabel(
+                  "Thickness",
+                  coin.measurements.thickness,
+                  "mm"
+                ),
+              ].filter((label): label is string => label !== null)
+
+              if (measurementLabels.length === 0) {
+                return null
+              }
+
+              return (
+                <p className="text-sm text-muted-foreground">
+                  {measurementLabels.join(" · ")}
+                </p>
+              )
+            })()}
+          </li>
         ))}
       </ul>
     </div>
-  )
-}
-
-type CoinListItemCoin = Awaited<
-  ReturnType<typeof getCoinListData>
->["coins"][number]
-
-type CoinListItemProps = {
-  coin: CoinListItemCoin
-}
-
-function CoinListItem({ coin }: CoinListItemProps) {
-  const measurementsLabel = formatCoinMeasurementsLabel(coin.measurements)
-
-  return (
-    <li className="border-b border-border pb-4">
-      <p className="font-medium">{coin.title}</p>
-      <p className="text-sm text-muted-foreground">
-        {coin.issuer.name} · {coin.distribution.name}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        {formatIssueYearRangeLabel(coin.issueYearRange)}
-      </p>
-      {measurementsLabel ? (
-        <p className="text-sm text-muted-foreground">{measurementsLabel}</p>
-      ) : null}
-    </li>
   )
 }

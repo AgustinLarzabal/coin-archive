@@ -113,6 +113,12 @@ describe("getCoins integration", () => {
         title: "Ungrouped Civic Issue",
         createdAt,
         updatedAt: createdAt,
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
         distribution: {
           id: standardCirculation.id,
           code: "standard-circulation",
@@ -133,12 +139,6 @@ describe("getCoins integration", () => {
             createdAt: ancientWorld.createdAt,
             updatedAt: ancientWorld.updatedAt,
           },
-        },
-        issueYearRange: null,
-        measurements: {
-          weight: null,
-          diameter: null,
-          thickness: null,
         },
         references: [],
         rulers: [],
@@ -171,285 +171,263 @@ describe("getCoins integration", () => {
     ])
   })
 
-  it("returns grouped nullable measurements through the shared coin listing", async () => {
+  it("returns grouped measurements and filters weight, diameter, and thickness ranges while excluding unknown values only for the filtered measurement", async () => {
     const rome = await createIssuer({
       code: "rome",
       name: "Rome",
     })
 
-    const coin = await createCoin({
-      title: "Measured Denarius",
+    const measuredMatch = await createCoin({
+      title: "Measured Match",
       issuerId: rome.id,
-      weight: "3.90",
-      diameter: "18.50",
-      createdAt: new Date("2026-05-02T12:00:00.000Z"),
-    })
-
-    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
-      {
-        id: coin.id,
-        title: "Measured Denarius",
-        measurements: {
-          weight: "3.90",
-          diameter: "18.50",
-          thickness: null,
-        },
-      },
-    ])
-  })
-
-  it("filters coins by exact and open-ended weight ranges, excluding only unknown weight values", async () => {
-    const rome = await createIssuer({
-      code: "rome",
-      name: "Rome",
-    })
-    const spain = await createIssuer({
-      code: "spain",
-      name: "Spain",
-    })
-
-    await createCoin({
-      title: "Exact Weight Match",
-      issuerId: rome.id,
-      weight: "3.90",
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
       createdAt: new Date("2026-05-06T00:00:00.000Z"),
     })
     await createCoin({
-      title: "Within Weight Range",
+      title: "Measured Miss",
       issuerId: rome.id,
-      weight: "4.00",
-      diameter: "18.75",
-      thickness: "2.10",
+      weight: 2.75,
+      diameter: 17.0,
+      thickness: 1.2,
       createdAt: new Date("2026-05-05T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Weight With Unknown Diameter And Thickness",
-      issuerId: rome.id,
-      weight: "4.10",
-      createdAt: new Date("2026-05-04T00:00:00.000Z"),
     })
     await createCoin({
       title: "Unknown Weight",
       issuerId: rome.id,
-      diameter: "18.50",
-      thickness: "1.90",
-      createdAt: new Date("2026-05-03T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Other Issuer Weight Match",
-      issuerId: spain.id,
-      weight: "4.00",
-      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+      diameter: 21.0,
+      thickness: 2.0,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
     })
 
-    await expect(
-      getCoins({
-        minWeight: 3.9,
-        maxWeight: 4,
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Exact Weight Match",
-          "Within Weight Range",
-          "Other Issuer Weight Match",
-        ].join("|")
-    )
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: measuredMatch.id,
+        title: "Measured Match",
+        measurements: {
+          weight: 4.5,
+          diameter: 19.25,
+          thickness: 1.75,
+        },
+      },
+      {
+        title: "Measured Miss",
+        measurements: {
+          weight: 2.75,
+          diameter: 17,
+          thickness: 1.2,
+        },
+      },
+      {
+        title: "Unknown Weight",
+        measurements: {
+          weight: null,
+          diameter: 21,
+          thickness: 2,
+        },
+      },
+    ])
 
     await expect(
       getCoins({
         minWeight: 4,
+        maxWeight: 5,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Within Weight Range",
-          "Weight With Unknown Diameter And Thickness",
-          "Other Issuer Weight Match",
-        ].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") === ["Measured Match"].join("|")
     )
 
     await expect(
       getCoins({
-        maxWeight: 4,
-        issuerCode: "rome",
+        minDiameter: 18,
+        maxDiameter: 20,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Exact Weight Match", "Within Weight Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") === ["Measured Match"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        minThickness: 1.5,
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Measured Match", "Unknown Weight"].join("|")
     )
   })
 
-  it("filters coins by exact and open-ended diameter ranges, excluding only unknown diameter values", async () => {
+  it("combines measurement filtering with existing homepage filters using AND semantics and keeps newest-first ordering", async () => {
     const rome = await createIssuer({
       code: "rome",
       name: "Rome",
     })
-    const spain = await createIssuer({
-      code: "spain",
-      name: "Spain",
+    const athens = await createIssuer({
+      code: "athens",
+      name: "Athens",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const commemorative = await createDistribution({
+      code: "commemorative",
+      name: "Commemorative",
+    })
+    const romanImperialCoinage = await createCatalogue({
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+    const augustus = await createRuler({
+      code: "augustus",
+      name: "Augustus",
     })
 
-    await createCoin({
-      title: "Exact Diameter Match",
+    const latestMatchingCoin = await createCoin({
+      title: "Latest Matching Measured Coin",
       issuerId: rome.id,
-      diameter: "18.50",
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
       createdAt: new Date("2026-05-06T00:00:00.000Z"),
     })
-    await createCoin({
-      title: "Within Diameter Range",
+    const earlierMatchingCoin = await createCoin({
+      title: "Earlier Matching Measured Coin",
       issuerId: rome.id,
-      diameter: "18.75",
-      weight: "3.90",
-      thickness: "2.10",
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.75,
+      diameter: 19.5,
+      thickness: 1.8,
       createdAt: new Date("2026-05-05T00:00:00.000Z"),
     })
-    await createCoin({
-      title: "Diameter With Unknown Weight And Thickness",
-      issuerId: rome.id,
-      diameter: "19.00",
+    const issuerMiss = await createCoin({
+      title: "Issuer Miss",
+      issuerId: athens.id,
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
       createdAt: new Date("2026-05-04T00:00:00.000Z"),
     })
-    await createCoin({
-      title: "Unknown Diameter",
+    const distributionMiss = await createCoin({
+      title: "Distribution Miss",
       issuerId: rome.id,
-      weight: "4.10",
-      thickness: "1.90",
+      distributionId: commemorative.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
       createdAt: new Date("2026-05-03T00:00:00.000Z"),
     })
-    await createCoin({
-      title: "Other Issuer Diameter Match",
-      issuerId: spain.id,
-      diameter: "18.75",
+    const yearMiss = await createCoin({
+      title: "Year Miss",
+      issuerId: rome.id,
+      distributionId: standardCirculation.id,
+      minYear: 6,
+      maxYear: 8,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
       createdAt: new Date("2026-05-02T00:00:00.000Z"),
     })
+    const measurementMiss = await createCoin({
+      title: "Measurement Miss",
+      issuerId: rome.id,
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 2.5,
+      diameter: 17,
+      thickness: 1.1,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const referenceMiss = await createCoin({
+      title: "Reference Miss",
+      issuerId: rome.id,
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
+      createdAt: new Date("2026-04-30T00:00:00.000Z"),
+    })
+    const rulerMiss = await createCoin({
+      title: "Ruler Miss",
+      issuerId: rome.id,
+      distributionId: standardCirculation.id,
+      minYear: -5,
+      maxYear: 5,
+      weight: 4.5,
+      diameter: 19.25,
+      thickness: 1.75,
+      createdAt: new Date("2026-04-29T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: latestMatchingCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "12A",
+    })
+    await createCoinReference({
+      coinId: earlierMatchingCoin.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "12B",
+    })
+    await createCoinReference({
+      coinId: referenceMiss.id,
+      catalogueId: romanImperialCoinage.id,
+      number: "14A",
+    })
+    await createCoinRuler({
+      coinId: latestMatchingCoin.id,
+      rulerId: augustus.id,
+      rulerOrder: 0,
+    })
+    await createCoinRuler({
+      coinId: earlierMatchingCoin.id,
+      rulerId: augustus.id,
+      rulerOrder: 0,
+    })
+    await createCoinRuler({
+      coinId: rulerMiss.id,
+      rulerId: (await createRuler({
+        code: "tiberius",
+        name: "Tiberius",
+      })).id,
+      rulerOrder: 0,
+    })
 
     await expect(
       getCoins({
-        minDiameter: 18.5,
-        maxDiameter: 18.75,
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Exact Diameter Match",
-          "Within Diameter Range",
-          "Other Issuer Diameter Match",
-        ].join("|")
-    )
-
-    await expect(
-      getCoins({
-        minDiameter: 18.75,
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Within Diameter Range",
-          "Diameter With Unknown Weight And Thickness",
-          "Other Issuer Diameter Match",
-        ].join("|")
-    )
-
-    await expect(
-      getCoins({
-        maxDiameter: 18.75,
         issuerCode: "rome",
+        distributionCode: "standard-circulation",
+        catalogueCode: "RIC",
+        referenceNumber: "12",
+        rulerCode: "augustus",
+        fromYear: 0,
+        toYear: 0,
+        minWeight: 4,
+        maxWeight: 5,
+        minDiameter: 19,
+        maxDiameter: 20,
+        minThickness: 1.7,
+        maxThickness: 2,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Exact Diameter Match", "Within Diameter Range"].join("|")
-    )
-  })
-
-  it("filters coins by exact and open-ended thickness ranges, excluding only unknown thickness values and preserving newest-first ordering", async () => {
-    const rome = await createIssuer({
-      code: "rome",
-      name: "Rome",
-    })
-    const spain = await createIssuer({
-      code: "spain",
-      name: "Spain",
-    })
-
-    await createCoin({
-      title: "Exact Thickness Match",
-      issuerId: rome.id,
-      thickness: "1.25",
-      createdAt: new Date("2026-05-06T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Within Thickness Range",
-      issuerId: rome.id,
-      diameter: "18.75",
-      thickness: "2.10",
-      weight: "3.90",
-      createdAt: new Date("2026-05-05T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Thickness With Unknown Weight And Diameter",
-      issuerId: rome.id,
-      thickness: "2.50",
-      createdAt: new Date("2026-05-04T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Unknown Thickness",
-      issuerId: rome.id,
-      diameter: "19.00",
-      weight: "4.10",
-      createdAt: new Date("2026-05-03T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "Other Issuer Thickness Match",
-      issuerId: spain.id,
-      thickness: "2.10",
-      createdAt: new Date("2026-05-02T00:00:00.000Z"),
-    })
-
-    await expect(
-      getCoins({
-        minThickness: 1.25,
-        maxThickness: 2.1,
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Exact Thickness Match",
-          "Within Thickness Range",
-          "Other Issuer Thickness Match",
-        ].join("|")
-    )
-
-    await expect(
-      getCoins({
-        minThickness: 2.1,
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Within Thickness Range",
-          "Thickness With Unknown Weight And Diameter",
-          "Other Issuer Thickness Match",
-        ].join("|")
-    )
-
-    await expect(
-      getCoins({
-        maxThickness: 2.1,
-        issuerCode: "rome",
-      })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Exact Thickness Match", "Within Thickness Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      [
+        "Latest Matching Measured Coin",
+        "Earlier Matching Measured Coin",
+      ].join("|")
     )
   })
 
@@ -491,10 +469,9 @@ describe("getCoins integration", () => {
         fromYear: 1900,
         toYear: 1900,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Exact Year Match", "Overlapping Multi Year Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Exact Year Match", "Overlapping Multi Year Match"].join("|")
     )
   })
 
@@ -530,20 +507,18 @@ describe("getCoins integration", () => {
       getCoins({
         fromYear: 1900,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Later Range", "Crossing Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Later Range", "Crossing Range"].join("|")
     )
 
     await expect(
       getCoins({
         toYear: 1850,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Earlier Range", "Crossing Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Earlier Range", "Crossing Range"].join("|")
     )
   })
 
@@ -585,30 +560,27 @@ describe("getCoins integration", () => {
         fromYear: -1,
         toYear: 0,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["BCE To CE Transition Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["BCE To CE Transition Range"].join("|")
     )
 
     await expect(
       getCoins({
         fromYear: 0,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["BCE To CE Transition Range", "Early Empire Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["BCE To CE Transition Range", "Early Empire Range"].join("|")
     )
 
     await expect(
       getCoins({
         toYear: -40,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Late Republic Range"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Late Republic Range", "BCE To CE Transition Range"].join("|")
     )
   })
 
@@ -650,10 +622,9 @@ describe("getCoins integration", () => {
         toYear: 1900,
         issuerCode: "spain",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Spanish Overlapping Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Overlapping Match"].join("|")
     )
   })
 
@@ -696,17 +667,17 @@ describe("getCoins integration", () => {
     await createCoinRuler({
       coinId: augustusMatch.id,
       rulerId: augustus.id,
-      rulerOrder: 1,
+      rulerOrder: 0,
     })
     await createCoinRuler({
       coinId: augustusMiss.id,
       rulerId: augustus.id,
-      rulerOrder: 1,
+      rulerOrder: 0,
     })
     await createCoinRuler({
       coinId: tiberiusMatch.id,
       rulerId: tiberius.id,
-      rulerOrder: 1,
+      rulerOrder: 0,
     })
 
     await expect(
@@ -715,10 +686,9 @@ describe("getCoins integration", () => {
         toYear: 0,
         rulerCode: "augustus",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Augustus Overlapping Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Augustus Overlapping Match"].join("|")
     )
   })
 
@@ -767,10 +737,9 @@ describe("getCoins integration", () => {
         toYear: 1900,
         distributionCode: "standard-circulation",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Circulation Overlapping Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Circulation Overlapping Match"].join("|")
     )
   })
 
@@ -856,14 +825,9 @@ describe("getCoins integration", () => {
         fromYear: 1900,
         toYear: 1900,
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "RIC Overlapping Match",
-          "Reference Overlapping Match",
-          "Reference Different Prefix",
-        ].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["RIC Overlapping Match"].join("|")
     )
 
     await expect(
@@ -872,10 +836,9 @@ describe("getCoins integration", () => {
         toYear: 1900,
         referenceNumber: "1338",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Reference Overlapping Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Reference Overlapping Match"].join("|")
     )
   })
 
@@ -921,6 +884,12 @@ describe("getCoins integration", () => {
         title: "Catalogue Reference Test Issue",
         createdAt,
         updatedAt: createdAt,
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
         distribution: {
           id: standardCirculation.id,
           code: "standard-circulation",
@@ -935,12 +904,6 @@ describe("getCoins integration", () => {
           createdAt: spain.createdAt,
           updatedAt: spain.updatedAt,
           parent: null,
-        },
-        issueYearRange: null,
-        measurements: {
-          weight: null,
-          diameter: null,
-          thickness: null,
         },
         rulers: [],
         references: [
@@ -1196,15 +1159,14 @@ describe("getCoins integration", () => {
       getCoins({
         distributionCode: "circulating-commemorative",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        [
-          "Spanish Circulating Commemorative Match",
-          "French Circulating Commemorative",
-          "Spanish Commemorative Without Ruler",
-          "Spanish Commemorative Wrong Reference",
-        ].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      [
+        "Spanish Circulating Commemorative Match",
+        "French Circulating Commemorative",
+        "Spanish Commemorative Without Ruler",
+        "Spanish Commemorative Wrong Reference",
+      ].join("|")
     )
 
     await expect(
@@ -1215,10 +1177,9 @@ describe("getCoins integration", () => {
         catalogueCode: "km",
         referenceNumber: "1338",
       })
-    ).resolves.toSatisfy(
-      (coins: Array<{ title: string }>) =>
-        coins.map(({ title }) => title).join("|") ===
-        ["Spanish Circulating Commemorative Match"].join("|")
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Circulating Commemorative Match"].join("|")
     )
   })
 
@@ -1325,13 +1286,6 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
-        issueYearRange: null,
-        measurements: {
-          weight: null,
-          diameter: null,
-          thickness: null,
-        },
-        references: [],
         rulers: [
           {
             id: juanCarlos.id,
@@ -1652,12 +1606,6 @@ describe("getCoins integration", () => {
           createdAt: spain.createdAt,
           updatedAt: spain.updatedAt,
           parent: null,
-        },
-        issueYearRange: null,
-        measurements: {
-          weight: null,
-          diameter: null,
-          thickness: null,
         },
         references: [],
         rulers: [],

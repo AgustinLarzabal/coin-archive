@@ -7,30 +7,10 @@ import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { seedDatabase } from "./index"
 
-type SeededCoinListing = Awaited<ReturnType<typeof getCoins>>
-type SeededCoinListingItem = SeededCoinListing[number]
-
-const findSeededCoinByTitle = (
-  seededCoins: SeededCoinListing,
-  title: string
-): SeededCoinListingItem | undefined =>
-  seededCoins.find((seededCoin) => seededCoin.title === title)
-
-const expectSeededCoinMeasurements = (
-  seededCoins: SeededCoinListing,
-  title: string,
-  measurements: SeededCoinListingItem["measurements"]
-) => {
-  expect(findSeededCoinByTitle(seededCoins, title)).toMatchObject({
-    title,
-    measurements,
-  })
-}
-
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("seeds the demo KM catalogue reference once and exposes it in coin listings", async () => {
+  it("seeds the demo KM catalogue reference and measurement-bearing example coins once and exposes them in coin listings", async () => {
     await seedDatabase()
     await seedDatabase()
 
@@ -56,22 +36,20 @@ describe("seed integration", () => {
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
 
-    const seededCoins = await getCoins({ limit: 10 })
-    const seededCoin = findSeededCoinByTitle(
-      seededCoins,
-      "2014 Kennedy Half Dollar"
+    const seededCoin = (await getCoins({ limit: 10 })).find(
+      ({ title }) => title === "United States National Park Quarter"
     )
 
     expect(seededCoin).toMatchObject({
-      title: "2014 Kennedy Half Dollar",
+      title: "United States National Park Quarter",
       issueYearRange: {
         minYear: 2014,
         maxYear: 2026,
       },
       measurements: {
-        weight: "11.34",
-        diameter: "30.61",
-        thickness: "2.15",
+        weight: 8.1,
+        diameter: 26.5,
+        thickness: 2,
       },
       distribution: {
         code: "standard-circulation",
@@ -89,49 +67,34 @@ describe("seed integration", () => {
       ],
     })
 
-    const earlyAmericanSeedCoin = findSeededCoinByTitle(
-      seededCoins,
-      "1793 Flowing Hair Cent"
+    const ancientSeedCoin = (await getCoins({ limit: 10 })).find(
+      ({ title }) => title === "Buenos Aires Transition Half Real"
     )
 
-    expect(earlyAmericanSeedCoin).toMatchObject({
-      title: "1793 Flowing Hair Cent",
+    expect(ancientSeedCoin).toMatchObject({
+      title: "Buenos Aires Transition Half Real",
       issueYearRange: {
-        minYear: 1793,
-        maxYear: 1793,
+        minYear: -2,
+        maxYear: 0,
       },
       measurements: {
-        weight: "13.48",
-        diameter: "27.50",
-        thickness: null,
+        weight: 3.8,
+        diameter: 18.5,
+        thickness: 1.4,
       },
     })
-  })
 
-  it("seeds measurement demo coins with full and partial measurement coverage for homepage verification", async () => {
-    await seedDatabase()
+    const partialMeasurementSeedCoin = (await getCoins({ limit: 10 })).find(
+      ({ title }) => title === "Argentina Copper Peso"
+    )
 
-    const seededCoins = await getCoins({ limit: 20 })
-
-    expectSeededCoinMeasurements(seededCoins, "2001 Argentine 1 Peso", {
-      weight: "6.35",
-      diameter: "23.00",
-      thickness: "2.00",
-    })
-    expectSeededCoinMeasurements(seededCoins, "1896 Argentine 20 Centavos", {
-      weight: null,
-      diameter: "21.00",
-      thickness: "1.40",
-    })
-    expectSeededCoinMeasurements(seededCoins, "1822 Buenos Aires Decimo", {
-      weight: "1.35",
-      diameter: null,
-      thickness: "0.90",
-    })
-    expectSeededCoinMeasurements(seededCoins, "1793 Flowing Hair Cent", {
-      weight: "13.48",
-      diameter: "27.50",
-      thickness: null,
+    expect(partialMeasurementSeedCoin).toMatchObject({
+      title: "Argentina Copper Peso",
+      measurements: {
+        weight: null,
+        diameter: 22,
+        thickness: null,
+      },
     })
   })
 })

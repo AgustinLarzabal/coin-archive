@@ -53,9 +53,9 @@ export type GetCoinsRow = {
   updatedAt: Date
   minYear: number | null
   maxYear: number | null
-  weight: string | null
-  diameter: string | null
-  thickness: string | null
+  weight: number | null
+  diameter: number | null
+  thickness: number | null
 } & GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
@@ -110,9 +110,9 @@ export type CoinIssueYearRange = {
 }
 
 export type CoinMeasurements = {
-  weight: string | null
-  diameter: string | null
-  thickness: string | null
+  weight: number | null
+  diameter: number | null
+  thickness: number | null
 }
 
 export type CoinIssuer = {

@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process"
+import { getDatabaseTestUrl } from "../env"
 import { prepareDatabaseIntegrationTests } from "./database-test-client"
 
 await prepareDatabaseIntegrationTests()
@@ -16,6 +17,10 @@ function runVitest() {
       ],
       {
         cwd: new URL("../../", import.meta.url),
+        env: {
+          ...process.env,
+          DATABASE_URL: getDatabaseTestUrl(),
+        },
         stdio: "inherit",
       }
     )

@@ -390,12 +390,12 @@ describe("getCoins integration", () => {
     await createCoinRuler({
       coinId: latestMatchingCoin.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: earlierMatchingCoin.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: rulerMiss.id,
@@ -403,7 +403,7 @@ describe("getCoins integration", () => {
         code: "tiberius",
         name: "Tiberius",
       })).id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
 
     await expect(
@@ -580,7 +580,7 @@ describe("getCoins integration", () => {
       })
     ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
       coins.map(({ title }) => title).join("|") ===
-      ["Late Republic Range", "BCE To CE Transition Range"].join("|")
+      ["Late Republic Range"].join("|")
     )
   })
 
@@ -667,17 +667,17 @@ describe("getCoins integration", () => {
     await createCoinRuler({
       coinId: augustusMatch.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: augustusMiss.id,
       rulerId: augustus.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
     await createCoinRuler({
       coinId: tiberiusMatch.id,
       rulerId: tiberius.id,
-      rulerOrder: 0,
+      rulerOrder: 1,
     })
 
     await expect(
@@ -827,7 +827,11 @@ describe("getCoins integration", () => {
       })
     ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
       coins.map(({ title }) => title).join("|") ===
-      ["RIC Overlapping Match"].join("|")
+      [
+        "RIC Overlapping Match",
+        "Reference Overlapping Match",
+        "Reference Different Prefix",
+      ].join("|")
     )
 
     await expect(
@@ -1271,6 +1275,12 @@ describe("getCoins integration", () => {
         title: "Attribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
         distribution: {
           id: standardCirculation.id,
           code: "standard-circulation",
@@ -1286,6 +1296,7 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        references: [],
         rulers: [
           {
             id: juanCarlos.id,
@@ -1592,6 +1603,12 @@ describe("getCoins integration", () => {
         title: "Distribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        issueYearRange: null,
+        measurements: {
+          weight: null,
+          diameter: null,
+          thickness: null,
+        },
         distribution: {
           id: standardCirculation.id,
           code: "standard-circulation",

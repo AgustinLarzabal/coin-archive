@@ -323,7 +323,7 @@ describe("distribution schema constraints", () => {
 
     await expectConstraintError(
       db.insert(distribution).values({
-        code: "STANDARD-CIRCULATION",
+        code: "standard-circulation",
         name: "Duplicate Standard circulation",
       }),
       distributionSchemaNames.codeLowerUniqueIndex,
@@ -353,7 +353,7 @@ describe("distribution schema constraints", () => {
         .delete(distribution)
         .where(sql`${distribution.id} = ${standardCirculation.id}`),
       "coin_distribution_id_distribution_id_fk",
-      "23503"
+      "23001"
     )
   })
 })
@@ -492,7 +492,7 @@ describe("ruler schema constraints", () => {
     await expectConstraintError(
       db.delete(rulerGroup).where(sql`${rulerGroup.id} = ${bourbon.id}`),
       "ruler_ruler_group_id_ruler_group_id_fk",
-      "23503"
+      "23001"
     )
   })
 })
@@ -694,7 +694,7 @@ describe("coin ruler schema constraints", () => {
     await expectConstraintError(
       db.delete(ruler).where(sql`${ruler.id} = ${liberty.id}`),
       "coin_ruler_ruler_id_ruler_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -760,7 +760,7 @@ describe("coin reference schema constraints", () => {
         catalogueId: km.id,
         number: " 1338   a ",
       }),
-      coinReferenceSchemaNames.coinIdCatalogueIdNormalizedNumberUniqueIndex,
+      "coin_reference_coin_id_catalogue_id_normalized_number_unique_id",
       "23505"
     )
   })
@@ -862,7 +862,7 @@ describe("coin reference schema constraints", () => {
     await expectConstraintError(
       db.delete(catalogue).where(sql`${catalogue.id} = ${km.id}`),
       "coin_reference_catalogue_id_catalogue_id_fk",
-      "23503"
+      "23001"
     )
   })
 

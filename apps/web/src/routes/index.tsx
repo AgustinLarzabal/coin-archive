@@ -418,6 +418,9 @@ function App() {
           )
         })}
       </ul>
+
+      {/* Keep JSON - DO NOT REMOVE */}
+      <pre className="text-xs">{JSON.stringify(coins, null, 2)}</pre>
     </div>
   )
 }

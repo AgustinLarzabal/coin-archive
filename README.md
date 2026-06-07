@@ -61,6 +61,26 @@ Useful database maintenance commands:
 - `pnpm db:generate`
 - `pnpm db:studio`
 
+## Measurement demo
+
+After `pnpm db:seed`, the homepage demo data includes Coins with:
+
+- all three measurements known, such as `2001 Argentine 1 Peso`
+- unknown Weight but known Diameter and Thickness, such as `1896 Argentine 20 Centavos`
+- unknown Diameter but known Weight and Thickness, such as `1822 Buenos Aires Decimo`
+- unknown Thickness but known Weight and Diameter, such as `1793 Flowing Hair Cent`
+
+Homepage measurement filters use grams for Weight, millimeters for Diameter, and millimeters for Thickness. The public URL search parameters are `minWeight`, `maxWeight`, `minDiameter`, `maxDiameter`, `minThickness`, and `maxThickness`.
+
+Measurement filters compose with each other and with the other homepage filters using AND semantics. Coins with unknown values are excluded only for the specific measurement being filtered. For example, a Weight filter excludes Coins with unknown Weight but still allows unknown Diameter or Thickness.
+
+The seeded demo data is arranged so local manual checks are easy:
+
+- `minWeight=6&maxWeight=7` matches `2001 Argentine 1 Peso` and `1794 Flowing Hair Half Cent`
+- `minDiameter=23&maxDiameter=24` matches `2001 Argentine 1 Peso` and `1794 Flowing Hair Half Cent`
+- `minThickness=1.9&maxThickness=2.1` matches `2001 Argentine 1 Peso` and `1992 Argentine 50 Centavos`
+- combining all three ranges narrows the result to `2001 Argentine 1 Peso`
+
 ## Where to go next
 
 - [Catalogue glossary](/CONTEXT.md)

@@ -84,4 +84,54 @@ describe("seed integration", () => {
       },
     })
   })
+
+  it("seeds measurement demo coins with full and partial measurement coverage for homepage verification", async () => {
+    await seedDatabase()
+
+    const seededCoins = await getCoins({ limit: 20 })
+
+    expect(
+      seededCoins.find(({ title }) => title === "2001 Argentine 1 Peso")
+    ).toMatchObject({
+      title: "2001 Argentine 1 Peso",
+      measurements: {
+        weight: "6.35",
+        diameter: "23.00",
+        thickness: "2.00",
+      },
+    })
+
+    expect(
+      seededCoins.find(({ title }) => title === "1896 Argentine 20 Centavos")
+    ).toMatchObject({
+      title: "1896 Argentine 20 Centavos",
+      measurements: {
+        weight: null,
+        diameter: "21.00",
+        thickness: "1.40",
+      },
+    })
+
+    expect(
+      seededCoins.find(({ title }) => title === "1822 Buenos Aires Decimo")
+    ).toMatchObject({
+      title: "1822 Buenos Aires Decimo",
+      measurements: {
+        weight: "1.35",
+        diameter: null,
+        thickness: "0.90",
+      },
+    })
+
+    expect(
+      seededCoins.find(({ title }) => title === "1793 Flowing Hair Cent")
+    ).toMatchObject({
+      title: "1793 Flowing Hair Cent",
+      measurements: {
+        weight: "13.48",
+        diameter: "27.50",
+        thickness: null,
+      },
+    })
+  })
 })

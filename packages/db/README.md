@@ -98,6 +98,23 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
 
+## Measurement query behavior
+
+The shared `getCoins` query is the package-owned contract for homepage measurement filtering.
+
+- Weight is filtered by exact stored decimal gram values through `minWeight` and `maxWeight`
+- Diameter is filtered by exact stored decimal millimeter values through `minDiameter` and `maxDiameter`
+- Thickness is filtered by exact stored decimal millimeter values through `minThickness` and `maxThickness`
+- each measurement range accepts either bound on its own or both bounds together
+- measurement filters compose with each other and with the other `getCoins` filters using AND semantics
+- measurement filters do not change the default newest-first ordering
+- Coins with unknown values are excluded only for the specific measurement filter that is active
+
+Terminology note:
+
+- use Diameter consistently in schema, docs, and public URL parameter names
+- do not introduce Size aliases
+
 ## Maintainer workflow
 
 ### Schema and migrations
@@ -119,6 +136,13 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 - keep seeding orchestration in `packages/db/src/seed/index.ts`
 - keep seeded Coin measurements realistic and varied so the homepage listing demonstrates known and unknown measurement states
 - treat seed data as local/demo setup, not as a dependency for behavior tests
+- the current demo data intentionally includes:
+  - full measurement examples such as `2001 Argentine 1 Peso`
+  - unknown Weight with known Diameter and Thickness such as `1896 Argentine 20 Centavos`
+  - unknown Diameter with known Weight and Thickness such as `1822 Buenos Aires Decimo`
+  - unknown Thickness with known Weight and Diameter such as `1793 Flowing Hair Cent`
+- the current demo data also supports a combined homepage verification example:
+  - `minWeight=6&maxWeight=7&minDiameter=23&maxDiameter=24&minThickness=1.9&maxThickness=2.1` should isolate `2001 Argentine 1 Peso` after `pnpm db:seed`
 
 ### Database tests
 

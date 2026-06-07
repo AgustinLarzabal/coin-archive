@@ -101,6 +101,8 @@ type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 
+type ParsedFilterValue<T> = T | null | undefined
+
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,
@@ -214,14 +216,16 @@ function parseMeasurementFilterValue(value: MeasurementFilterValue) {
   return parsedValue > 0 ? parsedValue : null
 }
 
-export function applyIssueYearRangeSearch(
+function applyParsedRangeSearch<K extends CoinSearchFilterName, V>(
   currentSearch: CoinSearch,
-  yearRange: Record<IssueYearFilterName, IssueYearFilterValue>
+  filterNames: readonly K[],
+  requestedFilters: Record<K, V>,
+  parseFilterValue: (value: V) => ParsedFilterValue<CoinSearch[K]>
 ): CoinSearch {
   let nextSearch = currentSearch
 
-  for (const filterName of issueYearFilterNames) {
-    const parsedFilterValue = parseIssueYearFilterValue(yearRange[filterName])
+  for (const filterName of filterNames) {
+    const parsedFilterValue = parseFilterValue(requestedFilters[filterName])
 
     if (parsedFilterValue === null) {
       continue
@@ -237,29 +241,28 @@ export function applyIssueYearRangeSearch(
   return nextSearch
 }
 
+export function applyIssueYearRangeSearch(
+  currentSearch: CoinSearch,
+  yearRange: Record<IssueYearFilterName, IssueYearFilterValue>
+): CoinSearch {
+  return applyParsedRangeSearch(
+    currentSearch,
+    issueYearFilterNames,
+    yearRange,
+    parseIssueYearFilterValue
+  )
+}
+
 export function applyMeasurementRangeSearch(
   currentSearch: CoinSearch,
   measurementRange: Record<MeasurementFilterName, MeasurementFilterValue>
 ): CoinSearch {
-  let nextSearch = currentSearch
-
-  for (const filterName of measurementFilterNames) {
-    const parsedFilterValue = parseMeasurementFilterValue(
-      measurementRange[filterName]
-    )
-
-    if (parsedFilterValue === null) {
-      continue
-    }
-
-    nextSearch = updateCoinSearchFilter(
-      nextSearch,
-      filterName,
-      parsedFilterValue
-    )
-  }
-
-  return nextSearch
+  return applyParsedRangeSearch(
+    currentSearch,
+    measurementFilterNames,
+    measurementRange,
+    parseMeasurementFilterValue
+  )
 }
 
 export function getCatalogueOptionLabel(catalogue: CatalogueOptionLabel) {

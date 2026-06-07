@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start"
 import type { FormEvent } from "react"
 import type {
   CatalogueOption,
+  CoinMeasurements,
   DistributionOption,
   IssuerOption,
   RulerOption,
@@ -22,7 +23,11 @@ import {
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
-import type { TextCoinSearchFilterName } from "../lib/coin-search"
+import type {
+  MeasurementFilterName,
+  MeasurementFilterValue,
+  TextCoinSearchFilterName,
+} from "../lib/coin-search"
 
 import {
   Combobox,
@@ -35,6 +40,77 @@ import {
 import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
+
+const measurementRangeInputFields = [
+  {
+    name: "minWeight",
+    ariaLabel: "Minimum weight in grams",
+    placeholder: "Min weight (g)",
+  },
+  {
+    name: "maxWeight",
+    ariaLabel: "Maximum weight in grams",
+    placeholder: "Max weight (g)",
+  },
+  {
+    name: "minDiameter",
+    ariaLabel: "Minimum diameter in millimeters",
+    placeholder: "Min diameter (mm)",
+  },
+  {
+    name: "maxDiameter",
+    ariaLabel: "Maximum diameter in millimeters",
+    placeholder: "Max diameter (mm)",
+  },
+  {
+    name: "minThickness",
+    ariaLabel: "Minimum thickness in millimeters",
+    placeholder: "Min thickness (mm)",
+  },
+  {
+    name: "maxThickness",
+    ariaLabel: "Maximum thickness in millimeters",
+    placeholder: "Max thickness (mm)",
+  },
+] as const satisfies ReadonlyArray<{
+  ariaLabel: string
+  name: MeasurementFilterName
+  placeholder: string
+}>
+
+const coinMeasurementFields = [
+  { key: "weight", label: "Weight", unit: "g" },
+  { key: "diameter", label: "Diameter", unit: "mm" },
+  { key: "thickness", label: "Thickness", unit: "mm" },
+] as const satisfies ReadonlyArray<{
+  key: keyof CoinMeasurements
+  label: string
+  unit: string
+}>
+
+function getMeasurementRangeFromFormData(
+  formData: FormData
+): Record<MeasurementFilterName, MeasurementFilterValue> {
+  return Object.fromEntries(
+    measurementRangeInputFields.map(({ name }) => [name, formData.get(name)])
+  ) as Record<MeasurementFilterName, MeasurementFilterValue>
+}
+
+function formatCoinMeasurements(measurements: CoinMeasurements) {
+  const labels = coinMeasurementFields
+    .map(({ key, label, unit }) =>
+      formatMeasurementLabel(label, measurements[key], unit)
+    )
+    .filter((measurementLabel): measurementLabel is string => {
+      return measurementLabel !== null
+    })
+
+  if (labels.length === 0) {
+    return null
+  }
+
+  return labels.join(" · ")
+}
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -94,6 +170,14 @@ function App() {
     toYear: selectedToYear,
   } = Route.useSearch()
   const navigate = Route.useNavigate()
+  const selectedMeasurementRange = {
+    minWeight: selectedMinWeight,
+    maxWeight: selectedMaxWeight,
+    minDiameter: selectedMinDiameter,
+    maxDiameter: selectedMaxDiameter,
+    minThickness: selectedMinThickness,
+    maxThickness: selectedMaxThickness,
+  } satisfies Record<MeasurementFilterName, number | undefined>
 
   const selectedCatalogue = findSelectedCatalogueOption(
     catalogues,
@@ -156,14 +240,10 @@ function App() {
 
     await navigate({
       search: (currentSearch) =>
-        applyMeasurementRangeSearch(currentSearch, {
-          minWeight: formData.get("minWeight"),
-          maxWeight: formData.get("maxWeight"),
-          minDiameter: formData.get("minDiameter"),
-          maxDiameter: formData.get("maxDiameter"),
-          minThickness: formData.get("minThickness"),
-          maxThickness: formData.get("maxThickness"),
-        }),
+        applyMeasurementRangeSearch(
+          currentSearch,
+          getMeasurementRangeFromFormData(formData)
+        ),
     })
   }
 
@@ -297,60 +377,17 @@ function App() {
         className="flex flex-wrap items-end gap-2 py-2"
         onSubmit={updateMeasurementRange}
       >
-        <Input
-          aria-label="Minimum weight in grams"
-          defaultValue={selectedMinWeight?.toString() ?? ""}
-          key={`min-weight-${selectedMinWeight ?? ""}`}
-          name="minWeight"
-          placeholder="Min weight (g)"
-          step="0.01"
-          type="number"
-        />
-        <Input
-          aria-label="Maximum weight in grams"
-          defaultValue={selectedMaxWeight?.toString() ?? ""}
-          key={`max-weight-${selectedMaxWeight ?? ""}`}
-          name="maxWeight"
-          placeholder="Max weight (g)"
-          step="0.01"
-          type="number"
-        />
-        <Input
-          aria-label="Minimum diameter in millimeters"
-          defaultValue={selectedMinDiameter?.toString() ?? ""}
-          key={`min-diameter-${selectedMinDiameter ?? ""}`}
-          name="minDiameter"
-          placeholder="Min diameter (mm)"
-          step="0.01"
-          type="number"
-        />
-        <Input
-          aria-label="Maximum diameter in millimeters"
-          defaultValue={selectedMaxDiameter?.toString() ?? ""}
-          key={`max-diameter-${selectedMaxDiameter ?? ""}`}
-          name="maxDiameter"
-          placeholder="Max diameter (mm)"
-          step="0.01"
-          type="number"
-        />
-        <Input
-          aria-label="Minimum thickness in millimeters"
-          defaultValue={selectedMinThickness?.toString() ?? ""}
-          key={`min-thickness-${selectedMinThickness ?? ""}`}
-          name="minThickness"
-          placeholder="Min thickness (mm)"
-          step="0.01"
-          type="number"
-        />
-        <Input
-          aria-label="Maximum thickness in millimeters"
-          defaultValue={selectedMaxThickness?.toString() ?? ""}
-          key={`max-thickness-${selectedMaxThickness ?? ""}`}
-          name="maxThickness"
-          placeholder="Max thickness (mm)"
-          step="0.01"
-          type="number"
-        />
+        {measurementRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
+          <Input
+            aria-label={ariaLabel}
+            defaultValue={selectedMeasurementRange[name]?.toString() ?? ""}
+            key={`${name}-${selectedMeasurementRange[name] ?? ""}`}
+            name={name}
+            placeholder={placeholder}
+            step="0.01"
+            type="number"
+          />
+        ))}
         <button
           className="rounded border border-border px-3 py-2"
           type="submit"
@@ -360,46 +397,26 @@ function App() {
       </form>
 
       <ul className="space-y-4 py-4">
-        {coins.map((coin) => (
-          <li className="border-b border-border pb-4" key={coin.id}>
-            <p className="font-medium">{coin.title}</p>
-            <p className="text-sm text-muted-foreground">
-              {coin.issuer.name} · {coin.distribution.name}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {formatIssueYearRangeLabel(coin.issueYearRange)}
-            </p>
-            {(() => {
-              const measurementLabels = [
-                formatMeasurementLabel(
-                  "Weight",
-                  coin.measurements.weight,
-                  "g"
-                ),
-                formatMeasurementLabel(
-                  "Diameter",
-                  coin.measurements.diameter,
-                  "mm"
-                ),
-                formatMeasurementLabel(
-                  "Thickness",
-                  coin.measurements.thickness,
-                  "mm"
-                ),
-              ].filter((label): label is string => label !== null)
+        {coins.map((coin) => {
+          const measurementSummary = formatCoinMeasurements(coin.measurements)
 
-              if (measurementLabels.length === 0) {
-                return null
-              }
-
-              return (
+          return (
+            <li className="border-b border-border pb-4" key={coin.id}>
+              <p className="font-medium">{coin.title}</p>
+              <p className="text-sm text-muted-foreground">
+                {coin.issuer.name} · {coin.distribution.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {formatIssueYearRangeLabel(coin.issueYearRange)}
+              </p>
+              {measurementSummary ? (
                 <p className="text-sm text-muted-foreground">
-                  {measurementLabels.join(" · ")}
+                  {measurementSummary}
                 </p>
-              )
-            })()}
-          </li>
-        ))}
+              ) : null}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

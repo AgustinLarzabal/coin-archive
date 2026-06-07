@@ -116,6 +116,16 @@ function buildCoinFilter({
   referenceNumber,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
+  const minMeasurementOptions = {
+    minWeight,
+    minDiameter,
+    minThickness,
+  } as const
+  const maxMeasurementOptions = {
+    maxWeight,
+    maxDiameter,
+    maxThickness,
+  } as const
   const filters = [
     buildDistributionFilter(distributionCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
@@ -128,21 +138,13 @@ function buildCoinFilter({
       fromYear,
       toYear,
     }),
-    buildMeasurementRangeFilter({
-      column: coin.weight,
-      minValue: minWeight,
-      maxValue: maxWeight,
-    }),
-    buildMeasurementRangeFilter({
-      column: coin.diameter,
-      minValue: minDiameter,
-      maxValue: maxDiameter,
-    }),
-    buildMeasurementRangeFilter({
-      column: coin.thickness,
-      minValue: minThickness,
-      maxValue: maxThickness,
-    }),
+    ...measurementRangeFilters.map(({ column, minOptionKey, maxOptionKey }) =>
+      buildMeasurementRangeFilter({
+        column,
+        minValue: minMeasurementOptions[minOptionKey],
+        maxValue: maxMeasurementOptions[maxOptionKey],
+      })
+    ),
   ].filter(isDefined)
 
   if (filters.length === 0) {
@@ -236,6 +238,24 @@ type MeasurementRangeFilterOptions = {
   minValue: number | undefined
   maxValue: number | undefined
 }
+
+const measurementRangeFilters = [
+  {
+    column: coin.weight,
+    minOptionKey: "minWeight",
+    maxOptionKey: "maxWeight",
+  },
+  {
+    column: coin.diameter,
+    minOptionKey: "minDiameter",
+    maxOptionKey: "maxDiameter",
+  },
+  {
+    column: coin.thickness,
+    minOptionKey: "minThickness",
+    maxOptionKey: "maxThickness",
+  },
+] as const
 
 function buildCatalogueReferenceFilter({
   catalogueCode,

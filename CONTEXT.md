@@ -20,6 +20,22 @@ _Avoid_: Creation date, open-ended date qualification, ruler reign, issuer perio
 A catalogue filter that returns coins whose Issue Year Range overlaps the requested year or year range. Coins without an Issue Year Range are excluded when an issue year filter is applied.
 _Avoid_: Contained-within filter, exact year-only filter, archive creation date filter
 
+**Diameter**:
+The standard catalogue width of a coin type or issue, measured across the coin in millimeters. For non-round coins, Diameter means the largest measured width across the coin.
+_Avoid_: Size, specimen measurement
+
+**Weight**:
+The standard catalogue mass of a coin type or issue, measured in grams.
+_Avoid_: Specimen weight, unitless mass
+
+**Thickness**:
+The standard catalogue edge thickness of a coin type or issue, measured in millimeters.
+_Avoid_: Specimen thickness, unitless thickness
+
+**Measurement Filter**:
+A catalogue filter that returns coins whose known Weight, Diameter, or Thickness falls within the requested measurement range. Coins without the filtered measurement are excluded only when that measurement filter is applied.
+_Avoid_: Unknown-measurement match, specimen measurement filter
+
 **Issuer**:
 The historical or legal authority whose name, sovereignty, or authorization a coin was issued under. An issuer has a display name and a globally unique issuer code. The display name does not need to be globally unique. An issuer is distinct from the mint that physically produced the coin.
 _Avoid_: Mint, any named entity associated with a coin, globally unique display name

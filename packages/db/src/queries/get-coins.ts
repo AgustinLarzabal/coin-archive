@@ -95,6 +95,7 @@ export type GetCoinsOptions = {
   maxThickness?: number
   maxWeight?: number
   maxValue?: number
+  mintCode?: string
   minDiameter?: number
   minThickness?: number
   minWeight?: number
@@ -116,6 +117,7 @@ type CoinFilterOptions = Pick<
   | "maxThickness"
   | "maxWeight"
   | "maxValue"
+  | "mintCode"
   | "minDiameter"
   | "minThickness"
   | "minWeight"
@@ -140,6 +142,7 @@ function buildCoinFilter({
   maxThickness,
   maxWeight,
   maxValue,
+  mintCode,
   minDiameter,
   minThickness,
   minWeight,
@@ -177,6 +180,7 @@ function buildCoinFilter({
     buildDistributionFilter(distributionCode),
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
+    buildMintFilter(mintCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
     rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
@@ -263,6 +267,23 @@ function buildCurrencyFilter(
     relatedIdColumn: currency.id,
     relatedTableName: "currency",
   })
+}
+
+function buildMintFilter(mintCode: string | undefined): SQL | undefined {
+  const normalizedMintCode = normalizeCodeFilter(mintCode)
+
+  if (normalizedMintCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.id} in (
+      select ${coinMint.coinId}
+      from "coin_mint"
+      inner join "mint" on ${coinMint.mintId} = ${mint.id}
+      where lower(${mint.code}) = ${normalizedMintCode}
+    )
+  `
 }
 
 type RelatedCodeFilterOptions = {

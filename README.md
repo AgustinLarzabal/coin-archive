@@ -90,6 +90,22 @@ After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and 
 - seeded Coins intentionally reuse those Compositions across multiple records rather than embedding free-text material labels per Coin
 - deleting a Composition that is still referenced by a Coin is rejected by the database
 
+## Mint demo
+
+After `pnpm db:seed`, the homepage supports exact Mint filtering through the singular `mint` URL parameter and shows a visible `Mints:` row when a Coin has one or more Mint Attributions.
+
+- shared seeded Mints include `Royal Mint of Madrid`, `Buenos Aires Mint`, `Philadelphia Mint`, and `Denver Mint`
+- the demo data includes `Spain 2 Euro` with `Royal Mint of Madrid`
+- the demo data includes `United States National Park Quarter` with both `Philadelphia Mint` and `Denver Mint`
+- Mint filters compose with the other homepage filters using AND semantics
+
+The seeded demo data supports quick manual checks:
+
+- `mint=royal-mint-of-madrid` matches the Spain Euro example
+- `mint=philadelphia-mint` matches the Lincoln Cent and the National Park Quarter
+- `mint=philadelphia-mint&currency=united-states-dollar` keeps both United States Mint examples
+- `mint=philadelphia-mint&composition=copper-nickel-clad` narrows the result to `United States National Park Quarter`
+
 ## Face Value and Currency demo
 
 After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.

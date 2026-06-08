@@ -8,6 +8,7 @@ import type {
   CurrencyOption,
   DistributionOption,
   IssuerOption,
+  MintOption,
   RulerOption,
 } from "@workspace/db"
 import {
@@ -20,6 +21,7 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  findSelectedMintOption,
   formatMintNames,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
@@ -28,6 +30,7 @@ import {
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
+  getMintOptionLabel,
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
@@ -152,6 +155,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getCurrencies,
       getDistributions,
       getIssuers,
+      getMints,
       getRulers,
     } = await import("@workspace/db")
 
@@ -162,6 +166,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       currencies,
       distributions,
       issuers,
+      mints,
       rulers,
     ] = await Promise.all([
       getCoins(data),
@@ -170,6 +175,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getCurrencies(),
       getDistributions(),
       getIssuers(),
+      getMints(),
       getRulers(),
     ])
 
@@ -180,6 +186,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       currencies,
       distributions,
       issuers,
+      mints,
       rulers,
     }
   })
@@ -199,6 +206,7 @@ function App() {
     currencies,
     distributions,
     issuers,
+    mints,
     rulers,
   } = Route.useLoaderData()
   const {
@@ -212,6 +220,7 @@ function App() {
     maxThickness: selectedMaxThickness,
     maxWeight: selectedMaxWeight,
     maxValue: selectedMaxValue,
+    mint: selectedMintCode,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
     minWeight: selectedMinWeight,
@@ -250,6 +259,7 @@ function App() {
     distributions,
     selectedDistributionCode
   )
+  const selectedMint = findSelectedMintOption(mints, selectedMintCode)
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
   const selectedRuler =
@@ -279,6 +289,7 @@ function App() {
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
+  const selectMint = createSelectHandler<MintOption>("mint")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
 
   async function updateReferenceNumber(referenceNumber: string) {
@@ -455,6 +466,27 @@ function App() {
                 <span className="text-muted-foreground">
                   {distribution.code}
                 </span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+
+      <Combobox<MintOption>
+        items={mints}
+        value={selectedMint}
+        itemToStringLabel={getMintOptionLabel}
+        isItemEqualToValue={isCodeOptionEqual}
+        onValueChange={selectMint}
+      >
+        <ComboboxInput placeholder="Filter by mint" showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No mints found.</ComboboxEmpty>
+          <ComboboxList>
+            {(mint: MintOption) => (
+              <ComboboxItem key={mint.code} value={mint}>
+                <span>{mint.name}</span>
+                <span className="text-muted-foreground">{mint.code}</span>
               </ComboboxItem>
             )}
           </ComboboxList>

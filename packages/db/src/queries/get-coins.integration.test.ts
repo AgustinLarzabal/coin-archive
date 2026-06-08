@@ -274,6 +274,113 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters coins by exact mint code case-insensitively and excludes coins without Mint Attributions only when the filter is applied", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const bronze = await createComposition({
+      code: "bronze",
+      description: "Bronze alloy.",
+      name: "Bronze",
+    })
+    const philadelphiaMint = await createMint({
+      code: "philadelphia-mint",
+      name: "Philadelphia Mint",
+    })
+    const denverMint = await createMint({
+      code: "denver-mint",
+      name: "Denver Mint",
+    })
+    const coinWithoutMint = await createCoin({
+      title: "Unknown Mint Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const philadelphiaCoin = await createCoin({
+      title: "Philadelphia Issue",
+      compositionId: silver900.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const multiMintCoin = await createCoin({
+      title: "Dual Mint Issue",
+      compositionId: bronze.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const denverCoin = await createCoin({
+      title: "Denver Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoinMint({
+      coinId: denverCoin.id,
+      mintId: denverMint.id,
+    })
+
+    await createCoinMint({
+      coinId: philadelphiaCoin.id,
+      mintId: philadelphiaMint.id,
+    })
+    await createCoinMint({
+      coinId: multiMintCoin.id,
+      mintId: philadelphiaMint.id,
+    })
+    await createCoinMint({
+      coinId: multiMintCoin.id,
+      mintId: denverMint.id,
+    })
+
+    await expect(
+      getCoins({
+        limit: 4,
+        mintCode: "PHILADELPHIA-MINT",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: multiMintCoin.id,
+        title: "Dual Mint Issue",
+      },
+      {
+        id: philadelphiaCoin.id,
+        title: "Philadelphia Issue",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        compositionCode: "SILVER-900",
+        limit: 4,
+        mintCode: "PHILADELPHIA-MINT",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: philadelphiaCoin.id,
+        title: "Philadelphia Issue",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 4,
+        mintCode: "  ",
+      })
+    ).resolves.toMatchObject(
+      expect.arrayContaining([
+        {
+          id: coinWithoutMint.id,
+          title: "Unknown Mint Issue",
+        },
+      ])
+    )
+  })
+
   it("returns the stored issue year range through the shared coin listing", async () => {
     const rome = await createIssuer({
       code: "rome",

@@ -9,6 +9,7 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  findSelectedMintOption,
   formatMintNames,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
@@ -16,6 +17,7 @@ import {
   getCompositionOptionLabel,
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
+  getMintOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "./coin-search"
@@ -580,6 +582,7 @@ describe("coinSearchSchema", () => {
         maxThickness: "2.5",
         maxWeight: "8.75",
         maxValue: "2",
+        mint: "royal-mint-of-madrid",
         minDiameter: "20.25",
         minThickness: "1.25",
         minWeight: "4.5",
@@ -599,6 +602,7 @@ describe("coinSearchSchema", () => {
       maxThickness: 2.5,
       maxWeight: 8.75,
       maxValue: 2,
+      mint: "royal-mint-of-madrid",
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
@@ -631,8 +635,13 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage currency, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
-    expect(getCoinListLoaderDeps(currentSearch)).toStrictEqual({
+  it("passes homepage currency, mint, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+    expect(
+      getCoinListLoaderDeps({
+        ...currentSearch,
+        mint: "royal-mint-of-madrid",
+      })
+    ).toStrictEqual({
       catalogueCode: "km",
       compositionCode: "silver-900",
       currencyCode: "euro",
@@ -643,6 +652,7 @@ describe("getCoinListLoaderDeps", () => {
       maxThickness: 2.5,
       maxWeight: 8.75,
       maxValue: 2,
+      mintCode: "royal-mint-of-madrid",
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
@@ -728,6 +738,17 @@ describe("getCurrencyOptionLabel", () => {
   })
 })
 
+describe("getMintOptionLabel", () => {
+  it("includes mint name and code so combobox search can match both", () => {
+    expect(
+      getMintOptionLabel({
+        code: "royal-mint-of-madrid",
+        name: "Royal Mint of Madrid",
+      })
+    ).toBe("Royal Mint of Madrid · royal-mint-of-madrid")
+  })
+})
+
 describe("findSelectedCatalogueOption", () => {
   it("matches the selected catalogue code case-insensitively", () => {
     const standardCatalog = {
@@ -779,5 +800,18 @@ describe("findSelectedCurrencyOption", () => {
     }
 
     expect(findSelectedCurrencyOption([euro], "EURO")).toStrictEqual(euro)
+  })
+})
+
+describe("findSelectedMintOption", () => {
+  it("matches the selected mint code case-insensitively", () => {
+    const royalMintOfMadrid = {
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    }
+
+    expect(
+      findSelectedMintOption([royalMintOfMadrid], "ROYAL-MINT-OF-MADRID")
+    ).toStrictEqual(royalMintOfMadrid)
   })
 })

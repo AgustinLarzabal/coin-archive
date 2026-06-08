@@ -5,6 +5,7 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
+  MintOption,
   RulerOption,
 } from "@workspace/db"
 import { z } from "zod"
@@ -40,6 +41,7 @@ export const coinSearchSchema = z.object({
   maxThickness: optionalPositiveNumberSchema,
   maxWeight: optionalPositiveNumberSchema,
   maxValue: optionalPositiveNumberSchema,
+  mint: optionalStringSchema,
   minDiameter: optionalPositiveNumberSchema,
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
@@ -60,6 +62,7 @@ export const coinListInputSchema = z.object({
   maxThickness: optionalPositiveNumberSchema,
   maxWeight: optionalPositiveNumberSchema,
   maxValue: optionalPositiveNumberSchema,
+  mintCode: optionalStringSchema,
   minDiameter: optionalPositiveNumberSchema,
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
@@ -130,6 +133,7 @@ type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type CompositionOptionLabel = Pick<CompositionOption, "name">
 type CurrencyOptionLabel = Pick<CurrencyOption, "name" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
+type MintOptionLabel = Pick<MintOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 type CoinMintLabel = Pick<CoinRecordMint, "name">
 
@@ -147,6 +151,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     maxThickness: search.maxThickness,
     maxWeight: search.maxWeight,
     maxValue: search.maxValue,
+    mintCode: search.mint,
     minDiameter: search.minDiameter,
     minThickness: search.minThickness,
     minWeight: search.minWeight,
@@ -200,6 +205,13 @@ export function findSelectedDistributionOption<T extends OptionWithCode>(
   selectedDistributionCode: string | undefined
 ): T | null {
   return findSelectedCodeOption(distributions, selectedDistributionCode)
+}
+
+export function findSelectedMintOption<T extends OptionWithCode>(
+  mints: T[],
+  selectedMintCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(mints, selectedMintCode)
 }
 
 export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
@@ -343,6 +355,10 @@ export function getCompositionOptionLabel(composition: CompositionOptionLabel) {
 
 export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
   return `${currency.name} · ${currency.code}`
+}
+
+export function getMintOptionLabel(mint: MintOptionLabel) {
+  return `${mint.name} · ${mint.code}`
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

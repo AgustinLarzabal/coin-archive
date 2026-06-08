@@ -347,6 +347,133 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters coins by exact theme code case-insensitively, composes with other filters, and still returns all themes on matching coins", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const bronze = await createComposition({
+      code: "bronze",
+      description: "Bronze alloy.",
+      name: "Bronze",
+    })
+    const map = await createTheme({
+      code: "map",
+      name: "Map",
+    })
+    const flag = await createTheme({
+      code: "flag",
+      name: "Flag",
+    })
+    const coinWithoutThemes = await createCoin({
+      title: "Unthemed Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const mapOnlyCoin = await createCoin({
+      title: "Map Only Coin",
+      compositionId: silver900.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const multiThemeCoin = await createCoin({
+      title: "Map and Flag Coin",
+      compositionId: bronze.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const flagOnlyCoin = await createCoin({
+      title: "Flag Only Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: mapOnlyCoin.id,
+      themeId: map.id,
+    })
+    await createCoinTheme({
+      coinId: multiThemeCoin.id,
+      themeId: flag.id,
+    })
+    await createCoinTheme({
+      coinId: multiThemeCoin.id,
+      themeId: map.id,
+    })
+    await createCoinTheme({
+      coinId: flagOnlyCoin.id,
+      themeId: flag.id,
+    })
+
+    await expect(
+      getCoins({
+        limit: 4,
+        themeCode: "MAP",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: multiThemeCoin.id,
+        title: "Map and Flag Coin",
+        themes: [
+          {
+            code: "flag",
+          },
+          {
+            code: "map",
+          },
+        ],
+      },
+      {
+        id: mapOnlyCoin.id,
+        title: "Map Only Coin",
+        themes: [
+          {
+            code: "map",
+          },
+        ],
+      },
+    ])
+
+    await expect(
+      getCoins({
+        compositionCode: "silver-900",
+        limit: 4,
+        themeCode: "MAP",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: mapOnlyCoin.id,
+        title: "Map Only Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 4,
+        themeCode: "  ",
+      })
+    ).resolves.toMatchObject(
+      expect.arrayContaining([
+        {
+          id: coinWithoutThemes.id,
+          title: "Unthemed Coin",
+        },
+      ])
+    )
+
+    await expect(
+      getCoins({
+        limit: 4,
+        themeCode: "unknown-theme",
+      })
+    ).resolves.toStrictEqual([])
+  })
+
   it("filters coins by exact mint code case-insensitively and excludes coins without Mint Attributions only when the filter is applied", async () => {
     const spain = await createIssuer({
       code: "spain",

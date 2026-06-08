@@ -128,7 +128,9 @@ The shared `getCoins` query is the package-owned contract for homepage filtering
 
 - `getThemes` returns reusable Theme options sorted by display name, then code
 - `getCoins` returns each Coin's nested `themes` sorted deterministically by name, code, then id
-- Theme filtering is intentionally not part of the current `getCoins` contract in this increment
+- Theme is filtered by exact stable Theme Code through `themeCode`
+- Theme filtering is case-insensitive, ignores blank input, returns no Coins for unknown Theme Codes, and composes with the other `getCoins` filters using AND semantics
+- Theme filtering uses the same attribution-filter pattern as Mint, so a Coin filtered by one matching Theme still returns all of its stored Themes in the nested `themes` collection
 
 - Currency is filtered by exact stable Currency Code through `currencyCode`
 - Face Value is filtered by exact stored major-unit numeric values through `minValue` and `maxValue`

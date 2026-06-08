@@ -10,6 +10,7 @@ import type {
   IssuerOption,
   MintOption,
   RulerOption,
+  ThemeOption,
 } from "@workspace/db"
 import {
   applyFaceValueRangeSearch,
@@ -22,6 +23,7 @@ import {
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
   findSelectedMintOption,
+  findSelectedThemeOption,
   formatMintNames,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
@@ -32,6 +34,7 @@ import {
   getCoinListLoaderDeps,
   getMintOptionLabel,
   getRulerOptionLabel,
+  getThemeOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
@@ -158,6 +161,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getIssuers,
       getMints,
       getRulers,
+      getThemes,
     } = await import("@workspace/db")
 
     const [
@@ -169,6 +173,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       issuers,
       mints,
       rulers,
+      themes,
     ] = await Promise.all([
       getCoins(data),
       getCatalogues(),
@@ -178,6 +183,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getIssuers(),
       getMints(),
       getRulers(),
+      getThemes(),
     ])
 
     return {
@@ -189,6 +195,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       issuers,
       mints,
       rulers,
+      themes,
     }
   })
 
@@ -209,6 +216,7 @@ function App() {
     issuers,
     mints,
     rulers,
+    themes,
   } = Route.useLoaderData()
   const {
     catalogue: selectedCatalogueCode,
@@ -228,6 +236,7 @@ function App() {
     minValue: selectedMinValue,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
+    theme: selectedThemeCode,
     toYear: selectedToYear,
   } = Route.useSearch()
   const navigate = Route.useNavigate()
@@ -261,6 +270,7 @@ function App() {
     selectedDistributionCode
   )
   const selectedMint = findSelectedMintOption(mints, selectedMintCode)
+  const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
   const selectedRuler =
@@ -292,6 +302,7 @@ function App() {
     createSelectHandler<DistributionOption>("distribution")
   const selectMint = createSelectHandler<MintOption>("mint")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
+  const selectTheme = createSelectHandler<ThemeOption>("theme")
 
   async function updateReferenceNumber(referenceNumber: string) {
     await updateSearchFilter("referenceNumber", referenceNumber)
@@ -488,6 +499,27 @@ function App() {
               <ComboboxItem key={mint.code} value={mint}>
                 <span>{mint.name}</span>
                 <span className="text-muted-foreground">{mint.code}</span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+
+      <Combobox<ThemeOption>
+        items={themes}
+        value={selectedTheme}
+        itemToStringLabel={getThemeOptionLabel}
+        isItemEqualToValue={isCodeOptionEqual}
+        onValueChange={selectTheme}
+      >
+        <ComboboxInput placeholder="Filter by theme" showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No themes found.</ComboboxEmpty>
+          <ComboboxList>
+            {(theme: ThemeOption) => (
+              <ComboboxItem key={theme.code} value={theme}>
+                <span>{theme.name}</span>
+                <span className="text-muted-foreground">{theme.code}</span>
               </ComboboxItem>
             )}
           </ComboboxList>

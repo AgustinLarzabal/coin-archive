@@ -7,6 +7,7 @@ import type {
   DistributionOption,
   MintOption,
   RulerOption,
+  ThemeOption,
 } from "@workspace/db"
 import { z } from "zod"
 
@@ -48,6 +49,7 @@ export const coinSearchSchema = z.object({
   minValue: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
+  theme: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
 
@@ -69,6 +71,7 @@ export const coinListInputSchema = z.object({
   minValue: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
+  themeCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
 
@@ -139,6 +142,7 @@ type DistributionOptionLabel = Pick<
 >
 type MintOptionLabel = Pick<MintOption, keyof NamedCodeOptionLabel>
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+type ThemeOptionLabel = Pick<ThemeOption, keyof NamedCodeOptionLabel>
 type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
@@ -162,6 +166,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     minValue: search.minValue,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
+    themeCode: search.theme,
     toYear: search.toYear,
   }
 }
@@ -216,6 +221,13 @@ export function findSelectedMintOption<T extends OptionWithCode>(
   selectedMintCode: string | undefined
 ): T | null {
   return findSelectedCodeOption(mints, selectedMintCode)
+}
+
+export function findSelectedThemeOption<T extends OptionWithCode>(
+  themes: T[],
+  selectedThemeCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(themes, selectedThemeCode)
 }
 
 export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
@@ -367,6 +379,10 @@ export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
 
 export function getMintOptionLabel(mint: MintOptionLabel) {
   return getNamedCodeOptionLabel(mint)
+}
+
+export function getThemeOptionLabel(theme: ThemeOptionLabel) {
+  return getNamedCodeOptionLabel(theme)
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

@@ -112,6 +112,7 @@ export type GetCoinsOptions = {
   limit?: number
   referenceNumber?: string
   rulerCode?: string
+  themeCode?: string
   toYear?: number
 }
 
@@ -134,6 +135,7 @@ type CoinFilterOptions = Pick<
   | "rulerCode"
   | "catalogueCode"
   | "referenceNumber"
+  | "themeCode"
   | "toYear"
 >
 
@@ -159,6 +161,7 @@ function buildCoinFilter({
   rulerCode,
   catalogueCode,
   referenceNumber,
+  themeCode,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
   const rangeFilters = [
@@ -188,6 +191,7 @@ function buildCoinFilter({
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
     buildMintFilter(mintCode),
+    buildThemeFilter(themeCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
     rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
@@ -289,6 +293,23 @@ function buildMintFilter(mintCode: string | undefined): SQL | undefined {
       from ${coinMint}
       inner join ${mint} on ${coinMint.mintId} = ${mint.id}
       where lower(${mint.code}) = ${normalizedMintCode}
+    )
+  `
+}
+
+function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
+  const normalizedThemeCode = normalizeCodeFilter(themeCode)
+
+  if (normalizedThemeCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.id} in (
+      select ${coinTheme.coinId}
+      from ${coinTheme}
+      inner join ${theme} on ${coinTheme.themeId} = ${theme.id}
+      where lower(${theme.code}) = ${normalizedThemeCode}
     )
   `
 }

@@ -111,6 +111,25 @@ The seeded demo data supports quick manual checks:
 - `mint=philadelphia-mint&currency=united-states-dollar` keeps both United States Mint examples
 - `mint=philadelphia-mint&composition=copper-nickel-clad` narrows the result to `United States National Park Quarter`
 
+## Theme demo
+
+After `pnpm db:seed`, the demo catalogue includes reusable Themes, the homepage supports exact Theme filtering through the singular `theme` URL parameter, and Coin cards show a visible `Themes:` row when a Coin has one or more Theme Attributions.
+
+- shared seeded Themes include `Map`, `Flag`, `Portrait`, `Animal`, `Building`, `Plant`, and `Independence`
+- the demo data includes `Spain 2 Euro` with `Building` and `Map`
+- the demo data includes `United States National Park Quarter` with `Animal` and `Plant`
+- the demo data keeps `Argentina Copper Peso` unthemed so optional Theme behavior remains visible
+- the homepage keeps the debug JSON block for manual verification, and each Coin record includes `themes`
+- Theme filters compose with the other homepage filters using AND semantics
+
+The seeded demo data supports quick manual checks:
+
+- `theme=map` matches `Spain 2 Euro`, shows `Themes: Building, Map`, and includes `themes` in that Coin's debug JSON
+- `theme=animal` matches `United States National Park Quarter`
+- `theme=portrait` matches `Argentina Sol de Mayo Peso`
+- `theme=building&currency=euro` keeps the Spain Euro example only
+- `theme=MAP` behaves the same as `theme=map`
+
 ## Face Value and Currency demo
 
 After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.

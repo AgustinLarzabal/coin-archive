@@ -10,6 +10,7 @@ import {
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
   findSelectedMintOption,
+  findSelectedThemeOption,
   formatMintNames,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
@@ -18,6 +19,7 @@ import {
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getMintOptionLabel,
+  getThemeOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "./coin-search"
@@ -45,6 +47,11 @@ const currentSearch = {
 const currentSearchWithMint = {
   ...currentSearch,
   mint: "royal-mint-of-madrid",
+}
+
+const currentSearchWithTheme = {
+  ...currentSearch,
+  theme: "map",
 }
 
 const emptyFilterValues = [undefined, ""] as const
@@ -98,6 +105,15 @@ describe("updateCoinSearchFilter", () => {
       expect(
         updateCoinSearchFilter(currentSearchWithMint, "mint", filterValue)
       ).toStrictEqual(omitFilter(currentSearchWithMint, "mint"))
+    }
+  )
+
+  it.each(emptyFilterValues)(
+    "clears the theme filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearchWithTheme, "theme", filterValue)
+      ).toStrictEqual(omitFilter(currentSearchWithTheme, "theme"))
     }
   )
 
@@ -458,7 +474,7 @@ describe("applyFaceValueRangeSearch", () => {
 })
 
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, currency, face value, issue year range, measurement, and reference number search params", () => {
+  it("accepts homepage catalogue, currency, face value, issue year range, measurement, theme, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
@@ -478,6 +494,7 @@ describe("coinSearchSchema", () => {
         minValue: "0.5",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
+        theme: "map",
         toYear: "1902",
       })
     ).toStrictEqual({
@@ -498,6 +515,7 @@ describe("coinSearchSchema", () => {
       minValue: 0.5,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
+      theme: "map",
       toYear: 1902,
     })
   })
@@ -524,11 +542,12 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage currency, mint, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage currency, mint, theme, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         ...currentSearch,
         mint: "royal-mint-of-madrid",
+        theme: "map",
       })
     ).toStrictEqual({
       catalogueCode: "km",
@@ -548,6 +567,7 @@ describe("getCoinListLoaderDeps", () => {
       minValue: 0.5,
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
+      themeCode: "map",
       toYear: 1902,
     })
   })
@@ -638,6 +658,17 @@ describe("getMintOptionLabel", () => {
   })
 })
 
+describe("getThemeOptionLabel", () => {
+  it("includes theme name and code so combobox search can match both", () => {
+    expect(
+      getThemeOptionLabel({
+        code: "map",
+        name: "Map",
+      })
+    ).toBe("Map · map")
+  })
+})
+
 describe("findSelectedCatalogueOption", () => {
   it("matches the selected catalogue code case-insensitively", () => {
     const standardCatalog = {
@@ -702,5 +733,16 @@ describe("findSelectedMintOption", () => {
     expect(
       findSelectedMintOption([royalMintOfMadrid], "ROYAL-MINT-OF-MADRID")
     ).toStrictEqual(royalMintOfMadrid)
+  })
+})
+
+describe("findSelectedThemeOption", () => {
+  it("matches the selected theme code case-insensitively", () => {
+    const map = {
+      code: "map",
+      name: "Map",
+    }
+
+    expect(findSelectedThemeOption([map], "MAP")).toStrictEqual(map)
   })
 })

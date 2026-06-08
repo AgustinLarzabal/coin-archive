@@ -182,6 +182,14 @@ type CoinRulerAttribution = {
   ruler: CoinRuler
 }
 
+type CoinCodeNamedRecord = {
+  id: string
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 type CoinEntry = {
   coin: CoinRecord
   rulerAttributions: CoinRulerAttribution[]
@@ -238,13 +246,55 @@ function mapDistribution({
   distributionCreatedAt,
   distributionUpdatedAt,
 }: GetCoinsDistributionColumns): CoinDistribution {
-  return {
+  return mapCodeNamedRecord({
     id: distributionId,
     code: distributionCode,
     name: distributionName,
     createdAt: distributionCreatedAt,
     updatedAt: distributionUpdatedAt,
+  })
+}
+
+function mapCodeNamedRecord({
+  id,
+  code,
+  name,
+  createdAt,
+  updatedAt,
+}: CoinCodeNamedRecord): CoinCodeNamedRecord {
+  return {
+    id,
+    code,
+    name,
+    createdAt,
+    updatedAt,
   }
+}
+
+function mapOptionalCodeNamedRecord({
+  id,
+  code,
+  name,
+  createdAt,
+  updatedAt,
+}: {
+  id: string | null
+  code: string | null
+  name: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
+}): CoinCodeNamedRecord | null {
+  if (!id || !code || !name || !createdAt || !updatedAt) {
+    return null
+  }
+
+  return mapCodeNamedRecord({
+    id,
+    code,
+    name,
+    createdAt,
+    updatedAt,
+  })
 }
 
 function mapComposition({
@@ -256,12 +306,14 @@ function mapComposition({
   compositionUpdatedAt,
 }: GetCoinsCompositionColumns): CoinComposition {
   return {
-    id: compositionId,
-    code: compositionCode,
-    name: compositionName,
+    ...mapCodeNamedRecord({
+      id: compositionId,
+      code: compositionCode,
+      name: compositionName,
+      createdAt: compositionCreatedAt,
+      updatedAt: compositionUpdatedAt,
+    }),
     description: compositionDescription,
-    createdAt: compositionCreatedAt,
-    updatedAt: compositionUpdatedAt,
   }
 }
 
@@ -272,23 +324,13 @@ function mapParentIssuer({
   parentIssuerCreatedAt,
   parentIssuerUpdatedAt,
 }: GetCoinsParentIssuerColumns): CoinIssuerParent | null {
-  if (
-    !parentIssuerId ||
-    !parentIssuerCode ||
-    !parentIssuerName ||
-    !parentIssuerCreatedAt ||
-    !parentIssuerUpdatedAt
-  ) {
-    return null
-  }
-
-  return {
+  return mapOptionalCodeNamedRecord({
     id: parentIssuerId,
     code: parentIssuerCode,
     name: parentIssuerName,
     createdAt: parentIssuerCreatedAt,
     updatedAt: parentIssuerUpdatedAt,
-  }
+  })
 }
 
 function mapIssuer({
@@ -316,23 +358,13 @@ function mapRulerGroup({
   rulerGroupCreatedAt,
   rulerGroupUpdatedAt,
 }: GetCoinsRulerGroupColumns): CoinRulerGroup | null {
-  if (
-    !rulerGroupId ||
-    !rulerGroupCode ||
-    !rulerGroupName ||
-    !rulerGroupCreatedAt ||
-    !rulerGroupUpdatedAt
-  ) {
-    return null
-  }
-
-  return {
+  return mapOptionalCodeNamedRecord({
     id: rulerGroupId,
     code: rulerGroupCode,
     name: rulerGroupName,
     createdAt: rulerGroupCreatedAt,
     updatedAt: rulerGroupUpdatedAt,
-  }
+  })
 }
 
 function mapCatalogue({

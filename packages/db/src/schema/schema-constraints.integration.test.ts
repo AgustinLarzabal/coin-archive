@@ -51,20 +51,20 @@ async function expectConstraintError(
 async function createCoinDependencies() {
   const [createdIssuer, createdDistribution, createdComposition] =
     await Promise.all([
-    createIssuer({
-      code: "athens",
-      name: "Athens",
-    }),
-    createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    }),
-    createComposition({
-      code: "silver-900",
-      description: "Ninety percent silver alloy.",
-      name: "Silver (.900)",
-    }),
-  ])
+      createIssuer({
+        code: "athens",
+        name: "Athens",
+      }),
+      createDistribution({
+        code: "standard-circulation",
+        name: "Standard circulation",
+      }),
+      createComposition({
+        code: "silver-900",
+        description: "Ninety percent silver alloy.",
+        name: "Silver (.900)",
+      }),
+    ])
 
   return {
     compositionId: createdComposition.id,
@@ -73,10 +73,10 @@ async function createCoinDependencies() {
   }
 }
 
-function insertCoinWithPartialIssueYearRange(input: {
-  compositionId: string
-  distributionId: string
-  issuerId: string
+function insertCoinRow(input: {
+  compositionId: string | null
+  distributionId: string | null
+  issuerId: string | null
   minYear?: number
   maxYear?: number
   title: string
@@ -99,6 +99,28 @@ function insertCoinWithPartialIssueYearRange(input: {
       ${input.maxYear ?? null}
     )
   `)
+}
+
+async function expectCoinRequiredColumnError(input: {
+  compositionId: string | null
+  distributionId: string | null
+  issuerId: string | null
+  missingColumn: "issuer_id" | "distribution_id" | "composition_id"
+  title: string
+}) {
+  await expect(
+    insertCoinRow({
+      title: input.title,
+      issuerId: input.issuerId,
+      distributionId: input.distributionId,
+      compositionId: input.compositionId,
+    })
+  ).rejects.toMatchObject({
+    cause: expect.objectContaining({
+      code: "23502",
+      column_name: input.missingColumn,
+    }),
+  })
 }
 
 describe("composition schema constraints", () => {
@@ -212,26 +234,12 @@ describe("coin schema constraints", () => {
       }),
     ])
 
-    await expect(
-      db.execute(sql`
-        insert into "coin" (
-          "title",
-          "issuer_id",
-          "distribution_id",
-          "composition_id"
-        )
-        values (
-          ${"Issuerless Test Coin"},
-          ${null},
-          ${standardCirculation.id},
-          ${silver900.id}
-        )
-      `)
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23502",
-        column_name: "issuer_id",
-      }),
+    await expectCoinRequiredColumnError({
+      title: "Issuerless Test Coin",
+      issuerId: null,
+      distributionId: standardCirculation.id,
+      compositionId: silver900.id,
+      missingColumn: "issuer_id",
     })
   })
 
@@ -247,26 +255,12 @@ describe("coin schema constraints", () => {
       }),
     ])
 
-    await expect(
-      db.execute(sql`
-        insert into "coin" (
-          "title",
-          "issuer_id",
-          "distribution_id",
-          "composition_id"
-        )
-        values (
-          ${"Distributionless Test Coin"},
-          ${athens.id},
-          ${null},
-          ${silver900.id}
-        )
-      `)
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23502",
-        column_name: "distribution_id",
-      }),
+    await expectCoinRequiredColumnError({
+      title: "Distributionless Test Coin",
+      issuerId: athens.id,
+      distributionId: null,
+      compositionId: silver900.id,
+      missingColumn: "distribution_id",
     })
   })
 
@@ -282,26 +276,12 @@ describe("coin schema constraints", () => {
       }),
     ])
 
-    await expect(
-      db.execute(sql`
-        insert into "coin" (
-          "title",
-          "issuer_id",
-          "distribution_id",
-          "composition_id"
-        )
-        values (
-          ${"Compositionless Test Coin"},
-          ${athens.id},
-          ${standardCirculation.id},
-          ${null}
-        )
-      `)
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23502",
-        column_name: "composition_id",
-      }),
+    await expectCoinRequiredColumnError({
+      title: "Compositionless Test Coin",
+      issuerId: athens.id,
+      distributionId: standardCirculation.id,
+      compositionId: null,
+      missingColumn: "composition_id",
     })
   })
 
@@ -369,7 +349,7 @@ describe("coin schema constraints", () => {
       await createCoinDependencies()
 
     await expectConstraintError(
-      insertCoinWithPartialIssueYearRange({
+      insertCoinRow({
         compositionId,
         title: "Half Entered Range Coin",
         issuerId,
@@ -386,7 +366,7 @@ describe("coin schema constraints", () => {
       await createCoinDependencies()
 
     await expectConstraintError(
-      insertCoinWithPartialIssueYearRange({
+      insertCoinRow({
         compositionId,
         title: "Half Entered Max Range Coin",
         issuerId,

@@ -304,21 +304,13 @@ async function seedCoins(
   const insertedCoins = await db
     .insert(coin)
     .values(
-      seededCoins.map(
-        ({ issuerCode, distributionCode, compositionCode, ...seededCoin }) => ({
-          ...seededCoin,
-          compositionId: getRequiredSeededId(
-            compositionIdsByCode,
-            compositionCode,
-            "composition"
-          ),
-          distributionId: getRequiredSeededId(
-            distributionIdsByCode,
-            distributionCode,
-            "distribution"
-          ),
-          issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
-        })
+      seededCoins.map((seededCoin) =>
+        mapSeededCoinToInsertValues(
+          seededCoin,
+          compositionIdsByCode,
+          issuerIdsByCode,
+          distributionIdsByCode
+        )
       )
     )
     .returning({ id: coin.id, title: coin.title })
@@ -327,6 +319,31 @@ async function seedCoins(
   )
 
   return coinIdsByTitle
+}
+
+function mapSeededCoinToInsertValues(
+  seededCoin: (typeof seededCoins)[number],
+  compositionIdsByCode: CompositionIdsByCode,
+  issuerIdsByCode: IssuerIdsByCode,
+  distributionIdsByCode: DistributionIdsByCode
+) {
+  const { issuerCode, distributionCode, compositionCode, ...coinValues } =
+    seededCoin
+
+  return {
+    ...coinValues,
+    compositionId: getRequiredSeededId(
+      compositionIdsByCode,
+      compositionCode,
+      "composition"
+    ),
+    distributionId: getRequiredSeededId(
+      distributionIdsByCode,
+      distributionCode,
+      "distribution"
+    ),
+    issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
+  }
 }
 
 async function seedCoinRulers(

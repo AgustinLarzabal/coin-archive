@@ -1,5 +1,6 @@
 import type {
   CatalogueOption,
+  CoinRecordMint,
   CoinIssueYearRange,
   CompositionOption,
   CurrencyOption,
@@ -130,7 +131,7 @@ type CompositionOptionLabel = Pick<CompositionOption, "name">
 type CurrencyOptionLabel = Pick<CurrencyOption, "name" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
-type CoinMintLabel = { name: string }
+type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
 

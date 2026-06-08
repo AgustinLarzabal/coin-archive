@@ -29,7 +29,7 @@ export type {
   CoinFaceValue,
   CoinIssueYearRange,
   CoinIssuer,
-  CoinMint as CoinRecordMint,
+  CoinRecordMint,
   CoinIssuerParent,
   CoinMeasurements,
   CoinRecord,

@@ -189,7 +189,7 @@ export type CoinIssuer = {
   parent: CoinIssuerParent | null
 }
 
-export type CoinMint = {
+export type CoinRecordMint = {
   id: string
   code: string
   name: string
@@ -236,8 +236,6 @@ type CoinRulerAttribution = {
   ruler: CoinRuler
 }
 
-type CoinMintRecord = CoinMint
-
 type CoinCodeNamedRecord = {
   id: string
   code: string
@@ -247,8 +245,8 @@ type CoinCodeNamedRecord = {
 }
 
 type CoinEntry = {
-  coin: CoinRecord
-  mints: CoinMintRecord[]
+  coin: CoinEntryCoin
+  mints: CoinRecordMint[]
   rulerAttributions: CoinRulerAttribution[]
   catalogueReferences: CoinCatalogueReference[]
   seenMintIds: Set<string>
@@ -268,10 +266,12 @@ export type CoinRecord = CoinRecordBase & {
   composition: CoinComposition
   distribution: CoinDistribution
   issuer: CoinIssuer
-  mints: CoinMint[]
+  mints: CoinRecordMint[]
   rulers: CoinRuler[]
   references: CoinCatalogueReference[]
 }
+
+type CoinEntryCoin = Omit<CoinRecord, "mints" | "rulers" | "references">
 
 function mapIssueYearRange({
   minYear,
@@ -441,7 +441,7 @@ function mapIssuer({
   }
 }
 
-function mapMint(row: GetCoinsMintColumns): CoinMint | null {
+function mapMint(row: GetCoinsMintColumns): CoinRecordMint | null {
   return mapOptionalCodeNamedRecord({
     id: row.mintId,
     code: row.mintCode,
@@ -557,7 +557,7 @@ function compareCatalogueReferences(
   )
 }
 
-function compareMints(left: CoinMint, right: CoinMint): number {
+function compareMints(left: CoinRecordMint, right: CoinRecordMint): number {
   return (
     left.name.localeCompare(right.name) ||
     left.code.localeCompare(right.code) ||
@@ -614,7 +614,7 @@ function mapCatalogueReference(
   }
 }
 
-function mapCoinRecord(row: GetCoinsRow): CoinRecord {
+function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
   return {
     id: row.id,
     title: row.title,
@@ -626,9 +626,6 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     composition: mapComposition(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
-    mints: [],
-    rulers: [],
-    references: [],
   }
 }
 

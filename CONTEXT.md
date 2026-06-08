@@ -32,6 +32,26 @@ _Avoid_: Specimen weight, unitless mass
 The standard catalogue edge thickness of a coin type or issue, measured in millimeters.
 _Avoid_: Specimen thickness, unitless thickness
 
+**Face Value**:
+The official nominal denomination assigned to a coin type or issue, such as 2 Euros or 50 Euro Cent. Every Coin has exactly one Face Value. Face Value combines authoritative display text, a numeric value expressed in the Currency's major unit, and the Currency itself. The display text is catalogue data, not a generated label. Face Value describes the denomination of the coin itself, not its market price, collector value, melt value, exchange-rate value, or current purchasing power.
+_Avoid_: Value, market value, collector value, sale price, melt value, purchasing power, zero or negative denomination, minor-unit numeric value, generated denomination label
+
+**Currency**:
+The reusable monetary unit used by a coin's Face Value, such as Euro, Argentine peso, or United States dollar. A Currency has a short display name and a full display name for historical disambiguation. A Currency is distinct from an Issuer and does not imply which authority issued a specific Coin.
+_Avoid_: Issuer, denomination, exchange rate, market value
+
+**Currency Code**:
+The globally unique, stable, human-readable catalogue key for a currency, used to identify the currency in imports, filters, URLs, and administrative lookup. It uses lowercase slug-style text and is distinct from the currency's display names. Currency names and full names are not archive identities.
+_Avoid_: Display name, full display name, ISO currency code requirement, issuer code
+
+**Currency Filter**:
+A catalogue filter that returns coins linked directly to the selected Currency.
+_Avoid_: Issuer filter, exchange-rate filter, face-value range filter
+
+**Face Value Filter**:
+A catalogue filter that returns coins whose numeric Face Value falls within the requested range. The numeric comparison uses each Face Value's major-unit value without exchange-rate conversion and composes with Currency Filter and other catalogue filters using AND semantics.
+_Avoid_: Market-price filter, exchange-rate conversion filter, minor-unit filter
+
 **Composition**:
 The named material makeup of catalogued coin types or issues, with optional descriptive detail about alloys, layers, or parts of the coin. Every Coin has exactly one Composition. A Composition has a display name and a globally unique composition code, and it describes coin types or issues rather than tested individual specimens.
 _Avoid_: Specimen assay, normalized metal inventory, parsed chemistry

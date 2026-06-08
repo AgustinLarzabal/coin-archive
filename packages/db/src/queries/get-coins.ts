@@ -281,37 +281,27 @@ function buildCurrencyFilter(
 }
 
 function buildMintFilter(mintCode: string | undefined): SQL | undefined {
-  const normalizedMintCode = normalizeCodeFilter(mintCode)
-
-  if (normalizedMintCode === undefined) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.id} in (
-      select ${coinMint.coinId}
-      from ${coinMint}
-      inner join ${mint} on ${coinMint.mintId} = ${mint.id}
-      where lower(${mint.code}) = ${normalizedMintCode}
-    )
-  `
+  return buildAttributionCodeFilter({
+    attributionCoinIdColumn: coinMint.coinId,
+    attributionForeignKeyColumn: coinMint.mintId,
+    attributionTableName: "coin_mint",
+    relatedCode: mintCode,
+    relatedCodeColumn: mint.code,
+    relatedIdColumn: mint.id,
+    relatedTableName: "mint",
+  })
 }
 
 function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
-  const normalizedThemeCode = normalizeCodeFilter(themeCode)
-
-  if (normalizedThemeCode === undefined) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.id} in (
-      select ${coinTheme.coinId}
-      from ${coinTheme}
-      inner join ${theme} on ${coinTheme.themeId} = ${theme.id}
-      where lower(${theme.code}) = ${normalizedThemeCode}
-    )
-  `
+  return buildAttributionCodeFilter({
+    attributionCoinIdColumn: coinTheme.coinId,
+    attributionForeignKeyColumn: coinTheme.themeId,
+    attributionTableName: "coin_theme",
+    relatedCode: themeCode,
+    relatedCodeColumn: theme.code,
+    relatedIdColumn: theme.id,
+    relatedTableName: "theme",
+  })
 }
 
 type RelatedCodeFilterOptions = {
@@ -331,6 +321,16 @@ type RelatedCodeFilterOptions = {
   relatedTableName: "composition" | "currency" | "distribution"
 }
 
+type AttributionCodeFilterOptions = {
+  attributionCoinIdColumn: typeof coinMint.coinId | typeof coinTheme.coinId
+  attributionForeignKeyColumn: typeof coinMint.mintId | typeof coinTheme.themeId
+  attributionTableName: "coin_mint" | "coin_theme"
+  relatedCode: string | undefined
+  relatedCodeColumn: typeof mint.code | typeof theme.code
+  relatedIdColumn: typeof mint.id | typeof theme.id
+  relatedTableName: "mint" | "theme"
+}
+
 function buildRelatedCodeFilter({
   foreignKeyColumn,
   relatedCode,
@@ -348,6 +348,32 @@ function buildRelatedCodeFilter({
     ${foreignKeyColumn} in (
       select ${relatedIdColumn}
       from ${sql.raw(`"${relatedTableName}"`)}
+      where lower(${relatedCodeColumn}) = ${normalizedRelatedCode}
+    )
+  `
+}
+
+function buildAttributionCodeFilter({
+  attributionCoinIdColumn,
+  attributionForeignKeyColumn,
+  attributionTableName,
+  relatedCode,
+  relatedCodeColumn,
+  relatedIdColumn,
+  relatedTableName,
+}: AttributionCodeFilterOptions): SQL | undefined {
+  const normalizedRelatedCode = normalizeCodeFilter(relatedCode)
+
+  if (normalizedRelatedCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.id} in (
+      select ${attributionCoinIdColumn}
+      from ${sql.raw(`"${attributionTableName}"`)}
+      inner join ${sql.raw(`"${relatedTableName}"`)}
+        on ${attributionForeignKeyColumn} = ${relatedIdColumn}
       where lower(${relatedCodeColumn}) = ${normalizedRelatedCode}
     )
   `

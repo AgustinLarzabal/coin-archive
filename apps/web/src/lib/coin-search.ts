@@ -216,19 +216,15 @@ export function findSelectedDistributionOption<T extends OptionWithCode>(
   return findSelectedCodeOption(distributions, selectedDistributionCode)
 }
 
-export function findSelectedMintOption<T extends OptionWithCode>(
+export const findSelectedMintOption: <T extends OptionWithCode>(
   mints: T[],
   selectedMintCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(mints, selectedMintCode)
-}
+) => T | null = findSelectedCodeOption
 
-export function findSelectedThemeOption<T extends OptionWithCode>(
+export const findSelectedThemeOption: <T extends OptionWithCode>(
   themes: T[],
   selectedThemeCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(themes, selectedThemeCode)
-}
+) => T | null = findSelectedCodeOption
 
 export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
   currentSearch: CoinSearch,
@@ -377,13 +373,11 @@ export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
   return getNamedCodeOptionLabel(currency)
 }
 
-export function getMintOptionLabel(mint: MintOptionLabel) {
-  return getNamedCodeOptionLabel(mint)
-}
+export const getMintOptionLabel: (mint: MintOptionLabel) => string =
+  getNamedCodeOptionLabel
 
-export function getThemeOptionLabel(theme: ThemeOptionLabel) {
-  return getNamedCodeOptionLabel(theme)
-}
+export const getThemeOptionLabel: (theme: ThemeOptionLabel) => string =
+  getNamedCodeOptionLabel
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {
   return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name

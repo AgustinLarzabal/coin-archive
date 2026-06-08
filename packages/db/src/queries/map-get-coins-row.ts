@@ -73,18 +73,11 @@ export type GetCoinsRow = {
   updatedAt: Date
   minYear: number | null
   maxYear: number | null
-  faceValueText: string
-  faceValueNumericValue: number
-  currencyId: string
-  currencyCode: string
-  currencyName: string
-  currencyFullName: string
-  currencyCreatedAt: Date
-  currencyUpdatedAt: Date
   weight: number | null
   diameter: number | null
   thickness: number | null
 } & GetCoinsCompositionColumns &
+  GetCoinsCurrencyColumns &
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
@@ -115,6 +108,16 @@ type GetCoinsCatalogueColumns = Pick<
   | "referenceCatalogueTitle"
   | "referenceCatalogueCreatedAt"
   | "referenceCatalogueUpdatedAt"
+>
+
+type GetCoinsCurrencyRecordColumns = Pick<
+  GetCoinsCurrencyColumns,
+  | "currencyId"
+  | "currencyCode"
+  | "currencyName"
+  | "currencyFullName"
+  | "currencyCreatedAt"
+  | "currencyUpdatedAt"
 >
 
 export type CoinIssuerParent = {
@@ -274,27 +277,33 @@ function mapMeasurements({
   }
 }
 
-function mapFaceValue({
-  faceValueText,
-  faceValueNumericValue,
+function mapCurrency({
   currencyId,
   currencyCode,
   currencyName,
   currencyFullName,
   currencyCreatedAt,
   currencyUpdatedAt,
+}: GetCoinsCurrencyRecordColumns): CoinCurrency {
+  return {
+    id: currencyId,
+    code: currencyCode,
+    name: currencyName,
+    fullName: currencyFullName,
+    createdAt: currencyCreatedAt,
+    updatedAt: currencyUpdatedAt,
+  }
+}
+
+function mapFaceValue({
+  faceValueText,
+  faceValueNumericValue,
+  ...currencyColumns
 }: GetCoinsCurrencyColumns): CoinFaceValue {
   return {
     text: faceValueText,
     numericValue: faceValueNumericValue,
-    currency: {
-      id: currencyId,
-      code: currencyCode,
-      name: currencyName,
-      fullName: currencyFullName,
-      createdAt: currencyCreatedAt,
-      updatedAt: currencyUpdatedAt,
-    },
+    currency: mapCurrency(currencyColumns),
   }
 }
 

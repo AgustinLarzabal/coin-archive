@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm"
 import { coin } from "../schema/coin"
-import { currency } from "../schema/currency"
 import { issuer } from "../schema/issuer"
 import { getOrCreateDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency } from "./default-currency"

@@ -34,7 +34,6 @@ import {
   getCoinListLoaderDeps,
   getMintOptionLabel,
   getRulerOptionLabel,
-  getThemeOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
@@ -46,6 +45,7 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
+import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
 
 import {
   Combobox,
@@ -505,26 +505,11 @@ function App() {
         </ComboboxContent>
       </Combobox>
 
-      <Combobox<ThemeOption>
-        items={themes}
-        value={selectedTheme}
-        itemToStringLabel={getThemeOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <ThemeFilterCombobox
         onValueChange={selectTheme}
-      >
-        <ComboboxInput placeholder="Filter by theme" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No themes found.</ComboboxEmpty>
-          <ComboboxList>
-            {(theme: ThemeOption) => (
-              <ComboboxItem key={theme.code} value={theme}>
-                <span>{theme.name}</span>
-                <span className="text-muted-foreground">{theme.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedTheme={selectedTheme}
+        themes={themes}
+      />
 
       <Input
         aria-label="Filter by reference number"

@@ -7,16 +7,12 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
-import { getThemeOptionLabel } from "../lib/coin-search"
+import { getThemeOptionLabel, isCodeOptionEqual } from "../lib/coin-search"
 
 type ThemeFilterComboboxProps = {
   onValueChange: (theme: ThemeOption | null) => Promise<void>
   selectedTheme: ThemeOption | null
   themes: ThemeOption[]
-}
-
-function isThemeOptionEqual(left: ThemeOption, right: ThemeOption) {
-  return left.code === right.code
 }
 
 export function ThemeFilterCombobox({
@@ -29,7 +25,7 @@ export function ThemeFilterCombobox({
       items={themes}
       value={selectedTheme}
       itemToStringLabel={getThemeOptionLabel}
-      isItemEqualToValue={isThemeOptionEqual}
+      isItemEqualToValue={isCodeOptionEqual}
       onValueChange={onValueChange}
     >
       <ComboboxInput placeholder="Filter by theme" showClear />

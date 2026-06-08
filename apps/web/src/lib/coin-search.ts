@@ -147,6 +147,10 @@ type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
 
+export function isCodeOptionEqual<T extends OptionWithCode>(left: T, right: T) {
+  return left.code === right.code
+}
+
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,

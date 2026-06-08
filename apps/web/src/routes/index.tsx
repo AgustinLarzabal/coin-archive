@@ -34,6 +34,7 @@ import {
   getCoinListLoaderDeps,
   getMintOptionLabel,
   getRulerOptionLabel,
+  isCodeOptionEqual,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
@@ -63,10 +64,6 @@ type RangeInputField<Name extends string> = Readonly<{
   name: Name
   placeholder: string
 }>
-
-function isCodeOptionEqual<T extends OptionWithCode>(option: T, value: T) {
-  return option.code === value.code
-}
 
 const measurementRangeInputFields = [
   {

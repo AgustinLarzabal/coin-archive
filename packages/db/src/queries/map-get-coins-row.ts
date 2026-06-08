@@ -198,22 +198,6 @@ export type CoinIssuer = {
   parent: CoinIssuerParent | null
 }
 
-export type CoinRecordMint = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type CoinThemeRecord = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
 export type CoinRulerGroup = {
   id: string
   code: string
@@ -261,6 +245,10 @@ type CoinCodeNamedRecord = {
   updatedAt: Date
 }
 
+export type CoinRecordMint = CoinCodeNamedRecord
+
+export type CoinThemeRecord = CoinCodeNamedRecord
+
 type CoinEntry = {
   coin: CoinEntryCoin
   mints: CoinRecordMint[]
@@ -291,7 +279,10 @@ export type CoinRecord = CoinRecordBase & {
   references: CoinCatalogueReference[]
 }
 
-type CoinEntryCoin = Omit<CoinRecord, "mints" | "themes" | "rulers" | "references">
+type CoinEntryCoin = Omit<
+  CoinRecord,
+  "mints" | "themes" | "rulers" | "references"
+>
 
 function mapIssueYearRange({
   minYear,
@@ -471,6 +462,16 @@ function mapMint(row: GetCoinsMintColumns): CoinRecordMint | null {
   })
 }
 
+function mapTheme(row: GetCoinsThemeColumns): CoinThemeRecord | null {
+  return mapOptionalCodeNamedRecord({
+    id: row.themeId ?? null,
+    code: row.themeCode ?? null,
+    name: row.themeName ?? null,
+    createdAt: row.themeCreatedAt ?? null,
+    updatedAt: row.themeUpdatedAt ?? null,
+  })
+}
+
 function mapRulerGroup({
   rulerGroupId,
   rulerGroupCode,
@@ -578,14 +579,17 @@ function compareCatalogueReferences(
 }
 
 function compareMints(left: CoinRecordMint, right: CoinRecordMint): number {
-  return (
-    left.name.localeCompare(right.name) ||
-    left.code.localeCompare(right.code) ||
-    left.id.localeCompare(right.id)
-  )
+  return compareCodeNamedRecords(left, right)
 }
 
 function compareThemes(left: CoinThemeRecord, right: CoinThemeRecord): number {
+  return compareCodeNamedRecords(left, right)
+}
+
+function compareCodeNamedRecords(
+  left: CoinCodeNamedRecord,
+  right: CoinCodeNamedRecord
+): number {
   return (
     left.name.localeCompare(right.name) ||
     left.code.localeCompare(right.code) ||
@@ -656,32 +660,6 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     composition: mapComposition(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
-  }
-}
-
-function mapTheme({
-  themeId,
-  themeCode,
-  themeName,
-  themeCreatedAt,
-  themeUpdatedAt,
-}: GetCoinsThemeColumns): CoinThemeRecord | null {
-  if (
-    !themeId ||
-    !themeCode ||
-    !themeName ||
-    !themeCreatedAt ||
-    !themeUpdatedAt
-  ) {
-    return null
-  }
-
-  return {
-    id: themeId,
-    code: themeCode,
-    name: themeName,
-    createdAt: themeCreatedAt,
-    updatedAt: themeUpdatedAt,
   }
 }
 

@@ -17,8 +17,11 @@ export function CoinListItem({
   measurementSummary,
   mintNames,
 }: CoinListItemProps) {
+  const themeNames =
+    coin.themes.length > 0 ? formatThemeNames(coin.themes) : null
+
   return (
-    <li className="border-b border-border pb-4" key={coin.id}>
+    <li className="border-b border-border pb-4">
       <p className="font-medium">{coin.title}</p>
       <p className="text-sm text-muted-foreground">
         {coin.issuer.name} · {coin.distribution.name}
@@ -32,10 +35,8 @@ export function CoinListItem({
       {mintNames ? (
         <p className="text-sm text-muted-foreground">Mints: {mintNames}</p>
       ) : null}
-      {coin.themes.length > 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Themes: {formatThemeNames(coin.themes)}
-        </p>
+      {themeNames ? (
+        <p className="text-sm text-muted-foreground">Themes: {themeNames}</p>
       ) : null}
       <p className="text-sm text-muted-foreground">{issueYearRangeLabel}</p>
       {measurementSummary ? (

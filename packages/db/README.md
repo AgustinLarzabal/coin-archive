@@ -161,16 +161,15 @@ Terminology note:
 - seed reusable Currencies before seeded Coins so every Coin gets an explicit `currency_id`
 - keep seeded Coin measurements realistic and varied so the homepage listing demonstrates known and unknown measurement states
 - treat seed data as local/demo setup, not as a dependency for behavior tests
+- local reset and reseed is acceptable when this demo catalogue changes: `pnpm db:reset`, `pnpm db:start`, `pnpm db:migrate`, then `pnpm db:seed`
 - keep seeded Coin Compositions and Currencies reusable and explicit so the homepage and shared coin listing demonstrate nested catalogue data
 - the current demo data intentionally includes:
   - reusable Currencies such as `Euro`, `Argentine peso`, `Real`, and `United States dollar`
-  - `2003 Spain 2 Euro` with Face Value text `2 Euros` and numeric value `2`
-  - full measurement examples such as `2001 Argentine 1 Peso`
-  - unknown Weight with known Diameter and Thickness such as `1896 Argentine 20 Centavos`
-  - unknown Diameter with known Weight and Thickness such as `1822 Buenos Aires Decimo`
-  - unknown Thickness with known Weight and Diameter such as `1793 Flowing Hair Cent`
+  - `Spain 2 Euro` with Face Value text `2 Euros`, numeric value `2`, Currency `Euro`, closed Issue Year Range `2002-2026`, catalogue reference `KM 1338A`, and ruler `Felipe VI`
+  - full measurement examples such as `Argentina Convertible Peso`
+  - partial measurement examples such as `Argentina Copper Peso` and `United States Lincoln Cent`
 - the current demo data also supports a combined homepage verification example:
-  - `minWeight=6&maxWeight=7&minDiameter=23&maxDiameter=24&minThickness=1.9&maxThickness=2.1` should isolate `2001 Argentine 1 Peso` after `pnpm db:seed`
+  - `minWeight=6&maxWeight=7&minDiameter=23&maxDiameter=24&minThickness=1.9&maxThickness=2.1` should isolate `Argentina Convertible Peso` after `pnpm db:seed`
 
 ### Database tests
 

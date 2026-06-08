@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { db, getCoins } from "../index"
+import { db, getCoins, getCurrencies } from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
 import { distribution } from "../schema/distribution"
@@ -35,6 +35,28 @@ describe("seed integration", () => {
     expect(kmReferenceCount?.count).toBe(1)
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
+    await expect(getCurrencies()).resolves.toMatchObject([
+      {
+        code: "argentine-peso",
+        name: "Argentine peso",
+        fullName: "Argentine peso",
+      },
+      {
+        code: "euro",
+        name: "Euro",
+        fullName: "Euro (2002-date)",
+      },
+      {
+        code: "real",
+        name: "Real",
+        fullName: "Real",
+      },
+      {
+        code: "united-states-dollar",
+        name: "United States dollar",
+        fullName: "United States dollar",
+      },
+    ])
 
     const seededCoin = (await getCoins({ limit: 10 })).find(
       ({ title }) => title === "United States National Park Quarter"
@@ -134,6 +156,26 @@ describe("seed integration", () => {
         code: "circulating-commemorative",
         name: "Circulating commemorative",
       },
+      references: [
+        {
+          type: "catalogue",
+          number: "1338A",
+          catalogue: {
+            code: "KM",
+            title: "Standard Catalog of World Coins",
+          },
+        },
+      ],
+      rulers: [
+        {
+          code: "felipe-vi",
+          name: "Felipe VI",
+          group: {
+            code: "house-of-bourbon",
+            name: "House of Bourbon",
+          },
+        },
+      ],
     })
   })
 })

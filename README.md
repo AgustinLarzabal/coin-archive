@@ -61,14 +61,15 @@ Useful database maintenance commands:
 - `pnpm db:generate`
 - `pnpm db:studio`
 
+For the current demo catalogue, resetting and reseeding local data is an acceptable workflow when schema or seed content changes: `pnpm db:reset`, `pnpm db:start`, `pnpm db:migrate`, then `pnpm db:seed`.
+
 ## Measurement demo
 
 After `pnpm db:seed`, the homepage demo data includes Coins with:
 
-- all three measurements known, such as `2001 Argentine 1 Peso`
-- unknown Weight but known Diameter and Thickness, such as `1896 Argentine 20 Centavos`
-- unknown Diameter but known Weight and Thickness, such as `1822 Buenos Aires Decimo`
-- unknown Thickness but known Weight and Diameter, such as `1793 Flowing Hair Cent`
+- all three measurements known, such as `Argentina Convertible Peso`
+- only Diameter known, such as `Argentina Copper Peso`
+- Weight and Diameter known but unknown Thickness, such as `United States Lincoln Cent`
 
 Homepage measurement filters use grams for Weight, millimeters for Diameter, and millimeters for Thickness. The public URL search parameters are `minWeight`, `maxWeight`, `minDiameter`, `maxDiameter`, `minThickness`, and `maxThickness`.
 
@@ -76,10 +77,10 @@ Measurement filters compose with each other and with the other homepage filters 
 
 The seeded demo data is arranged so local manual checks are easy:
 
-- `minWeight=6&maxWeight=7` matches `2001 Argentine 1 Peso` and `1794 Flowing Hair Half Cent`
-- `minDiameter=23&maxDiameter=24` matches `2001 Argentine 1 Peso` and `1794 Flowing Hair Half Cent`
-- `minThickness=1.9&maxThickness=2.1` matches `2001 Argentine 1 Peso` and `1992 Argentine 50 Centavos`
-- combining all three ranges narrows the result to `2001 Argentine 1 Peso`
+- `minWeight=6&maxWeight=7` matches `Argentina Convertible Peso` only
+- `minDiameter=23&maxDiameter=24` matches `Argentina Convertible Peso` and `Buenos Aires 5 Decimos`
+- `minThickness=1.9&maxThickness=2.1` matches `Argentina Convertible Peso`, `Buenos Aires 8 Reales 1813`, and `United States National Park Quarter`
+- combining all three ranges narrows the result to `Argentina Convertible Peso`
 
 ## Composition demo
 
@@ -94,7 +95,7 @@ After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and 
 After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.
 
 - shared seeded Currencies include `Euro`, `Argentine peso`, `Real`, and `United States dollar`
-- the demo data includes `2003 Spain 2 Euro` with Face Value text `2 Euros`
+- the demo data includes `Spain 2 Euro` with Face Value text `2 Euros`, numeric value `2`, Currency `Euro`, and Issue Year Range `2002-2026`
 - homepage Currency URLs use the stable Currency Code in `currency`
 - homepage Face Value range URLs use `minValue` and `maxValue`
 - Currency and Face Value filters compose with the existing homepage filters using AND semantics
@@ -102,8 +103,10 @@ After `pnpm db:seed`, every demo Coin also has a required Face Value with a reus
 The seeded demo data supports quick manual checks:
 
 - `currency=euro` matches the Spain Euro example only
-- `minValue=0.5&maxValue=1` matches subunit and one-unit Coins by stored major-unit numeric values
+- `minValue=0.5&maxValue=1` matches `Buenos Aires 5 Decimos`, `Buenos Aires Transition Half Real`, `Argentina Sol de Mayo Peso`, `Argentina Copper Peso`, `Argentina Convertible Peso`, and `United States Flowing Hair Dollar`
 - `currency=argentine-peso&minValue=0.2&maxValue=1` narrows the results to Argentine peso denominations in that numeric range
+
+Seed data is for local exploration and manual verification only. Automated behavior tests should use purpose-built fixtures instead of depending on seeded titles or seeded IDs.
 
 ## Where to go next
 

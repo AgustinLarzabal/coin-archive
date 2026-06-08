@@ -386,7 +386,7 @@ export const seededRulers: SeededRuler[] = [
 
 export const seededCoinRulers: SeededCoinRuler[] = [
   {
-    coinTitle: "United States National Park Quarter",
+    coinTitle: "Spain 2 Euro",
     rulerCode: "felipe-vi",
     rulerOrder: 1,
   },
@@ -408,7 +408,7 @@ export const seededCatalogues: SeededCatalogue[] = [
 
 export const seededCoinReferences: SeededCoinReference[] = [
   {
-    coinTitle: "United States National Park Quarter",
+    coinTitle: "Spain 2 Euro",
     catalogueCode: "KM",
     number: "1338A",
     createdAt: new Date("2026-01-11T00:00:00.000Z"),

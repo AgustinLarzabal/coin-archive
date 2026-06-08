@@ -185,10 +185,22 @@ describe("getCoins integration", () => {
     ])
   })
 
-  it("returns a stable mints array with empty and single-mint coin records", async () => {
+  it("returns a stable mints array with empty, single-mint, and multiple-mint coin records", async () => {
     const spain = await createIssuer({
       code: "spain",
       name: "Spain",
+    })
+    const buenosAiresMint = await createMint({
+      code: "buenos-aires-mint",
+      name: "Buenos Aires Mint",
+    })
+    const denverMint = await createMint({
+      code: "denver-mint",
+      name: "Mint",
+    })
+    const philadelphiaMint = await createMint({
+      code: "philadelphia-mint",
+      name: "Mint",
     })
     const royalMintOfMadrid = await createMint({
       code: "royal-mint-of-madrid",
@@ -204,13 +216,60 @@ describe("getCoins integration", () => {
       issuerId: spain.id,
       createdAt: new Date("2026-05-02T00:00:00.000Z"),
     })
+    const coinWithMultipleMints = await createCoin({
+      title: "Shared Mint Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
 
     await createCoinMint({
       coinId: coinWithMint.id,
       mintId: royalMintOfMadrid.id,
     })
+    await createCoinMint({
+      coinId: coinWithMultipleMints.id,
+      mintId: royalMintOfMadrid.id,
+    })
+    await createCoinMint({
+      coinId: coinWithMultipleMints.id,
+      mintId: philadelphiaMint.id,
+    })
+    await createCoinMint({
+      coinId: coinWithMultipleMints.id,
+      mintId: denverMint.id,
+    })
+    await createCoinMint({
+      coinId: coinWithMultipleMints.id,
+      mintId: buenosAiresMint.id,
+    })
 
-    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: coinWithMultipleMints.id,
+        title: "Shared Mint Issue",
+        mints: [
+          {
+            id: buenosAiresMint.id,
+            code: "buenos-aires-mint",
+            name: "Buenos Aires Mint",
+          },
+          {
+            id: denverMint.id,
+            code: "denver-mint",
+            name: "Mint",
+          },
+          {
+            id: philadelphiaMint.id,
+            code: "philadelphia-mint",
+            name: "Mint",
+          },
+          {
+            id: royalMintOfMadrid.id,
+            code: "royal-mint-of-madrid",
+            name: "Royal Mint of Madrid",
+          },
+        ],
+      },
       {
         id: coinWithMint.id,
         title: "Known Mint Issue",

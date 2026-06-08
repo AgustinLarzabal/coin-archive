@@ -313,6 +313,12 @@ export const seededMints: SeededMint[] = [
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
+  {
+    code: "denver-mint",
+    name: "Denver Mint",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
 ]
 
 export const seededCurrencies: SeededCurrency[] = [
@@ -358,6 +364,14 @@ export const seededCoinMints: SeededCoinMint[] = [
   {
     coinTitle: "United States Lincoln Cent",
     mintCode: "philadelphia-mint",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    mintCode: "philadelphia-mint",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    mintCode: "denver-mint",
   },
 ]
 

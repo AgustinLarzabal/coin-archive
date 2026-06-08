@@ -36,6 +36,10 @@ const expectedSeededMints = [
     name: "Buenos Aires Mint",
   },
   {
+    code: "denver-mint",
+    name: "Denver Mint",
+  },
+  {
     code: "philadelphia-mint",
     name: "Philadelphia Mint",
   },
@@ -87,6 +91,16 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("United States National Park Quarter")).toMatchObject({
       title: "United States National Park Quarter",
+      mints: [
+        {
+          code: "denver-mint",
+          name: "Denver Mint",
+        },
+        {
+          code: "philadelphia-mint",
+          name: "Philadelphia Mint",
+        },
+      ],
       issueYearRange: {
         minYear: 2014,
         maxYear: 2026,

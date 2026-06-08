@@ -82,13 +82,16 @@ const getCoinsSelection = {
 export type GetCoinsOptions = {
   catalogueCode?: string
   compositionCode?: string
+  currencyCode?: string
   distributionCode?: string
   maxDiameter?: number
   maxThickness?: number
   maxWeight?: number
+  maxValue?: number
   minDiameter?: number
   minThickness?: number
   minWeight?: number
+  minValue?: number
   fromYear?: number
   issuerCode?: string
   limit?: number
@@ -101,12 +104,15 @@ type CoinFilterOptions = Pick<
   GetCoinsOptions,
   | "distributionCode"
   | "compositionCode"
+  | "currencyCode"
   | "maxDiameter"
   | "maxThickness"
   | "maxWeight"
+  | "maxValue"
   | "minDiameter"
   | "minThickness"
   | "minWeight"
+  | "minValue"
   | "fromYear"
   | "issuerCode"
   | "rulerCode"
@@ -122,12 +128,15 @@ function isDefined<T>(value: T | undefined): value is T {
 function buildCoinFilter({
   distributionCode,
   compositionCode,
+  currencyCode,
   maxDiameter,
   maxThickness,
   maxWeight,
+  maxValue,
   minDiameter,
   minThickness,
   minWeight,
+  minValue,
   fromYear,
   issuerCode,
   rulerCode,
@@ -148,6 +157,7 @@ function buildCoinFilter({
   const filters = [
     buildDistributionFilter(distributionCode),
     buildCompositionFilter(compositionCode),
+    buildCurrencyFilter(currencyCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
     rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
@@ -165,6 +175,11 @@ function buildCoinFilter({
         maxValue: maxMeasurementOptions[maxOptionKey],
       })
     ),
+    buildMeasurementRangeFilter({
+      column: coin.faceValueNumericValue,
+      minValue,
+      maxValue,
+    }),
   ].filter(isDefined)
 
   if (filters.length === 0) {
@@ -222,6 +237,22 @@ function buildCompositionFilter(
     relatedIdColumn: composition.id,
     relatedTableName: "composition",
   })
+}
+
+function buildCurrencyFilter(currencyCode: string | undefined): SQL | undefined {
+  const normalizedCurrencyCode = normalizeCodeFilter(currencyCode)
+
+  if (normalizedCurrencyCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.currencyId} in (
+      select ${currency.id}
+      from "currency"
+      where lower(${currency.code}) = ${normalizedCurrencyCode}
+    )
+  `
 }
 
 type RelatedCodeFilterOptions = {
@@ -290,7 +321,11 @@ type CatalogueReferenceFilterOptions = Pick<
 
 type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
 type MeasurementRangeFilterOptions = {
-  column: typeof coin.weight | typeof coin.diameter | typeof coin.thickness
+  column:
+    | typeof coin.weight
+    | typeof coin.diameter
+    | typeof coin.thickness
+    | typeof coin.faceValueNumericValue
   minValue: number | undefined
   maxValue: number | undefined
 }

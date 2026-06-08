@@ -5,28 +5,33 @@ import type {
   CatalogueOption,
   CoinMeasurements,
   CompositionOption,
+  CurrencyOption,
   DistributionOption,
   IssuerOption,
   RulerOption,
 } from "@workspace/db"
 import {
+  applyFaceValueRangeSearch,
   applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedCompositionOption,
+  findSelectedCurrencyOption,
   findSelectedDistributionOption,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
   getCompositionOptionLabel,
+  getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
+  FaceValueFilterName,
   MeasurementFilterName,
   MeasurementFilterValue,
   TextCoinSearchFilterName,
@@ -81,6 +86,23 @@ const measurementRangeInputFields = [
   placeholder: string
 }>
 
+const faceValueRangeInputFields = [
+  {
+    name: "minValue",
+    ariaLabel: "Minimum face value in major units",
+    placeholder: "Min face value",
+  },
+  {
+    name: "maxValue",
+    ariaLabel: "Maximum face value in major units",
+    placeholder: "Max face value",
+  },
+] as const satisfies ReadonlyArray<{
+  ariaLabel: string
+  name: FaceValueFilterName
+  placeholder: string
+}>
+
 const coinMeasurementFields = [
   { key: "weight", label: "Weight", unit: "g" },
   { key: "diameter", label: "Diameter", unit: "mm" },
@@ -97,6 +119,14 @@ function getMeasurementRangeFromFormData(
   return Object.fromEntries(
     measurementRangeInputFields.map(({ name }) => [name, formData.get(name)])
   ) as Record<MeasurementFilterName, MeasurementFilterValue>
+}
+
+function getFaceValueRangeFromFormData(
+  formData: FormData
+): Record<FaceValueFilterName, MeasurementFilterValue> {
+  return Object.fromEntries(
+    faceValueRangeInputFields.map(({ name }) => [name, formData.get(name)])
+  ) as Record<FaceValueFilterName, MeasurementFilterValue>
 }
 
 function formatCoinMeasurements(measurements: CoinMeasurements) {
@@ -122,37 +152,58 @@ const getCoinListData = createServerFn({ method: "GET" })
       getCatalogues,
       getCoins,
       getCompositions,
+      getCurrencies,
       getDistributions,
       getIssuers,
       getRulers,
     } = await import("@workspace/db")
 
-    const [coins, catalogues, compositions, distributions, issuers, rulers] =
+    const [
+      coins,
+      catalogues,
+      compositions,
+      currencies,
+      distributions,
+      issuers,
+      rulers,
+    ] =
       await Promise.all([
         getCoins({
           catalogueCode: data.catalogueCode,
           compositionCode: data.compositionCode,
+          currencyCode: data.currencyCode,
           distributionCode: data.distributionCode,
           fromYear: data.fromYear,
           issuerCode: data.issuerCode,
           maxDiameter: data.maxDiameter,
           maxThickness: data.maxThickness,
           maxWeight: data.maxWeight,
+          maxValue: data.maxValue,
           minDiameter: data.minDiameter,
           minThickness: data.minThickness,
           minWeight: data.minWeight,
+          minValue: data.minValue,
           referenceNumber: data.referenceNumber,
           rulerCode: data.rulerCode,
           toYear: data.toYear,
         }),
         getCatalogues(),
         getCompositions(),
+        getCurrencies(),
         getDistributions(),
         getIssuers(),
         getRulers(),
       ])
 
-    return { coins, catalogues, compositions, distributions, issuers, rulers }
+    return {
+      coins,
+      catalogues,
+      compositions,
+      currencies,
+      distributions,
+      issuers,
+      rulers,
+    }
   })
 
 export const Route = createFileRoute("/")({
@@ -163,20 +214,30 @@ export const Route = createFileRoute("/")({
 })
 
 function App() {
-  const { coins, catalogues, compositions, distributions, issuers, rulers } =
-    Route.useLoaderData()
+  const {
+    coins,
+    catalogues,
+    compositions,
+    currencies,
+    distributions,
+    issuers,
+    rulers,
+  } = Route.useLoaderData()
   const {
     catalogue: selectedCatalogueCode,
     composition: selectedCompositionCode,
+    currency: selectedCurrencyCode,
     distribution: selectedDistributionCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
     maxDiameter: selectedMaxDiameter,
     maxThickness: selectedMaxThickness,
     maxWeight: selectedMaxWeight,
+    maxValue: selectedMaxValue,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
     minWeight: selectedMinWeight,
+    minValue: selectedMinValue,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
     toYear: selectedToYear,
@@ -190,6 +251,10 @@ function App() {
     minThickness: selectedMinThickness,
     maxThickness: selectedMaxThickness,
   } satisfies Record<MeasurementFilterName, number | undefined>
+  const selectedFaceValueRange = {
+    minValue: selectedMinValue,
+    maxValue: selectedMaxValue,
+  } satisfies Record<FaceValueFilterName, number | undefined>
 
   const selectedCatalogue = findSelectedCatalogueOption(
     catalogues,
@@ -198,6 +263,10 @@ function App() {
   const selectedComposition = findSelectedCompositionOption(
     compositions,
     selectedCompositionCode
+  )
+  const selectedCurrency = findSelectedCurrencyOption(
+    currencies,
+    selectedCurrencyCode
   )
   const selectedDistribution = findSelectedDistributionOption(
     distributions,
@@ -228,6 +297,7 @@ function App() {
   const selectIssuer = createSelectHandler<IssuerOption>("issuer")
   const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
   const selectComposition = createSelectHandler<CompositionOption>("composition")
+  const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
@@ -260,6 +330,20 @@ function App() {
         applyMeasurementRangeSearch(
           currentSearch,
           getMeasurementRangeFromFormData(formData)
+        ),
+    })
+  }
+
+  async function updateFaceValueRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+
+    await navigate({
+      search: (currentSearch) =>
+        applyFaceValueRangeSearch(
+          currentSearch,
+          getFaceValueRangeFromFormData(formData)
         ),
     })
   }
@@ -351,6 +435,29 @@ function App() {
         </ComboboxContent>
       </Combobox>
 
+      <Combobox<CurrencyOption>
+        items={currencies}
+        value={selectedCurrency}
+        itemToStringLabel={getCurrencyOptionLabel}
+        isItemEqualToValue={(currency, value) => currency.code === value.code}
+        onValueChange={selectCurrency}
+      >
+        <ComboboxInput placeholder="Filter by currency" showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No currencies found.</ComboboxEmpty>
+          <ComboboxList>
+            {(currency: CurrencyOption) => (
+              <ComboboxItem key={currency.code} value={currency}>
+                <span>{currency.name}</span>
+                <span className="text-muted-foreground">
+                  {currency.fullName}
+                </span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+
       <Combobox<DistributionOption>
         items={distributions}
         value={selectedDistribution}
@@ -409,6 +516,29 @@ function App() {
           type="submit"
         >
           Apply years
+        </button>
+      </form>
+
+      <form
+        className="flex flex-wrap items-end gap-2 py-2"
+        onSubmit={updateFaceValueRange}
+      >
+        {faceValueRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
+          <Input
+            aria-label={ariaLabel}
+            defaultValue={selectedFaceValueRange[name]?.toString() ?? ""}
+            key={`${name}-${selectedFaceValueRange[name] ?? ""}`}
+            name={name}
+            placeholder={placeholder}
+            step="0.000001"
+            type="number"
+          />
+        ))}
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
+          Apply face value
         </button>
       </form>
 

@@ -2,6 +2,7 @@ import type {
   CatalogueOption,
   CoinIssueYearRange,
   CompositionOption,
+  CurrencyOption,
   DistributionOption,
   RulerOption,
 } from "@workspace/db"
@@ -30,15 +31,18 @@ const optionalPositiveNumberSchema = z.preprocess(
 export const coinSearchSchema = z.object({
   catalogue: optionalStringSchema,
   composition: optionalStringSchema,
+  currency: optionalStringSchema,
   distribution: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
   maxDiameter: optionalPositiveNumberSchema,
   maxThickness: optionalPositiveNumberSchema,
   maxWeight: optionalPositiveNumberSchema,
+  maxValue: optionalPositiveNumberSchema,
   minDiameter: optionalPositiveNumberSchema,
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
+  minValue: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -47,15 +51,18 @@ export const coinSearchSchema = z.object({
 export const coinListInputSchema = z.object({
   catalogueCode: optionalStringSchema,
   compositionCode: optionalStringSchema,
+  currencyCode: optionalStringSchema,
   distributionCode: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
   maxDiameter: optionalPositiveNumberSchema,
   maxThickness: optionalPositiveNumberSchema,
   maxWeight: optionalPositiveNumberSchema,
+  maxValue: optionalPositiveNumberSchema,
   minDiameter: optionalPositiveNumberSchema,
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
+  minValue: optionalPositiveNumberSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
@@ -74,9 +81,10 @@ export type MeasurementFilterName = keyof Pick<
   | "minThickness"
   | "maxThickness"
 >
+export type FaceValueFilterName = keyof Pick<CoinSearch, "minValue" | "maxValue">
 export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
-  IssueYearFilterName | MeasurementFilterName
+  IssueYearFilterName | MeasurementFilterName | FaceValueFilterName
 >
 export type IssueYearFilterValue =
   | CoinSearch[IssueYearFilterName]
@@ -98,10 +106,12 @@ const measurementFilterNames = [
   "minThickness",
   "maxThickness",
 ] as const
+const faceValueFilterNames = ["minValue", "maxValue"] as const
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type CompositionOptionLabel = Pick<CompositionOption, "name">
+type CurrencyOptionLabel = Pick<CurrencyOption, "name" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 
@@ -111,15 +121,18 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,
     compositionCode: search.composition,
+    currencyCode: search.currency,
     distributionCode: search.distribution,
     fromYear: search.fromYear,
     issuerCode: search.issuer,
     maxDiameter: search.maxDiameter,
     maxThickness: search.maxThickness,
     maxWeight: search.maxWeight,
+    maxValue: search.maxValue,
     minDiameter: search.minDiameter,
     minThickness: search.minThickness,
     minWeight: search.minWeight,
+    minValue: search.minValue,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
     toYear: search.toYear,
@@ -155,6 +168,13 @@ export function findSelectedCompositionOption<T extends OptionWithCode>(
   selectedCompositionCode: string | undefined
 ): T | null {
   return findSelectedCodeOption(compositions, selectedCompositionCode)
+}
+
+export function findSelectedCurrencyOption<T extends OptionWithCode>(
+  currencies: T[],
+  selectedCurrencyCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(currencies, selectedCurrencyCode)
 }
 
 export function findSelectedDistributionOption<T extends OptionWithCode>(
@@ -277,6 +297,18 @@ export function applyMeasurementRangeSearch(
   )
 }
 
+export function applyFaceValueRangeSearch(
+  currentSearch: CoinSearch,
+  faceValueRange: Record<FaceValueFilterName, MeasurementFilterValue>
+): CoinSearch {
+  return applyParsedRangeSearch(
+    currentSearch,
+    faceValueFilterNames,
+    faceValueRange,
+    parseMeasurementFilterValue
+  )
+}
+
 export function getCatalogueOptionLabel(catalogue: CatalogueOptionLabel) {
   return `${catalogue.title} · ${catalogue.code}`
 }
@@ -291,6 +323,10 @@ export function getCompositionOptionLabel(
   composition: CompositionOptionLabel
 ) {
   return composition.name
+}
+
+export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
+  return `${currency.name} · ${currency.code}`
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

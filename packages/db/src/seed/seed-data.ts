@@ -102,6 +102,12 @@ export const seededIssuers: SeededIssuer[] = [
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
+  {
+    name: "Spain",
+    code: "spain",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
 ]
 
 export const seededCoins: SeededCoin[] = [
@@ -258,29 +264,52 @@ export const seededCoins: SeededCoin[] = [
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
   },
+  {
+    title: "Spain 2 Euro",
+    compositionCode: "copper-nickel-clad",
+    currencyCode: "euro",
+    distributionCode: "circulating-commemorative",
+    faceValueNumericValue: 2,
+    faceValueText: "2 Euros",
+    issuerCode: "spain",
+    weight: 8.5,
+    diameter: 25.75,
+    thickness: 2.2,
+    minYear: 2002,
+    maxYear: 2026,
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
 ]
 
 export const seededCurrencies: SeededCurrency[] = [
   {
+    code: "euro",
+    name: "Euro",
+    fullName: "Euro (2002-date)",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
     code: "argentine-peso",
     name: "Argentine peso",
     fullName: "Argentine peso",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
   {
     code: "real",
     name: "Real",
     fullName: "Real",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
   {
     code: "united-states-dollar",
     name: "United States dollar",
     fullName: "United States dollar",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
 ]
 

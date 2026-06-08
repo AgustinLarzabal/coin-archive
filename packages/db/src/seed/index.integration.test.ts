@@ -10,7 +10,7 @@ import { seedDatabase } from "./index"
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("seeds the demo KM catalogue reference and measurement-bearing example coins once and exposes them in coin listings", async () => {
+  it("seeds the demo KM catalogue reference, Euro face value example, and measurement-bearing coins once and exposes them in coin listings", async () => {
     await seedDatabase()
     await seedDatabase()
 
@@ -108,6 +108,31 @@ describe("seed integration", () => {
         weight: null,
         diameter: 22,
         thickness: null,
+      },
+    })
+
+    const euroSeedCoin = (await getCoins({ limit: 20 })).find(
+      ({ title }) => title === "Spain 2 Euro"
+    )
+
+    expect(euroSeedCoin).toMatchObject({
+      title: "Spain 2 Euro",
+      faceValue: {
+        text: "2 Euros",
+        numericValue: 2,
+        currency: {
+          code: "euro",
+          name: "Euro",
+          fullName: "Euro (2002-date)",
+        },
+      },
+      issueYearRange: {
+        minYear: 2002,
+        maxYear: 2026,
+      },
+      distribution: {
+        code: "circulating-commemorative",
+        name: "Circulating commemorative",
       },
     })
   })

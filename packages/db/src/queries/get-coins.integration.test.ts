@@ -293,6 +293,81 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters coins by exact currency code and inclusive face value range using AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const euro = await createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    })
+    const usDollar = await createCurrency({
+      code: "united-states-dollar",
+      fullName: "United States dollar",
+      name: "United States dollar",
+    })
+
+    await createCoin({
+      title: "Spanish Euro Fraction",
+      issuerId: spain.id,
+      currencyId: euro.id,
+      faceValueNumericValue: 0.5,
+      faceValueText: "50 Euro Cent",
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Euro Match",
+      issuerId: spain.id,
+      currencyId: euro.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Euros",
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Euro Too Large",
+      issuerId: spain.id,
+      currencyId: euro.id,
+      faceValueNumericValue: 5,
+      faceValueText: "5 Euros",
+      createdAt: new Date("2026-05-07T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Dollar Wrong Currency",
+      issuerId: spain.id,
+      currencyId: usDollar.id,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Dollar",
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Euro Wrong Issuer",
+      issuerId: france.id,
+      currencyId: euro.id,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Euro",
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        currencyCode: "EURO",
+        issuerCode: "spain",
+        minValue: 0.5,
+        maxValue: 2,
+      })
+    ).resolves.toSatisfy(
+      (coins: Array<{ title: string }>) =>
+        coins.map(({ title }) => title).join("|") ===
+        ["Spanish Euro Match", "Spanish Euro Fraction"].join("|")
+    )
+  })
+
   it("combines measurement filtering with existing homepage filters using AND semantics and keeps newest-first ordering", async () => {
     const rome = await createIssuer({
       code: "rome",

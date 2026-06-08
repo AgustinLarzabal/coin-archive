@@ -89,6 +89,22 @@ After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and 
 - seeded Coins intentionally reuse those Compositions across multiple records rather than embedding free-text material labels per Coin
 - deleting a Composition that is still referenced by a Coin is rejected by the database
 
+## Face Value and Currency demo
+
+After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.
+
+- shared seeded Currencies include `Euro`, `Argentine peso`, `Real`, and `United States dollar`
+- the demo data includes `2003 Spain 2 Euro` with Face Value text `2 Euros`
+- homepage Currency URLs use the stable Currency Code in `currency`
+- homepage Face Value range URLs use `minValue` and `maxValue`
+- Currency and Face Value filters compose with the existing homepage filters using AND semantics
+
+The seeded demo data supports quick manual checks:
+
+- `currency=euro` matches the Spain Euro example only
+- `minValue=0.5&maxValue=1` matches subunit and one-unit Coins by stored major-unit numeric values
+- `currency=argentine-peso&minValue=0.2&maxValue=1` narrows the results to Argentine peso denominations in that numeric range
+
 ## Where to go next
 
 - [Catalogue glossary](/CONTEXT.md)

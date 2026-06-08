@@ -19,6 +19,9 @@ Start with the catalogue model, not the tables:
 
 - Coin has exactly one direct Issuer.
 - Coin has exactly one Composition.
+- Coin has exactly one Face Value.
+- Face Value stores authoritative display text, a positive numeric value in the Currency's major unit, and exactly one Currency.
+- Currency is a reusable catalogue concept distinct from Issuer.
 - Coin may have zero or more Ruler attributions.
 - Ruler Attribution Order matters only within a single Coin's ruler attributions.
 - Coin may have zero or more Catalogue References.
@@ -36,8 +39,9 @@ Important model notes:
 
 The current core relationships map to these tables:
 
-- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
+- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description`, and timestamps
+- `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
@@ -50,6 +54,7 @@ The current core relationships map to these tables:
 ```mermaid
 erDiagram
   composition ||--o{ coin : "composition_id"
+  currency ||--o{ coin : "currency_id"
   issuer ||--o{ issuer : "parent_issuer_id"
   issuer ||--o{ coin : "issuer_id"
   coin ||--o{ coin_ruler : "coin_id"
@@ -66,13 +71,17 @@ These are enforced by the current PostgreSQL schema and exercised by package tes
 - every Coin must have exactly one direct Issuer because `coin.issuer_id` is `NOT NULL` and references `issuer.id`
 - every Coin must have exactly one Distribution because `coin.distribution_id` is `NOT NULL` and references `distribution.id`
 - every Coin must have exactly one Composition because `coin.composition_id` is `NOT NULL` and references `composition.id`
+- every Coin must have exactly one Currency-backed Face Value because `coin.currency_id`, `coin.face_value_text`, and `coin.face_value_numeric_value` are required
 - Composition Code must be unique ignoring case and use lowercase slug-style text
+- Currency Code must be unique ignoring case and use lowercase slug-style text
+- Currency Name and Currency full name are required display data, not identities
 - Composition Name is required but not unique
 - Composition Description is nullable shared long-form text
 - Coin Issue Year Range may be unknown with both `min_year` and `max_year` null
 - Coin Issue Year Range must be closed when present; half-entered ranges are rejected
 - Coin Issue Year Range must satisfy `min_year <= max_year`
 - Coin measurements are optional exact decimals stored with two fractional digits
+- Face Value numeric value is stored as an exact decimal in the Currency's major unit and must be strictly positive
 - Weight is stored in grams; Diameter and Thickness are stored in millimeters
 - Diameter describes the largest width of the Coin when the Coin is not round
 - Coin measurements describe the Coin type or issue, not an individual specimen
@@ -101,14 +110,20 @@ These are intentionally separate from the enforced invariants above:
 Consumers should import from `@workspace/db` instead of rebuilding database access locally.
 
 - use `db` when a caller needs direct shared access
-- prefer shared query functions such as `getCoins`, `getIssuers`, `getRulers`, and `getCatalogues` for reusable data access behavior
-- `getCoins` returns nested shared catalogue data including each Coin's required Composition record
+- prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, and `getCatalogues` for reusable data access behavior
+- `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
 
-## Measurement query behavior
+## Query behavior
 
-The shared `getCoins` query is the package-owned contract for homepage measurement filtering.
+The shared `getCoins` query is the package-owned contract for homepage filtering, including Face Value, Currency, Issue Year Range, measurements, references, and attribution filters.
+
+- Currency is filtered by exact stable Currency Code through `currencyCode`
+- Face Value is filtered by exact stored major-unit numeric values through `minValue` and `maxValue`
+- each Face Value range accepts either bound on its own or both bounds together
+- Face Value filtering composes with the other `getCoins` filters using AND semantics
+- Face Value filtering does not perform exchange-rate conversion or generated denomination formatting
 
 - Weight is filtered by exact stored decimal gram values through `minWeight` and `maxWeight`
 - Diameter is filtered by exact stored decimal millimeter values through `minDiameter` and `maxDiameter`
@@ -143,10 +158,13 @@ Terminology note:
 - keep demo seed data in `packages/db/src/seed/seed-data.ts`
 - keep seeding orchestration in `packages/db/src/seed/index.ts`
 - seed reusable Compositions before seeded Coins so every Coin gets an explicit `composition_id`
+- seed reusable Currencies before seeded Coins so every Coin gets an explicit `currency_id`
 - keep seeded Coin measurements realistic and varied so the homepage listing demonstrates known and unknown measurement states
 - treat seed data as local/demo setup, not as a dependency for behavior tests
-- keep seeded Coin Compositions reusable and explicit so the homepage and shared coin listing demonstrate nested Composition data
+- keep seeded Coin Compositions and Currencies reusable and explicit so the homepage and shared coin listing demonstrate nested catalogue data
 - the current demo data intentionally includes:
+  - reusable Currencies such as `Euro`, `Argentine peso`, `Real`, and `United States dollar`
+  - `2003 Spain 2 Euro` with Face Value text `2 Euros` and numeric value `2`
   - full measurement examples such as `2001 Argentine 1 Peso`
   - unknown Weight with known Diameter and Thickness such as `1896 Argentine 20 Centavos`
   - unknown Diameter with known Weight and Thickness such as `1822 Buenos Aires Decimo`

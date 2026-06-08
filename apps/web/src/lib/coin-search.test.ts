@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  applyFaceValueRangeSearch,
   applyIssueYearRangeSearch,
   applyMeasurementRangeSearch,
   coinSearchSchema,
   findSelectedCatalogueOption,
   findSelectedCompositionOption,
+  findSelectedCurrencyOption,
   findSelectedDistributionOption,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
@@ -19,15 +21,18 @@ import {
 const currentSearch = {
   catalogue: "km",
   composition: "silver-900",
+  currency: "euro",
   distribution: "circulating-commemorative",
   fromYear: 1898,
   issuer: "spain",
   maxDiameter: 30.5,
   maxThickness: 2.5,
   maxWeight: 8.75,
+  maxValue: 2,
   minDiameter: 20.25,
   minThickness: 1.25,
   minWeight: 4.5,
+  minValue: 0.5,
   referenceNumber: "1338",
   ruler: "felipe-vi",
   toYear: 1902,
@@ -40,14 +45,17 @@ describe("updateCoinSearchFilter", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -62,14 +70,17 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -84,15 +95,18 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "composition", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -108,15 +122,18 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         referenceNumber: "1338",
         toYear: 1902,
       })
@@ -131,15 +148,18 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         ruler: "felipe-vi",
         toYear: 1902,
       })
@@ -154,14 +174,17 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
         toYear: 1902,
@@ -177,15 +200,18 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
         maxThickness: 2.5,
         maxWeight: 8.75,
+        maxValue: 2,
         minDiameter: 20.25,
         minThickness: 1.25,
         minWeight: 4.5,
+        minValue: 0.5,
         referenceNumber: "1338",
         ruler: "felipe-vi",
       })
@@ -203,15 +229,18 @@ describe("applyIssueYearRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: -43,
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 0,
@@ -225,15 +254,18 @@ describe("applyIssueYearRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1900,
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -248,14 +280,17 @@ describe("applyIssueYearRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -269,15 +304,18 @@ describe("applyIssueYearRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
     })
@@ -292,15 +330,18 @@ describe("applyIssueYearRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1900,
@@ -322,13 +363,16 @@ describe("applyMeasurementRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.25,
       maxThickness: 2.75,
+      maxValue: 2,
       minDiameter: 18.5,
       minWeight: 5.25,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -348,12 +392,15 @@ describe("applyMeasurementRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
+      minValue: 0.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
       toYear: 1902,
@@ -373,12 +420,67 @@ describe("applyMeasurementRangeSearch", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.75,
       maxThickness: 2.25,
       maxWeight: 9.5,
+      maxValue: 2,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minWeight: 4.5,
+      minValue: 0.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+})
+
+describe("applyFaceValueRangeSearch", () => {
+  it("applies open and full face value ranges while preserving unrelated filters", () => {
+    expect(
+      applyFaceValueRangeSearch(currentSearch, {
+        minValue: "1",
+        maxValue: "",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      composition: "silver-900",
+      currency: "euro",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxWeight: 8.75,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minValue: 1,
+      minWeight: 4.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyFaceValueRangeSearch(currentSearch, {
+        minValue: "",
+        maxValue: "1.5",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      composition: "silver-900",
+      currency: "euro",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxValue: 1.5,
+      maxWeight: 8.75,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
@@ -387,23 +489,35 @@ describe("applyMeasurementRangeSearch", () => {
       toYear: 1902,
     })
   })
+
+  it("ignores invalid requested face value inputs instead of dropping the current bounds", () => {
+    expect(
+      applyFaceValueRangeSearch(currentSearch, {
+        minValue: "invalid",
+        maxValue: "0",
+      })
+    ).toStrictEqual(currentSearch)
+  })
 })
 
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, issue year range, measurement, and reference number search params", () => {
+  it("accepts homepage catalogue, currency, face value, issue year range, measurement, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
         composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: "1898",
         issuer: "spain",
         maxDiameter: "30.5",
         maxThickness: "2.5",
         maxWeight: "8.75",
+        maxValue: "2",
         minDiameter: "20.25",
         minThickness: "1.25",
         minWeight: "4.5",
+        minValue: "0.5",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
         toYear: "1902",
@@ -411,32 +525,39 @@ describe("coinSearchSchema", () => {
     ).toStrictEqual({
       catalogue: "km",
       composition: "silver-900",
+      currency: "euro",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
       toYear: 1902,
     })
   })
 
-  it("treats blank issue year and measurement params as undefined", () => {
+  it("treats blank face value, issue year, and measurement params as undefined", () => {
     expect(
       coinSearchSchema.parse({
         fromYear: "",
         maxDiameter: "  ",
+        maxValue: "",
+        minValue: "  ",
         minWeight: "",
         toYear: "  ",
       })
     ).toStrictEqual({
       fromYear: undefined,
       maxDiameter: undefined,
+      maxValue: undefined,
+      minValue: undefined,
       minWeight: undefined,
       toYear: undefined,
     })
@@ -444,19 +565,22 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage currency, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(getCoinListLoaderDeps(currentSearch)).toStrictEqual({
       catalogueCode: "km",
       compositionCode: "silver-900",
+      currencyCode: "euro",
       distributionCode: "circulating-commemorative",
       fromYear: 1898,
       issuerCode: "spain",
       maxDiameter: 30.5,
       maxThickness: 2.5,
       maxWeight: 8.75,
+      maxValue: 2,
       minDiameter: 20.25,
       minThickness: 1.25,
       minWeight: 4.5,
+      minValue: 0.5,
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
       toYear: 1902,
@@ -566,5 +690,17 @@ describe("findSelectedCompositionOption", () => {
     expect(
       findSelectedCompositionOption([silver900], "SILVER-900")
     ).toStrictEqual(silver900)
+  })
+})
+
+describe("findSelectedCurrencyOption", () => {
+  it("matches the selected currency code case-insensitively", () => {
+    const euro = {
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    }
+
+    expect(findSelectedCurrencyOption([euro], "EURO")).toStrictEqual(euro)
   })
 })

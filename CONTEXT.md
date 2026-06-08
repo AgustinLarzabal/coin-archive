@@ -5,7 +5,7 @@ Coin Archive is a catalog of physical coins from across history. The context exi
 ## Language
 
 **Coin**:
-A catalogued physical coin type or issue in the archive, not an individual owned example. A coin has exactly one direct issuer and may have zero or more ruler attributions. A coin may later be described by historical, geographic, minting, material, inscription, image, and reference information.
+A catalogued physical coin type or issue in the archive, not an individual owned example. A coin has exactly one direct issuer, may have zero or more ruler attributions, and may have zero or more mint attributions. A coin may later be described by historical, geographic, minting, material, inscription, image, and reference information.
 _Avoid_: Coina, specimen, item
 
 **Coin Title**:
@@ -71,6 +71,22 @@ _Avoid_: Unknown-measurement match, specimen measurement filter
 **Issuer**:
 The historical or legal authority whose name, sovereignty, or authorization a coin was issued under. An issuer has a display name and a globally unique issuer code. The display name does not need to be globally unique. An issuer is distinct from the mint that physically produced the coin.
 _Avoid_: Mint, any named entity associated with a coin, globally unique display name
+
+**Mint**:
+The named facility, institution, or minting authority associated with physically producing a coin type or issue. A Mint is distinct from the Issuer under whose authority the coin was issued.
+_Avoid_: Issuer, ruler, composition, production date
+
+**Mint Code**:
+The globally unique, stable, human-readable catalogue key for a mint, used to identify the mint in filters, URLs, imports, and administrative lookup. It uses lowercase slug-style text and is distinct from the mint's display name.
+_Avoid_: Display name, temporary label, issuer code
+
+**Mint Attribution**:
+A catalogue relationship that links a Coin to a Mint associated with producing that coin type or issue. Multiple mint attributions on a single Coin are unordered, and a recorded attribution means the archive attributes the coin type or issue to that Mint.
+_Avoid_: Issuer attribution, ruler attribution order, production batch, mint mark, uncertain attribution note
+
+**Mint Filter**:
+A catalogue filter that returns coins attributed directly to the selected Mint. It composes with other catalogue filters using AND semantics.
+_Avoid_: Issuer filter, mint grouping filter, mint name search
 
 **Issuer Code**:
 The globally unique, stable, human-readable catalogue key for an issuer, used to identify the issuer in filters, URLs, imports, and administrative lookup. It identifies the issuer itself rather than encoding the issuer's parent grouping path. It uses lowercase slug-style text and is distinct from the issuer's display name. It should not be reused for a different issuer.

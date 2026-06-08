@@ -32,6 +32,18 @@ _Avoid_: Specimen weight, unitless mass
 The standard catalogue edge thickness of a coin type or issue, measured in millimeters.
 _Avoid_: Specimen thickness, unitless thickness
 
+**Composition**:
+The named material makeup of catalogued coin types or issues, with optional descriptive detail about alloys, layers, or parts of the coin. Every Coin has exactly one Composition. A Composition has a display name and a globally unique composition code, and it describes coin types or issues rather than tested individual specimens.
+_Avoid_: Specimen assay, normalized metal inventory, parsed chemistry
+
+**Composition Code**:
+The globally unique, stable, human-readable catalogue key for a composition, used to identify the composition in imports, filters, URLs, and administrative lookup. It uses lowercase slug-style text and is distinct from the composition's display name.
+_Avoid_: Display name, temporary label, parsed material formula
+
+**Composition Filter**:
+A catalogue filter that returns coins linked directly to the selected composition.
+_Avoid_: Metal component search, contains-text material search, issuer-style descendant filter
+
 **Measurement Filter**:
 A catalogue filter that returns coins whose known Weight, Diameter, or Thickness falls within the requested measurement range. Coins without the filtered measurement are excluded only when that measurement filter is applied.
 _Avoid_: Unknown-measurement match, specimen measurement filter

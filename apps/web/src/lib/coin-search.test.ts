@@ -42,6 +42,11 @@ const currentSearch = {
   toYear: 1902,
 }
 
+const currentSearchWithMint = {
+  ...currentSearch,
+  mint: "royal-mint-of-madrid",
+}
+
 describe("updateCoinSearchFilter", () => {
   it("clears only the selected filter and preserves unrelated search params", () => {
     expect(
@@ -126,6 +131,33 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         composition: "silver-900",
+        distribution: "circulating-commemorative",
+        fromYear: 1898,
+        issuer: "spain",
+        maxDiameter: 30.5,
+        maxThickness: 2.5,
+        maxWeight: 8.75,
+        maxValue: 2,
+        minDiameter: 20.25,
+        minThickness: 1.25,
+        minWeight: 4.5,
+        minValue: 0.5,
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
+      })
+    }
+  )
+
+  it.each([undefined, ""])(
+    "clears the mint filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearchWithMint, "mint", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        composition: "silver-900",
+        currency: "euro",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",

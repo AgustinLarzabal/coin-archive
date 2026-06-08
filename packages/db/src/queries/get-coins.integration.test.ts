@@ -6,6 +6,7 @@ import {
   createCoinReference,
   createCoinRuler,
   createComposition,
+  createCurrency,
   createDistribution,
   createIssuer,
   createRuler,
@@ -105,11 +106,19 @@ describe("getCoins integration", () => {
       description: "Ninety percent silver alloy.",
       name: "Silver (.900)",
     })
+    const euro = await createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    })
     const createdAt = new Date("2026-05-01T00:00:00.000Z")
     const coin = await createCoin({
       title: "Ungrouped Civic Issue",
       compositionId: silver900.id,
+      currencyId: euro.id,
       distributionId: standardCirculation.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Euros",
       issuerId: athens.id,
       createdAt,
     })
@@ -121,6 +130,18 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         issueYearRange: null,
+        faceValue: {
+          text: "2 Euros",
+          numericValue: 2,
+          currency: {
+            id: euro.id,
+            code: "euro",
+            name: "Euro",
+            fullName: "Euro (2002-date)",
+            createdAt: euro.createdAt,
+            updatedAt: euro.updatedAt,
+          },
+        },
         measurements: {
           weight: null,
           diameter: null,
@@ -904,6 +925,18 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         issueYearRange: null,
+        faceValue: {
+          text: "1 Test Unit",
+          numericValue: 1,
+          currency: {
+            id: expect.any(String),
+            code: "test-unit",
+            name: "Test Unit",
+            fullName: "Test Unit",
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        },
         measurements: {
           weight: null,
           diameter: null,
@@ -1357,6 +1390,18 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         issueYearRange: null,
+        faceValue: {
+          text: "1 Test Unit",
+          numericValue: 1,
+          currency: {
+            id: expect.any(String),
+            code: "test-unit",
+            name: "Test Unit",
+            fullName: "Test Unit",
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        },
         measurements: {
           weight: null,
           diameter: null,
@@ -1685,6 +1730,18 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         issueYearRange: null,
+        faceValue: {
+          text: "1 Test Unit",
+          numericValue: 1,
+          currency: {
+            id: expect.any(String),
+            code: "test-unit",
+            name: "Test Unit",
+            fullName: "Test Unit",
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        },
         measurements: {
           weight: null,
           diameter: null,

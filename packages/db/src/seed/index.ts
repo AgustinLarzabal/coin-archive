@@ -6,6 +6,7 @@ import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
+import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -16,6 +17,7 @@ import {
   seededCoinRulers,
   seededCoins,
   seededCompositions,
+  seededCurrencies,
   seededDistributions,
   seededIssuers,
   seededRulerGroups,
@@ -29,6 +31,7 @@ type CoinIdsByTitle = Map<string, string>
 type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
+type CurrencyIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -92,6 +95,13 @@ async function deleteSeededCompositions() {
   await deleteSeededRecords(
     seededCompositions.map(({ code }) => code),
     (code) => db.delete(composition).where(eq(composition.code, code))
+  )
+}
+
+async function deleteSeededCurrencies() {
+  await deleteSeededRecords(
+    seededCurrencies.map(({ code }) => code),
+    (code) => db.delete(currency).where(eq(currency.code, code))
   )
 }
 
@@ -247,6 +257,23 @@ async function seedCompositions() {
   return compositionIdsByCode
 }
 
+async function seedCurrencies() {
+  const currencyIdsByCode: CurrencyIdsByCode = new Map()
+
+  await deleteSeededCurrencies()
+
+  for (const seededCurrency of seededCurrencies) {
+    const [insertedCurrency] = await db
+      .insert(currency)
+      .values(seededCurrency)
+      .returning({ id: currency.id })
+
+    currencyIdsByCode.set(seededCurrency.code, insertedCurrency.id)
+  }
+
+  return currencyIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -291,6 +318,7 @@ async function seedDistributions() {
 
 async function seedCoins(
   compositionIdsByCode: CompositionIdsByCode,
+  currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
@@ -308,6 +336,7 @@ async function seedCoins(
         mapSeededCoinToInsertValues(
           seededCoin,
           compositionIdsByCode,
+          currencyIdsByCode,
           issuerIdsByCode,
           distributionIdsByCode
         )
@@ -324,11 +353,17 @@ async function seedCoins(
 function mapSeededCoinToInsertValues(
   seededCoin: (typeof seededCoins)[number],
   compositionIdsByCode: CompositionIdsByCode,
+  currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
-  const { issuerCode, distributionCode, compositionCode, ...coinValues } =
-    seededCoin
+  const {
+    issuerCode,
+    distributionCode,
+    compositionCode,
+    currencyCode,
+    ...coinValues
+  } = seededCoin
 
   return {
     ...coinValues,
@@ -337,6 +372,7 @@ function mapSeededCoinToInsertValues(
       compositionCode,
       "composition"
     ),
+    currencyId: getRequiredSeededId(currencyIdsByCode, currencyCode, "currency"),
     distributionId: getRequiredSeededId(
       distributionIdsByCode,
       distributionCode,
@@ -395,9 +431,11 @@ export async function seedDatabase() {
 
   const issuerIdsByCode = await seedIssuers()
   const compositionIdsByCode = await seedCompositions()
+  const currencyIdsByCode = await seedCurrencies()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
+    currencyIdsByCode,
     issuerIdsByCode,
     distributionIdsByCode
   )

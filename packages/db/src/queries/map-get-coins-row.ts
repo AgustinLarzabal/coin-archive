@@ -15,6 +15,17 @@ type GetCoinsDistributionColumns = {
   distributionUpdatedAt: Date
 }
 
+type GetCoinsCurrencyColumns = {
+  faceValueText: string
+  faceValueNumericValue: number
+  currencyId: string
+  currencyCode: string
+  currencyName: string
+  currencyFullName: string
+  currencyCreatedAt: Date
+  currencyUpdatedAt: Date
+}
+
 type GetCoinsIssuerColumns = {
   issuerId: string
   issuerCode: string
@@ -62,6 +73,14 @@ export type GetCoinsRow = {
   updatedAt: Date
   minYear: number | null
   maxYear: number | null
+  faceValueText: string
+  faceValueNumericValue: number
+  currencyId: string
+  currencyCode: string
+  currencyName: string
+  currencyFullName: string
+  currencyCreatedAt: Date
+  currencyUpdatedAt: Date
   weight: number | null
   diameter: number | null
   thickness: number | null
@@ -126,6 +145,21 @@ export type CoinComposition = {
 export type CoinIssueYearRange = {
   minYear: number
   maxYear: number
+}
+
+export type CoinCurrency = {
+  id: string
+  code: string
+  name: string
+  fullName: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type CoinFaceValue = {
+  text: string
+  numericValue: number
+  currency: CoinCurrency
 }
 
 export type CoinMeasurements = {
@@ -205,6 +239,7 @@ type CoinRecordBase = Pick<
 
 export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
+  faceValue: CoinFaceValue
   measurements: CoinMeasurements
   composition: CoinComposition
   distribution: CoinDistribution
@@ -236,6 +271,30 @@ function mapMeasurements({
     weight,
     diameter,
     thickness,
+  }
+}
+
+function mapFaceValue({
+  faceValueText,
+  faceValueNumericValue,
+  currencyId,
+  currencyCode,
+  currencyName,
+  currencyFullName,
+  currencyCreatedAt,
+  currencyUpdatedAt,
+}: GetCoinsCurrencyColumns): CoinFaceValue {
+  return {
+    text: faceValueText,
+    numericValue: faceValueNumericValue,
+    currency: {
+      id: currencyId,
+      code: currencyCode,
+      name: currencyName,
+      fullName: currencyFullName,
+      createdAt: currencyCreatedAt,
+      updatedAt: currencyUpdatedAt,
+    },
   }
 }
 
@@ -511,6 +570,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     issueYearRange: mapIssueYearRange(row),
+    faceValue: mapFaceValue(row),
     measurements: mapMeasurements(row),
     composition: mapComposition(row),
     distribution: mapDistribution(row),

@@ -7,6 +7,7 @@ import {
   coinReference,
   coinRuler,
   composition,
+  currency,
   db,
   distribution,
   issuer,
@@ -19,6 +20,7 @@ import {
   createCoinReference,
   createCoinRuler,
   createComposition,
+  createCurrency,
   createDistribution,
   createIssuer,
   createRuler,
@@ -30,6 +32,7 @@ import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { coinSchemaNames } from "./coin"
 import { compositionSchemaNames } from "./composition"
+import { currencySchemaNames } from "./currency"
 import { distributionSchemaNames } from "./distribution"
 import { issuerSchemaNames } from "./issuer"
 import { rulerSchemaNames } from "./ruler"
@@ -49,7 +52,7 @@ async function expectConstraintError(
 }
 
 async function createCoinDependencies() {
-  const [createdIssuer, createdDistribution, createdComposition] =
+  const [createdIssuer, createdDistribution, createdComposition, createdCurrency] =
     await Promise.all([
       createIssuer({
         code: "athens",
@@ -64,10 +67,16 @@ async function createCoinDependencies() {
         description: "Ninety percent silver alloy.",
         name: "Silver (.900)",
       }),
+      createCurrency({
+        code: "euro",
+        fullName: "Euro (2002-date)",
+        name: "Euro",
+      }),
     ])
 
   return {
     compositionId: createdComposition.id,
+    currencyId: createdCurrency.id,
     distributionId: createdDistribution.id,
     issuerId: createdIssuer.id,
   }
@@ -75,7 +84,10 @@ async function createCoinDependencies() {
 
 function insertCoinRow(input: {
   compositionId: string | null
+  currencyId?: string | null
   distributionId: string | null
+  faceValueNumericValue?: number | null
+  faceValueText?: string | null
   issuerId: string | null
   minYear?: number
   maxYear?: number
@@ -87,6 +99,9 @@ function insertCoinRow(input: {
       "issuer_id",
       "distribution_id",
       "composition_id",
+      "face_value_text",
+      "face_value_numeric_value",
+      "currency_id",
       "min_year",
       "max_year"
     )
@@ -95,6 +110,9 @@ function insertCoinRow(input: {
       ${input.issuerId},
       ${input.distributionId},
       ${input.compositionId},
+      ${input.faceValueText === undefined ? "1 Test Unit" : input.faceValueText},
+      ${input.faceValueNumericValue === undefined ? 1 : input.faceValueNumericValue},
+      ${input.currencyId === undefined ? null : input.currencyId},
       ${input.minYear ?? null},
       ${input.maxYear ?? null}
     )
@@ -103,9 +121,18 @@ function insertCoinRow(input: {
 
 async function expectCoinRequiredColumnError(input: {
   compositionId: string | null
+  currencyId?: string | null
   distributionId: string | null
   issuerId: string | null
-  missingColumn: "issuer_id" | "distribution_id" | "composition_id"
+  missingColumn:
+    | "issuer_id"
+    | "distribution_id"
+    | "composition_id"
+    | "face_value_text"
+    | "face_value_numeric_value"
+    | "currency_id"
+  faceValueNumericValue?: number | null
+  faceValueText?: string | null
   title: string
 }) {
   await expect(
@@ -114,6 +141,9 @@ async function expectCoinRequiredColumnError(input: {
       issuerId: input.issuerId,
       distributionId: input.distributionId,
       compositionId: input.compositionId,
+      currencyId: input.currencyId,
+      faceValueNumericValue: input.faceValueNumericValue,
+      faceValueText: input.faceValueText,
     })
   ).rejects.toMatchObject({
     cause: expect.objectContaining({
@@ -173,6 +203,40 @@ describe("composition schema constraints", () => {
   })
 })
 
+describe("currency schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects currency codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(currency).values({
+        code: "United States Dollar",
+        name: "United States dollar",
+        fullName: "United States dollar",
+      }),
+      currencySchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate currency codes ignoring case", async () => {
+    await db.insert(currency).values({
+      code: "euro",
+      name: "Euro",
+      fullName: "Euro (2002-date)",
+    })
+
+    await expectConstraintError(
+      db.insert(currency).values({
+        code: "EURO",
+        name: "Duplicate Euro",
+        fullName: "Duplicate Euro (2002-date)",
+      }),
+      currencySchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+})
+
 describe("issuer schema constraints", () => {
   useTestDatabaseIsolation(db)
 
@@ -223,7 +287,7 @@ describe("coin schema constraints", () => {
   useTestDatabaseIsolation(db)
 
   it("requires every coin to have exactly one direct issuer", async () => {
-    const [standardCirculation, silver900] = await Promise.all([
+    const [standardCirculation, silver900, euro] = await Promise.all([
       createDistribution({
         code: "standard-circulation",
         name: "Standard circulation",
@@ -231,6 +295,11 @@ describe("coin schema constraints", () => {
       createComposition({
         code: "silver-900",
         name: "Silver (.900)",
+      }),
+      createCurrency({
+        code: "euro",
+        fullName: "Euro (2002-date)",
+        name: "Euro",
       }),
     ])
 
@@ -239,12 +308,13 @@ describe("coin schema constraints", () => {
       issuerId: null,
       distributionId: standardCirculation.id,
       compositionId: silver900.id,
+      currencyId: euro.id,
       missingColumn: "issuer_id",
     })
   })
 
   it("requires every coin to have exactly one distribution", async () => {
-    const [athens, silver900] = await Promise.all([
+    const [athens, silver900, euro] = await Promise.all([
       createIssuer({
         code: "athens",
         name: "Athens",
@@ -253,6 +323,11 @@ describe("coin schema constraints", () => {
         code: "silver-900",
         name: "Silver (.900)",
       }),
+      createCurrency({
+        code: "euro",
+        fullName: "Euro (2002-date)",
+        name: "Euro",
+      }),
     ])
 
     await expectCoinRequiredColumnError({
@@ -260,12 +335,13 @@ describe("coin schema constraints", () => {
       issuerId: athens.id,
       distributionId: null,
       compositionId: silver900.id,
+      currencyId: euro.id,
       missingColumn: "distribution_id",
     })
   })
 
   it("requires every coin to have exactly one composition", async () => {
-    const [athens, standardCirculation] = await Promise.all([
+    const [athens, standardCirculation, euro] = await Promise.all([
       createIssuer({
         code: "athens",
         name: "Athens",
@@ -274,6 +350,11 @@ describe("coin schema constraints", () => {
         code: "standard-circulation",
         name: "Standard circulation",
       }),
+      createCurrency({
+        code: "euro",
+        fullName: "Euro (2002-date)",
+        name: "Euro",
+      }),
     ])
 
     await expectCoinRequiredColumnError({
@@ -281,7 +362,64 @@ describe("coin schema constraints", () => {
       issuerId: athens.id,
       distributionId: standardCirculation.id,
       compositionId: null,
+      currencyId: euro.id,
       missingColumn: "composition_id",
+    })
+  })
+
+  it("requires every coin to have exactly one currency", async () => {
+    const [athens, standardCirculation, silver900] = await Promise.all([
+      createIssuer({
+        code: "athens",
+        name: "Athens",
+      }),
+      createDistribution({
+        code: "standard-circulation",
+        name: "Standard circulation",
+      }),
+      createComposition({
+        code: "silver-900",
+        name: "Silver (.900)",
+      }),
+    ])
+
+    await expectCoinRequiredColumnError({
+      title: "Currencyless Test Coin",
+      issuerId: athens.id,
+      distributionId: standardCirculation.id,
+      compositionId: silver900.id,
+      currencyId: null,
+      missingColumn: "currency_id",
+    })
+  })
+
+  it("requires every coin to have face value text", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await expectCoinRequiredColumnError({
+      title: "Face Value Textless Test Coin",
+      issuerId,
+      distributionId,
+      compositionId,
+      currencyId,
+      faceValueText: null,
+      missingColumn: "face_value_text",
+    })
+  })
+
+  it("requires every coin to have a face value numeric value", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await expectCoinRequiredColumnError({
+      title: "Face Value Numberless Test Coin",
+      issuerId,
+      distributionId,
+      compositionId,
+      currencyId,
+      faceValueNumericValue: null,
+      missingColumn: "face_value_numeric_value",
     })
   })
 
@@ -345,7 +483,7 @@ describe("coin schema constraints", () => {
   })
 
   it("rejects coins with only min_year present", async () => {
-    const { compositionId, distributionId, issuerId } =
+    const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
 
     await expectConstraintError(
@@ -355,6 +493,7 @@ describe("coin schema constraints", () => {
         issuerId,
         distributionId,
         minYear: 1900,
+        currencyId,
       }),
       coinSchemaNames.issueYearRangeClosedCheck,
       "23514"
@@ -362,7 +501,7 @@ describe("coin schema constraints", () => {
   })
 
   it("rejects coins with only max_year present", async () => {
-    const { compositionId, distributionId, issuerId } =
+    const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
 
     await expectConstraintError(
@@ -372,6 +511,7 @@ describe("coin schema constraints", () => {
         issuerId,
         distributionId,
         maxYear: 1900,
+        currencyId,
       }),
       coinSchemaNames.issueYearRangeClosedCheck,
       "23514"
@@ -396,6 +536,16 @@ describe("coin schema constraints", () => {
   })
 
   it.each([
+    [
+      "faceValueNumericValue",
+      0,
+      coinSchemaNames.faceValueNumericValuePositiveCheck,
+    ],
+    [
+      "faceValueNumericValue",
+      -0.01,
+      coinSchemaNames.faceValueNumericValuePositiveCheck,
+    ],
     ["weight", 0, coinSchemaNames.weightPositiveCheck],
     ["weight", -0.01, coinSchemaNames.weightPositiveCheck],
     ["diameter", 0, coinSchemaNames.diameterPositiveCheck],

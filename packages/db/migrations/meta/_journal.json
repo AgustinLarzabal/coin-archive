@@ -64,6 +64,13 @@
       "when": 1780900718768,
       "tag": "0008_crazy_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1780907592216,
+      "tag": "0009_equal_blur",
+      "breakpoints": true
     }
   ]
 }

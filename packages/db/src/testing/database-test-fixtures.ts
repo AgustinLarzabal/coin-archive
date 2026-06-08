@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm"
 import { coin } from "../schema/coin"
+import { currency } from "../schema/currency"
 import { issuer } from "../schema/issuer"
 import { getOrCreateDefaultComposition } from "./default-composition"
+import { getOrCreateDefaultCurrency } from "./default-currency"
 import { createTestDatabase } from "./database-test-client"
 import { getOrCreateDefaultDistribution } from "./default-distribution"
 
@@ -43,7 +45,10 @@ export async function insertIssuer(input: {
 
 export async function insertCoin(input: {
   compositionId?: string
+  currencyId?: string
   distributionId?: string
+  faceValueNumericValue?: number
+  faceValueText?: string
   issuerId: string
   maxYear?: number
   minYear?: number
@@ -54,12 +59,16 @@ export async function insertCoin(input: {
     input.distributionId ?? (await insertDefaultDistribution()).id
   const compositionId =
     input.compositionId ?? (await insertDefaultComposition()).id
+  const currencyId = input.currencyId ?? (await insertDefaultCurrency()).id
 
   const [insertedCoin] = await testDb
     .insert(coin)
     .values({
       compositionId,
+      currencyId,
       distributionId,
+      faceValueNumericValue: input.faceValueNumericValue ?? 1,
+      faceValueText: input.faceValueText ?? "1 Test Unit",
       issuerId: input.issuerId,
       maxYear: input.maxYear,
       minYear: input.minYear,
@@ -78,4 +87,8 @@ async function insertDefaultDistribution() {
 
 async function insertDefaultComposition() {
   return getOrCreateDefaultComposition(testDb)
+}
+
+async function insertDefaultCurrency() {
+  return getOrCreateDefaultCurrency(testDb)
 }

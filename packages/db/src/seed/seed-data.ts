@@ -9,7 +9,10 @@ type SeededIssuer = {
 type SeededCoin = {
   title: string
   compositionCode: string
+  currencyCode: string
   distributionCode: string
+  faceValueNumericValue: number
+  faceValueText: string
   issuerCode: string
   weight?: number
   diameter?: number
@@ -71,6 +74,14 @@ type SeededCoinReference = {
   updatedAt: Date
 }
 
+type SeededCurrency = {
+  code: string
+  fullName: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export const seededIssuers: SeededIssuer[] = [
   {
     name: "Argentina",
@@ -97,7 +108,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina Sol de Mayo Peso",
     compositionCode: "silver-900",
+    currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 1,
+    faceValueText: "1 Peso",
     issuerCode: "argentina",
     weight: 12.5,
     diameter: 31.5,
@@ -108,7 +122,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Buenos Aires 8 Reales 1813",
     compositionCode: "silver-900",
+    currencyCode: "real",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 8,
+    faceValueText: "8 Reales",
     issuerCode: "buenos-aires",
     weight: 26.95,
     diameter: 37.5,
@@ -121,7 +138,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "United States Lincoln Cent",
     compositionCode: "copper",
+    currencyCode: "united-states-dollar",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 0.01,
+    faceValueText: "1 Cent",
     issuerCode: "united-states",
     weight: 3.11,
     diameter: 19.05,
@@ -133,7 +153,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina 20 Centavos",
     compositionCode: "copper-nickel",
+    currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 0.2,
+    faceValueText: "20 Centavos",
     issuerCode: "argentina",
     weight: 10,
     diameter: 27,
@@ -146,7 +169,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Buenos Aires 5 Decimos",
     compositionCode: "silver-900",
+    currencyCode: "real",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 0.5,
+    faceValueText: "5 Decimos",
     issuerCode: "buenos-aires",
     weight: 8.5,
     diameter: 24,
@@ -159,7 +185,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "United States National Park Quarter",
     compositionCode: "copper-nickel-clad",
+    currencyCode: "united-states-dollar",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 0.25,
+    faceValueText: "Quarter Dollar",
     issuerCode: "united-states",
     weight: 8.1,
     diameter: 26.5,
@@ -172,7 +201,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina Copper Peso",
     compositionCode: "copper",
+    currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 1,
+    faceValueText: "1 Peso",
     issuerCode: "argentina",
     diameter: 22,
     createdAt: new Date("2026-01-07T00:00:00.000Z"),
@@ -181,7 +213,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Buenos Aires Transition Half Real",
     compositionCode: "silver-900",
+    currencyCode: "real",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 0.5,
+    faceValueText: "Half Real",
     issuerCode: "buenos-aires",
     weight: 3.8,
     diameter: 18.5,
@@ -194,7 +229,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "United States Flowing Hair Dollar",
     compositionCode: "silver-900",
+    currencyCode: "united-states-dollar",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 1,
+    faceValueText: "1 Dollar",
     issuerCode: "united-states",
     weight: 26.73,
     diameter: 39,
@@ -207,7 +245,10 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina Convertible Peso",
     compositionCode: "copper-nickel",
+    currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
+    faceValueNumericValue: 1,
+    faceValueText: "1 Peso",
     issuerCode: "argentina",
     weight: 6.35,
     diameter: 23.5,
@@ -216,6 +257,30 @@ export const seededCoins: SeededCoin[] = [
     maxYear: 2001,
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
+  },
+]
+
+export const seededCurrencies: SeededCurrency[] = [
+  {
+    code: "argentine-peso",
+    name: "Argentine peso",
+    fullName: "Argentine peso",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "real",
+    name: "Real",
+    fullName: "Real",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "united-states-dollar",
+    name: "United States dollar",
+    fullName: "United States dollar",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
 ]
 

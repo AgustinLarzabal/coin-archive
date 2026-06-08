@@ -3,12 +3,14 @@ import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
+import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { db } from "../index"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
+import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
 
 type CreateIssuerInput = {
@@ -21,7 +23,10 @@ type CreateCoinInput = {
   createdAt: Date
   diameter?: number
   compositionId?: string
+  currencyId?: string
   distributionId?: string
+  faceValueNumericValue?: number
+  faceValueText?: string
   issuerId: string
   maxYear?: number
   minYear?: number
@@ -39,6 +44,12 @@ type CreateDistributionInput = {
 type CreateCompositionInput = {
   code: string
   description?: string | null
+  name: string
+}
+
+type CreateCurrencyInput = {
+  code: string
+  fullName: string
   name: string
 }
 
@@ -91,7 +102,10 @@ export async function createCoin({
   createdAt,
   diameter,
   compositionId,
+  currencyId,
   distributionId,
+  faceValueNumericValue = 1,
+  faceValueText = "1 Test Unit",
   issuerId,
   maxYear,
   minYear,
@@ -104,13 +118,17 @@ export async function createCoin({
     distributionId ?? (await getOrCreateDefaultDistribution()).id
   const resolvedCompositionId =
     compositionId ?? (await getOrCreateDefaultComposition()).id
+  const resolvedCurrencyId = currencyId ?? (await getOrCreateDefaultCurrency()).id
 
   const [createdCoin] = await db
     .insert(coin)
     .values({
       createdAt,
       compositionId: resolvedCompositionId,
+      currencyId: resolvedCurrencyId,
       distributionId: resolvedDistributionId,
+      faceValueNumericValue,
+      faceValueText,
       issuerId,
       maxYear,
       minYear,
@@ -155,6 +173,23 @@ export async function createComposition({
     .returning()
 
   return createdComposition
+}
+
+export async function createCurrency({
+  code,
+  fullName,
+  name,
+}: CreateCurrencyInput) {
+  const [createdCurrency] = await db
+    .insert(currency)
+    .values({
+      code,
+      fullName,
+      name,
+    })
+    .returning()
+
+  return createdCurrency
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
@@ -238,4 +273,8 @@ async function getOrCreateDefaultDistribution() {
 
 async function getOrCreateDefaultComposition() {
   return getDefaultComposition(db)
+}
+
+async function getOrCreateDefaultCurrency() {
+  return getDefaultCurrency(db)
 }

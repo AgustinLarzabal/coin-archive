@@ -10,6 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { composition } from "./composition"
+import { currency } from "./currency"
 import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
@@ -18,6 +19,8 @@ export const coinSchemaNames = {
   diameterIndex: "coin_diameter_idx",
   diameterPositiveCheck: "coin_diameter_positive_check",
   distributionIdIndex: "coin_distribution_id_idx",
+  currencyIdIndex: "coin_currency_id_idx",
+  faceValueNumericValuePositiveCheck: "coin_face_value_numeric_value_positive_check",
   issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
   issueYearRangeIndex: "coin_issue_year_range_idx",
   issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
@@ -37,6 +40,12 @@ const timestamptzDateColumn = {
 const measurementColumn = {
   precision: 10,
   scale: 2,
+  mode: "number",
+} as const
+
+const faceValueNumericColumn = {
+  precision: 20,
+  scale: 6,
   mode: "number",
 } as const
 
@@ -62,6 +71,16 @@ export const coin = pgTable(
       .references(() => composition.id, {
         onDelete: "restrict",
       }),
+    faceValueText: varchar("face_value_text", { length: 255 }).notNull(),
+    faceValueNumericValue: numeric(
+      "face_value_numeric_value",
+      faceValueNumericColumn
+    ).notNull(),
+    currencyId: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "restrict",
+      }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
     weight: numeric("weight", measurementColumn),
@@ -82,6 +101,7 @@ export const coin = pgTable(
     index(coinSchemaNames.issuerIdIndex).on(coin.issuerId),
     index(coinSchemaNames.distributionIdIndex).on(coin.distributionId),
     index(coinSchemaNames.compositionIdIndex).on(coin.compositionId),
+    index(coinSchemaNames.currencyIdIndex).on(coin.currencyId),
     index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),
     index(coinSchemaNames.weightIndex).on(coin.weight),
     index(coinSchemaNames.diameterIndex).on(coin.diameter),
@@ -105,6 +125,10 @@ export const coin = pgTable(
     check(
       coinSchemaNames.thicknessPositiveCheck,
       sql`${coin.thickness} is null or ${coin.thickness} > 0`
+    ),
+    check(
+      coinSchemaNames.faceValueNumericValuePositiveCheck,
+      sql`${coin.faceValueNumericValue} > 0`
     ),
   ]
 )

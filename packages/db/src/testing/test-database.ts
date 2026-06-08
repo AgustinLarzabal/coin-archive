@@ -6,6 +6,7 @@ import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
+import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -33,6 +34,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(catalogue)
   await database.delete(issuer)
   await database.delete(distribution)
+  await database.delete(currency)
   await database.delete(composition)
 }
 

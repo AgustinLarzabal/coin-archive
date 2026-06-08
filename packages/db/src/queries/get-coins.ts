@@ -6,6 +6,7 @@ import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
+import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -21,6 +22,14 @@ const getCoinsSelection = {
   updatedAt: coin.updatedAt,
   minYear: coin.minYear,
   maxYear: coin.maxYear,
+  faceValueText: coin.faceValueText,
+  faceValueNumericValue: coin.faceValueNumericValue,
+  currencyId: currency.id,
+  currencyCode: currency.code,
+  currencyName: currency.name,
+  currencyFullName: currency.fullName,
+  currencyCreatedAt: currency.createdAt,
+  currencyUpdatedAt: currency.updatedAt,
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
@@ -415,6 +424,7 @@ export function buildGetCoinsQuery(
     .from(limitedCoins)
     .innerJoin(coin, eq(limitedCoins.id, coin.id))
     .innerJoin(composition, eq(coin.compositionId, composition.id))
+    .innerJoin(currency, eq(coin.currencyId, currency.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))

@@ -4,10 +4,6 @@ export function formatThemeNames(themes: CoinRecord["themes"]) {
   return themes.map(({ name }) => name).join(", ")
 }
 
-export function formatOrientationName(orientation: CoinRecord["orientation"]) {
-  return orientation?.name ?? null
-}
-
 type CoinListItemProps = {
   coin: CoinRecord
   issueYearRangeLabel: string
@@ -21,7 +17,6 @@ export function CoinListItem({
   measurementSummary,
   mintNames,
 }: CoinListItemProps) {
-  const orientationName = formatOrientationName(coin.orientation)
   const themeNames =
     coin.themes.length > 0 ? formatThemeNames(coin.themes) : null
 
@@ -43,9 +38,9 @@ export function CoinListItem({
       {themeNames ? (
         <p className="text-sm text-muted-foreground">Themes: {themeNames}</p>
       ) : null}
-      {orientationName ? (
+      {coin.orientation ? (
         <p className="text-sm text-muted-foreground">
-          Orientation: {orientationName}
+          Orientation: {coin.orientation.name}
         </p>
       ) : null}
       <p className="text-sm text-muted-foreground">{issueYearRangeLabel}</p>

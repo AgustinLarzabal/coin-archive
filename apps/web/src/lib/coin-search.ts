@@ -200,33 +200,25 @@ function findSelectedCodeOption<T extends OptionWithCode>(
   )
 }
 
-export function findSelectedCatalogueOption<T extends OptionWithCode>(
+export const findSelectedCatalogueOption: <T extends OptionWithCode>(
   catalogues: T[],
   selectedCatalogueCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(catalogues, selectedCatalogueCode)
-}
+) => T | null = findSelectedCodeOption
 
-export function findSelectedCompositionOption<T extends OptionWithCode>(
+export const findSelectedCompositionOption: <T extends OptionWithCode>(
   compositions: T[],
   selectedCompositionCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(compositions, selectedCompositionCode)
-}
+) => T | null = findSelectedCodeOption
 
-export function findSelectedCurrencyOption<T extends OptionWithCode>(
+export const findSelectedCurrencyOption: <T extends OptionWithCode>(
   currencies: T[],
   selectedCurrencyCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(currencies, selectedCurrencyCode)
-}
+) => T | null = findSelectedCodeOption
 
-export function findSelectedDistributionOption<T extends OptionWithCode>(
+export const findSelectedDistributionOption: <T extends OptionWithCode>(
   distributions: T[],
   selectedDistributionCode: string | undefined
-): T | null {
-  return findSelectedCodeOption(distributions, selectedDistributionCode)
-}
+) => T | null = findSelectedCodeOption
 
 export const findSelectedMintOption: <T extends OptionWithCode>(
   mints: T[],

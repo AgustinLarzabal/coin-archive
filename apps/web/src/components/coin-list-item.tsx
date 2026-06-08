@@ -4,12 +4,14 @@ export function formatThemeNames(themes: CoinRecord["themes"]) {
   return themes.map(({ name }) => name).join(", ")
 }
 
+const mintageFormatter = new Intl.NumberFormat("en-US")
+
 function formatMintage(mintage: number | null) {
   if (mintage === null) {
     return null
   }
 
-  return new Intl.NumberFormat("en-US").format(mintage)
+  return mintageFormatter.format(mintage)
 }
 
 type CoinListItemProps = {

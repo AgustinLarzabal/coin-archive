@@ -34,7 +34,7 @@ type CreateCoinInput = {
   faceValueText?: string
   issuerId: string
   maxYear?: number
-  mintage?: number
+  mintage?: number | null
   minYear?: number
   orientationId?: string
   thickness?: number

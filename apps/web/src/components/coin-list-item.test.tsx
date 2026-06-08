@@ -59,79 +59,62 @@ const baseCoin: CoinRecord = {
   references: [],
 }
 
+function renderCoinListItemMarkup(coin: CoinRecord = baseCoin) {
+  return renderToStaticMarkup(
+    <CoinListItem
+      coin={coin}
+      issueYearRangeLabel="Issue year unknown"
+      measurementSummary={null}
+      mintNames={null}
+    />
+  )
+}
+
 describe("CoinListItem", () => {
   it("renders grouped Mintage when known", () => {
-    const markup = renderToStaticMarkup(
-      <CoinListItem
-        coin={{
-          ...baseCoin,
-          mintage: 1234567,
-        }}
-        issueYearRangeLabel="Issue year unknown"
-        measurementSummary={null}
-        mintNames={null}
-      />
-    )
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      mintage: 1234567,
+    })
 
     expect(markup).toContain("Mintage: 1,234,567")
   })
 
   it("omits Mintage when unknown", () => {
-    const markup = renderToStaticMarkup(
-      <CoinListItem
-        coin={baseCoin}
-        issueYearRangeLabel="Issue year unknown"
-        measurementSummary={null}
-        mintNames={null}
-      />
-    )
+    const markup = renderCoinListItemMarkup()
 
     expect(markup).not.toContain("Mintage:")
   })
 
   it("renders a Themes row when a coin has one or more themes", () => {
-    const markup = renderToStaticMarkup(
-      <CoinListItem
-        coin={{
-          ...baseCoin,
-          themes: [
-            {
-              id: "theme-1",
-              code: "building",
-              name: "Building",
-              createdAt: timestamp,
-              updatedAt: timestamp,
-            },
-            {
-              id: "theme-2",
-              code: "map",
-              name: "Map",
-              createdAt: timestamp,
-              updatedAt: timestamp,
-            },
-          ],
-        }}
-        issueYearRangeLabel="Issue year unknown"
-        measurementSummary={null}
-        mintNames={null}
-      />
-    )
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      themes: [
+        {
+          id: "theme-1",
+          code: "building",
+          name: "Building",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+        {
+          id: "theme-2",
+          code: "map",
+          name: "Map",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+    })
 
     expect(markup).toContain("Themes: Building, Map")
   })
 
   it("omits the Themes row when a coin has no themes", () => {
-    const markup = renderToStaticMarkup(
-      <CoinListItem
-        coin={{
-          ...baseCoin,
-          themes: [],
-        }}
-        issueYearRangeLabel="Issue year unknown"
-        measurementSummary={null}
-        mintNames={null}
-      />
-    )
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      themes: [],
+    })
 
     expect(markup).not.toContain("Themes:")
   })

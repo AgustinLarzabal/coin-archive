@@ -589,6 +589,34 @@ describe("shape schema constraints", () => {
       "23503"
     )
   })
+
+  it("keeps shared shapes when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdShape = await createShape({
+      code: "round",
+      name: "Round",
+    })
+    const createdCoin = await createCoin({
+      title: "Deleted Shape Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      shapeId: createdShape.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(shape)
+        .where(eq(shape.id, createdShape.id)),
+      1
+    )
+  })
 })
 
 describe("rim schema constraints", () => {

@@ -521,7 +521,6 @@ describe("getCompositionOptionLabel", () => {
   it("returns only the composition name for homepage combobox display", () => {
     expect(
       getCompositionOptionLabel({
-        code: "silver-900",
         name: "Silver (.900)",
       })
     ).toBe("Silver (.900)")

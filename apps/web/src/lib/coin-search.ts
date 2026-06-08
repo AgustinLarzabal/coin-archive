@@ -101,7 +101,7 @@ const measurementFilterNames = [
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
-type CompositionOptionLabel = Pick<CompositionOption, "name" | "code">
+type CompositionOptionLabel = Pick<CompositionOption, "name">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 

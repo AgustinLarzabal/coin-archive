@@ -32,6 +32,46 @@ _Avoid_: Specimen weight, unitless mass
 The standard catalogue edge thickness of a coin type or issue, measured in millimeters.
 _Avoid_: Specimen thickness, unitless thickness
 
+**Orientation**:
+The intended standard physical-description alignment relationship between the obverse and reverse designs of a coin type or issue, using Coin Archive's flat canonical orientation vocabulary. A coin has at most one Orientation, and it may be unknown.
+_Avoid_: Specimen rotation, minting error, image rotation, source-specific orientation label, orientation grouping
+
+**Orientation Code**:
+The unique, stable, human-readable catalogue key for an orientation, used to identify the orientation in imports, filters, URLs, and administrative lookup. It is unique within orientations, uses lowercase slug-style text, and is distinct from the orientation's display name.
+_Avoid_: Display name, temporary label, generated database identity
+
+**Orientation Filter**:
+A catalogue filter that returns coins linked directly to the selected Orientation. It composes with other catalogue filters using AND semantics, and coins without an Orientation are excluded when an orientation filter is applied.
+_Avoid_: Image rotation filter, specimen orientation filter, unknown-orientation match
+
+**Shape**:
+The intended standard physical-description outline form of a coin type or issue, using Coin Archive's flat canonical shape vocabulary. A coin has at most one Shape, and it may be unknown.
+_Avoid_: Diameter, design motif, specimen deformation, specimen damage, source-specific shape label, shape grouping
+
+**Shape Code**:
+The unique, stable, human-readable catalogue key for a shape, used to identify the shape in imports, filters, URLs, and administrative lookup. It is unique within shapes, uses lowercase slug-style text, and is distinct from the shape's display name.
+_Avoid_: Display name, temporary label, generated database identity
+
+**Shape Filter**:
+A catalogue filter that returns coins linked directly to the selected Shape. It composes with other catalogue filters using AND semantics, and coins without a Shape are excluded when a shape filter is applied.
+_Avoid_: Diameter filter, design motif filter, unknown-shape match
+
+**Rim**:
+The intended standard physical-description border treatment recorded on the face or faces of a coin type or issue, such as raised, barred, or chained rim forms, using Coin Archive's flat canonical rim vocabulary. A coin has at most one Rim, and the Rim value may include face applicability such as both sides.
+_Avoid_: Edge, edge inscription, edge lettering, obverse rim field, reverse rim field, source-specific rim label, rim grouping, weak strike, specimen wear, specimen damage
+
+**Rim Code**:
+The unique, stable, human-readable catalogue key for a rim, used to identify the rim in imports, filters, URLs, and administrative lookup. It is unique within rims, uses lowercase slug-style text, and is distinct from the rim's display name.
+_Avoid_: Display name, temporary label, edge code
+
+**Rim Filter**:
+A catalogue filter that returns coins linked directly to the selected Rim. It composes with other catalogue filters using AND semantics, and coins without a Rim are excluded when a rim filter is applied.
+_Avoid_: Edge filter, edge inscription filter, obverse rim filter, reverse rim filter, unknown-rim match
+
+**Mintage**:
+The exact known production fact for the total quantity actually produced for a coin type or issue as a positive whole number, using the same cataloguing scope as the Coin record. A coin may have unknown Mintage.
+_Avoid_: Archive count, owned specimen count, population estimate, rarity label, approximate mintage, authorized quantity, planned quantity, per-mint mintage, per-year mintage
+
 **Face Value**:
 The official nominal denomination assigned to a coin type or issue, such as 2 Euros or 50 Euro Cent. Every Coin has exactly one Face Value. Face Value combines authoritative display text, a numeric value expressed in the Currency's major unit, and the Currency itself. The display text is catalogue data, not a generated label. Face Value describes the denomination of the coin itself, not its market price, collector value, melt value, exchange-rate value, or current purchasing power.
 _Avoid_: Value, market value, collector value, sale price, melt value, purchasing power, zero or negative denomination, minor-unit numeric value, generated denomination label

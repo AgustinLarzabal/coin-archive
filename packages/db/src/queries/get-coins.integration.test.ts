@@ -3,12 +3,14 @@ import { db, getCoins } from "../index"
 import {
   createCatalogue,
   createCoin,
+  createCoinMint,
   createCoinReference,
   createCoinRuler,
   createComposition,
   createCurrency,
   createDistribution,
   createIssuer,
+  createMint,
   createRuler,
   createRulerGroup,
 } from "../testing/fixtures"
@@ -176,8 +178,54 @@ describe("getCoins integration", () => {
             updatedAt: ancientWorld.updatedAt,
           },
         },
+        mints: [],
         references: [],
         rulers: [],
+      },
+    ])
+  })
+
+  it("returns a stable mints array with empty and single-mint coin records", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const royalMintOfMadrid = await createMint({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+    const coinWithoutMint = await createCoin({
+      title: "Unknown Mint Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const coinWithMint = await createCoin({
+      title: "Known Mint Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await createCoinMint({
+      coinId: coinWithMint.id,
+      mintId: royalMintOfMadrid.id,
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: coinWithMint.id,
+        title: "Known Mint Issue",
+        mints: [
+          {
+            id: royalMintOfMadrid.id,
+            code: "royal-mint-of-madrid",
+            name: "Royal Mint of Madrid",
+          },
+        ],
+      },
+      {
+        id: coinWithoutMint.id,
+        title: "Unknown Mint Issue",
+        mints: [],
       },
     ])
   })
@@ -1278,6 +1326,7 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        mints: [],
         rulers: [],
         references: [
           {
@@ -1834,6 +1883,7 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        mints: [],
         references: [],
         rulers: [
           {
@@ -2182,6 +2232,7 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        mints: [],
         references: [],
         rulers: [],
       },

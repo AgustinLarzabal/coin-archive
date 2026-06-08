@@ -71,6 +71,13 @@
       "when": 1780907592216,
       "tag": "0009_equal_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780916165564,
+      "tag": "0010_useful_terror",
+      "breakpoints": true
     }
   ]
 }

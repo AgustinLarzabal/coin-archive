@@ -9,6 +9,7 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  formatMintNames,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
   getCatalogueOptionLabel,
@@ -373,6 +374,17 @@ describe("applyIssueYearRangeSearch", () => {
       ruler: "felipe-vi",
       toYear: 1900,
     })
+  })
+})
+
+describe("formatMintNames", () => {
+  it("joins visible mint names for homepage display", () => {
+    expect(
+      formatMintNames([
+        { name: "Buenos Aires Mint" },
+        { name: "Royal Mint of Madrid" },
+      ])
+    ).toBe("Buenos Aires Mint, Royal Mint of Madrid")
   })
 })
 

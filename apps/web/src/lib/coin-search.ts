@@ -130,6 +130,7 @@ type CompositionOptionLabel = Pick<CompositionOption, "name">
 type CurrencyOptionLabel = Pick<CurrencyOption, "name" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+type CoinMintLabel = { name: string }
 
 type ParsedFilterValue<T> = T | null | undefined
 
@@ -345,6 +346,10 @@ export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {
   return ruler.group ? `${ruler.name} · ${ruler.group.name}` : ruler.name
+}
+
+export function formatMintNames(mints: CoinMintLabel[]) {
+  return mints.map(({ name }) => name).join(", ")
 }
 
 function formatAstronomicalYear(year: number) {

@@ -3,12 +3,14 @@ import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
@@ -54,6 +56,11 @@ const getCoinsSelection = {
   parentIssuerName: parentIssuer.name,
   parentIssuerCreatedAt: parentIssuer.createdAt,
   parentIssuerUpdatedAt: parentIssuer.updatedAt,
+  mintId: mint.id,
+  mintCode: mint.code,
+  mintName: mint.name,
+  mintCreatedAt: mint.createdAt,
+  mintUpdatedAt: mint.updatedAt,
   rulerOrder: coinRuler.rulerOrder,
   rulerId: ruler.id,
   rulerCode: ruler.code,
@@ -453,6 +460,8 @@ export function buildGetCoinsQuery(
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
+    .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
+    .leftJoin(mint, eq(coinMint.mintId, mint.id))
     .leftJoin(coinRuler, eq(coin.id, coinRuler.coinId))
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(rulerGroup, eq(ruler.rulerGroupId, rulerGroup.id))
@@ -461,6 +470,9 @@ export function buildGetCoinsQuery(
     .orderBy(
       desc(coin.createdAt),
       desc(coin.id),
+      asc(mint.name),
+      asc(mint.code),
+      asc(mint.id),
       asc(coinRuler.rulerOrder),
       asc(ruler.id),
       asc(catalogue.title),

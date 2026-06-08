@@ -3,12 +3,14 @@ import postgres from "postgres"
 import { afterAll, beforeEach } from "vitest"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 
@@ -27,8 +29,10 @@ export function createTestDatabase(databaseUrl: string) {
 
 export async function clearTestData(database: TestDatabase) {
   await database.delete(coinReference)
+  await database.delete(coinMint)
   await database.delete(coinRuler)
   await database.delete(coin)
+  await database.delete(mint)
   await database.delete(ruler)
   await database.delete(rulerGroup)
   await database.delete(catalogue)

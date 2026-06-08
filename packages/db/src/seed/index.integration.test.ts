@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { db, getCoins, getCurrencies } from "../index"
+import { db, getCoins, getCurrencies, getMints } from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
 import { distribution } from "../schema/distribution"
@@ -30,10 +30,25 @@ const expectedSeededCurrencies = [
   },
 ] as const
 
+const expectedSeededMints = [
+  {
+    code: "buenos-aires-mint",
+    name: "Buenos Aires Mint",
+  },
+  {
+    code: "philadelphia-mint",
+    name: "Philadelphia Mint",
+  },
+  {
+    code: "royal-mint-of-madrid",
+    name: "Royal Mint of Madrid",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("seeds the demo KM catalogue reference, Euro face value example, and measurement-bearing coins once and exposes them in coin listings", async () => {
+  it("seeds the demo KM catalogue reference, Mint Attribution examples, Euro face value example, and measurement-bearing coins once and exposes them in coin listings", async () => {
     await seedDatabase()
     await seedDatabase()
 
@@ -59,6 +74,7 @@ describe("seed integration", () => {
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
     await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
+    await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
 
     const seededCoins = await getCoins({ limit: 20 })
     const findSeededCoin = (title: string) => {
@@ -124,6 +140,12 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
       title: "Spain 2 Euro",
+      mints: [
+        {
+          code: "royal-mint-of-madrid",
+          name: "Royal Mint of Madrid",
+        },
+      ],
       faceValue: {
         text: "2 Euros",
         numericValue: 2,
@@ -161,6 +183,28 @@ describe("seed integration", () => {
           },
         },
       ],
+    })
+
+    expect(findSeededCoin("Buenos Aires 8 Reales 1813")).toMatchObject({
+      mints: [
+        {
+          code: "buenos-aires-mint",
+          name: "Buenos Aires Mint",
+        },
+      ],
+    })
+
+    expect(findSeededCoin("United States Lincoln Cent")).toMatchObject({
+      mints: [
+        {
+          code: "philadelphia-mint",
+          name: "Philadelphia Mint",
+        },
+      ],
+    })
+
+    expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
+      mints: [],
     })
   })
 })

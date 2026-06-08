@@ -3,23 +3,27 @@ import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import {
   seededCatalogues,
   seededCoinReferences,
+  seededCoinMints,
   seededCoinRulers,
   seededCoins,
   seededCompositions,
   seededCurrencies,
   seededDistributions,
   seededIssuers,
+  seededMints,
   seededRulerGroups,
   seededRulers,
 } from "./seed-data"
@@ -32,6 +36,7 @@ type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
+type MintIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -102,6 +107,13 @@ async function deleteSeededCurrencies() {
   await deleteSeededRecords(
     seededCurrencies.map(({ code }) => code),
     (code) => db.delete(currency).where(eq(currency.code, code))
+  )
+}
+
+async function deleteSeededMints() {
+  await deleteSeededRecords(
+    seededMints.map(({ code }) => code),
+    (code) => db.delete(mint).where(eq(mint.code, code))
   )
 }
 
@@ -274,6 +286,23 @@ async function seedCurrencies() {
   return currencyIdsByCode
 }
 
+async function seedMints() {
+  const mintIdsByCode: MintIdsByCode = new Map()
+
+  await deleteSeededMints()
+
+  for (const seededMint of seededMints) {
+    const [insertedMint] = await db
+      .insert(mint)
+      .values(seededMint)
+      .returning({ id: mint.id })
+
+    mintIdsByCode.set(seededMint.code, insertedMint.id)
+  }
+
+  return mintIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -426,12 +455,29 @@ async function seedCoinReferences(
   )
 }
 
+async function seedCoinMints(
+  coinIdsByTitle: CoinIdsByTitle,
+  mintIdsByCode: MintIdsByCode
+) {
+  await db.insert(coinMint).values(
+    seededCoinMints.map((seededCoinMint) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinMint.coinTitle,
+        "coin"
+      ),
+      mintId: getRequiredSeededId(mintIdsByCode, seededCoinMint.mintCode, "mint"),
+    }))
+  )
+}
+
 export async function seedDatabase() {
   await deleteSeededCoins()
 
   const issuerIdsByCode = await seedIssuers()
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
+  const mintIdsByCode = await seedMints()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
@@ -443,6 +489,7 @@ export async function seedDatabase() {
   const catalogueIdsByCode = await seedCatalogues()
 
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
+  await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
 }
 

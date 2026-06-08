@@ -23,6 +23,13 @@ type SeededCoin = {
   updatedAt: Date
 }
 
+type SeededMint = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 type SeededComposition = {
   code: string
   name: string
@@ -72,6 +79,11 @@ type SeededCoinReference = {
   number: string
   createdAt: Date
   updatedAt: Date
+}
+
+type SeededCoinMint = {
+  coinTitle: string
+  mintCode: string
 }
 
 type SeededCurrency = {
@@ -282,6 +294,27 @@ export const seededCoins: SeededCoin[] = [
   },
 ]
 
+export const seededMints: SeededMint[] = [
+  {
+    code: "royal-mint-of-madrid",
+    name: "Royal Mint of Madrid",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "buenos-aires-mint",
+    name: "Buenos Aires Mint",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "philadelphia-mint",
+    name: "Philadelphia Mint",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+]
+
 export const seededCurrencies: SeededCurrency[] = [
   {
     code: "euro",
@@ -310,6 +343,21 @@ export const seededCurrencies: SeededCurrency[] = [
     fullName: "United States dollar",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinMints: SeededCoinMint[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    mintCode: "royal-mint-of-madrid",
+  },
+  {
+    coinTitle: "Buenos Aires 8 Reales 1813",
+    mintCode: "buenos-aires-mint",
+  },
+  {
+    coinTitle: "United States Lincoln Cent",
+    mintCode: "philadelphia-mint",
   },
 ]
 

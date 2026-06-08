@@ -39,6 +39,14 @@ type GetCoinsIssuerColumns = {
   parentIssuerUpdatedAt: Date | null
 }
 
+type GetCoinsMintColumns = {
+  mintId: string | null
+  mintCode: string | null
+  mintName: string | null
+  mintCreatedAt: Date | null
+  mintUpdatedAt: Date | null
+}
+
 type GetCoinsRulerColumns = {
   rulerOrder: number | null
   rulerId: string | null
@@ -80,6 +88,7 @@ export type GetCoinsRow = {
   GetCoinsCurrencyColumns &
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
+  GetCoinsMintColumns &
   GetCoinsRulerColumns &
   GetCoinsReferenceColumns
 
@@ -180,6 +189,14 @@ export type CoinIssuer = {
   parent: CoinIssuerParent | null
 }
 
+export type CoinMint = {
+  id: string
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export type CoinRulerGroup = {
   id: string
   code: string
@@ -219,6 +236,8 @@ type CoinRulerAttribution = {
   ruler: CoinRuler
 }
 
+type CoinMintRecord = CoinMint
+
 type CoinCodeNamedRecord = {
   id: string
   code: string
@@ -229,8 +248,10 @@ type CoinCodeNamedRecord = {
 
 type CoinEntry = {
   coin: CoinRecord
+  mints: CoinMintRecord[]
   rulerAttributions: CoinRulerAttribution[]
   catalogueReferences: CoinCatalogueReference[]
+  seenMintIds: Set<string>
   seenRulerAttributionKeys: Set<string>
   seenCatalogueReferenceIds: Set<string>
 }
@@ -247,6 +268,7 @@ export type CoinRecord = CoinRecordBase & {
   composition: CoinComposition
   distribution: CoinDistribution
   issuer: CoinIssuer
+  mints: CoinMint[]
   rulers: CoinRuler[]
   references: CoinCatalogueReference[]
 }
@@ -419,6 +441,16 @@ function mapIssuer({
   }
 }
 
+function mapMint(row: GetCoinsMintColumns): CoinMint | null {
+  return mapOptionalCodeNamedRecord({
+    id: row.mintId,
+    code: row.mintCode,
+    name: row.mintName,
+    createdAt: row.mintCreatedAt,
+    updatedAt: row.mintUpdatedAt,
+  })
+}
+
 function mapRulerGroup({
   rulerGroupId,
   rulerGroupCode,
@@ -525,13 +557,23 @@ function compareCatalogueReferences(
   )
 }
 
+function compareMints(left: CoinMint, right: CoinMint): number {
+  return (
+    left.name.localeCompare(right.name) ||
+    left.code.localeCompare(right.code) ||
+    left.id.localeCompare(right.id)
+  )
+}
+
 function mapCoinEntry({
   coin,
+  mints,
   rulerAttributions,
   catalogueReferences,
 }: CoinEntry): CoinRecord {
   return {
     ...coin,
+    mints: mints.sort(compareMints),
     rulers: rulerAttributions
       .sort(compareRulerAttributions)
       .map(({ ruler }) => ruler),
@@ -584,6 +626,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     composition: mapComposition(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
+    mints: [],
     rulers: [],
     references: [],
   }
@@ -592,11 +635,24 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
 function createCoinEntry(row: GetCoinsRow): CoinEntry {
   return {
     coin: mapCoinRecord(row),
+    mints: [],
     rulerAttributions: [],
     catalogueReferences: [],
+    seenMintIds: new Set<string>(),
     seenRulerAttributionKeys: new Set<string>(),
     seenCatalogueReferenceIds: new Set<string>(),
   }
+}
+
+function addMint(row: GetCoinsRow, coinEntry: CoinEntry) {
+  const mappedMint = mapMint(row)
+
+  if (!mappedMint || coinEntry.seenMintIds.has(mappedMint.id)) {
+    return
+  }
+
+  coinEntry.seenMintIds.add(mappedMint.id)
+  coinEntry.mints.push(mappedMint)
 }
 
 function getRulerAttributionKey({
@@ -651,6 +707,7 @@ export function mapGetCoinsRowsToCoinRecords(
       coinsById.set(row.id, coinEntry)
     }
 
+    addMint(row, coinEntry)
     addRulerAttribution(row, coinEntry)
     addCatalogueReference(row, coinEntry)
   }

@@ -20,6 +20,7 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  formatMintNames,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
@@ -558,6 +559,11 @@ function App() {
               <p className="text-sm text-muted-foreground">
                 Face Value: {coin.faceValue.text}
               </p>
+              {coin.mints.length > 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Mints: {formatMintNames(coin.mints)}
+                </p>
+              ) : null}
               <p className="text-sm text-muted-foreground">
                 {formatIssueYearRangeLabel(coin.issueYearRange)}
               </p>

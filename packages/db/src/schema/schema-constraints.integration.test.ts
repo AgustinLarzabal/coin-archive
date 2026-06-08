@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto"
-import { sql } from "drizzle-orm"
+import { count, eq, sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import {
   catalogue,
   coin,
+  coinMint,
   coinReference,
   coinRuler,
   composition,
@@ -11,18 +12,21 @@ import {
   db,
   distribution,
   issuer,
+  mint,
   ruler,
   rulerGroup,
 } from "../index"
 import {
   createCatalogue,
   createCoin,
+  createCoinMint,
   createCoinReference,
   createCoinRuler,
   createComposition,
   createCurrency,
   createDistribution,
   createIssuer,
+  createMint,
   createRuler,
   createRulerGroup,
 } from "../testing/fixtures"
@@ -35,6 +39,8 @@ import { compositionSchemaNames } from "./composition"
 import { currencySchemaNames } from "./currency"
 import { distributionSchemaNames } from "./distribution"
 import { issuerSchemaNames } from "./issuer"
+import { coinMintSchemaNames } from "./coin-mint"
+import { mintSchemaNames } from "./mint"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
 
@@ -233,6 +239,65 @@ describe("currency schema constraints", () => {
       }),
       currencySchemaNames.codeLowerUniqueIndex,
       "23505"
+    )
+  })
+})
+
+describe("mint schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects mint codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(mint).values({
+        code: "Royal Mint of Madrid",
+        name: "Royal Mint of Madrid",
+      }),
+      mintSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate mint codes ignoring case", async () => {
+    await db.insert(mint).values({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+
+    await expectConstraintError(
+      db.insert(mint).values({
+        code: "ROYAL-MINT-OF-MADRID",
+        name: "Duplicate Royal Mint of Madrid",
+      }),
+      mintSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a mint while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdMint = await createMint({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+    const createdCoin = await createCoin({
+      title: "Referenced Mint Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinMint({
+      coinId: createdCoin.id,
+      mintId: createdMint.id,
+    })
+
+    await expectConstraintError(
+      db.delete(mint).where(sql`${mint.id} = ${createdMint.id}`),
+      "coin_mint_mint_id_mint_id_fk",
+      "23503"
     )
   })
 })
@@ -987,6 +1052,72 @@ describe("coin ruler schema constraints", () => {
         .from(coinRuler)
         .where(sql`${coinRuler.coinId} = ${civicCoin.id}`)
     ).resolves.toStrictEqual([])
+  })
+})
+
+describe("coin mint schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects duplicate mint attributions for the same coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdMint = await createMint({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+    const createdCoin = await createCoin({
+      title: "Duplicate Mint Attribution Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinMint({
+      coinId: createdCoin.id,
+      mintId: createdMint.id,
+    })
+
+    await expectConstraintError(
+      db.insert(coinMint).values({
+        coinId: createdCoin.id,
+        mintId: createdMint.id,
+      }),
+      coinMintSchemaNames.coinIdMintIdPrimaryKey,
+      "23505"
+    )
+  })
+
+  it("deletes coin mint attributions when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdMint = await createMint({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+    const createdCoin = await createCoin({
+      title: "Cascade Deleted Mint Attribution Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinMint({
+      coinId: createdCoin.id,
+      mintId: createdMint.id,
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    const [attributionCount] = await db
+      .select({ count: count() })
+      .from(coinMint)
+      .where(eq(coinMint.mintId, createdMint.id))
+
+    expect(attributionCount?.count).toBe(0)
   })
 })
 

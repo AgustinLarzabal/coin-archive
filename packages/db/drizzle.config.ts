@@ -7,11 +7,13 @@ export default defineConfig({
   schema: [
     "./src/schema/catalogue.ts",
     "./src/schema/coin.ts",
+    "./src/schema/coin-mint.ts",
     "./src/schema/coin-reference.ts",
     "./src/schema/composition.ts",
     "./src/schema/currency.ts",
     "./src/schema/distribution.ts",
     "./src/schema/issuer.ts",
+    "./src/schema/mint.ts",
     "./src/schema/ruler-group.ts",
     "./src/schema/ruler.ts",
     "./src/schema/coin-ruler.ts",

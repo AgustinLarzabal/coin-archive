@@ -1,11 +1,13 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { db } from "../index"
@@ -53,6 +55,11 @@ type CreateCurrencyInput = {
   name: string
 }
 
+type CreateMintInput = {
+  code: string
+  name: string
+}
+
 type CreateRulerGroupInput = {
   code: string
   name: string
@@ -79,6 +86,11 @@ type CreateCoinReferenceInput = {
   catalogueId: string
   coinId: string
   number: string
+}
+
+type CreateCoinMintInput = {
+  coinId: string
+  mintId: string
 }
 
 export async function createIssuer({
@@ -192,6 +204,18 @@ export async function createCurrency({
   return createdCurrency
 }
 
+export async function createMint({ code, name }: CreateMintInput) {
+  const [createdMint] = await db
+    .insert(mint)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdMint
+}
+
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
   const [createdRulerGroup] = await db
     .insert(rulerGroup)
@@ -265,6 +289,21 @@ export async function createCoinReference({
     .returning()
 
   return createdCoinReference
+}
+
+export async function createCoinMint({
+  coinId,
+  mintId,
+}: CreateCoinMintInput) {
+  const [createdCoinMint] = await db
+    .insert(coinMint)
+    .values({
+      coinId,
+      mintId,
+    })
+    .returning()
+
+  return createdCoinMint
 }
 
 async function getOrCreateDefaultDistribution() {

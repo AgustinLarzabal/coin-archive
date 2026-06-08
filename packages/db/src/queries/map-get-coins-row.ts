@@ -1,3 +1,12 @@
+type GetCoinsCompositionColumns = {
+  compositionId: string
+  compositionCode: string
+  compositionName: string
+  compositionDescription: string | null
+  compositionCreatedAt: Date
+  compositionUpdatedAt: Date
+}
+
 type GetCoinsDistributionColumns = {
   distributionId: string
   distributionCode: string
@@ -56,7 +65,8 @@ export type GetCoinsRow = {
   weight: number | null
   diameter: number | null
   thickness: number | null
-} & GetCoinsDistributionColumns &
+} & GetCoinsCompositionColumns &
+  GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsRulerColumns &
   GetCoinsReferenceColumns
@@ -100,6 +110,15 @@ export type CoinDistribution = {
   id: string
   code: string
   name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type CoinComposition = {
+  id: string
+  code: string
+  name: string
+  description: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -179,6 +198,7 @@ type CoinRecordBase = Pick<
 export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
   measurements: CoinMeasurements
+  composition: CoinComposition
   distribution: CoinDistribution
   issuer: CoinIssuer
   rulers: CoinRuler[]
@@ -224,6 +244,24 @@ function mapDistribution({
     name: distributionName,
     createdAt: distributionCreatedAt,
     updatedAt: distributionUpdatedAt,
+  }
+}
+
+function mapComposition({
+  compositionId,
+  compositionCode,
+  compositionName,
+  compositionDescription,
+  compositionCreatedAt,
+  compositionUpdatedAt,
+}: GetCoinsCompositionColumns): CoinComposition {
+  return {
+    id: compositionId,
+    code: compositionCode,
+    name: compositionName,
+    description: compositionDescription,
+    createdAt: compositionCreatedAt,
+    updatedAt: compositionUpdatedAt,
   }
 }
 
@@ -442,6 +480,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinRecord {
     updatedAt: row.updatedAt,
     issueYearRange: mapIssueYearRange(row),
     measurements: mapMeasurements(row),
+    composition: mapComposition(row),
     distribution: mapDistribution(row),
     issuer: mapIssuer(row),
     rulers: [],

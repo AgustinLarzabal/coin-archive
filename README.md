@@ -1,6 +1,6 @@
 # Coin Archive
 
-Coin Archive is a catalog of physical coins from across history. It catalogs coin types and issues rather than individual owned specimens, and it uses the glossary in [`CONTEXT.md`](/CONTEXT.md) as the canonical source for catalogue language such as Coin, Issuer, Ruler, Catalogue, and Catalogue Reference.
+Coin Archive is a catalog of physical coins from across history. It catalogs coin types and issues rather than individual owned specimens, and it uses the glossary in [`CONTEXT.md`](/CONTEXT.md) as the canonical source for catalogue language such as Coin, Issuer, Composition, Ruler, Catalogue, and Catalogue Reference.
 
 Use this README as the repository entry point. It explains the workspace at a useful maintainer level, gives the shortest path to a running local setup, and points to the deeper documents that own glossary, database architecture, testing strategy, and architectural decisions.
 
@@ -80,6 +80,14 @@ The seeded demo data is arranged so local manual checks are easy:
 - `minDiameter=23&maxDiameter=24` matches `2001 Argentine 1 Peso` and `1794 Flowing Hair Half Cent`
 - `minThickness=1.9&maxThickness=2.1` matches `2001 Argentine 1 Peso` and `1992 Argentine 50 Centavos`
 - combining all three ranges narrows the result to `2001 Argentine 1 Peso`
+
+## Composition demo
+
+After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and the homepage visibly shows that Composition while keeping the raw JSON block for debugging.
+
+- shared seeded Compositions include `Silver (.900)`, `Copper`, `Copper-nickel`, and `Copper-nickel clad`
+- seeded Coins intentionally reuse those Compositions across multiple records rather than embedding free-text material labels per Coin
+- deleting a Composition that is still referenced by a Coin is rejected by the database
 
 ## Where to go next
 

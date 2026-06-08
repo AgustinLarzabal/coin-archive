@@ -5,6 +5,7 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { composition } from "../schema/composition"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -23,6 +24,12 @@ const getCoinsSelection = {
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
+  compositionId: composition.id,
+  compositionCode: composition.code,
+  compositionName: composition.name,
+  compositionDescription: composition.description,
+  compositionCreatedAt: composition.createdAt,
+  compositionUpdatedAt: composition.updatedAt,
   distributionId: distribution.id,
   distributionCode: distribution.code,
   distributionName: distribution.name,
@@ -367,6 +374,7 @@ export function buildGetCoinsQuery(
     .select(getCoinsSelection)
     .from(limitedCoins)
     .innerJoin(coin, eq(limitedCoins.id, coin.id))
+    .innerJoin(composition, eq(coin.compositionId, composition.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))

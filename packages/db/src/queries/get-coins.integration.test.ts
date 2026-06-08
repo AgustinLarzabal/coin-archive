@@ -5,6 +5,7 @@ import {
   createCoin,
   createCoinReference,
   createCoinRuler,
+  createComposition,
   createDistribution,
   createIssuer,
   createRuler,
@@ -99,9 +100,15 @@ describe("getCoins integration", () => {
       code: "standard-circulation",
       name: "Standard circulation",
     })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
     const createdAt = new Date("2026-05-01T00:00:00.000Z")
     const coin = await createCoin({
       title: "Ungrouped Civic Issue",
+      compositionId: silver900.id,
       distributionId: standardCirculation.id,
       issuerId: athens.id,
       createdAt,
@@ -118,6 +125,14 @@ describe("getCoins integration", () => {
           weight: null,
           diameter: null,
           thickness: null,
+        },
+        composition: {
+          id: silver900.id,
+          code: "silver-900",
+          name: "Silver (.900)",
+          description: "Ninety percent silver alloy.",
+          createdAt: silver900.createdAt,
+          updatedAt: silver900.updatedAt,
         },
         distribution: {
           id: standardCirculation.id,

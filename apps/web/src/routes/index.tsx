@@ -407,6 +407,9 @@ function App() {
                 {coin.issuer.name} · {coin.distribution.name}
               </p>
               <p className="text-sm text-muted-foreground">
+                Composition: {coin.composition.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
                 {formatIssueYearRangeLabel(coin.issueYearRange)}
               </p>
               {measurementSummary ? (

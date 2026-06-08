@@ -9,10 +9,12 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
+import { composition } from "./composition"
 import { distribution } from "./distribution"
 import { issuer } from "./issuer"
 
 export const coinSchemaNames = {
+  compositionIdIndex: "coin_composition_id_idx",
   diameterIndex: "coin_diameter_idx",
   diameterPositiveCheck: "coin_diameter_positive_check",
   distributionIdIndex: "coin_distribution_id_idx",
@@ -55,6 +57,11 @@ export const coin = pgTable(
       .references(() => distribution.id, {
         onDelete: "restrict",
       }),
+    compositionId: uuid("composition_id")
+      .notNull()
+      .references(() => composition.id, {
+        onDelete: "restrict",
+      }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
     weight: numeric("weight", measurementColumn),
@@ -74,6 +81,7 @@ export const coin = pgTable(
     ),
     index(coinSchemaNames.issuerIdIndex).on(coin.issuerId),
     index(coinSchemaNames.distributionIdIndex).on(coin.distributionId),
+    index(coinSchemaNames.compositionIdIndex).on(coin.compositionId),
     index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),
     index(coinSchemaNames.weightIndex).on(coin.weight),
     index(coinSchemaNames.diameterIndex).on(coin.diameter),

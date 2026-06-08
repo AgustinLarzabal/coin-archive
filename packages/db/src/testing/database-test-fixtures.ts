@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm"
 import { coin } from "../schema/coin"
 import { issuer } from "../schema/issuer"
+import { getOrCreateDefaultComposition } from "./default-composition"
 import { createTestDatabase } from "./database-test-client"
 import { getOrCreateDefaultDistribution } from "./default-distribution"
 
@@ -41,6 +42,7 @@ export async function insertIssuer(input: {
 }
 
 export async function insertCoin(input: {
+  compositionId?: string
   distributionId?: string
   issuerId: string
   maxYear?: number
@@ -50,10 +52,13 @@ export async function insertCoin(input: {
 }) {
   const distributionId =
     input.distributionId ?? (await insertDefaultDistribution()).id
+  const compositionId =
+    input.compositionId ?? (await insertDefaultComposition()).id
 
   const [insertedCoin] = await testDb
     .insert(coin)
     .values({
+      compositionId,
       distributionId,
       issuerId: input.issuerId,
       maxYear: input.maxYear,
@@ -69,4 +74,8 @@ export async function insertCoin(input: {
 
 async function insertDefaultDistribution() {
   return getOrCreateDefaultDistribution(testDb)
+}
+
+async function insertDefaultComposition() {
+  return getOrCreateDefaultComposition(testDb)
 }

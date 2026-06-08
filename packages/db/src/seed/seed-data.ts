@@ -8,6 +8,7 @@ type SeededIssuer = {
 
 type SeededCoin = {
   title: string
+  compositionCode: string
   distributionCode: string
   issuerCode: string
   weight?: number
@@ -15,6 +16,14 @@ type SeededCoin = {
   thickness?: number
   minYear?: number
   maxYear?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededComposition = {
+  code: string
+  name: string
+  description?: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -87,6 +96,7 @@ export const seededIssuers: SeededIssuer[] = [
 export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina Sol de Mayo Peso",
+    compositionCode: "silver-900",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
     weight: 12.5,
@@ -97,6 +107,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 8 Reales 1813",
+    compositionCode: "silver-900",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     weight: 26.95,
@@ -109,6 +120,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "United States Lincoln Cent",
+    compositionCode: "copper",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
     weight: 3.11,
@@ -120,6 +132,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Argentina 20 Centavos",
+    compositionCode: "copper-nickel",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
     weight: 10,
@@ -132,6 +145,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 5 Decimos",
+    compositionCode: "silver-900",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     weight: 8.5,
@@ -144,6 +158,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "United States National Park Quarter",
+    compositionCode: "copper-nickel-clad",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
     weight: 8.1,
@@ -156,6 +171,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Argentina Copper Peso",
+    compositionCode: "copper",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
     diameter: 22,
@@ -164,6 +180,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires Transition Half Real",
+    compositionCode: "silver-900",
     distributionCode: "standard-circulation",
     issuerCode: "buenos-aires",
     weight: 3.8,
@@ -176,6 +193,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "United States Flowing Hair Dollar",
+    compositionCode: "silver-900",
     distributionCode: "standard-circulation",
     issuerCode: "united-states",
     weight: 26.73,
@@ -188,6 +206,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Argentina Convertible Peso",
+    compositionCode: "copper-nickel",
     distributionCode: "standard-circulation",
     issuerCode: "argentina",
     weight: 6.35,
@@ -197,6 +216,37 @@ export const seededCoins: SeededCoin[] = [
     maxYear: 2001,
     createdAt: new Date("2026-01-10T00:00:00.000Z"),
     updatedAt: new Date("2026-01-10T00:00:00.000Z"),
+  },
+]
+
+export const seededCompositions: SeededComposition[] = [
+  {
+    code: "silver-900",
+    name: "Silver (.900)",
+    description: "Ninety percent silver alloy.",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "copper",
+    name: "Copper",
+    description: null,
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "copper-nickel",
+    name: "Copper-nickel",
+    description: null,
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "copper-nickel-clad",
+    name: "Copper-nickel clad",
+    description: "Copper core with copper-nickel outer layers.",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
 ]
 

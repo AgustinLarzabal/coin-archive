@@ -6,6 +6,7 @@ import {
   coin,
   coinReference,
   coinRuler,
+  composition,
   db,
   distribution,
   issuer,
@@ -17,6 +18,7 @@ import {
   createCoin,
   createCoinReference,
   createCoinRuler,
+  createComposition,
   createDistribution,
   createIssuer,
   createRuler,
@@ -26,8 +28,9 @@ import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
-import { distributionSchemaNames } from "./distribution"
 import { coinSchemaNames } from "./coin"
+import { compositionSchemaNames } from "./composition"
+import { distributionSchemaNames } from "./distribution"
 import { issuerSchemaNames } from "./issuer"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
@@ -46,7 +49,8 @@ async function expectConstraintError(
 }
 
 async function createCoinDependencies() {
-  const [createdIssuer, createdDistribution] = await Promise.all([
+  const [createdIssuer, createdDistribution, createdComposition] =
+    await Promise.all([
     createIssuer({
       code: "athens",
       name: "Athens",
@@ -55,15 +59,22 @@ async function createCoinDependencies() {
       code: "standard-circulation",
       name: "Standard circulation",
     }),
+    createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    }),
   ])
 
   return {
+    compositionId: createdComposition.id,
     distributionId: createdDistribution.id,
     issuerId: createdIssuer.id,
   }
 }
 
 function insertCoinWithPartialIssueYearRange(input: {
+  compositionId: string
   distributionId: string
   issuerId: string
   minYear?: number
@@ -75,6 +86,7 @@ function insertCoinWithPartialIssueYearRange(input: {
       "title",
       "issuer_id",
       "distribution_id",
+      "composition_id",
       "min_year",
       "max_year"
     )
@@ -82,11 +94,62 @@ function insertCoinWithPartialIssueYearRange(input: {
       ${input.title},
       ${input.issuerId},
       ${input.distributionId},
+      ${input.compositionId},
       ${input.minYear ?? null},
       ${input.maxYear ?? null}
     )
   `)
 }
+
+describe("composition schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects composition codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(composition).values({
+        code: "Silver 900",
+        name: "Silver (.900)",
+      }),
+      compositionSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate composition codes ignoring case", async () => {
+    await db.insert(composition).values({
+      code: "silver-900",
+      name: "Silver (.900)",
+    })
+
+    await expectConstraintError(
+      db.insert(composition).values({
+        code: "SILVER-900",
+        name: "Duplicate Silver (.900)",
+      }),
+      compositionSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a composition while coins still reference it", async () => {
+    const { compositionId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await createCoin({
+      title: "Referenced Composition Coin",
+      compositionId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(composition).where(sql`${composition.id} = ${compositionId}`),
+      "coin_composition_id_composition_id_fk",
+      "23503"
+    )
+  })
+})
 
 describe("issuer schema constraints", () => {
   useTestDatabaseIsolation(db)
@@ -138,18 +201,30 @@ describe("coin schema constraints", () => {
   useTestDatabaseIsolation(db)
 
   it("requires every coin to have exactly one direct issuer", async () => {
-    const standardCirculation = await createDistribution({
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
+    const [standardCirculation, silver900] = await Promise.all([
+      createDistribution({
+        code: "standard-circulation",
+        name: "Standard circulation",
+      }),
+      createComposition({
+        code: "silver-900",
+        name: "Silver (.900)",
+      }),
+    ])
 
     await expect(
       db.execute(sql`
-        insert into "coin" ("title", "issuer_id", "distribution_id")
+        insert into "coin" (
+          "title",
+          "issuer_id",
+          "distribution_id",
+          "composition_id"
+        )
         values (
           ${"Issuerless Test Coin"},
           ${null},
-          ${standardCirculation.id}
+          ${standardCirculation.id},
+          ${silver900.id}
         )
       `)
     ).rejects.toMatchObject({
@@ -161,20 +236,71 @@ describe("coin schema constraints", () => {
   })
 
   it("requires every coin to have exactly one distribution", async () => {
-    const athens = await createIssuer({
-      code: "athens",
-      name: "Athens",
-    })
+    const [athens, silver900] = await Promise.all([
+      createIssuer({
+        code: "athens",
+        name: "Athens",
+      }),
+      createComposition({
+        code: "silver-900",
+        name: "Silver (.900)",
+      }),
+    ])
 
     await expect(
       db.execute(sql`
-        insert into "coin" ("title", "issuer_id", "distribution_id")
-        values (${ "Distributionless Test Coin" }, ${athens.id}, ${null})
+        insert into "coin" (
+          "title",
+          "issuer_id",
+          "distribution_id",
+          "composition_id"
+        )
+        values (
+          ${"Distributionless Test Coin"},
+          ${athens.id},
+          ${null},
+          ${silver900.id}
+        )
       `)
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
         code: "23502",
         column_name: "distribution_id",
+      }),
+    })
+  })
+
+  it("requires every coin to have exactly one composition", async () => {
+    const [athens, standardCirculation] = await Promise.all([
+      createIssuer({
+        code: "athens",
+        name: "Athens",
+      }),
+      createDistribution({
+        code: "standard-circulation",
+        name: "Standard circulation",
+      }),
+    ])
+
+    await expect(
+      db.execute(sql`
+        insert into "coin" (
+          "title",
+          "issuer_id",
+          "distribution_id",
+          "composition_id"
+        )
+        values (
+          ${"Compositionless Test Coin"},
+          ${athens.id},
+          ${standardCirculation.id},
+          ${null}
+        )
+      `)
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23502",
+        column_name: "composition_id",
       }),
     })
   })
@@ -239,10 +365,12 @@ describe("coin schema constraints", () => {
   })
 
   it("rejects coins with only min_year present", async () => {
-    const { distributionId, issuerId } = await createCoinDependencies()
+    const { compositionId, distributionId, issuerId } =
+      await createCoinDependencies()
 
     await expectConstraintError(
       insertCoinWithPartialIssueYearRange({
+        compositionId,
         title: "Half Entered Range Coin",
         issuerId,
         distributionId,
@@ -254,10 +382,12 @@ describe("coin schema constraints", () => {
   })
 
   it("rejects coins with only max_year present", async () => {
-    const { distributionId, issuerId } = await createCoinDependencies()
+    const { compositionId, distributionId, issuerId } =
+      await createCoinDependencies()
 
     await expectConstraintError(
       insertCoinWithPartialIssueYearRange({
+        compositionId,
         title: "Half Entered Max Range Coin",
         issuerId,
         distributionId,

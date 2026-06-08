@@ -46,6 +46,11 @@ describe("seed integration", () => {
         minYear: 2014,
         maxYear: 2026,
       },
+      composition: {
+        code: "copper-nickel-clad",
+        name: "Copper-nickel clad",
+        description: "Copper core with copper-nickel outer layers.",
+      },
       measurements: {
         weight: 8.1,
         diameter: 26.5,
@@ -73,6 +78,10 @@ describe("seed integration", () => {
 
     expect(ancientSeedCoin).toMatchObject({
       title: "Buenos Aires Transition Half Real",
+      composition: {
+        code: "silver-900",
+        name: "Silver (.900)",
+      },
       issueYearRange: {
         minYear: -2,
         maxYear: 0,
@@ -90,6 +99,11 @@ describe("seed integration", () => {
 
     expect(partialMeasurementSeedCoin).toMatchObject({
       title: "Argentina Copper Peso",
+      composition: {
+        code: "copper",
+        name: "Copper",
+        description: null,
+      },
       measurements: {
         weight: null,
         diameter: 22,

@@ -2,11 +2,13 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { composition } from "../schema/composition"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { db } from "../index"
+import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
 
 type CreateIssuerInput = {
@@ -18,6 +20,7 @@ type CreateIssuerInput = {
 type CreateCoinInput = {
   createdAt: Date
   diameter?: number
+  compositionId?: string
   distributionId?: string
   issuerId: string
   maxYear?: number
@@ -30,6 +33,12 @@ type CreateCoinInput = {
 
 type CreateDistributionInput = {
   code: string
+  name: string
+}
+
+type CreateCompositionInput = {
+  code: string
+  description?: string | null
   name: string
 }
 
@@ -81,6 +90,7 @@ export async function createIssuer({
 export async function createCoin({
   createdAt,
   diameter,
+  compositionId,
   distributionId,
   issuerId,
   maxYear,
@@ -92,11 +102,14 @@ export async function createCoin({
 }: CreateCoinInput) {
   const resolvedDistributionId =
     distributionId ?? (await getOrCreateDefaultDistribution()).id
+  const resolvedCompositionId =
+    compositionId ?? (await getOrCreateDefaultComposition()).id
 
   const [createdCoin] = await db
     .insert(coin)
     .values({
       createdAt,
+      compositionId: resolvedCompositionId,
       distributionId: resolvedDistributionId,
       issuerId,
       maxYear,
@@ -125,6 +138,23 @@ export async function createDistribution({
     .returning()
 
   return createdDistribution
+}
+
+export async function createComposition({
+  code,
+  description,
+  name,
+}: CreateCompositionInput) {
+  const [createdComposition] = await db
+    .insert(composition)
+    .values({
+      code,
+      description,
+      name,
+    })
+    .returning()
+
+  return createdComposition
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
@@ -204,4 +234,8 @@ export async function createCoinReference({
 
 async function getOrCreateDefaultDistribution() {
   return getDefaultDistribution(db)
+}
+
+async function getOrCreateDefaultComposition() {
+  return getDefaultComposition(db)
 }

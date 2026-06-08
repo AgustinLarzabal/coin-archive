@@ -5,6 +5,7 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { composition } from "../schema/composition"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { ruler } from "../schema/ruler"
@@ -14,6 +15,7 @@ import {
   seededCoinReferences,
   seededCoinRulers,
   seededCoins,
+  seededCompositions,
   seededDistributions,
   seededIssuers,
   seededRulerGroups,
@@ -25,6 +27,7 @@ type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
 type CatalogueIdsByCode = Map<string, string>
+type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
@@ -82,6 +85,13 @@ async function deleteSeededCoins() {
   await deleteSeededRecords(
     seededCoins.map(({ title }) => title),
     (title) => db.delete(coin).where(eq(coin.title, title))
+  )
+}
+
+async function deleteSeededCompositions() {
+  await deleteSeededRecords(
+    seededCompositions.map(({ code }) => code),
+    (code) => db.delete(composition).where(eq(composition.code, code))
   )
 }
 
@@ -220,6 +230,23 @@ async function seedCatalogues() {
   return catalogueIdsByCode
 }
 
+async function seedCompositions() {
+  const compositionIdsByCode: CompositionIdsByCode = new Map()
+
+  await deleteSeededCompositions()
+
+  for (const seededComposition of seededCompositions) {
+    const [insertedComposition] = await db
+      .insert(composition)
+      .values(seededComposition)
+      .returning({ id: composition.id })
+
+    compositionIdsByCode.set(seededComposition.code, insertedComposition.id)
+  }
+
+  return compositionIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -263,6 +290,7 @@ async function seedDistributions() {
 }
 
 async function seedCoins(
+  compositionIdsByCode: CompositionIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
@@ -276,15 +304,22 @@ async function seedCoins(
   const insertedCoins = await db
     .insert(coin)
     .values(
-      seededCoins.map(({ issuerCode, distributionCode, ...seededCoin }) => ({
-        ...seededCoin,
-        distributionId: getRequiredSeededId(
-          distributionIdsByCode,
-          distributionCode,
-          "distribution"
-        ),
-        issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
-      }))
+      seededCoins.map(
+        ({ issuerCode, distributionCode, compositionCode, ...seededCoin }) => ({
+          ...seededCoin,
+          compositionId: getRequiredSeededId(
+            compositionIdsByCode,
+            compositionCode,
+            "composition"
+          ),
+          distributionId: getRequiredSeededId(
+            distributionIdsByCode,
+            distributionCode,
+            "distribution"
+          ),
+          issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
+        })
+      )
     )
     .returning({ id: coin.id, title: coin.title })
   const coinIdsByTitle: CoinIdsByTitle = new Map(
@@ -342,8 +377,13 @@ export async function seedDatabase() {
   await deleteSeededCoins()
 
   const issuerIdsByCode = await seedIssuers()
+  const compositionIdsByCode = await seedCompositions()
   const distributionIdsByCode = await seedDistributions()
-  const coinIdsByTitle = await seedCoins(issuerIdsByCode, distributionIdsByCode)
+  const coinIdsByTitle = await seedCoins(
+    compositionIdsByCode,
+    issuerIdsByCode,
+    distributionIdsByCode
+  )
   const rulerIdsByCode = await seedRulers()
   const catalogueIdsByCode = await seedCatalogues()
 

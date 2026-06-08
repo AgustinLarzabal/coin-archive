@@ -88,6 +88,22 @@ _Avoid_: Issuer attribution, ruler attribution order, production batch, mint mar
 A catalogue filter that returns coins attributed directly to the selected Mint. It composes with other catalogue filters using AND semantics.
 _Avoid_: Issuer filter, mint grouping filter, mint name search
 
+**Theme**:
+A reusable subject, visual motif, or explicit commemorative concept intentionally represented by catalogued coin types or issues, such as a map, flag, portrait, animal, building, plant, or independence. A coin may have zero or more Themes.
+_Avoid_: Design type, primary subject, image description, free-text tag, broad inferred historical topic
+
+**Theme Code**:
+The globally unique, stable, human-readable catalogue key for a theme, used to identify the theme in filters, URLs, imports, and administrative lookup. It uses lowercase slug-style text and is distinct from the theme's display name.
+_Avoid_: Display name, temporary label, image label
+
+**Theme Attribution**:
+A catalogue relationship that explicitly links a Coin to a Theme depicted on or otherwise commemorated by that catalogued coin type or issue as recorded. Multiple theme attributions on a single Coin are unordered.
+_Avoid_: Primary theme, incidental description, keyword tag order, inferred historical association, title-derived theme, automatic parent theme
+
+**Theme Filter**:
+A catalogue filter that returns coins attributed directly to the selected Theme. It composes with other catalogue filters using AND semantics.
+_Avoid_: Free-text image search, generated tag filter, issuer-style descendant filter
+
 **Issuer Code**:
 The globally unique, stable, human-readable catalogue key for an issuer, used to identify the issuer in filters, URLs, imports, and administrative lookup. It identifies the issuer itself rather than encoding the issuer's parent grouping path. It uses lowercase slug-style text and is distinct from the issuer's display name. It should not be reused for a different issuer.
 _Avoid_: Display name, temporary label, parent path

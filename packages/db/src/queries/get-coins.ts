@@ -144,16 +144,28 @@ function buildCoinFilter({
   referenceNumber,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
-  const minMeasurementOptions = {
-    minWeight,
-    minDiameter,
-    minThickness,
-  } as const
-  const maxMeasurementOptions = {
-    maxWeight,
-    maxDiameter,
-    maxThickness,
-  } as const
+  const rangeFilters = [
+    {
+      column: coin.faceValueNumericValue,
+      minValue,
+      maxValue,
+    },
+    {
+      column: coin.weight,
+      minValue: minWeight,
+      maxValue: maxWeight,
+    },
+    {
+      column: coin.diameter,
+      minValue: minDiameter,
+      maxValue: maxDiameter,
+    },
+    {
+      column: coin.thickness,
+      minValue: minThickness,
+      maxValue: maxThickness,
+    },
+  ] as const
   const filters = [
     buildDistributionFilter(distributionCode),
     buildCompositionFilter(compositionCode),
@@ -168,18 +180,13 @@ function buildCoinFilter({
       fromYear,
       toYear,
     }),
-    ...measurementRangeFilters.map(({ column, minOptionKey, maxOptionKey }) =>
+    ...rangeFilters.map(({ column, minValue, maxValue }) =>
       buildMeasurementRangeFilter({
         column,
-        minValue: minMeasurementOptions[minOptionKey],
-        maxValue: maxMeasurementOptions[maxOptionKey],
+        minValue,
+        maxValue,
       })
     ),
-    buildMeasurementRangeFilter({
-      column: coin.faceValueNumericValue,
-      minValue,
-      maxValue,
-    }),
   ].filter(isDefined)
 
   if (filters.length === 0) {
@@ -334,24 +341,6 @@ type MeasurementRangeFilterOptions = {
   minValue: number | undefined
   maxValue: number | undefined
 }
-
-const measurementRangeFilters = [
-  {
-    column: coin.weight,
-    minOptionKey: "minWeight",
-    maxOptionKey: "maxWeight",
-  },
-  {
-    column: coin.diameter,
-    minOptionKey: "minDiameter",
-    maxOptionKey: "maxDiameter",
-  },
-  {
-    column: coin.thickness,
-    minOptionKey: "minThickness",
-    maxOptionKey: "maxThickness",
-  },
-] as const
 
 function buildCatalogueReferenceFilter({
   catalogueCode,

@@ -72,7 +72,10 @@ export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
 export type IssueYearFilterName = keyof Pick<CoinSearch, "fromYear" | "toYear">
-export type FaceValueFilterName = keyof Pick<CoinSearch, "minValue" | "maxValue">
+export type FaceValueFilterName = keyof Pick<
+  CoinSearch,
+  "minValue" | "maxValue"
+>
 export type MeasurementFilterName = keyof Pick<
   CoinSearch,
   | "minWeight"
@@ -101,6 +104,11 @@ export type MeasurementFilterValue =
   | undefined
 export type PositiveNumberFilterValue =
   | CoinSearch[PositiveNumberFilterName]
+  | FormDataEntryValue
+  | null
+  | undefined
+export type FaceValueFilterValue =
+  | CoinSearch[FaceValueFilterName]
   | FormDataEntryValue
   | null
   | undefined

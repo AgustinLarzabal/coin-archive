@@ -131,9 +131,13 @@ const measurementFilterNames = [
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type CompositionOptionLabel = Pick<CompositionOption, "name">
-type CurrencyOptionLabel = Pick<CurrencyOption, "name" | "code">
-type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
-type MintOptionLabel = Pick<MintOption, "name" | "code">
+type NamedCodeOptionLabel = { name: string; code: string }
+type CurrencyOptionLabel = Pick<CurrencyOption, keyof NamedCodeOptionLabel>
+type DistributionOptionLabel = Pick<
+  DistributionOption,
+  keyof NamedCodeOptionLabel
+>
+type MintOptionLabel = Pick<MintOption, keyof NamedCodeOptionLabel>
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 type CoinMintLabel = Pick<CoinRecordMint, "name">
 
@@ -343,10 +347,14 @@ export function getCatalogueOptionLabel(catalogue: CatalogueOptionLabel) {
   return `${catalogue.title} · ${catalogue.code}`
 }
 
+function getNamedCodeOptionLabel(option: NamedCodeOptionLabel) {
+  return `${option.name} · ${option.code}`
+}
+
 export function getDistributionOptionLabel(
   distribution: DistributionOptionLabel
 ) {
-  return `${distribution.name} · ${distribution.code}`
+  return getNamedCodeOptionLabel(distribution)
 }
 
 export function getCompositionOptionLabel(composition: CompositionOptionLabel) {
@@ -354,11 +362,11 @@ export function getCompositionOptionLabel(composition: CompositionOptionLabel) {
 }
 
 export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
-  return `${currency.name} · ${currency.code}`
+  return getNamedCodeOptionLabel(currency)
 }
 
 export function getMintOptionLabel(mint: MintOptionLabel) {
-  return `${mint.name} · ${mint.code}`
+  return getNamedCodeOptionLabel(mint)
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

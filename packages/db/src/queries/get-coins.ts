@@ -279,8 +279,8 @@ function buildMintFilter(mintCode: string | undefined): SQL | undefined {
   return sql`
     ${coin.id} in (
       select ${coinMint.coinId}
-      from "coin_mint"
-      inner join "mint" on ${coinMint.mintId} = ${mint.id}
+      from ${coinMint}
+      inner join ${mint} on ${coinMint.mintId} = ${mint.id}
       where lower(${mint.code}) = ${normalizedMintCode}
     )
   `

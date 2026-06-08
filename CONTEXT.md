@@ -52,6 +52,10 @@ _Avoid_: Observe, heads, front image, placeholder face text
 The back face description recorded for a catalogued coin type or issue. A coin may have no Reverse description, and its descriptive text and lettering may be known independently.
 _Avoid_: Tails, back image, placeholder face text
 
+**Face Lettering**:
+The plain text inscription recorded from an Obverse or Reverse as catalogue data. Face Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
+_Avoid_: Parsed inscription, generated text, normalized token sequence
+
 **Engraver**:
 A person credited with creating or engraving a coin face design. An Engraver may be attributed to an Obverse or Reverse, but is not a whole-coin attribution unless both faces are explicitly attributed.
 _Avoid_: Artist, designer, issuer, mint worker, whole-coin engraver
@@ -93,12 +97,16 @@ A catalogue filter that returns coins linked directly to the selected Rim. It co
 _Avoid_: Edge filter, edge inscription filter, obverse rim filter, reverse rim filter, unknown-rim match
 
 **Edge**:
-The intended standard physical-description treatment of the coin's outer side surface, using Coin Archive's flat canonical edge vocabulary. A coin has at most one Edge, and may also have coin-specific edge description or lettering details.
+The intended standard physical-description treatment of the coin's outer side surface, using Coin Archive's flat canonical edge vocabulary. A coin has at most one Edge, and coin-specific edge description or lettering details may be known without selecting an Edge.
 _Avoid_: Rim, face border, obverse rim, reverse rim, source-specific edge label
 
 **Edge Code**:
 The unique, stable, human-readable catalogue key for an edge, used to identify the edge in imports, filters, URLs, and administrative lookup. It is unique within edges, uses lowercase slug-style text, and is distinct from the edge's display name.
 _Avoid_: Display name, temporary label, rim code
+
+**Edge Lettering**:
+The plain text inscription recorded from the coin's outer side surface as catalogue data. Edge Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
+_Avoid_: Edge code, parsed inscription, generated text, normalized token sequence
 
 **Edge Filter**:
 A catalogue filter that returns coins linked directly to the selected Edge. It composes with other catalogue filters using AND semantics, and coins without an Edge are excluded when an edge filter is applied.

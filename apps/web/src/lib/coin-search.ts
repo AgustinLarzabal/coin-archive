@@ -290,7 +290,7 @@ export function getDistributionOptionLabel(
 export function getCompositionOptionLabel(
   composition: CompositionOptionLabel
 ) {
-  return `${composition.name} · ${composition.code}`
+  return composition.name
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

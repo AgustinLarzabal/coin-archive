@@ -518,13 +518,13 @@ describe("getDistributionOptionLabel", () => {
 })
 
 describe("getCompositionOptionLabel", () => {
-  it("includes composition name and code so combobox search can match both", () => {
+  it("returns only the composition name for homepage combobox display", () => {
     expect(
       getCompositionOptionLabel({
         code: "silver-900",
         name: "Silver (.900)",
       })
-    ).toBe("Silver (.900) · silver-900")
+    ).toBe("Silver (.900)")
   })
 })
 

@@ -92,6 +92,18 @@ _Avoid_: Display name, temporary label, edge code
 A catalogue filter that returns coins linked directly to the selected Rim. It composes with other catalogue filters using AND semantics, and coins without a Rim are excluded when a rim filter is applied.
 _Avoid_: Edge filter, edge inscription filter, obverse rim filter, reverse rim filter, unknown-rim match
 
+**Edge**:
+The intended standard physical-description treatment of the coin's outer side surface, using Coin Archive's flat canonical edge vocabulary. A coin has at most one Edge, and may also have coin-specific edge description or lettering details.
+_Avoid_: Rim, face border, obverse rim, reverse rim, source-specific edge label
+
+**Edge Code**:
+The unique, stable, human-readable catalogue key for an edge, used to identify the edge in imports, filters, URLs, and administrative lookup. It is unique within edges, uses lowercase slug-style text, and is distinct from the edge's display name.
+_Avoid_: Display name, temporary label, rim code
+
+**Edge Filter**:
+A catalogue filter that returns coins linked directly to the selected Edge. It composes with other catalogue filters using AND semantics, and coins without an Edge are excluded when an edge filter is applied.
+_Avoid_: Rim filter, edge lettering search, unknown-edge match
+
 **Mintage**:
 The exact known production fact for the total quantity actually produced for a coin type or issue as a positive whole number, using the same cataloguing scope as the Coin record. A coin may have unknown Mintage.
 _Avoid_: Archive count, owned specimen count, population estimate, rarity label, approximate mintage, authorized quantity, planned quantity, per-mint mintage, per-year mintage

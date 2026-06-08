@@ -1,16 +1,6 @@
 import type { OrientationOption } from "@workspace/db"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox"
-import {
-  getOrientationOptionLabel,
-  isCodeOptionEqual,
-} from "../lib/coin-search"
+import { getOrientationOptionLabel } from "../lib/coin-search"
+import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type OrientationFilterComboboxProps = {
   onValueChange: (orientation: OrientationOption | null) => Promise<void>
@@ -24,25 +14,13 @@ export function OrientationFilterCombobox({
   selectedOrientation,
 }: OrientationFilterComboboxProps) {
   return (
-    <Combobox<OrientationOption>
+    <NamedCodeFilterCombobox<OrientationOption>
+      emptyMessage="No orientations found."
       items={orientations}
-      value={selectedOrientation}
       itemToStringLabel={getOrientationOptionLabel}
-      isItemEqualToValue={isCodeOptionEqual}
       onValueChange={onValueChange}
-    >
-      <ComboboxInput placeholder="Filter by orientation" showClear />
-      <ComboboxContent>
-        <ComboboxEmpty>No orientations found.</ComboboxEmpty>
-        <ComboboxList>
-          {(orientation: OrientationOption) => (
-            <ComboboxItem key={orientation.code} value={orientation}>
-              <span>{orientation.name}</span>
-              <span className="text-muted-foreground">{orientation.code}</span>
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+      placeholder="Filter by orientation"
+      selectedItem={selectedOrientation}
+    />
   )
 }

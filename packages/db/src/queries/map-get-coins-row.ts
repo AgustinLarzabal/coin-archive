@@ -50,6 +50,14 @@ type GetCoinsRimColumns = {
   rimUpdatedAt?: Date | null
 }
 
+type OptionalCoinCodeNamedColumns = {
+  id?: string | null
+  code?: string | null
+  name?: string | null
+  createdAt?: Date | null
+  updatedAt?: Date | null
+}
+
 type GetCoinsIssuerColumns = {
   issuerId: string
   issuerCode: string
@@ -346,51 +354,33 @@ function mapMeasurements({
 }
 
 function mapOrientation({
-  orientationId,
-  orientationCode,
-  orientationName,
-  orientationCreatedAt,
-  orientationUpdatedAt,
+  orientationId: id,
+  orientationCode: code,
+  orientationName: name,
+  orientationCreatedAt: createdAt,
+  orientationUpdatedAt: updatedAt,
 }: GetCoinsOrientationColumns): CoinOrientation | null {
-  return mapOptionalCodeNamedRecord({
-    id: orientationId ?? null,
-    code: orientationCode ?? null,
-    name: orientationName ?? null,
-    createdAt: orientationCreatedAt ?? null,
-    updatedAt: orientationUpdatedAt ?? null,
-  })
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
 }
 
 function mapShape({
-  shapeId,
-  shapeCode,
-  shapeName,
-  shapeCreatedAt,
-  shapeUpdatedAt,
+  shapeId: id,
+  shapeCode: code,
+  shapeName: name,
+  shapeCreatedAt: createdAt,
+  shapeUpdatedAt: updatedAt,
 }: GetCoinsShapeColumns): CoinShape | null {
-  return mapOptionalCodeNamedRecord({
-    id: shapeId ?? null,
-    code: shapeCode ?? null,
-    name: shapeName ?? null,
-    createdAt: shapeCreatedAt ?? null,
-    updatedAt: shapeUpdatedAt ?? null,
-  })
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
 }
 
 function mapRim({
-  rimId,
-  rimCode,
-  rimName,
-  rimCreatedAt,
-  rimUpdatedAt,
+  rimId: id,
+  rimCode: code,
+  rimName: name,
+  rimCreatedAt: createdAt,
+  rimUpdatedAt: updatedAt,
 }: GetCoinsRimColumns): CoinRim | null {
-  return mapOptionalCodeNamedRecord({
-    id: rimId ?? null,
-    code: rimCode ?? null,
-    name: rimName ?? null,
-    createdAt: rimCreatedAt ?? null,
-    updatedAt: rimUpdatedAt ?? null,
-  })
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
 }
 
 function mapCurrency({
@@ -461,13 +451,7 @@ function mapOptionalCodeNamedRecord({
   name,
   createdAt,
   updatedAt,
-}: {
-  id: string | null
-  code: string | null
-  name: string | null
-  createdAt: Date | null
-  updatedAt: Date | null
-}): CoinCodeNamedRecord | null {
+}: OptionalCoinCodeNamedColumns): CoinCodeNamedRecord | null {
   if (!id || !code || !name || !createdAt || !updatedAt) {
     return null
   }

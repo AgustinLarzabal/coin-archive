@@ -1,13 +1,6 @@
 import type { ThemeOption } from "@workspace/db"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox"
-import { getThemeOptionLabel, isCodeOptionEqual } from "../lib/coin-search"
+import { getThemeOptionLabel } from "../lib/coin-search"
+import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type ThemeFilterComboboxProps = {
   onValueChange: (theme: ThemeOption | null) => Promise<void>
@@ -21,25 +14,13 @@ export function ThemeFilterCombobox({
   themes,
 }: ThemeFilterComboboxProps) {
   return (
-    <Combobox<ThemeOption>
+    <NamedCodeFilterCombobox<ThemeOption>
+      emptyMessage="No themes found."
       items={themes}
-      value={selectedTheme}
       itemToStringLabel={getThemeOptionLabel}
-      isItemEqualToValue={isCodeOptionEqual}
       onValueChange={onValueChange}
-    >
-      <ComboboxInput placeholder="Filter by theme" showClear />
-      <ComboboxContent>
-        <ComboboxEmpty>No themes found.</ComboboxEmpty>
-        <ComboboxList>
-          {(theme: ThemeOption) => (
-            <ComboboxItem key={theme.code} value={theme}>
-              <span>{theme.name}</span>
-              <span className="text-muted-foreground">{theme.code}</span>
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+      placeholder="Filter by theme"
+      selectedItem={selectedTheme}
+    />
   )
 }

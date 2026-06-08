@@ -1,13 +1,6 @@
 import type { ShapeOption } from "@workspace/db"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox"
-import { getShapeOptionLabel, isCodeOptionEqual } from "../lib/coin-search"
+import { getShapeOptionLabel } from "../lib/coin-search"
+import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type ShapeFilterComboboxProps = {
   onValueChange: (shape: ShapeOption | null) => Promise<void>
@@ -21,25 +14,13 @@ export function ShapeFilterCombobox({
   shapes,
 }: ShapeFilterComboboxProps) {
   return (
-    <Combobox<ShapeOption>
+    <NamedCodeFilterCombobox<ShapeOption>
+      emptyMessage="No shapes found."
       items={shapes}
-      value={selectedShape}
       itemToStringLabel={getShapeOptionLabel}
-      isItemEqualToValue={isCodeOptionEqual}
       onValueChange={onValueChange}
-    >
-      <ComboboxInput placeholder="Filter by shape" showClear />
-      <ComboboxContent>
-        <ComboboxEmpty>No shapes found.</ComboboxEmpty>
-        <ComboboxList>
-          {(shape: ShapeOption) => (
-            <ComboboxItem key={shape.code} value={shape}>
-              <span>{shape.name}</span>
-              <span className="text-muted-foreground">{shape.code}</span>
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+      placeholder="Filter by shape"
+      selectedItem={selectedShape}
+    />
   )
 }

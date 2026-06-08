@@ -1,13 +1,6 @@
 import type { RimOption } from "@workspace/db"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox"
-import { getRimOptionLabel, isCodeOptionEqual } from "../lib/coin-search"
+import { getRimOptionLabel } from "../lib/coin-search"
+import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type RimFilterComboboxProps = {
   onValueChange: (rim: RimOption | null) => Promise<void>
@@ -21,25 +14,13 @@ export function RimFilterCombobox({
   selectedRim,
 }: RimFilterComboboxProps) {
   return (
-    <Combobox<RimOption>
+    <NamedCodeFilterCombobox<RimOption>
+      emptyMessage="No rims found."
       items={rims}
-      value={selectedRim}
       itemToStringLabel={getRimOptionLabel}
-      isItemEqualToValue={isCodeOptionEqual}
       onValueChange={onValueChange}
-    >
-      <ComboboxInput placeholder="Filter by rim" showClear />
-      <ComboboxContent>
-        <ComboboxEmpty>No rims found.</ComboboxEmpty>
-        <ComboboxList>
-          {(rim: RimOption) => (
-            <ComboboxItem key={rim.code} value={rim}>
-              <span>{rim.name}</span>
-              <span className="text-muted-foreground">{rim.code}</span>
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+      placeholder="Filter by rim"
+      selectedItem={selectedRim}
+    />
   )
 }

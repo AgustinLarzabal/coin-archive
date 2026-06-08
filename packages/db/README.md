@@ -23,6 +23,7 @@ Start with the catalogue model, not the tables:
 - Face Value stores authoritative display text, a positive numeric value in the Currency's major unit, and exactly one Currency.
 - Currency is a reusable catalogue concept distinct from Issuer.
 - Coin may have zero or more Ruler attributions.
+- Coin may have zero or more Theme Attributions.
 - Ruler Attribution Order matters only within a single Coin's ruler attributions.
 - Coin may have zero or more Catalogue References.
 - Issuer Grouping places a more specific Issuer under a broader Issuer for browsing and filtering.
@@ -46,6 +47,8 @@ The current core relationships map to these tables:
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
 - `coin_ruler`: join table from Coin to Ruler plus per-Coin `ruler_order`
+- `theme`: shared Theme record with stable `code`, display `name`, and timestamps
+- `coin_theme`: unordered join table from Coin to Theme
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
 
@@ -59,6 +62,8 @@ erDiagram
   issuer ||--o{ coin : "issuer_id"
   coin ||--o{ coin_ruler : "coin_id"
   ruler ||--o{ coin_ruler : "ruler_id"
+  coin ||--o{ coin_theme : "coin_id"
+  theme ||--o{ coin_theme : "theme_id"
   ruler_group ||--o{ ruler : "ruler_group_id"
   coin ||--o{ coin_reference : "coin_id"
   catalogue ||--o{ coin_reference : "catalogue_id"
@@ -87,14 +92,16 @@ These are enforced by the current PostgreSQL schema and exercised by package tes
 - Coin measurements describe the Coin type or issue, not an individual specimen
 - each present Coin measurement must be strictly positive; zero and negative values are rejected
 - Issuer Code, Ruler Code, and Ruler Group Code must be unique and lowercase slug-style text
+- Theme Code must be unique ignoring case and use lowercase slug-style text
 - Catalogue Code is required and unique ignoring case; preferred display casing is still preserved in `catalogue.code`
 - an Issuer cannot be its own direct parent
 - Ruler may omit `ruler_group_id`
 - Coin to Ruler attribution is unique per `(coin_id, ruler_id)`
+- Coin to Theme Attribution is unique per `(coin_id, theme_id)`
 - Ruler Attribution Order must be positive and unique per Coin through `(coin_id, ruler_order)`
 - Catalogue Reference is deduplicated by `(coin_id, catalogue_id, normalized number)` where normalization trims outer whitespace, collapses internal whitespace, and compares case-insensitively
-- deleting a Coin cascades to `coin_ruler` and `coin_reference`
-- deleting referenced Compositions, Issuers, Rulers, Ruler Groups, or Catalogues is restricted while dependent rows still exist
+- deleting a Coin cascades to `coin_ruler`, `coin_theme`, and `coin_reference`
+- deleting referenced Compositions, Issuers, Rulers, Ruler Groups, Themes, or Catalogues is restricted while dependent rows still exist
 
 ## Known gaps and future schema work
 
@@ -110,14 +117,18 @@ These are intentionally separate from the enforced invariants above:
 Consumers should import from `@workspace/db` instead of rebuilding database access locally.
 
 - use `db` when a caller needs direct shared access
-- prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, and `getCatalogues` for reusable data access behavior
-- `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records
+- prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, `getMints`, `getThemes`, and `getCatalogues` for reusable data access behavior
+- `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records plus nested Mint and Theme collections
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
 
 ## Query behavior
 
 The shared `getCoins` query is the package-owned contract for homepage filtering, including Face Value, Currency, Issue Year Range, measurements, references, and attribution filters.
+
+- `getThemes` returns reusable Theme options sorted by display name, then code
+- `getCoins` returns each Coin's nested `themes` sorted deterministically by name, code, then id
+- Theme filtering is intentionally not part of the current `getCoins` contract in this increment
 
 - Currency is filtered by exact stable Currency Code through `currencyCode`
 - Face Value is filtered by exact stored major-unit numeric values through `minValue` and `maxValue`
@@ -157,15 +168,20 @@ Terminology note:
 
 - keep demo seed data in `packages/db/src/seed/seed-data.ts`
 - keep seeding orchestration in `packages/db/src/seed/index.ts`
+- seed reusable Themes before seeded Coins receive Theme Attributions
 - seed reusable Compositions before seeded Coins so every Coin gets an explicit `composition_id`
 - seed reusable Currencies before seeded Coins so every Coin gets an explicit `currency_id`
 - keep seeded Coin measurements realistic and varied so the homepage listing demonstrates known and unknown measurement states
 - treat seed data as local/demo setup, not as a dependency for behavior tests
 - local reset and reseed is acceptable when this demo catalogue changes: `pnpm db:reset`, `pnpm db:start`, `pnpm db:migrate`, then `pnpm db:seed`
 - keep seeded Coin Compositions and Currencies reusable and explicit so the homepage and shared coin listing demonstrate nested catalogue data
+- keep seeded Theme Attributions explicit and flat; do not infer Themes from Coin Titles or other display text
 - the current demo data intentionally includes:
   - reusable Currencies such as `Euro`, `Argentine peso`, `Real`, and `United States dollar`
+  - reusable Themes such as `Map`, `Flag`, `Portrait`, `Animal`, `Building`, `Plant`, and `Independence`
   - `Spain 2 Euro` with Face Value text `2 Euros`, numeric value `2`, Currency `Euro`, closed Issue Year Range `2002-2026`, catalogue reference `KM 1338A`, and ruler `Felipe VI`
+  - multi-theme Coin examples such as `Spain 2 Euro` and `United States National Park Quarter`
+  - at least one unthemed Coin such as `Argentina Copper Peso`
   - full measurement examples such as `Argentina Convertible Peso`
   - partial measurement examples such as `Argentina Copper Peso` and `United States Lincoln Cent`
 - the current demo data also supports a combined homepage verification example:

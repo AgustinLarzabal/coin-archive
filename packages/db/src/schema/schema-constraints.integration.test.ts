@@ -7,6 +7,7 @@ import {
   coinMint,
   coinReference,
   coinRuler,
+  coinTheme,
   composition,
   currency,
   db,
@@ -15,6 +16,7 @@ import {
   mint,
   ruler,
   rulerGroup,
+  theme,
 } from "../index"
 import {
   createCatalogue,
@@ -22,6 +24,7 @@ import {
   createCoinMint,
   createCoinReference,
   createCoinRuler,
+  createCoinTheme,
   createComposition,
   createCurrency,
   createDistribution,
@@ -29,6 +32,7 @@ import {
   createMint,
   createRuler,
   createRulerGroup,
+  createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
@@ -40,9 +44,11 @@ import { currencySchemaNames } from "./currency"
 import { distributionSchemaNames } from "./distribution"
 import { issuerSchemaNames } from "./issuer"
 import { coinMintSchemaNames } from "./coin-mint"
+import { coinThemeSchemaNames } from "./coin-theme"
 import { mintSchemaNames } from "./mint"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
+import { themeSchemaNames } from "./theme"
 
 async function expectConstraintError(
   promise: Promise<unknown>,
@@ -299,6 +305,127 @@ describe("mint schema constraints", () => {
       "coin_mint_mint_id_mint_id_fk",
       "23503"
     )
+  })
+})
+
+describe("theme schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects theme codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(theme).values({
+        code: "National Flag",
+        name: "Flag",
+      }),
+      themeSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate theme codes ignoring case", async () => {
+    await db.insert(theme).values({
+      code: "flag",
+      name: "Flag",
+    })
+
+    await expectConstraintError(
+      db.insert(theme).values({
+        code: "FLAG",
+        name: "Duplicate Flag",
+      }),
+      themeSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("rejects duplicate Theme Attributions for the same coin and theme", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdTheme = await createTheme({
+      code: "flag",
+      name: "Flag",
+    })
+    const createdCoin = await createCoin({
+      title: "Flag Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: createdCoin.id,
+      themeId: createdTheme.id,
+    })
+
+    await expectConstraintError(
+      createCoinTheme({
+        coinId: createdCoin.id,
+        themeId: createdTheme.id,
+      }),
+      coinThemeSchemaNames.coinIdThemeIdPrimaryKey,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a theme while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdTheme = await createTheme({
+      code: "flag",
+      name: "Flag",
+    })
+    const createdCoin = await createCoin({
+      title: "Referenced Theme Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: createdCoin.id,
+      themeId: createdTheme.id,
+    })
+
+    await expectConstraintError(
+      db.delete(theme).where(sql`${theme.id} = ${createdTheme.id}`),
+      "coin_theme_theme_id_theme_id_fk",
+      "23503"
+    )
+  })
+
+  it("cascades Theme Attributions when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdTheme = await createTheme({
+      code: "flag",
+      name: "Flag",
+    })
+    const createdCoin = await createCoin({
+      title: "Deleted Theme Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: createdCoin.id,
+      themeId: createdTheme.id,
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    const [remainingThemeAttributions] = await db
+      .select({ count: count() })
+      .from(coinTheme)
+      .where(eq(coinTheme.themeId, createdTheme.id))
+
+    expect(remainingThemeAttributions?.count).toBe(0)
   })
 })
 

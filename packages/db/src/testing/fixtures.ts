@@ -3,6 +3,7 @@ import { coin } from "../schema/coin"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
@@ -10,6 +11,7 @@ import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { theme } from "../schema/theme"
 import { db } from "../index"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
@@ -60,6 +62,11 @@ type CreateMintInput = {
   name: string
 }
 
+type CreateThemeInput = {
+  code: string
+  name: string
+}
+
 type CreateRulerGroupInput = {
   code: string
   name: string
@@ -91,6 +98,11 @@ type CreateCoinReferenceInput = {
 type CreateCoinMintInput = {
   coinId: string
   mintId: string
+}
+
+type CreateCoinThemeInput = {
+  coinId: string
+  themeId: string
 }
 
 export async function createIssuer({
@@ -216,6 +228,18 @@ export async function createMint({ code, name }: CreateMintInput) {
   return createdMint
 }
 
+export async function createTheme({ code, name }: CreateThemeInput) {
+  const [createdTheme] = await db
+    .insert(theme)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdTheme
+}
+
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
   const [createdRulerGroup] = await db
     .insert(rulerGroup)
@@ -304,6 +328,21 @@ export async function createCoinMint({
     .returning()
 
   return createdCoinMint
+}
+
+export async function createCoinTheme({
+  coinId,
+  themeId,
+}: CreateCoinThemeInput) {
+  const [createdCoinTheme] = await db
+    .insert(coinTheme)
+    .values({
+      coinId,
+      themeId,
+    })
+    .returning()
+
+  return createdCoinTheme
 }
 
 async function getOrCreateDefaultDistribution() {

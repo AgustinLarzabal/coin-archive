@@ -42,6 +42,7 @@ import type {
   PositiveNumberFilterValue,
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
+import { CoinListItem } from "../components/coin-list-item"
 
 import {
   Combobox,
@@ -578,33 +579,16 @@ function App() {
       <ul className="space-y-4 py-4">
         {coins.map((coin) => {
           const measurementSummary = formatCoinMeasurements(coin.measurements)
+          const mintNames = coin.mints.length > 0 ? formatMintNames(coin.mints) : null
 
           return (
-            <li className="border-b border-border pb-4" key={coin.id}>
-              <p className="font-medium">{coin.title}</p>
-              <p className="text-sm text-muted-foreground">
-                {coin.issuer.name} · {coin.distribution.name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Composition: {coin.composition.name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Face Value: {coin.faceValue.text}
-              </p>
-              {coin.mints.length > 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Mints: {formatMintNames(coin.mints)}
-                </p>
-              ) : null}
-              <p className="text-sm text-muted-foreground">
-                {formatIssueYearRangeLabel(coin.issueYearRange)}
-              </p>
-              {measurementSummary ? (
-                <p className="text-sm text-muted-foreground">
-                  {measurementSummary}
-                </p>
-              ) : null}
-            </li>
+            <CoinListItem
+              coin={coin}
+              issueYearRangeLabel={formatIssueYearRangeLabel(coin.issueYearRange)}
+              key={coin.id}
+              measurementSummary={measurementSummary}
+              mintNames={mintNames}
+            />
           )
         })}
       </ul>

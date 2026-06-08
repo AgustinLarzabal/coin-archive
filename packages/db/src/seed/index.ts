@@ -6,6 +6,7 @@ import { coin } from "../schema/coin"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
@@ -13,11 +14,13 @@ import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { theme } from "../schema/theme"
 import {
   seededCatalogues,
   seededCoinReferences,
   seededCoinMints,
   seededCoinRulers,
+  seededCoinThemes,
   seededCoins,
   seededCompositions,
   seededCurrencies,
@@ -26,6 +29,7 @@ import {
   seededMints,
   seededRulerGroups,
   seededRulers,
+  seededThemes,
 } from "./seed-data"
 
 type IssuerIdsByCode = Map<string, string>
@@ -37,6 +41,7 @@ type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
+type ThemeIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -114,6 +119,13 @@ async function deleteSeededMints() {
   await deleteSeededRecords(
     seededMints.map(({ code }) => code),
     (code) => db.delete(mint).where(eq(mint.code, code))
+  )
+}
+
+async function deleteSeededThemes() {
+  await deleteSeededRecords(
+    seededThemes.map(({ code }) => code),
+    (code) => db.delete(theme).where(eq(theme.code, code))
   )
 }
 
@@ -303,6 +315,23 @@ async function seedMints() {
   return mintIdsByCode
 }
 
+async function seedThemes() {
+  const themeIdsByCode: ThemeIdsByCode = new Map()
+
+  await deleteSeededThemes()
+
+  for (const seededTheme of seededThemes) {
+    const [insertedTheme] = await db
+      .insert(theme)
+      .values(seededTheme)
+      .returning({ id: theme.id })
+
+    themeIdsByCode.set(seededTheme.code, insertedTheme.id)
+  }
+
+  return themeIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -471,6 +500,26 @@ async function seedCoinMints(
   )
 }
 
+async function seedCoinThemes(
+  coinIdsByTitle: CoinIdsByTitle,
+  themeIdsByCode: ThemeIdsByCode
+) {
+  await db.insert(coinTheme).values(
+    seededCoinThemes.map((seededCoinTheme) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinTheme.coinTitle,
+        "coin"
+      ),
+      themeId: getRequiredSeededId(
+        themeIdsByCode,
+        seededCoinTheme.themeCode,
+        "theme"
+      ),
+    }))
+  )
+}
+
 export async function seedDatabase() {
   await deleteSeededCoins()
 
@@ -478,6 +527,7 @@ export async function seedDatabase() {
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
   const mintIdsByCode = await seedMints()
+  const themeIdsByCode = await seedThemes()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
@@ -490,6 +540,7 @@ export async function seedDatabase() {
 
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
+  await seedCoinThemes(coinIdsByTitle, themeIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
 }
 

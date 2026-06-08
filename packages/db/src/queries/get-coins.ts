@@ -6,6 +6,7 @@ import { coin } from "../schema/coin"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
@@ -13,6 +14,7 @@ import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
@@ -61,6 +63,11 @@ const getCoinsSelection = {
   mintName: mint.name,
   mintCreatedAt: mint.createdAt,
   mintUpdatedAt: mint.updatedAt,
+  themeId: theme.id,
+  themeCode: theme.code,
+  themeName: theme.name,
+  themeCreatedAt: theme.createdAt,
+  themeUpdatedAt: theme.updatedAt,
   rulerOrder: coinRuler.rulerOrder,
   rulerId: ruler.id,
   rulerCode: ruler.code,
@@ -483,6 +490,8 @@ export function buildGetCoinsQuery(
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
     .leftJoin(mint, eq(coinMint.mintId, mint.id))
+    .leftJoin(coinTheme, eq(coin.id, coinTheme.coinId))
+    .leftJoin(theme, eq(coinTheme.themeId, theme.id))
     .leftJoin(coinRuler, eq(coin.id, coinRuler.coinId))
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(rulerGroup, eq(ruler.rulerGroupId, rulerGroup.id))
@@ -494,6 +503,9 @@ export function buildGetCoinsQuery(
       asc(mint.name),
       asc(mint.code),
       asc(mint.id),
+      asc(theme.name),
+      asc(theme.code),
+      asc(theme.id),
       asc(coinRuler.rulerOrder),
       asc(ruler.id),
       asc(catalogue.title),

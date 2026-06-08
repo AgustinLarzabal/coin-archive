@@ -30,6 +30,13 @@ type SeededMint = {
   updatedAt: Date
 }
 
+type SeededTheme = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 type SeededComposition = {
   code: string
   name: string
@@ -84,6 +91,11 @@ type SeededCoinReference = {
 type SeededCoinMint = {
   coinTitle: string
   mintCode: string
+}
+
+type SeededCoinTheme = {
+  coinTitle: string
+  themeCode: string
 }
 
 type SeededCurrency = {
@@ -321,6 +333,51 @@ export const seededMints: SeededMint[] = [
   },
 ]
 
+export const seededThemes: SeededTheme[] = [
+  {
+    code: "animal",
+    name: "Animal",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "building",
+    name: "Building",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "flag",
+    name: "Flag",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "independence",
+    name: "Independence",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+  {
+    code: "map",
+    name: "Map",
+    createdAt: new Date("2026-01-05T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-05T00:00:00.000Z"),
+  },
+  {
+    code: "plant",
+    name: "Plant",
+    createdAt: new Date("2026-01-06T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-06T00:00:00.000Z"),
+  },
+  {
+    code: "portrait",
+    name: "Portrait",
+    createdAt: new Date("2026-01-07T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-07T00:00:00.000Z"),
+  },
+]
+
 export const seededCurrencies: SeededCurrency[] = [
   {
     code: "euro",
@@ -372,6 +429,45 @@ export const seededCoinMints: SeededCoinMint[] = [
   {
     coinTitle: "United States National Park Quarter",
     mintCode: "denver-mint",
+  },
+]
+
+export const seededCoinThemes: SeededCoinTheme[] = [
+  {
+    coinTitle: "Argentina Sol de Mayo Peso",
+    themeCode: "flag",
+  },
+  {
+    coinTitle: "Buenos Aires 8 Reales 1813",
+    themeCode: "independence",
+  },
+  {
+    coinTitle: "United States Lincoln Cent",
+    themeCode: "portrait",
+  },
+  {
+    coinTitle: "Argentina 20 Centavos",
+    themeCode: "plant",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    themeCode: "animal",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    themeCode: "plant",
+  },
+  {
+    coinTitle: "United States Flowing Hair Dollar",
+    themeCode: "portrait",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    themeCode: "building",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    themeCode: "map",
   },
 ]
 

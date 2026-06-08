@@ -6,6 +6,7 @@ import {
   createCoinMint,
   createCoinReference,
   createCoinRuler,
+  createCoinTheme,
   createComposition,
   createCurrency,
   createDistribution,
@@ -13,6 +14,7 @@ import {
   createMint,
   createRuler,
   createRulerGroup,
+  createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -270,6 +272,77 @@ describe("getCoins integration", () => {
         id: coinWithoutMint.id,
         title: "Unknown Mint Issue",
         mints: [],
+      },
+    ])
+  })
+
+  it("returns nested themes sorted by name, code, then id while leaving unthemed coins with an empty array", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const animalAlt = await createTheme({
+      code: "animal-alt",
+      name: "Animal",
+    })
+    const animal = await createTheme({
+      code: "animal",
+      name: "Animal",
+    })
+    const portrait = await createTheme({
+      code: "portrait",
+      name: "Portrait",
+    })
+    const coinWithoutThemes = await createCoin({
+      title: "Unthemed Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const coinWithThemes = await createCoin({
+      title: "Multi Theme Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: coinWithThemes.id,
+      themeId: portrait.id,
+    })
+    await createCoinTheme({
+      coinId: coinWithThemes.id,
+      themeId: animal.id,
+    })
+    await createCoinTheme({
+      coinId: coinWithThemes.id,
+      themeId: animalAlt.id,
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: coinWithThemes.id,
+        title: "Multi Theme Coin",
+        themes: [
+          {
+            id: animal.id,
+            code: "animal",
+            name: "Animal",
+          },
+          {
+            id: animalAlt.id,
+            code: "animal-alt",
+            name: "Animal",
+          },
+          {
+            id: portrait.id,
+            code: "portrait",
+            name: "Portrait",
+          },
+        ],
+      },
+      {
+        id: coinWithoutThemes.id,
+        title: "Unthemed Coin",
+        themes: [],
       },
     ])
   })

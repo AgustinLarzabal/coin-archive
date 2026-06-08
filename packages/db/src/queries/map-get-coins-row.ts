@@ -47,6 +47,14 @@ type GetCoinsMintColumns = {
   mintUpdatedAt: Date | null
 }
 
+type GetCoinsThemeColumns = {
+  themeId?: string | null
+  themeCode?: string | null
+  themeName?: string | null
+  themeCreatedAt?: Date | null
+  themeUpdatedAt?: Date | null
+}
+
 type GetCoinsRulerColumns = {
   rulerOrder: number | null
   rulerId: string | null
@@ -89,6 +97,7 @@ export type GetCoinsRow = {
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsMintColumns &
+  GetCoinsThemeColumns &
   GetCoinsRulerColumns &
   GetCoinsReferenceColumns
 
@@ -197,6 +206,14 @@ export type CoinRecordMint = {
   updatedAt: Date
 }
 
+export type CoinThemeRecord = {
+  id: string
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export type CoinRulerGroup = {
   id: string
   code: string
@@ -247,9 +264,11 @@ type CoinCodeNamedRecord = {
 type CoinEntry = {
   coin: CoinEntryCoin
   mints: CoinRecordMint[]
+  themes: CoinThemeRecord[]
   rulerAttributions: CoinRulerAttribution[]
   catalogueReferences: CoinCatalogueReference[]
   seenMintIds: Set<string>
+  seenThemeIds: Set<string>
   seenRulerAttributionKeys: Set<string>
   seenCatalogueReferenceIds: Set<string>
 }
@@ -267,11 +286,12 @@ export type CoinRecord = CoinRecordBase & {
   distribution: CoinDistribution
   issuer: CoinIssuer
   mints: CoinRecordMint[]
+  themes: CoinThemeRecord[]
   rulers: CoinRuler[]
   references: CoinCatalogueReference[]
 }
 
-type CoinEntryCoin = Omit<CoinRecord, "mints" | "rulers" | "references">
+type CoinEntryCoin = Omit<CoinRecord, "mints" | "themes" | "rulers" | "references">
 
 function mapIssueYearRange({
   minYear,
@@ -565,15 +585,25 @@ function compareMints(left: CoinRecordMint, right: CoinRecordMint): number {
   )
 }
 
+function compareThemes(left: CoinThemeRecord, right: CoinThemeRecord): number {
+  return (
+    left.name.localeCompare(right.name) ||
+    left.code.localeCompare(right.code) ||
+    left.id.localeCompare(right.id)
+  )
+}
+
 function mapCoinEntry({
   coin,
   mints,
+  themes,
   rulerAttributions,
   catalogueReferences,
 }: CoinEntry): CoinRecord {
   return {
     ...coin,
     mints: mints.sort(compareMints),
+    themes: themes.sort(compareThemes),
     rulers: rulerAttributions
       .sort(compareRulerAttributions)
       .map(({ ruler }) => ruler),
@@ -629,13 +659,41 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
   }
 }
 
+function mapTheme({
+  themeId,
+  themeCode,
+  themeName,
+  themeCreatedAt,
+  themeUpdatedAt,
+}: GetCoinsThemeColumns): CoinThemeRecord | null {
+  if (
+    !themeId ||
+    !themeCode ||
+    !themeName ||
+    !themeCreatedAt ||
+    !themeUpdatedAt
+  ) {
+    return null
+  }
+
+  return {
+    id: themeId,
+    code: themeCode,
+    name: themeName,
+    createdAt: themeCreatedAt,
+    updatedAt: themeUpdatedAt,
+  }
+}
+
 function createCoinEntry(row: GetCoinsRow): CoinEntry {
   return {
     coin: mapCoinRecord(row),
     mints: [],
+    themes: [],
     rulerAttributions: [],
     catalogueReferences: [],
     seenMintIds: new Set<string>(),
+    seenThemeIds: new Set<string>(),
     seenRulerAttributionKeys: new Set<string>(),
     seenCatalogueReferenceIds: new Set<string>(),
   }
@@ -650,6 +708,17 @@ function addMint(row: GetCoinsRow, coinEntry: CoinEntry) {
 
   coinEntry.seenMintIds.add(mappedMint.id)
   coinEntry.mints.push(mappedMint)
+}
+
+function addTheme(row: GetCoinsRow, coinEntry: CoinEntry) {
+  const mappedTheme = mapTheme(row)
+
+  if (!mappedTheme || coinEntry.seenThemeIds.has(mappedTheme.id)) {
+    return
+  }
+
+  coinEntry.seenThemeIds.add(mappedTheme.id)
+  coinEntry.themes.push(mappedTheme)
 }
 
 function getRulerAttributionKey({
@@ -705,6 +774,7 @@ export function mapGetCoinsRowsToCoinRecords(
     }
 
     addMint(row, coinEntry)
+    addTheme(row, coinEntry)
     addRulerAttribution(row, coinEntry)
     addCatalogueReference(row, coinEntry)
   }

@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { db, getCoins, getCurrencies, getMints } from "../index"
+import { db, getCoins, getCurrencies, getMints, getThemes } from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
 import { distribution } from "../schema/distribution"
@@ -49,6 +49,37 @@ const expectedSeededMints = [
   },
 ] as const
 
+const expectedSeededThemes = [
+  {
+    code: "animal",
+    name: "Animal",
+  },
+  {
+    code: "building",
+    name: "Building",
+  },
+  {
+    code: "flag",
+    name: "Flag",
+  },
+  {
+    code: "independence",
+    name: "Independence",
+  },
+  {
+    code: "map",
+    name: "Map",
+  },
+  {
+    code: "plant",
+    name: "Plant",
+  },
+  {
+    code: "portrait",
+    name: "Portrait",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -79,6 +110,7 @@ describe("seed integration", () => {
     expect(circulatingCommemorativeCount?.count).toBe(1)
     await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
     await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
+    await expect(getThemes()).resolves.toMatchObject(expectedSeededThemes)
 
     const seededCoins = await getCoins({ limit: 20 })
     const findSeededCoin = (title: string) => {
@@ -99,6 +131,16 @@ describe("seed integration", () => {
         {
           code: "philadelphia-mint",
           name: "Philadelphia Mint",
+        },
+      ],
+      themes: [
+        {
+          code: "animal",
+          name: "Animal",
+        },
+        {
+          code: "plant",
+          name: "Plant",
         },
       ],
       issueYearRange: {
@@ -160,6 +202,16 @@ describe("seed integration", () => {
           name: "Royal Mint of Madrid",
         },
       ],
+      themes: [
+        {
+          code: "building",
+          name: "Building",
+        },
+        {
+          code: "map",
+          name: "Map",
+        },
+      ],
       faceValue: {
         text: "2 Euros",
         numericValue: 2,
@@ -218,6 +270,7 @@ describe("seed integration", () => {
     })
 
     expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
+      themes: [],
       mints: [],
     })
   })

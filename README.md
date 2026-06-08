@@ -99,12 +99,12 @@ After `pnpm db:seed`, the demo catalogue includes reusable Mints, the homepage s
 - the demo data includes `Buenos Aires 8 Reales 1813` with `Buenos Aires Mint`
 - the demo data includes `United States Lincoln Cent` with `Philadelphia Mint`
 - the demo data includes `United States National Park Quarter` with both `Philadelphia Mint` and `Denver Mint`
-- the homepage debug JSON stays available for manual verification, and each Coin record includes `mints`
+- the homepage keeps the debug JSON block for manual verification, and each Coin record includes `mints`
 - Mint filters compose with the other homepage filters using AND semantics
 
 The seeded demo data supports quick manual checks:
 
-- `mint=royal-mint-of-madrid` matches `Spain 2 Euro`, shows `Mints: Royal Mint of Madrid`, and includes `"mints"` in the debug JSON for that Coin
+- `mint=royal-mint-of-madrid` matches `Spain 2 Euro`, shows `Mints: Royal Mint of Madrid`, and includes `mints` in that Coin's debug JSON
 - `mint=buenos-aires-mint` matches `Buenos Aires 8 Reales 1813`
 - `mint=philadelphia-mint` matches `United States Lincoln Cent` and `United States National Park Quarter`
 - `mint=denver-mint` matches `United States National Park Quarter`, showing the multi-mint demo Coin

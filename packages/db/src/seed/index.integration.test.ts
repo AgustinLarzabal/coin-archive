@@ -1,6 +1,13 @@
 import { count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { db, getCoins, getCurrencies, getMints, getThemes } from "../index"
+import {
+  db,
+  getCoins,
+  getCurrencies,
+  getMints,
+  getOrientations,
+  getThemes,
+} from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
 import { distribution } from "../schema/distribution"
@@ -80,10 +87,21 @@ const expectedSeededThemes = [
   },
 ] as const
 
+const expectedSeededOrientations = [
+  {
+    code: "coin-alignment",
+    name: "Coin alignment",
+  },
+  {
+    code: "medal-alignment",
+    name: "Medal alignment",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("seeds the demo KM catalogue reference, Mint Attribution examples, Euro face value example, and measurement-bearing coins once and exposes them in coin listings", async () => {
+  it("seeds the demo Orientation values and assignments alongside the existing catalogue examples once and exposes them in coin listings", async () => {
     await seedDatabase()
     await seedDatabase()
 
@@ -110,6 +128,7 @@ describe("seed integration", () => {
     expect(circulatingCommemorativeCount?.count).toBe(1)
     await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
     await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
+    await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)
     await expect(getThemes()).resolves.toMatchObject(expectedSeededThemes)
 
     const seededCoins = await getCoins({ limit: 20 })
@@ -156,6 +175,10 @@ describe("seed integration", () => {
         weight: 8.1,
         diameter: 26.5,
         thickness: 2,
+      },
+      orientation: {
+        code: "coin-alignment",
+        name: "Coin alignment",
       },
       distribution: {
         code: "standard-circulation",
@@ -221,6 +244,10 @@ describe("seed integration", () => {
           fullName: "Euro (2002-date)",
         },
       },
+      orientation: {
+        code: "medal-alignment",
+        name: "Medal alignment",
+      },
       issueYearRange: {
         minYear: 2002,
         maxYear: 2026,
@@ -270,6 +297,7 @@ describe("seed integration", () => {
     })
 
     expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
+      orientation: null,
       themes: [],
       mints: [],
     })

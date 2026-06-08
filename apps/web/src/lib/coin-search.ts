@@ -6,6 +6,7 @@ import type {
   CurrencyOption,
   DistributionOption,
   MintOption,
+  OrientationOption,
   RulerOption,
   ThemeOption,
 } from "@workspace/db"
@@ -47,6 +48,7 @@ export const coinSearchSchema = z.object({
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
   minValue: optionalPositiveNumberSchema,
+  orientation: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
   theme: optionalStringSchema,
@@ -69,6 +71,7 @@ export const coinListInputSchema = z.object({
   minThickness: optionalPositiveNumberSchema,
   minWeight: optionalPositiveNumberSchema,
   minValue: optionalPositiveNumberSchema,
+  orientationCode: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
   themeCode: optionalStringSchema,
@@ -141,6 +144,10 @@ type DistributionOptionLabel = Pick<
   keyof NamedCodeOptionLabel
 >
 type MintOptionLabel = Pick<MintOption, keyof NamedCodeOptionLabel>
+type OrientationOptionLabel = Pick<
+  OrientationOption,
+  keyof NamedCodeOptionLabel
+>
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 type ThemeOptionLabel = Pick<ThemeOption, keyof NamedCodeOptionLabel>
 type CoinMintLabel = Pick<CoinRecordMint, "name">
@@ -168,6 +175,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     minThickness: search.minThickness,
     minWeight: search.minWeight,
     minValue: search.minValue,
+    orientationCode: search.orientation,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
     themeCode: search.theme,
@@ -223,6 +231,11 @@ export function findSelectedDistributionOption<T extends OptionWithCode>(
 export const findSelectedMintOption: <T extends OptionWithCode>(
   mints: T[],
   selectedMintCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedOrientationOption: <T extends OptionWithCode>(
+  orientations: T[],
+  selectedOrientationCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
 export const findSelectedThemeOption: <T extends OptionWithCode>(
@@ -379,6 +392,10 @@ export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
 
 export const getMintOptionLabel: (mint: MintOptionLabel) => string =
   getNamedCodeOptionLabel
+
+export const getOrientationOptionLabel: (
+  orientation: OrientationOptionLabel
+) => string = getNamedCodeOptionLabel
 
 export const getThemeOptionLabel: (theme: ThemeOptionLabel) => string =
   getNamedCodeOptionLabel

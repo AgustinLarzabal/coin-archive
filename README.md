@@ -130,6 +130,24 @@ The seeded demo data supports quick manual checks:
 - `theme=building&currency=euro` keeps the Spain Euro example only
 - `theme=MAP` behaves the same as `theme=map`
 
+## Orientation demo
+
+After `pnpm db:seed`, the demo catalogue includes reusable Orientations, the homepage supports exact Orientation filtering through the singular `orientation` URL parameter, and Coin cards show a visible `Orientation:` row when a Coin has a known Orientation.
+
+- shared seeded Orientations include `Coin alignment` and `Medal alignment`
+- the demo data includes `Spain 2 Euro` with `Medal alignment`
+- the demo data includes `United States National Park Quarter` with `Coin alignment`
+- the demo data keeps `Argentina Copper Peso` without an Orientation so unknown Orientation behavior remains visible
+- the homepage keeps the debug JSON block for manual verification, and each Coin record includes `orientation`
+- Orientation filters compose with the other homepage filters using AND semantics
+
+The seeded demo data supports quick manual checks:
+
+- `orientation=medal-alignment` matches `Spain 2 Euro`, shows `Orientation: Medal alignment`, and includes `orientation` in that Coin's debug JSON
+- `orientation=coin-alignment` matches the seeded United States and Buenos Aires examples with known Coin alignment
+- `orientation=COIN-ALIGNMENT` behaves the same as `orientation=coin-alignment`
+- `orientation=medal-alignment&currency=euro` keeps the Spain Euro example only
+
 ## Face Value and Currency demo
 
 After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.

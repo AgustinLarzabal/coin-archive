@@ -23,6 +23,7 @@ const baseCoin: CoinRecord = {
       updatedAt: timestamp,
     },
   },
+  orientation: null,
   measurements: {
     weight: null,
     diameter: null,
@@ -103,5 +104,41 @@ describe("CoinListItem", () => {
     )
 
     expect(markup).not.toContain("Themes:")
+  })
+
+  it("renders an Orientation row when a coin has a known Orientation", () => {
+    const markup = renderToStaticMarkup(
+      <CoinListItem
+        coin={{
+          ...baseCoin,
+          orientation: {
+            id: "orientation-1",
+            code: "coin-alignment",
+            name: "Coin alignment",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        }}
+        issueYearRangeLabel="Issue year unknown"
+        measurementSummary={null}
+        mintNames={null}
+      />
+    )
+
+    expect(markup).toContain("Orientation: Coin alignment")
+    expect(markup).not.toContain("coin-alignment")
+  })
+
+  it("omits the Orientation row when a coin has no Orientation", () => {
+    const markup = renderToStaticMarkup(
+      <CoinListItem
+        coin={baseCoin}
+        issueYearRangeLabel="Issue year unknown"
+        measurementSummary={null}
+        mintNames={null}
+      />
+    )
+
+    expect(markup).not.toContain("Orientation:")
   })
 })

@@ -3,6 +3,7 @@ export { getCatalogues } from "./queries/get-catalogues"
 export { getCompositions } from "./queries/get-compositions"
 export { getCurrencies } from "./queries/get-currencies"
 export { getMints } from "./queries/get-mints"
+export { getOrientations } from "./queries/get-orientations"
 export { getThemes } from "./queries/get-themes"
 export { buildGetCoinsQuery, getCoins } from "./queries/get-coins"
 export { getDistributions } from "./queries/get-distributions"
@@ -19,6 +20,7 @@ export { currency } from "./schema/currency"
 export { distribution } from "./schema/distribution"
 export { issuer } from "./schema/issuer"
 export { mint } from "./schema/mint"
+export { orientation } from "./schema/orientation"
 export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
 export { theme } from "./schema/theme"
@@ -35,6 +37,7 @@ export type {
   CoinRecordMint,
   CoinIssuerParent,
   CoinMeasurements,
+  CoinOrientation,
   CoinRecord,
   CoinRulerGroup,
   CoinThemeRecord,
@@ -44,6 +47,7 @@ export type { CatalogueOption } from "./queries/get-catalogues"
 export type { CompositionOption } from "./queries/get-compositions"
 export type { CurrencyOption } from "./queries/get-currencies"
 export type { MintOption } from "./queries/get-mints"
+export type { OrientationOption } from "./queries/get-orientations"
 export type { ThemeOption } from "./queries/get-themes"
 export type { Composition } from "./schema/composition"
 export type { CoinMint } from "./schema/coin-mint"
@@ -52,6 +56,7 @@ export type { Currency } from "./schema/currency"
 export type { DistributionOption } from "./queries/get-distributions"
 export type { IssuerOption } from "./queries/get-issuers"
 export type { Mint } from "./schema/mint"
+export type { Orientation } from "./schema/orientation"
 export type { RulerOption } from "./queries/get-rulers"
 export type { Coin } from "./schema/coin"
 export type { CoinReference } from "./schema/coin-reference"

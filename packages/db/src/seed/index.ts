@@ -12,6 +12,7 @@ import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
+import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { theme } from "../schema/theme"
@@ -27,6 +28,7 @@ import {
   seededDistributions,
   seededIssuers,
   seededMints,
+  seededOrientations,
   seededRulerGroups,
   seededRulers,
   seededThemes,
@@ -41,6 +43,7 @@ type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
+type OrientationIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
@@ -119,6 +122,13 @@ async function deleteSeededMints() {
   await deleteSeededRecords(
     seededMints.map(({ code }) => code),
     (code) => db.delete(mint).where(eq(mint.code, code))
+  )
+}
+
+async function deleteSeededOrientations() {
+  await deleteSeededRecords(
+    seededOrientations.map(({ code }) => code),
+    (code) => db.delete(orientation).where(eq(orientation.code, code))
   )
 }
 
@@ -315,6 +325,23 @@ async function seedMints() {
   return mintIdsByCode
 }
 
+async function seedOrientations() {
+  const orientationIdsByCode: OrientationIdsByCode = new Map()
+
+  await deleteSeededOrientations()
+
+  for (const seededOrientation of seededOrientations) {
+    const [insertedOrientation] = await db
+      .insert(orientation)
+      .values(seededOrientation)
+      .returning({ id: orientation.id })
+
+    orientationIdsByCode.set(seededOrientation.code, insertedOrientation.id)
+  }
+
+  return orientationIdsByCode
+}
+
 async function seedThemes() {
   const themeIdsByCode: ThemeIdsByCode = new Map()
 
@@ -378,6 +405,7 @@ async function seedCoins(
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
+  orientationIdsByCode: OrientationIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   await db.delete(coin).where(
@@ -396,6 +424,7 @@ async function seedCoins(
           compositionIdsByCode,
           currencyIdsByCode,
           issuerIdsByCode,
+          orientationIdsByCode,
           distributionIdsByCode
         )
       )
@@ -413,6 +442,7 @@ function mapSeededCoinToInsertValues(
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
+  orientationIdsByCode: OrientationIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   const {
@@ -420,6 +450,7 @@ function mapSeededCoinToInsertValues(
     distributionCode,
     compositionCode,
     currencyCode,
+    orientationCode,
     ...coinValues
   } = seededCoin
 
@@ -437,6 +468,13 @@ function mapSeededCoinToInsertValues(
       "distribution"
     ),
     issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
+    orientationId: orientationCode
+      ? getRequiredSeededId(
+          orientationIdsByCode,
+          orientationCode,
+          "orientation"
+        )
+      : undefined,
   }
 }
 
@@ -527,12 +565,14 @@ export async function seedDatabase() {
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
   const mintIdsByCode = await seedMints()
+  const orientationIdsByCode = await seedOrientations()
   const themeIdsByCode = await seedThemes()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
     currencyIdsByCode,
     issuerIdsByCode,
+    orientationIdsByCode,
     distributionIdsByCode
   )
   const rulerIdsByCode = await seedRulers()

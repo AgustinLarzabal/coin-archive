@@ -9,6 +9,7 @@ import type {
   DistributionOption,
   IssuerOption,
   MintOption,
+  OrientationOption,
   RulerOption,
   ThemeOption,
 } from "@workspace/db"
@@ -23,6 +24,7 @@ import {
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
   findSelectedMintOption,
+  findSelectedOrientationOption,
   findSelectedThemeOption,
   formatMintNames,
   formatMeasurementLabel,
@@ -46,6 +48,7 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
+import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
 import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
 
 import {
@@ -157,6 +160,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getDistributions,
       getIssuers,
       getMints,
+      getOrientations,
       getRulers,
       getThemes,
     } = await import("@workspace/db")
@@ -169,6 +173,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       distributions,
       issuers,
       mints,
+      orientations,
       rulers,
       themes,
     ] = await Promise.all([
@@ -179,6 +184,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getDistributions(),
       getIssuers(),
       getMints(),
+      getOrientations(),
       getRulers(),
       getThemes(),
     ])
@@ -191,6 +197,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       distributions,
       issuers,
       mints,
+      orientations,
       rulers,
       themes,
     }
@@ -212,6 +219,7 @@ function App() {
     distributions,
     issuers,
     mints,
+    orientations,
     rulers,
     themes,
   } = Route.useLoaderData()
@@ -227,6 +235,7 @@ function App() {
     maxWeight: selectedMaxWeight,
     maxValue: selectedMaxValue,
     mint: selectedMintCode,
+    orientation: selectedOrientationCode,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
     minWeight: selectedMinWeight,
@@ -267,6 +276,10 @@ function App() {
     selectedDistributionCode
   )
   const selectedMint = findSelectedMintOption(mints, selectedMintCode)
+  const selectedOrientation = findSelectedOrientationOption(
+    orientations,
+    selectedOrientationCode
+  )
   const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
@@ -298,6 +311,8 @@ function App() {
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
   const selectMint = createSelectHandler<MintOption>("mint")
+  const selectOrientation =
+    createSelectHandler<OrientationOption>("orientation")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
 
@@ -501,6 +516,12 @@ function App() {
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
+
+      <OrientationFilterCombobox
+        onValueChange={selectOrientation}
+        orientations={orientations}
+        selectedOrientation={selectedOrientation}
+      />
 
       <ThemeFilterCombobox
         onValueChange={selectTheme}

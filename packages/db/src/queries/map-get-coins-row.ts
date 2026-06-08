@@ -26,6 +26,14 @@ type GetCoinsCurrencyColumns = {
   currencyUpdatedAt: Date
 }
 
+type GetCoinsOrientationColumns = {
+  orientationId?: string | null
+  orientationCode?: string | null
+  orientationName?: string | null
+  orientationCreatedAt?: Date | null
+  orientationUpdatedAt?: Date | null
+}
+
 type GetCoinsIssuerColumns = {
   issuerId: string
   issuerCode: string
@@ -94,6 +102,7 @@ export type GetCoinsRow = {
   thickness: number | null
 } & GetCoinsCompositionColumns &
   GetCoinsCurrencyColumns &
+  GetCoinsOrientationColumns &
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsMintColumns &
@@ -183,6 +192,8 @@ export type CoinFaceValue = {
   currency: CoinCurrency
 }
 
+export type CoinOrientation = CoinCodeNamedRecord
+
 export type CoinMeasurements = {
   weight: number | null
   diameter: number | null
@@ -269,6 +280,7 @@ type CoinRecordBase = Pick<
 export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
   faceValue: CoinFaceValue
+  orientation: CoinOrientation | null
   measurements: CoinMeasurements
   composition: CoinComposition
   distribution: CoinDistribution
@@ -308,6 +320,22 @@ function mapMeasurements({
     diameter,
     thickness,
   }
+}
+
+function mapOrientation({
+  orientationId,
+  orientationCode,
+  orientationName,
+  orientationCreatedAt,
+  orientationUpdatedAt,
+}: GetCoinsOrientationColumns): CoinOrientation | null {
+  return mapOptionalCodeNamedRecord({
+    id: orientationId ?? null,
+    code: orientationCode ?? null,
+    name: orientationName ?? null,
+    createdAt: orientationCreatedAt ?? null,
+    updatedAt: orientationUpdatedAt ?? null,
+  })
 }
 
 function mapCurrency({
@@ -656,6 +684,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     updatedAt: row.updatedAt,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
+    orientation: mapOrientation(row),
     measurements: mapMeasurements(row),
     composition: mapComposition(row),
     distribution: mapDistribution(row),

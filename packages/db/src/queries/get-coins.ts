@@ -12,6 +12,7 @@ import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
+import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { theme } from "../schema/theme"
@@ -34,6 +35,11 @@ const getCoinsSelection = {
   currencyFullName: currency.fullName,
   currencyCreatedAt: currency.createdAt,
   currencyUpdatedAt: currency.updatedAt,
+  orientationId: orientation.id,
+  orientationCode: orientation.code,
+  orientationName: orientation.name,
+  orientationCreatedAt: orientation.createdAt,
+  orientationUpdatedAt: orientation.updatedAt,
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
@@ -107,6 +113,7 @@ export type GetCoinsOptions = {
   minThickness?: number
   minWeight?: number
   minValue?: number
+  orientationCode?: string
   fromYear?: number
   issuerCode?: string
   limit?: number
@@ -130,6 +137,7 @@ type CoinFilterOptions = Pick<
   | "minThickness"
   | "minWeight"
   | "minValue"
+  | "orientationCode"
   | "fromYear"
   | "issuerCode"
   | "rulerCode"
@@ -156,6 +164,7 @@ function buildCoinFilter({
   minThickness,
   minWeight,
   minValue,
+  orientationCode,
   fromYear,
   issuerCode,
   rulerCode,
@@ -190,6 +199,7 @@ function buildCoinFilter({
     buildDistributionFilter(distributionCode),
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
+    buildOrientationFilter(orientationCode),
     buildMintFilter(mintCode),
     buildThemeFilter(themeCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
@@ -280,6 +290,18 @@ function buildCurrencyFilter(
   })
 }
 
+function buildOrientationFilter(
+  orientationCode: string | undefined
+): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.orientationId,
+    relatedCode: orientationCode,
+    relatedCodeColumn: orientation.code,
+    relatedIdColumn: orientation.id,
+    relatedTableName: "orientation",
+  })
+}
+
 function buildMintFilter(mintCode: string | undefined): SQL | undefined {
   return buildAttributionCodeFilter({
     attributionCoinIdColumn: coinMint.coinId,
@@ -309,16 +331,23 @@ type RelatedCodeFilterOptions = {
     | typeof coin.distributionId
     | typeof coin.compositionId
     | typeof coin.currencyId
+    | typeof coin.orientationId
   relatedCode: string | undefined
   relatedCodeColumn:
     | typeof distribution.code
     | typeof composition.code
     | typeof currency.code
+    | typeof orientation.code
   relatedIdColumn:
     | typeof distribution.id
     | typeof composition.id
     | typeof currency.id
-  relatedTableName: "composition" | "currency" | "distribution"
+    | typeof orientation.id
+  relatedTableName:
+    | "composition"
+    | "currency"
+    | "distribution"
+    | "orientation"
 }
 
 type AttributionCodeFilterOptions = {
@@ -534,6 +563,7 @@ export function buildGetCoinsQuery(
     .innerJoin(currency, eq(coin.currencyId, currency.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
     .leftJoin(mint, eq(coinMint.mintId, mint.id))

@@ -14,6 +14,7 @@ type SeededCoin = {
   faceValueNumericValue: number
   faceValueText: string
   issuerCode: string
+  orientationCode?: string
   weight?: number
   diameter?: number
   thickness?: number
@@ -24,6 +25,13 @@ type SeededCoin = {
 }
 
 type SeededMint = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededOrientation = {
   code: string
   name: string
   createdAt: Date
@@ -143,6 +151,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 1,
     faceValueText: "1 Peso",
     issuerCode: "argentina",
+    orientationCode: "coin-alignment",
     weight: 12.5,
     diameter: 31.5,
     thickness: 2.4,
@@ -157,6 +166,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 8,
     faceValueText: "8 Reales",
     issuerCode: "buenos-aires",
+    orientationCode: "coin-alignment",
     weight: 26.95,
     diameter: 37.5,
     thickness: 2.1,
@@ -173,6 +183,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 0.01,
     faceValueText: "1 Cent",
     issuerCode: "united-states",
+    orientationCode: "coin-alignment",
     weight: 3.11,
     diameter: 19.05,
     minYear: 1909,
@@ -220,6 +231,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 0.25,
     faceValueText: "Quarter Dollar",
     issuerCode: "united-states",
+    orientationCode: "coin-alignment",
     weight: 8.1,
     diameter: 26.5,
     thickness: 2,
@@ -264,6 +276,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 1,
     faceValueText: "1 Dollar",
     issuerCode: "united-states",
+    orientationCode: "coin-alignment",
     weight: 26.73,
     diameter: 39,
     thickness: 2.9,
@@ -296,6 +309,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 2,
     faceValueText: "2 Euros",
     issuerCode: "spain",
+    orientationCode: "medal-alignment",
     weight: 8.5,
     diameter: 25.75,
     thickness: 2.2,
@@ -330,6 +344,21 @@ export const seededMints: SeededMint[] = [
     name: "Denver Mint",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
+
+export const seededOrientations: SeededOrientation[] = [
+  {
+    code: "coin-alignment",
+    name: "Coin alignment",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "medal-alignment",
+    name: "Medal alignment",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
 ]
 

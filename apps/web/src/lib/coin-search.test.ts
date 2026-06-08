@@ -10,6 +10,7 @@ import {
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
   findSelectedMintOption,
+  findSelectedOrientationOption,
   findSelectedThemeOption,
   formatMintNames,
   formatIssueYearRangeLabel,
@@ -19,6 +20,7 @@ import {
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getMintOptionLabel,
+  getOrientationOptionLabel,
   getThemeOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
@@ -47,6 +49,11 @@ const currentSearch = {
 const currentSearchWithMint = {
   ...currentSearch,
   mint: "royal-mint-of-madrid",
+}
+
+const currentSearchWithOrientation = {
+  ...currentSearch,
+  orientation: "coin-alignment",
 }
 
 const currentSearchWithTheme = {
@@ -105,6 +112,19 @@ describe("updateCoinSearchFilter", () => {
       expect(
         updateCoinSearchFilter(currentSearchWithMint, "mint", filterValue)
       ).toStrictEqual(omitFilter(currentSearchWithMint, "mint"))
+    }
+  )
+
+  it.each(emptyFilterValues)(
+    "clears the orientation filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(
+          currentSearchWithOrientation,
+          "orientation",
+          filterValue
+        )
+      ).toStrictEqual(omitFilter(currentSearchWithOrientation, "orientation"))
     }
   )
 
@@ -547,6 +567,7 @@ describe("getCoinListLoaderDeps", () => {
       getCoinListLoaderDeps({
         ...currentSearch,
         mint: "royal-mint-of-madrid",
+        orientation: "coin-alignment",
         theme: "map",
       })
     ).toStrictEqual({
@@ -565,6 +586,7 @@ describe("getCoinListLoaderDeps", () => {
       minThickness: 1.25,
       minWeight: 4.5,
       minValue: 0.5,
+      orientationCode: "coin-alignment",
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
       themeCode: "map",
@@ -658,6 +680,17 @@ describe("getMintOptionLabel", () => {
   })
 })
 
+describe("getOrientationOptionLabel", () => {
+  it("includes orientation name and code so combobox search can match both", () => {
+    expect(
+      getOrientationOptionLabel({
+        code: "coin-alignment",
+        name: "Coin alignment",
+      })
+    ).toBe("Coin alignment · coin-alignment")
+  })
+})
+
 describe("getThemeOptionLabel", () => {
   it("includes theme name and code so combobox search can match both", () => {
     expect(
@@ -733,6 +766,19 @@ describe("findSelectedMintOption", () => {
     expect(
       findSelectedMintOption([royalMintOfMadrid], "ROYAL-MINT-OF-MADRID")
     ).toStrictEqual(royalMintOfMadrid)
+  })
+})
+
+describe("findSelectedOrientationOption", () => {
+  it("matches the selected orientation code case-insensitively", () => {
+    const coinAlignment = {
+      code: "coin-alignment",
+      name: "Coin alignment",
+    }
+
+    expect(
+      findSelectedOrientationOption([coinAlignment], "COIN-ALIGNMENT")
+    ).toStrictEqual(coinAlignment)
   })
 })
 

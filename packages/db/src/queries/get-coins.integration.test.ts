@@ -12,6 +12,7 @@ import {
   createDistribution,
   createIssuer,
   createMint,
+  createOrientation,
   createRuler,
   createRulerGroup,
   createTheme,
@@ -146,6 +147,7 @@ describe("getCoins integration", () => {
             updatedAt: euro.updatedAt,
           },
         },
+        orientation: null,
         measurements: {
           weight: null,
           diameter: null,
@@ -345,6 +347,120 @@ describe("getCoins integration", () => {
         themes: [],
       },
     ])
+  })
+
+  it("returns known Orientation records with null for unknown values and filters by exact orientation code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const bronze = await createComposition({
+      code: "bronze",
+      description: "Bronze alloy.",
+      name: "Bronze",
+    })
+    const coinAlignment = await createOrientation({
+      code: "coin-alignment",
+      name: "Coin alignment",
+    })
+    const medalAlignment = await createOrientation({
+      code: "medal-alignment",
+      name: "Medal alignment",
+    })
+    const coinWithoutOrientation = await createCoin({
+      title: "Unknown Orientation Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const coinAlignmentCoin = await createCoin({
+      title: "Coin Alignment Coin",
+      compositionId: silver900.id,
+      issuerId: spain.id,
+      orientationId: coinAlignment.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const medalAlignmentCoin = await createCoin({
+      title: "Medal Alignment Coin",
+      compositionId: bronze.id,
+      issuerId: spain.id,
+      orientationId: medalAlignment.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: medalAlignmentCoin.id,
+        title: "Medal Alignment Coin",
+        orientation: {
+          code: "medal-alignment",
+          name: "Medal alignment",
+        },
+      },
+      {
+        id: coinAlignmentCoin.id,
+        title: "Coin Alignment Coin",
+        orientation: {
+          code: "coin-alignment",
+          name: "Coin alignment",
+        },
+      },
+      {
+        id: coinWithoutOrientation.id,
+        title: "Unknown Orientation Coin",
+        orientation: null,
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        orientationCode: "COIN-ALIGNMENT",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: coinAlignmentCoin.id,
+        title: "Coin Alignment Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        compositionCode: "bronze",
+        limit: 3,
+        orientationCode: "MEDAL-ALIGNMENT",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: medalAlignmentCoin.id,
+        title: "Medal Alignment Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        orientationCode: "  ",
+      })
+    ).resolves.toMatchObject(
+      expect.arrayContaining([
+        {
+          id: coinWithoutOrientation.id,
+          title: "Unknown Orientation Coin",
+        },
+      ])
+    )
+
+    await expect(
+      getCoins({
+        limit: 3,
+        orientationCode: "unknown-orientation",
+      })
+    ).resolves.toStrictEqual([])
   })
 
   it("filters coins by exact theme code case-insensitively, composes with other filters, and still returns all themes on matching coins", async () => {

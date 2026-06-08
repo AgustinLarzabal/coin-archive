@@ -14,6 +14,7 @@ import {
   distribution,
   issuer,
   mint,
+  orientation,
   ruler,
   rulerGroup,
   theme,
@@ -30,6 +31,7 @@ import {
   createDistribution,
   createIssuer,
   createMint,
+  createOrientation,
   createRuler,
   createRulerGroup,
   createTheme,
@@ -46,6 +48,7 @@ import { issuerSchemaNames } from "./issuer"
 import { coinMintSchemaNames } from "./coin-mint"
 import { coinThemeSchemaNames } from "./coin-theme"
 import { mintSchemaNames } from "./mint"
+import { orientationSchemaNames } from "./orientation"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
 import { themeSchemaNames } from "./theme"
@@ -426,6 +429,89 @@ describe("theme schema constraints", () => {
       .where(eq(coinTheme.themeId, createdTheme.id))
 
     expect(remainingThemeAttributions?.count).toBe(0)
+  })
+})
+
+describe("orientation schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects orientation codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(orientation).values({
+        code: "Coin Alignment",
+        name: "Coin alignment",
+      }),
+      orientationSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate orientation codes ignoring case", async () => {
+    await db.insert(orientation).values({
+      code: "coin-alignment",
+      name: "Coin alignment",
+    })
+
+    await expectConstraintError(
+      db.insert(orientation).values({
+        code: "COIN-ALIGNMENT",
+        name: "Duplicate coin alignment",
+      }),
+      orientationSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting an orientation while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdOrientation = await createOrientation({
+      code: "coin-alignment",
+      name: "Coin alignment",
+    })
+
+    await createCoin({
+      title: "Referenced Orientation Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      orientationId: createdOrientation.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(orientation).where(sql`${orientation.id} = ${createdOrientation.id}`),
+      "coin_orientation_id_orientation_id_fk",
+      "23503"
+    )
+  })
+
+  it("keeps shared orientations when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdOrientation = await createOrientation({
+      code: "medal-alignment",
+      name: "Medal alignment",
+    })
+    const createdCoin = await createCoin({
+      title: "Deleted Orientation Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      orientationId: createdOrientation.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    const [remainingOrientations] = await db
+      .select({ count: count() })
+      .from(orientation)
+      .where(eq(orientation.id, createdOrientation.id))
+
+    expect(remainingOrientations?.count).toBe(1)
   })
 })
 

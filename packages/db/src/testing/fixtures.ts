@@ -9,6 +9,7 @@ import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
+import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { theme } from "../schema/theme"
@@ -34,6 +35,7 @@ type CreateCoinInput = {
   issuerId: string
   maxYear?: number
   minYear?: number
+  orientationId?: string
   thickness?: number
   title: string
   updatedAt?: Date
@@ -58,6 +60,11 @@ type CreateCurrencyInput = {
 }
 
 type CreateMintInput = {
+  code: string
+  name: string
+}
+
+type CreateOrientationInput = {
   code: string
   name: string
 }
@@ -133,6 +140,7 @@ export async function createCoin({
   issuerId,
   maxYear,
   minYear,
+  orientationId,
   thickness,
   title,
   updatedAt = createdAt,
@@ -156,6 +164,7 @@ export async function createCoin({
       issuerId,
       maxYear,
       minYear,
+      orientationId,
       diameter,
       thickness,
       title,
@@ -226,6 +235,18 @@ export async function createMint({ code, name }: CreateMintInput) {
     .returning()
 
   return createdMint
+}
+
+export async function createOrientation({ code, name }: CreateOrientationInput) {
+  const [createdOrientation] = await db
+    .insert(orientation)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdOrientation
 }
 
 export async function createTheme({ code, name }: CreateThemeInput) {

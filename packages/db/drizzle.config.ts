@@ -15,6 +15,7 @@ export default defineConfig({
     "./src/schema/distribution.ts",
     "./src/schema/issuer.ts",
     "./src/schema/mint.ts",
+    "./src/schema/orientation.ts",
     "./src/schema/ruler-group.ts",
     "./src/schema/ruler.ts",
     "./src/schema/coin-ruler.ts",

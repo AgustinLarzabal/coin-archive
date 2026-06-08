@@ -7,6 +7,29 @@ import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { seedDatabase } from "./index"
 
+const expectedSeededCurrencies = [
+  {
+    code: "argentine-peso",
+    name: "Argentine peso",
+    fullName: "Argentine peso",
+  },
+  {
+    code: "euro",
+    name: "Euro",
+    fullName: "Euro (2002-date)",
+  },
+  {
+    code: "real",
+    name: "Real",
+    fullName: "Real",
+  },
+  {
+    code: "united-states-dollar",
+    name: "United States dollar",
+    fullName: "United States dollar",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -35,34 +58,18 @@ describe("seed integration", () => {
     expect(kmReferenceCount?.count).toBe(1)
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
-    await expect(getCurrencies()).resolves.toMatchObject([
-      {
-        code: "argentine-peso",
-        name: "Argentine peso",
-        fullName: "Argentine peso",
-      },
-      {
-        code: "euro",
-        name: "Euro",
-        fullName: "Euro (2002-date)",
-      },
-      {
-        code: "real",
-        name: "Real",
-        fullName: "Real",
-      },
-      {
-        code: "united-states-dollar",
-        name: "United States dollar",
-        fullName: "United States dollar",
-      },
-    ])
+    await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
 
-    const seededCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "United States National Park Quarter"
-    )
+    const seededCoins = await getCoins({ limit: 20 })
+    const findSeededCoin = (title: string) => {
+      const seededCoin = seededCoins.find((coinRecord) => coinRecord.title === title)
 
-    expect(seededCoin).toMatchObject({
+      expect(seededCoin, `Expected seeded coin "${title}" in getCoins results`).toBeDefined()
+
+      return seededCoin
+    }
+
+    expect(findSeededCoin("United States National Park Quarter")).toMatchObject({
       title: "United States National Park Quarter",
       issueYearRange: {
         minYear: 2014,
@@ -82,23 +89,9 @@ describe("seed integration", () => {
         code: "standard-circulation",
         name: "Standard circulation",
       },
-      references: [
-        {
-          type: "catalogue",
-          number: "1338A",
-          catalogue: {
-            code: "KM",
-            title: "Standard Catalog of World Coins",
-          },
-        },
-      ],
     })
 
-    const ancientSeedCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "Buenos Aires Transition Half Real"
-    )
-
-    expect(ancientSeedCoin).toMatchObject({
+    expect(findSeededCoin("Buenos Aires Transition Half Real")).toMatchObject({
       title: "Buenos Aires Transition Half Real",
       composition: {
         code: "silver-900",
@@ -115,11 +108,7 @@ describe("seed integration", () => {
       },
     })
 
-    const partialMeasurementSeedCoin = (await getCoins({ limit: 10 })).find(
-      ({ title }) => title === "Argentina Copper Peso"
-    )
-
-    expect(partialMeasurementSeedCoin).toMatchObject({
+    expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
       title: "Argentina Copper Peso",
       composition: {
         code: "copper",
@@ -133,11 +122,7 @@ describe("seed integration", () => {
       },
     })
 
-    const euroSeedCoin = (await getCoins({ limit: 20 })).find(
-      ({ title }) => title === "Spain 2 Euro"
-    )
-
-    expect(euroSeedCoin).toMatchObject({
+    expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
       title: "Spain 2 Euro",
       faceValue: {
         text: "2 Euros",

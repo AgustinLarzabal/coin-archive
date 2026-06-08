@@ -13,6 +13,7 @@ import {
   formatMeasurementLabel,
   getCatalogueOptionLabel,
   getCompositionOptionLabel,
+  getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
@@ -96,6 +97,32 @@ describe("updateCoinSearchFilter", () => {
       ).toStrictEqual({
         catalogue: "km",
         currency: "euro",
+        distribution: "circulating-commemorative",
+        fromYear: 1898,
+        issuer: "spain",
+        maxDiameter: 30.5,
+        maxThickness: 2.5,
+        maxWeight: 8.75,
+        maxValue: 2,
+        minDiameter: 20.25,
+        minThickness: 1.25,
+        minWeight: 4.5,
+        minValue: 0.5,
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
+      })
+    }
+  )
+
+  it.each([undefined, ""])(
+    "clears the currency filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "currency", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
@@ -648,6 +675,17 @@ describe("getCompositionOptionLabel", () => {
         name: "Silver (.900)",
       })
     ).toBe("Silver (.900)")
+  })
+})
+
+describe("getCurrencyOptionLabel", () => {
+  it("includes currency name and code so combobox search can match both", () => {
+    expect(
+      getCurrencyOptionLabel({
+        code: "euro",
+        name: "Euro",
+      })
+    ).toBe("Euro · euro")
   })
 })
 

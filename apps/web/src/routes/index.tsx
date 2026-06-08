@@ -287,8 +287,7 @@ function App() {
 
   const selectIssuer = createSelectHandler<IssuerOption>("issuer")
   const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
-  const selectComposition =
-    createSelectHandler<CompositionOption>("composition")
+  const selectComposition = createSelectHandler<CompositionOption>("composition")
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
@@ -446,9 +445,7 @@ function App() {
             {(currency: CurrencyOption) => (
               <ComboboxItem key={currency.code} value={currency}>
                 <span>{currency.name}</span>
-                <span className="text-muted-foreground">
-                  {currency.fullName}
-                </span>
+                <span className="text-muted-foreground">{currency.code}</span>
               </ComboboxItem>
             )}
           </ComboboxList>

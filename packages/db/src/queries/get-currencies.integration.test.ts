@@ -8,12 +8,12 @@ describe("getCurrencies integration", () => {
   useTestDatabaseIsolation(db)
 
   it("returns currency options sorted by name and code", async () => {
-    const euro = await createCurrency({
-      code: "euro",
-      fullName: "Euro (2002-date)",
-      name: "Euro",
+    const eastCaribbeanDollar = await createCurrency({
+      code: "east-caribbean-dollar",
+      fullName: "East Caribbean dollar",
+      name: "Dollar",
     })
-    const usDollar = await createCurrency({
+    const unitedStatesDollar = await createCurrency({
       code: "united-states-dollar",
       fullName: "United States dollar",
       name: "Dollar",
@@ -23,15 +23,28 @@ describe("getCurrencies integration", () => {
       fullName: "Zimbabwe dollar",
       name: "Dollar",
     })
+    const euro = await createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    })
 
     await expect(getCurrencies()).resolves.toStrictEqual([
       {
-        id: usDollar.id,
+        id: eastCaribbeanDollar.id,
+        code: "east-caribbean-dollar",
+        fullName: "East Caribbean dollar",
+        name: "Dollar",
+        createdAt: eastCaribbeanDollar.createdAt,
+        updatedAt: eastCaribbeanDollar.updatedAt,
+      },
+      {
+        id: unitedStatesDollar.id,
         code: "united-states-dollar",
         fullName: "United States dollar",
         name: "Dollar",
-        createdAt: usDollar.createdAt,
-        updatedAt: usDollar.updatedAt,
+        createdAt: unitedStatesDollar.createdAt,
+        updatedAt: unitedStatesDollar.updatedAt,
       },
       {
         id: zDollar.id,

@@ -1017,6 +1017,14 @@ describe("getCoins integration", () => {
           diameter: null,
           thickness: null,
         },
+        composition: {
+          id: expect.any(String),
+          code: "copper-nickel",
+          name: "Copper-nickel",
+          description: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        },
         distribution: {
           id: standardCirculation.id,
           code: "standard-circulation",
@@ -1407,6 +1415,89 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters coins by exact currency code and combines the currency filter with existing filters using AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const euro = await createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    })
+    const unitedStatesDollar = await createCurrency({
+      code: "united-states-dollar",
+      fullName: "United States dollar",
+      name: "United States dollar",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const copperNickel = await createComposition({
+      code: "copper-nickel",
+      name: "Copper-nickel",
+    })
+
+    await createCoin({
+      title: "Spanish Euro Silver Match",
+      compositionId: silver900.id,
+      currencyId: euro.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-11T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Euro Coin",
+      compositionId: silver900.id,
+      currencyId: euro.id,
+      issuerId: france.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Dollar Coin",
+      compositionId: silver900.id,
+      currencyId: unitedStatesDollar.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Euro Copper-Nickel Coin",
+      compositionId: copperNickel.id,
+      currencyId: euro.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        currencyCode: "EURO",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      [
+        "Spanish Euro Silver Match",
+        "French Euro Coin",
+        "Spanish Euro Copper-Nickel Coin",
+      ].join("|")
+    )
+
+    await expect(
+      getCoins({
+        compositionCode: "silver-900",
+        currencyCode: "euro",
+        issuerCode: "spain",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Euro Silver Match"].join("|")
+    )
+  })
+
   it("returns full linked ruler data in ruler attribution order", async () => {
     const spain = await createIssuer({
       code: "spain",
@@ -1481,6 +1572,14 @@ describe("getCoins integration", () => {
           weight: null,
           diameter: null,
           thickness: null,
+        },
+        composition: {
+          id: expect.any(String),
+          code: "copper-nickel",
+          name: "Copper-nickel",
+          description: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
         },
         distribution: {
           id: standardCirculation.id,
@@ -1821,6 +1920,14 @@ describe("getCoins integration", () => {
           weight: null,
           diameter: null,
           thickness: null,
+        },
+        composition: {
+          id: expect.any(String),
+          code: "copper-nickel",
+          name: "Copper-nickel",
+          description: null,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
         },
         distribution: {
           id: standardCirculation.id,

@@ -13,8 +13,10 @@ import {
   createIssuer,
   createMint,
   createOrientation,
+  createRim,
   createRuler,
   createRulerGroup,
+  createShape,
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -492,6 +494,132 @@ describe("getCoins integration", () => {
       getCoins({
         limit: 3,
         orientationCode: "unknown-orientation",
+      })
+    ).resolves.toStrictEqual([])
+  })
+
+  it("returns known Shape and Rim records with null for unknown values and filters both descriptors by exact code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const round = await createShape({
+      code: "round",
+      name: "Round",
+    })
+    const scalloped = await createShape({
+      code: "scalloped",
+      name: "Scalloped",
+    })
+    const plain = await createRim({
+      code: "plain",
+      name: "Plain",
+    })
+    const raisedBothSides = await createRim({
+      code: "raised-both-sides",
+      name: "Raised, both sides",
+    })
+    const unknownDescriptorCoin = await createCoin({
+      title: "Unknown Descriptor Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const roundRaisedCoin = await createCoin({
+      title: "Round Raised Coin",
+      issuerId: spain.id,
+      shapeId: round.id,
+      rimId: raisedBothSides.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const scallopedPlainCoin = await createCoin({
+      title: "Scalloped Plain Coin",
+      issuerId: spain.id,
+      shapeId: scalloped.id,
+      rimId: plain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: scallopedPlainCoin.id,
+        title: "Scalloped Plain Coin",
+        shape: {
+          code: "scalloped",
+          name: "Scalloped",
+        },
+        rim: {
+          code: "plain",
+          name: "Plain",
+        },
+      },
+      {
+        id: roundRaisedCoin.id,
+        title: "Round Raised Coin",
+        shape: {
+          code: "round",
+          name: "Round",
+        },
+        rim: {
+          code: "raised-both-sides",
+          name: "Raised, both sides",
+        },
+      },
+      {
+        id: unknownDescriptorCoin.id,
+        title: "Unknown Descriptor Coin",
+        shape: null,
+        rim: null,
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        shapeCode: "ROUND",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: roundRaisedCoin.id,
+        title: "Round Raised Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        rimCode: "PLAIN",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: scallopedPlainCoin.id,
+        title: "Scalloped Plain Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        shapeCode: "SCALLOPED",
+        rimCode: "PLAIN",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: scallopedPlainCoin.id,
+        title: "Scalloped Plain Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        shapeCode: "unknown-shape",
+      })
+    ).resolves.toStrictEqual([])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        rimCode: "unknown-rim",
       })
     ).resolves.toStrictEqual([])
   })

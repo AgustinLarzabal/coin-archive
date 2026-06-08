@@ -6,6 +6,8 @@ import {
   getCurrencies,
   getMints,
   getOrientations,
+  getRims,
+  getShapes,
   getThemes,
 } from "../index"
 import { catalogue } from "../schema/catalogue"
@@ -98,6 +100,32 @@ const expectedSeededOrientations = [
   },
 ] as const
 
+const expectedSeededShapes = [
+  {
+    code: "round",
+    name: "Round",
+  },
+  {
+    code: "scalloped",
+    name: "Scalloped",
+  },
+] as const
+
+const expectedSeededRims = [
+  {
+    code: "lettered",
+    name: "Lettered",
+  },
+  {
+    code: "plain",
+    name: "Plain",
+  },
+  {
+    code: "raised-both-sides",
+    name: "Raised, both sides",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -129,6 +157,8 @@ describe("seed integration", () => {
     await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
     await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
     await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)
+    await expect(getShapes()).resolves.toMatchObject(expectedSeededShapes)
+    await expect(getRims()).resolves.toMatchObject(expectedSeededRims)
     await expect(getThemes()).resolves.toMatchObject(expectedSeededThemes)
 
     const seededCoins = await getCoins({ limit: 20 })
@@ -165,6 +195,14 @@ describe("seed integration", () => {
       issueYearRange: {
         minYear: 2014,
         maxYear: 2026,
+      },
+      shape: {
+        code: "round",
+        name: "Round",
+      },
+      rim: {
+        code: "raised-both-sides",
+        name: "Raised, both sides",
       },
       composition: {
         code: "copper-nickel-clad",

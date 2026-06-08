@@ -10,8 +10,10 @@ import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
+import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { shape } from "../schema/shape"
 import { theme } from "../schema/theme"
 import { db } from "../index"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
@@ -37,6 +39,8 @@ type CreateCoinInput = {
   mintage?: number | null
   minYear?: number
   orientationId?: string
+  rimId?: string
+  shapeId?: string
   thickness?: number
   title: string
   updatedAt?: Date
@@ -71,6 +75,16 @@ type CreateOrientationInput = {
 }
 
 type CreateThemeInput = {
+  code: string
+  name: string
+}
+
+type CreateShapeInput = {
+  code: string
+  name: string
+}
+
+type CreateRimInput = {
   code: string
   name: string
 }
@@ -143,6 +157,8 @@ export async function createCoin({
   mintage,
   minYear,
   orientationId,
+  rimId,
+  shapeId,
   thickness,
   title,
   updatedAt = createdAt,
@@ -168,6 +184,8 @@ export async function createCoin({
       mintage,
       minYear,
       orientationId,
+      rimId,
+      shapeId,
       diameter,
       thickness,
       title,
@@ -262,6 +280,30 @@ export async function createTheme({ code, name }: CreateThemeInput) {
     .returning()
 
   return createdTheme
+}
+
+export async function createShape({ code, name }: CreateShapeInput) {
+  const [createdShape] = await db
+    .insert(shape)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdShape
+}
+
+export async function createRim({ code, name }: CreateRimInput) {
+  const [createdRim] = await db
+    .insert(rim)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdRim
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {

@@ -11,6 +11,8 @@ import {
   findSelectedDistributionOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
+  findSelectedRimOption,
+  findSelectedShapeOption,
   findSelectedThemeOption,
   formatMintNames,
   formatIssueYearRangeLabel,
@@ -21,6 +23,8 @@ import {
   getDistributionOptionLabel,
   getMintOptionLabel,
   getOrientationOptionLabel,
+  getRimOptionLabel,
+  getShapeOptionLabel,
   getThemeOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
@@ -570,6 +574,18 @@ describe("coinSearchSchema", () => {
       issuer: "spain",
     })
   })
+
+  it("accepts singular shape and rim homepage search params", () => {
+    expect(
+      coinSearchSchema.parse({
+        shape: "round",
+        rim: "raised-both-sides",
+      })
+    ).toStrictEqual({
+      rim: "raised-both-sides",
+      shape: "round",
+    })
+  })
 })
 
 describe("getCoinListLoaderDeps", () => {
@@ -579,6 +595,8 @@ describe("getCoinListLoaderDeps", () => {
         ...currentSearch,
         mint: "royal-mint-of-madrid",
         orientation: "coin-alignment",
+        rim: "raised-both-sides",
+        shape: "round",
         theme: "map",
       })
     ).toStrictEqual({
@@ -599,7 +617,9 @@ describe("getCoinListLoaderDeps", () => {
       minValue: 0.5,
       orientationCode: "coin-alignment",
       referenceNumber: "1338",
+      rimCode: "raised-both-sides",
       rulerCode: "felipe-vi",
+      shapeCode: "round",
       themeCode: "map",
       toYear: 1902,
     })
@@ -741,6 +761,28 @@ describe("getThemeOptionLabel", () => {
   })
 })
 
+describe("getShapeOptionLabel", () => {
+  it("includes shape name and code so combobox search can match both", () => {
+    expect(
+      getShapeOptionLabel({
+        code: "round",
+        name: "Round",
+      })
+    ).toBe("Round · round")
+  })
+})
+
+describe("getRimOptionLabel", () => {
+  it("includes rim name and code so combobox search can match both", () => {
+    expect(
+      getRimOptionLabel({
+        code: "raised-both-sides",
+        name: "Raised, both sides",
+      })
+    ).toBe("Raised, both sides · raised-both-sides")
+  })
+})
+
 describe("findSelectedCatalogueOption", () => {
   it("matches the selected catalogue code case-insensitively", () => {
     const standardCatalog = {
@@ -829,5 +871,29 @@ describe("findSelectedThemeOption", () => {
     }
 
     expect(findSelectedThemeOption([map], "MAP")).toStrictEqual(map)
+  })
+})
+
+describe("findSelectedShapeOption", () => {
+  it("matches the selected shape code case-insensitively", () => {
+    const round = {
+      code: "round",
+      name: "Round",
+    }
+
+    expect(findSelectedShapeOption([round], "ROUND")).toStrictEqual(round)
+  })
+})
+
+describe("findSelectedRimOption", () => {
+  it("matches the selected rim code case-insensitively", () => {
+    const raisedBothSides = {
+      code: "raised-both-sides",
+      name: "Raised, both sides",
+    }
+
+    expect(
+      findSelectedRimOption([raisedBothSides], "RAISED-BOTH-SIDES")
+    ).toStrictEqual(raisedBothSides)
   })
 })

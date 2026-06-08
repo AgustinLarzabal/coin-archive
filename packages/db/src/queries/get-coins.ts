@@ -13,8 +13,10 @@ import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
+import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { shape } from "../schema/shape"
 import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
@@ -41,6 +43,16 @@ const getCoinsSelection = {
   orientationName: orientation.name,
   orientationCreatedAt: orientation.createdAt,
   orientationUpdatedAt: orientation.updatedAt,
+  shapeId: shape.id,
+  shapeCode: shape.code,
+  shapeName: shape.name,
+  shapeCreatedAt: shape.createdAt,
+  shapeUpdatedAt: shape.updatedAt,
+  rimId: rim.id,
+  rimCode: rim.code,
+  rimName: rim.name,
+  rimCreatedAt: rim.createdAt,
+  rimUpdatedAt: rim.updatedAt,
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
@@ -115,6 +127,8 @@ export type GetCoinsOptions = {
   minWeight?: number
   minValue?: number
   orientationCode?: string
+  rimCode?: string
+  shapeCode?: string
   fromYear?: number
   issuerCode?: string
   limit?: number
@@ -139,6 +153,8 @@ type CoinFilterOptions = Pick<
   | "minWeight"
   | "minValue"
   | "orientationCode"
+  | "rimCode"
+  | "shapeCode"
   | "fromYear"
   | "issuerCode"
   | "rulerCode"
@@ -166,6 +182,8 @@ function buildCoinFilter({
   minWeight,
   minValue,
   orientationCode,
+  rimCode,
+  shapeCode,
   fromYear,
   issuerCode,
   rulerCode,
@@ -201,6 +219,8 @@ function buildCoinFilter({
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
     buildOrientationFilter(orientationCode),
+    buildShapeFilter(shapeCode),
+    buildRimFilter(rimCode),
     buildMintFilter(mintCode),
     buildThemeFilter(themeCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
@@ -303,6 +323,26 @@ function buildOrientationFilter(
   })
 }
 
+function buildShapeFilter(shapeCode: string | undefined): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.shapeId,
+    relatedCode: shapeCode,
+    relatedCodeColumn: shape.code,
+    relatedIdColumn: shape.id,
+    relatedTableName: "shape",
+  })
+}
+
+function buildRimFilter(rimCode: string | undefined): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.rimId,
+    relatedCode: rimCode,
+    relatedCodeColumn: rim.code,
+    relatedIdColumn: rim.id,
+    relatedTableName: "rim",
+  })
+}
+
 function buildMintFilter(mintCode: string | undefined): SQL | undefined {
   return buildAttributionCodeFilter({
     attributionCoinIdColumn: coinMint.coinId,
@@ -333,22 +373,30 @@ type RelatedCodeFilterOptions = {
     | typeof coin.compositionId
     | typeof coin.currencyId
     | typeof coin.orientationId
+    | typeof coin.rimId
+    | typeof coin.shapeId
   relatedCode: string | undefined
   relatedCodeColumn:
     | typeof distribution.code
     | typeof composition.code
     | typeof currency.code
     | typeof orientation.code
+    | typeof rim.code
+    | typeof shape.code
   relatedIdColumn:
     | typeof distribution.id
     | typeof composition.id
     | typeof currency.id
     | typeof orientation.id
+    | typeof rim.id
+    | typeof shape.id
   relatedTableName:
     | "composition"
     | "currency"
     | "distribution"
     | "orientation"
+    | "rim"
+    | "shape"
 }
 
 type AttributionCodeFilterOptions = {
@@ -565,6 +613,8 @@ export function buildGetCoinsQuery(
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(orientation, eq(coin.orientationId, orientation.id))
+    .leftJoin(shape, eq(coin.shapeId, shape.id))
+    .leftJoin(rim, eq(coin.rimId, rim.id))
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
     .leftJoin(mint, eq(coinMint.mintId, mint.id))

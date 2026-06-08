@@ -10,7 +10,9 @@ import type {
   IssuerOption,
   MintOption,
   OrientationOption,
+  RimOption,
   RulerOption,
+  ShapeOption,
   ThemeOption,
 } from "@workspace/db"
 import {
@@ -25,6 +27,8 @@ import {
   findSelectedDistributionOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
+  findSelectedRimOption,
+  findSelectedShapeOption,
   findSelectedThemeOption,
   formatMintNames,
   formatMeasurementLabel,
@@ -49,6 +53,8 @@ import type {
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
 import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
+import { RimFilterCombobox } from "../components/rim-filter-combobox"
+import { ShapeFilterCombobox } from "../components/shape-filter-combobox"
 import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
 
 import {
@@ -161,7 +167,9 @@ const getCoinListData = createServerFn({ method: "GET" })
       getIssuers,
       getMints,
       getOrientations,
+      getRims,
       getRulers,
+      getShapes,
       getThemes,
     } = await import("@workspace/db")
 
@@ -174,7 +182,9 @@ const getCoinListData = createServerFn({ method: "GET" })
       issuers,
       mints,
       orientations,
+      rims,
       rulers,
+      shapes,
       themes,
     ] = await Promise.all([
       getCoins(data),
@@ -185,7 +195,9 @@ const getCoinListData = createServerFn({ method: "GET" })
       getIssuers(),
       getMints(),
       getOrientations(),
+      getRims(),
       getRulers(),
+      getShapes(),
       getThemes(),
     ])
 
@@ -198,7 +210,9 @@ const getCoinListData = createServerFn({ method: "GET" })
       issuers,
       mints,
       orientations,
+      rims,
       rulers,
+      shapes,
       themes,
     }
   })
@@ -220,7 +234,9 @@ function App() {
     issuers,
     mints,
     orientations,
+    rims,
     rulers,
+    shapes,
     themes,
   } = Route.useLoaderData()
   const {
@@ -236,12 +252,14 @@ function App() {
     maxValue: selectedMaxValue,
     mint: selectedMintCode,
     orientation: selectedOrientationCode,
+    rim: selectedRimCode,
     minDiameter: selectedMinDiameter,
     minThickness: selectedMinThickness,
     minWeight: selectedMinWeight,
     minValue: selectedMinValue,
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
+    shape: selectedShapeCode,
     theme: selectedThemeCode,
     toYear: selectedToYear,
   } = Route.useSearch()
@@ -280,6 +298,8 @@ function App() {
     orientations,
     selectedOrientationCode
   )
+  const selectedRim = findSelectedRimOption(rims, selectedRimCode)
+  const selectedShape = findSelectedShapeOption(shapes, selectedShapeCode)
   const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
@@ -313,7 +333,9 @@ function App() {
   const selectMint = createSelectHandler<MintOption>("mint")
   const selectOrientation =
     createSelectHandler<OrientationOption>("orientation")
+  const selectRim = createSelectHandler<RimOption>("rim")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
+  const selectShape = createSelectHandler<ShapeOption>("shape")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
 
   async function updateReferenceNumber(referenceNumber: string) {
@@ -521,6 +543,18 @@ function App() {
         onValueChange={selectOrientation}
         orientations={orientations}
         selectedOrientation={selectedOrientation}
+      />
+
+      <ShapeFilterCombobox
+        onValueChange={selectShape}
+        selectedShape={selectedShape}
+        shapes={shapes}
+      />
+
+      <RimFilterCombobox
+        onValueChange={selectRim}
+        rims={rims}
+        selectedRim={selectedRim}
       />
 
       <ThemeFilterCombobox

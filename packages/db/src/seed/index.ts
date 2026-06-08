@@ -13,8 +13,10 @@ import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
+import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { shape } from "../schema/shape"
 import { theme } from "../schema/theme"
 import {
   seededCatalogues,
@@ -29,8 +31,10 @@ import {
   seededIssuers,
   seededMints,
   seededOrientations,
+  seededRims,
   seededRulerGroups,
   seededRulers,
+  seededShapes,
   seededThemes,
 } from "./seed-data"
 
@@ -44,6 +48,8 @@ type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
+type RimIdsByCode = Map<string, string>
+type ShapeIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
 
 function getRequiredSeededId(
@@ -136,6 +142,20 @@ async function deleteSeededThemes() {
   await deleteSeededRecords(
     seededThemes.map(({ code }) => code),
     (code) => db.delete(theme).where(eq(theme.code, code))
+  )
+}
+
+async function deleteSeededShapes() {
+  await deleteSeededRecords(
+    seededShapes.map(({ code }) => code),
+    (code) => db.delete(shape).where(eq(shape.code, code))
+  )
+}
+
+async function deleteSeededRims() {
+  await deleteSeededRecords(
+    seededRims.map(({ code }) => code),
+    (code) => db.delete(rim).where(eq(rim.code, code))
   )
 }
 
@@ -359,6 +379,40 @@ async function seedThemes() {
   return themeIdsByCode
 }
 
+async function seedShapes() {
+  const shapeIdsByCode: ShapeIdsByCode = new Map()
+
+  await deleteSeededShapes()
+
+  for (const seededShape of seededShapes) {
+    const [insertedShape] = await db
+      .insert(shape)
+      .values(seededShape)
+      .returning({ id: shape.id })
+
+    shapeIdsByCode.set(seededShape.code, insertedShape.id)
+  }
+
+  return shapeIdsByCode
+}
+
+async function seedRims() {
+  const rimIdsByCode: RimIdsByCode = new Map()
+
+  await deleteSeededRims()
+
+  for (const seededRim of seededRims) {
+    const [insertedRim] = await db
+      .insert(rim)
+      .values(seededRim)
+      .returning({ id: rim.id })
+
+    rimIdsByCode.set(seededRim.code, insertedRim.id)
+  }
+
+  return rimIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -406,6 +460,8 @@ async function seedCoins(
   currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   orientationIdsByCode: OrientationIdsByCode,
+  shapeIdsByCode: ShapeIdsByCode,
+  rimIdsByCode: RimIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   await db.delete(coin).where(
@@ -425,6 +481,8 @@ async function seedCoins(
           currencyIdsByCode,
           issuerIdsByCode,
           orientationIdsByCode,
+          shapeIdsByCode,
+          rimIdsByCode,
           distributionIdsByCode
         )
       )
@@ -443,6 +501,8 @@ function mapSeededCoinToInsertValues(
   currencyIdsByCode: CurrencyIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   orientationIdsByCode: OrientationIdsByCode,
+  shapeIdsByCode: ShapeIdsByCode,
+  rimIdsByCode: RimIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   const {
@@ -451,6 +511,8 @@ function mapSeededCoinToInsertValues(
     compositionCode,
     currencyCode,
     orientationCode,
+    shapeCode,
+    rimCode,
     ...coinValues
   } = seededCoin
 
@@ -475,6 +537,10 @@ function mapSeededCoinToInsertValues(
           "orientation"
         )
       : undefined,
+    shapeId: shapeCode
+      ? getRequiredSeededId(shapeIdsByCode, shapeCode, "shape")
+      : undefined,
+    rimId: rimCode ? getRequiredSeededId(rimIdsByCode, rimCode, "rim") : undefined,
   }
 }
 
@@ -566,6 +632,8 @@ export async function seedDatabase() {
   const currencyIdsByCode = await seedCurrencies()
   const mintIdsByCode = await seedMints()
   const orientationIdsByCode = await seedOrientations()
+  const shapeIdsByCode = await seedShapes()
+  const rimIdsByCode = await seedRims()
   const themeIdsByCode = await seedThemes()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
@@ -573,6 +641,8 @@ export async function seedDatabase() {
     currencyIdsByCode,
     issuerIdsByCode,
     orientationIdsByCode,
+    shapeIdsByCode,
+    rimIdsByCode,
     distributionIdsByCode
   )
   const rulerIdsByCode = await seedRulers()

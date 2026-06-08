@@ -34,6 +34,22 @@ type GetCoinsOrientationColumns = {
   orientationUpdatedAt?: Date | null
 }
 
+type GetCoinsShapeColumns = {
+  shapeId?: string | null
+  shapeCode?: string | null
+  shapeName?: string | null
+  shapeCreatedAt?: Date | null
+  shapeUpdatedAt?: Date | null
+}
+
+type GetCoinsRimColumns = {
+  rimId?: string | null
+  rimCode?: string | null
+  rimName?: string | null
+  rimCreatedAt?: Date | null
+  rimUpdatedAt?: Date | null
+}
+
 type GetCoinsIssuerColumns = {
   issuerId: string
   issuerCode: string
@@ -104,6 +120,8 @@ export type GetCoinsRow = {
 } & GetCoinsCompositionColumns &
   GetCoinsCurrencyColumns &
   GetCoinsOrientationColumns &
+  GetCoinsShapeColumns &
+  GetCoinsRimColumns &
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsMintColumns &
@@ -194,6 +212,8 @@ export type CoinFaceValue = {
 }
 
 export type CoinOrientation = CoinCodeNamedRecord
+export type CoinShape = CoinCodeNamedRecord
+export type CoinRim = CoinCodeNamedRecord
 
 export type CoinMeasurements = {
   weight: number | null
@@ -282,6 +302,8 @@ export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
   faceValue: CoinFaceValue
   orientation: CoinOrientation | null
+  shape: CoinShape | null
+  rim: CoinRim | null
   measurements: CoinMeasurements
   composition: CoinComposition
   distribution: CoinDistribution
@@ -336,6 +358,38 @@ function mapOrientation({
     name: orientationName ?? null,
     createdAt: orientationCreatedAt ?? null,
     updatedAt: orientationUpdatedAt ?? null,
+  })
+}
+
+function mapShape({
+  shapeId,
+  shapeCode,
+  shapeName,
+  shapeCreatedAt,
+  shapeUpdatedAt,
+}: GetCoinsShapeColumns): CoinShape | null {
+  return mapOptionalCodeNamedRecord({
+    id: shapeId ?? null,
+    code: shapeCode ?? null,
+    name: shapeName ?? null,
+    createdAt: shapeCreatedAt ?? null,
+    updatedAt: shapeUpdatedAt ?? null,
+  })
+}
+
+function mapRim({
+  rimId,
+  rimCode,
+  rimName,
+  rimCreatedAt,
+  rimUpdatedAt,
+}: GetCoinsRimColumns): CoinRim | null {
+  return mapOptionalCodeNamedRecord({
+    id: rimId ?? null,
+    code: rimCode ?? null,
+    name: rimName ?? null,
+    createdAt: rimCreatedAt ?? null,
+    updatedAt: rimUpdatedAt ?? null,
   })
 }
 
@@ -687,6 +741,8 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
     orientation: mapOrientation(row),
+    shape: mapShape(row),
+    rim: mapRim(row),
     measurements: mapMeasurements(row),
     composition: mapComposition(row),
     distribution: mapDistribution(row),

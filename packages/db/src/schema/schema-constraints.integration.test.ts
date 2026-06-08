@@ -15,8 +15,10 @@ import {
   issuer,
   mint,
   orientation,
+  rim,
   ruler,
   rulerGroup,
+  shape,
   theme,
 } from "../index"
 import {
@@ -32,8 +34,10 @@ import {
   createIssuer,
   createMint,
   createOrientation,
+  createRim,
   createRuler,
   createRulerGroup,
+  createShape,
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -49,8 +53,10 @@ import { coinMintSchemaNames } from "./coin-mint"
 import { coinThemeSchemaNames } from "./coin-theme"
 import { mintSchemaNames } from "./mint"
 import { orientationSchemaNames } from "./orientation"
+import { rimSchemaNames } from "./rim"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
+import { shapeSchemaNames } from "./shape"
 import { themeSchemaNames } from "./theme"
 
 async function expectConstraintError(
@@ -515,6 +521,118 @@ describe("orientation schema constraints", () => {
       .where(eq(orientation.id, createdOrientation.id))
 
     expect(remainingOrientations?.count).toBe(1)
+  })
+})
+
+describe("shape schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects shape codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(shape).values({
+        code: "Round Shape",
+        name: "Round",
+      }),
+      shapeSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate shape codes ignoring case", async () => {
+    await db.insert(shape).values({
+      code: "round",
+      name: "Round",
+    })
+
+    await expectConstraintError(
+      db.insert(shape).values({
+        code: "ROUND",
+        name: "Duplicate round",
+      }),
+      shapeSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a shape while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdShape = await createShape({
+      code: "round",
+      name: "Round",
+    })
+
+    await createCoin({
+      title: "Referenced Shape Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      shapeId: createdShape.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(shape).where(sql`${shape.id} = ${createdShape.id}`),
+      "coin_shape_id_shape_id_fk",
+      "23503"
+    )
+  })
+})
+
+describe("rim schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects rim codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(rim).values({
+        code: "Raised Both Sides",
+        name: "Raised, both sides",
+      }),
+      rimSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate rim codes ignoring case", async () => {
+    await db.insert(rim).values({
+      code: "raised-both-sides",
+      name: "Raised, both sides",
+    })
+
+    await expectConstraintError(
+      db.insert(rim).values({
+        code: "RAISED-BOTH-SIDES",
+        name: "Duplicate raised rim",
+      }),
+      rimSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a rim while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdRim = await createRim({
+      code: "plain",
+      name: "Plain",
+    })
+
+    await createCoin({
+      title: "Referenced Rim Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      rimId: createdRim.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(rim).where(sql`${rim.id} = ${createdRim.id}`),
+      "coin_rim_id_rim_id_fk",
+      "23503"
+    )
   })
 })
 

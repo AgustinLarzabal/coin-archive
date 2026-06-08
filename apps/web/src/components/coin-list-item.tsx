@@ -49,10 +49,16 @@ export function CoinListItem({
       {themeNames ? (
         <p className="text-sm text-muted-foreground">Themes: {themeNames}</p>
       ) : null}
+      {coin.shape ? (
+        <p className="text-sm text-muted-foreground">Shape: {coin.shape.name}</p>
+      ) : null}
       {coin.orientation ? (
         <p className="text-sm text-muted-foreground">
           Orientation: {coin.orientation.name}
         </p>
+      ) : null}
+      {coin.rim ? (
+        <p className="text-sm text-muted-foreground">Rim: {coin.rim.name}</p>
       ) : null}
       {formattedMintage ? (
         <p className="text-sm text-muted-foreground">

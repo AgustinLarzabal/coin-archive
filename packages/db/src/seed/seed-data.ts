@@ -15,6 +15,8 @@ type SeededCoin = {
   faceValueText: string
   issuerCode: string
   orientationCode?: string
+  rimCode?: string
+  shapeCode?: string
   weight?: number
   diameter?: number
   thickness?: number
@@ -39,6 +41,20 @@ type SeededOrientation = {
 }
 
 type SeededTheme = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededShape = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededRim = {
   code: string
   name: string
   createdAt: Date
@@ -152,6 +168,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "1 Peso",
     issuerCode: "argentina",
     orientationCode: "coin-alignment",
+    shapeCode: "round",
+    rimCode: "raised-both-sides",
     weight: 12.5,
     diameter: 31.5,
     thickness: 2.4,
@@ -167,6 +185,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "8 Reales",
     issuerCode: "buenos-aires",
     orientationCode: "coin-alignment",
+    shapeCode: "round",
+    rimCode: "raised-both-sides",
     weight: 26.95,
     diameter: 37.5,
     thickness: 2.1,
@@ -184,6 +204,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "1 Cent",
     issuerCode: "united-states",
     orientationCode: "coin-alignment",
+    shapeCode: "round",
+    rimCode: "plain",
     weight: 3.11,
     diameter: 19.05,
     minYear: 1909,
@@ -232,6 +254,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "Quarter Dollar",
     issuerCode: "united-states",
     orientationCode: "coin-alignment",
+    shapeCode: "round",
+    rimCode: "raised-both-sides",
     weight: 8.1,
     diameter: 26.5,
     thickness: 2,
@@ -277,6 +301,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "1 Dollar",
     issuerCode: "united-states",
     orientationCode: "coin-alignment",
+    shapeCode: "round",
+    rimCode: "lettered",
     weight: 26.73,
     diameter: 39,
     thickness: 2.9,
@@ -310,6 +336,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "2 Euros",
     issuerCode: "spain",
     orientationCode: "medal-alignment",
+    shapeCode: "round",
+    rimCode: "raised-both-sides",
     weight: 8.5,
     diameter: 25.75,
     thickness: 2.2,
@@ -406,6 +434,42 @@ export const seededThemes: SeededTheme[] = [
     updatedAt: new Date("2026-01-07T00:00:00.000Z"),
   },
 ]
+
+export const seededShapes: SeededShape[] = [
+  {
+    code: "round",
+    name: "Round",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "scalloped",
+    name: "Scalloped",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+] as const
+
+export const seededRims: SeededRim[] = [
+  {
+    code: "lettered",
+    name: "Lettered",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "plain",
+    name: "Plain",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "raised-both-sides",
+    name: "Raised, both sides",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+] as const
 
 export const seededCurrencies: SeededCurrency[] = [
   {

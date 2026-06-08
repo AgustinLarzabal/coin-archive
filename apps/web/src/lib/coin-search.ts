@@ -7,7 +7,9 @@ import type {
   DistributionOption,
   MintOption,
   OrientationOption,
+  RimOption,
   RulerOption,
+  ShapeOption,
   ThemeOption,
 } from "@workspace/db"
 import { z } from "zod"
@@ -49,8 +51,10 @@ export const coinSearchSchema = z.object({
   minWeight: optionalPositiveNumberSchema,
   minValue: optionalPositiveNumberSchema,
   orientation: optionalStringSchema,
+  rim: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
+  shape: optionalStringSchema,
   theme: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
@@ -72,8 +76,10 @@ export const coinListInputSchema = z.object({
   minWeight: optionalPositiveNumberSchema,
   minValue: optionalPositiveNumberSchema,
   orientationCode: optionalStringSchema,
+  rimCode: optionalStringSchema,
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
+  shapeCode: optionalStringSchema,
   themeCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
@@ -148,7 +154,9 @@ type OrientationOptionLabel = Pick<
   OrientationOption,
   keyof NamedCodeOptionLabel
 >
+type RimOptionLabel = Pick<RimOption, keyof NamedCodeOptionLabel>
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
+type ShapeOptionLabel = Pick<ShapeOption, keyof NamedCodeOptionLabel>
 type ThemeOptionLabel = Pick<ThemeOption, keyof NamedCodeOptionLabel>
 type CoinMintLabel = Pick<CoinRecordMint, "name">
 
@@ -176,8 +184,10 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     minWeight: search.minWeight,
     minValue: search.minValue,
     orientationCode: search.orientation,
+    ...(search.rim === undefined ? {} : { rimCode: search.rim }),
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
+    ...(search.shape === undefined ? {} : { shapeCode: search.shape }),
     themeCode: search.theme,
     toYear: search.toYear,
   }
@@ -228,6 +238,16 @@ export const findSelectedMintOption: <T extends OptionWithCode>(
 export const findSelectedOrientationOption: <T extends OptionWithCode>(
   orientations: T[],
   selectedOrientationCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedRimOption: <T extends OptionWithCode>(
+  rims: T[],
+  selectedRimCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedShapeOption: <T extends OptionWithCode>(
+  shapes: T[],
+  selectedShapeCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
 export const findSelectedThemeOption: <T extends OptionWithCode>(
@@ -388,6 +408,12 @@ export const getMintOptionLabel: (mint: MintOptionLabel) => string =
 export const getOrientationOptionLabel: (
   orientation: OrientationOptionLabel
 ) => string = getNamedCodeOptionLabel
+
+export const getRimOptionLabel: (rim: RimOptionLabel) => string =
+  getNamedCodeOptionLabel
+
+export const getShapeOptionLabel: (shape: ShapeOptionLabel) => string =
+  getNamedCodeOptionLabel
 
 export const getThemeOptionLabel: (theme: ThemeOptionLabel) => string =
   getNamedCodeOptionLabel

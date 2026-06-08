@@ -24,6 +24,7 @@ const baseCoin: CoinRecord = {
     },
   },
   orientation: null,
+  shape: null,
   measurements: {
     weight: null,
     diameter: null,
@@ -45,6 +46,7 @@ const baseCoin: CoinRecord = {
     updatedAt: timestamp,
   },
   mintage: null,
+  rim: null,
   issuer: {
     id: "issuer-1",
     code: "spain",
@@ -153,5 +155,49 @@ describe("CoinListItem", () => {
     )
 
     expect(markup).not.toContain("Orientation:")
+  })
+
+  it("renders Shape, Orientation, Rim, and Mintage in compact order using display names only", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      shape: {
+        id: "shape-1",
+        code: "round",
+        name: "Round",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      orientation: {
+        id: "orientation-1",
+        code: "coin-alignment",
+        name: "Coin alignment",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      rim: {
+        id: "rim-1",
+        code: "raised-both-sides",
+        name: "Raised, both sides",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      mintage: 1234567,
+    })
+
+    expect(markup).toContain("Shape: Round")
+    expect(markup).toContain("Orientation: Coin alignment")
+    expect(markup).toContain("Rim: Raised, both sides")
+    expect(markup).toContain("Mintage: 1,234,567")
+    expect(markup).not.toContain("raised-both-sides")
+
+    expect(markup.indexOf("Shape: Round")).toBeLessThan(
+      markup.indexOf("Orientation: Coin alignment")
+    )
+    expect(markup.indexOf("Orientation: Coin alignment")).toBeLessThan(
+      markup.indexOf("Rim: Raised, both sides")
+    )
+    expect(markup.indexOf("Rim: Raised, both sides")).toBeLessThan(
+      markup.indexOf("Mintage: 1,234,567")
+    )
   })
 })

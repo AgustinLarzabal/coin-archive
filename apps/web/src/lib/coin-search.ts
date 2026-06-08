@@ -72,6 +72,7 @@ export type CoinSearch = z.infer<typeof coinSearchSchema>
 export type CoinListLoaderDeps = z.infer<typeof coinListInputSchema>
 export type CoinSearchFilterName = keyof CoinSearch
 export type IssueYearFilterName = keyof Pick<CoinSearch, "fromYear" | "toYear">
+export type FaceValueFilterName = keyof Pick<CoinSearch, "minValue" | "maxValue">
 export type MeasurementFilterName = keyof Pick<
   CoinSearch,
   | "minWeight"
@@ -80,10 +81,6 @@ export type MeasurementFilterName = keyof Pick<
   | "maxDiameter"
   | "minThickness"
   | "maxThickness"
->
-export type FaceValueFilterName = keyof Pick<
-  CoinSearch,
-  "minValue" | "maxValue"
 >
 export type PositiveNumberFilterName =
   | MeasurementFilterName
@@ -109,6 +106,7 @@ export type PositiveNumberFilterValue =
   | undefined
 
 const issueYearFilterNames = ["fromYear", "toYear"] as const
+const faceValueFilterNames = ["minValue", "maxValue"] as const
 const measurementFilterNames = [
   "minWeight",
   "maxWeight",
@@ -117,7 +115,6 @@ const measurementFilterNames = [
   "minThickness",
   "maxThickness",
 ] as const
-const faceValueFilterNames = ["minValue", "maxValue"] as const
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">

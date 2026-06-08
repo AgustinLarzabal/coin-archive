@@ -467,34 +467,10 @@ describe("applyMeasurementRangeSearch", () => {
 })
 
 describe("applyFaceValueRangeSearch", () => {
-  it("applies open and full face value ranges while preserving unrelated filters", () => {
+  it("applies a full face value range while preserving unrelated filters", () => {
     expect(
       applyFaceValueRangeSearch(currentSearch, {
-        minValue: "1",
-        maxValue: "",
-      })
-    ).toStrictEqual({
-      catalogue: "km",
-      composition: "silver-900",
-      currency: "euro",
-      distribution: "circulating-commemorative",
-      fromYear: 1898,
-      issuer: "spain",
-      maxDiameter: 30.5,
-      maxThickness: 2.5,
-      maxWeight: 8.75,
-      minDiameter: 20.25,
-      minThickness: 1.25,
-      minValue: 1,
-      minWeight: 4.5,
-      referenceNumber: "1338",
-      ruler: "felipe-vi",
-      toYear: 1902,
-    })
-
-    expect(
-      applyFaceValueRangeSearch(currentSearch, {
-        minValue: "",
+        minValue: "0.25",
         maxValue: "1.5",
       })
     ).toStrictEqual({
@@ -510,6 +486,57 @@ describe("applyFaceValueRangeSearch", () => {
       maxWeight: 8.75,
       minDiameter: 20.25,
       minThickness: 1.25,
+      minValue: 0.25,
+      minWeight: 4.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("clears requested face value bounds without removing unrelated filters or the other bound", () => {
+    expect(
+      applyFaceValueRangeSearch(currentSearch, {
+        minValue: "",
+        maxValue: "2",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      composition: "silver-900",
+      currency: "euro",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxValue: 2,
+      maxWeight: 8.75,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minWeight: 4.5,
+      referenceNumber: "1338",
+      ruler: "felipe-vi",
+      toYear: 1902,
+    })
+
+    expect(
+      applyFaceValueRangeSearch(currentSearch, {
+        minValue: "0.5",
+        maxValue: " ",
+      })
+    ).toStrictEqual({
+      catalogue: "km",
+      composition: "silver-900",
+      currency: "euro",
+      distribution: "circulating-commemorative",
+      fromYear: 1898,
+      issuer: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxWeight: 8.75,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minValue: 0.5,
       minWeight: 4.5,
       referenceNumber: "1338",
       ruler: "felipe-vi",
@@ -576,16 +603,16 @@ describe("coinSearchSchema", () => {
         fromYear: "",
         maxDiameter: "  ",
         maxValue: "",
-        minValue: "  ",
         minWeight: "",
+        minValue: "  ",
         toYear: "  ",
       })
     ).toStrictEqual({
       fromYear: undefined,
       maxDiameter: undefined,
       maxValue: undefined,
-      minValue: undefined,
       minWeight: undefined,
+      minValue: undefined,
       toYear: undefined,
     })
   })

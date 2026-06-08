@@ -368,6 +368,244 @@ describe("getCoins integration", () => {
     )
   })
 
+  it("filters coins by minimum face value using raw major-unit numeric values", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const euro = await createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    })
+    const unitedStatesDollar = await createCurrency({
+      code: "united-states-dollar",
+      fullName: "United States dollar",
+      name: "US dollar",
+    })
+
+    await createCoin({
+      title: "Fifty Euro Cent",
+      currencyId: euro.id,
+      faceValueNumericValue: 0.5,
+      faceValueText: "50 Euro Cent",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    const oneDollar = await createCoin({
+      title: "One Dollar",
+      currencyId: unitedStatesDollar.id,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Dollar",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+    const twoEuros = await createCoin({
+      title: "Two Euros",
+      currencyId: euro.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Euros",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ minValue: 1 })).resolves.toMatchObject([
+      {
+        id: twoEuros.id,
+        title: "Two Euros",
+        faceValue: {
+          numericValue: 2,
+        },
+      },
+      {
+        id: oneDollar.id,
+        title: "One Dollar",
+        faceValue: {
+          numericValue: 1,
+        },
+      },
+    ])
+  })
+
+  it("filters coins by maximum face value using an inclusive upper bound", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const halfUnit = await createCoin({
+      title: "Half Unit",
+      faceValueNumericValue: 0.5,
+      faceValueText: "Half Unit",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    const oneUnit = await createCoin({
+      title: "One Unit",
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Two Units",
+      faceValueNumericValue: 2,
+      faceValueText: "2 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ maxValue: 1 })).resolves.toMatchObject([
+      {
+        id: halfUnit.id,
+        title: "Half Unit",
+        faceValue: {
+          numericValue: 0.5,
+        },
+      },
+      {
+        id: oneUnit.id,
+        title: "One Unit",
+        faceValue: {
+          numericValue: 1,
+        },
+      },
+    ])
+  })
+
+  it("filters coins by an inclusive face value range", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const lowerBoundMatch = await createCoin({
+      title: "One Unit",
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    const middleMatch = await createCoin({
+      title: "One and a Half Units",
+      faceValueNumericValue: 1.5,
+      faceValueText: "1.5 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    const upperBoundMatch = await createCoin({
+      title: "Two Units",
+      faceValueNumericValue: 2,
+      faceValueText: "2 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Quarter Unit",
+      faceValueNumericValue: 0.25,
+      faceValueText: "Quarter Unit",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-07T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Three Units",
+      faceValueNumericValue: 3,
+      faceValueText: "3 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        minValue: 1,
+        maxValue: 2,
+      })
+    ).resolves.toMatchObject([
+      {
+        id: middleMatch.id,
+        title: "One and a Half Units",
+        faceValue: {
+          numericValue: 1.5,
+        },
+      },
+      {
+        id: lowerBoundMatch.id,
+        title: "One Unit",
+        faceValue: {
+          numericValue: 1,
+        },
+      },
+      {
+        id: upperBoundMatch.id,
+        title: "Two Units",
+        faceValue: {
+          numericValue: 2,
+        },
+      },
+    ])
+  })
+
+  it("combines face value filtering with composition filters using AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const copperNickel = await createComposition({
+      code: "copper-nickel",
+      description: "Copper-nickel alloy.",
+      name: "Copper-nickel",
+    })
+
+    const matchingCoin = await createCoin({
+      title: "Silver Two Unit Match",
+      compositionId: silver900.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Silver Half Unit",
+      compositionId: silver900.id,
+      faceValueNumericValue: 0.5,
+      faceValueText: "Half Unit",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Copper Two Unit",
+      compositionId: copperNickel.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Units",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-08T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        compositionCode: "silver-900",
+        minValue: 1,
+        maxValue: 2,
+      })
+    ).resolves.toMatchObject([
+      {
+        id: matchingCoin.id,
+        title: "Silver Two Unit Match",
+        composition: {
+          code: "silver-900",
+        },
+        faceValue: {
+          numericValue: 2,
+        },
+      },
+    ])
+  })
+
   it("combines measurement filtering with existing homepage filters using AND semantics and keeps newest-first ordering", async () => {
     const rome = await createIssuer({
       code: "rome",

@@ -125,6 +125,14 @@ function getRangeFromFormData<Name extends PositiveNumberFilterName>(
   ) as Record<Name, PositiveNumberFilterValue>
 }
 
+function getFaceValueRangeFromFormData(
+  formData: FormData
+): Record<FaceValueFilterName, FaceValueFilterValue> {
+  return Object.fromEntries(
+    faceValueRangeInputFields.map(({ name }) => [name, formData.get(name)])
+  ) as Record<FaceValueFilterName, FaceValueFilterValue>
+}
+
 function formatCoinMeasurements(measurements: CoinMeasurements) {
   const labels = coinMeasurementFields
     .map(({ key, label, unit }) =>

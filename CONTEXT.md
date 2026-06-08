@@ -44,6 +44,30 @@ _Avoid_: Display name, temporary label, generated database identity
 A catalogue filter that returns coins linked directly to the selected Orientation. It composes with other catalogue filters using AND semantics, and coins without an Orientation are excluded when an orientation filter is applied.
 _Avoid_: Image rotation filter, specimen orientation filter, unknown-orientation match
 
+**Obverse**:
+The front face description recorded for a catalogued coin type or issue. A coin may have no Obverse description, and its descriptive text and lettering may be known independently.
+_Avoid_: Observe, heads, front image, placeholder face text
+
+**Reverse**:
+The back face description recorded for a catalogued coin type or issue. A coin may have no Reverse description, and its descriptive text and lettering may be known independently.
+_Avoid_: Tails, back image, placeholder face text
+
+**Engraver**:
+A person credited with creating or engraving a coin face design. An Engraver may be attributed to an Obverse or Reverse, but is not a whole-coin attribution unless both faces are explicitly attributed.
+_Avoid_: Artist, designer, issuer, mint worker, whole-coin engraver
+
+**Engraver Code**:
+The globally unique, stable, human-readable catalogue key for an engraver, used to identify the engraver in filters, URLs, imports, and administrative lookup. It uses lowercase slug-style text and is distinct from the engraver's display name.
+_Avoid_: Display name, temporary label, generated database identity
+
+**Engraver Attribution**:
+A catalogue relationship that links an Engraver to the Obverse or Reverse face design they are credited with. Multiple engraver attributions on a single face are unordered unless the archive later defines a face-specific credit order.
+_Avoid_: Coin-level artist tag, mint attribution, issuer attribution, inferred designer
+
+**Engraver Filter**:
+A catalogue filter that returns coins with the selected Engraver attributed to either the Obverse or Reverse. It composes with other catalogue filters using AND semantics.
+_Avoid_: Face-specific engraver filter, whole-coin artist filter, issuer filter
+
 **Shape**:
 The intended standard physical-description outline form of a coin type or issue, using Coin Archive's flat canonical shape vocabulary. A coin has at most one Shape, and it may be unknown.
 _Avoid_: Diameter, design motif, specimen deformation, specimen damage, source-specific shape label, shape grouping

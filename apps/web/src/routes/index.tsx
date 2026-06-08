@@ -26,6 +26,7 @@ import {
   getRulerOptionLabel,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
+import { formatFaceValueLabel } from "../lib/coin-summary"
 import type {
   MeasurementFilterName,
   MeasurementFilterValue,
@@ -447,6 +448,9 @@ function App() {
               </p>
               <p className="text-sm text-muted-foreground">
                 Composition: {coin.composition.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {formatFaceValueLabel(coin.faceValue)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {formatIssueYearRangeLabel(coin.issueYearRange)}

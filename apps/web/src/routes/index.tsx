@@ -4,6 +4,7 @@ import type { FormEvent } from "react"
 import type {
   CatalogueOption,
   CoinMeasurements,
+  CompositionOption,
   DistributionOption,
   IssuerOption,
   RulerOption,
@@ -14,10 +15,12 @@ import {
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCatalogueOption,
+  findSelectedCompositionOption,
   findSelectedDistributionOption,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
   getCatalogueOptionLabel,
+  getCompositionOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
   getRulerOptionLabel,
@@ -115,13 +118,20 @@ function formatCoinMeasurements(measurements: CoinMeasurements) {
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const { getCatalogues, getCoins, getDistributions, getIssuers, getRulers } =
-      await import("@workspace/db")
+    const {
+      getCatalogues,
+      getCoins,
+      getCompositions,
+      getDistributions,
+      getIssuers,
+      getRulers,
+    } = await import("@workspace/db")
 
-    const [coins, catalogues, distributions, issuers, rulers] =
+    const [coins, catalogues, compositions, distributions, issuers, rulers] =
       await Promise.all([
         getCoins({
           catalogueCode: data.catalogueCode,
+          compositionCode: data.compositionCode,
           distributionCode: data.distributionCode,
           fromYear: data.fromYear,
           issuerCode: data.issuerCode,
@@ -136,12 +146,13 @@ const getCoinListData = createServerFn({ method: "GET" })
           toYear: data.toYear,
         }),
         getCatalogues(),
+        getCompositions(),
         getDistributions(),
         getIssuers(),
         getRulers(),
       ])
 
-    return { coins, catalogues, distributions, issuers, rulers }
+    return { coins, catalogues, compositions, distributions, issuers, rulers }
   })
 
 export const Route = createFileRoute("/")({
@@ -152,10 +163,11 @@ export const Route = createFileRoute("/")({
 })
 
 function App() {
-  const { coins, catalogues, distributions, issuers, rulers } =
+  const { coins, catalogues, compositions, distributions, issuers, rulers } =
     Route.useLoaderData()
   const {
     catalogue: selectedCatalogueCode,
+    composition: selectedCompositionCode,
     distribution: selectedDistributionCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
@@ -182,6 +194,10 @@ function App() {
   const selectedCatalogue = findSelectedCatalogueOption(
     catalogues,
     selectedCatalogueCode
+  )
+  const selectedComposition = findSelectedCompositionOption(
+    compositions,
+    selectedCompositionCode
   )
   const selectedDistribution = findSelectedDistributionOption(
     distributions,
@@ -211,6 +227,7 @@ function App() {
 
   const selectIssuer = createSelectHandler<IssuerOption>("issuer")
   const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
+  const selectComposition = createSelectHandler<CompositionOption>("composition")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
@@ -306,6 +323,28 @@ function App() {
               <ComboboxItem key={catalogue.code} value={catalogue}>
                 <span>{catalogue.title}</span>
                 <span className="text-muted-foreground">{catalogue.code}</span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+
+      <Combobox<CompositionOption>
+        items={compositions}
+        value={selectedComposition}
+        itemToStringLabel={getCompositionOptionLabel}
+        isItemEqualToValue={(composition, value) =>
+          composition.code === value.code
+        }
+        onValueChange={selectComposition}
+      >
+        <ComboboxInput placeholder="Filter by composition" showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No compositions found.</ComboboxEmpty>
+          <ComboboxList>
+            {(composition: CompositionOption) => (
+              <ComboboxItem key={composition.code} value={composition}>
+                <span>{composition.name}</span>
               </ComboboxItem>
             )}
           </ComboboxList>

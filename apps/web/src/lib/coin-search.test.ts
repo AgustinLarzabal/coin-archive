@@ -5,6 +5,7 @@ import {
   applyMeasurementRangeSearch,
   coinSearchSchema,
   findSelectedCatalogueOption,
+  findSelectedCompositionOption,
   findSelectedDistributionOption,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
@@ -16,6 +17,7 @@ import {
 
 const currentSearch = {
   catalogue: "km",
+  composition: "silver-900",
   distribution: "circulating-commemorative",
   fromYear: 1898,
   issuer: "spain",
@@ -36,6 +38,7 @@ describe("updateCoinSearchFilter", () => {
       updateCoinSearchFilter(currentSearch, "issuer", undefined)
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       maxDiameter: 30.5,
@@ -57,6 +60,30 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "distribution", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        composition: "silver-900",
+        fromYear: 1898,
+        issuer: "spain",
+        maxDiameter: 30.5,
+        maxThickness: 2.5,
+        maxWeight: 8.75,
+        minDiameter: 20.25,
+        minThickness: 1.25,
+        minWeight: 4.5,
+        referenceNumber: "1338",
+        ruler: "felipe-vi",
+        toYear: 1902,
+      })
+    }
+  )
+
+  it.each([undefined, ""])(
+    "clears the composition filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearch, "composition", filterValue)
+      ).toStrictEqual({
+        catalogue: "km",
+        distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
         maxDiameter: 30.5,
@@ -79,6 +106,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "ruler", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
@@ -101,6 +129,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "referenceNumber", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
@@ -123,6 +152,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "fromYear", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         issuer: "spain",
         maxDiameter: 30.5,
@@ -145,6 +175,7 @@ describe("updateCoinSearchFilter", () => {
         updateCoinSearchFilter(currentSearch, "toYear", filterValue)
       ).toStrictEqual({
         catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         fromYear: 1898,
         issuer: "spain",
@@ -170,6 +201,7 @@ describe("applyIssueYearRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: -43,
       issuer: "spain",
@@ -191,6 +223,7 @@ describe("applyIssueYearRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1900,
       issuer: "spain",
@@ -213,6 +246,7 @@ describe("applyIssueYearRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       issuer: "spain",
       maxDiameter: 30.5,
@@ -233,6 +267,7 @@ describe("applyIssueYearRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -255,6 +290,7 @@ describe("applyIssueYearRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -284,6 +320,7 @@ describe("applyMeasurementRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -309,6 +346,7 @@ describe("applyMeasurementRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -333,6 +371,7 @@ describe("applyMeasurementRangeSearch", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -354,6 +393,7 @@ describe("coinSearchSchema", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
+        composition: "silver-900",
         distribution: "circulating-commemorative",
         fromYear: "1898",
         issuer: "spain",
@@ -369,6 +409,7 @@ describe("coinSearchSchema", () => {
       })
     ).toStrictEqual({
       catalogue: "km",
+      composition: "silver-900",
       distribution: "circulating-commemorative",
       fromYear: 1898,
       issuer: "spain",
@@ -405,6 +446,7 @@ describe("getCoinListLoaderDeps", () => {
   it("passes homepage issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(getCoinListLoaderDeps(currentSearch)).toStrictEqual({
       catalogueCode: "km",
+      compositionCode: "silver-900",
       distributionCode: "circulating-commemorative",
       fromYear: 1898,
       issuerCode: "spain",
@@ -500,5 +542,18 @@ describe("findSelectedDistributionOption", () => {
         "CIRCULATING-COMMEMORATIVE"
       )
     ).toStrictEqual(circulatingCommemorative)
+  })
+})
+
+describe("findSelectedCompositionOption", () => {
+  it("matches the selected composition code case-insensitively", () => {
+    const silver900 = {
+      code: "silver-900",
+      name: "Silver (.900)",
+    }
+
+    expect(
+      findSelectedCompositionOption([silver900], "SILVER-900")
+    ).toStrictEqual(silver900)
   })
 })

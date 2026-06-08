@@ -72,6 +72,7 @@ const getCoinsSelection = {
 
 export type GetCoinsOptions = {
   catalogueCode?: string
+  compositionCode?: string
   distributionCode?: string
   maxDiameter?: number
   maxThickness?: number
@@ -90,6 +91,7 @@ export type GetCoinsOptions = {
 type CoinFilterOptions = Pick<
   GetCoinsOptions,
   | "distributionCode"
+  | "compositionCode"
   | "maxDiameter"
   | "maxThickness"
   | "maxWeight"
@@ -110,6 +112,7 @@ function isDefined<T>(value: T | undefined): value is T {
 
 function buildCoinFilter({
   distributionCode,
+  compositionCode,
   maxDiameter,
   maxThickness,
   maxWeight,
@@ -135,6 +138,7 @@ function buildCoinFilter({
   } as const
   const filters = [
     buildDistributionFilter(distributionCode),
+    buildCompositionFilter(compositionCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
     rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
@@ -201,6 +205,24 @@ function buildDistributionFilter(
       select ${distribution.id}
       from "distribution"
       where lower(${distribution.code}) = ${normalizedDistributionCode}
+    )
+  `
+}
+
+function buildCompositionFilter(
+  compositionCode: string | undefined
+): SQL | undefined {
+  const normalizedCompositionCode = normalizeCodeFilter(compositionCode)
+
+  if (normalizedCompositionCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.compositionId} in (
+      select ${composition.id}
+      from "composition"
+      where lower(${composition.code}) = ${normalizedCompositionCode}
     )
   `
 }

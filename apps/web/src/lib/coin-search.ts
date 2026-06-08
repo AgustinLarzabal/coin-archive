@@ -1,6 +1,7 @@
 import type {
   CatalogueOption,
   CoinIssueYearRange,
+  CompositionOption,
   DistributionOption,
   RulerOption,
 } from "@workspace/db"
@@ -28,6 +29,7 @@ const optionalPositiveNumberSchema = z.preprocess(
 
 export const coinSearchSchema = z.object({
   catalogue: optionalStringSchema,
+  composition: optionalStringSchema,
   distribution: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuer: optionalStringSchema,
@@ -44,6 +46,7 @@ export const coinSearchSchema = z.object({
 
 export const coinListInputSchema = z.object({
   catalogueCode: optionalStringSchema,
+  compositionCode: optionalStringSchema,
   distributionCode: optionalStringSchema,
   fromYear: optionalIntegerSchema,
   issuerCode: optionalStringSchema,
@@ -98,6 +101,7 @@ const measurementFilterNames = [
 
 type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
+type CompositionOptionLabel = Pick<CompositionOption, "name" | "code">
 type DistributionOptionLabel = Pick<DistributionOption, "name" | "code">
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 
@@ -106,6 +110,7 @@ type ParsedFilterValue<T> = T | null | undefined
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
     catalogueCode: search.catalogue,
+    compositionCode: search.composition,
     distributionCode: search.distribution,
     fromYear: search.fromYear,
     issuerCode: search.issuer,
@@ -143,6 +148,13 @@ export function findSelectedCatalogueOption<T extends OptionWithCode>(
   selectedCatalogueCode: string | undefined
 ): T | null {
   return findSelectedCodeOption(catalogues, selectedCatalogueCode)
+}
+
+export function findSelectedCompositionOption<T extends OptionWithCode>(
+  compositions: T[],
+  selectedCompositionCode: string | undefined
+): T | null {
+  return findSelectedCodeOption(compositions, selectedCompositionCode)
 }
 
 export function findSelectedDistributionOption<T extends OptionWithCode>(
@@ -273,6 +285,12 @@ export function getDistributionOptionLabel(
   distribution: DistributionOptionLabel
 ) {
   return `${distribution.name} · ${distribution.code}`
+}
+
+export function getCompositionOptionLabel(
+  composition: CompositionOptionLabel
+) {
+  return `${composition.name} · ${composition.code}`
 }
 
 export function getRulerOptionLabel(ruler: RulerOptionLabel) {

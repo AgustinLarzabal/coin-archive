@@ -1233,6 +1233,72 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters coins by exact composition code and combines the composition filter with existing filters using AND semantics", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const copperNickel = await createComposition({
+      code: "copper-nickel",
+      name: "Copper-nickel",
+    })
+    const circulatingCommemorative = await createDistribution({
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    })
+
+    await createCoin({
+      title: "Spanish Silver Match",
+      compositionId: silver900.id,
+      distributionId: circulatingCommemorative.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-11T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Silver Coin",
+      compositionId: silver900.id,
+      distributionId: circulatingCommemorative.id,
+      issuerId: france.id,
+      createdAt: new Date("2026-05-10T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Copper-Nickel Coin",
+      compositionId: copperNickel.id,
+      distributionId: circulatingCommemorative.id,
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-09T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({
+        compositionCode: "SILVER-900",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Silver Match", "French Silver Coin"].join("|")
+    )
+
+    await expect(
+      getCoins({
+        compositionCode: "silver-900",
+        distributionCode: "circulating-commemorative",
+        issuerCode: "spain",
+      })
+    ).resolves.toSatisfy((coins: Array<{ title: string }>) =>
+      coins.map(({ title }) => title).join("|") ===
+      ["Spanish Silver Match"].join("|")
+    )
+  })
+
   it("returns full linked ruler data in ruler attribution order", async () => {
     const spain = await createIssuer({
       code: "spain",

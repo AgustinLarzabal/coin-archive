@@ -56,6 +56,10 @@ type RangeInputField<Name extends string> = Readonly<{
   placeholder: string
 }>
 
+function isCodeOptionEqual<T extends OptionWithCode>(option: T, value: T) {
+  return option.code === value.code
+}
+
 const measurementRangeInputFields = [
   {
     name: "minWeight",
@@ -159,25 +163,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       issuers,
       rulers,
     ] = await Promise.all([
-      getCoins({
-        catalogueCode: data.catalogueCode,
-        compositionCode: data.compositionCode,
-        currencyCode: data.currencyCode,
-        distributionCode: data.distributionCode,
-        fromYear: data.fromYear,
-        issuerCode: data.issuerCode,
-        maxDiameter: data.maxDiameter,
-        maxThickness: data.maxThickness,
-        maxWeight: data.maxWeight,
-        maxValue: data.maxValue,
-        minDiameter: data.minDiameter,
-        minThickness: data.minThickness,
-        minWeight: data.minWeight,
-        minValue: data.minValue,
-        referenceNumber: data.referenceNumber,
-        rulerCode: data.rulerCode,
-        toYear: data.toYear,
-      }),
+      getCoins(data),
       getCatalogues(),
       getCompositions(),
       getCurrencies(),
@@ -287,7 +273,8 @@ function App() {
 
   const selectIssuer = createSelectHandler<IssuerOption>("issuer")
   const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
-  const selectComposition = createSelectHandler<CompositionOption>("composition")
+  const selectComposition =
+    createSelectHandler<CompositionOption>("composition")
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
@@ -350,7 +337,7 @@ function App() {
         items={issuers}
         value={selectedIssuer}
         itemToStringLabel={(issuer) => issuer.name}
-        isItemEqualToValue={(issuer, value) => issuer.code === value.code}
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectIssuer}
       >
         <ComboboxInput placeholder="Filter by issuer" showClear />
@@ -371,7 +358,7 @@ function App() {
         items={rulers}
         value={selectedRuler}
         itemToStringLabel={getRulerOptionLabel}
-        isItemEqualToValue={(ruler, value) => ruler.code === value.code}
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectRuler}
       >
         <ComboboxInput placeholder="Filter by ruler" showClear />
@@ -392,7 +379,7 @@ function App() {
         items={catalogues}
         value={selectedCatalogue}
         itemToStringLabel={getCatalogueOptionLabel}
-        isItemEqualToValue={(catalogue, value) => catalogue.code === value.code}
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectCatalogue}
       >
         <ComboboxInput placeholder="Filter by catalogue" showClear />
@@ -413,9 +400,7 @@ function App() {
         items={compositions}
         value={selectedComposition}
         itemToStringLabel={getCompositionOptionLabel}
-        isItemEqualToValue={(composition, value) =>
-          composition.code === value.code
-        }
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectComposition}
       >
         <ComboboxInput placeholder="Filter by composition" showClear />
@@ -435,7 +420,7 @@ function App() {
         items={currencies}
         value={selectedCurrency}
         itemToStringLabel={getCurrencyOptionLabel}
-        isItemEqualToValue={(currency, value) => currency.code === value.code}
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectCurrency}
       >
         <ComboboxInput placeholder="Filter by currency" showClear />
@@ -456,9 +441,7 @@ function App() {
         items={distributions}
         value={selectedDistribution}
         itemToStringLabel={getDistributionOptionLabel}
-        isItemEqualToValue={(distribution, value) =>
-          distribution.code === value.code
-        }
+        isItemEqualToValue={isCodeOptionEqual}
         onValueChange={selectDistribution}
       >
         <ComboboxInput placeholder="Filter by distribution" showClear />

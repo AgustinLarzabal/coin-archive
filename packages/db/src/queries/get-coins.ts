@@ -357,7 +357,7 @@ function buildCatalogueReferenceFilter({
   catalogueCode,
   referenceNumber,
 }: CatalogueReferenceFilterOptions): SQL | undefined {
-  const normalizedCatalogueCode = normalizeCatalogueCode(catalogueCode)
+  const normalizedCatalogueCode = normalizeCodeFilter(catalogueCode)
   const normalizedReferenceNumber =
     normalizeReferenceNumberPrefix(referenceNumber)
   const referenceFilters: SQL[] = []
@@ -400,10 +400,6 @@ function normalizeFilterValue(value: string | undefined) {
 
 function normalizeCodeFilter(value: string | undefined) {
   return normalizeFilterValue(value)?.toLowerCase()
-}
-
-function normalizeCatalogueCode(value: string | undefined) {
-  return normalizeCodeFilter(value)
 }
 
 function normalizeReferenceNumberPrefix(value: string | undefined) {

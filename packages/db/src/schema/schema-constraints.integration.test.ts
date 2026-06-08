@@ -634,6 +634,33 @@ describe("rim schema constraints", () => {
       "23503"
     )
   })
+
+  it("keeps shared rims when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdRim = await createRim({
+      code: "raised-both-sides",
+      name: "Raised, both sides",
+    })
+    const createdCoin = await createCoin({
+      title: "Deleted Rim Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      rimId: createdRim.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    const [remainingRims] = await db
+      .select({ count: count() })
+      .from(rim)
+      .where(eq(rim.id, createdRim.id))
+
+    expect(remainingRims?.count).toBe(1)
+  })
 })
 
 describe("issuer schema constraints", () => {

@@ -194,35 +194,53 @@ function buildLimitedCoinsQuery(
 function buildDistributionFilter(
   distributionCode: string | undefined
 ): SQL | undefined {
-  const normalizedDistributionCode = normalizeCodeFilter(distributionCode)
-
-  if (normalizedDistributionCode === undefined) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.distributionId} in (
-      select ${distribution.id}
-      from "distribution"
-      where lower(${distribution.code}) = ${normalizedDistributionCode}
-    )
-  `
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.distributionId,
+    relatedCode: distributionCode,
+    relatedCodeColumn: distribution.code,
+    relatedIdColumn: distribution.id,
+    relatedTableName: "distribution",
+  })
 }
 
 function buildCompositionFilter(
   compositionCode: string | undefined
 ): SQL | undefined {
-  const normalizedCompositionCode = normalizeCodeFilter(compositionCode)
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.compositionId,
+    relatedCode: compositionCode,
+    relatedCodeColumn: composition.code,
+    relatedIdColumn: composition.id,
+    relatedTableName: "composition",
+  })
+}
 
-  if (normalizedCompositionCode === undefined) {
+type RelatedCodeFilterOptions = {
+  foreignKeyColumn: typeof coin.distributionId | typeof coin.compositionId
+  relatedCode: string | undefined
+  relatedCodeColumn: typeof distribution.code | typeof composition.code
+  relatedIdColumn: typeof distribution.id | typeof composition.id
+  relatedTableName: "composition" | "distribution"
+}
+
+function buildRelatedCodeFilter({
+  foreignKeyColumn,
+  relatedCode,
+  relatedCodeColumn,
+  relatedIdColumn,
+  relatedTableName,
+}: RelatedCodeFilterOptions): SQL | undefined {
+  const normalizedRelatedCode = normalizeCodeFilter(relatedCode)
+
+  if (normalizedRelatedCode === undefined) {
     return undefined
   }
 
   return sql`
-    ${coin.compositionId} in (
-      select ${composition.id}
-      from "composition"
-      where lower(${composition.code}) = ${normalizedCompositionCode}
+    ${foreignKeyColumn} in (
+      select ${relatedIdColumn}
+      from ${sql.raw(`"${relatedTableName}"`)}
+      where lower(${relatedCodeColumn}) = ${normalizedRelatedCode}
     )
   `
 }

@@ -10,6 +10,7 @@ import {
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
   getCatalogueOptionLabel,
+  getCompositionOptionLabel,
   getDistributionOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
@@ -513,6 +514,17 @@ describe("getDistributionOptionLabel", () => {
         name: "Circulating commemorative",
       })
     ).toBe("Circulating commemorative · circulating-commemorative")
+  })
+})
+
+describe("getCompositionOptionLabel", () => {
+  it("includes composition name and code so combobox search can match both", () => {
+    expect(
+      getCompositionOptionLabel({
+        code: "silver-900",
+        name: "Silver (.900)",
+      })
+    ).toBe("Silver (.900) · silver-900")
   })
 })
 

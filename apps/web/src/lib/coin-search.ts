@@ -81,7 +81,13 @@ export type MeasurementFilterName = keyof Pick<
   | "minThickness"
   | "maxThickness"
 >
-export type FaceValueFilterName = keyof Pick<CoinSearch, "minValue" | "maxValue">
+export type FaceValueFilterName = keyof Pick<
+  CoinSearch,
+  "minValue" | "maxValue"
+>
+export type PositiveNumberFilterName =
+  | MeasurementFilterName
+  | FaceValueFilterName
 export type TextCoinSearchFilterName = Exclude<
   CoinSearchFilterName,
   IssueYearFilterName | MeasurementFilterName | FaceValueFilterName
@@ -93,6 +99,11 @@ export type IssueYearFilterValue =
   | undefined
 export type MeasurementFilterValue =
   | CoinSearch[MeasurementFilterName]
+  | FormDataEntryValue
+  | null
+  | undefined
+export type PositiveNumberFilterValue =
+  | CoinSearch[PositiveNumberFilterName]
   | FormDataEntryValue
   | null
   | undefined
@@ -224,7 +235,7 @@ function parseIssueYearFilterValue(value: IssueYearFilterValue) {
   return Number.parseInt(trimmedValue, 10)
 }
 
-function parseMeasurementFilterValue(value: MeasurementFilterValue) {
+function parsePositiveNumberFilterValue(value: PositiveNumberFilterValue) {
   if (typeof value === "number") {
     return Number.isFinite(value) && value > 0 ? value : null
   }
@@ -293,19 +304,19 @@ export function applyMeasurementRangeSearch(
     currentSearch,
     measurementFilterNames,
     measurementRange,
-    parseMeasurementFilterValue
+    parsePositiveNumberFilterValue
   )
 }
 
 export function applyFaceValueRangeSearch(
   currentSearch: CoinSearch,
-  faceValueRange: Record<FaceValueFilterName, MeasurementFilterValue>
+  faceValueRange: Record<FaceValueFilterName, PositiveNumberFilterValue>
 ): CoinSearch {
   return applyParsedRangeSearch(
     currentSearch,
     faceValueFilterNames,
     faceValueRange,
-    parseMeasurementFilterValue
+    parsePositiveNumberFilterValue
   )
 }
 
@@ -319,9 +330,7 @@ export function getDistributionOptionLabel(
   return `${distribution.name} · ${distribution.code}`
 }
 
-export function getCompositionOptionLabel(
-  composition: CompositionOptionLabel
-) {
+export function getCompositionOptionLabel(composition: CompositionOptionLabel) {
   return composition.name
 }
 

@@ -239,28 +239,33 @@ function buildCompositionFilter(
   })
 }
 
-function buildCurrencyFilter(currencyCode: string | undefined): SQL | undefined {
-  const normalizedCurrencyCode = normalizeCodeFilter(currencyCode)
-
-  if (normalizedCurrencyCode === undefined) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.currencyId} in (
-      select ${currency.id}
-      from "currency"
-      where lower(${currency.code}) = ${normalizedCurrencyCode}
-    )
-  `
+function buildCurrencyFilter(
+  currencyCode: string | undefined
+): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.currencyId,
+    relatedCode: currencyCode,
+    relatedCodeColumn: currency.code,
+    relatedIdColumn: currency.id,
+    relatedTableName: "currency",
+  })
 }
 
 type RelatedCodeFilterOptions = {
-  foreignKeyColumn: typeof coin.distributionId | typeof coin.compositionId
+  foreignKeyColumn:
+    | typeof coin.distributionId
+    | typeof coin.compositionId
+    | typeof coin.currencyId
   relatedCode: string | undefined
-  relatedCodeColumn: typeof distribution.code | typeof composition.code
-  relatedIdColumn: typeof distribution.id | typeof composition.id
-  relatedTableName: "composition" | "distribution"
+  relatedCodeColumn:
+    | typeof distribution.code
+    | typeof composition.code
+    | typeof currency.code
+  relatedIdColumn:
+    | typeof distribution.id
+    | typeof composition.id
+    | typeof currency.id
+  relatedTableName: "composition" | "currency" | "distribution"
 }
 
 function buildRelatedCodeFilter({

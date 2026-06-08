@@ -31,9 +31,11 @@ import {
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
+  CoinSearch,
   FaceValueFilterName,
   MeasurementFilterName,
-  MeasurementFilterValue,
+  PositiveNumberFilterName,
+  PositiveNumberFilterValue,
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 
@@ -48,6 +50,11 @@ import {
 import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
+type RangeInputField<Name extends string> = Readonly<{
+  ariaLabel: string
+  name: Name
+  placeholder: string
+}>
 
 const measurementRangeInputFields = [
   {
@@ -80,11 +87,7 @@ const measurementRangeInputFields = [
     ariaLabel: "Maximum thickness in millimeters",
     placeholder: "Max thickness (mm)",
   },
-] as const satisfies ReadonlyArray<{
-  ariaLabel: string
-  name: MeasurementFilterName
-  placeholder: string
-}>
+] as const satisfies ReadonlyArray<RangeInputField<MeasurementFilterName>>
 
 const faceValueRangeInputFields = [
   {
@@ -97,11 +100,7 @@ const faceValueRangeInputFields = [
     ariaLabel: "Maximum face value in major units",
     placeholder: "Max face value",
   },
-] as const satisfies ReadonlyArray<{
-  ariaLabel: string
-  name: FaceValueFilterName
-  placeholder: string
-}>
+] as const satisfies ReadonlyArray<RangeInputField<FaceValueFilterName>>
 
 const coinMeasurementFields = [
   { key: "weight", label: "Weight", unit: "g" },
@@ -113,20 +112,13 @@ const coinMeasurementFields = [
   unit: string
 }>
 
-function getMeasurementRangeFromFormData(
-  formData: FormData
-): Record<MeasurementFilterName, MeasurementFilterValue> {
+function getRangeFromFormData<Name extends PositiveNumberFilterName>(
+  formData: FormData,
+  fields: ReadonlyArray<RangeInputField<Name>>
+): Record<Name, PositiveNumberFilterValue> {
   return Object.fromEntries(
-    measurementRangeInputFields.map(({ name }) => [name, formData.get(name)])
-  ) as Record<MeasurementFilterName, MeasurementFilterValue>
-}
-
-function getFaceValueRangeFromFormData(
-  formData: FormData
-): Record<FaceValueFilterName, MeasurementFilterValue> {
-  return Object.fromEntries(
-    faceValueRangeInputFields.map(({ name }) => [name, formData.get(name)])
-  ) as Record<FaceValueFilterName, MeasurementFilterValue>
+    fields.map(({ name }) => [name, formData.get(name)])
+  ) as Record<Name, PositiveNumberFilterValue>
 }
 
 function formatCoinMeasurements(measurements: CoinMeasurements) {
@@ -166,34 +158,33 @@ const getCoinListData = createServerFn({ method: "GET" })
       distributions,
       issuers,
       rulers,
-    ] =
-      await Promise.all([
-        getCoins({
-          catalogueCode: data.catalogueCode,
-          compositionCode: data.compositionCode,
-          currencyCode: data.currencyCode,
-          distributionCode: data.distributionCode,
-          fromYear: data.fromYear,
-          issuerCode: data.issuerCode,
-          maxDiameter: data.maxDiameter,
-          maxThickness: data.maxThickness,
-          maxWeight: data.maxWeight,
-          maxValue: data.maxValue,
-          minDiameter: data.minDiameter,
-          minThickness: data.minThickness,
-          minWeight: data.minWeight,
-          minValue: data.minValue,
-          referenceNumber: data.referenceNumber,
-          rulerCode: data.rulerCode,
-          toYear: data.toYear,
-        }),
-        getCatalogues(),
-        getCompositions(),
-        getCurrencies(),
-        getDistributions(),
-        getIssuers(),
-        getRulers(),
-      ])
+    ] = await Promise.all([
+      getCoins({
+        catalogueCode: data.catalogueCode,
+        compositionCode: data.compositionCode,
+        currencyCode: data.currencyCode,
+        distributionCode: data.distributionCode,
+        fromYear: data.fromYear,
+        issuerCode: data.issuerCode,
+        maxDiameter: data.maxDiameter,
+        maxThickness: data.maxThickness,
+        maxWeight: data.maxWeight,
+        maxValue: data.maxValue,
+        minDiameter: data.minDiameter,
+        minThickness: data.minThickness,
+        minWeight: data.minWeight,
+        minValue: data.minValue,
+        referenceNumber: data.referenceNumber,
+        rulerCode: data.rulerCode,
+        toYear: data.toYear,
+      }),
+      getCatalogues(),
+      getCompositions(),
+      getCurrencies(),
+      getDistributions(),
+      getIssuers(),
+      getRulers(),
+    ])
 
     return {
       coins,
@@ -296,7 +287,8 @@ function App() {
 
   const selectIssuer = createSelectHandler<IssuerOption>("issuer")
   const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
-  const selectComposition = createSelectHandler<CompositionOption>("composition")
+  const selectComposition =
+    createSelectHandler<CompositionOption>("composition")
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
@@ -320,33 +312,38 @@ function App() {
     })
   }
 
-  async function updateMeasurementRange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function createPositiveNumberRangeSubmitHandler<
+    Name extends PositiveNumberFilterName,
+  >(
+    fields: ReadonlyArray<RangeInputField<Name>>,
+    applyRangeSearch: (
+      currentSearch: CoinSearch,
+      range: Record<Name, PositiveNumberFilterValue>
+    ) => CoinSearch
+  ) {
+    return async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
 
-    const formData = new FormData(event.currentTarget)
+      const formData = new FormData(event.currentTarget)
 
-    await navigate({
-      search: (currentSearch) =>
-        applyMeasurementRangeSearch(
-          currentSearch,
-          getMeasurementRangeFromFormData(formData)
-        ),
-    })
+      await navigate({
+        search: (currentSearch) =>
+          applyRangeSearch(
+            currentSearch,
+            getRangeFromFormData(formData, fields)
+          ),
+      })
+    }
   }
 
-  async function updateFaceValueRange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-
-    await navigate({
-      search: (currentSearch) =>
-        applyFaceValueRangeSearch(
-          currentSearch,
-          getFaceValueRangeFromFormData(formData)
-        ),
-    })
-  }
+  const updateFaceValueRange = createPositiveNumberRangeSubmitHandler(
+    faceValueRangeInputFields,
+    applyFaceValueRangeSearch
+  )
+  const updateMeasurementRange = createPositiveNumberRangeSubmitHandler(
+    measurementRangeInputFields,
+    applyMeasurementRangeSearch
+  )
 
   return (
     <div>

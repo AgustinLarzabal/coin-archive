@@ -134,6 +134,7 @@ describe("getCoins integration", () => {
         title: "Ungrouped Civic Issue",
         createdAt,
         updatedAt: createdAt,
+        mintage: null,
         issueYearRange: null,
         faceValue: {
           text: "2 Euros",
@@ -185,6 +186,38 @@ describe("getCoins integration", () => {
         mints: [],
         references: [],
         rulers: [],
+      },
+    ])
+  })
+
+  it("returns known mintage and null for unknown mintage in coin records", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const unknownMintageCoin = await createCoin({
+      title: "Unknown Mintage Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const knownMintageCoin = await createCoin({
+      title: "Known Mintage Issue",
+      issuerId: spain.id,
+      mintage: 1234567,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: knownMintageCoin.id,
+        title: "Known Mintage Issue",
+        mintage: 1234567,
+      },
+      {
+        id: unknownMintageCoin.id,
+        title: "Unknown Mintage Issue",
+        mintage: null,
       },
     ])
   })
@@ -1752,6 +1785,7 @@ describe("getCoins integration", () => {
         title: "Catalogue Reference Test Issue",
         createdAt,
         updatedAt: createdAt,
+        mintage: null,
         issueYearRange: null,
         faceValue: {
           text: "1 Test Unit",
@@ -2309,6 +2343,7 @@ describe("getCoins integration", () => {
         title: "Attribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        mintage: null,
         issueYearRange: null,
         faceValue: {
           text: "1 Test Unit",
@@ -2658,6 +2693,7 @@ describe("getCoins integration", () => {
         title: "Distribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        mintage: null,
         issueYearRange: null,
         faceValue: {
           text: "1 Test Unit",

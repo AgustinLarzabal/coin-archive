@@ -44,6 +44,7 @@ const baseCoin: CoinRecord = {
     createdAt: timestamp,
     updatedAt: timestamp,
   },
+  mintage: null,
   issuer: {
     id: "issuer-1",
     code: "spain",
@@ -59,6 +60,35 @@ const baseCoin: CoinRecord = {
 }
 
 describe("CoinListItem", () => {
+  it("renders grouped Mintage when known", () => {
+    const markup = renderToStaticMarkup(
+      <CoinListItem
+        coin={{
+          ...baseCoin,
+          mintage: 1234567,
+        }}
+        issueYearRangeLabel="Issue year unknown"
+        measurementSummary={null}
+        mintNames={null}
+      />
+    )
+
+    expect(markup).toContain("Mintage: 1,234,567")
+  })
+
+  it("omits Mintage when unknown", () => {
+    const markup = renderToStaticMarkup(
+      <CoinListItem
+        coin={baseCoin}
+        issueYearRangeLabel="Issue year unknown"
+        measurementSummary={null}
+        mintNames={null}
+      />
+    )
+
+    expect(markup).not.toContain("Mintage:")
+  })
+
   it("renders a Themes row when a coin has one or more themes", () => {
     const markup = renderToStaticMarkup(
       <CoinListItem

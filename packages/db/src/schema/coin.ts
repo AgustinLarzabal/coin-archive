@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm"
 import {
+  bigint,
   check,
   index,
   integer,
@@ -26,6 +27,7 @@ export const coinSchemaNames = {
   issueYearRangeIndex: "coin_issue_year_range_idx",
   issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
   issuerIdIndex: "coin_issuer_id_idx",
+  mintagePositiveCheck: "coin_mintage_positive_check",
   orientationIdIndex: "coin_orientation_id_idx",
   recentCreatedAtIdIndex: "coin_recent_created_at_id_idx",
   thicknessIndex: "coin_thickness_idx",
@@ -86,6 +88,7 @@ export const coin = pgTable(
     orientationId: uuid("orientation_id").references(() => orientation.id, {
       onDelete: "restrict",
     }),
+    mintage: bigint("mintage", { mode: "number" }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
     weight: numeric("weight", measurementColumn),
@@ -135,6 +138,10 @@ export const coin = pgTable(
     check(
       coinSchemaNames.faceValueNumericValuePositiveCheck,
       sql`${coin.faceValueNumericValue} > 0`
+    ),
+    check(
+      coinSchemaNames.mintagePositiveCheck,
+      sql`${coin.mintage} is null or ${coin.mintage} > 0`
     ),
   ]
 )

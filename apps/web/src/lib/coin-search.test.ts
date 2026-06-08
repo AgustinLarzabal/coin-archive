@@ -559,6 +559,17 @@ describe("coinSearchSchema", () => {
       toYear: undefined,
     })
   })
+
+  it("ignores a mintage homepage search param", () => {
+    expect(
+      coinSearchSchema.parse({
+        issuer: "spain",
+        mintage: "1234567",
+      })
+    ).toStrictEqual({
+      issuer: "spain",
+    })
+  })
 })
 
 describe("getCoinListLoaderDeps", () => {
@@ -590,6 +601,34 @@ describe("getCoinListLoaderDeps", () => {
       referenceNumber: "1338",
       rulerCode: "felipe-vi",
       themeCode: "map",
+      toYear: 1902,
+    })
+  })
+
+  it("does not forward mintage to the coin listing boundary", () => {
+    const deps = getCoinListLoaderDeps({
+      ...currentSearch,
+      mintage: "1234567",
+    } as Parameters<typeof getCoinListLoaderDeps>[0])
+
+    expect(deps).not.toHaveProperty("mintage")
+    expect(deps).toMatchObject({
+      catalogueCode: "km",
+      compositionCode: "silver-900",
+      currencyCode: "euro",
+      distributionCode: "circulating-commemorative",
+      fromYear: 1898,
+      issuerCode: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxWeight: 8.75,
+      maxValue: 2,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minWeight: 4.5,
+      minValue: 0.5,
+      referenceNumber: "1338",
+      rulerCode: "felipe-vi",
       toYear: 1902,
     })
   })

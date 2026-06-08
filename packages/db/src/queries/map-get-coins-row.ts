@@ -95,6 +95,7 @@ export type GetCoinsRow = {
   title: string
   createdAt: Date
   updatedAt: Date
+  mintage: number | null
   minYear: number | null
   maxYear: number | null
   weight: number | null
@@ -274,7 +275,7 @@ type CoinEntry = {
 
 type CoinRecordBase = Pick<
   GetCoinsRow,
-  "id" | "title" | "createdAt" | "updatedAt"
+  "id" | "title" | "createdAt" | "updatedAt" | "mintage"
 >
 
 export type CoinRecord = CoinRecordBase & {
@@ -682,6 +683,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
     orientation: mapOrientation(row),

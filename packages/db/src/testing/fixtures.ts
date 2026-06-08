@@ -34,6 +34,7 @@ type CreateCoinInput = {
   faceValueText?: string
   issuerId: string
   maxYear?: number
+  mintage?: number
   minYear?: number
   orientationId?: string
   thickness?: number
@@ -139,6 +140,7 @@ export async function createCoin({
   faceValueText = "1 Test Unit",
   issuerId,
   maxYear,
+  mintage,
   minYear,
   orientationId,
   thickness,
@@ -163,6 +165,7 @@ export async function createCoin({
       faceValueText,
       issuerId,
       maxYear,
+      mintage,
       minYear,
       orientationId,
       diameter,

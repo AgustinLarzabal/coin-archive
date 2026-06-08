@@ -106,6 +106,7 @@ function insertCoinRow(input: {
   issuerId: string | null
   minYear?: number
   maxYear?: number
+  mintage?: number | null
   title: string
 }) {
   return db.execute(sql`
@@ -117,6 +118,7 @@ function insertCoinRow(input: {
       "face_value_text",
       "face_value_numeric_value",
       "currency_id",
+      "mintage",
       "min_year",
       "max_year"
     )
@@ -128,6 +130,7 @@ function insertCoinRow(input: {
       ${input.faceValueText === undefined ? "1 Test Unit" : input.faceValueText},
       ${input.faceValueNumericValue === undefined ? 1 : input.faceValueNumericValue},
       ${input.currencyId === undefined ? null : input.currencyId},
+      ${input.mintage === undefined ? null : input.mintage},
       ${input.minYear ?? null},
       ${input.maxYear ?? null}
     )
@@ -760,6 +763,29 @@ describe("coin schema constraints", () => {
     ).resolves.toBeDefined()
   })
 
+  it("allows coins with unknown or positive whole-number mintage", async () => {
+    const { distributionId, issuerId } = await createCoinDependencies()
+
+    await expect(
+      createCoin({
+        title: "Unknown Mintage Coin",
+        issuerId,
+        distributionId,
+        createdAt: new Date("2026-06-02T20:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+
+    await expect(
+      createCoin({
+        title: "Known Mintage Coin",
+        issuerId,
+        distributionId,
+        mintage: 1234567,
+        createdAt: new Date("2026-06-02T21:00:00.000Z"),
+      })
+    ).resolves.toBeDefined()
+  })
+
   it("rejects coins with only min_year present", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
@@ -813,6 +839,26 @@ describe("coin schema constraints", () => {
     )
   })
 
+  it("rejects non-whole mintage values", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await expect(
+      insertCoinRow({
+        compositionId,
+        currencyId,
+        distributionId,
+        issuerId,
+        mintage: 1.5,
+        title: "Fractional Mintage Coin",
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "22P02",
+      }),
+    })
+  })
+
   it.each([
     [
       "faceValueNumericValue",
@@ -830,8 +876,10 @@ describe("coin schema constraints", () => {
     ["diameter", -1, coinSchemaNames.diameterPositiveCheck],
     ["thickness", 0, coinSchemaNames.thicknessPositiveCheck],
     ["thickness", -0.5, coinSchemaNames.thicknessPositiveCheck],
+    ["mintage", 0, coinSchemaNames.mintagePositiveCheck],
+    ["mintage", -1, coinSchemaNames.mintagePositiveCheck],
   ] as const)(
-    "rejects non-positive %s measurements",
+    "rejects non-positive %s values",
     async (field, value, constraintName) => {
       const { distributionId, issuerId } = await createCoinDependencies()
 

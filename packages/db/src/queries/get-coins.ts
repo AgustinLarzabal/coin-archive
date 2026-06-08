@@ -25,6 +25,7 @@ const getCoinsSelection = {
   title: coin.title,
   createdAt: coin.createdAt,
   updatedAt: coin.updatedAt,
+  mintage: coin.mintage,
   minYear: coin.minYear,
   maxYear: coin.maxYear,
   faceValueText: coin.faceValueText,

@@ -4,6 +4,14 @@ export function formatThemeNames(themes: CoinRecord["themes"]) {
   return themes.map(({ name }) => name).join(", ")
 }
 
+function formatMintage(mintage: number | null) {
+  if (mintage === null) {
+    return null
+  }
+
+  return new Intl.NumberFormat("en-US").format(mintage)
+}
+
 type CoinListItemProps = {
   coin: CoinRecord
   issueYearRangeLabel: string
@@ -19,6 +27,7 @@ export function CoinListItem({
 }: CoinListItemProps) {
   const themeNames =
     coin.themes.length > 0 ? formatThemeNames(coin.themes) : null
+  const formattedMintage = formatMintage(coin.mintage)
 
   return (
     <li className="border-b border-border pb-4">
@@ -41,6 +50,11 @@ export function CoinListItem({
       {coin.orientation ? (
         <p className="text-sm text-muted-foreground">
           Orientation: {coin.orientation.name}
+        </p>
+      ) : null}
+      {formattedMintage ? (
+        <p className="text-sm text-muted-foreground">
+          Mintage: {formattedMintage}
         </p>
       ) : null}
       <p className="text-sm text-muted-foreground">{issueYearRangeLabel}</p>

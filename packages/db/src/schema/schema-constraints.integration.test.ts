@@ -72,6 +72,15 @@ async function expectConstraintError(
   })
 }
 
+async function expectCountQueryResult(
+  countQuery: Promise<Array<{ count: number }>>,
+  expectedCount: number
+) {
+  const [result] = await countQuery
+
+  expect(result?.count).toBe(expectedCount)
+}
+
 async function createCoinDependencies() {
   const [createdIssuer, createdDistribution, createdComposition, createdCurrency] =
     await Promise.all([
@@ -432,12 +441,13 @@ describe("theme schema constraints", () => {
 
     await db.delete(coin).where(eq(coin.id, createdCoin.id))
 
-    const [remainingThemeAttributions] = await db
-      .select({ count: count() })
-      .from(coinTheme)
-      .where(eq(coinTheme.themeId, createdTheme.id))
-
-    expect(remainingThemeAttributions?.count).toBe(0)
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(coinTheme)
+        .where(eq(coinTheme.themeId, createdTheme.id)),
+      0
+    )
   })
 })
 
@@ -515,12 +525,13 @@ describe("orientation schema constraints", () => {
 
     await db.delete(coin).where(eq(coin.id, createdCoin.id))
 
-    const [remainingOrientations] = await db
-      .select({ count: count() })
-      .from(orientation)
-      .where(eq(orientation.id, createdOrientation.id))
-
-    expect(remainingOrientations?.count).toBe(1)
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(orientation)
+        .where(eq(orientation.id, createdOrientation.id)),
+      1
+    )
   })
 })
 
@@ -654,12 +665,10 @@ describe("rim schema constraints", () => {
 
     await db.delete(coin).where(eq(coin.id, createdCoin.id))
 
-    const [remainingRims] = await db
-      .select({ count: count() })
-      .from(rim)
-      .where(eq(rim.id, createdRim.id))
-
-    expect(remainingRims?.count).toBe(1)
+    await expectCountQueryResult(
+      db.select({ count: count() }).from(rim).where(eq(rim.id, createdRim.id)),
+      1
+    )
   })
 })
 
@@ -1518,12 +1527,13 @@ describe("coin mint schema constraints", () => {
 
     await db.delete(coin).where(eq(coin.id, createdCoin.id))
 
-    const [attributionCount] = await db
-      .select({ count: count() })
-      .from(coinMint)
-      .where(eq(coinMint.mintId, createdMint.id))
-
-    expect(attributionCount?.count).toBe(0)
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(coinMint)
+        .where(eq(coinMint.mintId, createdMint.id)),
+      0
+    )
   })
 })
 

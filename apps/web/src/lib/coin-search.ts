@@ -15,14 +15,18 @@ import type {
   ShapeOption,
   ThemeOption,
 } from "@workspace/db"
+import { demonetizationFilterValues } from "@workspace/db"
 import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
-const demonetizationFilterValues = [
-  "demonetized",
-  "not-demonetized",
-  "unknown",
-] as const satisfies readonly DemonetizationFilterValue[]
+
+function isDemonetizationFilterValue(
+  value: string
+): value is DemonetizationFilterValue {
+  return demonetizationFilterValues.some(
+    (demonetizationFilterValue) => demonetizationFilterValue === value
+  )
+}
 
 const optionalDemonetizationFilterSchema = z.preprocess((value) => {
   if (typeof value !== "string") {
@@ -31,11 +35,7 @@ const optionalDemonetizationFilterSchema = z.preprocess((value) => {
 
   const normalizedValue = value.trim()
 
-  if (
-    demonetizationFilterValues.includes(
-      normalizedValue as DemonetizationFilterValue
-    )
-  ) {
+  if (isDemonetizationFilterValue(normalizedValue)) {
     return normalizedValue
   }
 
@@ -196,14 +196,19 @@ type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
 
-export const demonetizationFilterOptions = [
-  { label: "Demonetized", value: "demonetized" },
-  { label: "Not demonetized", value: "not-demonetized" },
-  { label: "Unknown", value: "unknown" },
-] as const satisfies ReadonlyArray<{
+const demonetizationFilterLabels: Record<DemonetizationFilterValue, string> = {
+  demonetized: "Demonetized",
+  "not-demonetized": "Not demonetized",
+  unknown: "Unknown",
+}
+
+export const demonetizationFilterOptions: ReadonlyArray<{
   label: string
   value: DemonetizationFilterValue
-}>
+}> = demonetizationFilterValues.map((value) => ({
+  label: demonetizationFilterLabels[value],
+  value,
+}))
 
 export function isCodeOptionEqual<T extends OptionWithCode>(left: T, right: T) {
   return left.code === right.code
@@ -536,7 +541,5 @@ export function formatMeasurementLabel(
 export function getDemonetizationFilterLabel(
   demonetization: DemonetizationFilterValue
 ) {
-  return demonetizationFilterOptions.find(
-    (option) => option.value === demonetization
-  )!.label
+  return demonetizationFilterLabels[demonetization]
 }

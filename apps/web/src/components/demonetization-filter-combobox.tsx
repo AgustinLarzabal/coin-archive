@@ -7,10 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
-import {
-  demonetizationFilterOptions,
-  getDemonetizationFilterLabel,
-} from "../lib/coin-search"
+import { demonetizationFilterOptions } from "../lib/coin-search"
 
 type DemonetizationFilterOption = (typeof demonetizationFilterOptions)[number]
 
@@ -28,20 +25,32 @@ function isDemonetizationOptionEqual(
   return left.value === right.value
 }
 
+function getSelectedDemonetizationOption(
+  demonetization: DemonetizationFilterValue | undefined
+) {
+  if (demonetization === undefined) {
+    return null
+  }
+
+  return (
+    demonetizationFilterOptions.find((option) => option.value === demonetization)
+    ?? null
+  )
+}
+
 export function DemonetizationFilterCombobox({
   onValueChange,
   selectedDemonetization,
 }: DemonetizationFilterComboboxProps) {
-  const selectedOption =
-    demonetizationFilterOptions.find(
-      (option) => option.value === selectedDemonetization
-    ) ?? null
+  const selectedOption = getSelectedDemonetizationOption(
+    selectedDemonetization
+  )
 
   return (
     <Combobox<DemonetizationFilterOption>
       items={demonetizationFilterOptions}
       value={selectedOption}
-      itemToStringLabel={(option) => getDemonetizationFilterLabel(option.value)}
+      itemToStringLabel={(option) => option.label}
       isItemEqualToValue={isDemonetizationOptionEqual}
       onValueChange={(option) => onValueChange(option?.value)}
     >

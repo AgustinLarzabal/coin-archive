@@ -814,6 +814,50 @@ describe("issuer schema constraints", () => {
 describe("coin schema constraints", () => {
   useTestDatabaseIsolation(db)
 
+  it("stores Demonetization Status as true, false, or null and leaves omitted values unknown", async () => {
+    const dependencies = await createCoinDependencies()
+
+    await insertCoinRow({
+      ...dependencies,
+      title: "Unknown by omission",
+    })
+    await db.insert(coin).values({
+      ...dependencies,
+      title: "Known demonetized",
+      faceValueText: "1 Test Unit",
+      faceValueNumericValue: 1,
+      isDemonetized: true,
+    })
+    await db.insert(coin).values({
+      ...dependencies,
+      title: "Known not demonetized",
+      faceValueText: "1 Test Unit",
+      faceValueNumericValue: 1,
+      isDemonetized: false,
+    })
+    await db.insert(coin).values({
+      ...dependencies,
+      title: "Explicitly unknown",
+      faceValueText: "1 Test Unit",
+      faceValueNumericValue: 1,
+      isDemonetized: null,
+    })
+
+    const storedStatuses = await db
+      .select({
+        title: coin.title,
+        isDemonetized: coin.isDemonetized,
+      })
+      .from(coin)
+
+    expect(storedStatuses).toEqual([
+      { title: "Unknown by omission", isDemonetized: null },
+      { title: "Known demonetized", isDemonetized: true },
+      { title: "Known not demonetized", isDemonetized: false },
+      { title: "Explicitly unknown", isDemonetized: null },
+    ])
+  })
+
   it("requires every coin to have exactly one direct issuer", async () => {
     const [standardCirculation, silver900, euro] = await Promise.all([
       createDistribution({

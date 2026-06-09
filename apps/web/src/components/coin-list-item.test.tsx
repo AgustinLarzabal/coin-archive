@@ -12,6 +12,7 @@ const baseCoin: CoinRecord = {
   createdAt: timestamp,
   updatedAt: timestamp,
   comments: null,
+  isDemonetized: null,
   issueYearRange: null,
   faceValue: {
     text: "1 Euro",
@@ -91,6 +92,29 @@ describe("CoinListItem", () => {
     const markup = renderCoinListItemMarkup()
 
     expect(markup).not.toContain("Mintage:")
+  })
+
+  it("renders known demonetized, known not demonetized, and unknown Demonetization Status distinctly", () => {
+    const demonetizedMarkup = renderCoinListItemMarkup({
+      ...baseCoin,
+      isDemonetized: true,
+    })
+    const notDemonetizedMarkup = renderCoinListItemMarkup({
+      ...baseCoin,
+      isDemonetized: false,
+    })
+    const unknownMarkup = renderCoinListItemMarkup({
+      ...baseCoin,
+      isDemonetized: null,
+    })
+
+    expect(demonetizedMarkup).toContain(
+      "Demonetization Status: Demonetized"
+    )
+    expect(notDemonetizedMarkup).toContain(
+      "Demonetization Status: Not demonetized"
+    )
+    expect(unknownMarkup).toContain("Demonetization Status: Unknown")
   })
 
   it("renders a Themes row when a coin has one or more themes", () => {

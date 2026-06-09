@@ -15,6 +15,18 @@ function formatMintage(mintage: number | null) {
   return mintageFormatter.format(mintage)
 }
 
+function formatDemonetizationStatus(isDemonetized: boolean | null) {
+  if (isDemonetized === true) {
+    return "Demonetized"
+  }
+
+  if (isDemonetized === false) {
+    return "Not demonetized"
+  }
+
+  return "Unknown"
+}
+
 type CoinListItemProps = {
   coin: CoinRecord
   issueYearRangeLabel: string
@@ -31,6 +43,7 @@ export function CoinListItem({
   const themeNames =
     coin.themes.length > 0 ? formatThemeNames(coin.themes) : null
   const formattedMintage = formatMintage(coin.mintage)
+  const demonetizationStatus = formatDemonetizationStatus(coin.isDemonetized)
 
   return (
     <li className="border-b border-border pb-4">
@@ -40,6 +53,9 @@ export function CoinListItem({
       </p>
       <p className={detailClassName}>Composition: {coin.composition.name}</p>
       <p className={detailClassName}>Face Value: {coin.faceValue.text}</p>
+      <p className={detailClassName}>
+        Demonetization Status: {demonetizationStatus}
+      </p>
       {mintNames ? (
         <p className={detailClassName}>Mints: {mintNames}</p>
       ) : null}

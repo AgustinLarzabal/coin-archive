@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm"
 import {
+  boolean,
   bigint,
   check,
   index,
@@ -107,6 +108,7 @@ export const coin = pgTable(
       onDelete: "restrict",
     }),
     comments: text("comments"),
+    isDemonetized: boolean("is_demonetized"),
     mintage: bigint("mintage", { mode: "number" }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),

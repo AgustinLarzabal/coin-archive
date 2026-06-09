@@ -43,6 +43,7 @@ type CreateCoinInput = {
   edgeDescription?: string | null
   edgeId?: string
   edgeLettering?: string | null
+  isDemonetized?: boolean | null
   issuerId: string
   maxYear?: number
   mintage?: number | null
@@ -187,6 +188,7 @@ export async function createCoin({
   edgeLettering,
   faceValueNumericValue = 1,
   faceValueText = "1 Test Unit",
+  isDemonetized,
   issuerId,
   maxYear,
   mintage,
@@ -218,6 +220,7 @@ export async function createCoin({
       edgeLettering,
       faceValueNumericValue,
       faceValueText,
+      isDemonetized,
       issuerId,
       maxYear,
       mintage,

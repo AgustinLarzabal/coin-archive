@@ -98,6 +98,49 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("returns tri-state Demonetization Status without inferring false from unknown records", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const unknownCoin = await createCoin({
+      title: "Unknown Status Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const activeCoin = await createCoin({
+      title: "Not Demonetized Coin",
+      issuerId: spain.id,
+      isDemonetized: false,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const demonetizedCoin = await createCoin({
+      title: "Demonetized Coin",
+      issuerId: spain.id,
+      isDemonetized: true,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: demonetizedCoin.id,
+        title: "Demonetized Coin",
+        isDemonetized: true,
+      },
+      {
+        id: activeCoin.id,
+        title: "Not Demonetized Coin",
+        isDemonetized: false,
+      },
+      {
+        id: unknownCoin.id,
+        title: "Unknown Status Coin",
+        isDemonetized: null,
+      },
+    ])
+  })
+
   it("returns full issuer data and an empty rulers array when a coin has no ruler attributions", async () => {
     const ancientWorld = await createIssuer({
       code: "ancient-world",
@@ -141,6 +184,7 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         comments: null,
+        isDemonetized: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -2396,6 +2440,7 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         comments: null,
+        isDemonetized: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -2955,6 +3000,7 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         comments: null,
+        isDemonetized: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -3306,6 +3352,7 @@ describe("getCoins integration", () => {
         createdAt,
         updatedAt: createdAt,
         comments: null,
+        isDemonetized: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {

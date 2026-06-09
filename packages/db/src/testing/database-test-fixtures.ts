@@ -50,6 +50,7 @@ export async function insertCoin(input: {
   distributionId?: string
   faceValueNumericValue?: number
   faceValueText?: string
+  isDemonetized?: boolean | null
   issuerId: string
   maxYear?: number
   minYear?: number
@@ -71,6 +72,7 @@ export async function insertCoin(input: {
       distributionId,
       faceValueNumericValue: input.faceValueNumericValue ?? 1,
       faceValueText: input.faceValueText ?? "1 Test Unit",
+      isDemonetized: input.isDemonetized,
       issuerId: input.issuerId,
       maxYear: input.maxYear,
       minYear: input.minYear,

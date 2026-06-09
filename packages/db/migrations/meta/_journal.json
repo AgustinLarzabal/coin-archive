@@ -8,6 +8,13 @@
       "when": 1781012258603,
       "tag": "0000_amusing_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781016000000,
+      "tag": "0001_add_coin_demonetization_status",
+      "breakpoints": true
     }
   ]
 }

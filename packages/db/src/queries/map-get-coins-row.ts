@@ -149,6 +149,7 @@ export type GetCoinsRow = {
   createdAt: Date
   updatedAt: Date
   comments: string | null
+  isDemonetized?: boolean | null
   mintage: number | null
   minYear: number | null
   maxYear: number | null
@@ -298,7 +299,9 @@ type CoinRulerAttribution = {
 type CoinRecordBase = Pick<
   GetCoinsRow,
   "id" | "title" | "createdAt" | "updatedAt" | "comments" | "mintage"
->
+> & {
+  isDemonetized: boolean | null
+}
 
 export type CoinRecord = CoinRecordBase & {
   composition: CoinComposition
@@ -833,6 +836,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     comments: normalizeCoinComments(row.comments),
+    isDemonetized: row.isDemonetized ?? null,
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),

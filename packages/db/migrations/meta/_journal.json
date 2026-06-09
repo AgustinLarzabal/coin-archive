@@ -127,6 +127,13 @@
       "when": 1780994965656,
       "tag": "0017_fuzzy_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1780992000000,
+      "tag": "0015_noisy_edge",
+      "breakpoints": true
     }
   ]
 }

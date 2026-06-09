@@ -12,6 +12,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
@@ -33,6 +34,7 @@ import {
   seededCompositions,
   seededCurrencies,
   seededDistributions,
+  seededEdges,
   seededEngravers,
   seededIssuers,
   seededMints,
@@ -52,6 +54,7 @@ type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
+type EdgeIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
@@ -147,6 +150,13 @@ async function deleteSeededEngravers() {
   await deleteSeededRecords(
     seededEngravers.map(({ code }) => code),
     (code) => db.delete(engraver).where(eq(engraver.code, code))
+  )
+}
+
+async function deleteSeededEdges() {
+  await deleteSeededRecords(
+    seededEdges.map(({ code }) => code),
+    (code) => db.delete(edge).where(eq(edge.code, code))
   )
 }
 
@@ -381,6 +391,23 @@ async function seedEngravers() {
   return engraverIdsByCode
 }
 
+async function seedEdges() {
+  const edgeIdsByCode: EdgeIdsByCode = new Map()
+
+  await deleteSeededEdges()
+
+  for (const seededEdge of seededEdges) {
+    const [insertedEdge] = await db
+      .insert(edge)
+      .values(seededEdge)
+      .returning({ id: edge.id })
+
+    edgeIdsByCode.set(seededEdge.code, insertedEdge.id)
+  }
+
+  return edgeIdsByCode
+}
+
 async function seedOrientations() {
   const orientationIdsByCode: OrientationIdsByCode = new Map()
 
@@ -494,6 +521,7 @@ async function seedDistributions() {
 async function seedCoins(
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
+  edgeIdsByCode: EdgeIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   orientationIdsByCode: OrientationIdsByCode,
   shapeIdsByCode: ShapeIdsByCode,
@@ -515,6 +543,7 @@ async function seedCoins(
           seededCoin,
           compositionIdsByCode,
           currencyIdsByCode,
+          edgeIdsByCode,
           issuerIdsByCode,
           orientationIdsByCode,
           shapeIdsByCode,
@@ -607,6 +636,7 @@ function mapSeededCoinToInsertValues(
   seededCoin: (typeof seededCoins)[number],
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
+  edgeIdsByCode: EdgeIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   orientationIdsByCode: OrientationIdsByCode,
   shapeIdsByCode: ShapeIdsByCode,
@@ -618,6 +648,9 @@ function mapSeededCoinToInsertValues(
     distributionCode,
     compositionCode,
     currencyCode,
+    edgeCode,
+    edgeDescription,
+    edgeLettering,
     orientationCode,
     shapeCode,
     rimCode,
@@ -637,6 +670,11 @@ function mapSeededCoinToInsertValues(
       distributionCode,
       "distribution"
     ),
+    edgeDescription,
+    edgeLettering,
+    edgeId: edgeCode
+      ? getRequiredSeededId(edgeIdsByCode, edgeCode, "edge")
+      : undefined,
     issuerId: getRequiredSeededId(issuerIdsByCode, issuerCode, "issuer"),
     orientationId: orientationCode
       ? getRequiredSeededId(
@@ -738,6 +776,7 @@ export async function seedDatabase() {
   const issuerIdsByCode = await seedIssuers()
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
+  const edgeIdsByCode = await seedEdges()
   const mintIdsByCode = await seedMints()
   const engraverIdsByCode = await seedEngravers()
   const orientationIdsByCode = await seedOrientations()
@@ -748,6 +787,7 @@ export async function seedDatabase() {
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
     currencyIdsByCode,
+    edgeIdsByCode,
     issuerIdsByCode,
     orientationIdsByCode,
     shapeIdsByCode,

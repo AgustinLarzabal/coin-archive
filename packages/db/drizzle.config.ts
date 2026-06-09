@@ -15,6 +15,7 @@ export default defineConfig({
     "./src/schema/composition.ts",
     "./src/schema/currency.ts",
     "./src/schema/distribution.ts",
+    "./src/schema/edge.ts",
     "./src/schema/engraver.ts",
     "./src/schema/issuer.ts",
     "./src/schema/mint.ts",

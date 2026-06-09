@@ -14,6 +14,7 @@ import {
   currency,
   db,
   distribution,
+  edge,
   engraver,
   issuer,
   mint,
@@ -36,6 +37,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEdge,
   createEngraver,
   createIssuer,
   createMint,
@@ -56,6 +58,7 @@ import { coinSchemaNames } from "./coin"
 import { compositionSchemaNames } from "./composition"
 import { currencySchemaNames } from "./currency"
 import { distributionSchemaNames } from "./distribution"
+import { edgeSchemaNames } from "./edge"
 import { engraverSchemaNames } from "./engraver"
 import { issuerSchemaNames } from "./issuer"
 import { coinMintSchemaNames } from "./coin-mint"
@@ -275,6 +278,59 @@ describe("currency schema constraints", () => {
       }),
       currencySchemaNames.codeLowerUniqueIndex,
       "23505"
+    )
+  })
+})
+
+describe("edge schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects edge codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(edge).values({
+        code: "Security Edge",
+        name: "Security edge",
+      }),
+      edgeSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate edge codes ignoring case", async () => {
+    await db.insert(edge).values({
+      code: "reeded",
+      name: "Reeded",
+    })
+
+    await expectConstraintError(
+      db.insert(edge).values({
+        code: "REEDED",
+        name: "Duplicate Reeded",
+      }),
+      edgeSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting an edge while coins still reference it", async () => {
+    const { distributionId, issuerId } = await createCoinDependencies()
+    const reeded = await createEdge({
+      code: "reeded",
+      name: "Reeded",
+    })
+
+    await createCoin({
+      title: "Referenced Edge Coin",
+      distributionId,
+      edgeId: reeded.id,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(edge).where(sql`${edge.id} = ${reeded.id}`),
+      "coin_edge_id_edge_id_fk",
+      "23503"
     )
   })
 })

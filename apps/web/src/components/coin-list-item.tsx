@@ -60,6 +60,9 @@ export function CoinListItem({
       {coin.rim ? (
         <p className="text-sm text-muted-foreground">Rim: {coin.rim.name}</p>
       ) : null}
+      {coin.edge?.name ? (
+        <p className="text-sm text-muted-foreground">Edge: {coin.edge.name}</p>
+      ) : null}
       {formattedMintage ? (
         <p className="text-sm text-muted-foreground">
           Mintage: {formattedMintage}

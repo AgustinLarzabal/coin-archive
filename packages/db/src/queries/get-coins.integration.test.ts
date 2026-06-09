@@ -12,6 +12,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEdge,
   createEngraver,
   createIssuer,
   createMint,
@@ -829,6 +830,123 @@ describe("getCoins integration", () => {
         rimCode: "unknown-rim",
       })
     ).resolves.toStrictEqual([])
+  })
+
+  it("returns flat Edge data, preserves text-only edge details, and filters by canonical edge code only", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const reeded = await createEdge({
+      code: "reeded",
+      name: "Reeded",
+    })
+    const security = await createEdge({
+      code: "security",
+      name: "Security edge",
+    })
+    const noEdgeCoin = await createCoin({
+      title: "No Edge Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const textOnlyEdgeCoin = await createCoin({
+      title: "Text Only Edge Coin",
+      issuerId: spain.id,
+      edgeDescription: "Lettered edge with stars.",
+      edgeLettering: "E PLURIBUS UNUM",
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const classifiedEdgeCoin = await createCoin({
+      title: "Classified Edge Coin",
+      issuerId: spain.id,
+      edgeId: reeded.id,
+      edgeDescription: "Alternating grooves.",
+      edgeLettering: "  ",
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Other Edge Coin",
+      issuerId: spain.id,
+      edgeId: security.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 4 })).resolves.toMatchObject([
+      {
+        title: "Other Edge Coin",
+        edge: {
+          code: "security",
+          name: "Security edge",
+          description: null,
+          lettering: null,
+        },
+      },
+      {
+        id: classifiedEdgeCoin.id,
+        title: "Classified Edge Coin",
+        edge: {
+          id: reeded.id,
+          code: "reeded",
+          name: "Reeded",
+          description: "Alternating grooves.",
+          lettering: null,
+        },
+      },
+      {
+        id: textOnlyEdgeCoin.id,
+        title: "Text Only Edge Coin",
+        edge: {
+          id: null,
+          code: null,
+          name: null,
+          description: "Lettered edge with stars.",
+          lettering: "E PLURIBUS UNUM",
+        },
+      },
+      {
+        id: noEdgeCoin.id,
+        title: "No Edge Coin",
+        edge: null,
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 4,
+        edgeCode: "REEDED",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: classifiedEdgeCoin.id,
+        title: "Classified Edge Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 4,
+        edgeCode: "security",
+      })
+    ).resolves.toMatchObject([
+      {
+        title: "Other Edge Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 4,
+        edgeCode: "  ",
+      })
+    ).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: textOnlyEdgeCoin.id,
+          title: "Text Only Edge Coin",
+        }),
+      ])
+    )
   })
 
   it("filters coins by exact theme code case-insensitively, composes with other filters, and still returns all themes on matching coins", async () => {

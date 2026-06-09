@@ -24,6 +24,7 @@ const baseCoin: CoinRecord = {
     },
   },
   orientation: null,
+  edge: null,
   shape: null,
   obverse: null,
   reverse: null,
@@ -201,5 +202,40 @@ describe("CoinListItem", () => {
     expect(markup.indexOf("Rim: Raised, both sides")).toBeLessThan(
       markup.indexOf("Mintage: 1,234,567")
     )
+  })
+
+  it("renders an Edge row using the display name only when known", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      edge: {
+        id: "edge-1",
+        code: "reeded",
+        name: "Reeded",
+        description: "Alternating grooves.",
+        lettering: "E PLURIBUS UNUM",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    })
+
+    expect(markup).toContain("Edge: Reeded")
+    expect(markup).not.toContain("reeded")
+  })
+
+  it("omits the Edge row when no Edge name is known", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      edge: {
+        id: null,
+        code: null,
+        name: null,
+        description: "Lettered edge.",
+        lettering: "E PLURIBUS UNUM",
+        createdAt: null,
+        updatedAt: null,
+      },
+    })
+
+    expect(markup).not.toContain("Edge:")
   })
 })

@@ -34,6 +34,16 @@ type GetCoinsOrientationColumns = {
   orientationUpdatedAt?: Date | null
 }
 
+type GetCoinsEdgeColumns = {
+  edgeId?: string | null
+  edgeCode?: string | null
+  edgeName?: string | null
+  edgeDescription?: string | null
+  edgeLettering?: string | null
+  edgeCreatedAt?: Date | null
+  edgeUpdatedAt?: Date | null
+}
+
 type GetCoinsShapeColumns = {
   shapeId?: string | null
   shapeCode?: string | null
@@ -144,16 +154,17 @@ export type GetCoinsRow = {
   thickness: number | null
 } & GetCoinsCompositionColumns &
   GetCoinsCurrencyColumns &
-  GetCoinsOrientationColumns &
-  GetCoinsShapeColumns &
-  GetCoinsRimColumns &
   GetCoinsFaceColumns &
   GetCoinsDistributionColumns &
+  GetCoinsEdgeColumns &
   GetCoinsIssuerColumns &
   GetCoinsMintColumns &
-  GetCoinsThemeColumns &
+  GetCoinsOrientationColumns &
+  GetCoinsReferenceColumns &
+  GetCoinsRimColumns &
   GetCoinsRulerColumns &
-  GetCoinsReferenceColumns
+  GetCoinsShapeColumns &
+  GetCoinsThemeColumns
 
 type GetCoinsParentIssuerColumns = Pick<
   GetCoinsRow,
@@ -192,7 +203,7 @@ type GetCoinsCurrencyRecordColumns = Pick<
   | "currencyUpdatedAt"
 >
 
-export type CoinIssuerParent = {
+export type CoinCodeNamedRecord = {
   id: string
   code: string
   name: string
@@ -200,21 +211,16 @@ export type CoinIssuerParent = {
   updatedAt: Date
 }
 
-export type CoinDistribution = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export type CoinIssuerParent = CoinCodeNamedRecord
+export type CoinDistribution = CoinCodeNamedRecord
+export type CoinOrientation = CoinCodeNamedRecord
+export type CoinShape = CoinCodeNamedRecord
+export type CoinRim = CoinCodeNamedRecord
+export type CoinRecordMint = CoinCodeNamedRecord
+export type CoinThemeRecord = CoinCodeNamedRecord
 
-export type CoinComposition = {
-  id: string
-  code: string
-  name: string
+export type CoinComposition = CoinCodeNamedRecord & {
   description: string | null
-  createdAt: Date
-  updatedAt: Date
 }
 
 export type CoinIssueYearRange = {
@@ -222,13 +228,8 @@ export type CoinIssueYearRange = {
   maxYear: number
 }
 
-export type CoinCurrency = {
-  id: string
-  code: string
-  name: string
+export type CoinCurrency = CoinCodeNamedRecord & {
   fullName: string
-  createdAt: Date
-  updatedAt: Date
 }
 
 export type CoinFaceValue = {
@@ -243,9 +244,15 @@ export type CoinFaceDetails = {
   engravers: CoinEngraver[]
 }
 
-export type CoinOrientation = CoinCodeNamedRecord
-export type CoinShape = CoinCodeNamedRecord
-export type CoinRim = CoinCodeNamedRecord
+export type CoinEdge = {
+  id: string | null
+  code: string | null
+  name: string | null
+  description: string | null
+  lettering: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
+}
 
 export type CoinMeasurements = {
   weight: number | null
@@ -253,29 +260,13 @@ export type CoinMeasurements = {
   thickness: number | null
 }
 
-export type CoinIssuer = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
+export type CoinIssuer = CoinCodeNamedRecord & {
   parent: CoinIssuerParent | null
 }
 
-export type CoinRulerGroup = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export type CoinRulerGroup = CoinCodeNamedRecord
 
-export type CoinRuler = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
+export type CoinRuler = CoinCodeNamedRecord & {
   group: CoinRulerGroup | null
 }
 
@@ -301,18 +292,35 @@ type CoinRulerAttribution = {
   ruler: CoinRuler
 }
 
-type CoinCodeNamedRecord = {
-  id: string
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
+type CoinRecordBase = Pick<
+  GetCoinsRow,
+  "id" | "title" | "createdAt" | "updatedAt" | "mintage"
+>
+
+export type CoinRecord = CoinRecordBase & {
+  composition: CoinComposition
+  distribution: CoinDistribution
+  edge: CoinEdge | null
+  faceValue: CoinFaceValue
+  issueYearRange: CoinIssueYearRange | null
+  issuer: CoinIssuer
+  measurements: CoinMeasurements
+  mints: CoinRecordMint[]
+  obverse: CoinFaceDetails | null
+  orientation: CoinOrientation | null
+  references: CoinCatalogueReference[]
+  reverse: CoinFaceDetails | null
+  rim: CoinRim | null
+  rulers: CoinRuler[]
+  shape: CoinShape | null
+  themes: CoinThemeRecord[]
 }
 
 export type CoinEngraver = CoinCodeNamedRecord
-export type CoinRecordMint = CoinCodeNamedRecord
-
-export type CoinThemeRecord = CoinCodeNamedRecord
+type CoinEntryCoin = Omit<
+  CoinRecord,
+  "mints" | "references" | "rulers" | "themes"
+>
 
 type CoinFaceSide = "obverse" | "reverse"
 
@@ -329,34 +337,6 @@ type CoinEntry = {
   seenRulerAttributionKeys: Set<string>
   seenCatalogueReferenceIds: Set<string>
 }
-
-type CoinRecordBase = Pick<
-  GetCoinsRow,
-  "id" | "title" | "createdAt" | "updatedAt" | "mintage"
->
-
-export type CoinRecord = CoinRecordBase & {
-  issueYearRange: CoinIssueYearRange | null
-  faceValue: CoinFaceValue
-  obverse: CoinFaceDetails | null
-  reverse: CoinFaceDetails | null
-  orientation: CoinOrientation | null
-  shape: CoinShape | null
-  rim: CoinRim | null
-  measurements: CoinMeasurements
-  composition: CoinComposition
-  distribution: CoinDistribution
-  issuer: CoinIssuer
-  mints: CoinRecordMint[]
-  themes: CoinThemeRecord[]
-  rulers: CoinRuler[]
-  references: CoinCatalogueReference[]
-}
-
-type CoinEntryCoin = Omit<
-  CoinRecord,
-  "mints" | "themes" | "rulers" | "references"
->
 
 function mapIssueYearRange({
   minYear,
@@ -382,117 +362,6 @@ function mapMeasurements({
     diameter,
     thickness,
   }
-}
-
-function mapOrientation({
-  orientationId: id,
-  orientationCode: code,
-  orientationName: name,
-  orientationCreatedAt: createdAt,
-  orientationUpdatedAt: updatedAt,
-}: GetCoinsOrientationColumns): CoinOrientation | null {
-  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
-}
-
-function mapShape({
-  shapeId: id,
-  shapeCode: code,
-  shapeName: name,
-  shapeCreatedAt: createdAt,
-  shapeUpdatedAt: updatedAt,
-}: GetCoinsShapeColumns): CoinShape | null {
-  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
-}
-
-function mapRim({
-  rimId: id,
-  rimCode: code,
-  rimName: name,
-  rimCreatedAt: createdAt,
-  rimUpdatedAt: updatedAt,
-}: GetCoinsRimColumns): CoinRim | null {
-  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
-}
-
-function mapCurrency({
-  currencyId,
-  currencyCode,
-  currencyName,
-  currencyFullName,
-  currencyCreatedAt,
-  currencyUpdatedAt,
-}: GetCoinsCurrencyRecordColumns): CoinCurrency {
-  return {
-    id: currencyId,
-    code: currencyCode,
-    name: currencyName,
-    fullName: currencyFullName,
-    createdAt: currencyCreatedAt,
-    updatedAt: currencyUpdatedAt,
-  }
-}
-
-function mapFaceValue({
-  faceValueText,
-  faceValueNumericValue,
-  ...currencyColumns
-}: GetCoinsCurrencyColumns): CoinFaceValue {
-  return {
-    text: faceValueText,
-    numericValue: faceValueNumericValue,
-    currency: mapCurrency(currencyColumns),
-  }
-}
-
-function normalizeOptionalPlainText(value: string | null | undefined) {
-  if (value === null || value === undefined) {
-    return null
-  }
-
-  return value.trim() ? value : null
-}
-
-function mapCoinFaceDetails({
-  description,
-  lettering,
-  engravers,
-}: {
-  description?: string | null
-  lettering?: string | null
-  engravers: CoinEngraver[]
-}): CoinFaceDetails | null {
-  const normalizedDescription = normalizeOptionalPlainText(description)
-  const normalizedLettering = normalizeOptionalPlainText(lettering)
-
-  if (
-    normalizedDescription === null &&
-    normalizedLettering === null &&
-    engravers.length === 0
-  ) {
-    return null
-  }
-
-  return {
-    description: normalizedDescription,
-    lettering: normalizedLettering,
-    engravers,
-  }
-}
-
-function mapDistribution({
-  distributionId,
-  distributionCode,
-  distributionName,
-  distributionCreatedAt,
-  distributionUpdatedAt,
-}: GetCoinsDistributionColumns): CoinDistribution {
-  return mapCodeNamedRecord({
-    id: distributionId,
-    code: distributionCode,
-    name: distributionName,
-    createdAt: distributionCreatedAt,
-    updatedAt: distributionUpdatedAt,
-  })
 }
 
 function mapCodeNamedRecord({
@@ -528,6 +397,148 @@ function mapOptionalCodeNamedRecord({
     name,
     createdAt,
     updatedAt,
+  })
+}
+
+function mapOrientation({
+  orientationId: id,
+  orientationCode: code,
+  orientationName: name,
+  orientationCreatedAt: createdAt,
+  orientationUpdatedAt: updatedAt,
+}: GetCoinsOrientationColumns): CoinOrientation | null {
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  return value.trim() === "" ? null : value
+}
+
+function mapEdge({
+  edgeId,
+  edgeCode,
+  edgeName,
+  edgeDescription,
+  edgeLettering,
+  edgeCreatedAt,
+  edgeUpdatedAt,
+}: GetCoinsEdgeColumns): CoinEdge | null {
+  const description = normalizeOptionalText(edgeDescription)
+  const lettering = normalizeOptionalText(edgeLettering)
+  const hasLookup =
+    !!edgeId && !!edgeCode && !!edgeName && !!edgeCreatedAt && !!edgeUpdatedAt
+
+  if (!hasLookup && description === null && lettering === null) {
+    return null
+  }
+
+  return {
+    id: hasLookup ? edgeId! : null,
+    code: hasLookup ? edgeCode! : null,
+    name: hasLookup ? edgeName! : null,
+    description,
+    lettering,
+    createdAt: hasLookup ? edgeCreatedAt! : null,
+    updatedAt: hasLookup ? edgeUpdatedAt! : null,
+  }
+}
+
+function mapCoinFaceDetails({
+  description,
+  lettering,
+  engravers,
+}: {
+  description?: string | null
+  lettering?: string | null
+  engravers: CoinEngraver[]
+}): CoinFaceDetails | null {
+  const normalizedDescription = normalizeOptionalText(description)
+  const normalizedLettering = normalizeOptionalText(lettering)
+
+  if (
+    normalizedDescription === null &&
+    normalizedLettering === null &&
+    engravers.length === 0
+  ) {
+    return null
+  }
+
+  return {
+    description: normalizedDescription,
+    lettering: normalizedLettering,
+    engravers,
+  }
+}
+
+function mapShape({
+  shapeId: id,
+  shapeCode: code,
+  shapeName: name,
+  shapeCreatedAt: createdAt,
+  shapeUpdatedAt: updatedAt,
+}: GetCoinsShapeColumns): CoinShape | null {
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
+}
+
+function mapRim({
+  rimId: id,
+  rimCode: code,
+  rimName: name,
+  rimCreatedAt: createdAt,
+  rimUpdatedAt: updatedAt,
+}: GetCoinsRimColumns): CoinRim | null {
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
+}
+
+function mapCurrency({
+  currencyId,
+  currencyCode,
+  currencyName,
+  currencyFullName,
+  currencyCreatedAt,
+  currencyUpdatedAt,
+}: GetCoinsCurrencyRecordColumns): CoinCurrency {
+  return {
+    ...mapCodeNamedRecord({
+      id: currencyId,
+      code: currencyCode,
+      name: currencyName,
+      createdAt: currencyCreatedAt,
+      updatedAt: currencyUpdatedAt,
+    }),
+    fullName: currencyFullName,
+  }
+}
+
+function mapFaceValue({
+  faceValueText,
+  faceValueNumericValue,
+  ...currencyColumns
+}: GetCoinsCurrencyColumns): CoinFaceValue {
+  return {
+    text: faceValueText,
+    numericValue: faceValueNumericValue,
+    currency: mapCurrency(currencyColumns),
+  }
+}
+
+function mapDistribution({
+  distributionId,
+  distributionCode,
+  distributionName,
+  distributionCreatedAt,
+  distributionUpdatedAt,
+}: GetCoinsDistributionColumns): CoinDistribution {
+  return mapCodeNamedRecord({
+    id: distributionId,
+    code: distributionCode,
+    name: distributionName,
+    createdAt: distributionCreatedAt,
+    updatedAt: distributionUpdatedAt,
   })
 }
 
@@ -731,15 +742,7 @@ function compareCatalogueReferences(
   )
 }
 
-function compareMints(left: CoinRecordMint, right: CoinRecordMint): number {
-  return compareCodeNamedRecords(left, right)
-}
-
 function compareEngravers(left: CoinEngraver, right: CoinEngraver): number {
-  return compareCodeNamedRecords(left, right)
-}
-
-function compareThemes(left: CoinThemeRecord, right: CoinThemeRecord): number {
   return compareCodeNamedRecords(left, right)
 }
 
@@ -778,8 +781,8 @@ function mapCoinEntry({
     ...coin,
     obverse: sortFaceEngravers(coin.obverse),
     reverse: sortFaceEngravers(coin.reverse),
-    mints: mints.sort(compareMints),
-    themes: themes.sort(compareThemes),
+    mints: mints.sort(compareCodeNamedRecords),
+    themes: themes.sort(compareCodeNamedRecords),
     rulers: rulerAttributions
       .sort(compareRulerAttributions)
       .map(({ ruler }) => ruler),
@@ -840,6 +843,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
       engravers: [],
     }),
     orientation: mapOrientation(row),
+    edge: mapEdge(row),
     shape: mapShape(row),
     rim: mapRim(row),
     measurements: mapMeasurements(row),

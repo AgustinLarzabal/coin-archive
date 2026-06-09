@@ -22,6 +22,7 @@ export { coinReference } from "./schema/coin-reference"
 export { coinRuler } from "./schema/coin-ruler"
 export { currency } from "./schema/currency"
 export { distribution } from "./schema/distribution"
+export { edge } from "./schema/edge"
 export { engraver } from "./schema/engraver"
 export { issuer } from "./schema/issuer"
 export { mint } from "./schema/mint"
@@ -38,6 +39,7 @@ export type {
   CoinComposition,
   CoinCurrency,
   CoinDistribution,
+  CoinEdge,
   CoinEngraver,
   CoinFaceValue,
   CoinFaceDetails,
@@ -79,6 +81,7 @@ export type { CoinFaceEngraver } from "./schema/coin-face-engraver"
 export type { CoinReference } from "./schema/coin-reference"
 export type { CoinRuler } from "./schema/coin-ruler"
 export type { Distribution } from "./schema/distribution"
+export type { Edge } from "./schema/edge"
 export type { Engraver } from "./schema/engraver"
 export type { Issuer } from "./schema/issuer"
 export type { Ruler } from "./schema/ruler"

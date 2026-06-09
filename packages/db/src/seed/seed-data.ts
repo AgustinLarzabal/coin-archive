@@ -13,6 +13,9 @@ type SeededCoin = {
   compositionCode: string
   currencyCode: string
   distributionCode: string
+  edgeCode?: string
+  edgeDescription?: string
+  edgeLettering?: string
   faceValueNumericValue: number
   faceValueText: string
   issuerCode: string
@@ -77,6 +80,13 @@ type SeededShape = {
 }
 
 type SeededRim = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededEdge = {
   code: string
   name: string
   createdAt: Date
@@ -354,6 +364,9 @@ export const seededCoins: SeededCoin[] = [
     compositionCode: "copper-nickel-clad",
     currencyCode: "euro",
     distributionCode: "circulating-commemorative",
+    edgeCode: "lettered",
+    edgeDescription: "Finely reeded with incuse lettering.",
+    edgeLettering: "2 **",
     faceValueNumericValue: 2,
     faceValueText: "2 Euros",
     issuerCode: "spain",
@@ -522,6 +535,21 @@ export const seededRims: SeededRim[] = [
     name: "Raised, both sides",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+] as const
+
+export const seededEdges: SeededEdge[] = [
+  {
+    code: "lettered",
+    name: "Lettered",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "reeded",
+    name: "Reeded",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
 ] as const
 

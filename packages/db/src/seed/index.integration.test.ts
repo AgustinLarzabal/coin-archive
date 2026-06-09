@@ -257,6 +257,12 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
       title: "Spain 2 Euro",
+      edge: {
+        code: "lettered",
+        name: "Lettered",
+        description: "Finely reeded with incuse lettering.",
+        lettering: "2 **",
+      },
       mints: [
         {
           code: "royal-mint-of-madrid",

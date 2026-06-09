@@ -55,6 +55,11 @@ const currentSearchWithMint = {
   mint: "royal-mint-of-madrid",
 }
 
+const currentSearchWithEdge = {
+  ...currentSearch,
+  edge: "reeded",
+}
+
 const currentSearchWithOrientation = {
   ...currentSearch,
   orientation: "coin-alignment",
@@ -134,6 +139,15 @@ describe("updateCoinSearchFilter", () => {
           filterValue
         )
       ).toStrictEqual(omitFilter(currentSearchWithOrientation, "orientation"))
+    }
+  )
+
+  it.each(emptyFilterValues)(
+    "clears the edge filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(currentSearchWithEdge, "edge", filterValue)
+      ).toStrictEqual(omitFilter(currentSearchWithEdge, "edge"))
     }
   )
 
@@ -516,13 +530,14 @@ describe("applyFaceValueRangeSearch", () => {
 })
 
 describe("coinSearchSchema", () => {
-  it("accepts homepage catalogue, currency, face value, issue year range, measurement, theme, and reference number search params", () => {
+  it("accepts homepage catalogue, currency, edge, face value, issue year range, measurement, theme, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
         composition: "silver-900",
         currency: "euro",
         distribution: "circulating-commemorative",
+        edge: "reeded",
         fromYear: "1898",
         issuer: "spain",
         maxDiameter: "30.5",
@@ -544,6 +559,7 @@ describe("coinSearchSchema", () => {
       composition: "silver-900",
       currency: "euro",
       distribution: "circulating-commemorative",
+      edge: "reeded",
       fromYear: 1898,
       issuer: "spain",
       maxDiameter: 30.5,
@@ -617,10 +633,11 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage currency, mint, theme, engraver, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage currency, edge, mint, theme, engraver, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         ...currentSearch,
+        edge: "reeded",
         engraver: "georgios-stamatopoulos",
         mint: "royal-mint-of-madrid",
         orientation: "coin-alignment",
@@ -633,6 +650,7 @@ describe("getCoinListLoaderDeps", () => {
       compositionCode: "silver-900",
       currencyCode: "euro",
       distributionCode: "circulating-commemorative",
+      edgeCode: "reeded",
       engraverCode: "georgios-stamatopoulos",
       fromYear: 1898,
       issuerCode: "spain",

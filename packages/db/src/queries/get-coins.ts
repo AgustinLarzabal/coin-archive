@@ -12,6 +12,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
@@ -52,6 +53,13 @@ const getCoinsSelection = {
   orientationName: orientation.name,
   orientationCreatedAt: orientation.createdAt,
   orientationUpdatedAt: orientation.updatedAt,
+  edgeId: edge.id,
+  edgeCode: edge.code,
+  edgeName: edge.name,
+  edgeDescription: coin.edgeDescription,
+  edgeLettering: coin.edgeLettering,
+  edgeCreatedAt: edge.createdAt,
+  edgeUpdatedAt: edge.updatedAt,
   shapeId: shape.id,
   shapeCode: shape.code,
   shapeName: shape.name,
@@ -140,7 +148,11 @@ export type GetCoinsOptions = {
   compositionCode?: string
   currencyCode?: string
   distributionCode?: string
+  edgeCode?: string
   engraverCode?: string
+  fromYear?: number
+  issuerCode?: string
+  limit?: number
   maxDiameter?: number
   maxThickness?: number
   maxWeight?: number
@@ -151,23 +163,24 @@ export type GetCoinsOptions = {
   minWeight?: number
   minValue?: number
   orientationCode?: string
-  rimCode?: string
-  shapeCode?: string
-  fromYear?: number
-  issuerCode?: string
-  limit?: number
   referenceNumber?: string
+  rimCode?: string
   rulerCode?: string
+  shapeCode?: string
   themeCode?: string
   toYear?: number
 }
 
 type CoinFilterOptions = Pick<
   GetCoinsOptions,
-  | "distributionCode"
-  | "engraverCode"
+  | "catalogueCode"
   | "compositionCode"
   | "currencyCode"
+  | "distributionCode"
+  | "edgeCode"
+  | "engraverCode"
+  | "fromYear"
+  | "issuerCode"
   | "maxDiameter"
   | "maxThickness"
   | "maxWeight"
@@ -178,26 +191,90 @@ type CoinFilterOptions = Pick<
   | "minWeight"
   | "minValue"
   | "orientationCode"
-  | "rimCode"
-  | "shapeCode"
-  | "fromYear"
-  | "issuerCode"
-  | "rulerCode"
-  | "catalogueCode"
   | "referenceNumber"
+  | "rimCode"
+  | "rulerCode"
+  | "shapeCode"
   | "themeCode"
   | "toYear"
 >
+
+type RelatedCodeFilterOptions = {
+  foreignKeyColumn:
+    | typeof coin.compositionId
+    | typeof coin.currencyId
+    | typeof coin.distributionId
+    | typeof coin.edgeId
+    | typeof coin.orientationId
+    | typeof coin.rimId
+    | typeof coin.shapeId
+  relatedCode: string | undefined
+  relatedCodeColumn:
+    | typeof composition.code
+    | typeof currency.code
+    | typeof distribution.code
+    | typeof edge.code
+    | typeof orientation.code
+    | typeof rim.code
+    | typeof shape.code
+  relatedIdColumn:
+    | typeof composition.id
+    | typeof currency.id
+    | typeof distribution.id
+    | typeof edge.id
+    | typeof orientation.id
+    | typeof rim.id
+    | typeof shape.id
+  relatedTableName:
+    | "composition"
+    | "currency"
+    | "distribution"
+    | "edge"
+    | "orientation"
+    | "rim"
+    | "shape"
+}
+
+type AttributionCodeFilterOptions = {
+  attributionCoinIdColumn: typeof coinMint.coinId | typeof coinTheme.coinId
+  attributionForeignKeyColumn: typeof coinMint.mintId | typeof coinTheme.themeId
+  attributionTableName: "coin_mint" | "coin_theme"
+  relatedCode: string | undefined
+  relatedCodeColumn: typeof mint.code | typeof theme.code
+  relatedIdColumn: typeof mint.id | typeof theme.id
+  relatedTableName: "mint" | "theme"
+}
+
+type CatalogueReferenceFilterOptions = Pick<
+  GetCoinsOptions,
+  "catalogueCode" | "referenceNumber"
+>
+
+type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
+
+type MeasurementRangeFilterOptions = {
+  column:
+    | typeof coin.diameter
+    | typeof coin.faceValueNumericValue
+    | typeof coin.thickness
+    | typeof coin.weight
+  minValue: number | undefined
+  maxValue: number | undefined
+}
 
 function isDefined<T>(value: T | undefined): value is T {
   return value !== undefined
 }
 
 function buildCoinFilter({
-  distributionCode,
-  engraverCode,
+  catalogueCode,
   compositionCode,
   currencyCode,
+  distributionCode,
+  edgeCode,
+  engraverCode,
+  fromYear,
+  issuerCode,
   maxDiameter,
   maxThickness,
   maxWeight,
@@ -208,13 +285,10 @@ function buildCoinFilter({
   minWeight,
   minValue,
   orientationCode,
-  rimCode,
-  shapeCode,
-  fromYear,
-  issuerCode,
-  rulerCode,
-  catalogueCode,
   referenceNumber,
+  rimCode,
+  rulerCode,
+  shapeCode,
   themeCode,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
@@ -240,8 +314,10 @@ function buildCoinFilter({
       maxValue: maxThickness,
     },
   ] as const
+
   const filters = [
     buildDistributionFilter(distributionCode),
+    buildEdgeFilter(edgeCode),
     buildEngraverFilter(engraverCode),
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
@@ -311,6 +387,16 @@ function buildDistributionFilter(
     relatedCodeColumn: distribution.code,
     relatedIdColumn: distribution.id,
     relatedTableName: "distribution",
+  })
+}
+
+function buildEdgeFilter(edgeCode: string | undefined): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.edgeId,
+    relatedCode: edgeCode,
+    relatedCodeColumn: edge.code,
+    relatedIdColumn: edge.id,
+    relatedTableName: "edge",
   })
 }
 
@@ -414,48 +500,6 @@ function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined 
   `
 }
 
-type RelatedCodeFilterOptions = {
-  foreignKeyColumn:
-    | typeof coin.distributionId
-    | typeof coin.compositionId
-    | typeof coin.currencyId
-    | typeof coin.orientationId
-    | typeof coin.rimId
-    | typeof coin.shapeId
-  relatedCode: string | undefined
-  relatedCodeColumn:
-    | typeof distribution.code
-    | typeof composition.code
-    | typeof currency.code
-    | typeof orientation.code
-    | typeof rim.code
-    | typeof shape.code
-  relatedIdColumn:
-    | typeof distribution.id
-    | typeof composition.id
-    | typeof currency.id
-    | typeof orientation.id
-    | typeof rim.id
-    | typeof shape.id
-  relatedTableName:
-    | "composition"
-    | "currency"
-    | "distribution"
-    | "orientation"
-    | "rim"
-    | "shape"
-}
-
-type AttributionCodeFilterOptions = {
-  attributionCoinIdColumn: typeof coinMint.coinId | typeof coinTheme.coinId
-  attributionForeignKeyColumn: typeof coinMint.mintId | typeof coinTheme.themeId
-  attributionTableName: "coin_mint" | "coin_theme"
-  relatedCode: string | undefined
-  relatedCodeColumn: typeof mint.code | typeof theme.code
-  relatedIdColumn: typeof mint.id | typeof theme.id
-  relatedTableName: "mint" | "theme"
-}
-
 function buildRelatedCodeFilter({
   foreignKeyColumn,
   relatedCode,
@@ -531,22 +575,6 @@ function buildRulerFilter(rulerCode: string): SQL {
       where "ruler"."code" = ${rulerCode}
     )
   `
-}
-
-type CatalogueReferenceFilterOptions = Pick<
-  GetCoinsOptions,
-  "catalogueCode" | "referenceNumber"
->
-
-type IssueYearRangeFilterOptions = Pick<GetCoinsOptions, "fromYear" | "toYear">
-type MeasurementRangeFilterOptions = {
-  column:
-    | typeof coin.weight
-    | typeof coin.diameter
-    | typeof coin.thickness
-    | typeof coin.faceValueNumericValue
-  minValue: number | undefined
-  maxValue: number | undefined
 }
 
 function buildCatalogueReferenceFilter({
@@ -659,6 +687,7 @@ export function buildGetCoinsQuery(
     .innerJoin(currency, eq(coin.currencyId, currency.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .leftJoin(edge, eq(coin.edgeId, edge.id))
     .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(rim, eq(coin.rimId, rim.id))

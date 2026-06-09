@@ -13,6 +13,7 @@ import {
 import { composition } from "./composition"
 import { currency } from "./currency"
 import { distribution } from "./distribution"
+import { edge } from "./edge"
 import { issuer } from "./issuer"
 import { orientation } from "./orientation"
 import { rim } from "./rim"
@@ -24,6 +25,7 @@ export const coinSchemaNames = {
   diameterPositiveCheck: "coin_diameter_positive_check",
   distributionIdIndex: "coin_distribution_id_idx",
   currencyIdIndex: "coin_currency_id_idx",
+  edgeIdIndex: "coin_edge_id_idx",
   faceValueNumericValuePositiveCheck: "coin_face_value_numeric_value_positive_check",
   issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
   issueYearRangeIndex: "coin_issue_year_range_idx",
@@ -92,6 +94,11 @@ export const coin = pgTable(
     orientationId: uuid("orientation_id").references(() => orientation.id, {
       onDelete: "restrict",
     }),
+    edgeId: uuid("edge_id").references(() => edge.id, {
+      onDelete: "restrict",
+    }),
+    edgeDescription: varchar("edge_description", { length: 4000 }),
+    edgeLettering: varchar("edge_lettering", { length: 4000 }),
     shapeId: uuid("shape_id").references(() => shape.id, {
       onDelete: "restrict",
     }),
@@ -121,6 +128,7 @@ export const coin = pgTable(
     index(coinSchemaNames.compositionIdIndex).on(coin.compositionId),
     index(coinSchemaNames.currencyIdIndex).on(coin.currencyId),
     index(coinSchemaNames.orientationIdIndex).on(coin.orientationId),
+    index(coinSchemaNames.edgeIdIndex).on(coin.edgeId),
     index(coinSchemaNames.shapeIdIndex).on(coin.shapeId),
     index(coinSchemaNames.rimIdIndex).on(coin.rimId),
     index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),

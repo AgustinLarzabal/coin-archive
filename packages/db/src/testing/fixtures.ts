@@ -9,6 +9,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
@@ -37,6 +38,9 @@ type CreateCoinInput = {
   distributionId?: string
   faceValueNumericValue?: number
   faceValueText?: string
+  edgeDescription?: string | null
+  edgeId?: string
+  edgeLettering?: string | null
   issuerId: string
   maxYear?: number
   mintage?: number | null
@@ -51,6 +55,11 @@ type CreateCoinInput = {
 }
 
 type CreateDistributionInput = {
+  code: string
+  name: string
+}
+
+type CreateEdgeInput = {
   code: string
   name: string
 }
@@ -170,6 +179,9 @@ export async function createCoin({
   compositionId,
   currencyId,
   distributionId,
+  edgeDescription,
+  edgeId,
+  edgeLettering,
   faceValueNumericValue = 1,
   faceValueText = "1 Test Unit",
   issuerId,
@@ -197,6 +209,9 @@ export async function createCoin({
       compositionId: resolvedCompositionId,
       currencyId: resolvedCurrencyId,
       distributionId: resolvedDistributionId,
+      edgeDescription,
+      edgeId,
+      edgeLettering,
       faceValueNumericValue,
       faceValueText,
       issuerId,
@@ -230,6 +245,18 @@ export async function createDistribution({
     .returning()
 
   return createdDistribution
+}
+
+export async function createEdge({ code, name }: CreateEdgeInput) {
+  const [createdEdge] = await db
+    .insert(edge)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdEdge
 }
 
 export async function createComposition({

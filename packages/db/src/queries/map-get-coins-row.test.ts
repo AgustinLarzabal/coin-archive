@@ -27,6 +27,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
   const referenceUpdatedAt = new Date("2026-01-02T12:00:00.000Z")
   const referenceCatalogueCreatedAt = new Date("2025-12-01T12:00:00.000Z")
   const referenceCatalogueUpdatedAt = new Date("2025-12-02T12:00:00.000Z")
+  const edgeCreatedAt = new Date("2026-04-15T12:00:00.000Z")
+  const edgeUpdatedAt = new Date("2026-04-16T12:00:00.000Z")
 
   it("maps grouped rows into the exact coin record shape", () => {
     const rows: GetCoinsRow[] = [
@@ -46,6 +48,13 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         currencyFullName: "Euro (2002-date)",
         currencyCreatedAt,
         currencyUpdatedAt,
+        edgeId: "edge-1",
+        edgeCode: "reeded",
+        edgeName: "Reeded",
+        edgeDescription: "Alternating grooves around the circumference.",
+        edgeLettering: "E PLURIBUS UNUM",
+        edgeCreatedAt,
+        edgeUpdatedAt,
         weight: 4.5,
         diameter: 19.25,
         thickness: 1.75,
@@ -118,6 +127,13 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         currencyFullName: "Euro (2002-date)",
         currencyCreatedAt,
         currencyUpdatedAt,
+        edgeId: "edge-1",
+        edgeCode: "reeded",
+        edgeName: "Reeded",
+        edgeDescription: "Alternating grooves around the circumference.",
+        edgeLettering: "E PLURIBUS UNUM",
+        edgeCreatedAt,
+        edgeUpdatedAt,
         weight: 4.5,
         diameter: 19.25,
         thickness: 1.75,
@@ -200,6 +216,15 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           },
         },
         orientation: null,
+        edge: {
+          id: "edge-1",
+          code: "reeded",
+          name: "Reeded",
+          description: "Alternating grooves around the circumference.",
+          lettering: "E PLURIBUS UNUM",
+          createdAt: edgeCreatedAt,
+          updatedAt: edgeUpdatedAt,
+        },
         shape: null,
         rim: null,
         obverse: null,
@@ -1440,6 +1465,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         obverse: null,
         reverse: null,
         orientation: null,
+        edge: null,
         shape: null,
         rim: null,
         themes: [],
@@ -1619,6 +1645,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           parent: null,
         },
         orientation: null,
+        edge: null,
         shape: null,
         rim: null,
         obverse: null,

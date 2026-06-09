@@ -4,6 +4,7 @@ import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinFace } from "../schema/coin-face"
+import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -11,6 +12,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
@@ -24,7 +26,11 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 const defaultGetCoinsLimit = 10
 const parentIssuer = alias(issuer, "parent_issuer")
 const obverseFace = alias(coinFace, "obverse_face")
+const obverseFaceEngraver = alias(coinFaceEngraver, "obverse_face_engraver")
+const obverseEngraver = alias(engraver, "obverse_engraver")
 const reverseFace = alias(coinFace, "reverse_face")
+const reverseFaceEngraver = alias(coinFaceEngraver, "reverse_face_engraver")
+const reverseEngraver = alias(engraver, "reverse_engraver")
 const getCoinsSelection = {
   id: coin.id,
   title: coin.title,
@@ -58,8 +64,18 @@ const getCoinsSelection = {
   rimUpdatedAt: rim.updatedAt,
   obverseDescription: obverseFace.description,
   obverseLettering: obverseFace.lettering,
+  obverseEngraverId: obverseEngraver.id,
+  obverseEngraverCode: obverseEngraver.code,
+  obverseEngraverName: obverseEngraver.name,
+  obverseEngraverCreatedAt: obverseEngraver.createdAt,
+  obverseEngraverUpdatedAt: obverseEngraver.updatedAt,
   reverseDescription: reverseFace.description,
   reverseLettering: reverseFace.lettering,
+  reverseEngraverId: reverseEngraver.id,
+  reverseEngraverCode: reverseEngraver.code,
+  reverseEngraverName: reverseEngraver.name,
+  reverseEngraverCreatedAt: reverseEngraver.createdAt,
+  reverseEngraverUpdatedAt: reverseEngraver.updatedAt,
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
@@ -124,6 +140,7 @@ export type GetCoinsOptions = {
   compositionCode?: string
   currencyCode?: string
   distributionCode?: string
+  engraverCode?: string
   maxDiameter?: number
   maxThickness?: number
   maxWeight?: number
@@ -148,6 +165,7 @@ export type GetCoinsOptions = {
 type CoinFilterOptions = Pick<
   GetCoinsOptions,
   | "distributionCode"
+  | "engraverCode"
   | "compositionCode"
   | "currencyCode"
   | "maxDiameter"
@@ -177,6 +195,7 @@ function isDefined<T>(value: T | undefined): value is T {
 
 function buildCoinFilter({
   distributionCode,
+  engraverCode,
   compositionCode,
   currencyCode,
   maxDiameter,
@@ -223,6 +242,7 @@ function buildCoinFilter({
   ] as const
   const filters = [
     buildDistributionFilter(distributionCode),
+    buildEngraverFilter(engraverCode),
     buildCompositionFilter(compositionCode),
     buildCurrencyFilter(currencyCode),
     buildOrientationFilter(orientationCode),
@@ -372,6 +392,26 @@ function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
     relatedIdColumn: theme.id,
     relatedTableName: "theme",
   })
+}
+
+function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined {
+  const normalizedEngraverCode = normalizeCodeFilter(engraverCode)
+
+  if (normalizedEngraverCode === undefined) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.id} in (
+      select ${coinFace.coinId}
+      from "coin_face_engraver"
+      inner join "coin_face"
+        on ${coinFaceEngraver.coinFaceId} = ${coinFace.id}
+      inner join "engraver"
+        on ${coinFaceEngraver.engraverId} = ${engraver.id}
+      where lower(${engraver.code}) = ${normalizedEngraverCode}
+    )
+  `
 }
 
 type RelatedCodeFilterOptions = {
@@ -627,8 +667,24 @@ export function buildGetCoinsQuery(
       and(eq(coin.id, obverseFace.coinId), eq(obverseFace.side, "obverse"))
     )
     .leftJoin(
+      obverseFaceEngraver,
+      eq(obverseFace.id, obverseFaceEngraver.coinFaceId)
+    )
+    .leftJoin(
+      obverseEngraver,
+      eq(obverseFaceEngraver.engraverId, obverseEngraver.id)
+    )
+    .leftJoin(
       reverseFace,
       and(eq(coin.id, reverseFace.coinId), eq(reverseFace.side, "reverse"))
+    )
+    .leftJoin(
+      reverseFaceEngraver,
+      eq(reverseFace.id, reverseFaceEngraver.coinFaceId)
+    )
+    .leftJoin(
+      reverseEngraver,
+      eq(reverseFaceEngraver.engraverId, reverseEngraver.id)
     )
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
@@ -643,6 +699,12 @@ export function buildGetCoinsQuery(
     .orderBy(
       desc(coin.createdAt),
       desc(coin.id),
+      asc(obverseEngraver.name),
+      asc(obverseEngraver.code),
+      asc(obverseEngraver.id),
+      asc(reverseEngraver.name),
+      asc(reverseEngraver.code),
+      asc(reverseEngraver.id),
       asc(mint.name),
       asc(mint.code),
       asc(mint.id),

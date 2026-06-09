@@ -294,7 +294,12 @@ describe("seed integration", () => {
       reverse: {
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
-        engravers: [],
+        engravers: [
+          {
+            code: "georgios-stamatopoulos",
+            name: "Georgios Stamatópoulos",
+          },
+        ],
       },
       issueYearRange: {
         minYear: 2002,

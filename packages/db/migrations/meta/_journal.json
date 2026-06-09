@@ -120,6 +120,13 @@
       "when": 1780992360771,
       "tag": "0016_true_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1780994965656,
+      "tag": "0017_fuzzy_lionheart",
+      "breakpoints": true
     }
   ]
 }

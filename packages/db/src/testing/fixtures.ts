@@ -1,6 +1,7 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinFace, type CoinFaceSide } from "../schema/coin-face"
+import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -8,6 +9,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
@@ -66,6 +68,11 @@ type CreateCurrencyInput = {
 }
 
 type CreateMintInput = {
+  code: string
+  name: string
+}
+
+type CreateEngraverInput = {
   code: string
   name: string
 }
@@ -133,6 +140,11 @@ type CreateCoinFaceInput = {
 type CreateCoinThemeInput = {
   coinId: string
   themeId: string
+}
+
+type CreateCoinFaceEngraverInput = {
+  coinFaceId: string
+  engraverId: string
 }
 
 export async function createIssuer({
@@ -264,6 +276,18 @@ export async function createMint({ code, name }: CreateMintInput) {
     .returning()
 
   return createdMint
+}
+
+export async function createEngraver({ code, name }: CreateEngraverInput) {
+  const [createdEngraver] = await db
+    .insert(engraver)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdEngraver
 }
 
 export async function createOrientation({ code, name }: CreateOrientationInput) {
@@ -436,6 +460,21 @@ export async function createCoinTheme({
     .returning()
 
   return createdCoinTheme
+}
+
+export async function createCoinFaceEngraver({
+  coinFaceId,
+  engraverId,
+}: CreateCoinFaceEngraverInput) {
+  const [createdCoinFaceEngraver] = await db
+    .insert(coinFaceEngraver)
+    .values({
+      coinFaceId,
+      engraverId,
+    })
+    .returning()
+
+  return createdCoinFaceEngraver
 }
 
 async function getOrCreateDefaultDistribution() {

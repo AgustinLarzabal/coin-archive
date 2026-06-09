@@ -4,6 +4,7 @@ import {
   createCatalogue,
   createCoin,
   createCoinFace,
+  createCoinFaceEngraver,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -11,6 +12,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEngraver,
   createIssuer,
   createMint,
   createOrientation,
@@ -268,6 +270,131 @@ describe("getCoins integration", () => {
         id: noFaceCoin.id,
         obverse: null,
         reverse: null,
+      },
+    ])
+  })
+
+  it("returns sorted face-level Engravers, deduplicates join multiplication, and filters by engraverCode across either face", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const mapTheme = await createTheme({
+      code: "map",
+      name: "Map",
+    })
+    const portraitTheme = await createTheme({
+      code: "portrait",
+      name: "Portrait",
+    })
+    const madridMint = await createMint({
+      code: "royal-mint-of-madrid",
+      name: "Royal Mint of Madrid",
+    })
+    const georgios = await createEngraver({
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatópoulos",
+    })
+    const alpha = await createEngraver({
+      code: "alpha-engraver",
+      name: "Alpha Engraver",
+    })
+    const beta = await createEngraver({
+      code: "beta-engraver",
+      name: "Alpha Engraver",
+    })
+    const faceOnlyCoin = await createCoin({
+      title: "Face Engraver Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const obverseFace = await createCoinFace({
+      coinId: faceOnlyCoin.id,
+      side: "obverse",
+    })
+    const reverseFace = await createCoinFace({
+      coinId: faceOnlyCoin.id,
+      side: "reverse",
+      lettering: "2 EURO",
+    })
+    const filteredOutCoin = await createCoin({
+      title: "Different Engraver Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    const filteredOutFace = await createCoinFace({
+      coinId: filteredOutCoin.id,
+      side: "obverse",
+    })
+    const otherEngraver = await createEngraver({
+      code: "other-engraver",
+      name: "Other Engraver",
+    })
+
+    await createCoinTheme({
+      coinId: faceOnlyCoin.id,
+      themeId: mapTheme.id,
+    })
+    await createCoinTheme({
+      coinId: faceOnlyCoin.id,
+      themeId: portraitTheme.id,
+    })
+    await createCoinMint({
+      coinId: faceOnlyCoin.id,
+      mintId: madridMint.id,
+    })
+    await createCoinFaceEngraver({
+      coinFaceId: obverseFace.id,
+      engraverId: beta.id,
+    })
+    await createCoinFaceEngraver({
+      coinFaceId: obverseFace.id,
+      engraverId: alpha.id,
+    })
+    await createCoinFaceEngraver({
+      coinFaceId: reverseFace.id,
+      engraverId: georgios.id,
+    })
+    await createCoinFaceEngraver({
+      coinFaceId: filteredOutFace.id,
+      engraverId: otherEngraver.id,
+    })
+
+    await expect(
+      getCoins({
+        engraverCode: "georgios-stamatopoulos",
+        limit: 10,
+      })
+    ).resolves.toMatchObject([
+      {
+        id: faceOnlyCoin.id,
+        obverse: {
+          description: null,
+          lettering: null,
+          engravers: [
+            {
+              id: alpha.id,
+              code: "alpha-engraver",
+              name: "Alpha Engraver",
+            },
+            {
+              id: beta.id,
+              code: "beta-engraver",
+              name: "Alpha Engraver",
+            },
+          ],
+        },
+        reverse: {
+          description: null,
+          lettering: "2 EURO",
+          engravers: [
+            {
+              id: georgios.id,
+              code: "georgios-stamatopoulos",
+              name: "Georgios Stamatópoulos",
+            },
+          ],
+        },
       },
     ])
   })

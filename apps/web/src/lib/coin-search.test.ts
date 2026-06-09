@@ -65,6 +65,11 @@ const currentSearchWithTheme = {
   theme: "map",
 }
 
+const currentSearchWithEngraver = {
+  ...currentSearch,
+  engraver: "georgios-stamatopoulos",
+}
+
 const emptyFilterValues = [undefined, ""] as const
 
 function omitFilter<T extends object, K extends keyof T>(
@@ -138,6 +143,19 @@ describe("updateCoinSearchFilter", () => {
       expect(
         updateCoinSearchFilter(currentSearchWithTheme, "theme", filterValue)
       ).toStrictEqual(omitFilter(currentSearchWithTheme, "theme"))
+    }
+  )
+
+  it.each(emptyFilterValues)(
+    "clears the engraver filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(
+          currentSearchWithEngraver,
+          "engraver",
+          filterValue
+        )
+      ).toStrictEqual(omitFilter(currentSearchWithEngraver, "engraver"))
     }
   )
 
@@ -586,13 +604,24 @@ describe("coinSearchSchema", () => {
       shape: "round",
     })
   })
+
+  it("accepts a singular engraver homepage search param", () => {
+    expect(
+      coinSearchSchema.parse({
+        engraver: "georgios-stamatopoulos",
+      })
+    ).toStrictEqual({
+      engraver: "georgios-stamatopoulos",
+    })
+  })
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage currency, mint, theme, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage currency, mint, theme, engraver, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
         ...currentSearch,
+        engraver: "georgios-stamatopoulos",
         mint: "royal-mint-of-madrid",
         orientation: "coin-alignment",
         rim: "raised-both-sides",
@@ -604,6 +633,7 @@ describe("getCoinListLoaderDeps", () => {
       compositionCode: "silver-900",
       currencyCode: "euro",
       distributionCode: "circulating-commemorative",
+      engraverCode: "georgios-stamatopoulos",
       fromYear: 1898,
       issuerCode: "spain",
       maxDiameter: 30.5,

@@ -5,6 +5,7 @@ import {
   catalogue,
   coin,
   coinFace,
+  coinFaceEngraver,
   coinMint,
   coinReference,
   coinRuler,
@@ -13,6 +14,7 @@ import {
   currency,
   db,
   distribution,
+  engraver,
   issuer,
   mint,
   orientation,
@@ -26,6 +28,7 @@ import {
   createCatalogue,
   createCoin,
   createCoinFace,
+  createCoinFaceEngraver,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -33,6 +36,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEngraver,
   createIssuer,
   createMint,
   createOrientation,
@@ -45,12 +49,14 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
 import { coinFaceSchemaNames } from "./coin-face"
+import { coinFaceEngraverSchemaNames } from "./coin-face-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { coinSchemaNames } from "./coin"
 import { compositionSchemaNames } from "./composition"
 import { currencySchemaNames } from "./currency"
 import { distributionSchemaNames } from "./distribution"
+import { engraverSchemaNames } from "./engraver"
 import { issuerSchemaNames } from "./issuer"
 import { coinMintSchemaNames } from "./coin-mint"
 import { coinThemeSchemaNames } from "./coin-theme"
@@ -1219,6 +1225,162 @@ describe("coin face schema constraints", () => {
         .from(coinFace)
         .where(eq(coinFace.coinId, createdCoin.id)),
       0
+    )
+  })
+})
+
+describe("engraver schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects engraver codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(engraver).values({
+        code: "Georgios Stamatopoulos",
+        name: "Georgios Stamatopoulos",
+      }),
+      engraverSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate engraver codes ignoring case", async () => {
+    await db.insert(engraver).values({
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatópoulos",
+    })
+
+    await expectConstraintError(
+      db.insert(engraver).values({
+        code: "GEORGIOS-STAMATOPOULOS",
+        name: "Duplicate Geórgios Stamatópoulos",
+      }),
+      engraverSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("allows duplicate Engraver display names when the codes differ", async () => {
+    await expect(
+      db.insert(engraver).values([
+        {
+          code: "georgios-stamatopoulos",
+          name: "Georgios Stamatópoulos",
+        },
+        {
+          code: "georgios-stamatopoulos-ii",
+          name: "Georgios Stamatópoulos",
+        },
+      ])
+    ).resolves.toBeDefined()
+  })
+
+  it("restricts deleting an Engraver while face attributions still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Referenced Engraver Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+    const createdFace = await createCoinFace({
+      coinId: createdCoin.id,
+      side: "obverse",
+      description: "Portrait left.",
+    })
+    const createdEngraver = await createEngraver({
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatópoulos",
+    })
+
+    await createCoinFaceEngraver({
+      coinFaceId: createdFace.id,
+      engraverId: createdEngraver.id,
+    })
+
+    await expectConstraintError(
+      db.delete(engraver).where(sql`${engraver.id} = ${createdEngraver.id}`),
+      "coin_face_engraver_engraver_id_engraver_id_fk",
+      "23001"
+    )
+  })
+})
+
+describe("coin face engraver schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("cascades face engraver attributions when deleting a face", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Deleted Face Attribution Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+    const createdFace = await createCoinFace({
+      coinId: createdCoin.id,
+      side: "reverse",
+      lettering: "2 EURO",
+    })
+    const createdEngraver = await createEngraver({
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatópoulos",
+    })
+
+    await createCoinFaceEngraver({
+      coinFaceId: createdFace.id,
+      engraverId: createdEngraver.id,
+    })
+
+    await db.delete(coinFace).where(eq(coinFace.id, createdFace.id))
+
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(coinFaceEngraver)
+        .where(eq(coinFaceEngraver.coinFaceId, createdFace.id)),
+      0
+    )
+  })
+
+  it("rejects duplicate face engraver attributions", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Duplicate Face Attribution Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+    const createdFace = await createCoinFace({
+      coinId: createdCoin.id,
+      side: "obverse",
+      description: "Portrait right.",
+    })
+    const createdEngraver = await createEngraver({
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatópoulos",
+    })
+
+    await createCoinFaceEngraver({
+      coinFaceId: createdFace.id,
+      engraverId: createdEngraver.id,
+    })
+
+    await expectConstraintError(
+      createCoinFaceEngraver({
+        coinFaceId: createdFace.id,
+        engraverId: createdEngraver.id,
+      }),
+      "coin_face_engraver_coin_face_id_engraver_id_pk",
+      "23505"
     )
   })
 })

@@ -35,6 +35,19 @@ type SeededCoinFace = {
   lettering?: string | null
 }
 
+type SeededEngraver = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCoinFaceEngraver = {
+  coinTitle: string
+  side: CoinFaceSide
+  engraverCode: string
+}
+
 type SeededMint = {
   code: string
   name: string
@@ -369,6 +382,23 @@ export const seededCoinFaces: SeededCoinFace[] = [
     side: "reverse",
     description: "Map of Europe with denomination.",
     lettering: "2 EURO",
+  },
+]
+
+export const seededEngravers: SeededEngraver[] = [
+  {
+    code: "georgios-stamatopoulos",
+    name: "Georgios Stamatópoulos",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinFaceEngravers: SeededCoinFaceEngraver[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    side: "reverse",
+    engraverCode: "georgios-stamatopoulos",
   },
 ]
 

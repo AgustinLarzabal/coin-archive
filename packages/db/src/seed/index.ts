@@ -4,6 +4,7 @@ import { closeDb, db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinFace } from "../schema/coin-face"
+import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -11,6 +12,7 @@ import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
@@ -22,6 +24,7 @@ import { theme } from "../schema/theme"
 import {
   seededCatalogues,
   seededCoinFaces,
+  seededCoinFaceEngravers,
   seededCoinReferences,
   seededCoinMints,
   seededCoinRulers,
@@ -30,6 +33,7 @@ import {
   seededCompositions,
   seededCurrencies,
   seededDistributions,
+  seededEngravers,
   seededIssuers,
   seededMints,
   seededOrientations,
@@ -53,6 +57,8 @@ type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
+type EngraverIdsByCode = Map<string, string>
+type CoinFaceIdsByKey = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -130,6 +136,13 @@ async function deleteSeededMints() {
   await deleteSeededRecords(
     seededMints.map(({ code }) => code),
     (code) => db.delete(mint).where(eq(mint.code, code))
+  )
+}
+
+async function deleteSeededEngravers() {
+  await deleteSeededRecords(
+    seededEngravers.map(({ code }) => code),
+    (code) => db.delete(engraver).where(eq(engraver.code, code))
   )
 }
 
@@ -347,6 +360,23 @@ async function seedMints() {
   return mintIdsByCode
 }
 
+async function seedEngravers() {
+  const engraverIdsByCode: EngraverIdsByCode = new Map()
+
+  await deleteSeededEngravers()
+
+  for (const seededEngraver of seededEngravers) {
+    const [insertedEngraver] = await db
+      .insert(engraver)
+      .values(seededEngraver)
+      .returning({ id: engraver.id })
+
+    engraverIdsByCode.set(seededEngraver.code, insertedEngraver.id)
+  }
+
+  return engraverIdsByCode
+}
+
 async function seedOrientations() {
   const orientationIdsByCode: OrientationIdsByCode = new Map()
 
@@ -499,10 +529,12 @@ async function seedCoins(
 
 async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
   if (seededCoinFaces.length === 0) {
-    return
+    return new Map<string, string>()
   }
 
-  await db.insert(coinFace).values(
+  const insertedCoinFaces = await db
+    .insert(coinFace)
+    .values(
     seededCoinFaces.map((seededCoinFace) => ({
       coinId: getRequiredSeededId(
         coinIdsByTitle,
@@ -512,6 +544,47 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
       side: seededCoinFace.side,
       description: seededCoinFace.description,
       lettering: seededCoinFace.lettering,
+    }))
+    )
+    .returning({ id: coinFace.id, coinId: coinFace.coinId, side: coinFace.side })
+
+  const coinTitlesById = new Map(
+    [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
+  )
+
+  return new Map(
+    insertedCoinFaces.map((insertedCoinFace) => {
+      const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
+
+      if (!coinTitle) {
+        throw new Error(`Missing seeded coin title for face ${insertedCoinFace.id}`)
+      }
+
+      return [`${coinTitle}:${insertedCoinFace.side}`, insertedCoinFace.id]
+    })
+  )
+}
+
+async function seedCoinFaceEngravers(
+  coinFaceIdsByKey: CoinFaceIdsByKey,
+  engraverIdsByCode: EngraverIdsByCode
+) {
+  if (seededCoinFaceEngravers.length === 0) {
+    return
+  }
+
+  await db.insert(coinFaceEngraver).values(
+    seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
+      coinFaceId: getRequiredSeededId(
+        coinFaceIdsByKey,
+        `${seededCoinFaceEngraver.coinTitle}:${seededCoinFaceEngraver.side}`,
+        "coin face"
+      ),
+      engraverId: getRequiredSeededId(
+        engraverIdsByCode,
+        seededCoinFaceEngraver.engraverCode,
+        "engraver"
+      ),
     }))
   )
 }
@@ -652,6 +725,7 @@ export async function seedDatabase() {
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
   const mintIdsByCode = await seedMints()
+  const engraverIdsByCode = await seedEngravers()
   const orientationIdsByCode = await seedOrientations()
   const shapeIdsByCode = await seedShapes()
   const rimIdsByCode = await seedRims()
@@ -669,7 +743,8 @@ export async function seedDatabase() {
   const rulerIdsByCode = await seedRulers()
   const catalogueIdsByCode = await seedCatalogues()
 
-  await seedCoinFaces(coinIdsByTitle)
+  const coinFaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
+  await seedCoinFaceEngravers(coinFaceIdsByKey, engraverIdsByCode)
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinThemes(coinIdsByTitle, themeIdsByCode)

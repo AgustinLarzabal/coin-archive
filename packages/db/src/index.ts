@@ -14,6 +14,7 @@ export { getRulers } from "./queries/get-rulers"
 export { catalogue } from "./schema/catalogue"
 export { coin } from "./schema/coin"
 export { coinFace } from "./schema/coin-face"
+export { coinFaceEngraver } from "./schema/coin-face-engraver"
 export { coinMint } from "./schema/coin-mint"
 export { coinTheme } from "./schema/coin-theme"
 export { composition } from "./schema/composition"
@@ -21,6 +22,7 @@ export { coinReference } from "./schema/coin-reference"
 export { coinRuler } from "./schema/coin-ruler"
 export { currency } from "./schema/currency"
 export { distribution } from "./schema/distribution"
+export { engraver } from "./schema/engraver"
 export { issuer } from "./schema/issuer"
 export { mint } from "./schema/mint"
 export { orientation } from "./schema/orientation"
@@ -36,6 +38,7 @@ export type {
   CoinComposition,
   CoinCurrency,
   CoinDistribution,
+  CoinEngraver,
   CoinFaceValue,
   CoinFaceDetails,
   CoinIssueYearRange,
@@ -72,9 +75,11 @@ export type { RulerOption } from "./queries/get-rulers"
 export type { Shape } from "./schema/shape"
 export type { Coin } from "./schema/coin"
 export type { CoinFace, CoinFaceSide } from "./schema/coin-face"
+export type { CoinFaceEngraver } from "./schema/coin-face-engraver"
 export type { CoinReference } from "./schema/coin-reference"
 export type { CoinRuler } from "./schema/coin-ruler"
 export type { Distribution } from "./schema/distribution"
+export type { Engraver } from "./schema/engraver"
 export type { Issuer } from "./schema/issuer"
 export type { Ruler } from "./schema/ruler"
 export type { RulerGroup } from "./schema/ruler-group"

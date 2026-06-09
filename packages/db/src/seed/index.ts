@@ -3,7 +3,7 @@ import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
+import { coinFace, type CoinFaceSide } from "../schema/coin-face"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -72,6 +72,10 @@ function getRequiredSeededId(
   }
 
   return id
+}
+
+function getCoinFaceSeedKey(coinTitle: string, side: CoinFaceSide) {
+  return `${coinTitle}:${side}`
 }
 
 async function deleteSeededRecords(
@@ -529,22 +533,24 @@ async function seedCoins(
 
 async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
   if (seededCoinFaces.length === 0) {
-    return new Map<string, string>()
+    const coinFaceIdsByKey: CoinFaceIdsByKey = new Map()
+
+    return coinFaceIdsByKey
   }
 
   const insertedCoinFaces = await db
     .insert(coinFace)
     .values(
-    seededCoinFaces.map((seededCoinFace) => ({
-      coinId: getRequiredSeededId(
-        coinIdsByTitle,
-        seededCoinFace.coinTitle,
-        "coin"
-      ),
-      side: seededCoinFace.side,
-      description: seededCoinFace.description,
-      lettering: seededCoinFace.lettering,
-    }))
+      seededCoinFaces.map((seededCoinFace) => ({
+        coinId: getRequiredSeededId(
+          coinIdsByTitle,
+          seededCoinFace.coinTitle,
+          "coin"
+        ),
+        side: seededCoinFace.side,
+        description: seededCoinFace.description,
+        lettering: seededCoinFace.lettering,
+      }))
     )
     .returning({ id: coinFace.id, coinId: coinFace.coinId, side: coinFace.side })
 
@@ -552,7 +558,7 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
     [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
   )
 
-  return new Map(
+  const coinFaceIdsByKey: CoinFaceIdsByKey = new Map(
     insertedCoinFaces.map((insertedCoinFace) => {
       const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
 
@@ -560,9 +566,14 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
         throw new Error(`Missing seeded coin title for face ${insertedCoinFace.id}`)
       }
 
-      return [`${coinTitle}:${insertedCoinFace.side}`, insertedCoinFace.id]
+      return [
+        getCoinFaceSeedKey(coinTitle, insertedCoinFace.side),
+        insertedCoinFace.id,
+      ]
     })
   )
+
+  return coinFaceIdsByKey
 }
 
 async function seedCoinFaceEngravers(
@@ -577,7 +588,10 @@ async function seedCoinFaceEngravers(
     seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
       coinFaceId: getRequiredSeededId(
         coinFaceIdsByKey,
-        `${seededCoinFaceEngraver.coinTitle}:${seededCoinFaceEngraver.side}`,
+        getCoinFaceSeedKey(
+          seededCoinFaceEngraver.coinTitle,
+          seededCoinFaceEngraver.side
+        ),
         "coin face"
       ),
       engraverId: getRequiredSeededId(

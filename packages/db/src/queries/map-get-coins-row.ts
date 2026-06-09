@@ -314,6 +314,8 @@ export type CoinRecordMint = CoinCodeNamedRecord
 
 export type CoinThemeRecord = CoinCodeNamedRecord
 
+type CoinFaceSide = "obverse" | "reverse"
+
 type CoinEntry = {
   coin: CoinEntryCoin
   mints: CoinRecordMint[]
@@ -752,6 +754,19 @@ function compareCodeNamedRecords(
   )
 }
 
+function sortFaceEngravers(
+  face: CoinFaceDetails | null
+): CoinFaceDetails | null {
+  if (face === null) {
+    return null
+  }
+
+  return {
+    ...face,
+    engravers: face.engravers.sort(compareEngravers),
+  }
+}
+
 function mapCoinEntry({
   coin,
   mints,
@@ -761,20 +776,8 @@ function mapCoinEntry({
 }: CoinEntry): CoinRecord {
   return {
     ...coin,
-    obverse:
-      coin.obverse === null
-        ? null
-        : {
-            ...coin.obverse,
-            engravers: coin.obverse.engravers.sort(compareEngravers),
-          },
-    reverse:
-      coin.reverse === null
-        ? null
-        : {
-            ...coin.reverse,
-            engravers: coin.reverse.engravers.sort(compareEngravers),
-          },
+    obverse: sortFaceEngravers(coin.obverse),
+    reverse: sortFaceEngravers(coin.reverse),
     mints: mints.sort(compareMints),
     themes: themes.sort(compareThemes),
     rulers: rulerAttributions
@@ -862,19 +865,58 @@ function createCoinEntry(row: GetCoinsRow): CoinEntry {
   }
 }
 
+function getCoinFaceTextColumns(
+  row: GetCoinsRow,
+  side: CoinFaceSide
+): Pick<CoinFaceDetails, "description" | "lettering"> {
+  if (side === "obverse") {
+    return {
+      description: row.obverseDescription ?? null,
+      lettering: row.obverseLettering ?? null,
+    }
+  }
+
+  return {
+    description: row.reverseDescription ?? null,
+    lettering: row.reverseLettering ?? null,
+  }
+}
+
+function mapFaceEngraver(
+  row: GetCoinsRow,
+  side: CoinFaceSide
+): CoinEngraver | null {
+  if (side === "obverse") {
+    return mapObverseEngraver(row)
+  }
+
+  return mapReverseEngraver(row)
+}
+
+function getSeenFaceEngraverIds(
+  coinEntry: CoinEntry,
+  side: CoinFaceSide
+): Set<string> {
+  if (side === "obverse") {
+    return coinEntry.seenObverseEngraverIds
+  }
+
+  return coinEntry.seenReverseEngraverIds
+}
+
 function ensureCoinFaceDetails(
   row: GetCoinsRow,
   coinEntry: CoinEntry,
-  side: "obverse" | "reverse"
+  side: CoinFaceSide
 ) {
-  if (coinEntry.coin[side] !== null) {
-    return coinEntry.coin[side]!
+  const existingFace = coinEntry.coin[side]
+
+  if (existingFace !== null) {
+    return existingFace
   }
 
   const mappedFace = mapCoinFaceDetails({
-    description:
-      side === "obverse" ? row.obverseDescription : row.reverseDescription,
-    lettering: side === "obverse" ? row.obverseLettering : row.reverseLettering,
+    ...getCoinFaceTextColumns(row, side),
     engravers: [],
   })
 
@@ -896,14 +938,10 @@ function ensureCoinFaceDetails(
 function addFaceEngraver(
   row: GetCoinsRow,
   coinEntry: CoinEntry,
-  side: "obverse" | "reverse"
+  side: CoinFaceSide
 ) {
-  const mappedEngraver =
-    side === "obverse" ? mapObverseEngraver(row) : mapReverseEngraver(row)
-  const seenEngraverIds =
-    side === "obverse"
-      ? coinEntry.seenObverseEngraverIds
-      : coinEntry.seenReverseEngraverIds
+  const mappedEngraver = mapFaceEngraver(row, side)
+  const seenEngraverIds = getSeenFaceEngraverIds(coinEntry, side)
 
   if (!mappedEngraver || seenEngraverIds.has(mappedEngraver.id)) {
     return

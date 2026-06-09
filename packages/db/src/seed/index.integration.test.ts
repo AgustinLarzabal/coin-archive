@@ -243,6 +243,7 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
       title: "Argentina Copper Peso",
+      comments: null,
       composition: {
         code: "copper",
         name: "Copper",
@@ -361,6 +362,10 @@ describe("seed integration", () => {
       orientation: null,
       themes: [],
       mints: [],
+    })
+
+    expect(findSeededCoin("Argentina Convertible Peso")).toMatchObject({
+      comments: null,
     })
   })
 })

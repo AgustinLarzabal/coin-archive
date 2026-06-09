@@ -33,6 +33,7 @@ import {
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "./coin-search"
+import type { CoinSearch, CoinListLoaderDeps } from "./coin-search"
 
 const currentSearch = {
   catalogue: "km",
@@ -52,7 +53,27 @@ const currentSearch = {
   referenceNumber: "1338",
   ruler: "felipe-vi",
   toYear: 1902,
-}
+} satisfies CoinSearch
+
+const baseCoinListLoaderDeps = {
+  catalogueCode: "km",
+  compositionCode: "silver-900",
+  currencyCode: "euro",
+  distributionCode: "circulating-commemorative",
+  fromYear: 1898,
+  issuerCode: "spain",
+  maxDiameter: 30.5,
+  maxThickness: 2.5,
+  maxWeight: 8.75,
+  maxValue: 2,
+  minDiameter: 20.25,
+  minThickness: 1.25,
+  minWeight: 4.5,
+  minValue: 0.5,
+  referenceNumber: "1338",
+  rulerCode: "felipe-vi",
+  toYear: 1902,
+} satisfies CoinListLoaderDeps
 
 const currentSearchWithMint = {
   ...currentSearch,
@@ -88,6 +109,17 @@ function omitFilter<T extends object, K extends keyof T>(
   const { [filterName]: _removedFilter, ...remainingSearch } = search
 
   return remainingSearch
+}
+
+type UnexpectedHomepageSearchParam = {
+  comments?: string
+  mintage?: string
+}
+
+function getCoinListLoaderDepsWithUnexpectedSearchParam(
+  search: CoinSearch & UnexpectedHomepageSearchParam
+) {
+  return getCoinListLoaderDeps(search)
 }
 
 describe("updateCoinSearchFilter", () => {
@@ -602,22 +634,14 @@ describe("coinSearchSchema", () => {
     })
   })
 
-  it("ignores a mintage homepage search param", () => {
+  it.each([
+    ["mintage", "1234567"],
+    ["comments", "Public catalogue note."],
+  ] as const)("ignores a %s homepage search param", (paramName, paramValue) => {
     expect(
       coinSearchSchema.parse({
         issuer: "spain",
-        mintage: "1234567",
-      })
-    ).toStrictEqual({
-      issuer: "spain",
-    })
-  })
-
-  it("ignores a comments homepage search param", () => {
-    expect(
-      coinSearchSchema.parse({
-        issuer: "spain",
-        comments: "Public catalogue note.",
+        [paramName]: paramValue,
       })
     ).toStrictEqual({
       issuer: "spain",
@@ -689,59 +713,23 @@ describe("getCoinListLoaderDeps", () => {
   })
 
   it("does not forward mintage to the coin listing boundary", () => {
-    const deps = getCoinListLoaderDeps({
+    const deps = getCoinListLoaderDepsWithUnexpectedSearchParam({
       ...currentSearch,
       mintage: "1234567",
-    } as Parameters<typeof getCoinListLoaderDeps>[0])
+    })
 
     expect(deps).not.toHaveProperty("mintage")
-    expect(deps).toMatchObject({
-      catalogueCode: "km",
-      compositionCode: "silver-900",
-      currencyCode: "euro",
-      distributionCode: "circulating-commemorative",
-      fromYear: 1898,
-      issuerCode: "spain",
-      maxDiameter: 30.5,
-      maxThickness: 2.5,
-      maxWeight: 8.75,
-      maxValue: 2,
-      minDiameter: 20.25,
-      minThickness: 1.25,
-      minWeight: 4.5,
-      minValue: 0.5,
-      referenceNumber: "1338",
-      rulerCode: "felipe-vi",
-      toYear: 1902,
-    })
+    expect(deps).toMatchObject(baseCoinListLoaderDeps)
   })
 
   it("does not forward comments to the coin listing boundary", () => {
-    const deps = getCoinListLoaderDeps({
+    const deps = getCoinListLoaderDepsWithUnexpectedSearchParam({
       ...currentSearch,
       comments: "Public catalogue note.",
-    } as Parameters<typeof getCoinListLoaderDeps>[0])
+    })
 
     expect(deps).not.toHaveProperty("comments")
-    expect(deps).toMatchObject({
-      catalogueCode: "km",
-      compositionCode: "silver-900",
-      currencyCode: "euro",
-      distributionCode: "circulating-commemorative",
-      fromYear: 1898,
-      issuerCode: "spain",
-      maxDiameter: 30.5,
-      maxThickness: 2.5,
-      maxWeight: 8.75,
-      maxValue: 2,
-      minDiameter: 20.25,
-      minThickness: 1.25,
-      minWeight: 4.5,
-      minValue: 0.5,
-      referenceNumber: "1338",
-      rulerCode: "felipe-vi",
-      toYear: 1902,
-    })
+    expect(deps).toMatchObject(baseCoinListLoaderDeps)
   })
 })
 

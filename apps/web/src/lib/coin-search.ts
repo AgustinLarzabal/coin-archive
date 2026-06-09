@@ -19,7 +19,6 @@ import { demonetizationFilterValues } from "@workspace/db"
 import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
-
 function isDemonetizationFilterValue(
   value: string
 ): value is DemonetizationFilterValue {
@@ -196,20 +195,6 @@ type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
 
-const demonetizationFilterLabels: Record<DemonetizationFilterValue, string> = {
-  demonetized: "Demonetized",
-  "not-demonetized": "Not demonetized",
-  unknown: "Unknown",
-}
-
-export const demonetizationFilterOptions: ReadonlyArray<{
-  label: string
-  value: DemonetizationFilterValue
-}> = demonetizationFilterValues.map((value) => ({
-  label: demonetizationFilterLabels[value],
-  value,
-}))
-
 export function isCodeOptionEqual<T extends OptionWithCode>(left: T, right: T) {
   return left.code === right.code
 }
@@ -219,9 +204,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     catalogueCode: search.catalogue,
     compositionCode: search.composition,
     currencyCode: search.currency,
-    ...(search.demonetization === undefined
-      ? {}
-      : { demonetization: search.demonetization }),
+    demonetization: search.demonetization,
     distributionCode: search.distribution,
     edgeCode: search.edge,
     engraverCode: search.engraver,
@@ -317,6 +300,28 @@ export const findSelectedThemeOption: <T extends OptionWithCode>(
   themes: T[],
   selectedThemeCode: string | undefined
 ) => T | null = findSelectedCodeOption
+
+export type DemonetizationFilterOption = {
+  code: DemonetizationFilterValue
+  name: string
+}
+
+export const demonetizationFilterOptions: ReadonlyArray<DemonetizationFilterOption> =
+  [
+    { code: "demonetized", name: "Demonetized" },
+    { code: "not-demonetized", name: "Not demonetized" },
+    { code: "unknown", name: "Unknown" },
+  ]
+
+export function findSelectedDemonetizationFilterOption(
+  selectedDemonetization: DemonetizationFilterValue | undefined
+) {
+  return (
+    demonetizationFilterOptions.find(
+      ({ code }) => code === selectedDemonetization
+    ) ?? null
+  )
+}
 
 export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
   currentSearch: CoinSearch,
@@ -541,5 +546,8 @@ export function formatMeasurementLabel(
 export function getDemonetizationFilterLabel(
   demonetization: DemonetizationFilterValue
 ) {
-  return demonetizationFilterLabels[demonetization]
+  return (
+    demonetizationFilterOptions.find(({ code }) => code === demonetization)
+      ?.name ?? demonetization
+  )
 }

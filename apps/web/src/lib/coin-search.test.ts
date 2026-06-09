@@ -6,6 +6,7 @@ import {
   applyMeasurementRangeSearch,
   coinSearchSchema,
   demonetizationFilterOptions,
+  findSelectedDemonetizationFilterOption,
   findSelectedCatalogueOption,
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
@@ -100,6 +101,11 @@ const currentSearchWithEngraver = {
   ...currentSearch,
   engraver: "georgios-stamatopoulos",
 }
+
+const currentSearchWithDemonetization = {
+  ...currentSearch,
+  demonetization: "unknown",
+} satisfies CoinSearch
 
 const emptyFilterValues = [undefined, ""] as const
 
@@ -569,9 +575,9 @@ describe("applyFaceValueRangeSearch", () => {
 describe("coinSearchSchema", () => {
   it("defines the explicit homepage Demonetization Status options", () => {
     expect(demonetizationFilterOptions).toStrictEqual([
-      { label: "Demonetized", value: "demonetized" },
-      { label: "Not demonetized", value: "not-demonetized" },
-      { label: "Unknown", value: "unknown" },
+      { code: "demonetized", name: "Demonetized" },
+      { code: "not-demonetized", name: "Not demonetized" },
+      { code: "unknown", name: "Unknown" },
     ])
   })
 
@@ -581,6 +587,7 @@ describe("coinSearchSchema", () => {
         catalogue: "km",
         composition: "silver-900",
         currency: "euro",
+        demonetization: "not-demonetized",
         distribution: "circulating-commemorative",
         edge: "reeded",
         fromYear: "1898",
@@ -603,6 +610,7 @@ describe("coinSearchSchema", () => {
       catalogue: "km",
       composition: "silver-900",
       currency: "euro",
+      demonetization: "not-demonetized",
       distribution: "circulating-commemorative",
       edge: "reeded",
       fromYear: 1898,
@@ -698,6 +706,14 @@ describe("coinSearchSchema", () => {
 
     expect(
       coinSearchSchema.parse({
+        demonetization: "  ",
+      })
+    ).toStrictEqual({
+      demonetization: undefined,
+    })
+
+    expect(
+      coinSearchSchema.parse({
         demonetization: "still-legal-tender",
       })
     ).toStrictEqual({
@@ -707,10 +723,10 @@ describe("coinSearchSchema", () => {
 })
 
 describe("getCoinListLoaderDeps", () => {
-  it("passes homepage currency, edge, mint, theme, engraver, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
+  it("passes homepage currency, demonetization, edge, mint, theme, engraver, face value, issue year, measurement, distribution, catalogue, reference number, issuer, and ruler filters to the coin listing boundary", () => {
     expect(
       getCoinListLoaderDeps({
-        ...currentSearch,
+        ...currentSearchWithDemonetization,
         edge: "reeded",
         engraver: "georgios-stamatopoulos",
         mint: "royal-mint-of-madrid",
@@ -720,30 +736,15 @@ describe("getCoinListLoaderDeps", () => {
         theme: "map",
       })
     ).toStrictEqual({
-      catalogueCode: "km",
-      compositionCode: "silver-900",
-      currencyCode: "euro",
-      distributionCode: "circulating-commemorative",
+      ...baseCoinListLoaderDeps,
+      demonetization: "unknown",
       edgeCode: "reeded",
       engraverCode: "georgios-stamatopoulos",
-      fromYear: 1898,
-      issuerCode: "spain",
-      maxDiameter: 30.5,
-      maxThickness: 2.5,
-      maxWeight: 8.75,
-      maxValue: 2,
       mintCode: "royal-mint-of-madrid",
-      minDiameter: 20.25,
-      minThickness: 1.25,
-      minWeight: 4.5,
-      minValue: 0.5,
       orientationCode: "coin-alignment",
-      referenceNumber: "1338",
       rimCode: "raised-both-sides",
-      rulerCode: "felipe-vi",
       shapeCode: "round",
       themeCode: "map",
-      toYear: 1902,
     })
   })
 
@@ -775,6 +776,18 @@ describe("getCoinListLoaderDeps", () => {
 
     expect(deps).not.toHaveProperty("comments")
     expect(deps).toMatchObject(baseCoinListLoaderDeps)
+  })
+})
+
+describe("findSelectedDemonetizationFilterOption", () => {
+  it("returns the selected explicit homepage demonetization option", () => {
+    expect(findSelectedDemonetizationFilterOption("not-demonetized")).toStrictEqual(
+      demonetizationFilterOptions[1]
+    )
+  })
+
+  it("returns null when no demonetization filter is selected", () => {
+    expect(findSelectedDemonetizationFilterOption(undefined)).toBeNull()
   })
 })
 

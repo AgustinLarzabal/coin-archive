@@ -25,6 +25,15 @@ import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
+export const demonetizationFilterValues = [
+  "demonetized",
+  "not-demonetized",
+  "unknown",
+] as const
+
+export type DemonetizationFilterValue =
+  (typeof demonetizationFilterValues)[number]
+
 const parentIssuer = alias(issuer, "parent_issuer")
 const obverseFace = alias(coinFace, "obverse_face")
 const obverseFaceEngraver = alias(coinFaceEngraver, "obverse_face_engraver")
@@ -144,15 +153,6 @@ const getCoinsSelection = {
   referenceCatalogueCreatedAt: catalogue.createdAt,
   referenceCatalogueUpdatedAt: catalogue.updatedAt,
 }
-
-export const demonetizationFilterValues = [
-  "demonetized",
-  "not-demonetized",
-  "unknown",
-] as const
-
-export type DemonetizationFilterValue =
-  (typeof demonetizationFilterValues)[number]
 
 export type GetCoinsOptions = {
   catalogueCode?: string
@@ -393,21 +393,6 @@ function buildLimitedCoinsQuery(
   return baseQuery.where(filter).as("limited_coins")
 }
 
-function buildDemonetizationFilter(
-  demonetization: DemonetizationFilterValue | undefined
-): SQL | undefined {
-  switch (demonetization) {
-    case "demonetized":
-      return sql`${coin.isDemonetized} is true`
-    case "not-demonetized":
-      return sql`${coin.isDemonetized} is false`
-    case "unknown":
-      return sql`${coin.isDemonetized} is null`
-    default:
-      return undefined
-  }
-}
-
 function buildDistributionFilter(
   distributionCode: string | undefined
 ): SQL | undefined {
@@ -418,6 +403,24 @@ function buildDistributionFilter(
     relatedIdColumn: distribution.id,
     relatedTableName: "distribution",
   })
+}
+
+function buildDemonetizationFilter(
+  demonetization: DemonetizationFilterValue | undefined
+): SQL | undefined {
+  if (demonetization === "demonetized") {
+    return eq(coin.isDemonetized, true)
+  }
+
+  if (demonetization === "not-demonetized") {
+    return eq(coin.isDemonetized, false)
+  }
+
+  if (demonetization === "unknown") {
+    return sql`${coin.isDemonetized} is null`
+  }
+
+  return undefined
 }
 
 function buildEdgeFilter(edgeCode: string | undefined): SQL | undefined {

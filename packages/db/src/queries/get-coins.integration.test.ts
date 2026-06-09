@@ -141,62 +141,72 @@ describe("getCoins integration", () => {
     ])
   })
 
-  it("filters by Demonetization Status and composes that filter with issuer", async () => {
+  it("filters coins by tri-state Demonetization Status and composes with issuer filtering", async () => {
+    const iberia = await createIssuer({
+      code: "iberia",
+      name: "Iberia",
+    })
     const spain = await createIssuer({
       code: "spain",
       name: "Spain",
+      parentIssuerId: iberia.id,
     })
-    const france = await createIssuer({
-      code: "france",
-      name: "France",
+    const portugal = await createIssuer({
+      code: "portugal",
+      name: "Portugal",
     })
 
     await createCoin({
-      title: "Spanish Unknown",
+      title: "Spanish Demonetized Coin",
       issuerId: spain.id,
-      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+      isDemonetized: true,
+      createdAt: new Date("2026-05-11T00:00:00.000Z"),
     })
     await createCoin({
-      title: "Spanish Active",
+      title: "Portuguese Demonetized Coin",
+      issuerId: portugal.id,
+      isDemonetized: true,
+      createdAt: new Date("2026-05-12T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Active Coin",
       issuerId: spain.id,
       isDemonetized: false,
-      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+      createdAt: new Date("2026-05-13T00:00:00.000Z"),
     })
     await createCoin({
-      title: "Spanish Demonetized",
+      title: "Spanish Unknown Coin",
       issuerId: spain.id,
-      isDemonetized: true,
-      createdAt: new Date("2026-05-03T00:00:00.000Z"),
-    })
-    await createCoin({
-      title: "French Demonetized",
-      issuerId: france.id,
-      isDemonetized: true,
-      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+      createdAt: new Date("2026-05-14T00:00:00.000Z"),
     })
 
-    await expect(getCoins({ demonetization: "demonetized", limit: 10 }))
-      .resolves.toMatchObject([
-        { title: "French Demonetized", isDemonetized: true },
-        { title: "Spanish Demonetized", isDemonetized: true },
-      ])
+    await expect(
+      getCoins({ demonetization: "demonetized", limit: 10 })
+    ).resolves.toMatchObject([
+      { title: "Portuguese Demonetized Coin", isDemonetized: true },
+      { title: "Spanish Demonetized Coin", isDemonetized: true },
+    ])
 
-    await expect(getCoins({ demonetization: "not-demonetized", limit: 10 }))
-      .resolves.toMatchObject([
-        { title: "Spanish Active", isDemonetized: false },
-      ])
+    await expect(
+      getCoins({ demonetization: "not-demonetized", limit: 10 })
+    ).resolves.toMatchObject([
+      { title: "Spanish Active Coin", isDemonetized: false },
+    ])
 
-    await expect(getCoins({ demonetization: "unknown", limit: 10 })).resolves
-      .toMatchObject([{ title: "Spanish Unknown", isDemonetized: null }])
+    await expect(
+      getCoins({ demonetization: "unknown", limit: 10 })
+    ).resolves.toMatchObject([
+      { title: "Spanish Unknown Coin", isDemonetized: null },
+    ])
 
     await expect(
       getCoins({
         demonetization: "demonetized",
-        issuerCode: "spain",
+        issuerCode: "iberia",
         limit: 10,
       })
     ).resolves.toMatchObject([
-      { title: "Spanish Demonetized", isDemonetized: true },
+      { title: "Spanish Demonetized Coin", isDemonetized: true },
     ])
   })
 

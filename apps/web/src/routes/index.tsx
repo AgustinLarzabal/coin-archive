@@ -7,7 +7,6 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
-  DemonetizationFilterValue,
   EdgeOption,
   EngraverOption,
   IssuerOption,
@@ -24,6 +23,7 @@ import {
   applyIssueYearRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
+  findSelectedDemonetizationFilterOption,
   findSelectedCatalogueOption,
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
@@ -314,6 +314,9 @@ function App() {
     distributions,
     selectedDistributionCode
   )
+  const selectedDemonetizationOption = findSelectedDemonetizationFilterOption(
+    selectedDemonetization
+  )
   const selectedEdge = findSelectedEdgeOption(edges, selectedEdgeCode)
   const selectedEngraver = findSelectedEngraverOption(
     engravers,
@@ -356,6 +359,9 @@ function App() {
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
+  const selectDemonetization = async (
+    option: ReturnType<typeof findSelectedDemonetizationFilterOption>
+  ) => updateSearchFilter("demonetization", option?.code)
   const selectEdge = createSelectHandler<EdgeOption>("edge")
   const selectEngraver = createSelectHandler<EngraverOption>("engraver")
   const selectMint = createSelectHandler<MintOption>("mint")
@@ -365,12 +371,6 @@ function App() {
   const selectRuler = createSelectHandler<RulerOption>("ruler")
   const selectShape = createSelectHandler<ShapeOption>("shape")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
-
-  async function selectDemonetization(
-    demonetization: DemonetizationFilterValue | undefined
-  ) {
-    await updateSearchFilter("demonetization", demonetization)
-  }
 
   async function updateReferenceNumber(referenceNumber: string) {
     await updateSearchFilter("referenceNumber", referenceNumber)
@@ -554,7 +554,7 @@ function App() {
 
       <DemonetizationFilterCombobox
         onValueChange={selectDemonetization}
-        selectedDemonetization={selectedDemonetization}
+        selectedDemonetization={selectedDemonetizationOption}
       />
 
       <EdgeFilterCombobox

@@ -133,6 +133,11 @@ The shared `getCoins` query is the package-owned contract for homepage filtering
 
 - Coin Comments are intentionally excluded from `getCoins` filter options, query matching, and ordering inputs
 - changing `comments` must not change which existing filters match a Coin or how the default newest-first Coin ordering behaves
+- Demonetization Status is filtered by explicit tri-state values through `demonetization`
+- `demonetization=demonetized` returns only Coins with `is_demonetized = true`
+- `demonetization=not-demonetized` returns only Coins with `is_demonetized = false`
+- `demonetization=unknown` returns only Coins with `is_demonetized is null`
+- Demonetization Status filtering is AND-composed with the other `getCoins` filters and does not infer `null` as `false`
 
 - `getThemes` returns reusable Theme options sorted by display name, then code
 - `getOrientations` returns reusable Orientation options sorted by display name, then code

@@ -12,6 +12,10 @@ _Avoid_: Coina, specimen, item
 The human-readable display label for a coin. It is not structured catalogue data and should not be parsed to infer historical, geographic, minting, material, inscription, image, or reference information.
 _Avoid_: Name, generated catalogue data
 
+**Coin Comment**:
+Optional public free-text catalogue remarks attached to a Coin. A Coin has at most one Coin Comment, and it is not structured, parsed, or filterable catalogue data.
+_Avoid_: Note, private curator note, description, searchable field, structured annotation
+
 **Issue Year Range**:
 The closed earliest and latest known years in which a coin type or issue is understood to have been minted or issued, represented as astronomical integer years when structured. The range describes the coin type or issue itself, not the issuer's lifetime, a ruler's reign, catalogue publication date, or archive record creation date.
 _Avoid_: Creation date, open-ended date qualification, ruler reign, issuer period, catalogue year, era text

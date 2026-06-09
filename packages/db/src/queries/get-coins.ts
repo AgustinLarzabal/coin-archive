@@ -145,10 +145,20 @@ const getCoinsSelection = {
   referenceCatalogueUpdatedAt: catalogue.updatedAt,
 }
 
+export const demonetizationFilterValues = [
+  "demonetized",
+  "not-demonetized",
+  "unknown",
+] as const
+
+export type DemonetizationFilterValue =
+  (typeof demonetizationFilterValues)[number]
+
 export type GetCoinsOptions = {
   catalogueCode?: string
   compositionCode?: string
   currencyCode?: string
+  demonetization?: DemonetizationFilterValue
   distributionCode?: string
   edgeCode?: string
   engraverCode?: string
@@ -178,6 +188,7 @@ type CoinFilterOptions = Pick<
   | "catalogueCode"
   | "compositionCode"
   | "currencyCode"
+  | "demonetization"
   | "distributionCode"
   | "edgeCode"
   | "engraverCode"
@@ -272,6 +283,7 @@ function buildCoinFilter({
   catalogueCode,
   compositionCode,
   currencyCode,
+  demonetization,
   distributionCode,
   edgeCode,
   engraverCode,
@@ -318,6 +330,7 @@ function buildCoinFilter({
   ] as const
 
   const filters = [
+    buildDemonetizationFilter(demonetization),
     buildDistributionFilter(distributionCode),
     buildEdgeFilter(edgeCode),
     buildEngraverFilter(engraverCode),
@@ -378,6 +391,21 @@ function buildLimitedCoinsQuery(
   }
 
   return baseQuery.where(filter).as("limited_coins")
+}
+
+function buildDemonetizationFilter(
+  demonetization: DemonetizationFilterValue | undefined
+): SQL | undefined {
+  switch (demonetization) {
+    case "demonetized":
+      return sql`${coin.isDemonetized} is true`
+    case "not-demonetized":
+      return sql`${coin.isDemonetized} is false`
+    case "unknown":
+      return sql`${coin.isDemonetized} is null`
+    default:
+      return undefined
+  }
 }
 
 function buildDistributionFilter(

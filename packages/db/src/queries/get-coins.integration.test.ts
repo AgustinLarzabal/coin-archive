@@ -141,6 +141,65 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("filters by Demonetization Status and composes that filter with issuer", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+
+    await createCoin({
+      title: "Spanish Unknown",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Active",
+      issuerId: spain.id,
+      isDemonetized: false,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Demonetized",
+      issuerId: spain.id,
+      isDemonetized: true,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "French Demonetized",
+      issuerId: france.id,
+      isDemonetized: true,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ demonetization: "demonetized", limit: 10 }))
+      .resolves.toMatchObject([
+        { title: "French Demonetized", isDemonetized: true },
+        { title: "Spanish Demonetized", isDemonetized: true },
+      ])
+
+    await expect(getCoins({ demonetization: "not-demonetized", limit: 10 }))
+      .resolves.toMatchObject([
+        { title: "Spanish Active", isDemonetized: false },
+      ])
+
+    await expect(getCoins({ demonetization: "unknown", limit: 10 })).resolves
+      .toMatchObject([{ title: "Spanish Unknown", isDemonetized: null }])
+
+    await expect(
+      getCoins({
+        demonetization: "demonetized",
+        issuerCode: "spain",
+        limit: 10,
+      })
+    ).resolves.toMatchObject([
+      { title: "Spanish Demonetized", isDemonetized: true },
+    ])
+  })
+
   it("returns full issuer data and an empty rulers array when a coin has no ruler attributions", async () => {
     const ancientWorld = await createIssuer({
       code: "ancient-world",

@@ -4,6 +4,7 @@ import type {
   CoinIssueYearRange,
   CompositionOption,
   CurrencyOption,
+  DemonetizationFilterValue,
   DistributionOption,
   EdgeOption,
   EngraverOption,
@@ -17,6 +18,29 @@ import type {
 import { z } from "zod"
 
 const optionalStringSchema = z.string().optional()
+const demonetizationFilterValues = [
+  "demonetized",
+  "not-demonetized",
+  "unknown",
+] as const satisfies readonly DemonetizationFilterValue[]
+
+const optionalDemonetizationFilterSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return value
+  }
+
+  const normalizedValue = value.trim()
+
+  if (
+    demonetizationFilterValues.includes(
+      normalizedValue as DemonetizationFilterValue
+    )
+  ) {
+    return normalizedValue
+  }
+
+  return undefined
+}, z.enum(demonetizationFilterValues).optional())
 
 function normalizeOptionalNumericInput(value: unknown) {
   if (typeof value === "string" && value.trim() === "") {
@@ -40,6 +64,7 @@ export const coinSearchSchema = z.object({
   catalogue: optionalStringSchema,
   composition: optionalStringSchema,
   currency: optionalStringSchema,
+  demonetization: optionalDemonetizationFilterSchema,
   distribution: optionalStringSchema,
   edge: optionalStringSchema,
   engraver: optionalStringSchema,
@@ -67,6 +92,7 @@ export const coinListInputSchema = z.object({
   catalogueCode: optionalStringSchema,
   compositionCode: optionalStringSchema,
   currencyCode: optionalStringSchema,
+  demonetization: optionalDemonetizationFilterSchema,
   distributionCode: optionalStringSchema,
   edgeCode: optionalStringSchema,
   engraverCode: optionalStringSchema,
@@ -170,6 +196,15 @@ type CoinMintLabel = Pick<CoinRecordMint, "name">
 
 type ParsedFilterValue<T> = T | null | undefined
 
+export const demonetizationFilterOptions = [
+  { label: "Demonetized", value: "demonetized" },
+  { label: "Not demonetized", value: "not-demonetized" },
+  { label: "Unknown", value: "unknown" },
+] as const satisfies ReadonlyArray<{
+  label: string
+  value: DemonetizationFilterValue
+}>
+
 export function isCodeOptionEqual<T extends OptionWithCode>(left: T, right: T) {
   return left.code === right.code
 }
@@ -179,6 +214,9 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     catalogueCode: search.catalogue,
     compositionCode: search.composition,
     currencyCode: search.currency,
+    ...(search.demonetization === undefined
+      ? {}
+      : { demonetization: search.demonetization }),
     distributionCode: search.distribution,
     edgeCode: search.edge,
     engraverCode: search.engraver,
@@ -493,4 +531,12 @@ export function formatMeasurementLabel(
   }
 
   return `${label} ${measurementFormatter.format(value)} ${unit}`
+}
+
+export function getDemonetizationFilterLabel(
+  demonetization: DemonetizationFilterValue
+) {
+  return demonetizationFilterOptions.find(
+    (option) => option.value === demonetization
+  )!.label
 }

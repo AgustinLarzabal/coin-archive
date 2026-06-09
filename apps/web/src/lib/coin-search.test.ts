@@ -5,6 +5,7 @@ import {
   applyIssueYearRangeSearch,
   applyMeasurementRangeSearch,
   coinSearchSchema,
+  demonetizationFilterOptions,
   findSelectedCatalogueOption,
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
@@ -566,6 +567,14 @@ describe("applyFaceValueRangeSearch", () => {
 })
 
 describe("coinSearchSchema", () => {
+  it("defines the explicit homepage Demonetization Status options", () => {
+    expect(demonetizationFilterOptions).toStrictEqual([
+      { label: "Demonetized", value: "demonetized" },
+      { label: "Not demonetized", value: "not-demonetized" },
+      { label: "Unknown", value: "unknown" },
+    ])
+  })
+
   it("accepts homepage catalogue, currency, edge, face value, issue year range, measurement, theme, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
@@ -669,6 +678,32 @@ describe("coinSearchSchema", () => {
       engraver: "georgios-stamatopoulos",
     })
   })
+
+  it("accepts valid homepage Demonetization Status values and ignores blank or invalid values", () => {
+    expect(
+      coinSearchSchema.parse({
+        demonetization: "demonetized",
+      })
+    ).toStrictEqual({
+      demonetization: "demonetized",
+    })
+
+    expect(
+      coinSearchSchema.parse({
+        demonetization: "",
+      })
+    ).toStrictEqual({
+      demonetization: undefined,
+    })
+
+    expect(
+      coinSearchSchema.parse({
+        demonetization: "still-legal-tender",
+      })
+    ).toStrictEqual({
+      demonetization: undefined,
+    })
+  })
 })
 
 describe("getCoinListLoaderDeps", () => {
@@ -709,6 +744,16 @@ describe("getCoinListLoaderDeps", () => {
       shapeCode: "round",
       themeCode: "map",
       toYear: 1902,
+    })
+  })
+
+  it("passes the homepage Demonetization Status filter to the coin listing boundary", () => {
+    expect(
+      getCoinListLoaderDeps({
+        demonetization: "unknown",
+      })
+    ).toMatchObject({
+      demonetization: "unknown",
     })
   })
 

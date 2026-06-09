@@ -34,7 +34,10 @@ export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
 export { shape } from "./schema/shape"
 export { theme } from "./schema/theme"
-export type { GetCoinsOptions } from "./queries/get-coins"
+export type {
+  DemonetizationFilterValue,
+  GetCoinsOptions,
+} from "./queries/get-coins"
 export type {
   CoinCatalogue,
   CoinCatalogueReference,

@@ -7,6 +7,7 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
+  DemonetizationFilterValue,
   EdgeOption,
   EngraverOption,
   IssuerOption,
@@ -56,6 +57,7 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
+import { DemonetizationFilterCombobox } from "../components/demonetization-filter-combobox"
 import { EdgeFilterCombobox } from "../components/edge-filter-combobox"
 import { EngraverFilterCombobox } from "../components/engraver-filter-combobox"
 import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
@@ -259,6 +261,7 @@ function App() {
     catalogue: selectedCatalogueCode,
     composition: selectedCompositionCode,
     currency: selectedCurrencyCode,
+    demonetization: selectedDemonetization,
     distribution: selectedDistributionCode,
     edge: selectedEdgeCode,
     engraver: selectedEngraverCode,
@@ -362,6 +365,12 @@ function App() {
   const selectRuler = createSelectHandler<RulerOption>("ruler")
   const selectShape = createSelectHandler<ShapeOption>("shape")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
+
+  async function selectDemonetization(
+    demonetization: DemonetizationFilterValue | undefined
+  ) {
+    await updateSearchFilter("demonetization", demonetization)
+  }
 
   async function updateReferenceNumber(referenceNumber: string) {
     await updateSearchFilter("referenceNumber", referenceNumber)
@@ -542,6 +551,11 @@ function App() {
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
+
+      <DemonetizationFilterCombobox
+        onValueChange={selectDemonetization}
+        selectedDemonetization={selectedDemonetization}
+      />
 
       <EdgeFilterCombobox
         edges={edges}

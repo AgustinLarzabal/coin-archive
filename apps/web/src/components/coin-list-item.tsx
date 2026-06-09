@@ -6,6 +6,7 @@ export function formatThemeNames(themes: CoinRecord["themes"]) {
 
 const mintageFormatter = new Intl.NumberFormat("en-US")
 const detailClassName = "text-sm text-muted-foreground"
+type DemonetizationStatus = CoinRecord["isDemonetized"]
 
 function formatMintage(mintage: number | null) {
   if (mintage === null) {
@@ -15,12 +16,12 @@ function formatMintage(mintage: number | null) {
   return mintageFormatter.format(mintage)
 }
 
-function formatDemonetizationStatus(isDemonetized: boolean | null) {
-  if (isDemonetized === true) {
+function formatDemonetizationStatus(status: DemonetizationStatus) {
+  if (status === true) {
     return "Demonetized"
   }
 
-  if (isDemonetized === false) {
+  if (status === false) {
     return "Not demonetized"
   }
 
@@ -43,7 +44,9 @@ export function CoinListItem({
   const themeNames =
     coin.themes.length > 0 ? formatThemeNames(coin.themes) : null
   const formattedMintage = formatMintage(coin.mintage)
-  const demonetizationStatus = formatDemonetizationStatus(coin.isDemonetized)
+  const formattedDemonetizationStatus = formatDemonetizationStatus(
+    coin.isDemonetized
+  )
 
   return (
     <li className="border-b border-border pb-4">
@@ -54,7 +57,7 @@ export function CoinListItem({
       <p className={detailClassName}>Composition: {coin.composition.name}</p>
       <p className={detailClassName}>Face Value: {coin.faceValue.text}</p>
       <p className={detailClassName}>
-        Demonetization Status: {demonetizationStatus}
+        Demonetization Status: {formattedDemonetizationStatus}
       </p>
       {mintNames ? (
         <p className={detailClassName}>Mints: {mintNames}</p>

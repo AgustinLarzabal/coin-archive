@@ -15,8 +15,13 @@ import type {
   ShapeOption,
   ThemeOption,
 } from "@workspace/db"
-import { demonetizationFilterValues } from "@workspace/db"
 import { z } from "zod"
+
+const demonetizationFilterValues = [
+  "demonetized",
+  "not-demonetized",
+  "unknown",
+] as const satisfies ReadonlyArray<DemonetizationFilterValue>
 
 const optionalStringSchema = z.string().optional()
 function isDemonetizationFilterValue(

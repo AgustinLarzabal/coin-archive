@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -573,6 +574,20 @@ describe("applyFaceValueRangeSearch", () => {
 })
 
 describe("coinSearchSchema", () => {
+  it("keeps homepage search parsing free of runtime database package imports", () => {
+    const source = readFileSync(new URL("./coin-search.ts", import.meta.url), {
+      encoding: "utf8",
+    })
+
+    const runtimeDatabaseImports = source
+      .split("\n")
+      .filter((line) => line.startsWith("import "))
+      .filter((line) => !line.startsWith("import type "))
+      .filter((line) => line.includes('"@workspace/db"'))
+
+    expect(runtimeDatabaseImports).toStrictEqual([])
+  })
+
   it("defines the explicit homepage Demonetization Status options", () => {
     expect(demonetizationFilterOptions).toStrictEqual([
       { code: "demonetized", name: "Demonetized" },

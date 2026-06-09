@@ -230,7 +230,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
 }
 
 function findSelectedCodeOption<T extends OptionWithCode>(
-  options: T[],
+  options: ReadonlyArray<T>,
   selectedCode: string | undefined
 ): T | null {
   if (!selectedCode) {
@@ -315,11 +315,10 @@ export const demonetizationFilterOptions: ReadonlyArray<DemonetizationFilterOpti
 
 export function findSelectedDemonetizationFilterOption(
   selectedDemonetization: DemonetizationFilterValue | undefined
-) {
-  return (
-    demonetizationFilterOptions.find(
-      ({ code }) => code === selectedDemonetization
-    ) ?? null
+): DemonetizationFilterOption | null {
+  return findSelectedCodeOption(
+    demonetizationFilterOptions,
+    selectedDemonetization
   )
 }
 

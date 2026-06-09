@@ -50,6 +50,7 @@ import {
 } from "../lib/coin-search"
 import type {
   CoinSearch,
+  DemonetizationFilterOption,
   FaceValueFilterName,
   MeasurementFilterName,
   PositiveNumberFilterName,
@@ -359,9 +360,8 @@ function App() {
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
-  const selectDemonetization = async (
-    option: ReturnType<typeof findSelectedDemonetizationFilterOption>
-  ) => updateSearchFilter("demonetization", option?.code)
+  const selectDemonetization =
+    createSelectHandler<DemonetizationFilterOption>("demonetization")
   const selectEdge = createSelectHandler<EdgeOption>("edge")
   const selectEngraver = createSelectHandler<EngraverOption>("engraver")
   const selectMint = createSelectHandler<MintOption>("mint")

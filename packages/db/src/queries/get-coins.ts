@@ -408,19 +408,16 @@ function buildDistributionFilter(
 function buildDemonetizationFilter(
   demonetization: DemonetizationFilterValue | undefined
 ): SQL | undefined {
-  if (demonetization === "demonetized") {
-    return eq(coin.isDemonetized, true)
+  switch (demonetization) {
+    case "demonetized":
+      return eq(coin.isDemonetized, true)
+    case "not-demonetized":
+      return eq(coin.isDemonetized, false)
+    case "unknown":
+      return sql`${coin.isDemonetized} is null`
+    default:
+      return undefined
   }
-
-  if (demonetization === "not-demonetized") {
-    return eq(coin.isDemonetized, false)
-  }
-
-  if (demonetization === "unknown") {
-    return sql`${coin.isDemonetized} is null`
-  }
-
-  return undefined
 }
 
 function buildEdgeFilter(edgeCode: string | undefined): SQL | undefined {

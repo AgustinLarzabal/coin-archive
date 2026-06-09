@@ -7,6 +7,8 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
+  EdgeOption,
+  EngraverOption,
   IssuerOption,
   MintOption,
   OrientationOption,
@@ -25,6 +27,8 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  findSelectedEdgeOption,
+  findSelectedEngraverOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
   findSelectedRimOption,
@@ -52,6 +56,8 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
+import { EdgeFilterCombobox } from "../components/edge-filter-combobox"
+import { EngraverFilterCombobox } from "../components/engraver-filter-combobox"
 import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
 import { RimFilterCombobox } from "../components/rim-filter-combobox"
 import { ShapeFilterCombobox } from "../components/shape-filter-combobox"
@@ -164,6 +170,8 @@ const getCoinListData = createServerFn({ method: "GET" })
       getCompositions,
       getCurrencies,
       getDistributions,
+      getEdges,
+      getEngravers,
       getIssuers,
       getMints,
       getOrientations,
@@ -179,6 +187,8 @@ const getCoinListData = createServerFn({ method: "GET" })
       compositions,
       currencies,
       distributions,
+      edges,
+      engravers,
       issuers,
       mints,
       orientations,
@@ -192,6 +202,8 @@ const getCoinListData = createServerFn({ method: "GET" })
       getCompositions(),
       getCurrencies(),
       getDistributions(),
+      getEdges(),
+      getEngravers(),
       getIssuers(),
       getMints(),
       getOrientations(),
@@ -207,6 +219,8 @@ const getCoinListData = createServerFn({ method: "GET" })
       compositions,
       currencies,
       distributions,
+      edges,
+      engravers,
       issuers,
       mints,
       orientations,
@@ -231,6 +245,8 @@ function App() {
     compositions,
     currencies,
     distributions,
+    edges,
+    engravers,
     issuers,
     mints,
     orientations,
@@ -244,6 +260,8 @@ function App() {
     composition: selectedCompositionCode,
     currency: selectedCurrencyCode,
     distribution: selectedDistributionCode,
+    edge: selectedEdgeCode,
+    engraver: selectedEngraverCode,
     fromYear: selectedFromYear,
     issuer: selectedIssuerCode,
     maxDiameter: selectedMaxDiameter,
@@ -293,6 +311,11 @@ function App() {
     distributions,
     selectedDistributionCode
   )
+  const selectedEdge = findSelectedEdgeOption(edges, selectedEdgeCode)
+  const selectedEngraver = findSelectedEngraverOption(
+    engravers,
+    selectedEngraverCode
+  )
   const selectedMint = findSelectedMintOption(mints, selectedMintCode)
   const selectedOrientation = findSelectedOrientationOption(
     orientations,
@@ -330,6 +353,8 @@ function App() {
   const selectCurrency = createSelectHandler<CurrencyOption>("currency")
   const selectDistribution =
     createSelectHandler<DistributionOption>("distribution")
+  const selectEdge = createSelectHandler<EdgeOption>("edge")
+  const selectEngraver = createSelectHandler<EngraverOption>("engraver")
   const selectMint = createSelectHandler<MintOption>("mint")
   const selectOrientation =
     createSelectHandler<OrientationOption>("orientation")
@@ -517,6 +542,18 @@ function App() {
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
+
+      <EdgeFilterCombobox
+        edges={edges}
+        onValueChange={selectEdge}
+        selectedEdge={selectedEdge}
+      />
+
+      <EngraverFilterCombobox
+        engravers={engravers}
+        onValueChange={selectEngraver}
+        selectedEngraver={selectedEngraver}
+      />
 
       <Combobox<MintOption>
         items={mints}

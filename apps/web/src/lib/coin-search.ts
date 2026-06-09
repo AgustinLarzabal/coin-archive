@@ -5,6 +5,8 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
+  EdgeOption,
+  EngraverOption,
   MintOption,
   OrientationOption,
   RimOption,
@@ -153,6 +155,8 @@ type DistributionOptionLabel = Pick<
   DistributionOption,
   keyof NamedCodeOptionLabel
 >
+type EdgeOptionLabel = Pick<EdgeOption, keyof NamedCodeOptionLabel>
+type EngraverOptionLabel = Pick<EngraverOption, keyof NamedCodeOptionLabel>
 type MintOptionLabel = Pick<MintOption, keyof NamedCodeOptionLabel>
 type OrientationOptionLabel = Pick<
   OrientationOption,
@@ -234,6 +238,16 @@ export const findSelectedCurrencyOption: <T extends OptionWithCode>(
 export const findSelectedDistributionOption: <T extends OptionWithCode>(
   distributions: T[],
   selectedDistributionCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedEdgeOption: <T extends OptionWithCode>(
+  edges: T[],
+  selectedEdgeCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedEngraverOption: <T extends OptionWithCode>(
+  engravers: T[],
+  selectedEngraverCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
 export const findSelectedMintOption: <T extends OptionWithCode>(
@@ -407,6 +421,12 @@ export function getCompositionOptionLabel(composition: CompositionOptionLabel) {
 export function getCurrencyOptionLabel(currency: CurrencyOptionLabel) {
   return getNamedCodeOptionLabel(currency)
 }
+
+export const getEdgeOptionLabel: (edge: EdgeOptionLabel) => string =
+  getNamedCodeOptionLabel
+
+export const getEngraverOptionLabel: (engraver: EngraverOptionLabel) => string =
+  getNamedCodeOptionLabel
 
 export const getMintOptionLabel: (mint: MintOptionLabel) => string =
   getNamedCodeOptionLabel

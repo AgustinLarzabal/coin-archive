@@ -830,7 +830,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    comments: row.comments ?? null,
+    comments: row.comments,
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),

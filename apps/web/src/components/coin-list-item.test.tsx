@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { CoinListItem } from "./coin-list-item"
 
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
+const multilineComment = "First line\n<em>Second line</em>\n**Third line**"
 
 const baseCoin: CoinRecord = {
   id: "coin-1",
@@ -251,11 +252,13 @@ describe("CoinListItem", () => {
         updatedAt: timestamp,
       },
       mintage: 1234567,
-      comments: "First line\n<em>Second line</em>\n**Third line**",
+      comments: multilineComment,
     })
 
     expect(markup).toContain("Comments:")
-    expect(markup).toContain("First line\n&lt;em&gt;Second line&lt;/em&gt;\n**Third line**")
+    expect(markup).toContain(
+      "First line\n&lt;em&gt;Second line&lt;/em&gt;\n**Third line**"
+    )
     expect(markup).not.toContain("<em>Second line</em>")
     expect(markup.indexOf("Mintage: 1,234,567")).toBeLessThan(
       markup.indexOf("Comments:")

@@ -5,6 +5,7 @@ export function formatThemeNames(themes: CoinRecord["themes"]) {
 }
 
 const mintageFormatter = new Intl.NumberFormat("en-US")
+const detailClassName = "text-sm text-muted-foreground"
 
 function formatMintage(mintage: number | null) {
   if (mintage === null) {
@@ -34,46 +35,38 @@ export function CoinListItem({
   return (
     <li className="border-b border-border pb-4">
       <p className="font-medium">{coin.title}</p>
-      <p className="text-sm text-muted-foreground">
+      <p className={detailClassName}>
         {coin.issuer.name} · {coin.distribution.name}
       </p>
-      <p className="text-sm text-muted-foreground">
-        Composition: {coin.composition.name}
-      </p>
-      <p className="text-sm text-muted-foreground">
-        Face Value: {coin.faceValue.text}
-      </p>
+      <p className={detailClassName}>Composition: {coin.composition.name}</p>
+      <p className={detailClassName}>Face Value: {coin.faceValue.text}</p>
       {mintNames ? (
-        <p className="text-sm text-muted-foreground">Mints: {mintNames}</p>
+        <p className={detailClassName}>Mints: {mintNames}</p>
       ) : null}
       {themeNames ? (
-        <p className="text-sm text-muted-foreground">Themes: {themeNames}</p>
+        <p className={detailClassName}>Themes: {themeNames}</p>
       ) : null}
       {coin.shape ? (
-        <p className="text-sm text-muted-foreground">Shape: {coin.shape.name}</p>
+        <p className={detailClassName}>Shape: {coin.shape.name}</p>
       ) : null}
       {coin.orientation ? (
-        <p className="text-sm text-muted-foreground">
-          Orientation: {coin.orientation.name}
-        </p>
+        <p className={detailClassName}>Orientation: {coin.orientation.name}</p>
       ) : null}
       {coin.rim ? (
-        <p className="text-sm text-muted-foreground">Rim: {coin.rim.name}</p>
+        <p className={detailClassName}>Rim: {coin.rim.name}</p>
       ) : null}
       {coin.edge?.name ? (
         <p className="text-sm text-muted-foreground">Edge: {coin.edge.name}</p>
       ) : null}
       {formattedMintage ? (
-        <p className="text-sm text-muted-foreground">
-          Mintage: {formattedMintage}
-        </p>
+        <p className={detailClassName}>Mintage: {formattedMintage}</p>
       ) : null}
-      <p className="text-sm text-muted-foreground">{issueYearRangeLabel}</p>
+      <p className={detailClassName}>{issueYearRangeLabel}</p>
       {measurementSummary ? (
-        <p className="text-sm text-muted-foreground">{measurementSummary}</p>
+        <p className={detailClassName}>{measurementSummary}</p>
       ) : null}
       {coin.comments ? (
-        <p className="text-sm text-muted-foreground">
+        <p className={detailClassName}>
           <span>Comments: </span>
           <span className="whitespace-pre-line">{coin.comments}</span>
         </p>

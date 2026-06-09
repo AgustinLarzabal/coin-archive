@@ -146,6 +146,7 @@ export type GetCoinsRow = {
   title: string
   createdAt: Date
   updatedAt: Date
+  comments: string | null
   mintage: number | null
   minYear: number | null
   maxYear: number | null
@@ -294,7 +295,7 @@ type CoinRulerAttribution = {
 
 type CoinRecordBase = Pick<
   GetCoinsRow,
-  "id" | "title" | "createdAt" | "updatedAt" | "mintage"
+  "id" | "title" | "createdAt" | "updatedAt" | "comments" | "mintage"
 >
 
 export type CoinRecord = CoinRecordBase & {
@@ -829,6 +830,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    comments: row.comments ?? null,
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),

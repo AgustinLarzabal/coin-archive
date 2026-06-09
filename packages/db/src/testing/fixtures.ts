@@ -31,6 +31,7 @@ type CreateIssuerInput = {
 }
 
 type CreateCoinInput = {
+  comments?: string | null
   createdAt: Date
   diameter?: number
   compositionId?: string
@@ -174,6 +175,7 @@ export async function createIssuer({
 }
 
 export async function createCoin({
+  comments,
   createdAt,
   diameter,
   compositionId,
@@ -205,6 +207,7 @@ export async function createCoin({
   const [createdCoin] = await db
     .insert(coin)
     .values({
+      comments,
       createdAt,
       compositionId: resolvedCompositionId,
       currencyId: resolvedCurrencyId,

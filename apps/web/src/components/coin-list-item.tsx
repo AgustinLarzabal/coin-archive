@@ -72,6 +72,12 @@ export function CoinListItem({
       {measurementSummary ? (
         <p className="text-sm text-muted-foreground">{measurementSummary}</p>
       ) : null}
+      {coin.comments ? (
+        <p className="text-sm text-muted-foreground">
+          <span>Comments: </span>
+          <span className="whitespace-pre-line">{coin.comments}</span>
+        </p>
+      ) : null}
     </li>
   )
 }

@@ -140,6 +140,7 @@ describe("getCoins integration", () => {
         title: "Ungrouped Civic Issue",
         createdAt,
         updatedAt: createdAt,
+        comments: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -428,6 +429,65 @@ describe("getCoins integration", () => {
         id: unknownMintageCoin.id,
         title: "Unknown Mintage Issue",
         mintage: null,
+      },
+    ])
+  })
+
+  it("returns present comments and stable null comments through multiplied joined rows", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const madrid = await createMint({
+      code: "madrid",
+      name: "Madrid",
+    })
+    const mapTheme = await createTheme({
+      code: "map",
+      name: "Map",
+    })
+
+    const uncommentedCoin = await createCoin({
+      title: "Uncommented Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const commentedCoin = await createCoin({
+      title: "Commented Coin",
+      issuerId: spain.id,
+      comments: "Public catalogue note.\nSecond line.",
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await createCoinMint({
+      coinId: commentedCoin.id,
+      mintId: madrid.id,
+    })
+    await createCoinTheme({
+      coinId: commentedCoin.id,
+      themeId: mapTheme.id,
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: commentedCoin.id,
+        title: "Commented Coin",
+        comments: "Public catalogue note.\nSecond line.",
+        mints: [
+          {
+            id: madrid.id,
+          },
+        ],
+        themes: [
+          {
+            id: mapTheme.id,
+          },
+        ],
+      },
+      {
+        id: uncommentedCoin.id,
+        title: "Uncommented Coin",
+        comments: null,
       },
     ])
   })
@@ -2238,6 +2298,7 @@ describe("getCoins integration", () => {
         title: "Catalogue Reference Test Issue",
         createdAt,
         updatedAt: createdAt,
+        comments: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -2796,6 +2857,7 @@ describe("getCoins integration", () => {
         title: "Attribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        comments: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {
@@ -3146,6 +3208,7 @@ describe("getCoins integration", () => {
         title: "Distribution Test Issue",
         createdAt,
         updatedAt: createdAt,
+        comments: null,
         mintage: null,
         issueYearRange: null,
         faceValue: {

@@ -1,0 +1,1 @@
+ALTER TABLE "coin" ADD COLUMN "comments" text;

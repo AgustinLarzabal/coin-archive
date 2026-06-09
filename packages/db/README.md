@@ -41,7 +41,7 @@ Important model notes:
 
 The current core relationships map to these tables:
 
-- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
+- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional public plain-text `comments`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description`, and timestamps
 - `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
@@ -122,7 +122,7 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 
 - use `db` when a caller needs direct shared access
 - prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, `getMints`, `getOrientations`, `getThemes`, and `getCatalogues` for reusable data access behavior
-- `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records plus nullable Orientation plus nested Mint and Theme collections
+- `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records, nullable public `comments`, nullable Orientation, and nested Mint and Theme collections
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
 

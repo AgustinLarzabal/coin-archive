@@ -43,6 +43,7 @@ export async function insertIssuer(input: {
 }
 
 export async function insertCoin(input: {
+  comments?: string | null
   compositionId?: string
   currencyId?: string
   distributionId?: string
@@ -63,6 +64,7 @@ export async function insertCoin(input: {
   const [insertedCoin] = await testDb
     .insert(coin)
     .values({
+      comments: input.comments,
       compositionId,
       currencyId,
       distributionId,

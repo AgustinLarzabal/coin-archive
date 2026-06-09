@@ -10,6 +10,7 @@ const baseCoin: CoinRecord = {
   title: "Theme Test Coin",
   createdAt: timestamp,
   updatedAt: timestamp,
+  comments: null,
   issueYearRange: null,
   faceValue: {
     text: "1 Euro",
@@ -237,5 +238,30 @@ describe("CoinListItem", () => {
     })
 
     expect(markup).not.toContain("Edge:")
+  })
+
+  it("renders multiline Comments after structured rows as escaped plain text and omits them when absent", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      rim: {
+        id: "rim-1",
+        code: "raised-both-sides",
+        name: "Raised, both sides",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      mintage: 1234567,
+      comments: "First line\n<em>Second line</em>\n**Third line**",
+    })
+
+    expect(markup).toContain("Comments:")
+    expect(markup).toContain("First line\n&lt;em&gt;Second line&lt;/em&gt;\n**Third line**")
+    expect(markup).not.toContain("<em>Second line</em>")
+    expect(markup.indexOf("Mintage: 1,234,567")).toBeLessThan(
+      markup.indexOf("Comments:")
+    )
+    expect(markup).toContain("whitespace-pre-line")
+
+    expect(renderCoinListItemMarkup(baseCoin)).not.toContain("Comments:")
   })
 })

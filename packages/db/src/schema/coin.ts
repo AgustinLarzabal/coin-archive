@@ -7,6 +7,7 @@ import {
   numeric,
   pgTable,
   timestamp,
+  text,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
@@ -105,6 +106,7 @@ export const coin = pgTable(
     rimId: uuid("rim_id").references(() => rim.id, {
       onDelete: "restrict",
     }),
+    comments: text("comments"),
     mintage: bigint("mintage", { mode: "number" }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),

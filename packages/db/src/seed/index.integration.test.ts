@@ -257,6 +257,8 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
       title: "Spain 2 Euro",
+      comments:
+        "Common circulating commemorative format with a national obverse and shared euro reverse.",
       edge: {
         code: "lettered",
         name: "Lettered",

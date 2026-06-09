@@ -9,6 +9,7 @@ type SeededIssuer = {
 }
 
 type SeededCoin = {
+  comments?: string
   title: string
   compositionCode: string
   currencyCode: string
@@ -361,6 +362,8 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Spain 2 Euro",
+    comments:
+      "Common circulating commemorative format with a national obverse and shared euro reverse.",
     compositionCode: "copper-nickel-clad",
     currencyCode: "euro",
     distributionCode: "circulating-commemorative",

@@ -1,6 +1,7 @@
 import { pathToFileURL } from "node:url"
 import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
+import { normalizeCoinComments } from "../normalize-coin-comments"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinFace, type CoinFaceSide } from "../schema/coin-face"
@@ -659,6 +660,7 @@ function mapSeededCoinToInsertValues(
 
   return {
     ...coinValues,
+    comments: normalizeCoinComments(coinValues.comments),
     compositionId: getRequiredSeededId(
       compositionIdsByCode,
       compositionCode,

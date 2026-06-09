@@ -1,3 +1,5 @@
+import { normalizeCoinComments } from "../normalize-coin-comments"
+
 type GetCoinsCompositionColumns = {
   compositionId: string
   compositionCode: string
@@ -830,7 +832,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     title: row.title,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    comments: row.comments,
+    comments: normalizeCoinComments(row.comments),
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),

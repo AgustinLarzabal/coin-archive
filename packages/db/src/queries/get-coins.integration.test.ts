@@ -492,6 +492,39 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("normalizes Coin Comments by trimming outer whitespace and collapsing blank input to null", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const blankCommentCoin = await createCoin({
+      title: "Blank Comment Coin",
+      issuerId: spain.id,
+      comments: "  \n\t  ",
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const trimmedCommentCoin = await createCoin({
+      title: "Trimmed Comment Coin",
+      issuerId: spain.id,
+      comments: "  Public catalogue note.\nSecond line.  ",
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: trimmedCommentCoin.id,
+        title: "Trimmed Comment Coin",
+        comments: "Public catalogue note.\nSecond line.",
+      },
+      {
+        id: blankCommentCoin.id,
+        title: "Blank Comment Coin",
+        comments: null,
+      },
+    ])
+  })
+
   it("returns a stable mints array with empty, single-mint, and multiple-mint coin records", async () => {
     const spain = await createIssuer({
       code: "spain",

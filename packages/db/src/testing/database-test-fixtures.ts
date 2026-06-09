@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm"
+import { normalizeCoinComments } from "../normalize-coin-comments"
 import { coin } from "../schema/coin"
 import { issuer } from "../schema/issuer"
 import { getOrCreateDefaultComposition } from "./default-composition"
@@ -64,7 +65,7 @@ export async function insertCoin(input: {
   const [insertedCoin] = await testDb
     .insert(coin)
     .values({
-      comments: input.comments,
+      comments: normalizeCoinComments(input.comments),
       compositionId,
       currencyId,
       distributionId,

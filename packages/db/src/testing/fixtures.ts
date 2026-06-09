@@ -20,6 +20,7 @@ import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
 import { theme } from "../schema/theme"
 import { db } from "../index"
+import { normalizeCoinComments } from "../normalize-coin-comments"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
@@ -207,7 +208,7 @@ export async function createCoin({
   const [createdCoin] = await db
     .insert(coin)
     .values({
-      comments,
+      comments: normalizeCoinComments(comments),
       createdAt,
       compositionId: resolvedCompositionId,
       currencyId: resolvedCurrencyId,

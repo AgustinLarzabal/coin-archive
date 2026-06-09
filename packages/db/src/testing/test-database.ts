@@ -13,8 +13,12 @@ import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
+import { orientation } from "../schema/orientation"
+import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { shape } from "../schema/shape"
+import { theme } from "../schema/theme"
 
 type TestDatabase = ReturnType<typeof drizzle>
 
@@ -41,6 +45,10 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(rulerGroup)
   await database.delete(catalogue)
   await database.delete(issuer)
+  await database.delete(orientation)
+  await database.delete(rim)
+  await database.delete(shape)
+  await database.delete(theme)
   await database.delete(distribution)
   await database.delete(currency)
   await database.delete(composition)

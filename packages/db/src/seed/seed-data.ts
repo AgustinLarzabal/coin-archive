@@ -1,3 +1,5 @@
+import type { CoinFaceSide } from "../schema/coin-face"
+
 type SeededIssuer = {
   name: string
   code: string
@@ -28,7 +30,7 @@ type SeededCoin = {
 
 type SeededCoinFace = {
   coinTitle: string
-  side: "obverse" | "reverse"
+  side: CoinFaceSide
   description?: string | null
   lettering?: string | null
 }

@@ -1,6 +1,6 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
+import { coinFace, type CoinFaceSide } from "../schema/coin-face"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -125,7 +125,7 @@ type CreateCoinMintInput = {
 
 type CreateCoinFaceInput = {
   coinId: string
-  side: "obverse" | "reverse"
+  side: CoinFaceSide
   description?: string | null
   lettering?: string | null
 }

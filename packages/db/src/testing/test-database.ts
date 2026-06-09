@@ -3,9 +3,11 @@ import postgres from "postgres"
 import { afterAll, beforeEach } from "vitest"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinFace } from "../schema/coin-face"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { coinTheme } from "../schema/coin-theme"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
@@ -29,8 +31,10 @@ export function createTestDatabase(databaseUrl: string) {
 
 export async function clearTestData(database: TestDatabase) {
   await database.delete(coinReference)
+  await database.delete(coinTheme)
   await database.delete(coinMint)
   await database.delete(coinRuler)
+  await database.delete(coinFace)
   await database.delete(coin)
   await database.delete(mint)
   await database.delete(ruler)

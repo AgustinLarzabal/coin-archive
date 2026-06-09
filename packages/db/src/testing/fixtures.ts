@@ -1,5 +1,6 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinFace } from "../schema/coin-face"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -120,6 +121,13 @@ type CreateCoinReferenceInput = {
 type CreateCoinMintInput = {
   coinId: string
   mintId: string
+}
+
+type CreateCoinFaceInput = {
+  coinId: string
+  side: "obverse" | "reverse"
+  description?: string | null
+  lettering?: string | null
 }
 
 type CreateCoinThemeInput = {
@@ -394,6 +402,25 @@ export async function createCoinMint({
     .returning()
 
   return createdCoinMint
+}
+
+export async function createCoinFace({
+  coinId,
+  side,
+  description,
+  lettering,
+}: CreateCoinFaceInput) {
+  const [createdCoinFace] = await db
+    .insert(coinFace)
+    .values({
+      coinId,
+      side,
+      description,
+      lettering,
+    })
+    .returning()
+
+  return createdCoinFace
 }
 
 export async function createCoinTheme({

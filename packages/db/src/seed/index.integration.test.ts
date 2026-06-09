@@ -286,6 +286,16 @@ describe("seed integration", () => {
         code: "medal-alignment",
         name: "Medal alignment",
       },
+      obverse: {
+        description: "Portrait of Felipe VI facing left.",
+        lettering: "FELIPE VI REY DE ESPANA",
+        engravers: [],
+      },
+      reverse: {
+        description: "Map of Europe with denomination.",
+        lettering: "2 EURO",
+        engravers: [],
+      },
       issueYearRange: {
         minYear: 2002,
         maxYear: 2026,

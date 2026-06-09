@@ -3,6 +3,7 @@ import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinFace } from "../schema/coin-face"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -20,6 +21,7 @@ import { shape } from "../schema/shape"
 import { theme } from "../schema/theme"
 import {
   seededCatalogues,
+  seededCoinFaces,
   seededCoinReferences,
   seededCoinMints,
   seededCoinRulers,
@@ -495,6 +497,25 @@ async function seedCoins(
   return coinIdsByTitle
 }
 
+async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
+  if (seededCoinFaces.length === 0) {
+    return
+  }
+
+  await db.insert(coinFace).values(
+    seededCoinFaces.map((seededCoinFace) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinFace.coinTitle,
+        "coin"
+      ),
+      side: seededCoinFace.side,
+      description: seededCoinFace.description,
+      lettering: seededCoinFace.lettering,
+    }))
+  )
+}
+
 function mapSeededCoinToInsertValues(
   seededCoin: (typeof seededCoins)[number],
   compositionIdsByCode: CompositionIdsByCode,
@@ -648,6 +669,7 @@ export async function seedDatabase() {
   const rulerIdsByCode = await seedRulers()
   const catalogueIdsByCode = await seedCatalogues()
 
+  await seedCoinFaces(coinIdsByTitle)
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinThemes(coinIdsByTitle, themeIdsByCode)

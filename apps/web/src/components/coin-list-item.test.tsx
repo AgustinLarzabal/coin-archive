@@ -25,6 +25,8 @@ const baseCoin: CoinRecord = {
   },
   orientation: null,
   shape: null,
+  obverse: null,
+  reverse: null,
   measurements: {
     weight: null,
     diameter: null,

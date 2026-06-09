@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinFace } from "../schema/coin-face"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -22,6 +23,8 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
 const parentIssuer = alias(issuer, "parent_issuer")
+const obverseFace = alias(coinFace, "obverse_face")
+const reverseFace = alias(coinFace, "reverse_face")
 const getCoinsSelection = {
   id: coin.id,
   title: coin.title,
@@ -53,6 +56,10 @@ const getCoinsSelection = {
   rimName: rim.name,
   rimCreatedAt: rim.createdAt,
   rimUpdatedAt: rim.updatedAt,
+  obverseDescription: obverseFace.description,
+  obverseLettering: obverseFace.lettering,
+  reverseDescription: reverseFace.description,
+  reverseLettering: reverseFace.lettering,
   weight: coin.weight,
   diameter: coin.diameter,
   thickness: coin.thickness,
@@ -615,6 +622,14 @@ export function buildGetCoinsQuery(
     .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(rim, eq(coin.rimId, rim.id))
+    .leftJoin(
+      obverseFace,
+      and(eq(coin.id, obverseFace.coinId), eq(obverseFace.side, "obverse"))
+    )
+    .leftJoin(
+      reverseFace,
+      and(eq(coin.id, reverseFace.coinId), eq(reverseFace.side, "reverse"))
+    )
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))
     .leftJoin(mint, eq(coinMint.mintId, mint.id))

@@ -7,6 +7,7 @@ export default defineConfig({
   schema: [
     "./src/schema/catalogue.ts",
     "./src/schema/coin.ts",
+    "./src/schema/coin-face.ts",
     "./src/schema/coin-mint.ts",
     "./src/schema/coin-theme.ts",
     "./src/schema/coin-reference.ts",

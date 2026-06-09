@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   catalogue,
   coin,
+  coinFace,
   coinMint,
   coinReference,
   coinRuler,
@@ -24,6 +25,7 @@ import {
 import {
   createCatalogue,
   createCoin,
+  createCoinFace,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -42,6 +44,7 @@ import {
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
+import { coinFaceSchemaNames } from "./coin-face"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { coinSchemaNames } from "./coin"
@@ -1122,6 +1125,100 @@ describe("distribution schema constraints", () => {
         .where(sql`${distribution.id} = ${standardCirculation.id}`),
       "coin_distribution_id_distribution_id_fk",
       "23001"
+    )
+  })
+})
+
+describe("coin face schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("allows at most one Obverse and at most one Reverse per coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Single Face Per Side Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinFace({
+      coinId: createdCoin.id,
+      side: "obverse",
+      description: "First obverse description.",
+    })
+    await createCoinFace({
+      coinId: createdCoin.id,
+      side: "reverse",
+      lettering: "FIRST REVERSE",
+    })
+
+    await expectConstraintError(
+      createCoinFace({
+        coinId: createdCoin.id,
+        side: "obverse",
+        description: "Duplicate obverse description.",
+      }),
+      coinFaceSchemaNames.sideUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("rejects face side values outside obverse and reverse", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Invalid Face Side Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.execute(sql`
+        insert into "coin_face" ("coin_id", "side")
+        values (${createdCoin.id}, ${"edge"})
+      `),
+      coinFaceSchemaNames.sideCheck,
+      "23514"
+    )
+  })
+
+  it("cascades face detail rows when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Deleted Face Detail Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await createCoinFace({
+      coinId: createdCoin.id,
+      side: "obverse",
+      description: "Portrait right.",
+    })
+    await createCoinFace({
+      coinId: createdCoin.id,
+      side: "reverse",
+      lettering: "ONE EURO",
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(coinFace)
+        .where(eq(coinFace.coinId, createdCoin.id)),
+      0
     )
   })
 })

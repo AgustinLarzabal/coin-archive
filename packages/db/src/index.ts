@@ -13,6 +13,7 @@ export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"
 export { catalogue } from "./schema/catalogue"
 export { coin } from "./schema/coin"
+export { coinFace } from "./schema/coin-face"
 export { coinMint } from "./schema/coin-mint"
 export { coinTheme } from "./schema/coin-theme"
 export { composition } from "./schema/composition"
@@ -36,6 +37,7 @@ export type {
   CoinCurrency,
   CoinDistribution,
   CoinFaceValue,
+  CoinFaceDetails,
   CoinIssueYearRange,
   CoinIssuer,
   CoinRecordMint,
@@ -69,6 +71,7 @@ export type { Rim } from "./schema/rim"
 export type { RulerOption } from "./queries/get-rulers"
 export type { Shape } from "./schema/shape"
 export type { Coin } from "./schema/coin"
+export type { CoinFace, CoinFaceSide } from "./schema/coin-face"
 export type { CoinReference } from "./schema/coin-reference"
 export type { CoinRuler } from "./schema/coin-ruler"
 export type { Distribution } from "./schema/distribution"

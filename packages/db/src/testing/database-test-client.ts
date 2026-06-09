@@ -4,12 +4,21 @@ import { migrate } from "drizzle-orm/postgres-js/migrator"
 import { createDatabase, createDatabaseClient } from "../database"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinFace } from "../schema/coin-face"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
+import { coinTheme } from "../schema/coin-theme"
+import { composition } from "../schema/composition"
+import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
+import { orientation } from "../schema/orientation"
+import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { shape } from "../schema/shape"
+import { theme } from "../schema/theme"
 import {
   getDatabaseName,
   getMaintenanceDatabaseUrl,
@@ -30,13 +39,22 @@ export async function clearDatabaseTables(
   database: ReturnType<typeof createTestDatabase>["db"]
 ) {
   await database.delete(coinReference)
+  await database.delete(coinTheme)
   await database.delete(coinRuler)
+  await database.delete(coinFace)
   await database.delete(coin)
+  await database.delete(mint)
   await database.delete(ruler)
   await database.delete(rulerGroup)
   await database.delete(catalogue)
   await database.delete(issuer)
+  await database.delete(orientation)
+  await database.delete(rim)
+  await database.delete(shape)
+  await database.delete(theme)
   await database.delete(distribution)
+  await database.delete(currency)
+  await database.delete(composition)
 }
 
 export async function prepareDatabaseIntegrationTests() {

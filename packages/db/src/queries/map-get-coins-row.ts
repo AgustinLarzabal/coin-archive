@@ -50,6 +50,13 @@ type GetCoinsRimColumns = {
   rimUpdatedAt?: Date | null
 }
 
+type GetCoinsFaceColumns = {
+  obverseDescription?: string | null
+  obverseLettering?: string | null
+  reverseDescription?: string | null
+  reverseLettering?: string | null
+}
+
 type OptionalCoinCodeNamedColumns = {
   id?: string | null
   code?: string | null
@@ -130,6 +137,7 @@ export type GetCoinsRow = {
   GetCoinsOrientationColumns &
   GetCoinsShapeColumns &
   GetCoinsRimColumns &
+  GetCoinsFaceColumns &
   GetCoinsDistributionColumns &
   GetCoinsIssuerColumns &
   GetCoinsMintColumns &
@@ -217,6 +225,12 @@ export type CoinFaceValue = {
   text: string
   numericValue: number
   currency: CoinCurrency
+}
+
+export type CoinFaceDetails = {
+  description: string | null
+  lettering: string | null
+  engravers: []
 }
 
 export type CoinOrientation = CoinCodeNamedRecord
@@ -309,6 +323,8 @@ type CoinRecordBase = Pick<
 export type CoinRecord = CoinRecordBase & {
   issueYearRange: CoinIssueYearRange | null
   faceValue: CoinFaceValue
+  obverse: CoinFaceDetails | null
+  reverse: CoinFaceDetails | null
   orientation: CoinOrientation | null
   shape: CoinShape | null
   rim: CoinRim | null
@@ -410,6 +426,35 @@ function mapFaceValue({
     text: faceValueText,
     numericValue: faceValueNumericValue,
     currency: mapCurrency(currencyColumns),
+  }
+}
+
+function normalizeOptionalPlainText(value: string | null | undefined) {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  return value.trim() ? value : null
+}
+
+function mapCoinFaceDetails({
+  description,
+  lettering,
+}: {
+  description?: string | null
+  lettering?: string | null
+}): CoinFaceDetails | null {
+  const normalizedDescription = normalizeOptionalPlainText(description)
+  const normalizedLettering = normalizeOptionalPlainText(lettering)
+
+  if (normalizedDescription === null && normalizedLettering === null) {
+    return null
+  }
+
+  return {
+    description: normalizedDescription,
+    lettering: normalizedLettering,
+    engravers: [],
   }
 }
 
@@ -724,6 +769,14 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
+    obverse: mapCoinFaceDetails({
+      description: row.obverseDescription,
+      lettering: row.obverseLettering,
+    }),
+    reverse: mapCoinFaceDetails({
+      description: row.reverseDescription,
+      lettering: row.reverseLettering,
+    }),
     orientation: mapOrientation(row),
     shape: mapShape(row),
     rim: mapRim(row),

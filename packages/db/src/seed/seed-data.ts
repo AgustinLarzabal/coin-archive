@@ -26,6 +26,13 @@ type SeededCoin = {
   updatedAt: Date
 }
 
+type SeededCoinFace = {
+  coinTitle: string
+  side: "obverse" | "reverse"
+  description?: string | null
+  lettering?: string | null
+}
+
 type SeededMint = {
   code: string
   name: string
@@ -345,6 +352,21 @@ export const seededCoins: SeededCoin[] = [
     maxYear: 2026,
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinFaces: SeededCoinFace[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    side: "obverse",
+    description: "Portrait of Felipe VI facing left.",
+    lettering: "FELIPE VI REY DE ESPANA",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    side: "reverse",
+    description: "Map of Europe with denomination.",
+    lettering: "2 EURO",
   },
 ]
 

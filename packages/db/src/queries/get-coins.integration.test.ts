@@ -3,6 +3,7 @@ import { db, getCoins } from "../index"
 import {
   createCatalogue,
   createCoin,
+  createCoinFace,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -151,6 +152,8 @@ describe("getCoins integration", () => {
           },
         },
         orientation: null,
+        obverse: null,
+        reverse: null,
         measurements: {
           weight: null,
           diameter: null,
@@ -188,6 +191,83 @@ describe("getCoins integration", () => {
         mints: [],
         references: [],
         rulers: [],
+      },
+    ])
+  })
+
+  it("returns face detail objects only when Obverse or Reverse data exists and normalizes blank face text to null output", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    const noFaceCoin = await createCoin({
+      title: "No Face Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const obverseOnlyCoin = await createCoin({
+      title: "Obverse Only Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const reverseOnlyCoin = await createCoin({
+      title: "Reverse Only Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+    const blankFaceCoin = await createCoin({
+      title: "Blank Face Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+
+    await createCoinFace({
+      coinId: obverseOnlyCoin.id,
+      side: "obverse",
+      description: "Crowned shield.",
+      lettering: "FELIPE VI",
+    })
+    await createCoinFace({
+      coinId: reverseOnlyCoin.id,
+      side: "reverse",
+      lettering: "2 EURO",
+    })
+    await createCoinFace({
+      coinId: blankFaceCoin.id,
+      side: "obverse",
+      description: "   ",
+      lettering: "\n\t",
+    })
+
+    await expect(getCoins({ limit: 4 })).resolves.toMatchObject([
+      {
+        id: blankFaceCoin.id,
+        obverse: null,
+        reverse: null,
+      },
+      {
+        id: reverseOnlyCoin.id,
+        obverse: null,
+        reverse: {
+          description: null,
+          lettering: "2 EURO",
+          engravers: [],
+        },
+      },
+      {
+        id: obverseOnlyCoin.id,
+        obverse: {
+          description: "Crowned shield.",
+          lettering: "FELIPE VI",
+          engravers: [],
+        },
+        reverse: null,
+      },
+      {
+        id: noFaceCoin.id,
+        obverse: null,
+        reverse: null,
       },
     ])
   })

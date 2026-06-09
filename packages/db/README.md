@@ -123,12 +123,16 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 - use `db` when a caller needs direct shared access
 - prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, `getMints`, `getOrientations`, `getThemes`, and `getCatalogues` for reusable data access behavior
 - `getCoins` returns nested shared catalogue data including each Coin's required Face Value, Currency, and Composition records, nullable public `comments`, nullable Orientation, and nested Mint and Theme collections
+- Coin Comments are public display and export data only; they are not filter inputs, search inputs, sort keys, or Coin identity data
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
 
 ## Query behavior
 
 The shared `getCoins` query is the package-owned contract for homepage filtering, including Face Value, Currency, Issue Year Range, measurements, references, and attribution filters.
+
+- Coin Comments are intentionally excluded from `getCoins` filter options, query matching, and ordering inputs
+- changing `comments` must not change which existing filters match a Coin or how the default newest-first Coin ordering behaves
 
 - `getThemes` returns reusable Theme options sorted by display name, then code
 - `getOrientations` returns reusable Orientation options sorted by display name, then code

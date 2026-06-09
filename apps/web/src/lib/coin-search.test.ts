@@ -613,6 +613,17 @@ describe("coinSearchSchema", () => {
     })
   })
 
+  it("ignores a comments homepage search param", () => {
+    expect(
+      coinSearchSchema.parse({
+        issuer: "spain",
+        comments: "Public catalogue note.",
+      })
+    ).toStrictEqual({
+      issuer: "spain",
+    })
+  })
+
   it("accepts singular shape and rim homepage search params", () => {
     expect(
       coinSearchSchema.parse({
@@ -684,6 +695,34 @@ describe("getCoinListLoaderDeps", () => {
     } as Parameters<typeof getCoinListLoaderDeps>[0])
 
     expect(deps).not.toHaveProperty("mintage")
+    expect(deps).toMatchObject({
+      catalogueCode: "km",
+      compositionCode: "silver-900",
+      currencyCode: "euro",
+      distributionCode: "circulating-commemorative",
+      fromYear: 1898,
+      issuerCode: "spain",
+      maxDiameter: 30.5,
+      maxThickness: 2.5,
+      maxWeight: 8.75,
+      maxValue: 2,
+      minDiameter: 20.25,
+      minThickness: 1.25,
+      minWeight: 4.5,
+      minValue: 0.5,
+      referenceNumber: "1338",
+      rulerCode: "felipe-vi",
+      toYear: 1902,
+    })
+  })
+
+  it("does not forward comments to the coin listing boundary", () => {
+    const deps = getCoinListLoaderDeps({
+      ...currentSearch,
+      comments: "Public catalogue note.",
+    } as Parameters<typeof getCoinListLoaderDeps>[0])
+
+    expect(deps).not.toHaveProperty("comments")
     expect(deps).toMatchObject({
       catalogueCode: "km",
       compositionCode: "silver-900",

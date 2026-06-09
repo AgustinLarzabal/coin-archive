@@ -525,6 +525,70 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("does not use comment text to satisfy existing reference filters and keeps newest-first ordering", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const km = await createCatalogue({
+      code: "km",
+      title: "Krause-Mishler",
+    })
+
+    const commentMatchedCoin = await createCoin({
+      title: "Comment Match Only",
+      issuerId: spain.id,
+      comments: "Mentions KM 1338A in public remarks.",
+      createdAt: new Date("2026-05-07T00:00:00.000Z"),
+    })
+    const filteredCoin = await createCoin({
+      title: "Referenced Coin",
+      issuerId: spain.id,
+      comments: "Older comment that should not affect ordering.",
+      createdAt: new Date("2026-05-06T00:00:00.000Z"),
+    })
+    const unrelatedCoin = await createCoin({
+      title: "No Match Coin",
+      issuerId: spain.id,
+      comments: null,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+
+    await createCoinReference({
+      coinId: filteredCoin.id,
+      catalogueId: km.id,
+      number: "1338A",
+    })
+
+    await expect(
+      getCoins({
+        catalogueCode: "km",
+        referenceNumber: "1338A",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: filteredCoin.id,
+        title: "Referenced Coin",
+        comments: "Older comment that should not affect ordering.",
+      },
+    ])
+
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: commentMatchedCoin.id,
+        title: "Comment Match Only",
+      },
+      {
+        id: filteredCoin.id,
+        title: "Referenced Coin",
+      },
+      {
+        id: unrelatedCoin.id,
+        title: "No Match Coin",
+      },
+    ])
+  })
+
   it("returns a stable mints array with empty, single-mint, and multiple-mint coin records", async () => {
     const spain = await createIssuer({
       code: "spain",

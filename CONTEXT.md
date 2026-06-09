@@ -124,6 +124,14 @@ _Avoid_: Archive count, owned specimen count, population estimate, rarity label,
 The official nominal denomination assigned to a coin type or issue, such as 2 Euros or 50 Euro Cent. Every Coin has exactly one Face Value. Face Value combines authoritative display text, a numeric value expressed in the Currency's major unit, and the Currency itself. The display text is catalogue data, not a generated label. Face Value describes the denomination of the coin itself, not its market price, collector value, melt value, exchange-rate value, or current purchasing power.
 _Avoid_: Value, market value, collector value, sale price, melt value, purchasing power, zero or negative denomination, minor-unit numeric value, generated denomination label
 
+**Demonetization Status**:
+Whether a Coin's Face Value is known to be no longer legally monetized by the issuing authority. Demonetization Status belongs to the Coin rather than the Currency, and it may be unknown when the archive has not established the coin's legal monetary status. It is distinct from circulation frequency, collector demand, distribution category, and current purchasing power.
+_Avoid_: Circulation status, distribution, obsolete currency, collector-only status, current purchasing power
+
+**Demonetization Status Filter**:
+A catalogue filter that returns coins whose Demonetization Status is demonetized, not demonetized, or unknown. It composes with other catalogue filters using AND semantics.
+_Avoid_: Circulation filter, distribution filter, legal tender checkbox
+
 **Currency**:
 The reusable monetary unit used by a coin's Face Value, such as Euro, Argentine peso, or United States dollar. A Currency has a short display name and a full display name for historical disambiguation. A Currency is distinct from an Issuer and does not imply which authority issued a specific Coin.
 _Avoid_: Issuer, denomination, exchange rate, market value

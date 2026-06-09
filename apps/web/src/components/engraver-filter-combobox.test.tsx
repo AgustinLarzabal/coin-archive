@@ -26,9 +26,9 @@ describe("EngraverFilterCombobox", () => {
   it("renders the homepage Engraver combobox with the selected engraver name and code label", () => {
     const markup = renderToStaticMarkup(
       <EngraverFilterCombobox
-        engravers={engravers}
         onValueChange={() => Promise.resolve()}
         selectedEngraver={engravers[0]}
+        engravers={engravers}
       />
     )
 

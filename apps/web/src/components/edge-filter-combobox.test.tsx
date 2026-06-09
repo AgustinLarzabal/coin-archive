@@ -26,9 +26,9 @@ describe("EdgeFilterCombobox", () => {
   it("renders the homepage Edge combobox with the selected edge name and code label", () => {
     const markup = renderToStaticMarkup(
       <EdgeFilterCombobox
-        edges={edges}
         onValueChange={() => Promise.resolve()}
         selectedEdge={edges[0]}
+        edges={edges}
       />
     )
 

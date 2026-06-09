@@ -9,6 +9,8 @@ import {
   findSelectedCompositionOption,
   findSelectedCurrencyOption,
   findSelectedDistributionOption,
+  findSelectedEdgeOption,
+  findSelectedEngraverOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
   findSelectedRimOption,
@@ -21,6 +23,8 @@ import {
   getCompositionOptionLabel,
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
+  getEdgeOptionLabel,
+  getEngraverOptionLabel,
   getMintOptionLabel,
   getOrientationOptionLabel,
   getRimOptionLabel,
@@ -776,6 +780,28 @@ describe("getCurrencyOptionLabel", () => {
   })
 })
 
+describe("getEdgeOptionLabel", () => {
+  it("includes edge name and code so combobox search can match both", () => {
+    expect(
+      getEdgeOptionLabel({
+        code: "reeded",
+        name: "Reeded",
+      })
+    ).toBe("Reeded · reeded")
+  })
+})
+
+describe("getEngraverOptionLabel", () => {
+  it("includes engraver name and code so combobox search can match both", () => {
+    expect(
+      getEngraverOptionLabel({
+        code: "georgios-stamatopoulos",
+        name: "Georgios Stamatopoulos",
+      })
+    ).toBe("Georgios Stamatopoulos · georgios-stamatopoulos")
+  })
+})
+
 describe("getMintOptionLabel", () => {
   it("includes mint name and code so combobox search can match both", () => {
     expect(
@@ -857,6 +883,33 @@ describe("findSelectedDistributionOption", () => {
         "CIRCULATING-COMMEMORATIVE"
       )
     ).toStrictEqual(circulatingCommemorative)
+  })
+})
+
+describe("findSelectedEdgeOption", () => {
+  it("matches the selected edge code case-insensitively", () => {
+    const reeded = {
+      code: "reeded",
+      name: "Reeded",
+    }
+
+    expect(findSelectedEdgeOption([reeded], "REEDED")).toStrictEqual(reeded)
+  })
+})
+
+describe("findSelectedEngraverOption", () => {
+  it("matches the selected engraver code case-insensitively", () => {
+    const georgiosStamatopoulos = {
+      code: "georgios-stamatopoulos",
+      name: "Georgios Stamatopoulos",
+    }
+
+    expect(
+      findSelectedEngraverOption(
+        [georgiosStamatopoulos],
+        "GEORGIOS-STAMATOPOULOS"
+      )
+    ).toStrictEqual(georgiosStamatopoulos)
   })
 })
 

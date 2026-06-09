@@ -3,15 +3,15 @@ import { getEngraverOptionLabel } from "../lib/coin-search"
 import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type EngraverFilterComboboxProps = {
-  engravers: EngraverOption[]
   onValueChange: (engraver: EngraverOption | null) => Promise<void>
   selectedEngraver: EngraverOption | null
+  engravers: EngraverOption[]
 }
 
 export function EngraverFilterCombobox({
-  engravers,
   onValueChange,
   selectedEngraver,
+  engravers,
 }: EngraverFilterComboboxProps) {
   return (
     <NamedCodeFilterCombobox<EngraverOption>

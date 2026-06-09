@@ -3,15 +3,15 @@ import { getEdgeOptionLabel } from "../lib/coin-search"
 import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type EdgeFilterComboboxProps = {
-  edges: EdgeOption[]
   onValueChange: (edge: EdgeOption | null) => Promise<void>
   selectedEdge: EdgeOption | null
+  edges: EdgeOption[]
 }
 
 export function EdgeFilterCombobox({
-  edges,
   onValueChange,
   selectedEdge,
+  edges,
 }: EdgeFilterComboboxProps) {
   return (
     <NamedCodeFilterCombobox<EdgeOption>

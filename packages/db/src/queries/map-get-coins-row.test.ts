@@ -29,6 +29,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
   const referenceCatalogueUpdatedAt = new Date("2025-12-02T12:00:00.000Z")
   const edgeCreatedAt = new Date("2026-04-15T12:00:00.000Z")
   const edgeUpdatedAt = new Date("2026-04-16T12:00:00.000Z")
+  const paddedComments = "  Public catalogue note.\nSecond line.  "
+  const normalizedComments = "Public catalogue note.\nSecond line."
 
   it("maps grouped rows into the exact coin record shape", () => {
     const rows: GetCoinsRow[] = [
@@ -37,7 +39,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         title: "Silver Test Crown",
         createdAt,
         updatedAt,
-        comments: "Public catalogue note.\nSecond line.",
+        comments: paddedComments,
         mintage: 1234567,
         minYear: -43,
         maxYear: -41,
@@ -117,7 +119,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         title: "Silver Test Crown",
         createdAt,
         updatedAt,
-        comments: "Public catalogue note.\nSecond line.",
+        comments: paddedComments,
         mintage: 1234567,
         minYear: -43,
         maxYear: -41,
@@ -200,7 +202,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         title: "Silver Test Crown",
         createdAt,
         updatedAt,
-        comments: "Public catalogue note.\nSecond line.",
+        comments: normalizedComments,
         mintage: 1234567,
         issueYearRange: {
           minYear: -43,

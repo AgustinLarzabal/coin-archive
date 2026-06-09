@@ -1,9 +1,11 @@
-export function normalizeCoinComments(value: string | null | undefined) {
-  if (value === null || value === undefined) {
+export function normalizeCoinComments(
+  comments: string | null | undefined
+): string | null {
+  if (comments == null) {
     return null
   }
 
-  const trimmedValue = value.trim()
+  const trimmedComments = comments.trim()
 
-  return trimmedValue === "" ? null : trimmedValue
+  return trimmedComments === "" ? null : trimmedComments
 }

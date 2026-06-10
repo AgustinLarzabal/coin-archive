@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { count, eq, sql } from "drizzle-orm"
+import { asc, count, eq, sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import {
   catalogue,
@@ -936,12 +936,13 @@ describe("coin schema constraints", () => {
         isDemonetized: coin.isDemonetized,
       })
       .from(coin)
+      .orderBy(asc(coin.title))
 
     expect(storedStatuses).toEqual([
-      { title: "Unknown by omission", isDemonetized: null },
+      { title: "Explicitly unknown", isDemonetized: null },
       { title: "Known demonetized", isDemonetized: true },
       { title: "Known not demonetized", isDemonetized: false },
-      { title: "Explicitly unknown", isDemonetized: null },
+      { title: "Unknown by omission", isDemonetized: null },
     ])
   })
 

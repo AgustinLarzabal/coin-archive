@@ -47,6 +47,7 @@ import {
   seededShapes,
   seededTechniques,
   seededThemes,
+  seededTechniques,
 } from "./seed-data"
 
 type IssuerIdsByCode = Map<string, string>
@@ -175,6 +176,13 @@ async function deleteSeededThemes() {
   await deleteSeededRecords(
     seededThemes.map(({ code }) => code),
     (code) => db.delete(theme).where(eq(theme.code, code))
+  )
+}
+
+async function deleteSeededTechniques() {
+  await deleteSeededRecords(
+    seededTechniques.map(({ code }) => code),
+    (code) => db.delete(technique).where(eq(technique.code, code))
   )
 }
 
@@ -451,6 +459,23 @@ async function seedThemes() {
   }
 
   return themeIdsByCode
+}
+
+async function seedTechniques() {
+  const techniqueIdsByCode: TechniqueIdsByCode = new Map()
+
+  await deleteSeededTechniques()
+
+  for (const seededTechnique of seededTechniques) {
+    const [insertedTechnique] = await db
+      .insert(technique)
+      .values(seededTechnique)
+      .returning({ id: technique.id })
+
+    techniqueIdsByCode.set(seededTechnique.code, insertedTechnique.id)
+  }
+
+  return techniqueIdsByCode
 }
 
 async function seedShapes() {

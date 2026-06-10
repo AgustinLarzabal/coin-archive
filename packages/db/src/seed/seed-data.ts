@@ -74,6 +74,13 @@ type SeededTheme = {
   updatedAt: Date
 }
 
+type SeededTechnique = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 type SeededShape = {
   code: string
   name: string
@@ -246,6 +253,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "1 Cent",
     issuerCode: "united-states",
     orientationCode: "coin-alignment",
+    techniqueCode: "milled",
     shapeCode: "round",
     rimCode: "plain",
     techniqueCode: "milled",
@@ -297,6 +305,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "Quarter Dollar",
     issuerCode: "united-states",
     orientationCode: "coin-alignment",
+    techniqueCode: "milled",
     shapeCode: "round",
     rimCode: "raised-both-sides",
     techniqueCode: "milled",
@@ -365,6 +374,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 1,
     faceValueText: "1 Peso",
     issuerCode: "argentina",
+    techniqueCode: "milled",
     weight: 6.35,
     diameter: 23.5,
     thickness: 1.9,
@@ -387,6 +397,7 @@ export const seededCoins: SeededCoin[] = [
     faceValueText: "2 Euros",
     issuerCode: "spain",
     orientationCode: "medal-alignment",
+    techniqueCode: "milled",
     shapeCode: "round",
     rimCode: "raised-both-sides",
     techniqueCode: "milled",
@@ -516,6 +527,27 @@ export const seededThemes: SeededTheme[] = [
     name: "Portrait",
     createdAt: new Date("2026-01-07T00:00:00.000Z"),
     updatedAt: new Date("2026-01-07T00:00:00.000Z"),
+  },
+]
+
+export const seededTechniques: SeededTechnique[] = [
+  {
+    code: "cast",
+    name: "Cast",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "hammered",
+    name: "Hammered",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "milled",
+    name: "Milled",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
 ]
 

@@ -29,6 +29,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
   const referenceCatalogueUpdatedAt = new Date("2025-12-02T12:00:00.000Z")
   const edgeCreatedAt = new Date("2026-04-15T12:00:00.000Z")
   const edgeUpdatedAt = new Date("2026-04-16T12:00:00.000Z")
+  const techniqueCreatedAt = new Date("2026-04-17T12:00:00.000Z")
+  const techniqueUpdatedAt = new Date("2026-04-18T12:00:00.000Z")
   const paddedComments = "  Public catalogue note.\nSecond line.  "
   const normalizedComments = "Public catalogue note.\nSecond line."
 
@@ -59,6 +61,11 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         edgeLettering: "E PLURIBUS UNUM",
         edgeCreatedAt,
         edgeUpdatedAt,
+        techniqueId: "technique-1",
+        techniqueCode: "milled",
+        techniqueName: "Milled",
+        techniqueCreatedAt,
+        techniqueUpdatedAt,
         weight: 4.5,
         diameter: 19.25,
         thickness: 1.75,
@@ -140,6 +147,11 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         edgeLettering: "E PLURIBUS UNUM",
         edgeCreatedAt,
         edgeUpdatedAt,
+        techniqueId: "technique-1",
+        techniqueCode: "milled",
+        techniqueName: "Milled",
+        techniqueCreatedAt,
+        techniqueUpdatedAt,
         weight: 4.5,
         diameter: 19.25,
         thickness: 1.75,
@@ -235,7 +247,13 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         },
         shape: null,
         rim: null,
-        technique: null,
+        technique: {
+          id: "technique-1",
+          code: "milled",
+          name: "Milled",
+          createdAt: techniqueCreatedAt,
+          updatedAt: techniqueUpdatedAt,
+        },
         obverse: null,
         reverse: null,
         measurements: {

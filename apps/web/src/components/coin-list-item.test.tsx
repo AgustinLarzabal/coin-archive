@@ -27,6 +27,7 @@ const baseCoin: CoinRecord = {
     },
   },
   orientation: null,
+  technique: null,
   edge: null,
   shape: null,
   obverse: null,
@@ -53,7 +54,6 @@ const baseCoin: CoinRecord = {
   },
   mintage: null,
   rim: null,
-  technique: null,
   issuer: {
     id: "issuer-1",
     code: "spain",
@@ -240,6 +240,31 @@ describe("CoinListItem", () => {
     expect(markup.indexOf("Minting Technique: Milled")).toBeLessThan(
       markup.indexOf("Mintage: 1,234,567")
     )
+  })
+
+  it("renders a Minting Technique row using the display name only when known", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      technique: {
+        id: "technique-1",
+        code: "milled",
+        name: "Milled",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    })
+
+    expect(markup).toContain("Minting Technique: Milled")
+    expect(markup).not.toContain("milled")
+  })
+
+  it("omits the Minting Technique row when a coin has no recorded technique", () => {
+    const markup = renderCoinListItemMarkup({
+      ...baseCoin,
+      technique: null,
+    })
+
+    expect(markup).not.toContain("Minting Technique:")
   })
 
   it("renders an Edge row using the display name only when known", () => {

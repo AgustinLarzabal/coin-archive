@@ -142,6 +142,48 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("returns Minting Technique as a nullable nested lookup object", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const milled = await createTechnique({
+      code: "milled",
+      name: "Milled",
+    })
+
+    const unknownTechniqueCoin = await createCoin({
+      title: "Unknown Technique Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const milledCoin = await createCoin({
+      title: "Milled Coin",
+      issuerId: spain.id,
+      techniqueId: milled.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        id: milledCoin.id,
+        title: "Milled Coin",
+        technique: {
+          id: milled.id,
+          code: "milled",
+          name: "Milled",
+          createdAt: milled.createdAt,
+          updatedAt: milled.updatedAt,
+        },
+      },
+      {
+        id: unknownTechniqueCoin.id,
+        title: "Unknown Technique Coin",
+        technique: null,
+      },
+    ])
+  })
+
   it("filters coins by tri-state Demonetization Status and composes with issuer filtering", async () => {
     const iberia = await createIssuer({
       code: "iberia",
@@ -270,6 +312,7 @@ describe("getCoins integration", () => {
           },
         },
         orientation: null,
+        technique: null,
         obverse: null,
         reverse: null,
         measurements: {
@@ -2667,6 +2710,7 @@ describe("getCoins integration", () => {
           updatedAt: spain.updatedAt,
           parent: null,
         },
+        technique: null,
         mints: [],
         rulers: [],
         references: [
@@ -3219,6 +3263,7 @@ describe("getCoins integration", () => {
           createdAt: standardCirculation.createdAt,
           updatedAt: standardCirculation.updatedAt,
         },
+        technique: null,
         issuer: {
           id: spain.id,
           code: "spain",
@@ -3571,6 +3616,7 @@ describe("getCoins integration", () => {
           createdAt: standardCirculation.createdAt,
           updatedAt: standardCirculation.updatedAt,
         },
+        technique: null,
         issuer: {
           id: spain.id,
           code: "spain",

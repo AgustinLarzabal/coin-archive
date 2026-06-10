@@ -101,6 +101,11 @@ type CreateThemeInput = {
   name: string
 }
 
+type CreateTechniqueInput = {
+  code: string
+  name: string
+}
+
 type CreateShapeInput = {
   code: string
   name: string
@@ -355,6 +360,18 @@ export async function createTheme({ code, name }: CreateThemeInput) {
     .returning()
 
   return createdTheme
+}
+
+export async function createTechnique({ code, name }: CreateTechniqueInput) {
+  const [createdTechnique] = await db
+    .insert(technique)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdTechnique
 }
 
 export async function createShape({ code, name }: CreateShapeInput) {

@@ -316,6 +316,10 @@ describe("seed integration", () => {
         code: "medal-alignment",
         name: "Medal alignment",
       },
+      technique: {
+        code: "milled",
+        name: "Milled",
+      },
       obverse: {
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
@@ -381,12 +385,17 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
       orientation: null,
+      technique: null,
       themes: [],
       mints: [],
     })
 
     expect(findSeededCoin("Argentina Convertible Peso")).toMatchObject({
       comments: null,
+      technique: {
+        code: "milled",
+        name: "Milled",
+      },
     })
   })
 })

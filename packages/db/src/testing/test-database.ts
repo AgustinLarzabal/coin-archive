@@ -20,6 +20,7 @@ import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 
 type TestDatabase = ReturnType<typeof drizzle>
@@ -51,6 +52,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(orientation)
   await database.delete(rim)
   await database.delete(shape)
+  await database.delete(technique)
   await database.delete(theme)
   await database.delete(edge)
   await database.delete(distribution)

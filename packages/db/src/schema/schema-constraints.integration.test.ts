@@ -771,7 +771,7 @@ describe("rim schema constraints", () => {
 describe("technique schema constraints", () => {
   useTestDatabaseIsolation(db)
 
-  it("rejects Minting Technique codes that are not lowercase slug-style text", async () => {
+  it("rejects technique codes that are not lowercase slug-style text", async () => {
     await expectConstraintError(
       db.insert(technique).values({
         code: "Minted By Machine",
@@ -782,7 +782,7 @@ describe("technique schema constraints", () => {
     )
   })
 
-  it("rejects duplicate Minting Technique codes ignoring case", async () => {
+  it("rejects duplicate technique codes ignoring case", async () => {
     await db.insert(technique).values({
       code: "milled",
       name: "Milled",
@@ -798,7 +798,7 @@ describe("technique schema constraints", () => {
     )
   })
 
-  it("restricts deleting a Minting Technique while coins still reference it", async () => {
+  it("restricts deleting a technique while coins still reference it", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdTechnique = await createTechnique({
@@ -823,7 +823,7 @@ describe("technique schema constraints", () => {
     )
   })
 
-  it("keeps shared Minting Techniques when deleting a coin", async () => {
+  it("keeps shared techniques when deleting a coin", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdTechnique = await createTechnique({

@@ -386,8 +386,19 @@ function App() {
   const selectTechnique = createSelectHandler<TechniqueOption>("technique")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
 
-  async function updateReferenceNumber(referenceNumber: string) {
-    await updateSearchFilter("referenceNumber", referenceNumber)
+  async function updateReferenceNumberFromForm(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault()
+
+    const referenceNumber = new FormData(event.currentTarget).get(
+      "referenceNumber"
+    )
+
+    await updateSearchFilter(
+      "referenceNumber",
+      typeof referenceNumber === "string" ? referenceNumber.trim() : undefined
+    )
   }
 
   async function updateIssueYearRange(event: FormEvent<HTMLFormElement>) {
@@ -634,13 +645,25 @@ function App() {
         themes={themes}
       />
 
-      <Input
-        aria-label="Filter by reference number"
-        className="md:max-w-40"
-        onChange={(event) => updateReferenceNumber(event.target.value)}
-        placeholder="Reference number"
-        value={selectedReferenceNumber ?? ""}
-      />
+      <form
+        className="flex items-end gap-2 py-2"
+        onSubmit={updateReferenceNumberFromForm}
+      >
+        <Input
+          aria-label="Filter by reference number"
+          className="md:max-w-40"
+          defaultValue={selectedReferenceNumber ?? ""}
+          key={`reference-number-${selectedReferenceNumber ?? ""}`}
+          name="referenceNumber"
+          placeholder="Reference number"
+        />
+        <button
+          className="rounded border border-border px-3 py-2"
+          type="submit"
+        >
+          Apply reference
+        </button>
+      </form>
 
       <form
         className="flex items-end gap-2 py-2"

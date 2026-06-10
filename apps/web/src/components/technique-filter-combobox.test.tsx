@@ -23,7 +23,7 @@ const techniques: TechniqueOption[] = [
 ]
 
 describe("TechniqueFilterCombobox", () => {
-  it("renders the homepage Minting Technique combobox with the selected technique name and code label", () => {
+  it("restores the selected homepage Minting Technique label and URL value", () => {
     const markup = renderToStaticMarkup(
       <TechniqueFilterCombobox
         onValueChange={() => Promise.resolve()}
@@ -32,7 +32,7 @@ describe("TechniqueFilterCombobox", () => {
       />
     )
 
-    expect(markup).toContain("Milled")
-    expect(markup).toContain("milled")
+    expect(markup).toContain('value="Milled · milled"')
+    expect(markup).toContain('&quot;code&quot;:&quot;milled&quot;')
   })
 })

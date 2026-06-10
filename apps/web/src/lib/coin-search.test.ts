@@ -105,6 +105,11 @@ const currentSearchWithEngraver = {
   engraver: "georgios-stamatopoulos",
 }
 
+const currentSearchWithTechnique = {
+  ...currentSearch,
+  technique: "milled",
+}
+
 const currentSearchWithDemonetization = {
   ...currentSearch,
   demonetization: "unknown",
@@ -216,6 +221,19 @@ describe("updateCoinSearchFilter", () => {
           filterValue
         )
       ).toStrictEqual(omitFilter(currentSearchWithEngraver, "engraver"))
+    }
+  )
+
+  it.each(emptyFilterValues)(
+    "clears the Minting Technique filter without removing the other filters when the value is %p",
+    (filterValue) => {
+      expect(
+        updateCoinSearchFilter(
+          currentSearchWithTechnique,
+          "technique",
+          filterValue
+        )
+      ).toStrictEqual(omitFilter(currentSearchWithTechnique, "technique"))
     }
   )
 

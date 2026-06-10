@@ -14,9 +14,11 @@ import {
   findSelectedDistributionOption,
   findSelectedEdgeOption,
   findSelectedEngraverOption,
+  findSelectedIssuerOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
   findSelectedRimOption,
+  findSelectedRulerOption,
   findSelectedShapeOption,
   findSelectedTechniqueOption,
   findSelectedThemeOption,
@@ -117,10 +119,10 @@ const currentSearchWithDemonetization = {
 
 const emptyFilterValues = [undefined, ""] as const
 
-function omitFilter<T extends object, K extends keyof T>(
+function omitFilter<T extends object, TKey extends keyof T>(
   search: T,
-  filterName: K
-): Omit<T, K> {
+  filterName: TKey
+): Omit<T, TKey> {
   const { [filterName]: _removedFilter, ...remainingSearch } = search
 
   return remainingSearch
@@ -822,9 +824,9 @@ describe("getCoinListLoaderDeps", () => {
 
 describe("findSelectedDemonetizationFilterOption", () => {
   it("returns the selected explicit homepage demonetization option", () => {
-    expect(findSelectedDemonetizationFilterOption("not-demonetized")).toStrictEqual(
-      demonetizationFilterOptions[1]
-    )
+    expect(
+      findSelectedDemonetizationFilterOption("not-demonetized")
+    ).toStrictEqual(demonetizationFilterOptions[1])
   })
 
   it("returns null when no demonetization filter is selected", () => {
@@ -1039,6 +1041,36 @@ describe("findSelectedEngraverOption", () => {
   })
 })
 
+describe("findSelectedIssuerOption", () => {
+  it("matches the selected issuer code case-insensitively", () => {
+    const spain = {
+      code: "spain",
+      name: "Spain",
+    }
+
+    expect(findSelectedIssuerOption([spain], "SPAIN")).toStrictEqual(spain)
+  })
+
+  it("returns null when the selected issuer code does not match", () => {
+    const spain = {
+      code: "spain",
+      name: "Spain",
+    }
+
+    expect(findSelectedIssuerOption([spain], "france")).toBeNull()
+  })
+
+  it("returns null when the selected issuer code is undefined or empty", () => {
+    const spain = {
+      code: "spain",
+      name: "Spain",
+    }
+
+    expect(findSelectedIssuerOption([spain], undefined)).toBeNull()
+    expect(findSelectedIssuerOption([spain], "")).toBeNull()
+  })
+})
+
 describe("findSelectedCompositionOption", () => {
   it("matches the selected composition code case-insensitively", () => {
     const silver900 = {
@@ -1122,6 +1154,36 @@ describe("findSelectedShapeOption", () => {
     }
 
     expect(findSelectedShapeOption([round], "ROUND")).toStrictEqual(round)
+  })
+})
+
+describe("findSelectedRulerOption", () => {
+  it("matches the selected ruler code case-insensitively", () => {
+    const felipe = {
+      code: "felipe-vi",
+      name: "Felipe VI",
+    }
+
+    expect(findSelectedRulerOption([felipe], "FELIPE-VI")).toStrictEqual(felipe)
+  })
+
+  it("returns null when the selected ruler code does not match", () => {
+    const felipe = {
+      code: "felipe-vi",
+      name: "Felipe VI",
+    }
+
+    expect(findSelectedRulerOption([felipe], "juan-carlos-i")).toBeNull()
+  })
+
+  it("returns null when the selected ruler code is undefined or empty", () => {
+    const felipe = {
+      code: "felipe-vi",
+      name: "Felipe VI",
+    }
+
+    expect(findSelectedRulerOption([felipe], undefined)).toBeNull()
+    expect(findSelectedRulerOption([felipe], "")).toBeNull()
   })
 })
 

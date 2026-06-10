@@ -31,9 +31,11 @@ import {
   findSelectedDistributionOption,
   findSelectedEdgeOption,
   findSelectedEngraverOption,
+  findSelectedIssuerOption,
   findSelectedMintOption,
   findSelectedOrientationOption,
   findSelectedRimOption,
+  findSelectedRulerOption,
   findSelectedShapeOption,
   findSelectedTechniqueOption,
   findSelectedThemeOption,
@@ -80,9 +82,9 @@ import {
 import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
-type RangeInputField<Name extends string> = Readonly<{
+type RangeInputField<TName extends string> = Readonly<{
   ariaLabel: string
-  name: Name
+  name: TName
   placeholder: string
 }>
 
@@ -142,13 +144,13 @@ const coinMeasurementFields = [
   unit: string
 }>
 
-function getRangeFromFormData<Name extends PositiveNumberFilterName>(
+function getRangeFromFormData<TName extends PositiveNumberFilterName>(
   formData: FormData,
-  fields: ReadonlyArray<RangeInputField<Name>>
-): Record<Name, PositiveNumberFilterValue> {
+  fields: ReadonlyArray<RangeInputField<TName>>
+): Record<TName, PositiveNumberFilterValue> {
   return Object.fromEntries(
     fields.map(({ name }) => [name, formData.get(name)])
-  ) as Record<Name, PositiveNumberFilterValue>
+  ) as Record<TName, PositiveNumberFilterValue>
 }
 
 function formatCoinMeasurements(measurements: CoinMeasurements) {
@@ -344,10 +346,8 @@ function App() {
     selectedTechniqueCode
   )
   const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
-  const selectedIssuer =
-    issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
-  const selectedRuler =
-    rulers.find((ruler) => ruler.code === selectedRulerCode) ?? null
+  const selectedIssuer = findSelectedIssuerOption(issuers, selectedIssuerCode)
+  const selectedRuler = findSelectedRulerOption(rulers, selectedRulerCode)
 
   async function updateSearchFilter(
     filterName: TextCoinSearchFilterName,
@@ -405,12 +405,12 @@ function App() {
   }
 
   function createPositiveNumberRangeSubmitHandler<
-    Name extends PositiveNumberFilterName,
+    TName extends PositiveNumberFilterName,
   >(
-    fields: ReadonlyArray<RangeInputField<Name>>,
+    fields: ReadonlyArray<RangeInputField<TName>>,
     applyRangeSearch: (
       currentSearch: CoinSearch,
-      range: Record<Name, PositiveNumberFilterValue>
+      range: Record<TName, PositiveNumberFilterValue>
     ) => CoinSearch
   ) {
     return async (event: FormEvent<HTMLFormElement>) => {

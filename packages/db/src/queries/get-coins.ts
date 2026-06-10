@@ -355,8 +355,8 @@ function buildCoinFilter({
     buildTechniqueFilter(techniqueCode),
     buildMintFilter(mintCode),
     buildThemeFilter(themeCode),
-    issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
-    rulerCode === undefined ? undefined : buildRulerFilter(rulerCode),
+    buildIssuerTreeFilter(issuerCode),
+    buildRulerFilter(rulerCode),
     buildCatalogueReferenceFilter({
       catalogueCode,
       referenceNumber,
@@ -604,13 +604,21 @@ function buildAttributionCodeFilter({
   `
 }
 
-function buildIssuerTreeFilter(issuerCode: string): SQL {
+function buildIssuerTreeFilter(
+  issuerCode: string | undefined
+): SQL | undefined {
+  const normalizedIssuerCode = normalizeCodeFilter(issuerCode)
+
+  if (normalizedIssuerCode === undefined) {
+    return undefined
+  }
+
   return sql`
     ${coin.issuerId} in (
       with recursive issuer_tree(id) as (
         select "issuer"."id"
         from "issuer"
-        where "issuer"."code" = ${issuerCode}
+        where lower("issuer"."code") = ${normalizedIssuerCode}
         union all
         select "child_issuer"."id"
         from "issuer" as "child_issuer"
@@ -622,13 +630,19 @@ function buildIssuerTreeFilter(issuerCode: string): SQL {
   `
 }
 
-function buildRulerFilter(rulerCode: string): SQL {
+function buildRulerFilter(rulerCode: string | undefined): SQL | undefined {
+  const normalizedRulerCode = normalizeCodeFilter(rulerCode)
+
+  if (normalizedRulerCode === undefined) {
+    return undefined
+  }
+
   return sql`
     ${coin.id} in (
       select "coin_ruler"."coin_id"
       from "coin_ruler"
       inner join "ruler" on "coin_ruler"."ruler_id" = "ruler"."id"
-      where "ruler"."code" = ${rulerCode}
+      where lower("ruler"."code") = ${normalizedRulerCode}
     )
   `
 }

@@ -93,6 +93,10 @@ describe("getCoins issuer filter integration", () => {
     })
   }
 
+  async function getCoinSummaries(options: GetCoinsOptions = {}) {
+    return mapCoinSummaries(await getCoins(options))
+  }
+
   function mapCoinSummaries(coins: Awaited<ReturnType<typeof getCoins>>) {
     return coins.map(({ title, issuer }) => ({
       title,
@@ -143,6 +147,57 @@ describe("getCoins issuer filter integration", () => {
       filteredCoins.find(({ issuer }) => issuer.code === unrelatedIssuerCode)
     ).toBeUndefined()
     expect(mapCoinSummaries(filteredCoins)).toStrictEqual([
+      {
+        title: "Classical Athena",
+        issuerCode: issuerFixture.grandchild.code,
+      },
+      {
+        title: "Athenian Owl",
+        issuerCode: issuerFixture.child.code,
+      },
+      {
+        title: "Greek Union Coin",
+        issuerCode: selectedIssuerCode,
+      },
+    ])
+  })
+
+  it("matches issuer codes case-insensitively", async () => {
+    await createIssuerFilterFixture()
+
+    await expect(
+      getCoinSummaries({
+        issuerCode: "ANCIENT-GREECE",
+      })
+    ).resolves.toStrictEqual(
+      await getCoinSummaries({ issuerCode: "ancient-greece" })
+    )
+  })
+
+  it("ignores surrounding whitespace in issuer codes", async () => {
+    await createIssuerFilterFixture()
+
+    await expect(
+      getCoinSummaries({
+        issuerCode: "  ancient-greece  ",
+      })
+    ).resolves.toStrictEqual(
+      await getCoinSummaries({ issuerCode: "ancient-greece" })
+    )
+  })
+
+  it("does not apply an issuer filter for empty issuer codes", async () => {
+    await createIssuerFilterFixture()
+
+    await expect(
+      getCoinSummaries({
+        issuerCode: "",
+      })
+    ).resolves.toStrictEqual([
+      {
+        title: "Spartan Shield",
+        issuerCode: issuerFixture.unrelated.code,
+      },
       {
         title: "Classical Athena",
         issuerCode: issuerFixture.grandchild.code,

@@ -288,6 +288,11 @@ export const findSelectedEngraverOption: <T extends OptionWithCode>(
   selectedEngraverCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
+export const findSelectedIssuerOption: <T extends OptionWithCode>(
+  issuers: T[],
+  selectedIssuerCode: string | undefined
+) => T | null = findSelectedCodeOption
+
 export const findSelectedMintOption: <T extends OptionWithCode>(
   mints: T[],
   selectedMintCode: string | undefined
@@ -301,6 +306,11 @@ export const findSelectedOrientationOption: <T extends OptionWithCode>(
 export const findSelectedRimOption: <T extends OptionWithCode>(
   rims: T[],
   selectedRimCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedRulerOption: <T extends OptionWithCode>(
+  rulers: T[],
+  selectedRulerCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
 export const findSelectedShapeOption: <T extends OptionWithCode>(
@@ -339,10 +349,12 @@ export function findSelectedDemonetizationFilterOption(
   )
 }
 
-export function updateCoinSearchFilter<K extends CoinSearchFilterName>(
+export function updateCoinSearchFilter<
+  TFilterName extends CoinSearchFilterName,
+>(
   currentSearch: CoinSearch,
-  filterName: K,
-  filterValue: CoinSearch[K] | "" | undefined
+  filterName: TFilterName,
+  filterValue: CoinSearch[TFilterName] | "" | undefined
 ): CoinSearch {
   const nextSearch = { ...currentSearch }
 
@@ -403,11 +415,16 @@ function parsePositiveNumberFilterValue(value: PositiveNumberFilterValue) {
   return parsedValue > 0 ? parsedValue : null
 }
 
-function applyParsedRangeSearch<K extends CoinSearchFilterName, V>(
+function applyParsedRangeSearch<
+  TFilterName extends CoinSearchFilterName,
+  TValue,
+>(
   currentSearch: CoinSearch,
-  filterNames: readonly K[],
-  requestedFilters: Record<K, V>,
-  parseFilterValue: (value: V) => ParsedFilterValue<CoinSearch[K]>
+  filterNames: readonly TFilterName[],
+  requestedFilters: Record<TFilterName, TValue>,
+  parseFilterValue: (
+    value: TValue
+  ) => ParsedFilterValue<CoinSearch[TFilterName]>
 ): CoinSearch {
   let nextSearch = currentSearch
 

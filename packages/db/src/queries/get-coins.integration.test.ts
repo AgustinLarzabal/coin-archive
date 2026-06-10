@@ -3416,6 +3416,104 @@ describe("getCoins integration", () => {
     ).resolves.toStrictEqual([])
   })
 
+  async function createRulerFilterFixture() {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const france = await createIssuer({
+      code: "france",
+      name: "France",
+    })
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const felipe = await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+    const louis = await createRuler({
+      code: "louis-xiv",
+      name: "Louis XIV",
+      rulerGroupId: bourbon.id,
+    })
+
+    const spanishFelipeCoin = await createCoin({
+      title: "Spanish Felipe Issue",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+    const frenchLouisCoin = await createCoin({
+      title: "French Louis Issue",
+      issuerId: france.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: spanishFelipeCoin.id,
+      rulerId: felipe.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: frenchLouisCoin.id,
+      rulerId: louis.id,
+      rulerOrder: 1,
+    })
+  }
+
+  it("matches ruler codes case-insensitively", async () => {
+    await createRulerFilterFixture()
+
+    await expect(getCoins({ rulerCode: "FELIPE-VI" })).resolves.toMatchObject([
+      {
+        title: "Spanish Felipe Issue",
+        issuer: {
+          code: "spain",
+        },
+        rulers: [
+          {
+            code: "felipe-vi",
+          },
+        ],
+      },
+    ])
+  })
+
+  it("ignores surrounding whitespace in ruler codes", async () => {
+    await createRulerFilterFixture()
+
+    await expect(
+      getCoins({ rulerCode: "  felipe-vi  " })
+    ).resolves.toMatchObject([
+      {
+        title: "Spanish Felipe Issue",
+        issuer: {
+          code: "spain",
+        },
+        rulers: [
+          {
+            code: "felipe-vi",
+          },
+        ],
+      },
+    ])
+  })
+
+  it("does not apply a ruler filter for empty ruler codes", async () => {
+    await createRulerFilterFixture()
+
+    await expect(getCoins({ rulerCode: "" })).resolves.toMatchObject([
+      {
+        title: "Spanish Felipe Issue",
+      },
+      {
+        title: "French Louis Issue",
+      },
+    ])
+  })
+
   it("returns all ordered ruler attributions for a coin filtered by one matching ruler", async () => {
     const spain = await createIssuer({
       code: "spain",

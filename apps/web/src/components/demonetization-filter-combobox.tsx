@@ -1,7 +1,5 @@
-import {
-  demonetizationFilterOptions,
-  type DemonetizationFilterOption,
-} from "../lib/coin-search"
+import { demonetizationFilterOptions } from "../lib/coin-search"
+import type { DemonetizationFilterOption } from "../lib/coin-search"
 import { NamedCodeFilterCombobox } from "./named-code-filter-combobox"
 
 type DemonetizationFilterComboboxProps = {

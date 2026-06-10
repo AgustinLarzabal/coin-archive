@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import type { FormEvent } from "react"
 import type {
@@ -172,76 +172,12 @@ function formatCoinMeasurements(measurements: CoinMeasurements) {
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const {
-      getCatalogues,
-      getCoins,
-      getCompositions,
-      getCurrencies,
-      getDistributions,
-      getEdges,
-      getEngravers,
-      getIssuers,
-      getMints,
-      getOrientations,
-      getRims,
-      getRulers,
-      getShapes,
-      getTechniques,
-      getThemes,
-    } = await import("@workspace/db")
+    const { getCoins } = await import("@workspace/db")
 
-    const [
-      coins,
-      catalogues,
-      compositions,
-      currencies,
-      distributions,
-      edges,
-      engravers,
-      issuers,
-      mints,
-      orientations,
-      rims,
-      rulers,
-      shapes,
-      techniques,
-      themes,
-    ] = await Promise.all([
-      getCoins(data),
-      getCatalogues(),
-      getCompositions(),
-      getCurrencies(),
-      getDistributions(),
-      getEdges(),
-      getEngravers(),
-      getIssuers(),
-      getMints(),
-      getOrientations(),
-      getRims(),
-      getRulers(),
-      getShapes(),
-      getTechniques(),
-      getThemes(),
-    ])
-
-    return {
-      coins,
-      catalogues,
-      compositions,
-      currencies,
-      distributions,
-      edges,
-      engravers,
-      issuers,
-      mints,
-      orientations,
-      rims,
-      rulers,
-      shapes,
-      techniques,
-      themes,
-    }
+    return { coins: await getCoins(data) }
   })
+
+const rootRouteApi = getRouteApi("__root__")
 
 export const Route = createFileRoute("/")({
   validateSearch: coinSearchSchema,
@@ -251,8 +187,8 @@ export const Route = createFileRoute("/")({
 })
 
 function App() {
+  const { coins } = Route.useLoaderData()
   const {
-    coins,
     catalogues,
     compositions,
     currencies,
@@ -267,7 +203,7 @@ function App() {
     shapes,
     techniques,
     themes,
-  } = Route.useLoaderData()
+  } = rootRouteApi.useLoaderData()
   const {
     catalogue: selectedCatalogueCode,
     composition: selectedCompositionCode,

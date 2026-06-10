@@ -1,8 +1,81 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
 
 import appCss from "@workspace/ui/globals.css?url"
 
+const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const {
+      getCatalogues,
+      getCompositions,
+      getCurrencies,
+      getDistributions,
+      getEdges,
+      getEngravers,
+      getIssuers,
+      getMints,
+      getOrientations,
+      getRims,
+      getRulers,
+      getShapes,
+      getTechniques,
+      getThemes,
+    } = await import("@workspace/db")
+
+    const [
+      catalogues,
+      compositions,
+      currencies,
+      distributions,
+      edges,
+      engravers,
+      issuers,
+      mints,
+      orientations,
+      rims,
+      rulers,
+      shapes,
+      techniques,
+      themes,
+    ] = await Promise.all([
+      getCatalogues(),
+      getCompositions(),
+      getCurrencies(),
+      getDistributions(),
+      getEdges(),
+      getEngravers(),
+      getIssuers(),
+      getMints(),
+      getOrientations(),
+      getRims(),
+      getRulers(),
+      getShapes(),
+      getTechniques(),
+      getThemes(),
+    ])
+
+    return {
+      catalogues,
+      compositions,
+      currencies,
+      distributions,
+      edges,
+      engravers,
+      issuers,
+      mints,
+      orientations,
+      rims,
+      rulers,
+      shapes,
+      techniques,
+      themes,
+    }
+  }
+)
+
 export const Route = createRootRoute({
+  loader: () => getCoinFilterOptions(),
+  staleTime: Infinity,
   head: () => ({
     meta: [
       {

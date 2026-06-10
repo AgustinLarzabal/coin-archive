@@ -217,13 +217,6 @@ async function deleteSeededRims() {
   )
 }
 
-async function deleteSeededTechniques() {
-  await deleteSeededRecords(
-    seededTechniques.map(({ code }) => code),
-    (code) => db.delete(technique).where(eq(technique.code, code))
-  )
-}
-
 function getIssuersReadyToInsert(
   remainingIssuers: typeof seededIssuers,
   issuerIdsByCode: IssuerIdsByCode
@@ -503,23 +496,6 @@ async function seedRims(): Promise<RimIdsByCode> {
 
     return insertedRim.id
   })
-}
-
-async function seedTechniques() {
-  const techniqueIdsByCode: TechniqueIdsByCode = new Map()
-
-  await deleteSeededTechniques()
-
-  for (const seededTechnique of seededTechniques) {
-    const [insertedTechnique] = await db
-      .insert(technique)
-      .values(seededTechnique)
-      .returning({ id: technique.id })
-
-    techniqueIdsByCode.set(seededTechnique.code, insertedTechnique.id)
-  }
-
-  return techniqueIdsByCode
 }
 
 async function seedDistributions() {

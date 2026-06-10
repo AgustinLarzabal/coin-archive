@@ -398,18 +398,6 @@ export async function createRim({ code, name }: CreateRimInput) {
   return createdRim
 }
 
-export async function createTechnique({ code, name }: CreateTechniqueInput) {
-  const [createdTechnique] = await db
-    .insert(technique)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdTechnique
-}
-
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
   const [createdRulerGroup] = await db
     .insert(rulerGroup)

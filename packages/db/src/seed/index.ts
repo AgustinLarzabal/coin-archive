@@ -95,6 +95,23 @@ async function deleteSeededRecords(
   }
 }
 
+async function seedRecordsByCode<TSeededRecord extends { code: string }>(
+  seededRecords: readonly TSeededRecord[],
+  deleteSeeded: () => Promise<void>,
+  insertSeededRecord: (seededRecord: TSeededRecord) => Promise<string>
+) {
+  const idsByCode = new Map<string, string>()
+
+  await deleteSeeded()
+
+  for (const seededRecord of seededRecords) {
+    const insertedId = await insertSeededRecord(seededRecord)
+    idsByCode.set(seededRecord.code, insertedId)
+  }
+
+  return idsByCode
+}
+
 async function deleteSeededIssuers() {
   await deleteSeededRecords(
     seededIssuers.map(({ code }) => code),
@@ -342,174 +359,150 @@ async function seedCatalogues() {
   return catalogueIdsByCode
 }
 
-async function seedCompositions() {
-  const compositionIdsByCode: CompositionIdsByCode = new Map()
+async function seedCompositions(): Promise<CompositionIdsByCode> {
+  return seedRecordsByCode(
+    seededCompositions,
+    deleteSeededCompositions,
+    async (seededComposition) => {
+      const [insertedComposition] = await db
+        .insert(composition)
+        .values(seededComposition)
+        .returning({ id: composition.id })
 
-  await deleteSeededCompositions()
-
-  for (const seededComposition of seededCompositions) {
-    const [insertedComposition] = await db
-      .insert(composition)
-      .values(seededComposition)
-      .returning({ id: composition.id })
-
-    compositionIdsByCode.set(seededComposition.code, insertedComposition.id)
-  }
-
-  return compositionIdsByCode
+      return insertedComposition.id
+    }
+  )
 }
 
-async function seedCurrencies() {
-  const currencyIdsByCode: CurrencyIdsByCode = new Map()
+async function seedCurrencies(): Promise<CurrencyIdsByCode> {
+  return seedRecordsByCode(
+    seededCurrencies,
+    deleteSeededCurrencies,
+    async (seededCurrency) => {
+      const [insertedCurrency] = await db
+        .insert(currency)
+        .values(seededCurrency)
+        .returning({ id: currency.id })
 
-  await deleteSeededCurrencies()
-
-  for (const seededCurrency of seededCurrencies) {
-    const [insertedCurrency] = await db
-      .insert(currency)
-      .values(seededCurrency)
-      .returning({ id: currency.id })
-
-    currencyIdsByCode.set(seededCurrency.code, insertedCurrency.id)
-  }
-
-  return currencyIdsByCode
+      return insertedCurrency.id
+    }
+  )
 }
 
-async function seedMints() {
-  const mintIdsByCode: MintIdsByCode = new Map()
+async function seedMints(): Promise<MintIdsByCode> {
+  return seedRecordsByCode(
+    seededMints,
+    deleteSeededMints,
+    async (seededMint) => {
+      const [insertedMint] = await db
+        .insert(mint)
+        .values(seededMint)
+        .returning({ id: mint.id })
 
-  await deleteSeededMints()
-
-  for (const seededMint of seededMints) {
-    const [insertedMint] = await db
-      .insert(mint)
-      .values(seededMint)
-      .returning({ id: mint.id })
-
-    mintIdsByCode.set(seededMint.code, insertedMint.id)
-  }
-
-  return mintIdsByCode
+      return insertedMint.id
+    }
+  )
 }
 
-async function seedEngravers() {
-  const engraverIdsByCode: EngraverIdsByCode = new Map()
+async function seedEngravers(): Promise<EngraverIdsByCode> {
+  return seedRecordsByCode(
+    seededEngravers,
+    deleteSeededEngravers,
+    async (seededEngraver) => {
+      const [insertedEngraver] = await db
+        .insert(engraver)
+        .values(seededEngraver)
+        .returning({ id: engraver.id })
 
-  await deleteSeededEngravers()
-
-  for (const seededEngraver of seededEngravers) {
-    const [insertedEngraver] = await db
-      .insert(engraver)
-      .values(seededEngraver)
-      .returning({ id: engraver.id })
-
-    engraverIdsByCode.set(seededEngraver.code, insertedEngraver.id)
-  }
-
-  return engraverIdsByCode
+      return insertedEngraver.id
+    }
+  )
 }
 
-async function seedEdges() {
-  const edgeIdsByCode: EdgeIdsByCode = new Map()
+async function seedEdges(): Promise<EdgeIdsByCode> {
+  return seedRecordsByCode(
+    seededEdges,
+    deleteSeededEdges,
+    async (seededEdge) => {
+      const [insertedEdge] = await db
+        .insert(edge)
+        .values(seededEdge)
+        .returning({ id: edge.id })
 
-  await deleteSeededEdges()
-
-  for (const seededEdge of seededEdges) {
-    const [insertedEdge] = await db
-      .insert(edge)
-      .values(seededEdge)
-      .returning({ id: edge.id })
-
-    edgeIdsByCode.set(seededEdge.code, insertedEdge.id)
-  }
-
-  return edgeIdsByCode
+      return insertedEdge.id
+    }
+  )
 }
 
-async function seedOrientations() {
-  const orientationIdsByCode: OrientationIdsByCode = new Map()
+async function seedOrientations(): Promise<OrientationIdsByCode> {
+  return seedRecordsByCode(
+    seededOrientations,
+    deleteSeededOrientations,
+    async (seededOrientation) => {
+      const [insertedOrientation] = await db
+        .insert(orientation)
+        .values(seededOrientation)
+        .returning({ id: orientation.id })
 
-  await deleteSeededOrientations()
-
-  for (const seededOrientation of seededOrientations) {
-    const [insertedOrientation] = await db
-      .insert(orientation)
-      .values(seededOrientation)
-      .returning({ id: orientation.id })
-
-    orientationIdsByCode.set(seededOrientation.code, insertedOrientation.id)
-  }
-
-  return orientationIdsByCode
+      return insertedOrientation.id
+    }
+  )
 }
 
-async function seedThemes() {
-  const themeIdsByCode: ThemeIdsByCode = new Map()
+async function seedThemes(): Promise<ThemeIdsByCode> {
+  return seedRecordsByCode(
+    seededThemes,
+    deleteSeededThemes,
+    async (seededTheme) => {
+      const [insertedTheme] = await db
+        .insert(theme)
+        .values(seededTheme)
+        .returning({ id: theme.id })
 
-  await deleteSeededThemes()
-
-  for (const seededTheme of seededThemes) {
-    const [insertedTheme] = await db
-      .insert(theme)
-      .values(seededTheme)
-      .returning({ id: theme.id })
-
-    themeIdsByCode.set(seededTheme.code, insertedTheme.id)
-  }
-
-  return themeIdsByCode
+      return insertedTheme.id
+    }
+  )
 }
 
-async function seedTechniques() {
-  const techniqueIdsByCode: TechniqueIdsByCode = new Map()
+async function seedTechniques(): Promise<TechniqueIdsByCode> {
+  return seedRecordsByCode(
+    seededTechniques,
+    deleteSeededTechniques,
+    async (seededTechnique) => {
+      const [insertedTechnique] = await db
+        .insert(technique)
+        .values(seededTechnique)
+        .returning({ id: technique.id })
 
-  await deleteSeededTechniques()
-
-  for (const seededTechnique of seededTechniques) {
-    const [insertedTechnique] = await db
-      .insert(technique)
-      .values(seededTechnique)
-      .returning({ id: technique.id })
-
-    techniqueIdsByCode.set(seededTechnique.code, insertedTechnique.id)
-  }
-
-  return techniqueIdsByCode
+      return insertedTechnique.id
+    }
+  )
 }
 
-async function seedShapes() {
-  const shapeIdsByCode: ShapeIdsByCode = new Map()
+async function seedShapes(): Promise<ShapeIdsByCode> {
+  return seedRecordsByCode(
+    seededShapes,
+    deleteSeededShapes,
+    async (seededShape) => {
+      const [insertedShape] = await db
+        .insert(shape)
+        .values(seededShape)
+        .returning({ id: shape.id })
 
-  await deleteSeededShapes()
-
-  for (const seededShape of seededShapes) {
-    const [insertedShape] = await db
-      .insert(shape)
-      .values(seededShape)
-      .returning({ id: shape.id })
-
-    shapeIdsByCode.set(seededShape.code, insertedShape.id)
-  }
-
-  return shapeIdsByCode
+      return insertedShape.id
+    }
+  )
 }
 
-async function seedRims() {
-  const rimIdsByCode: RimIdsByCode = new Map()
-
-  await deleteSeededRims()
-
-  for (const seededRim of seededRims) {
+async function seedRims(): Promise<RimIdsByCode> {
+  return seedRecordsByCode(seededRims, deleteSeededRims, async (seededRim) => {
     const [insertedRim] = await db
       .insert(rim)
       .values(seededRim)
       .returning({ id: rim.id })
 
-    rimIdsByCode.set(seededRim.code, insertedRim.id)
-  }
-
-  return rimIdsByCode
+    return insertedRim.id
+  })
 }
 
 async function seedTechniques() {
@@ -636,7 +629,11 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
         lettering: seededCoinFace.lettering,
       }))
     )
-    .returning({ id: coinFace.id, coinId: coinFace.coinId, side: coinFace.side })
+    .returning({
+      id: coinFace.id,
+      coinId: coinFace.coinId,
+      side: coinFace.side,
+    })
 
   const coinTitlesById = new Map(
     [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
@@ -647,7 +644,9 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
       const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
 
       if (!coinTitle) {
-        throw new Error(`Missing seeded coin title for face ${insertedCoinFace.id}`)
+        throw new Error(
+          `Missing seeded coin title for face ${insertedCoinFace.id}`
+        )
       }
 
       return [
@@ -722,7 +721,11 @@ function mapSeededCoinToInsertValues(
       compositionCode,
       "composition"
     ),
-    currencyId: getRequiredSeededId(currencyIdsByCode, currencyCode, "currency"),
+    currencyId: getRequiredSeededId(
+      currencyIdsByCode,
+      currencyCode,
+      "currency"
+    ),
     distributionId: getRequiredSeededId(
       distributionIdsByCode,
       distributionCode,
@@ -744,7 +747,9 @@ function mapSeededCoinToInsertValues(
     shapeId: shapeCode
       ? getRequiredSeededId(shapeIdsByCode, shapeCode, "shape")
       : undefined,
-    rimId: rimCode ? getRequiredSeededId(rimIdsByCode, rimCode, "rim") : undefined,
+    rimId: rimCode
+      ? getRequiredSeededId(rimIdsByCode, rimCode, "rim")
+      : undefined,
     techniqueId: techniqueCode
       ? getRequiredSeededId(techniqueIdsByCode, techniqueCode, "technique")
       : undefined,
@@ -806,7 +811,11 @@ async function seedCoinMints(
         seededCoinMint.coinTitle,
         "coin"
       ),
-      mintId: getRequiredSeededId(mintIdsByCode, seededCoinMint.mintCode, "mint"),
+      mintId: getRequiredSeededId(
+        mintIdsByCode,
+        seededCoinMint.mintCode,
+        "mint"
+      ),
     }))
   )
 }

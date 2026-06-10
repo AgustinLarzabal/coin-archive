@@ -24,6 +24,22 @@ const demonetizationFilterValues = [
   "unknown",
 ] as const satisfies ReadonlyArray<DemonetizationFilterValue>
 
+type MissingDemonetizationFilterValue = Exclude<
+  DemonetizationFilterValue,
+  (typeof demonetizationFilterValues)[number]
+>
+
+// Compile-time drift guard: errors when @workspace/db adds a
+// DemonetizationFilterValue that is not mirrored above. A runtime import of
+// the db array is forbidden here (see the guard test in coin-search.test.ts).
+const demonetizationFilterValuesAreExhaustive: [
+  MissingDemonetizationFilterValue,
+] extends [never]
+  ? true
+  : never = true
+
+void demonetizationFilterValuesAreExhaustive
+
 const optionalStringSchema = z.string().optional()
 function isDemonetizationFilterValue(
   value: string
@@ -229,13 +245,11 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     minWeight: search.minWeight,
     minValue: search.minValue,
     orientationCode: search.orientation,
-    ...(search.rim === undefined ? {} : { rimCode: search.rim }),
+    rimCode: search.rim,
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
-    ...(search.shape === undefined ? {} : { shapeCode: search.shape }),
-    ...(search.technique === undefined
-      ? {}
-      : { techniqueCode: search.technique }),
+    shapeCode: search.shape,
+    techniqueCode: search.technique,
     themeCode: search.theme,
     toYear: search.toYear,
   }

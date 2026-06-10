@@ -48,6 +48,18 @@ _Avoid_: Display name, temporary label, generated database identity
 A catalogue filter that returns coins linked directly to the selected Orientation. It composes with other catalogue filters using AND semantics, and coins without an Orientation are excluded when an orientation filter is applied.
 _Avoid_: Image rotation filter, specimen orientation filter, unknown-orientation match
 
+**Minting Technique**:
+The production method used to manufacture a coin type or issue, such as milled, hammered, cast, or machine-struck. A coin has at most one Minting Technique, and it may be unknown.
+_Avoid_: Technique, design technique, engraving technique, edge technique, mint attribution
+
+**Minting Technique Code**:
+The unique, stable, human-readable catalogue key for a minting technique, used to identify the technique in imports, filters, URLs, and administrative lookup. It is unique within minting techniques, uses lowercase slug-style text, and is distinct from the minting technique's display name.
+_Avoid_: Display name, temporary label, generated database identity
+
+**Minting Technique Filter**:
+A catalogue filter that returns coins linked directly to the selected Minting Technique. It composes with other catalogue filters using AND semantics, and coins without a Minting Technique are excluded when a minting technique filter is applied.
+_Avoid_: Free-text technique search, engraving technique filter, edge technique filter, unknown-technique match
+
 **Obverse**:
 The front face description recorded for a catalogued coin type or issue. A coin may have no Obverse description, and its descriptive text and lettering may be known independently.
 _Avoid_: Observe, heads, front image, placeholder face text

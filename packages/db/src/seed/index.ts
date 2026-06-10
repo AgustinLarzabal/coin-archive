@@ -47,7 +47,6 @@ import {
   seededShapes,
   seededTechniques,
   seededThemes,
-  seededTechniques,
 } from "./seed-data"
 
 type IssuerIdsByCode = Map<string, string>

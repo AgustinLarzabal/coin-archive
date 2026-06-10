@@ -116,11 +116,6 @@ type CreateRimInput = {
   name: string
 }
 
-type CreateTechniqueInput = {
-  code: string
-  name: string
-}
-
 type CreateRulerGroupInput = {
   code: string
   name: string

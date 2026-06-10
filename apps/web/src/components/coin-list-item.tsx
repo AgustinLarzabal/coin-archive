@@ -47,6 +47,16 @@ export function CoinListItem({
   const formattedDemonetizationStatus = formatDemonetizationStatus(
     coin.isDemonetized
   )
+  const optionalDetailLines = [
+    mintNames ? `Mints: ${mintNames}` : null,
+    themeNames ? `Themes: ${themeNames}` : null,
+    coin.shape ? `Shape: ${coin.shape.name}` : null,
+    coin.orientation ? `Orientation: ${coin.orientation.name}` : null,
+    coin.rim ? `Rim: ${coin.rim.name}` : null,
+    coin.technique ? `Minting Technique: ${coin.technique.name}` : null,
+    coin.edge?.name ? `Edge: ${coin.edge.name}` : null,
+    formattedMintage ? `Mintage: ${formattedMintage}` : null,
+  ].filter((detailLine): detailLine is string => detailLine !== null)
 
   return (
     <li className="border-b border-border pb-4">
@@ -59,32 +69,11 @@ export function CoinListItem({
       <p className={detailClassName}>
         Demonetization Status: {formattedDemonetizationStatus}
       </p>
-      {mintNames ? (
-        <p className={detailClassName}>Mints: {mintNames}</p>
-      ) : null}
-      {themeNames ? (
-        <p className={detailClassName}>Themes: {themeNames}</p>
-      ) : null}
-      {coin.shape ? (
-        <p className={detailClassName}>Shape: {coin.shape.name}</p>
-      ) : null}
-      {coin.orientation ? (
-        <p className={detailClassName}>Orientation: {coin.orientation.name}</p>
-      ) : null}
-      {coin.rim ? (
-        <p className={detailClassName}>Rim: {coin.rim.name}</p>
-      ) : null}
-      {coin.technique ? (
-        <p className={detailClassName}>
-          Minting Technique: {coin.technique.name}
+      {optionalDetailLines.map((detailLine) => (
+        <p className={detailClassName} key={detailLine}>
+          {detailLine}
         </p>
-      ) : null}
-      {coin.edge?.name ? (
-        <p className="text-sm text-muted-foreground">Edge: {coin.edge.name}</p>
-      ) : null}
-      {formattedMintage ? (
-        <p className={detailClassName}>Mintage: {formattedMintage}</p>
-      ) : null}
+      ))}
       <p className={detailClassName}>{issueYearRangeLabel}</p>
       {measurementSummary ? (
         <p className={detailClassName}>{measurementSummary}</p>

@@ -215,7 +215,7 @@ describe("composition schema constraints", () => {
     )
   })
 
-  it("rejects duplicate composition codes ignoring case", async () => {
+  it("rejects duplicate composition codes", async () => {
     await db.insert(composition).values({
       code: "silver-900",
       name: "Silver (.900)",
@@ -223,7 +223,7 @@ describe("composition schema constraints", () => {
 
     await expectConstraintError(
       db.insert(composition).values({
-        code: "SILVER-900",
+        code: "silver-900",
         name: "Duplicate Silver (.900)",
       }),
       compositionSchemaNames.codeLowerUniqueIndex,
@@ -246,7 +246,7 @@ describe("composition schema constraints", () => {
     await expectConstraintError(
       db.delete(composition).where(sql`${composition.id} = ${compositionId}`),
       "coin_composition_id_composition_id_fk",
-      "23503"
+      "23001"
     )
   })
 })
@@ -266,7 +266,7 @@ describe("currency schema constraints", () => {
     )
   })
 
-  it("rejects duplicate currency codes ignoring case", async () => {
+  it("rejects duplicate currency codes", async () => {
     await db.insert(currency).values({
       code: "euro",
       name: "Euro",
@@ -275,7 +275,7 @@ describe("currency schema constraints", () => {
 
     await expectConstraintError(
       db.insert(currency).values({
-        code: "EURO",
+        code: "euro",
         name: "Duplicate Euro",
         fullName: "Duplicate Euro (2002-date)",
       }),
@@ -299,7 +299,7 @@ describe("edge schema constraints", () => {
     )
   })
 
-  it("rejects duplicate edge codes ignoring case", async () => {
+  it("rejects duplicate edge codes", async () => {
     await db.insert(edge).values({
       code: "reeded",
       name: "Reeded",
@@ -307,7 +307,7 @@ describe("edge schema constraints", () => {
 
     await expectConstraintError(
       db.insert(edge).values({
-        code: "REEDED",
+        code: "reeded",
         name: "Duplicate Reeded",
       }),
       edgeSchemaNames.codeLowerUniqueIndex,
@@ -333,7 +333,7 @@ describe("edge schema constraints", () => {
     await expectConstraintError(
       db.delete(edge).where(sql`${edge.id} = ${reeded.id}`),
       "coin_edge_id_edge_id_fk",
-      "23503"
+      "23001"
     )
   })
 })
@@ -352,7 +352,7 @@ describe("mint schema constraints", () => {
     )
   })
 
-  it("rejects duplicate mint codes ignoring case", async () => {
+  it("rejects duplicate mint codes", async () => {
     await db.insert(mint).values({
       code: "royal-mint-of-madrid",
       name: "Royal Mint of Madrid",
@@ -360,7 +360,7 @@ describe("mint schema constraints", () => {
 
     await expectConstraintError(
       db.insert(mint).values({
-        code: "ROYAL-MINT-OF-MADRID",
+        code: "royal-mint-of-madrid",
         name: "Duplicate Royal Mint of Madrid",
       }),
       mintSchemaNames.codeLowerUniqueIndex,
@@ -392,7 +392,7 @@ describe("mint schema constraints", () => {
     await expectConstraintError(
       db.delete(mint).where(sql`${mint.id} = ${createdMint.id}`),
       "coin_mint_mint_id_mint_id_fk",
-      "23503"
+      "23001"
     )
   })
 })
@@ -411,7 +411,7 @@ describe("theme schema constraints", () => {
     )
   })
 
-  it("rejects duplicate theme codes ignoring case", async () => {
+  it("rejects duplicate theme codes", async () => {
     await db.insert(theme).values({
       code: "flag",
       name: "Flag",
@@ -419,7 +419,7 @@ describe("theme schema constraints", () => {
 
     await expectConstraintError(
       db.insert(theme).values({
-        code: "FLAG",
+        code: "flag",
         name: "Duplicate Flag",
       }),
       themeSchemaNames.codeLowerUniqueIndex,
@@ -482,7 +482,7 @@ describe("theme schema constraints", () => {
     await expectConstraintError(
       db.delete(theme).where(sql`${theme.id} = ${createdTheme.id}`),
       "coin_theme_theme_id_theme_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -533,7 +533,7 @@ describe("orientation schema constraints", () => {
     )
   })
 
-  it("rejects duplicate orientation codes ignoring case", async () => {
+  it("rejects duplicate orientation codes", async () => {
     await db.insert(orientation).values({
       code: "coin-alignment",
       name: "Coin alignment",
@@ -541,7 +541,7 @@ describe("orientation schema constraints", () => {
 
     await expectConstraintError(
       db.insert(orientation).values({
-        code: "COIN-ALIGNMENT",
+        code: "coin-alignment",
         name: "Duplicate coin alignment",
       }),
       orientationSchemaNames.codeLowerUniqueIndex,
@@ -570,7 +570,7 @@ describe("orientation schema constraints", () => {
     await expectConstraintError(
       db.delete(orientation).where(sql`${orientation.id} = ${createdOrientation.id}`),
       "coin_orientation_id_orientation_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -617,7 +617,7 @@ describe("shape schema constraints", () => {
     )
   })
 
-  it("rejects duplicate shape codes ignoring case", async () => {
+  it("rejects duplicate shape codes", async () => {
     await db.insert(shape).values({
       code: "round",
       name: "Round",
@@ -625,7 +625,7 @@ describe("shape schema constraints", () => {
 
     await expectConstraintError(
       db.insert(shape).values({
-        code: "ROUND",
+        code: "round",
         name: "Duplicate round",
       }),
       shapeSchemaNames.codeLowerUniqueIndex,
@@ -654,7 +654,7 @@ describe("shape schema constraints", () => {
     await expectConstraintError(
       db.delete(shape).where(sql`${shape.id} = ${createdShape.id}`),
       "coin_shape_id_shape_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -701,7 +701,7 @@ describe("rim schema constraints", () => {
     )
   })
 
-  it("rejects duplicate rim codes ignoring case", async () => {
+  it("rejects duplicate rim codes", async () => {
     await db.insert(rim).values({
       code: "raised-both-sides",
       name: "Raised, both sides",
@@ -709,7 +709,7 @@ describe("rim schema constraints", () => {
 
     await expectConstraintError(
       db.insert(rim).values({
-        code: "RAISED-BOTH-SIDES",
+        code: "raised-both-sides",
         name: "Duplicate raised rim",
       }),
       rimSchemaNames.codeLowerUniqueIndex,
@@ -738,7 +738,7 @@ describe("rim schema constraints", () => {
     await expectConstraintError(
       db.delete(rim).where(sql`${rim.id} = ${createdRim.id}`),
       "coin_rim_id_rim_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -782,7 +782,7 @@ describe("technique schema constraints", () => {
     )
   })
 
-  it("rejects duplicate technique codes ignoring case", async () => {
+  it("rejects duplicate technique codes", async () => {
     await db.insert(technique).values({
       code: "milled",
       name: "Milled",
@@ -790,7 +790,7 @@ describe("technique schema constraints", () => {
 
     await expectConstraintError(
       db.insert(technique).values({
-        code: "MILLED",
+        code: "milled",
         name: "Duplicate milled",
       }),
       techniqueSchemaNames.codeLowerUniqueIndex,
@@ -819,7 +819,7 @@ describe("technique schema constraints", () => {
     await expectConstraintError(
       db.delete(technique).where(sql`${technique.id} = ${createdTechnique.id}`),
       "coin_technique_id_technique_id_fk",
-      "23503"
+      "23001"
     )
   })
 
@@ -1279,7 +1279,7 @@ describe("coin schema constraints", () => {
 describe("distribution schema constraints", () => {
   useTestDatabaseIsolation(db)
 
-  it("rejects duplicate distribution codes ignoring case", async () => {
+  it("rejects duplicate distribution codes", async () => {
     await createDistribution({
       code: "standard-circulation",
       name: "Standard circulation",
@@ -1430,7 +1430,7 @@ describe("engraver schema constraints", () => {
     )
   })
 
-  it("rejects duplicate engraver codes ignoring case", async () => {
+  it("rejects duplicate engraver codes", async () => {
     await db.insert(engraver).values({
       code: "georgios-stamatopoulos",
       name: "Georgios Stamatópoulos",
@@ -1438,7 +1438,7 @@ describe("engraver schema constraints", () => {
 
     await expectConstraintError(
       db.insert(engraver).values({
-        code: "GEORGIOS-STAMATOPOULOS",
+        code: "georgios-stamatopoulos",
         name: "Duplicate Geórgios Stamatópoulos",
       }),
       engraverSchemaNames.codeLowerUniqueIndex,

@@ -13,6 +13,7 @@ import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
 import { edge } from "../schema/edge"
+import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
@@ -55,6 +56,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(technique)
   await database.delete(theme)
   await database.delete(edge)
+  await database.delete(engraver)
   await database.delete(distribution)
   await database.delete(currency)
   await database.delete(composition)

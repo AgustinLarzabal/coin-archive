@@ -30,18 +30,18 @@ describe("getRims integration", () => {
         updatedAt: plain.updatedAt,
       },
       {
-        id: raisedAlt.id,
-        code: "raised-obverse-only",
-        name: "Raised, both sides",
-        createdAt: raisedAlt.createdAt,
-        updatedAt: raisedAlt.updatedAt,
-      },
-      {
         id: raised.id,
         code: "raised-both-sides",
         name: "Raised, both sides",
         createdAt: raised.createdAt,
         updatedAt: raised.updatedAt,
+      },
+      {
+        id: raisedAlt.id,
+        code: "raised-obverse-only",
+        name: "Raised, both sides",
+        createdAt: raisedAlt.createdAt,
+        updatedAt: raisedAlt.updatedAt,
       },
     ])
   })

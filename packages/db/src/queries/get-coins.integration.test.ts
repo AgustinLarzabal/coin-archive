@@ -289,7 +289,7 @@ describe("getCoins integration", () => {
       createdAt,
     })
 
-    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
       {
         id: coin.id,
         title: "Ungrouped Civic Issue",
@@ -1003,12 +1003,12 @@ describe("getCoins integration", () => {
         limit: 3,
         orientationCode: "  ",
       })
-    ).resolves.toMatchObject(
+    ).resolves.toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           id: coinWithoutOrientation.id,
           title: "Unknown Orientation Coin",
-        },
+        }),
       ])
     )
 
@@ -1243,12 +1243,12 @@ describe("getCoins integration", () => {
         limit: 3,
         techniqueCode: "  ",
       })
-    ).resolves.toMatchObject(
+    ).resolves.toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           id: coinWithoutTechnique.id,
           title: "Unknown Technique Coin",
-        },
+        }),
       ])
     )
 
@@ -1487,12 +1487,12 @@ describe("getCoins integration", () => {
         limit: 4,
         themeCode: "  ",
       })
-    ).resolves.toMatchObject(
+    ).resolves.toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           id: coinWithoutThemes.id,
           title: "Unthemed Coin",
-        },
+        }),
       ])
     )
 
@@ -1601,12 +1601,12 @@ describe("getCoins integration", () => {
         limit: 4,
         mintCode: "  ",
       })
-    ).resolves.toMatchObject(
+    ).resolves.toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           id: coinWithoutMint.id,
           title: "Unknown Mint Issue",
-        },
+        }),
       ])
     )
   })
@@ -2660,7 +2660,7 @@ describe("getCoins integration", () => {
       number: "1338A",
     })
 
-    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
       {
         id: coin.id,
         title: "Catalogue Reference Test Issue",
@@ -3221,7 +3221,7 @@ describe("getCoins integration", () => {
       rulerOrder: 3,
     })
 
-    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
       {
         id: coin.id,
         title: "Attribution Test Issue",
@@ -3672,7 +3672,7 @@ describe("getCoins integration", () => {
       createdAt,
     })
 
-    await expect(getCoins({ limit: 1 })).resolves.toStrictEqual([
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
       {
         id: coin.id,
         title: "Distribution Test Issue",

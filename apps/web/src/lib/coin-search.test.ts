@@ -225,7 +225,7 @@ describe("updateCoinSearchFilter", () => {
   )
 
   it.each(emptyFilterValues)(
-    "clears the Minting Technique filter without removing the other filters when the value is %p",
+    "clears the technique filter without removing the other filters when the value is %p",
     (filterValue) => {
       expect(
         updateCoinSearchFilter(

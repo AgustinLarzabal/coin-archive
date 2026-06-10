@@ -18,6 +18,7 @@ import {
   findSelectedOrientationOption,
   findSelectedRimOption,
   findSelectedShapeOption,
+  findSelectedTechniqueOption,
   findSelectedThemeOption,
   formatMintNames,
   formatIssueYearRangeLabel,
@@ -32,6 +33,7 @@ import {
   getOrientationOptionLabel,
   getRimOptionLabel,
   getShapeOptionLabel,
+  getTechniqueOptionLabel,
   getThemeOptionLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
@@ -596,7 +598,7 @@ describe("coinSearchSchema", () => {
     ])
   })
 
-  it("accepts homepage catalogue, currency, edge, face value, issue year range, measurement, theme, and reference number search params", () => {
+  it("accepts homepage catalogue, currency, edge, face value, issue year range, measurement, Minting Technique, theme, and reference number search params", () => {
     expect(
       coinSearchSchema.parse({
         catalogue: "km",
@@ -618,6 +620,7 @@ describe("coinSearchSchema", () => {
         minValue: "0.5",
         referenceNumber: "1338A",
         ruler: "felipe-vi",
+        technique: "milled",
         theme: "map",
         toYear: "1902",
       })
@@ -641,6 +644,7 @@ describe("coinSearchSchema", () => {
       minValue: 0.5,
       referenceNumber: "1338A",
       ruler: "felipe-vi",
+      technique: "milled",
       theme: "map",
       toYear: 1902,
     })
@@ -680,15 +684,17 @@ describe("coinSearchSchema", () => {
     })
   })
 
-  it("accepts singular shape and rim homepage search params", () => {
+  it("accepts singular shape, rim, and Minting Technique homepage search params", () => {
     expect(
       coinSearchSchema.parse({
         shape: "round",
         rim: "raised-both-sides",
+        technique: "milled",
       })
     ).toStrictEqual({
       rim: "raised-both-sides",
       shape: "round",
+      technique: "milled",
     })
   })
 
@@ -748,6 +754,7 @@ describe("getCoinListLoaderDeps", () => {
         orientation: "coin-alignment",
         rim: "raised-both-sides",
         shape: "round",
+        technique: "milled",
         theme: "map",
       })
     ).toStrictEqual({
@@ -759,6 +766,7 @@ describe("getCoinListLoaderDeps", () => {
       orientationCode: "coin-alignment",
       rimCode: "raised-both-sides",
       shapeCode: "round",
+      techniqueCode: "milled",
       themeCode: "map",
     })
   })
@@ -1075,6 +1083,19 @@ describe("findSelectedThemeOption", () => {
   })
 })
 
+describe("findSelectedTechniqueOption", () => {
+  it("matches the selected technique code case-insensitively", () => {
+    const milled = {
+      code: "milled",
+      name: "Milled",
+    }
+
+    expect(findSelectedTechniqueOption([milled], "MILLED")).toStrictEqual(
+      milled
+    )
+  })
+})
+
 describe("findSelectedShapeOption", () => {
   it("matches the selected shape code case-insensitively", () => {
     const round = {
@@ -1096,5 +1117,16 @@ describe("findSelectedRimOption", () => {
     expect(
       findSelectedRimOption([raisedBothSides], "RAISED-BOTH-SIDES")
     ).toStrictEqual(raisedBothSides)
+  })
+})
+
+describe("getTechniqueOptionLabel", () => {
+  it("includes the Minting Technique name and code so combobox search can match both", () => {
+    expect(
+      getTechniqueOptionLabel({
+        code: "milled",
+        name: "Milled",
+      })
+    ).toBe("Milled · milled")
   })
 })

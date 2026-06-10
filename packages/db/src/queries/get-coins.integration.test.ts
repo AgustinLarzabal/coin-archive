@@ -21,6 +21,7 @@ import {
   createRuler,
   createRulerGroup,
   createShape,
+  createTechnique,
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -1098,6 +1099,120 @@ describe("getCoins integration", () => {
       getCoins({
         limit: 3,
         rimCode: "unknown-rim",
+      })
+    ).resolves.toStrictEqual([])
+  })
+
+  it("returns known Minting Technique records with null for unknown values and filters by exact technique code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const silver900 = await createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    })
+    const bronze = await createComposition({
+      code: "bronze",
+      description: "Bronze alloy.",
+      name: "Bronze",
+    })
+    const milled = await createTechnique({
+      code: "milled",
+      name: "Milled",
+    })
+    const cast = await createTechnique({
+      code: "cast",
+      name: "Cast",
+    })
+    const coinWithoutTechnique = await createCoin({
+      title: "Unknown Technique Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+    })
+    const milledCoin = await createCoin({
+      title: "Milled Coin",
+      compositionId: silver900.id,
+      issuerId: spain.id,
+      techniqueId: milled.id,
+      createdAt: new Date("2026-05-02T00:00:00.000Z"),
+    })
+    const castCoin = await createCoin({
+      title: "Cast Coin",
+      compositionId: bronze.id,
+      issuerId: spain.id,
+      techniqueId: cast.id,
+      createdAt: new Date("2026-05-03T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 3 })).resolves.toMatchObject([
+      {
+        id: castCoin.id,
+        title: "Cast Coin",
+        technique: {
+          code: "cast",
+          name: "Cast",
+        },
+      },
+      {
+        id: milledCoin.id,
+        title: "Milled Coin",
+        technique: {
+          code: "milled",
+          name: "Milled",
+        },
+      },
+      {
+        id: coinWithoutTechnique.id,
+        title: "Unknown Technique Coin",
+        technique: null,
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        techniqueCode: "MILLED",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: milledCoin.id,
+        title: "Milled Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        compositionCode: "bronze",
+        limit: 3,
+        techniqueCode: "CAST",
+      })
+    ).resolves.toMatchObject([
+      {
+        id: castCoin.id,
+        title: "Cast Coin",
+      },
+    ])
+
+    await expect(
+      getCoins({
+        limit: 3,
+        techniqueCode: "  ",
+      })
+    ).resolves.toMatchObject(
+      expect.arrayContaining([
+        {
+          id: coinWithoutTechnique.id,
+          title: "Unknown Technique Coin",
+        },
+      ])
+    )
+
+    await expect(
+      getCoins({
+        limit: 3,
+        techniqueCode: "unknown-technique",
       })
     ).resolves.toStrictEqual([])
   })

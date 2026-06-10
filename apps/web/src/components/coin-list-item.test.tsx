@@ -53,6 +53,7 @@ const baseCoin: CoinRecord = {
   },
   mintage: null,
   rim: null,
+  technique: null,
   issuer: {
     id: "issuer-1",
     code: "spain",
@@ -210,12 +211,20 @@ describe("CoinListItem", () => {
         createdAt: timestamp,
         updatedAt: timestamp,
       },
+      technique: {
+        id: "technique-1",
+        code: "milled",
+        name: "Milled",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
       mintage: 1234567,
     })
 
     expect(markup).toContain("Shape: Round")
     expect(markup).toContain("Orientation: Coin alignment")
     expect(markup).toContain("Rim: Raised, both sides")
+    expect(markup).toContain("Minting Technique: Milled")
     expect(markup).toContain("Mintage: 1,234,567")
     expect(markup).not.toContain("raised-both-sides")
 
@@ -226,6 +235,9 @@ describe("CoinListItem", () => {
       markup.indexOf("Rim: Raised, both sides")
     )
     expect(markup.indexOf("Rim: Raised, both sides")).toBeLessThan(
+      markup.indexOf("Minting Technique: Milled")
+    )
+    expect(markup.indexOf("Minting Technique: Milled")).toBeLessThan(
       markup.indexOf("Mintage: 1,234,567")
     )
   })

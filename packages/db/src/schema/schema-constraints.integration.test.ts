@@ -23,6 +23,7 @@ import {
   ruler,
   rulerGroup,
   shape,
+  technique,
   theme,
 } from "../index"
 import {
@@ -46,6 +47,7 @@ import {
   createRuler,
   createRulerGroup,
   createShape,
+  createTechnique,
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -69,6 +71,7 @@ import { rimSchemaNames } from "./rim"
 import { rulerSchemaNames } from "./ruler"
 import { rulerGroupSchemaNames } from "./ruler-group"
 import { shapeSchemaNames } from "./shape"
+import { techniqueSchemaNames } from "./technique"
 import { themeSchemaNames } from "./theme"
 
 async function expectConstraintError(
@@ -760,6 +763,90 @@ describe("rim schema constraints", () => {
 
     await expectCountQueryResult(
       db.select({ count: count() }).from(rim).where(eq(rim.id, createdRim.id)),
+      1
+    )
+  })
+})
+
+describe("technique schema constraints", () => {
+  useTestDatabaseIsolation(db)
+
+  it("rejects Minting Technique codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(technique).values({
+        code: "Minted By Machine",
+        name: "Minted by machine",
+      }),
+      techniqueSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate Minting Technique codes ignoring case", async () => {
+    await db.insert(technique).values({
+      code: "milled",
+      name: "Milled",
+    })
+
+    await expectConstraintError(
+      db.insert(technique).values({
+        code: "MILLED",
+        name: "Duplicate milled",
+      }),
+      techniqueSchemaNames.codeLowerUniqueIndex,
+      "23505"
+    )
+  })
+
+  it("restricts deleting a Minting Technique while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdTechnique = await createTechnique({
+      code: "milled",
+      name: "Milled",
+    })
+
+    await createCoin({
+      title: "Referenced Technique Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      techniqueId: createdTechnique.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(technique).where(sql`${technique.id} = ${createdTechnique.id}`),
+      "coin_technique_id_technique_id_fk",
+      "23503"
+    )
+  })
+
+  it("keeps shared Minting Techniques when deleting a coin", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdTechnique = await createTechnique({
+      code: "cast",
+      name: "Cast",
+    })
+    const createdCoin = await createCoin({
+      title: "Deleted Technique Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      techniqueId: createdTechnique.id,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await db.delete(coin).where(eq(coin.id, createdCoin.id))
+
+    await expectCountQueryResult(
+      db
+        .select({ count: count() })
+        .from(technique)
+        .where(eq(technique.id, createdTechnique.id)),
       1
     )
   })

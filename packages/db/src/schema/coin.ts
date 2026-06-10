@@ -20,6 +20,7 @@ import { issuer } from "./issuer"
 import { orientation } from "./orientation"
 import { rim } from "./rim"
 import { shape } from "./shape"
+import { technique } from "./technique"
 
 export const coinSchemaNames = {
   compositionIdIndex: "coin_composition_id_idx",
@@ -38,6 +39,7 @@ export const coinSchemaNames = {
   recentCreatedAtIdIndex: "coin_recent_created_at_id_idx",
   rimIdIndex: "coin_rim_id_idx",
   shapeIdIndex: "coin_shape_id_idx",
+  techniqueIdIndex: "coin_technique_id_idx",
   thicknessIndex: "coin_thickness_idx",
   thicknessPositiveCheck: "coin_thickness_positive_check",
   weightIndex: "coin_weight_idx",
@@ -107,6 +109,9 @@ export const coin = pgTable(
     rimId: uuid("rim_id").references(() => rim.id, {
       onDelete: "restrict",
     }),
+    techniqueId: uuid("technique_id").references(() => technique.id, {
+      onDelete: "restrict",
+    }),
     comments: text("comments"),
     isDemonetized: boolean("is_demonetized"),
     mintage: bigint("mintage", { mode: "number" }),
@@ -135,6 +140,7 @@ export const coin = pgTable(
     index(coinSchemaNames.edgeIdIndex).on(coin.edgeId),
     index(coinSchemaNames.shapeIdIndex).on(coin.shapeId),
     index(coinSchemaNames.rimIdIndex).on(coin.rimId),
+    index(coinSchemaNames.techniqueIdIndex).on(coin.techniqueId),
     index(coinSchemaNames.issueYearRangeIndex).on(coin.minYear, coin.maxYear),
     index(coinSchemaNames.weightIndex).on(coin.weight),
     index(coinSchemaNames.diameterIndex).on(coin.diameter),

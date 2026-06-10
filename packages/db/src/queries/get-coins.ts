@@ -21,6 +21,7 @@ import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
@@ -81,6 +82,11 @@ const getCoinsSelection = {
   rimName: rim.name,
   rimCreatedAt: rim.createdAt,
   rimUpdatedAt: rim.updatedAt,
+  techniqueId: technique.id,
+  techniqueCode: technique.code,
+  techniqueName: technique.name,
+  techniqueCreatedAt: technique.createdAt,
+  techniqueUpdatedAt: technique.updatedAt,
   obverseDescription: obverseFace.description,
   obverseLettering: obverseFace.lettering,
   obverseEngraverId: obverseEngraver.id,
@@ -179,6 +185,7 @@ export type GetCoinsOptions = {
   rimCode?: string
   rulerCode?: string
   shapeCode?: string
+  techniqueCode?: string
   themeCode?: string
   toYear?: number
 }
@@ -208,6 +215,7 @@ type CoinFilterOptions = Pick<
   | "rimCode"
   | "rulerCode"
   | "shapeCode"
+  | "techniqueCode"
   | "themeCode"
   | "toYear"
 >
@@ -221,6 +229,7 @@ type RelatedCodeFilterOptions = {
     | typeof coin.orientationId
     | typeof coin.rimId
     | typeof coin.shapeId
+    | typeof coin.techniqueId
   relatedCode: string | undefined
   relatedCodeColumn:
     | typeof composition.code
@@ -230,6 +239,7 @@ type RelatedCodeFilterOptions = {
     | typeof orientation.code
     | typeof rim.code
     | typeof shape.code
+    | typeof technique.code
   relatedIdColumn:
     | typeof composition.id
     | typeof currency.id
@@ -238,6 +248,7 @@ type RelatedCodeFilterOptions = {
     | typeof orientation.id
     | typeof rim.id
     | typeof shape.id
+    | typeof technique.id
   relatedTableName:
     | "composition"
     | "currency"
@@ -246,6 +257,7 @@ type RelatedCodeFilterOptions = {
     | "orientation"
     | "rim"
     | "shape"
+    | "technique"
 }
 
 type AttributionCodeFilterOptions = {
@@ -303,6 +315,7 @@ function buildCoinFilter({
   rimCode,
   rulerCode,
   shapeCode,
+  techniqueCode,
   themeCode,
   toYear,
 }: CoinFilterOptions): SQL | undefined {
@@ -339,6 +352,7 @@ function buildCoinFilter({
     buildOrientationFilter(orientationCode),
     buildShapeFilter(shapeCode),
     buildRimFilter(rimCode),
+    buildTechniqueFilter(techniqueCode),
     buildMintFilter(mintCode),
     buildThemeFilter(themeCode),
     issuerCode === undefined ? undefined : buildIssuerTreeFilter(issuerCode),
@@ -483,6 +497,18 @@ function buildRimFilter(rimCode: string | undefined): SQL | undefined {
     relatedCodeColumn: rim.code,
     relatedIdColumn: rim.id,
     relatedTableName: "rim",
+  })
+}
+
+function buildTechniqueFilter(
+  techniqueCode: string | undefined
+): SQL | undefined {
+  return buildRelatedCodeFilter({
+    foreignKeyColumn: coin.techniqueId,
+    relatedCode: techniqueCode,
+    relatedCodeColumn: technique.code,
+    relatedIdColumn: technique.id,
+    relatedTableName: "technique",
   })
 }
 
@@ -721,6 +747,7 @@ export function buildGetCoinsQuery(
     .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(rim, eq(coin.rimId, rim.id))
+    .leftJoin(technique, eq(coin.techniqueId, technique.id))
     .leftJoin(
       obverseFace,
       and(eq(coin.id, obverseFace.coinId), eq(obverseFace.side, "obverse"))

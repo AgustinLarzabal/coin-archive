@@ -62,6 +62,14 @@ type GetCoinsRimColumns = {
   rimUpdatedAt?: Date | null
 }
 
+type GetCoinsTechniqueColumns = {
+  techniqueId?: string | null
+  techniqueCode?: string | null
+  techniqueName?: string | null
+  techniqueCreatedAt?: Date | null
+  techniqueUpdatedAt?: Date | null
+}
+
 type GetCoinsFaceColumns = {
   obverseDescription?: string | null
   obverseLettering?: string | null
@@ -168,6 +176,7 @@ export type GetCoinsRow = {
   GetCoinsRimColumns &
   GetCoinsRulerColumns &
   GetCoinsShapeColumns &
+  GetCoinsTechniqueColumns &
   GetCoinsThemeColumns
 
 type GetCoinsParentIssuerColumns = Pick<
@@ -220,6 +229,7 @@ export type CoinDistribution = CoinCodeNamedRecord
 export type CoinOrientation = CoinCodeNamedRecord
 export type CoinShape = CoinCodeNamedRecord
 export type CoinRim = CoinCodeNamedRecord
+export type CoinTechnique = CoinCodeNamedRecord
 export type CoinRecordMint = CoinCodeNamedRecord
 export type CoinThemeRecord = CoinCodeNamedRecord
 
@@ -323,6 +333,7 @@ export type CoinRecord = CoinRecordBase & {
   rim: CoinRim | null
   rulers: CoinRuler[]
   shape: CoinShape | null
+  technique: CoinTechnique | null
   themes: CoinThemeRecord[]
 }
 
@@ -501,6 +512,16 @@ function mapRim({
   rimCreatedAt: createdAt,
   rimUpdatedAt: updatedAt,
 }: GetCoinsRimColumns): CoinRim | null {
+  return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
+}
+
+function mapTechnique({
+  techniqueId: id,
+  techniqueCode: code,
+  techniqueName: name,
+  techniqueCreatedAt: createdAt,
+  techniqueUpdatedAt: updatedAt,
+}: GetCoinsTechniqueColumns): CoinTechnique | null {
   return mapOptionalCodeNamedRecord({ id, code, name, createdAt, updatedAt })
 }
 
@@ -858,6 +879,7 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     edge: mapEdge(row),
     shape: mapShape(row),
     rim: mapRim(row),
+    technique: mapTechnique(row),
     measurements: mapMeasurements(row),
     composition: mapComposition(row),
     distribution: mapDistribution(row),

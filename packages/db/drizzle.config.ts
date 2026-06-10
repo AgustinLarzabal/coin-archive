@@ -24,6 +24,7 @@ export default defineConfig({
     "./src/schema/ruler-group.ts",
     "./src/schema/ruler.ts",
     "./src/schema/shape.ts",
+    "./src/schema/technique.ts",
     "./src/schema/coin-ruler.ts",
     "./src/schema/theme.ts",
   ],

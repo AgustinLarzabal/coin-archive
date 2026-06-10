@@ -8,6 +8,7 @@ export { getMints } from "./queries/get-mints"
 export { getOrientations } from "./queries/get-orientations"
 export { getRims } from "./queries/get-rims"
 export { getShapes } from "./queries/get-shapes"
+export { getTechniques } from "./queries/get-techniques"
 export { getThemes } from "./queries/get-themes"
 export { demonetizationFilterValues } from "./queries/get-coins"
 export { buildGetCoinsQuery, getCoins } from "./queries/get-coins"
@@ -34,6 +35,7 @@ export { rim } from "./schema/rim"
 export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
 export { shape } from "./schema/shape"
+export { technique } from "./schema/technique"
 export { theme } from "./schema/theme"
 export type {
   DemonetizationFilterValue,
@@ -59,6 +61,7 @@ export type {
   CoinRim,
   CoinRulerGroup,
   CoinShape,
+  CoinTechnique,
   CoinThemeRecord,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
@@ -71,6 +74,7 @@ export type { MintOption } from "./queries/get-mints"
 export type { OrientationOption } from "./queries/get-orientations"
 export type { RimOption } from "./queries/get-rims"
 export type { ShapeOption } from "./queries/get-shapes"
+export type { TechniqueOption } from "./queries/get-techniques"
 export type { ThemeOption } from "./queries/get-themes"
 export type { Composition } from "./schema/composition"
 export type { CoinMint } from "./schema/coin-mint"
@@ -83,6 +87,7 @@ export type { Orientation } from "./schema/orientation"
 export type { Rim } from "./schema/rim"
 export type { RulerOption } from "./queries/get-rulers"
 export type { Shape } from "./schema/shape"
+export type { Technique } from "./schema/technique"
 export type { Coin } from "./schema/coin"
 export type { CoinFace, CoinFaceSide } from "./schema/coin-face"
 export type { CoinFaceEngraver } from "./schema/coin-face-engraver"

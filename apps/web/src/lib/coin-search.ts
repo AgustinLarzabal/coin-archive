@@ -13,6 +13,7 @@ import type {
   RimOption,
   RulerOption,
   ShapeOption,
+  TechniqueOption,
   ThemeOption,
 } from "@workspace/db"
 import { z } from "zod"
@@ -88,6 +89,7 @@ export const coinSearchSchema = z.object({
   referenceNumber: optionalStringSchema,
   ruler: optionalStringSchema,
   shape: optionalStringSchema,
+  technique: optionalStringSchema,
   theme: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
@@ -116,6 +118,7 @@ export const coinListInputSchema = z.object({
   referenceNumber: optionalStringSchema,
   rulerCode: optionalStringSchema,
   shapeCode: optionalStringSchema,
+  techniqueCode: optionalStringSchema,
   themeCode: optionalStringSchema,
   toYear: optionalIntegerSchema,
 })
@@ -195,6 +198,7 @@ type OrientationOptionLabel = Pick<
 type RimOptionLabel = Pick<RimOption, keyof NamedCodeOptionLabel>
 type RulerOptionLabel = Pick<RulerOption, "name" | "group">
 type ShapeOptionLabel = Pick<ShapeOption, keyof NamedCodeOptionLabel>
+type TechniqueOptionLabel = Pick<TechniqueOption, keyof NamedCodeOptionLabel>
 type ThemeOptionLabel = Pick<ThemeOption, keyof NamedCodeOptionLabel>
 type CoinMintLabel = Pick<CoinRecordMint, "name">
 
@@ -229,6 +233,9 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     referenceNumber: search.referenceNumber,
     rulerCode: search.ruler,
     ...(search.shape === undefined ? {} : { shapeCode: search.shape }),
+    ...(search.technique === undefined
+      ? {}
+      : { techniqueCode: search.technique }),
     themeCode: search.theme,
     toYear: search.toYear,
   }
@@ -299,6 +306,11 @@ export const findSelectedRimOption: <T extends OptionWithCode>(
 export const findSelectedShapeOption: <T extends OptionWithCode>(
   shapes: T[],
   selectedShapeCode: string | undefined
+) => T | null = findSelectedCodeOption
+
+export const findSelectedTechniqueOption: <T extends OptionWithCode>(
+  techniques: T[],
+  selectedTechniqueCode: string | undefined
 ) => T | null = findSelectedCodeOption
 
 export const findSelectedThemeOption: <T extends OptionWithCode>(
@@ -492,6 +504,10 @@ export const getRimOptionLabel: (rim: RimOptionLabel) => string =
 
 export const getShapeOptionLabel: (shape: ShapeOptionLabel) => string =
   getNamedCodeOptionLabel
+
+export const getTechniqueOptionLabel: (
+  technique: TechniqueOptionLabel
+) => string = getNamedCodeOptionLabel
 
 export const getThemeOptionLabel: (theme: ThemeOptionLabel) => string =
   getNamedCodeOptionLabel

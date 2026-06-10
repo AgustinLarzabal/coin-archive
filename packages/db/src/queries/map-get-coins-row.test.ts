@@ -235,6 +235,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         },
         shape: null,
         rim: null,
+        technique: null,
         obverse: null,
         reverse: null,
         measurements: {
@@ -1504,6 +1505,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         edge: null,
         shape: null,
         rim: null,
+        technique: null,
         themes: [],
         rulers: [
           {
@@ -1688,6 +1690,7 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         edge: null,
         shape: null,
         rim: null,
+        technique: null,
         obverse: null,
         reverse: null,
         mints: [],

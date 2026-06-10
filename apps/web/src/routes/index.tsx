@@ -15,6 +15,7 @@ import type {
   RimOption,
   RulerOption,
   ShapeOption,
+  TechniqueOption,
   ThemeOption,
 } from "@workspace/db"
 import {
@@ -34,6 +35,7 @@ import {
   findSelectedOrientationOption,
   findSelectedRimOption,
   findSelectedShapeOption,
+  findSelectedTechniqueOption,
   findSelectedThemeOption,
   formatMintNames,
   formatMeasurementLabel,
@@ -64,6 +66,7 @@ import { EngraverFilterCombobox } from "../components/engraver-filter-combobox"
 import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
 import { RimFilterCombobox } from "../components/rim-filter-combobox"
 import { ShapeFilterCombobox } from "../components/shape-filter-combobox"
+import { TechniqueFilterCombobox } from "../components/technique-filter-combobox"
 import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
 
 import {
@@ -181,6 +184,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getRims,
       getRulers,
       getShapes,
+      getTechniques,
       getThemes,
     } = await import("@workspace/db")
 
@@ -198,6 +202,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       rims,
       rulers,
       shapes,
+      techniques,
       themes,
     ] = await Promise.all([
       getCoins(data),
@@ -213,6 +218,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       getRims(),
       getRulers(),
       getShapes(),
+      getTechniques(),
       getThemes(),
     ])
 
@@ -230,6 +236,7 @@ const getCoinListData = createServerFn({ method: "GET" })
       rims,
       rulers,
       shapes,
+      techniques,
       themes,
     }
   })
@@ -256,6 +263,7 @@ function App() {
     rims,
     rulers,
     shapes,
+    techniques,
     themes,
   } = Route.useLoaderData()
   const {
@@ -282,6 +290,7 @@ function App() {
     referenceNumber: selectedReferenceNumber,
     ruler: selectedRulerCode,
     shape: selectedShapeCode,
+    technique: selectedTechniqueCode,
     theme: selectedThemeCode,
     toYear: selectedToYear,
   } = Route.useSearch()
@@ -330,6 +339,10 @@ function App() {
   )
   const selectedRim = findSelectedRimOption(rims, selectedRimCode)
   const selectedShape = findSelectedShapeOption(shapes, selectedShapeCode)
+  const selectedTechnique = findSelectedTechniqueOption(
+    techniques,
+    selectedTechniqueCode
+  )
   const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
   const selectedIssuer =
     issuers.find((issuer) => issuer.code === selectedIssuerCode) ?? null
@@ -370,6 +383,7 @@ function App() {
   const selectRim = createSelectHandler<RimOption>("rim")
   const selectRuler = createSelectHandler<RulerOption>("ruler")
   const selectShape = createSelectHandler<ShapeOption>("shape")
+  const selectTechnique = createSelectHandler<TechniqueOption>("technique")
   const selectTheme = createSelectHandler<ThemeOption>("theme")
 
   async function updateReferenceNumber(referenceNumber: string) {
@@ -606,6 +620,12 @@ function App() {
         onValueChange={selectRim}
         rims={rims}
         selectedRim={selectedRim}
+      />
+
+      <TechniqueFilterCombobox
+        onValueChange={selectTechnique}
+        selectedTechnique={selectedTechnique}
+        techniques={techniques}
       />
 
       <ThemeFilterCombobox

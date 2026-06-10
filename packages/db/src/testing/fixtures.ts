@@ -18,6 +18,7 @@ import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { db } from "../index"
 import { normalizeCoinComments } from "../normalize-coin-comments"
@@ -51,6 +52,7 @@ type CreateCoinInput = {
   orientationId?: string
   rimId?: string
   shapeId?: string
+  techniqueId?: string
   thickness?: number
   title: string
   updatedAt?: Date
@@ -105,6 +107,11 @@ type CreateShapeInput = {
 }
 
 type CreateRimInput = {
+  code: string
+  name: string
+}
+
+type CreateTechniqueInput = {
   code: string
   name: string
 }
@@ -196,6 +203,7 @@ export async function createCoin({
   orientationId,
   rimId,
   shapeId,
+  techniqueId,
   thickness,
   title,
   updatedAt = createdAt,
@@ -228,6 +236,7 @@ export async function createCoin({
       orientationId,
       rimId,
       shapeId,
+      techniqueId,
       diameter,
       thickness,
       title,
@@ -370,6 +379,18 @@ export async function createRim({ code, name }: CreateRimInput) {
     .returning()
 
   return createdRim
+}
+
+export async function createTechnique({ code, name }: CreateTechniqueInput) {
+  const [createdTechnique] = await db
+    .insert(technique)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdTechnique
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {

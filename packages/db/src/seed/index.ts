@@ -22,6 +22,7 @@ import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import {
   seededCatalogues,
@@ -44,6 +45,7 @@ import {
   seededRulerGroups,
   seededRulers,
   seededShapes,
+  seededTechniques,
   seededThemes,
 } from "./seed-data"
 
@@ -60,6 +62,7 @@ type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
+type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
 type EngraverIdsByCode = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
@@ -186,6 +189,13 @@ async function deleteSeededRims() {
   await deleteSeededRecords(
     seededRims.map(({ code }) => code),
     (code) => db.delete(rim).where(eq(rim.code, code))
+  )
+}
+
+async function deleteSeededTechniques() {
+  await deleteSeededRecords(
+    seededTechniques.map(({ code }) => code),
+    (code) => db.delete(technique).where(eq(technique.code, code))
   )
 }
 
@@ -477,6 +487,23 @@ async function seedRims() {
   return rimIdsByCode
 }
 
+async function seedTechniques() {
+  const techniqueIdsByCode: TechniqueIdsByCode = new Map()
+
+  await deleteSeededTechniques()
+
+  for (const seededTechnique of seededTechniques) {
+    const [insertedTechnique] = await db
+      .insert(technique)
+      .values(seededTechnique)
+      .returning({ id: technique.id })
+
+    techniqueIdsByCode.set(seededTechnique.code, insertedTechnique.id)
+  }
+
+  return techniqueIdsByCode
+}
+
 async function seedDistributions() {
   for (const seededDistribution of seededDistributions) {
     await db.execute(sql`
@@ -527,6 +554,7 @@ async function seedCoins(
   orientationIdsByCode: OrientationIdsByCode,
   shapeIdsByCode: ShapeIdsByCode,
   rimIdsByCode: RimIdsByCode,
+  techniqueIdsByCode: TechniqueIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   await db.delete(coin).where(
@@ -549,6 +577,7 @@ async function seedCoins(
           orientationIdsByCode,
           shapeIdsByCode,
           rimIdsByCode,
+          techniqueIdsByCode,
           distributionIdsByCode
         )
       )
@@ -642,6 +671,7 @@ function mapSeededCoinToInsertValues(
   orientationIdsByCode: OrientationIdsByCode,
   shapeIdsByCode: ShapeIdsByCode,
   rimIdsByCode: RimIdsByCode,
+  techniqueIdsByCode: TechniqueIdsByCode,
   distributionIdsByCode: DistributionIdsByCode
 ) {
   const {
@@ -655,6 +685,7 @@ function mapSeededCoinToInsertValues(
     orientationCode,
     shapeCode,
     rimCode,
+    techniqueCode,
     ...coinValues
   } = seededCoin
 
@@ -689,6 +720,9 @@ function mapSeededCoinToInsertValues(
       ? getRequiredSeededId(shapeIdsByCode, shapeCode, "shape")
       : undefined,
     rimId: rimCode ? getRequiredSeededId(rimIdsByCode, rimCode, "rim") : undefined,
+    techniqueId: techniqueCode
+      ? getRequiredSeededId(techniqueIdsByCode, techniqueCode, "technique")
+      : undefined,
   }
 }
 
@@ -784,6 +818,7 @@ export async function seedDatabase() {
   const orientationIdsByCode = await seedOrientations()
   const shapeIdsByCode = await seedShapes()
   const rimIdsByCode = await seedRims()
+  const techniqueIdsByCode = await seedTechniques()
   const themeIdsByCode = await seedThemes()
   const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
@@ -794,6 +829,7 @@ export async function seedDatabase() {
     orientationIdsByCode,
     shapeIdsByCode,
     rimIdsByCode,
+    techniqueIdsByCode,
     distributionIdsByCode
   )
   const rulerIdsByCode = await seedRulers()

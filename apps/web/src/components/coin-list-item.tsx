@@ -74,6 +74,11 @@ export function CoinListItem({
       {coin.rim ? (
         <p className={detailClassName}>Rim: {coin.rim.name}</p>
       ) : null}
+      {coin.technique ? (
+        <p className={detailClassName}>
+          Minting Technique: {coin.technique.name}
+        </p>
+      ) : null}
       {coin.edge?.name ? (
         <p className="text-sm text-muted-foreground">Edge: {coin.edge.name}</p>
       ) : null}

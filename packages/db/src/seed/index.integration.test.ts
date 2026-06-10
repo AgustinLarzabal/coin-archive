@@ -8,6 +8,7 @@ import {
   getOrientations,
   getRims,
   getShapes,
+  getTechniques,
   getThemes,
 } from "../index"
 import { catalogue } from "../schema/catalogue"
@@ -126,6 +127,21 @@ const expectedSeededRims = [
   },
 ] as const
 
+const expectedSeededTechniques = [
+  {
+    code: "cast",
+    name: "Cast",
+  },
+  {
+    code: "hammered",
+    name: "Hammered",
+  },
+  {
+    code: "milled",
+    name: "Milled",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -159,6 +175,7 @@ describe("seed integration", () => {
     await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)
     await expect(getShapes()).resolves.toMatchObject(expectedSeededShapes)
     await expect(getRims()).resolves.toMatchObject(expectedSeededRims)
+    await expect(getTechniques()).resolves.toMatchObject(expectedSeededTechniques)
     await expect(getThemes()).resolves.toMatchObject(expectedSeededThemes)
 
     const seededCoins = await getCoins({ limit: 20 })
@@ -217,6 +234,10 @@ describe("seed integration", () => {
       orientation: {
         code: "coin-alignment",
         name: "Coin alignment",
+      },
+      technique: {
+        code: "milled",
+        name: "Milled",
       },
       distribution: {
         code: "standard-circulation",

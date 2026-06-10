@@ -23,6 +23,7 @@ export type SeededCoin = {
   orientationCode?: string
   rimCode?: string
   shapeCode?: string
+  techniqueCode?: string
   weight?: number
   diameter?: number
   thickness?: number
@@ -81,6 +82,13 @@ type SeededShape = {
 }
 
 type SeededRim = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededTechnique = {
   code: string
   name: string
   createdAt: Date
@@ -203,6 +211,7 @@ export const seededCoins: SeededCoin[] = [
     orientationCode: "coin-alignment",
     shapeCode: "round",
     rimCode: "raised-both-sides",
+    techniqueCode: "milled",
     weight: 12.5,
     diameter: 31.5,
     thickness: 2.4,
@@ -239,6 +248,7 @@ export const seededCoins: SeededCoin[] = [
     orientationCode: "coin-alignment",
     shapeCode: "round",
     rimCode: "plain",
+    techniqueCode: "milled",
     weight: 3.11,
     diameter: 19.05,
     minYear: 1909,
@@ -289,6 +299,7 @@ export const seededCoins: SeededCoin[] = [
     orientationCode: "coin-alignment",
     shapeCode: "round",
     rimCode: "raised-both-sides",
+    techniqueCode: "milled",
     weight: 8.1,
     diameter: 26.5,
     thickness: 2,
@@ -336,6 +347,7 @@ export const seededCoins: SeededCoin[] = [
     orientationCode: "coin-alignment",
     shapeCode: "round",
     rimCode: "lettered",
+    techniqueCode: "milled",
     weight: 26.73,
     diameter: 39,
     thickness: 2.9,
@@ -377,6 +389,7 @@ export const seededCoins: SeededCoin[] = [
     orientationCode: "medal-alignment",
     shapeCode: "round",
     rimCode: "raised-both-sides",
+    techniqueCode: "milled",
     weight: 8.5,
     diameter: 25.75,
     thickness: 2.2,
@@ -585,6 +598,27 @@ export const seededCurrencies: SeededCurrency[] = [
     fullName: "United States dollar",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
+
+export const seededTechniques: SeededTechnique[] = [
+  {
+    code: "cast",
+    name: "Cast",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "hammered",
+    name: "Hammered",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "milled",
+    name: "Milled",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
 ]
 

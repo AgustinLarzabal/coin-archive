@@ -15,6 +15,13 @@
       "when": 1781016000000,
       "tag": "0001_add_coin_demonetization_status",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781077609966,
+      "tag": "0002_curved_sumo",
+      "breakpoints": true
     }
   ]
 }

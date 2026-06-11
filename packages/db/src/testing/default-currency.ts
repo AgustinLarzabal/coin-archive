@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm"
 import { currency, type Currency } from "../schema/currency"
+import { getOrCreateDefaultEntity } from "./default-entity"
 
 type Database = typeof import("../client").db
 
@@ -12,20 +12,10 @@ export const defaultCurrencyValues = {
 export async function getOrCreateDefaultCurrency(
   database: Database
 ): Promise<Currency> {
-  const [existingCurrency] = await database
-    .select()
-    .from(currency)
-    .where(eq(currency.code, defaultCurrencyValues.code))
-    .limit(1)
-
-  if (existingCurrency) {
-    return existingCurrency
-  }
-
-  const [createdCurrency] = await database
-    .insert(currency)
-    .values(defaultCurrencyValues)
-    .returning()
-
-  return createdCurrency
+  return getOrCreateDefaultEntity(
+    database,
+    currency,
+    currency.code,
+    defaultCurrencyValues
+  )
 }

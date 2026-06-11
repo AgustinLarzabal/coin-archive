@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm"
 import { distribution, type Distribution } from "../schema/distribution"
+import { getOrCreateDefaultEntity } from "./default-entity"
 
 type Database = typeof import("../client").db
 
@@ -11,20 +11,10 @@ export const defaultDistributionValues = {
 export async function getOrCreateDefaultDistribution(
   database: Database
 ): Promise<Distribution> {
-  const [existingDistribution] = await database
-    .select()
-    .from(distribution)
-    .where(eq(distribution.code, defaultDistributionValues.code))
-    .limit(1)
-
-  if (existingDistribution) {
-    return existingDistribution
-  }
-
-  const [createdDistribution] = await database
-    .insert(distribution)
-    .values(defaultDistributionValues)
-    .returning()
-
-  return createdDistribution
+  return getOrCreateDefaultEntity(
+    database,
+    distribution,
+    distribution.code,
+    defaultDistributionValues
+  )
 }

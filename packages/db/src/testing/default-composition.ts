@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm"
 import { composition, type Composition } from "../schema/composition"
+import { getOrCreateDefaultEntity } from "./default-entity"
 
 type Database = typeof import("../client").db
 
@@ -12,20 +12,10 @@ export const defaultCompositionValues = {
 export async function getOrCreateDefaultComposition(
   database: Database
 ): Promise<Composition> {
-  const [existingComposition] = await database
-    .select()
-    .from(composition)
-    .where(eq(composition.code, defaultCompositionValues.code))
-    .limit(1)
-
-  if (existingComposition) {
-    return existingComposition
-  }
-
-  const [createdComposition] = await database
-    .insert(composition)
-    .values(defaultCompositionValues)
-    .returning()
-
-  return createdComposition
+  return getOrCreateDefaultEntity(
+    database,
+    composition,
+    composition.code,
+    defaultCompositionValues
+  )
 }

@@ -216,6 +216,10 @@ _Avoid_: Free-text image search, generated tag filter, issuer-style descendant f
 The globally unique, stable, human-readable catalogue key for an issuer, used to identify the issuer in filters, URLs, imports, and administrative lookup. It identifies the issuer itself rather than encoding the issuer's parent grouping path. It uses lowercase slug-style text and is distinct from the issuer's display name. It should not be reused for a different issuer.
 _Avoid_: Display name, temporary label, parent path
 
+**Issuer ISO Code**:
+The required currently assigned official two-letter uppercase ISO 3166-1 alpha-2 country code associated with an issuer. It is distinct from the issuer's catalogue code and may be shared by multiple issuers.
+_Avoid_: Issuer code, lowercase slug, subdivision code, alpha-3 code, retired country code, exceptional reservation, optional country identifier, unique issuer identifier
+
 **Issuer Grouping**:
 A catalogue relationship that places a more specific issuer under a broader issuer for browsing and filtering. An issuer may have many child issuers, but at most one parent issuer. Issuer groupings must not contain cycles. The relationship does not necessarily mean the child issuer was legally, politically, or historically subordinate to the parent issuer.
 _Avoid_: Legal subordination, political containment, circular grouping

@@ -11,6 +11,7 @@ import {
   coinSearchSchema,
   getCoinListLoaderDeps,
 } from "../lib/coin-search"
+import { buildJsonInspectorQueries } from "../lib/json-inspector-queries"
 
 const coinJsonLimit = 1_000
 
@@ -46,7 +47,7 @@ function RouteComponent() {
   const { activeCoinFilters, coins, coinLimit, isTruncated } =
     Route.useLoaderData()
   const filterOptions = rootRouteApi.useLoaderData()
-  const queries = {
+  const queries = buildJsonInspectorQueries({
     coins,
     issuers: filterOptions.issuers,
     rulers: filterOptions.rulers,
@@ -62,7 +63,7 @@ function RouteComponent() {
     shapes: filterOptions.shapes,
     techniques: filterOptions.techniques,
     themes: filterOptions.themes,
-  }
+  })
   const queryEntries = Object.entries(queries)
 
   return (

@@ -3,6 +3,12 @@ import postgres from "postgres"
 
 export function createDatabaseClient(databaseUrl: string) {
   return postgres(databaseUrl, {
+    connection: {
+      // This catalog app issues wide, low-row-count queries. PostgreSQL JIT adds
+      // over a second of compilation overhead here while saving almost no
+      // execution time, so disable it for these sessions.
+      jit: "off",
+    },
     prepare: false,
   })
 }

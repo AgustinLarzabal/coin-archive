@@ -886,10 +886,13 @@ describe("issuer schema constraints", () => {
   })
 
   it("requires issuer ISO Codes and accepts uppercase two-letter values", async () => {
+    const issuerCode = "roman-republic"
+    const issuerName = "Roman Republic"
+
     await expect(
-      db
-        .insert(issuer)
-        .values({ code: "roman-republic", name: "Roman Republic" } as never)
+      db.execute(
+        sql`insert into "issuer" ("code", "name") values (${issuerCode}, ${issuerName})`
+      )
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
         code: "23502",

@@ -227,9 +227,10 @@ export type CoinCodeNamedRecord = {
   updatedAt: Date
 }
 
-export type CoinIssuerParent = CoinCodeNamedRecord & {
+type CoinIssuerRecord = CoinCodeNamedRecord & {
   isoCode: string
 }
+export type CoinIssuerParent = CoinIssuerRecord
 export type CoinDistribution = CoinCodeNamedRecord
 export type CoinOrientation = CoinCodeNamedRecord
 export type CoinShape = CoinCodeNamedRecord
@@ -279,8 +280,7 @@ export type CoinMeasurements = {
   thickness: number | null
 }
 
-export type CoinIssuer = CoinCodeNamedRecord & {
-  isoCode: string
+export type CoinIssuer = CoinIssuerRecord & {
   parent: CoinIssuerParent | null
 }
 
@@ -425,6 +425,34 @@ function mapOptionalCodeNamedRecord({
     createdAt,
     updatedAt,
   })
+}
+
+function mapIssuerRecord({
+  isoCode,
+  ...record
+}: CoinIssuerRecord): CoinIssuerRecord {
+  return {
+    ...mapCodeNamedRecord(record),
+    isoCode,
+  }
+}
+
+function mapOptionalIssuerRecord({
+  isoCode,
+  ...record
+}: OptionalCoinCodeNamedColumns & {
+  isoCode?: string | null
+}): CoinIssuerRecord | null {
+  const codeNamedRecord = mapOptionalCodeNamedRecord(record)
+
+  if (!codeNamedRecord || !isoCode) {
+    return null
+  }
+
+  return {
+    ...codeNamedRecord,
+    isoCode,
+  }
 }
 
 function mapOrientation({
@@ -607,22 +635,14 @@ function mapParentIssuer({
   parentIssuerCreatedAt,
   parentIssuerUpdatedAt,
 }: GetCoinsParentIssuerColumns): CoinIssuerParent | null {
-  const parentIssuer = mapOptionalCodeNamedRecord({
+  return mapOptionalIssuerRecord({
     id: parentIssuerId,
     code: parentIssuerCode,
+    isoCode: parentIssuerIsoCode,
     name: parentIssuerName,
     createdAt: parentIssuerCreatedAt,
     updatedAt: parentIssuerUpdatedAt,
   })
-
-  if (!parentIssuer || parentIssuerIsoCode === null) {
-    return null
-  }
-
-  return {
-    ...parentIssuer,
-    isoCode: parentIssuerIsoCode,
-  }
 }
 
 function mapIssuer({
@@ -635,12 +655,14 @@ function mapIssuer({
   ...row
 }: GetCoinsIssuerColumns): CoinIssuer {
   return {
-    id: issuerId,
-    code: issuerCode,
-    isoCode: issuerIsoCode,
-    name: issuerName,
-    createdAt: issuerCreatedAt,
-    updatedAt: issuerUpdatedAt,
+    ...mapIssuerRecord({
+      id: issuerId,
+      code: issuerCode,
+      isoCode: issuerIsoCode,
+      name: issuerName,
+      createdAt: issuerCreatedAt,
+      updatedAt: issuerUpdatedAt,
+    }),
     parent: mapParentIssuer(row),
   }
 }

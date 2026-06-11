@@ -195,7 +195,7 @@ const measurementFilterNames = [
   "maxThickness",
 ] as const
 
-type OptionWithCode = { code: string }
+export type OptionWithCode = { code: string }
 type CatalogueOptionLabel = Pick<CatalogueOption, "title" | "code">
 type CompositionOptionLabel = Pick<CompositionOption, "name">
 type NamedCodeOptionLabel = { name: string; code: string }
@@ -255,7 +255,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   }
 }
 
-function findSelectedCodeOption<T extends OptionWithCode>(
+export function findSelectedCodeOption<T extends OptionWithCode>(
   options: ReadonlyArray<T>,
   selectedCode: string | undefined
 ): T | null {
@@ -272,76 +272,6 @@ function findSelectedCodeOption<T extends OptionWithCode>(
   )
 }
 
-export const findSelectedCatalogueOption: <T extends OptionWithCode>(
-  catalogues: T[],
-  selectedCatalogueCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedCompositionOption: <T extends OptionWithCode>(
-  compositions: T[],
-  selectedCompositionCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedCurrencyOption: <T extends OptionWithCode>(
-  currencies: T[],
-  selectedCurrencyCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedDistributionOption: <T extends OptionWithCode>(
-  distributions: T[],
-  selectedDistributionCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedEdgeOption: <T extends OptionWithCode>(
-  edges: T[],
-  selectedEdgeCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedEngraverOption: <T extends OptionWithCode>(
-  engravers: T[],
-  selectedEngraverCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedIssuerOption: <T extends OptionWithCode>(
-  issuers: T[],
-  selectedIssuerCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedMintOption: <T extends OptionWithCode>(
-  mints: T[],
-  selectedMintCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedOrientationOption: <T extends OptionWithCode>(
-  orientations: T[],
-  selectedOrientationCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedRimOption: <T extends OptionWithCode>(
-  rims: T[],
-  selectedRimCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedRulerOption: <T extends OptionWithCode>(
-  rulers: T[],
-  selectedRulerCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedShapeOption: <T extends OptionWithCode>(
-  shapes: T[],
-  selectedShapeCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedTechniqueOption: <T extends OptionWithCode>(
-  techniques: T[],
-  selectedTechniqueCode: string | undefined
-) => T | null = findSelectedCodeOption
-
-export const findSelectedThemeOption: <T extends OptionWithCode>(
-  themes: T[],
-  selectedThemeCode: string | undefined
-) => T | null = findSelectedCodeOption
-
 export type DemonetizationFilterOption = {
   code: DemonetizationFilterValue
   name: string
@@ -353,15 +283,6 @@ export const demonetizationFilterOptions: ReadonlyArray<DemonetizationFilterOpti
     { code: "not-demonetized", name: "Not demonetized" },
     { code: "unknown", name: "Unknown" },
   ]
-
-export function findSelectedDemonetizationFilterOption(
-  selectedDemonetization: DemonetizationFilterValue | undefined
-): DemonetizationFilterOption | null {
-  return findSelectedCodeOption(
-    demonetizationFilterOptions,
-    selectedDemonetization
-  )
-}
 
 export function updateCoinSearchFilter<
   TFilterName extends CoinSearchFilterName,

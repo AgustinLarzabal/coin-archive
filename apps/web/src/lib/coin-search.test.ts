@@ -7,21 +7,7 @@ import {
   applyMeasurementRangeSearch,
   coinSearchSchema,
   demonetizationFilterOptions,
-  findSelectedDemonetizationFilterOption,
-  findSelectedCatalogueOption,
-  findSelectedCompositionOption,
-  findSelectedCurrencyOption,
-  findSelectedDistributionOption,
-  findSelectedEdgeOption,
-  findSelectedEngraverOption,
-  findSelectedIssuerOption,
-  findSelectedMintOption,
-  findSelectedOrientationOption,
-  findSelectedRimOption,
-  findSelectedRulerOption,
-  findSelectedShapeOption,
-  findSelectedTechniqueOption,
-  findSelectedThemeOption,
+  findSelectedCodeOption,
   formatMintNames,
   formatIssueYearRangeLabel,
   formatMeasurementLabel,
@@ -822,15 +808,29 @@ describe("getCoinListLoaderDeps", () => {
   })
 })
 
-describe("findSelectedDemonetizationFilterOption", () => {
-  it("returns the selected explicit homepage demonetization option", () => {
-    expect(
-      findSelectedDemonetizationFilterOption("not-demonetized")
-    ).toStrictEqual(demonetizationFilterOptions[1])
+describe("findSelectedCodeOption", () => {
+  const spain = {
+    code: "spain",
+    name: "Spain",
+  }
+
+  it("matches the selected code case-insensitively", () => {
+    expect(findSelectedCodeOption([spain], "SPAIN")).toStrictEqual(spain)
   })
 
-  it("returns null when no demonetization filter is selected", () => {
-    expect(findSelectedDemonetizationFilterOption(undefined)).toBeNull()
+  it("returns null when the selected code does not match", () => {
+    expect(findSelectedCodeOption([spain], "france")).toBeNull()
+  })
+
+  it("returns null when the selected code is undefined or empty", () => {
+    expect(findSelectedCodeOption([spain], undefined)).toBeNull()
+    expect(findSelectedCodeOption([spain], "")).toBeNull()
+  })
+
+  it("returns the selected explicit homepage demonetization option", () => {
+    expect(
+      findSelectedCodeOption(demonetizationFilterOptions, "not-demonetized")
+    ).toStrictEqual(demonetizationFilterOptions[1])
   })
 })
 
@@ -982,221 +982,6 @@ describe("getRimOptionLabel", () => {
         name: "Raised, both sides",
       })
     ).toBe("Raised, both sides · raised-both-sides")
-  })
-})
-
-describe("findSelectedCatalogueOption", () => {
-  it("matches the selected catalogue code case-insensitively", () => {
-    const standardCatalog = {
-      code: "KM",
-      title: "Standard Catalog of World Coins",
-    }
-
-    expect(findSelectedCatalogueOption([standardCatalog], "km")).toStrictEqual(
-      standardCatalog
-    )
-  })
-})
-
-describe("findSelectedDistributionOption", () => {
-  it("matches the selected distribution code case-insensitively", () => {
-    const circulatingCommemorative = {
-      code: "circulating-commemorative",
-      name: "Circulating commemorative",
-    }
-
-    expect(
-      findSelectedDistributionOption(
-        [circulatingCommemorative],
-        "CIRCULATING-COMMEMORATIVE"
-      )
-    ).toStrictEqual(circulatingCommemorative)
-  })
-})
-
-describe("findSelectedEdgeOption", () => {
-  it("matches the selected edge code case-insensitively", () => {
-    const reeded = {
-      code: "reeded",
-      name: "Reeded",
-    }
-
-    expect(findSelectedEdgeOption([reeded], "REEDED")).toStrictEqual(reeded)
-  })
-})
-
-describe("findSelectedEngraverOption", () => {
-  it("matches the selected engraver code case-insensitively", () => {
-    const georgiosStamatopoulos = {
-      code: "georgios-stamatopoulos",
-      name: "Georgios Stamatopoulos",
-    }
-
-    expect(
-      findSelectedEngraverOption(
-        [georgiosStamatopoulos],
-        "GEORGIOS-STAMATOPOULOS"
-      )
-    ).toStrictEqual(georgiosStamatopoulos)
-  })
-})
-
-describe("findSelectedIssuerOption", () => {
-  it("matches the selected issuer code case-insensitively", () => {
-    const spain = {
-      code: "spain",
-      name: "Spain",
-    }
-
-    expect(findSelectedIssuerOption([spain], "SPAIN")).toStrictEqual(spain)
-  })
-
-  it("returns null when the selected issuer code does not match", () => {
-    const spain = {
-      code: "spain",
-      name: "Spain",
-    }
-
-    expect(findSelectedIssuerOption([spain], "france")).toBeNull()
-  })
-
-  it("returns null when the selected issuer code is undefined or empty", () => {
-    const spain = {
-      code: "spain",
-      name: "Spain",
-    }
-
-    expect(findSelectedIssuerOption([spain], undefined)).toBeNull()
-    expect(findSelectedIssuerOption([spain], "")).toBeNull()
-  })
-})
-
-describe("findSelectedCompositionOption", () => {
-  it("matches the selected composition code case-insensitively", () => {
-    const silver900 = {
-      code: "silver-900",
-      name: "Silver (.900)",
-    }
-
-    expect(
-      findSelectedCompositionOption([silver900], "SILVER-900")
-    ).toStrictEqual(silver900)
-  })
-})
-
-describe("findSelectedCurrencyOption", () => {
-  it("matches the selected currency code case-insensitively", () => {
-    const euro = {
-      code: "euro",
-      fullName: "Euro (2002-date)",
-      name: "Euro",
-    }
-
-    expect(findSelectedCurrencyOption([euro], "EURO")).toStrictEqual(euro)
-  })
-})
-
-describe("findSelectedMintOption", () => {
-  it("matches the selected mint code case-insensitively", () => {
-    const royalMintOfMadrid = {
-      code: "royal-mint-of-madrid",
-      name: "Royal Mint of Madrid",
-    }
-
-    expect(
-      findSelectedMintOption([royalMintOfMadrid], "ROYAL-MINT-OF-MADRID")
-    ).toStrictEqual(royalMintOfMadrid)
-  })
-})
-
-describe("findSelectedOrientationOption", () => {
-  it("matches the selected orientation code case-insensitively", () => {
-    const coinAlignment = {
-      code: "coin-alignment",
-      name: "Coin alignment",
-    }
-
-    expect(
-      findSelectedOrientationOption([coinAlignment], "COIN-ALIGNMENT")
-    ).toStrictEqual(coinAlignment)
-  })
-})
-
-describe("findSelectedThemeOption", () => {
-  it("matches the selected theme code case-insensitively", () => {
-    const map = {
-      code: "map",
-      name: "Map",
-    }
-
-    expect(findSelectedThemeOption([map], "MAP")).toStrictEqual(map)
-  })
-})
-
-describe("findSelectedTechniqueOption", () => {
-  it("matches the selected technique code case-insensitively", () => {
-    const milled = {
-      code: "milled",
-      name: "Milled",
-    }
-
-    expect(findSelectedTechniqueOption([milled], "MILLED")).toStrictEqual(
-      milled
-    )
-  })
-})
-
-describe("findSelectedShapeOption", () => {
-  it("matches the selected shape code case-insensitively", () => {
-    const round = {
-      code: "round",
-      name: "Round",
-    }
-
-    expect(findSelectedShapeOption([round], "ROUND")).toStrictEqual(round)
-  })
-})
-
-describe("findSelectedRulerOption", () => {
-  it("matches the selected ruler code case-insensitively", () => {
-    const felipe = {
-      code: "felipe-vi",
-      name: "Felipe VI",
-    }
-
-    expect(findSelectedRulerOption([felipe], "FELIPE-VI")).toStrictEqual(felipe)
-  })
-
-  it("returns null when the selected ruler code does not match", () => {
-    const felipe = {
-      code: "felipe-vi",
-      name: "Felipe VI",
-    }
-
-    expect(findSelectedRulerOption([felipe], "juan-carlos-i")).toBeNull()
-  })
-
-  it("returns null when the selected ruler code is undefined or empty", () => {
-    const felipe = {
-      code: "felipe-vi",
-      name: "Felipe VI",
-    }
-
-    expect(findSelectedRulerOption([felipe], undefined)).toBeNull()
-    expect(findSelectedRulerOption([felipe], "")).toBeNull()
-  })
-})
-
-describe("findSelectedRimOption", () => {
-  it("matches the selected rim code case-insensitively", () => {
-    const raisedBothSides = {
-      code: "raised-both-sides",
-      name: "Raised, both sides",
-    }
-
-    expect(
-      findSelectedRimOption([raisedBothSides], "RAISED-BOTH-SIDES")
-    ).toStrictEqual(raisedBothSides)
   })
 })
 

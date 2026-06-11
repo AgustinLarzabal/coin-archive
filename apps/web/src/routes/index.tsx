@@ -1,44 +1,14 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import type { FormEvent } from "react"
-import type {
-  CatalogueOption,
-  CoinMeasurements,
-  CompositionOption,
-  CurrencyOption,
-  DistributionOption,
-  EdgeOption,
-  EngraverOption,
-  IssuerOption,
-  MintOption,
-  OrientationOption,
-  RimOption,
-  RulerOption,
-  ShapeOption,
-  TechniqueOption,
-  ThemeOption,
-} from "@workspace/db"
+import type { CoinMeasurements } from "@workspace/db"
 import {
   applyFaceValueRangeSearch,
   applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
-  findSelectedDemonetizationFilterOption,
-  findSelectedCatalogueOption,
-  findSelectedCompositionOption,
-  findSelectedCurrencyOption,
-  findSelectedDistributionOption,
-  findSelectedEdgeOption,
-  findSelectedEngraverOption,
-  findSelectedIssuerOption,
-  findSelectedMintOption,
-  findSelectedOrientationOption,
-  findSelectedRimOption,
-  findSelectedRulerOption,
-  findSelectedShapeOption,
-  findSelectedTechniqueOption,
-  findSelectedThemeOption,
+  findSelectedCodeOption,
   formatMintNames,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
@@ -47,33 +17,18 @@ import {
 } from "../lib/coin-search"
 import type {
   CoinSearch,
-  DemonetizationFilterOption,
   FaceValueFilterName,
   MeasurementFilterName,
   PositiveNumberFilterName,
   PositiveNumberFilterValue,
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
+import { coinCodeFilterConfigs } from "../lib/coin-filter-configs"
 import { CoinListItem } from "../components/coin-list-item"
-import { CatalogueFilterCombobox } from "../components/catalogue-filter-combobox"
-import { CompositionFilterCombobox } from "../components/composition-filter-combobox"
-import { CurrencyFilterCombobox } from "../components/currency-filter-combobox"
-import { DemonetizationFilterCombobox } from "../components/demonetization-filter-combobox"
-import { DistributionFilterCombobox } from "../components/distribution-filter-combobox"
-import { EdgeFilterCombobox } from "../components/edge-filter-combobox"
-import { EngraverFilterCombobox } from "../components/engraver-filter-combobox"
-import { IssuerFilterCombobox } from "../components/issuer-filter-combobox"
-import { MintFilterCombobox } from "../components/mint-filter-combobox"
-import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
-import { RimFilterCombobox } from "../components/rim-filter-combobox"
-import { RulerFilterCombobox } from "../components/ruler-filter-combobox"
-import { ShapeFilterCombobox } from "../components/shape-filter-combobox"
-import { TechniqueFilterCombobox } from "../components/technique-filter-combobox"
-import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
+import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
 
 import { Input } from "@workspace/ui/components/input"
 
-type OptionWithCode = { code: string }
 type RangeInputField<TName extends string> = Readonly<{
   ariaLabel: string
   name: TName
@@ -180,102 +135,9 @@ export const Route = createFileRoute("/")({
 
 function App() {
   const { coins } = Route.useLoaderData()
-  const {
-    catalogues,
-    compositions,
-    currencies,
-    distributions,
-    edges,
-    engravers,
-    issuers,
-    mints,
-    orientations,
-    rims,
-    rulers,
-    shapes,
-    techniques,
-    themes,
-  } = rootRouteApi.useLoaderData()
-  const {
-    catalogue: selectedCatalogueCode,
-    composition: selectedCompositionCode,
-    currency: selectedCurrencyCode,
-    demonetization: selectedDemonetization,
-    distribution: selectedDistributionCode,
-    edge: selectedEdgeCode,
-    engraver: selectedEngraverCode,
-    fromYear: selectedFromYear,
-    issuer: selectedIssuerCode,
-    maxDiameter: selectedMaxDiameter,
-    maxThickness: selectedMaxThickness,
-    maxWeight: selectedMaxWeight,
-    maxValue: selectedMaxValue,
-    mint: selectedMintCode,
-    orientation: selectedOrientationCode,
-    rim: selectedRimCode,
-    minDiameter: selectedMinDiameter,
-    minThickness: selectedMinThickness,
-    minWeight: selectedMinWeight,
-    minValue: selectedMinValue,
-    referenceNumber: selectedReferenceNumber,
-    ruler: selectedRulerCode,
-    shape: selectedShapeCode,
-    technique: selectedTechniqueCode,
-    theme: selectedThemeCode,
-    toYear: selectedToYear,
-  } = Route.useSearch()
+  const filterOptions = rootRouteApi.useLoaderData()
+  const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const selectedMeasurementRange = {
-    minWeight: selectedMinWeight,
-    maxWeight: selectedMaxWeight,
-    minDiameter: selectedMinDiameter,
-    maxDiameter: selectedMaxDiameter,
-    minThickness: selectedMinThickness,
-    maxThickness: selectedMaxThickness,
-  } satisfies Record<MeasurementFilterName, number | undefined>
-  const selectedFaceValueRange = {
-    minValue: selectedMinValue,
-    maxValue: selectedMaxValue,
-  } satisfies Record<FaceValueFilterName, number | undefined>
-
-  const selectedCatalogue = findSelectedCatalogueOption(
-    catalogues,
-    selectedCatalogueCode
-  )
-  const selectedComposition = findSelectedCompositionOption(
-    compositions,
-    selectedCompositionCode
-  )
-  const selectedCurrency = findSelectedCurrencyOption(
-    currencies,
-    selectedCurrencyCode
-  )
-  const selectedDistribution = findSelectedDistributionOption(
-    distributions,
-    selectedDistributionCode
-  )
-  const selectedDemonetizationOption = findSelectedDemonetizationFilterOption(
-    selectedDemonetization
-  )
-  const selectedEdge = findSelectedEdgeOption(edges, selectedEdgeCode)
-  const selectedEngraver = findSelectedEngraverOption(
-    engravers,
-    selectedEngraverCode
-  )
-  const selectedMint = findSelectedMintOption(mints, selectedMintCode)
-  const selectedOrientation = findSelectedOrientationOption(
-    orientations,
-    selectedOrientationCode
-  )
-  const selectedRim = findSelectedRimOption(rims, selectedRimCode)
-  const selectedShape = findSelectedShapeOption(shapes, selectedShapeCode)
-  const selectedTechnique = findSelectedTechniqueOption(
-    techniques,
-    selectedTechniqueCode
-  )
-  const selectedTheme = findSelectedThemeOption(themes, selectedThemeCode)
-  const selectedIssuer = findSelectedIssuerOption(issuers, selectedIssuerCode)
-  const selectedRuler = findSelectedRulerOption(rulers, selectedRulerCode)
 
   async function updateSearchFilter(
     filterName: TextCoinSearchFilterName,
@@ -287,33 +149,6 @@ function App() {
         updateCoinSearchFilter(currentSearch, filterName, filterValue),
     })
   }
-
-  function createSelectHandler<T extends OptionWithCode>(
-    filterName: TextCoinSearchFilterName
-  ) {
-    return async (option: T | null) =>
-      updateSearchFilter(filterName, option?.code)
-  }
-
-  const selectIssuer = createSelectHandler<IssuerOption>("issuer")
-  const selectCatalogue = createSelectHandler<CatalogueOption>("catalogue")
-  const selectComposition =
-    createSelectHandler<CompositionOption>("composition")
-  const selectCurrency = createSelectHandler<CurrencyOption>("currency")
-  const selectDistribution =
-    createSelectHandler<DistributionOption>("distribution")
-  const selectDemonetization =
-    createSelectHandler<DemonetizationFilterOption>("demonetization")
-  const selectEdge = createSelectHandler<EdgeOption>("edge")
-  const selectEngraver = createSelectHandler<EngraverOption>("engraver")
-  const selectMint = createSelectHandler<MintOption>("mint")
-  const selectOrientation =
-    createSelectHandler<OrientationOption>("orientation")
-  const selectRim = createSelectHandler<RimOption>("rim")
-  const selectRuler = createSelectHandler<RulerOption>("ruler")
-  const selectShape = createSelectHandler<ShapeOption>("shape")
-  const selectTechnique = createSelectHandler<TechniqueOption>("technique")
-  const selectTheme = createSelectHandler<ThemeOption>("theme")
 
   async function updateReferenceNumberFromForm(
     event: FormEvent<HTMLFormElement>
@@ -381,94 +216,19 @@ function App() {
 
   return (
     <div>
-      <IssuerFilterCombobox
-        issuers={issuers}
-        onValueChange={selectIssuer}
-        selectedIssuer={selectedIssuer}
-      />
+      {coinCodeFilterConfigs.map(({ name, getItems, ...comboboxProps }) => {
+        const items = getItems(filterOptions)
 
-      <RulerFilterCombobox
-        onValueChange={selectRuler}
-        rulers={rulers}
-        selectedRuler={selectedRuler}
-      />
-
-      <CatalogueFilterCombobox
-        catalogues={catalogues}
-        onValueChange={selectCatalogue}
-        selectedCatalogue={selectedCatalogue}
-      />
-
-      <CompositionFilterCombobox
-        compositions={compositions}
-        onValueChange={selectComposition}
-        selectedComposition={selectedComposition}
-      />
-
-      <CurrencyFilterCombobox
-        currencies={currencies}
-        onValueChange={selectCurrency}
-        selectedCurrency={selectedCurrency}
-      />
-
-      <DistributionFilterCombobox
-        distributions={distributions}
-        onValueChange={selectDistribution}
-        selectedDistribution={selectedDistribution}
-      />
-
-      <DemonetizationFilterCombobox
-        onValueChange={selectDemonetization}
-        selectedDemonetization={selectedDemonetizationOption}
-      />
-
-      <EdgeFilterCombobox
-        edges={edges}
-        onValueChange={selectEdge}
-        selectedEdge={selectedEdge}
-      />
-
-      <EngraverFilterCombobox
-        engravers={engravers}
-        onValueChange={selectEngraver}
-        selectedEngraver={selectedEngraver}
-      />
-
-      <MintFilterCombobox
-        mints={mints}
-        onValueChange={selectMint}
-        selectedMint={selectedMint}
-      />
-
-      <OrientationFilterCombobox
-        onValueChange={selectOrientation}
-        orientations={orientations}
-        selectedOrientation={selectedOrientation}
-      />
-
-      <ShapeFilterCombobox
-        onValueChange={selectShape}
-        selectedShape={selectedShape}
-        shapes={shapes}
-      />
-
-      <RimFilterCombobox
-        onValueChange={selectRim}
-        rims={rims}
-        selectedRim={selectedRim}
-      />
-
-      <TechniqueFilterCombobox
-        onValueChange={selectTechnique}
-        selectedTechnique={selectedTechnique}
-        techniques={techniques}
-      />
-
-      <ThemeFilterCombobox
-        onValueChange={selectTheme}
-        selectedTheme={selectedTheme}
-        themes={themes}
-      />
+        return (
+          <NamedCodeFilterCombobox
+            key={name}
+            items={items}
+            onValueChange={(option) => updateSearchFilter(name, option?.code)}
+            selectedItem={findSelectedCodeOption(items, search[name])}
+            {...comboboxProps}
+          />
+        )
+      })}
 
       <form
         className="flex items-end gap-2 py-2"
@@ -477,8 +237,8 @@ function App() {
         <Input
           aria-label="Filter by reference number"
           className="md:max-w-40"
-          defaultValue={selectedReferenceNumber ?? ""}
-          key={`reference-number-${selectedReferenceNumber ?? ""}`}
+          defaultValue={search.referenceNumber ?? ""}
+          key={`reference-number-${search.referenceNumber ?? ""}`}
           name="referenceNumber"
           placeholder="Reference number"
         />
@@ -496,16 +256,16 @@ function App() {
       >
         <Input
           aria-label="Filter from issue year"
-          defaultValue={selectedFromYear?.toString() ?? ""}
-          key={`from-year-${selectedFromYear ?? ""}`}
+          defaultValue={search.fromYear?.toString() ?? ""}
+          key={`from-year-${search.fromYear ?? ""}`}
           name="fromYear"
           placeholder="From year"
           type="number"
         />
         <Input
           aria-label="Filter to issue year"
-          defaultValue={selectedToYear?.toString() ?? ""}
-          key={`to-year-${selectedToYear ?? ""}`}
+          defaultValue={search.toYear?.toString() ?? ""}
+          key={`to-year-${search.toYear ?? ""}`}
           name="toYear"
           placeholder="To year"
           type="number"
@@ -525,8 +285,8 @@ function App() {
         {faceValueRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
           <Input
             aria-label={ariaLabel}
-            defaultValue={selectedFaceValueRange[name]?.toString() ?? ""}
-            key={`${name}-${selectedFaceValueRange[name] ?? ""}`}
+            defaultValue={search[name]?.toString() ?? ""}
+            key={`${name}-${search[name] ?? ""}`}
             name={name}
             placeholder={placeholder}
             step="0.000001"
@@ -548,8 +308,8 @@ function App() {
         {measurementRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
           <Input
             aria-label={ariaLabel}
-            defaultValue={selectedMeasurementRange[name]?.toString() ?? ""}
-            key={`${name}-${selectedMeasurementRange[name] ?? ""}`}
+            defaultValue={search[name]?.toString() ?? ""}
+            key={`${name}-${search[name] ?? ""}`}
             name={name}
             placeholder={placeholder}
             step="0.01"

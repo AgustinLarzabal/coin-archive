@@ -99,6 +99,58 @@ describe("getCoins integration", () => {
     ])
   })
 
+  it("exposes issuer ISO Code on direct and parent issuer Coin results", async () => {
+    const ancientWorld = await createIssuer({
+      code: "ancient-world",
+      isoCode: "XZ",
+      name: "Ancient World",
+    })
+    const athens = await createIssuer({
+      code: "athens",
+      isoCode: "GR",
+      name: "Athens",
+      parentIssuerId: ancientWorld.id,
+    })
+    const spain = await createIssuer({
+      code: "spain",
+      isoCode: "ES",
+      name: "Spain",
+    })
+
+    await createCoin({
+      title: "Athenian Owl",
+      issuerId: athens.id,
+      createdAt: new Date("2026-03-02T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Spanish Euro",
+      issuerId: spain.id,
+      createdAt: new Date("2026-03-01T00:00:00.000Z"),
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        title: "Athenian Owl",
+        issuer: {
+          code: "athens",
+          isoCode: "GR",
+          parent: {
+            code: "ancient-world",
+            isoCode: "XZ",
+          },
+        },
+      },
+      {
+        title: "Spanish Euro",
+        issuer: {
+          code: "spain",
+          isoCode: "ES",
+          parent: null,
+        },
+      },
+    ])
+  })
+
   it("returns tri-state Demonetization Status without inferring false from unknown records", async () => {
     const spain = await createIssuer({
       code: "spain",

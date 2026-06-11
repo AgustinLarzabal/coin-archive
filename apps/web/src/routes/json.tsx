@@ -6,23 +6,26 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import { coinSearchSchema, getCoinListLoaderDeps } from "../lib/coin-search"
+import {
+  coinListInputSchema,
+  coinSearchSchema,
+  getCoinListLoaderDeps,
+} from "../lib/coin-search"
 
 const fullCoinJsonLimit = 2_147_483_647
 
 const getJsonQueryData = createServerFn({ method: "GET" })
-  .inputValidator(coinSearchSchema)
+  .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
     const { getCoins } = await import("@workspace/db")
 
-    const coinFilters = getCoinListLoaderDeps(data)
     const coins = await getCoins({
       limit: fullCoinJsonLimit,
-      ...coinFilters,
+      ...data,
     })
 
     return {
-      activeCoinFilters: coinFilters,
+      activeCoinFilters: data,
       coins,
     }
   })
@@ -31,7 +34,7 @@ const rootRouteApi = getRouteApi("__root__")
 
 export const Route = createFileRoute("/json")({
   validateSearch: coinSearchSchema,
-  loaderDeps: ({ search }) => search,
+  loaderDeps: ({ search }) => getCoinListLoaderDeps(search),
   loader: ({ deps }) => getJsonQueryData({ data: deps }),
   component: RouteComponent,
 })

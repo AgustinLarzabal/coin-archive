@@ -469,6 +469,10 @@ export function getRulerOptionLabel(ruler: RulerOptionLabel) {
 }
 
 export function formatMintNames(mints: CoinMintLabel[]) {
+  if (mints.length === 0) {
+    return null
+  }
+
   return mints.map(({ name }) => name).join(", ")
 }
 

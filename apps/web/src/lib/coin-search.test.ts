@@ -393,6 +393,10 @@ describe("applyIssueYearRangeSearch", () => {
 })
 
 describe("formatMintNames", () => {
+  it("returns null when a coin has no mint attributions", () => {
+    expect(formatMintNames([])).toBeNull()
+  })
+
   it("joins visible mint names for homepage display", () => {
     expect(
       formatMintNames([

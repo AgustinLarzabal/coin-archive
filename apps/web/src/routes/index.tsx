@@ -327,7 +327,7 @@ function App() {
       <ul className="space-y-4 py-4">
         {coins.map((coin) => {
           const measurementSummary = formatCoinMeasurements(coin.measurements)
-          const mintNames = coin.mints.length > 0 ? formatMintNames(coin.mints) : null
+          const mintNames = formatMintNames(coin.mints)
 
           return (
             <CoinListItem

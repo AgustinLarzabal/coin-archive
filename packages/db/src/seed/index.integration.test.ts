@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   db,
   getCoins,
+  getIssuers,
   getCurrencies,
   getMints,
   getOrientations,
@@ -179,6 +180,16 @@ describe("seed integration", () => {
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
     await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
+    await expect(getIssuers()).resolves.toMatchObject([
+      { code: "argentina", isoCode: "AR", name: "Argentina" },
+      { code: "buenos-aires", isoCode: "AR", name: "Buenos Aires" },
+      {
+        code: "united-states",
+        isoCode: "US",
+        name: "United States of America",
+      },
+      { code: "spain", isoCode: "ES", name: "Spain" },
+    ])
     await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
     await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)
     await expect(getShapes()).resolves.toMatchObject(expectedSeededShapes)
@@ -197,6 +208,11 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("United States National Park Quarter")).toMatchObject({
       title: "United States National Park Quarter",
+      issuer: {
+        code: "united-states",
+        isoCode: "US",
+        name: "United States of America",
+      },
       mints: [
         {
           code: "denver-mint",
@@ -255,6 +271,16 @@ describe("seed integration", () => {
 
     expect(findSeededCoin("Buenos Aires Transition Half Real")).toMatchObject({
       title: "Buenos Aires Transition Half Real",
+      issuer: {
+        code: "buenos-aires",
+        isoCode: "AR",
+        name: "Buenos Aires",
+        parent: {
+          code: "argentina",
+          isoCode: "AR",
+          name: "Argentina",
+        },
+      },
       composition: {
         code: "silver-900",
         name: "Silver (.900)",

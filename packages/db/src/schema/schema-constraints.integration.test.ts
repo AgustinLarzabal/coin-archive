@@ -859,6 +859,7 @@ describe("issuer schema constraints", () => {
     await expectConstraintError(
       db.insert(issuer).values({
         code: "Roman Empire",
+        isoCode: "IT",
         name: "Roman Empire",
       }),
       issuerSchemaNames.codeSlugCheck,
@@ -869,16 +870,56 @@ describe("issuer schema constraints", () => {
   it("rejects duplicate issuer codes", async () => {
     await db.insert(issuer).values({
       code: "roman-empire",
+      isoCode: "IT",
       name: "Roman Empire",
     })
 
     await expectConstraintError(
       db.insert(issuer).values({
         code: "roman-empire",
+        isoCode: "IT",
         name: "Duplicate Roman Empire",
       }),
       issuerSchemaNames.codeUniqueIndex,
       "23505"
+    )
+  })
+
+  it("requires issuer ISO Codes and accepts uppercase two-letter values", async () => {
+    await expect(
+      db
+        .insert(issuer)
+        .values({ code: "roman-republic", name: "Roman Republic" } as never)
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23502",
+        column_name: "iso_code",
+      }),
+    })
+
+    await expect(
+      db.insert(issuer).values({
+        code: "roman-empire",
+        isoCode: "IT",
+        name: "Roman Empire",
+      })
+    ).resolves.toHaveLength(1)
+  })
+
+  it.each([
+    "ar",
+    "ARG",
+    "AR-B",
+    "A1",
+  ])("rejects malformed issuer ISO Codes: %s", async (isoCode) => {
+    await expectConstraintError(
+      db.insert(issuer).values({
+        code: `issuer-${isoCode.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        isoCode,
+        name: `Issuer ${isoCode}`,
+      }),
+      issuerSchemaNames.isoCodeFormatCheck,
+      "23514"
     )
   })
 
@@ -889,6 +930,7 @@ describe("issuer schema constraints", () => {
       db.insert(issuer).values({
         id: issuerId,
         code: "self-parented-issuer",
+        isoCode: "ZZ",
         name: "Self Parented Issuer",
         parentIssuerId: issuerId,
       }),

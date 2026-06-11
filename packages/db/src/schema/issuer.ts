@@ -13,6 +13,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core"
 export const issuerSchemaNames = {
   codeSlugCheck: "issuer_code_slug_check",
   codeUniqueIndex: "issuer_code_unique_idx",
+  isoCodeFormatCheck: "issuer_iso_code_format_check",
   parentIssuerIdIndex: "issuer_parent_issuer_id_idx",
   parentIssuerIdSelfCheck: "issuer_parent_issuer_id_self_check",
 } as const
@@ -30,6 +31,7 @@ export const issuer = pgTable(
       .default(sql`uuidv7()`),
     name: varchar("name", { length: 255 }).notNull(),
     code: varchar("code", { length: 255 }).notNull(),
+    isoCode: varchar("iso_code", { length: 2 }).notNull(),
     parentIssuerId: uuid("parent_issuer_id").references(
       (): AnyPgColumn => issuer.id,
       {
@@ -53,6 +55,10 @@ export const issuer = pgTable(
     check(
       issuerSchemaNames.codeSlugCheck,
       sql`${issuer.code} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`
+    ),
+    check(
+      issuerSchemaNames.isoCodeFormatCheck,
+      sql`${issuer.isoCode} ~ '^[A-Z]{2}$'`
     ),
   ]
 )

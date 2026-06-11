@@ -240,6 +240,7 @@ async function insertSeededIssuer(
     .values({
       name: seededIssuer.name,
       code: seededIssuer.code,
+      isoCode: seededIssuer.isoCode,
       parentIssuerId,
       createdAt: seededIssuer.createdAt,
       updatedAt: seededIssuer.updatedAt,

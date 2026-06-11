@@ -3,6 +3,7 @@ import type { CoinFaceSide } from "../schema/coin-face"
 type SeededIssuer = {
   name: string
   code: string
+  isoCode: string
   parentCode?: string
   createdAt: Date
   updatedAt: Date
@@ -175,12 +176,14 @@ export const seededIssuers: SeededIssuer[] = [
   {
     name: "Argentina",
     code: "argentina",
+    isoCode: "AR",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
   {
     name: "Buenos Aires",
     code: "buenos-aires",
+    isoCode: "AR",
     parentCode: "argentina",
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
@@ -188,12 +191,14 @@ export const seededIssuers: SeededIssuer[] = [
   {
     name: "United States of America",
     code: "united-states",
+    isoCode: "US",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
   {
     name: "Spain",
     code: "spain",
+    isoCode: "ES",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },

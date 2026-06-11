@@ -29,6 +29,7 @@ import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./defa
 
 type CreateIssuerInput = {
   code: string
+  isoCode?: string
   name: string
   parentIssuerId?: string
 }
@@ -169,6 +170,7 @@ type CreateCoinFaceEngraverInput = {
 
 export async function createIssuer({
   code,
+  isoCode = "ZZ",
   name,
   parentIssuerId,
 }: CreateIssuerInput) {
@@ -176,6 +178,7 @@ export async function createIssuer({
     .insert(issuer)
     .values({
       code,
+      isoCode,
       name,
       parentIssuerId,
     })

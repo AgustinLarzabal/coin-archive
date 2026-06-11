@@ -57,6 +57,7 @@ const baseCoin: CoinRecord = {
   issuer: {
     id: "issuer-1",
     code: "spain",
+    isoCode: "ES",
     name: "Spain",
     createdAt: timestamp,
     updatedAt: timestamp,

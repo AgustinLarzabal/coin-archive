@@ -256,10 +256,12 @@ describe("getCoins integration", () => {
   it("returns full issuer data and an empty rulers array when a coin has no ruler attributions", async () => {
     const ancientWorld = await createIssuer({
       code: "ancient-world",
+      isoCode: "XZ",
       name: "Ancient World",
     })
     const athens = await createIssuer({
       code: "athens",
+      isoCode: "GR",
       name: "Athens",
       parentIssuerId: ancientWorld.id,
     })
@@ -338,12 +340,14 @@ describe("getCoins integration", () => {
         issuer: {
           id: athens.id,
           code: "athens",
+          isoCode: "GR",
           name: "Athens",
           createdAt: athens.createdAt,
           updatedAt: athens.updatedAt,
           parent: {
             id: ancientWorld.id,
             code: "ancient-world",
+            isoCode: "XZ",
             name: "Ancient World",
             createdAt: ancientWorld.createdAt,
             updatedAt: ancientWorld.updatedAt,

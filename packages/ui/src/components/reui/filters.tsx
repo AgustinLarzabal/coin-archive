@@ -411,12 +411,6 @@ function FilterRemoveButton({
 }: FilterRemoveButtonProps) {
   const context = useFilterContext()
 
-  const sizeMap = {
-    sm: "sm" as const,
-    default: "sm" as const,
-    lg: "default" as const,
-  }
-
   return (
     <Button
       variant="outline"
@@ -1011,8 +1005,6 @@ function FilterValueSelector<T = unknown>({
   operator,
   autoFocus,
 }: FilterValueSelectorProps<T>) {
-  const context = useFilterContext()
-
   if (operator === "empty" || operator === "not_empty") {
     return null
   }

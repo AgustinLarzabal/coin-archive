@@ -12,7 +12,7 @@ import {
   getCoinListLoaderDeps,
 } from "../lib/coin-search"
 
-const fullCoinJsonLimit = 2_147_483_647
+const coinJsonLimit = 1_000
 
 const getJsonQueryData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -20,13 +20,16 @@ const getJsonQueryData = createServerFn({ method: "GET" })
     const { getCoins } = await import("@workspace/db")
 
     const coins = await getCoins({
-      limit: fullCoinJsonLimit,
+      limit: coinJsonLimit + 1,
       ...data,
     })
+    const isTruncated = coins.length > coinJsonLimit
 
     return {
       activeCoinFilters: data,
-      coins,
+      coins: isTruncated ? coins.slice(0, coinJsonLimit) : coins,
+      coinLimit: coinJsonLimit,
+      isTruncated,
     }
   })
 
@@ -40,7 +43,8 @@ export const Route = createFileRoute("/json")({
 })
 
 function RouteComponent() {
-  const { activeCoinFilters, coins } = Route.useLoaderData()
+  const { activeCoinFilters, coins, coinLimit, isTruncated } =
+    Route.useLoaderData()
   const filterOptions = rootRouteApi.useLoaderData()
   const queries = {
     coins,
@@ -67,9 +71,15 @@ function RouteComponent() {
         <h1 className="text-3xl font-semibold">Database JSON inspector</h1>
         <p className="text-sm text-muted-foreground">
           Raw output for every current DB query. The <code>coins</code> section
-          uses the same search params as the home page, but removes the default
-          10-row limit.
+          uses the same search params as the home page, but is capped at{" "}
+          <code>{coinLimit}</code> rows to keep the payload bounded.
         </p>
+        {isTruncated ? (
+          <p className="text-sm text-amber-700">
+            Showing the first <code>{coinLimit}</code> matching coins. Narrow
+            the filters to inspect the rest.
+          </p>
+        ) : null}
       </header>
 
       <section className="space-y-2">
@@ -90,6 +100,7 @@ function RouteComponent() {
             {queryEntries.map(([queryName, value]) => (
               <TabsTrigger key={queryName} value={queryName}>
                 {queryName} ({getResultCount(value)})
+                {queryName === "coins" && isTruncated ? "+" : ""}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -99,7 +110,11 @@ function RouteComponent() {
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg font-medium">{queryName}</h3>
                 <span className="text-sm text-muted-foreground">
-                  {getResultCountLabel(value)}
+                  {getResultCountLabel({
+                    isTruncated: queryName === "coins" && isTruncated,
+                    limit: queryName === "coins" ? coinLimit : undefined,
+                    value,
+                  })}
                 </span>
               </div>
               <JsonBlock value={value} />
@@ -119,8 +134,20 @@ function JsonBlock({ value }: { value: unknown }) {
   )
 }
 
-function getResultCountLabel(value: unknown) {
+function getResultCountLabel({
+  isTruncated,
+  limit,
+  value,
+}: {
+  isTruncated: boolean
+  limit?: number
+  value: unknown
+}) {
   if (Array.isArray(value)) {
+    if (isTruncated && typeof limit === "number") {
+      return `${value.length} records shown (limited to ${limit})`
+    }
+
     return `${value.length} record${value.length === 1 ? "" : "s"}`
   }
 

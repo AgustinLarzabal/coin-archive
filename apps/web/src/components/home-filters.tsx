@@ -1,22 +1,30 @@
-import type { IssuerOption } from "@workspace/db"
+import type { IssuerOption, RulerOption } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
 import type {
   Filter,
   FilterFieldConfig,
 } from "@workspace/ui/components/reui/filters"
-import { FunnelX, Globe, ListFilter } from "lucide-react"
+import { Crown, FunnelX, Globe, ListFilter } from "lucide-react"
+import { getRulerOptionLabel } from "../lib/coin-search"
 
 type HomeFiltersProps = {
   issuers: IssuerOption[]
+  rulers: RulerOption[]
   selectedIssuerCode?: string
-  onIssuerChange: (issuerCode: string | undefined) => Promise<void>
+  selectedRulerCode?: string
+  onFiltersChange: (filters: {
+    issuerCode: string | undefined
+    rulerCode: string | undefined
+  }) => Promise<void>
 }
 
 export function HomeFilters({
   issuers,
+  rulers,
   selectedIssuerCode,
-  onIssuerChange,
+  selectedRulerCode,
+  onFiltersChange,
 }: HomeFiltersProps) {
   const fields: FilterFieldConfig<string>[] = [
     {
@@ -42,27 +50,52 @@ export function HomeFilters({
             ),
           })),
         },
+        {
+          key: "ruler",
+          label: "Ruler",
+          icon: <Crown strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[280px]",
+          options: rulers.map((ruler) => ({
+            value: ruler.code,
+            label: getRulerOptionLabel(ruler),
+          })),
+        },
       ],
     },
   ]
 
-  const filters: Filter<string>[] = selectedIssuerCode
-    ? [createFilter("issuer", "is", [selectedIssuerCode])]
-    : []
+  const filters: Filter<string>[] = [
+    ...(selectedIssuerCode
+      ? [createFilter("issuer", "is", [selectedIssuerCode])]
+      : []),
+    ...(selectedRulerCode
+      ? [createFilter("ruler", "is", [selectedRulerCode])]
+      : []),
+  ]
 
   async function handleFiltersChange(nextFilters: Filter<string>[]) {
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
+    const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
+    const rulerCode = rulerFilter?.values[0]
 
-    await onIssuerChange(
-      typeof issuerCode === "string" && issuerCode.length > 0
-        ? issuerCode
-        : undefined
-    )
+    await onFiltersChange({
+      issuerCode:
+        typeof issuerCode === "string" && issuerCode.length > 0
+          ? issuerCode
+          : undefined,
+      rulerCode:
+        typeof rulerCode === "string" && rulerCode.length > 0
+          ? rulerCode
+          : undefined,
+    })
   }
 
   async function clearFilters() {
-    await onIssuerChange(undefined)
+    await onFiltersChange({ issuerCode: undefined, rulerCode: undefined })
   }
 
   return (

@@ -151,6 +151,24 @@ function App() {
     })
   }
 
+  async function updateHomeFilters({
+    issuerCode,
+    rulerCode,
+  }: {
+    issuerCode: string | undefined
+    rulerCode: string | undefined
+  }) {
+    await navigate({
+      resetScroll: false,
+      search: (currentSearch) =>
+        updateCoinSearchFilter(
+          updateCoinSearchFilter(currentSearch, "issuer", issuerCode),
+          "ruler",
+          rulerCode
+        ),
+    })
+  }
+
   async function updateReferenceNumberFromForm(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -219,24 +237,26 @@ function App() {
     <div className="p-5">
       <HomeFilters
         issuers={filterOptions.issuers}
+        rulers={filterOptions.rulers}
         selectedIssuerCode={search.issuer}
-        onIssuerChange={(issuerCode) => updateSearchFilter("issuer", issuerCode)}
+        selectedRulerCode={search.ruler}
+        onFiltersChange={updateHomeFilters}
       />
       {coinCodeFilterConfigs
-        .filter(({ name }) => name !== "issuer")
+        .filter(({ name }) => name !== "issuer" && name !== "ruler")
         .map(({ name, getItems, ...comboboxProps }) => {
-        const items = getItems(filterOptions)
+          const items = getItems(filterOptions)
 
-        return (
-          <NamedCodeFilterCombobox
-            key={name}
-            items={items}
-            onValueChange={(option) => updateSearchFilter(name, option?.code)}
-            selectedItem={findSelectedCodeOption(items, search[name])}
-            {...comboboxProps}
-          />
-        )
-      })}
+          return (
+            <NamedCodeFilterCombobox
+              key={name}
+              items={items}
+              onValueChange={(option) => updateSearchFilter(name, option?.code)}
+              selectedItem={findSelectedCodeOption(items, search[name])}
+              {...comboboxProps}
+            />
+          )
+        })}
 
       <form
         className="flex items-end gap-2 py-2"

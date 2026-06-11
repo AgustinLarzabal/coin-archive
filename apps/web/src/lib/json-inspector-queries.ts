@@ -33,9 +33,3 @@ export type JsonInspectorQueries = {
   techniques: TechniqueOption[]
   themes: ThemeOption[]
 }
-
-export function buildJsonInspectorQueries(
-  queries: JsonInspectorQueries
-): JsonInspectorQueries {
-  return queries
-}

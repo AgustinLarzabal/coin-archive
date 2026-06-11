@@ -1,6 +1,6 @@
 import type { CoinRecord, IssuerOption } from "@workspace/db"
-import { describe, expect, it } from "vitest"
-import { buildJsonInspectorQueries } from "./json-inspector-queries"
+import { describe, expect, expectTypeOf, it } from "vitest"
+import type { JsonInspectorQueries } from "./json-inspector-queries"
 
 const timestamp = new Date("2026-06-11T00:00:00.000Z")
 
@@ -80,25 +80,27 @@ const issuerOption: IssuerOption = {
   name: "Spain",
 }
 
-describe("buildJsonInspectorQueries", () => {
-  it("preserves issuer ISO Codes in coin and issuer debug output", () => {
-    const queries = buildJsonInspectorQueries({
-      coins: [coin],
-      issuers: [issuerOption],
-      rulers: [],
-      catalogues: [],
-      compositions: [],
-      currencies: [],
-      distributions: [],
-      edges: [],
-      engravers: [],
-      mints: [],
-      orientations: [],
-      rims: [],
-      shapes: [],
-      techniques: [],
-      themes: [],
-    })
+const queries = {
+  coins: [coin],
+  issuers: [issuerOption],
+  rulers: [],
+  catalogues: [],
+  compositions: [],
+  currencies: [],
+  distributions: [],
+  edges: [],
+  engravers: [],
+  mints: [],
+  orientations: [],
+  rims: [],
+  shapes: [],
+  techniques: [],
+  themes: [],
+} satisfies JsonInspectorQueries
+
+describe("JsonInspectorQueries", () => {
+  it("includes issuer ISO Codes in coin and issuer debug output", () => {
+    expectTypeOf(queries).toMatchTypeOf<JsonInspectorQueries>()
 
     expect(queries.coins[0]?.issuer.isoCode).toBe("ES")
     expect(queries.coins[0]?.issuer.parent?.isoCode).toBe("ES")

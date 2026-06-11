@@ -35,7 +35,7 @@ export function HomeFilters({
             label: issuer.name,
             icon: (
               <img
-                src={`https://flagcdn.com/ar.svg`}
+                src={`https://flagcdn.com/${issuer.isoCode.toLowerCase()}.svg`}
                 alt={issuer.name}
                 className="size-4 rounded-full object-cover"
               />

@@ -149,22 +149,30 @@ describe("seed integration", () => {
     await seedDatabase()
     await seedDatabase()
 
-    const [kmCatalogueCount] = await db
+    const kmCatalogueCount = (
+      await db
       .select({ count: count() })
       .from(catalogue)
       .where(eq(catalogue.code, "KM"))
-    const [kmReferenceCount] = await db
+    ).at(0)
+    const kmReferenceCount = (
+      await db
       .select({ count: count() })
       .from(coinReference)
       .where(eq(coinReference.number, "1338A"))
-    const [standardCirculationCount] = await db
+    ).at(0)
+    const standardCirculationCount = (
+      await db
       .select({ count: count() })
       .from(distribution)
       .where(eq(distribution.code, "standard-circulation"))
-    const [circulatingCommemorativeCount] = await db
+    ).at(0)
+    const circulatingCommemorativeCount = (
+      await db
       .select({ count: count() })
       .from(distribution)
       .where(eq(distribution.code, "circulating-commemorative"))
+    ).at(0)
 
     expect(kmCatalogueCount?.count).toBe(1)
     expect(kmReferenceCount?.count).toBe(1)

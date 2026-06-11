@@ -91,7 +91,7 @@ async function expectCountQueryResult(
   countQuery: Promise<Array<{ count: number }>>,
   expectedCount: number
 ) {
-  const [result] = await countQuery
+  const result = (await countQuery).at(0)
 
   expect(result?.count).toBe(expectedCount)
 }

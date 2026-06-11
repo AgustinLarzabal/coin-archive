@@ -1,6 +1,7 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace, type CoinFaceSide } from "../schema/coin-face"
+import { coinFace } from "../schema/coin-face"
+import type { CoinFaceSide } from "../schema/coin-face"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"

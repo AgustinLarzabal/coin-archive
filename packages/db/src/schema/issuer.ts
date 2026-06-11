@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm"
 import {
-  type AnyPgColumn,
   check,
   index,
   pgTable,
@@ -9,6 +8,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
+import type { AnyPgColumn } from "drizzle-orm/pg-core"
 
 export const issuerSchemaNames = {
   codeSlugCheck: "issuer_code_slug_check",

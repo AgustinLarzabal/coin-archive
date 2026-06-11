@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
-import {
-  mapGetCoinsRowsToCoinRecords,
-  type GetCoinsRow,
-} from "./map-get-coins-row"
+import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
+import type { GetCoinsRow } from "./map-get-coins-row"
 
 describe("mapGetCoinsRowsToCoinRecords", () => {
   const createdAt = new Date("2026-06-01T12:00:00.000Z")

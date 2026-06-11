@@ -4,7 +4,8 @@ import { closeDb, db } from "../client"
 import { normalizeCoinComments } from "../normalize-coin-comments"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace, type CoinFaceSide } from "../schema/coin-face"
+import { coinFace  } from "../schema/coin-face"
+import type {CoinFaceSide} from "../schema/coin-face";
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -853,7 +854,7 @@ export async function seedDatabase() {
 }
 
 function isExecutedDirectly() {
-  const entrypointPath = process.argv[1]
+  const entrypointPath = process.argv.at(1)
 
   return (
     entrypointPath !== undefined &&

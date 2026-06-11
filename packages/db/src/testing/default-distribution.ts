@@ -1,7 +1,9 @@
-import { distribution, type Distribution } from "../schema/distribution"
+import type * as ClientModule from "../client"
+import { distribution } from "../schema/distribution"
+import type { Distribution } from "../schema/distribution"
 import { getOrCreateDefaultEntity } from "./default-entity"
 
-type Database = typeof import("../client").db
+type Database = typeof ClientModule.db
 
 export const defaultDistributionValues = {
   code: "standard-circulation",

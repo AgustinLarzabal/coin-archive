@@ -1,7 +1,9 @@
-import { currency, type Currency } from "../schema/currency"
+import type * as ClientModule from "../client"
+import { currency } from "../schema/currency"
+import type { Currency } from "../schema/currency"
 import { getOrCreateDefaultEntity } from "./default-entity"
 
-type Database = typeof import("../client").db
+type Database = typeof ClientModule.db
 
 export const defaultCurrencyValues = {
   code: "test-unit",

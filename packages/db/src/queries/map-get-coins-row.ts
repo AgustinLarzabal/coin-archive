@@ -458,13 +458,13 @@ function mapEdge({
   }
 
   return {
-    id: hasLookup ? edgeId! : null,
-    code: hasLookup ? edgeCode! : null,
-    name: hasLookup ? edgeName! : null,
+    id: hasLookup ? edgeId : null,
+    code: hasLookup ? edgeCode : null,
+    name: hasLookup ? edgeName : null,
     description,
     lettering,
-    createdAt: hasLookup ? edgeCreatedAt! : null,
-    updatedAt: hasLookup ? edgeUpdatedAt! : null,
+    createdAt: hasLookup ? edgeCreatedAt : null,
+    updatedAt: hasLookup ? edgeUpdatedAt : null,
   }
 }
 
@@ -965,7 +965,7 @@ function ensureCoinFaceDetails(
       engravers: [],
     }
 
-    return coinEntry.coin[side]!
+    return coinEntry.coin[side]
   }
 
   coinEntry.coin[side] = mappedFace

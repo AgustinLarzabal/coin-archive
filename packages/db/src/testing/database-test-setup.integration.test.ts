@@ -20,13 +20,13 @@ describe("PostgreSQL integration test setup", () => {
       createdAt: new Date("2026-06-03T00:00:00.000Z"),
     })
 
-    const [result] = await db.select({ coinCount: count() }).from(coin)
+    const result = (await db.select({ coinCount: count() }).from(coin)).at(0)
 
     expect(result?.coinCount).toBe(1)
   })
 
   it("clears known tables between tests with the explicit helper", async () => {
-    const [result] = await db.select({ coinCount: count() }).from(coin)
+    const result = (await db.select({ coinCount: count() }).from(coin)).at(0)
 
     expect(result?.coinCount).toBe(0)
   })

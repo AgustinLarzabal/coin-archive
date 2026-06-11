@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { buildGetCoinsQuery, type GetCoinsOptions } from "./get-coins"
+import { buildGetCoinsQuery } from "./get-coins"
+import type { GetCoinsOptions } from "./get-coins"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 import { db } from "../index"
 import { createCoin, createIssuer } from "../testing/fixtures"

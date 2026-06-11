@@ -28,6 +28,7 @@ import { CoinListItem } from "../components/coin-list-item"
 import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
 
 import { Input } from "@workspace/ui/components/input"
+import { HomeFilters } from "@/components/home-filters"
 
 type RangeInputField<TName extends string> = Readonly<{
   ariaLabel: string
@@ -215,8 +216,15 @@ function App() {
   )
 
   return (
-    <div>
-      {coinCodeFilterConfigs.map(({ name, getItems, ...comboboxProps }) => {
+    <div className="p-5">
+      <HomeFilters
+        issuers={filterOptions.issuers}
+        selectedIssuerCode={search.issuer}
+        onIssuerChange={(issuerCode) => updateSearchFilter("issuer", issuerCode)}
+      />
+      {coinCodeFilterConfigs
+        .filter(({ name }) => name !== "issuer")
+        .map(({ name, getItems, ...comboboxProps }) => {
         const items = getItems(filterOptions)
 
         return (
@@ -332,7 +340,9 @@ function App() {
           return (
             <CoinListItem
               coin={coin}
-              issueYearRangeLabel={formatIssueYearRangeLabel(coin.issueYearRange)}
+              issueYearRangeLabel={formatIssueYearRangeLabel(
+                coin.issueYearRange
+              )}
               key={coin.id}
               measurementSummary={measurementSummary}
               mintNames={mintNames}

@@ -282,6 +282,7 @@ function App() {
     filterValue: string | undefined
   ) {
     await navigate({
+      resetScroll: false,
       search: (currentSearch) =>
         updateCoinSearchFilter(currentSearch, filterName, filterValue),
     })
@@ -335,6 +336,7 @@ function App() {
     const formData = new FormData(event.currentTarget)
 
     await navigate({
+      resetScroll: false,
       search: (currentSearch) =>
         applyIssueYearRangeSearch(currentSearch, {
           fromYear: formData.get("fromYear"),
@@ -358,6 +360,7 @@ function App() {
       const formData = new FormData(event.currentTarget)
 
       await navigate({
+        resetScroll: false,
         search: (currentSearch) =>
           applyRangeSearch(
             currentSearch,

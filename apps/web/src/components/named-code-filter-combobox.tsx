@@ -8,28 +8,31 @@ import {
 } from "@workspace/ui/components/combobox"
 import { isCodeOptionEqual } from "../lib/coin-search"
 
-type NamedCodeOption = {
+type CodeOption = {
   code: string
-  name: string
 }
 
-type NamedCodeFilterComboboxProps<T extends NamedCodeOption> = {
+type CodeFilterComboboxProps<T extends CodeOption> = {
   emptyMessage: string
   itemToStringLabel: (item: T) => string
   items: T[]
   onValueChange: (item: T | null) => Promise<void>
   placeholder: string
+  renderItemLabel?: (item: T) => string
+  showCode?: boolean
   selectedItem: T | null
 }
 
-export function NamedCodeFilterCombobox<T extends NamedCodeOption>({
+export function NamedCodeFilterCombobox<T extends CodeOption>({
   emptyMessage,
   itemToStringLabel,
   items,
   onValueChange,
   placeholder,
+  renderItemLabel = itemToStringLabel,
+  showCode = true,
   selectedItem,
-}: NamedCodeFilterComboboxProps<T>) {
+}: CodeFilterComboboxProps<T>) {
   return (
     <Combobox<T>
       items={items}
@@ -44,8 +47,10 @@ export function NamedCodeFilterCombobox<T extends NamedCodeOption>({
         <ComboboxList>
           {(item: T) => (
             <ComboboxItem key={item.code} value={item}>
-              <span>{item.name}</span>
-              <span className="text-muted-foreground">{item.code}</span>
+              <span>{renderItemLabel(item)}</span>
+              {showCode ? (
+                <span className="text-muted-foreground">{item.code}</span>
+              ) : null}
             </ComboboxItem>
           )}
         </ComboboxList>

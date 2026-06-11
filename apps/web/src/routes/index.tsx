@@ -42,14 +42,7 @@ import {
   formatMintNames,
   formatMeasurementLabel,
   formatIssueYearRangeLabel,
-  getCatalogueOptionLabel,
-  getCompositionOptionLabel,
-  getCurrencyOptionLabel,
-  getDistributionOptionLabel,
   getCoinListLoaderDeps,
-  getMintOptionLabel,
-  getRulerOptionLabel,
-  isCodeOptionEqual,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
@@ -62,23 +55,22 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { CoinListItem } from "../components/coin-list-item"
+import { CatalogueFilterCombobox } from "../components/catalogue-filter-combobox"
+import { CompositionFilterCombobox } from "../components/composition-filter-combobox"
+import { CurrencyFilterCombobox } from "../components/currency-filter-combobox"
 import { DemonetizationFilterCombobox } from "../components/demonetization-filter-combobox"
+import { DistributionFilterCombobox } from "../components/distribution-filter-combobox"
 import { EdgeFilterCombobox } from "../components/edge-filter-combobox"
 import { EngraverFilterCombobox } from "../components/engraver-filter-combobox"
+import { IssuerFilterCombobox } from "../components/issuer-filter-combobox"
+import { MintFilterCombobox } from "../components/mint-filter-combobox"
 import { OrientationFilterCombobox } from "../components/orientation-filter-combobox"
 import { RimFilterCombobox } from "../components/rim-filter-combobox"
+import { RulerFilterCombobox } from "../components/ruler-filter-combobox"
 import { ShapeFilterCombobox } from "../components/shape-filter-combobox"
 import { TechniqueFilterCombobox } from "../components/technique-filter-combobox"
 import { ThemeFilterCombobox } from "../components/theme-filter-combobox"
 
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@workspace/ui/components/combobox"
 import { Input } from "@workspace/ui/components/input"
 
 type OptionWithCode = { code: string }
@@ -386,132 +378,41 @@ function App() {
 
   return (
     <div>
-      <Combobox<IssuerOption>
-        items={issuers}
-        value={selectedIssuer}
-        itemToStringLabel={(issuer) => issuer.name}
-        isItemEqualToValue={isCodeOptionEqual}
+      <IssuerFilterCombobox
+        issuers={issuers}
         onValueChange={selectIssuer}
-      >
-        <ComboboxInput placeholder="Filter by issuer" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No issuers found.</ComboboxEmpty>
-          <ComboboxList>
-            {(issuer: IssuerOption) => (
-              <ComboboxItem key={issuer.code} value={issuer}>
-                <span>{issuer.name}</span>
-                <span className="text-muted-foreground">{issuer.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedIssuer={selectedIssuer}
+      />
 
-      <Combobox<RulerOption>
-        items={rulers}
-        value={selectedRuler}
-        itemToStringLabel={getRulerOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <RulerFilterCombobox
         onValueChange={selectRuler}
-      >
-        <ComboboxInput placeholder="Filter by ruler" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No rulers found.</ComboboxEmpty>
-          <ComboboxList>
-            {(ruler: RulerOption) => (
-              <ComboboxItem key={ruler.code} value={ruler}>
-                <span>{getRulerOptionLabel(ruler)}</span>
-                <span className="text-muted-foreground">{ruler.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        rulers={rulers}
+        selectedRuler={selectedRuler}
+      />
 
-      <Combobox<CatalogueOption>
-        items={catalogues}
-        value={selectedCatalogue}
-        itemToStringLabel={getCatalogueOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <CatalogueFilterCombobox
+        catalogues={catalogues}
         onValueChange={selectCatalogue}
-      >
-        <ComboboxInput placeholder="Filter by catalogue" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No catalogues found.</ComboboxEmpty>
-          <ComboboxList>
-            {(catalogue: CatalogueOption) => (
-              <ComboboxItem key={catalogue.code} value={catalogue}>
-                <span>{catalogue.title}</span>
-                <span className="text-muted-foreground">{catalogue.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedCatalogue={selectedCatalogue}
+      />
 
-      <Combobox<CompositionOption>
-        items={compositions}
-        value={selectedComposition}
-        itemToStringLabel={getCompositionOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <CompositionFilterCombobox
+        compositions={compositions}
         onValueChange={selectComposition}
-      >
-        <ComboboxInput placeholder="Filter by composition" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No compositions found.</ComboboxEmpty>
-          <ComboboxList>
-            {(composition: CompositionOption) => (
-              <ComboboxItem key={composition.code} value={composition}>
-                <span>{composition.name}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedComposition={selectedComposition}
+      />
 
-      <Combobox<CurrencyOption>
-        items={currencies}
-        value={selectedCurrency}
-        itemToStringLabel={getCurrencyOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <CurrencyFilterCombobox
+        currencies={currencies}
         onValueChange={selectCurrency}
-      >
-        <ComboboxInput placeholder="Filter by currency" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No currencies found.</ComboboxEmpty>
-          <ComboboxList>
-            {(currency: CurrencyOption) => (
-              <ComboboxItem key={currency.code} value={currency}>
-                <span>{currency.name}</span>
-                <span className="text-muted-foreground">{currency.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedCurrency={selectedCurrency}
+      />
 
-      <Combobox<DistributionOption>
-        items={distributions}
-        value={selectedDistribution}
-        itemToStringLabel={getDistributionOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <DistributionFilterCombobox
+        distributions={distributions}
         onValueChange={selectDistribution}
-      >
-        <ComboboxInput placeholder="Filter by distribution" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No distributions found.</ComboboxEmpty>
-          <ComboboxList>
-            {(distribution: DistributionOption) => (
-              <ComboboxItem key={distribution.code} value={distribution}>
-                <span>{distribution.name}</span>
-                <span className="text-muted-foreground">
-                  {distribution.code}
-                </span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedDistribution={selectedDistribution}
+      />
 
       <DemonetizationFilterCombobox
         onValueChange={selectDemonetization}
@@ -530,26 +431,11 @@ function App() {
         selectedEngraver={selectedEngraver}
       />
 
-      <Combobox<MintOption>
-        items={mints}
-        value={selectedMint}
-        itemToStringLabel={getMintOptionLabel}
-        isItemEqualToValue={isCodeOptionEqual}
+      <MintFilterCombobox
+        mints={mints}
         onValueChange={selectMint}
-      >
-        <ComboboxInput placeholder="Filter by mint" showClear />
-        <ComboboxContent>
-          <ComboboxEmpty>No mints found.</ComboboxEmpty>
-          <ComboboxList>
-            {(mint: MintOption) => (
-              <ComboboxItem key={mint.code} value={mint}>
-                <span>{mint.name}</span>
-                <span className="text-muted-foreground">{mint.code}</span>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
+        selectedMint={selectedMint}
+      />
 
       <OrientationFilterCombobox
         onValueChange={selectOrientation}

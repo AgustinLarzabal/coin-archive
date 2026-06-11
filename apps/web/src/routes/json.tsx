@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import {
   Tabs,
@@ -13,83 +13,21 @@ const fullCoinJsonLimit = 2_147_483_647
 const getJsonQueryData = createServerFn({ method: "GET" })
   .inputValidator(coinSearchSchema)
   .handler(async ({ data }) => {
-    const {
-      getCatalogues,
-      getCoins,
-      getCompositions,
-      getCurrencies,
-      getDistributions,
-      getEdges,
-      getEngravers,
-      getIssuers,
-      getMints,
-      getOrientations,
-      getRims,
-      getRulers,
-      getShapes,
-      getTechniques,
-      getThemes,
-    } = await import("@workspace/db")
+    const { getCoins } = await import("@workspace/db")
 
     const coinFilters = getCoinListLoaderDeps(data)
-    const [
-      catalogues,
-      coins,
-      compositions,
-      currencies,
-      distributions,
-      edges,
-      engravers,
-      issuers,
-      mints,
-      orientations,
-      rims,
-      rulers,
-      shapes,
-      techniques,
-      themes,
-    ] = await Promise.all([
-      getCatalogues(),
-      getCoins({
-        limit: fullCoinJsonLimit,
-        ...coinFilters,
-      }),
-      getCompositions(),
-      getCurrencies(),
-      getDistributions(),
-      getEdges(),
-      getEngravers(),
-      getIssuers(),
-      getMints(),
-      getOrientations(),
-      getRims(),
-      getRulers(),
-      getShapes(),
-      getTechniques(),
-      getThemes(),
-    ])
+    const coins = await getCoins({
+      limit: fullCoinJsonLimit,
+      ...coinFilters,
+    })
 
     return {
       activeCoinFilters: coinFilters,
-      queries: {
-        coins,
-        issuers,
-        rulers,
-        catalogues,
-        compositions,
-        currencies,
-        distributions,
-        edges,
-        engravers,
-        mints,
-        orientations,
-        rims,
-        shapes,
-        techniques,
-        themes,
-      },
+      coins,
     }
   })
+
+const rootRouteApi = getRouteApi("__root__")
 
 export const Route = createFileRoute("/json")({
   validateSearch: coinSearchSchema,
@@ -99,7 +37,25 @@ export const Route = createFileRoute("/json")({
 })
 
 function RouteComponent() {
-  const { activeCoinFilters, queries } = Route.useLoaderData()
+  const { activeCoinFilters, coins } = Route.useLoaderData()
+  const filterOptions = rootRouteApi.useLoaderData()
+  const queries = {
+    coins,
+    issuers: filterOptions.issuers,
+    rulers: filterOptions.rulers,
+    catalogues: filterOptions.catalogues,
+    compositions: filterOptions.compositions,
+    currencies: filterOptions.currencies,
+    distributions: filterOptions.distributions,
+    edges: filterOptions.edges,
+    engravers: filterOptions.engravers,
+    mints: filterOptions.mints,
+    orientations: filterOptions.orientations,
+    rims: filterOptions.rims,
+    shapes: filterOptions.shapes,
+    techniques: filterOptions.techniques,
+    themes: filterOptions.themes,
+  }
   const queryEntries = Object.entries(queries)
 
   return (

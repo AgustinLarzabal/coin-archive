@@ -2,6 +2,7 @@ import type {
   CatalogueOption,
   CompositionOption,
   CurrencyOption,
+  EdgeOption,
   IssuerOption,
   RulerOption,
 } from "@workspace/db"
@@ -19,11 +20,13 @@ import {
   BookImage,
   Box,
   DollarSign,
+  CircleDashed,
 } from "lucide-react"
 import {
   getCatalogueOptionLabel,
   getCompositionOptionLabel,
   getCurrencyOptionLabel,
+  getEdgeOptionLabel,
   getRulerOptionLabel,
 } from "../lib/coin-search"
 
@@ -31,17 +34,20 @@ type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
   currencies: CurrencyOption[]
+  edges: EdgeOption[]
   issuers: IssuerOption[]
   rulers: RulerOption[]
   selectedCatalogueCode?: string
   selectedCompositionCode?: string
   selectedCurrencyCode?: string
+  selectedEdgeCode?: string
   selectedIssuerCode?: string
   selectedRulerCode?: string
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
+    edgeCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) => Promise<void>
@@ -51,11 +57,13 @@ export function HomeFilters({
   catalogues,
   compositions,
   currencies,
+  edges,
   issuers,
   rulers,
   selectedCatalogueCode,
   selectedCompositionCode,
   selectedCurrencyCode,
+  selectedEdgeCode,
   selectedIssuerCode,
   selectedRulerCode,
   onFiltersChange,
@@ -111,6 +119,19 @@ export function HomeFilters({
           })),
         },
         {
+          key: "edge",
+          label: "Edge",
+          icon: <CircleDashed strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: edges.map((edge) => ({
+            value: edge.code,
+            label: getEdgeOptionLabel(edge),
+          })),
+        },
+        {
           key: "currency",
           label: "Currency",
           icon: <DollarSign strokeWidth={2} />,
@@ -150,6 +171,9 @@ export function HomeFilters({
     ...(selectedCurrencyCode
       ? [createFilter("currency", "is", [selectedCurrencyCode])]
       : []),
+    ...(selectedEdgeCode
+      ? [createFilter("edge", "is", [selectedEdgeCode])]
+      : []),
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
@@ -171,6 +195,8 @@ export function HomeFilters({
       (filter) => filter.field === "currency"
     )
     const currencyCode = currencyFilter?.values[0]
+    const edgeFilter = nextFilters.find((filter) => filter.field === "edge")
+    const edgeCode = edgeFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
@@ -189,6 +215,10 @@ export function HomeFilters({
         typeof currencyCode === "string" && currencyCode.length > 0
           ? currencyCode
           : undefined,
+      edgeCode:
+        typeof edgeCode === "string" && edgeCode.length > 0
+          ? edgeCode
+          : undefined,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
@@ -205,6 +235,7 @@ export function HomeFilters({
       catalogueCode: undefined,
       compositionCode: undefined,
       currencyCode: undefined,
+      edgeCode: undefined,
       issuerCode: undefined,
       rulerCode: undefined,
     })

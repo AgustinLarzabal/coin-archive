@@ -155,12 +155,14 @@ function App() {
     catalogueCode,
     compositionCode,
     currencyCode,
+    edgeCode,
     issuerCode,
     rulerCode,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
+    edgeCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) {
@@ -182,8 +184,13 @@ function App() {
           "currency",
           currencyCode
         )
-        const searchWithIssuer = updateCoinSearchFilter(
+        const searchWithEdge = updateCoinSearchFilter(
           searchWithCurrency,
+          "edge",
+          edgeCode
+        )
+        const searchWithIssuer = updateCoinSearchFilter(
+          searchWithEdge,
           "issuer",
           issuerCode
         )
@@ -263,11 +270,13 @@ function App() {
         catalogues={filterOptions.catalogues}
         compositions={filterOptions.compositions}
         currencies={filterOptions.currencies}
+        edges={filterOptions.edges}
         issuers={filterOptions.issuers}
         rulers={filterOptions.rulers}
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
         selectedCurrencyCode={search.currency}
+        selectedEdgeCode={search.edge}
         selectedIssuerCode={search.issuer}
         selectedRulerCode={search.ruler}
         onFiltersChange={updateHomeFilters}
@@ -278,6 +287,7 @@ function App() {
             name !== "catalogue" &&
             name !== "composition" &&
             name !== "currency" &&
+            name !== "edge" &&
             name !== "issuer" &&
             name !== "ruler"
         )

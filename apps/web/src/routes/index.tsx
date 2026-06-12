@@ -155,15 +155,25 @@ function App() {
     catalogueCode,
     compositionCode,
     currencyCode,
+    demonetization,
     edgeCode,
     issuerCode,
+    orientationCode,
+    rimCode,
     rulerCode,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
+    demonetization:
+      | "demonetized"
+      | "not-demonetized"
+      | "unknown"
+      | undefined
     edgeCode: string | undefined
     issuerCode: string | undefined
+    orientationCode: string | undefined
+    rimCode: string | undefined
     rulerCode: string | undefined
   }) {
     await navigate({
@@ -184,8 +194,13 @@ function App() {
           "currency",
           currencyCode
         )
-        const searchWithEdge = updateCoinSearchFilter(
+        const searchWithDemonetization = updateCoinSearchFilter(
           searchWithCurrency,
+          "demonetization",
+          demonetization
+        )
+        const searchWithEdge = updateCoinSearchFilter(
+          searchWithDemonetization,
           "edge",
           edgeCode
         )
@@ -194,8 +209,18 @@ function App() {
           "issuer",
           issuerCode
         )
+        const searchWithOrientation = updateCoinSearchFilter(
+          searchWithIssuer,
+          "orientation",
+          orientationCode
+        )
+        const searchWithRim = updateCoinSearchFilter(
+          searchWithOrientation,
+          "rim",
+          rimCode
+        )
 
-        return updateCoinSearchFilter(searchWithIssuer, "ruler", rulerCode)
+        return updateCoinSearchFilter(searchWithRim, "ruler", rulerCode)
       },
     })
   }
@@ -272,12 +297,17 @@ function App() {
         currencies={filterOptions.currencies}
         edges={filterOptions.edges}
         issuers={filterOptions.issuers}
+        orientations={filterOptions.orientations}
+        rims={filterOptions.rims}
         rulers={filterOptions.rulers}
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
         selectedCurrencyCode={search.currency}
+        selectedDemonetization={search.demonetization}
         selectedEdgeCode={search.edge}
         selectedIssuerCode={search.issuer}
+        selectedOrientationCode={search.orientation}
+        selectedRimCode={search.rim}
         selectedRulerCode={search.ruler}
         onFiltersChange={updateHomeFilters}
       />
@@ -287,8 +317,11 @@ function App() {
             name !== "catalogue" &&
             name !== "composition" &&
             name !== "currency" &&
+            name !== "demonetization" &&
             name !== "edge" &&
             name !== "issuer" &&
+            name !== "orientation" &&
+            name !== "rim" &&
             name !== "ruler"
         )
         .map(({ name, getItems, ...comboboxProps }) => {

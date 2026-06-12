@@ -66,7 +66,17 @@ function RouteComponent() {
     techniques: filterOptions.techniques,
     themes: filterOptions.themes,
   } satisfies JsonInspectorQueries
-  const queryEntries = Object.entries(queries)
+  const queryEntries = Object.entries(queries).sort(([left], [right]) => {
+    if (left === "coins") {
+      return -1
+    }
+
+    if (right === "coins") {
+      return 1
+    }
+
+    return left.localeCompare(right)
+  })
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 p-6">

@@ -166,6 +166,7 @@ function App() {
     rulerCode,
     shapeCode,
     techniqueCode,
+    themeCode,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
@@ -185,6 +186,7 @@ function App() {
     rulerCode: string | undefined
     shapeCode: string | undefined
     techniqueCode: string | undefined
+    themeCode: string | undefined
   }) {
     await navigate({
       resetScroll: false,
@@ -254,8 +256,13 @@ function App() {
           "technique",
           techniqueCode
         )
+        const searchWithTheme = updateCoinSearchFilter(
+          searchWithTechnique,
+          "theme",
+          themeCode
+        )
 
-        return updateCoinSearchFilter(searchWithTechnique, "ruler", rulerCode)
+        return updateCoinSearchFilter(searchWithTheme, "ruler", rulerCode)
       },
     })
   }
@@ -340,6 +347,7 @@ function App() {
         rulers={filterOptions.rulers}
         shapes={filterOptions.shapes}
         techniques={filterOptions.techniques}
+        themes={filterOptions.themes}
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
         selectedCurrencyCode={search.currency}
@@ -354,6 +362,7 @@ function App() {
         selectedRulerCode={search.ruler}
         selectedShapeCode={search.shape}
         selectedTechniqueCode={search.technique}
+        selectedThemeCode={search.theme}
         onFiltersChange={updateHomeFilters}
       />
       {coinCodeFilterConfigs
@@ -372,6 +381,7 @@ function App() {
             name !== "rim" &&
             name !== "shape" &&
             name !== "technique" &&
+            name !== "theme" &&
             name !== "ruler"
         )
         .map(({ name, getItems, ...comboboxProps }) => {

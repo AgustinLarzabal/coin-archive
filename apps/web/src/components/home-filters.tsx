@@ -13,6 +13,7 @@ import type {
   RulerOption,
   ShapeOption,
   TechniqueOption,
+  ThemeOption,
 } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
@@ -37,6 +38,7 @@ import {
   Coins,
   CircleX,
   PenTool,
+  Map,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -52,6 +54,7 @@ import {
   getRulerOptionLabel,
   getShapeOptionLabel,
   getTechniqueOptionLabel,
+  getThemeOptionLabel,
 } from "../lib/coin-search"
 
 type HomeFiltersProps = {
@@ -68,6 +71,7 @@ type HomeFiltersProps = {
   rulers: RulerOption[]
   shapes: ShapeOption[]
   techniques: TechniqueOption[]
+  themes: ThemeOption[]
   selectedCatalogueCode?: string
   selectedCompositionCode?: string
   selectedCurrencyCode?: string
@@ -82,6 +86,7 @@ type HomeFiltersProps = {
   selectedRulerCode?: string
   selectedShapeCode?: string
   selectedTechniqueCode?: string
+  selectedThemeCode?: string
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
@@ -97,6 +102,7 @@ type HomeFiltersProps = {
     rulerCode: string | undefined
     shapeCode: string | undefined
     techniqueCode: string | undefined
+    themeCode: string | undefined
   }) => Promise<void>
 }
 
@@ -114,6 +120,7 @@ export function HomeFilters({
   rulers,
   shapes,
   techniques,
+  themes,
   selectedCatalogueCode,
   selectedCompositionCode,
   selectedCurrencyCode,
@@ -128,6 +135,7 @@ export function HomeFilters({
   selectedRulerCode,
   selectedShapeCode,
   selectedTechniqueCode,
+  selectedThemeCode,
   onFiltersChange,
 }: HomeFiltersProps) {
   const fields: FilterFieldConfig<string>[] = [
@@ -311,6 +319,19 @@ export function HomeFilters({
           })),
         },
         {
+          key: "theme",
+          label: "Theme",
+          icon: <Map strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: themes.map((theme) => ({
+            value: theme.code,
+            label: getThemeOptionLabel(theme),
+          })),
+        },
+        {
           key: "ruler",
           label: "Ruler",
           icon: <Crown strokeWidth={2} />,
@@ -365,6 +386,9 @@ export function HomeFilters({
     ...(selectedTechniqueCode
       ? [createFilter("technique", "is", [selectedTechniqueCode])]
       : []),
+    ...(selectedThemeCode
+      ? [createFilter("theme", "is", [selectedThemeCode])]
+      : []),
     ...(selectedRulerCode
       ? [createFilter("ruler", "is", [selectedRulerCode])]
       : []),
@@ -413,6 +437,8 @@ export function HomeFilters({
       (filter) => filter.field === "technique"
     )
     const techniqueCode = techniqueFilter?.values[0]
+    const themeFilter = nextFilters.find((filter) => filter.field === "theme")
+    const themeCode = themeFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
     const rulerCode = rulerFilter?.values[0]
 
@@ -469,6 +495,10 @@ export function HomeFilters({
         typeof techniqueCode === "string" && techniqueCode.length > 0
           ? techniqueCode
           : undefined,
+      themeCode:
+        typeof themeCode === "string" && themeCode.length > 0
+          ? themeCode
+          : undefined,
       rulerCode:
         typeof rulerCode === "string" && rulerCode.length > 0
           ? rulerCode
@@ -492,6 +522,7 @@ export function HomeFilters({
       rulerCode: undefined,
       shapeCode: undefined,
       techniqueCode: undefined,
+      themeCode: undefined,
     })
   }
 

@@ -5,7 +5,7 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, composition, currency, distribution, demonetization, edge, engraver, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders catalogue, composition, currency, distribution, demonetization, edge, engraver, mint, orientation, rim, shape, minting technique, theme, issuer, and ruler selections in the new home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
         catalogues={[
@@ -109,6 +109,15 @@ describe("HomeFilters", () => {
             updatedAt: timestamp,
           },
         ]}
+        themes={[
+          {
+            id: "theme-1",
+            code: "map",
+            name: "Map",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
         issuers={[
           {
             code: "spain",
@@ -137,6 +146,7 @@ describe("HomeFilters", () => {
         selectedRimCode="raised-both-sides"
         selectedShapeCode="round"
         selectedTechniqueCode="milled"
+        selectedThemeCode="map"
         selectedRulerCode="felipe-vi"
       />
     )
@@ -154,6 +164,7 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Raised, both sides")
     expect(markup).toContain("Round")
     expect(markup).toContain("Milled")
+    expect(markup).toContain("Map")
     expect(markup).toContain("Spain")
     expect(markup).toContain("Felipe VI")
     expect(markup).toContain("Clear")

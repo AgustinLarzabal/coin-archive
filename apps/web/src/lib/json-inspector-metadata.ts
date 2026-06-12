@@ -13,30 +13,42 @@ export const jsonInspectorMetadata: Record<
   JsonInspectorQueryKey,
   JsonInspectorQueryMetadata
 > = {
+  catalogues: {
+    databaseTables: ["catalogue"],
+    requirements: ["code and title are required."],
+    limitations: [
+      "code is unique case-insensitively.",
+      "A catalogue cannot be deleted while coin references still point to it.",
+    ],
+    queryNotes: [
+      "The query returns id, code, title, createdAt, and updatedAt.",
+      "Results are ordered by title ascending, then code ascending.",
+    ],
+  },
   coins: {
     databaseTables: [
+      "catalogue",
       "coin",
-      "issuer",
-      "distribution",
-      "composition",
-      "currency",
-      "orientation",
-      "edge",
-      "shape",
-      "rim",
-      "technique",
       "coin_face",
       "coin_face_engraver",
-      "engraver",
       "coin_mint",
-      "mint",
-      "coin_theme",
-      "theme",
+      "coin_reference",
       "coin_ruler",
+      "coin_theme",
+      "composition",
+      "currency",
+      "distribution",
+      "edge",
+      "engraver",
+      "issuer",
+      "mint",
+      "orientation",
+      "rim",
       "ruler",
       "ruler_group",
-      "coin_reference",
-      "catalogue",
+      "shape",
+      "technique",
+      "theme",
     ],
     requirements: [
       "Each coin requires title, issuer, distribution, composition, face value text, positive face value numeric value, and currency.",
@@ -55,54 +67,6 @@ export const jsonInspectorMetadata: Record<
       "Rows are ordered by coin.createdAt descending, then coin.id descending.",
       "Many-to-many relations are collapsed into arrays for mints, themes, rulers, engravers, and references.",
       "Comments are normalized before being exposed in the JSON record shape.",
-    ],
-  },
-  issuers: {
-    databaseTables: ["issuer"],
-    requirements: [
-      "name, code, and isoCode are required.",
-      "code must be lowercase slug text.",
-      "isoCode must be exactly two uppercase letters.",
-      "parentIssuerId is optional, but cannot point to the same issuer.",
-    ],
-    limitations: [
-      "code must be unique.",
-      "A referenced issuer cannot be deleted while coins or child issuers still depend on it.",
-    ],
-    queryNotes: [
-      "The query returns only code, isoCode, and name.",
-      "Results are ordered by name ascending, then code ascending.",
-    ],
-  },
-  rulers: {
-    databaseTables: ["ruler", "ruler_group"],
-    requirements: [
-      "name and code are required.",
-      "code must be lowercase slug text.",
-      "rulerGroupId is optional but must reference an existing ruler group when present.",
-    ],
-    limitations: [
-      "code must be unique.",
-      "A ruler cannot be deleted while coin_ruler rows still reference it.",
-    ],
-    queryNotes: [
-      "The query returns code, name, and an optional nested group object.",
-      "Results are ordered by name ascending, then code ascending.",
-      "Unlike most lookup queries, this payload does not include ids or timestamps.",
-    ],
-  },
-  catalogues: {
-    databaseTables: ["catalogue"],
-    requirements: [
-      "code and title are required.",
-    ],
-    limitations: [
-      "code is unique case-insensitively.",
-      "A catalogue cannot be deleted while coin references still point to it.",
-    ],
-    queryNotes: [
-      "The query returns id, code, title, createdAt, and updatedAt.",
-      "Results are ordered by title ascending, then code ascending.",
     ],
   },
   compositions: {
@@ -181,8 +145,25 @@ export const jsonInspectorMetadata: Record<
       "Results are ordered by name ascending, then code ascending.",
     ],
   },
+  issuers: {
+    databaseTables: ["issuer"],
+    requirements: [
+      "name, code, and isoCode are required.",
+      "code must be lowercase slug text.",
+      "isoCode must be exactly two uppercase letters.",
+      "parentIssuerId is optional, but cannot point to the same issuer.",
+    ],
+    limitations: [
+      "code must be unique.",
+      "A referenced issuer cannot be deleted while coins or child issuers still depend on it.",
+    ],
+    queryNotes: [
+      "The query returns only code, isoCode, and name.",
+      "Results are ordered by name ascending, then code ascending.",
+    ],
+  },
   mints: {
-    databaseTables: ["mint", "coin_mint"],
+    databaseTables: ["coin_mint", "mint"],
     requirements: [
       "Mint rows require code and name.",
       "code must be lowercase slug text.",
@@ -228,6 +209,23 @@ export const jsonInspectorMetadata: Record<
       "Results are ordered by name ascending, then code ascending.",
     ],
   },
+  rulers: {
+    databaseTables: ["ruler", "ruler_group"],
+    requirements: [
+      "name and code are required.",
+      "code must be lowercase slug text.",
+      "rulerGroupId is optional but must reference an existing ruler group when present.",
+    ],
+    limitations: [
+      "code must be unique.",
+      "A ruler cannot be deleted while coin_ruler rows still reference it.",
+    ],
+    queryNotes: [
+      "The query returns code, name, and an optional nested group object.",
+      "Results are ordered by name ascending, then code ascending.",
+      "Unlike most lookup queries, this payload does not include ids or timestamps.",
+    ],
+  },
   shapes: {
     databaseTables: ["shape"],
     requirements: [
@@ -259,7 +257,7 @@ export const jsonInspectorMetadata: Record<
     ],
   },
   themes: {
-    databaseTables: ["theme", "coin_theme"],
+    databaseTables: ["coin_theme", "theme"],
     requirements: [
       "Theme rows require code and name.",
       "code must be lowercase slug text.",

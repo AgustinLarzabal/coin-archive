@@ -11,6 +11,8 @@ import {
   coinSearchSchema,
   getCoinListLoaderDeps,
 } from "../lib/coin-search"
+import { jsonInspectorMetadata } from "../lib/json-inspector-metadata"
+import type { JsonInspectorQueryKey } from "../lib/json-inspector-metadata"
 import type { JsonInspectorQueries } from "../lib/json-inspector-queries"
 
 const coinJsonLimit = 1_000
@@ -107,7 +109,11 @@ function RouteComponent() {
           </TabsList>
 
           {queryEntries.map(([queryName, value]) => (
-            <TabsContent key={queryName} value={queryName} className="space-y-2">
+            <TabsContent
+              key={queryName}
+              value={queryName}
+              className="space-y-2"
+            >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg font-medium">{queryName}</h3>
                 <span className="text-sm text-muted-foreground">
@@ -118,6 +124,11 @@ function RouteComponent() {
                   })}
                 </span>
               </div>
+              <QueryMetadataPanel
+                metadata={
+                  jsonInspectorMetadata[queryName as JsonInspectorQueryKey]
+                }
+              />
               <JsonBlock value={value} />
             </TabsContent>
           ))}
@@ -132,6 +143,36 @@ function JsonBlock({ value }: { value: unknown }) {
     <pre className="overflow-x-auto rounded-md bg-muted/40 p-4 text-xs leading-6">
       <code>{JSON.stringify(value, null, 2)}</code>
     </pre>
+  )
+}
+
+function QueryMetadataPanel({
+  metadata,
+}: {
+  metadata: (typeof jsonInspectorMetadata)[JsonInspectorQueryKey]
+}) {
+  return (
+    <section className="grid gap-3 md:grid-cols-3">
+      <MetadataCard title="Database tables" items={metadata.databaseTables} />
+      <MetadataCard title="Requirements" items={metadata.requirements} />
+      <MetadataCard title="Limitations" items={metadata.limitations} />
+      <div className="md:col-span-3">
+        <MetadataCard title="Query notes" items={metadata.queryNotes} />
+      </div>
+    </section>
+  )
+}
+
+function MetadataCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/20 p-4">
+      <h4 className="text-sm font-medium">{title}</h4>
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground marker:text-foreground/60">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

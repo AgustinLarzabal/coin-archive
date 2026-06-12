@@ -3,6 +3,7 @@ import type {
   CompositionOption,
   CurrencyOption,
   DemonetizationFilterValue,
+  DistributionOption,
   EdgeOption,
   IssuerOption,
   MintOption,
@@ -28,17 +29,19 @@ import {
   DollarSign,
   CircleDashed,
   CircleArrowDown,
-  BanknoteX,
   Circle,
   Factory,
   Diamond,
   Anvil,
+  Coins,
+  CircleX,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
   getCatalogueOptionLabel,
   getCompositionOptionLabel,
   getCurrencyOptionLabel,
+  getDistributionOptionLabel,
   getEdgeOptionLabel,
   getMintOptionLabel,
   getOrientationOptionLabel,
@@ -52,6 +55,7 @@ type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
   currencies: CurrencyOption[]
+  distributions: DistributionOption[]
   edges: EdgeOption[]
   issuers: IssuerOption[]
   mints: MintOption[]
@@ -63,6 +67,7 @@ type HomeFiltersProps = {
   selectedCatalogueCode?: string
   selectedCompositionCode?: string
   selectedCurrencyCode?: string
+  selectedDistributionCode?: string
   selectedEdgeCode?: string
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
@@ -76,6 +81,7 @@ type HomeFiltersProps = {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
+    distributionCode: string | undefined
     demonetization: DemonetizationFilterValue | undefined
     edgeCode: string | undefined
     issuerCode: string | undefined
@@ -92,6 +98,7 @@ export function HomeFilters({
   catalogues,
   compositions,
   currencies,
+  distributions,
   edges,
   issuers,
   mints,
@@ -103,6 +110,7 @@ export function HomeFilters({
   selectedCatalogueCode,
   selectedCompositionCode,
   selectedCurrencyCode,
+  selectedDistributionCode,
   selectedDemonetization,
   selectedEdgeCode,
   selectedIssuerCode,
@@ -165,9 +173,22 @@ export function HomeFilters({
           })),
         },
         {
+          key: "distribution",
+          label: "Distribution",
+          icon: <Coins strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: distributions.map((distribution) => ({
+            value: distribution.code,
+            label: getDistributionOptionLabel(distribution),
+          })),
+        },
+        {
           key: "demonetization",
           label: "Demonetization Status",
-          icon: <BanknoteX strokeWidth={2} />,
+          icon: <CircleX strokeWidth={2} />,
           type: "select",
           operators: [{ value: "is", label: "is" }],
           searchable: true,
@@ -295,6 +316,9 @@ export function HomeFilters({
     ...(selectedCurrencyCode
       ? [createFilter("currency", "is", [selectedCurrencyCode])]
       : []),
+    ...(selectedDistributionCode
+      ? [createFilter("distribution", "is", [selectedDistributionCode])]
+      : []),
     ...(selectedDemonetization
       ? [createFilter("demonetization", "is", [selectedDemonetization])]
       : []),
@@ -335,6 +359,10 @@ export function HomeFilters({
       (filter) => filter.field === "currency"
     )
     const currencyCode = currencyFilter?.values[0]
+    const distributionFilter = nextFilters.find(
+      (filter) => filter.field === "distribution"
+    )
+    const distributionCode = distributionFilter?.values[0]
     const demonetizationFilter = nextFilters.find(
       (filter) => filter.field === "demonetization"
     )
@@ -372,6 +400,10 @@ export function HomeFilters({
       currencyCode:
         typeof currencyCode === "string" && currencyCode.length > 0
           ? currencyCode
+          : undefined,
+      distributionCode:
+        typeof distributionCode === "string" && distributionCode.length > 0
+          ? distributionCode
           : undefined,
       demonetization:
         demonetization === "demonetized" ||
@@ -417,6 +449,7 @@ export function HomeFilters({
       catalogueCode: undefined,
       compositionCode: undefined,
       currencyCode: undefined,
+      distributionCode: undefined,
       demonetization: undefined,
       edgeCode: undefined,
       issuerCode: undefined,

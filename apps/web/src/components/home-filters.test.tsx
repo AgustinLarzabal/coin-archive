@@ -5,7 +5,7 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, composition, currency, demonetization, edge, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders catalogue, composition, currency, distribution, demonetization, edge, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
         catalogues={[
@@ -33,6 +33,15 @@ describe("HomeFilters", () => {
             code: "euro",
             name: "Euro",
             fullName: "Euro (2002-date)",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
+        distributions={[
+          {
+            id: "distribution-1",
+            code: "standard-circulation",
+            name: "Standard circulation",
             createdAt: timestamp,
             updatedAt: timestamp,
           },
@@ -109,6 +118,7 @@ describe("HomeFilters", () => {
         selectedCatalogueCode="KM"
         selectedCompositionCode="silver-900"
         selectedCurrencyCode="euro"
+        selectedDistributionCode="standard-circulation"
         selectedDemonetization="not-demonetized"
         selectedEdgeCode="reeded"
         selectedIssuerCode="spain"
@@ -125,6 +135,7 @@ describe("HomeFilters", () => {
     expect(markup).toContain("KM")
     expect(markup).toContain("Silver (.900)")
     expect(markup).toContain("Euro")
+    expect(markup).toContain("Standard circulation")
     expect(markup).toContain("Not demonetized")
     expect(markup).toContain("Reeded")
     expect(markup).toContain("Royal Mint of Madrid")

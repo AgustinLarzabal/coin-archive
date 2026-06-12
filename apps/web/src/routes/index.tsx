@@ -155,6 +155,7 @@ function App() {
     catalogueCode,
     compositionCode,
     currencyCode,
+    distributionCode,
     demonetization,
     edgeCode,
     issuerCode,
@@ -168,6 +169,7 @@ function App() {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
+    distributionCode: string | undefined
     demonetization:
       | "demonetized"
       | "not-demonetized"
@@ -200,8 +202,13 @@ function App() {
           "currency",
           currencyCode
         )
-        const searchWithDemonetization = updateCoinSearchFilter(
+        const searchWithDistribution = updateCoinSearchFilter(
           searchWithCurrency,
+          "distribution",
+          distributionCode
+        )
+        const searchWithDemonetization = updateCoinSearchFilter(
+          searchWithDistribution,
           "demonetization",
           demonetization
         )
@@ -316,6 +323,7 @@ function App() {
         catalogues={filterOptions.catalogues}
         compositions={filterOptions.compositions}
         currencies={filterOptions.currencies}
+        distributions={filterOptions.distributions}
         edges={filterOptions.edges}
         issuers={filterOptions.issuers}
         mints={filterOptions.mints}
@@ -327,6 +335,7 @@ function App() {
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
         selectedCurrencyCode={search.currency}
+        selectedDistributionCode={search.distribution}
         selectedDemonetization={search.demonetization}
         selectedEdgeCode={search.edge}
         selectedIssuerCode={search.issuer}
@@ -344,6 +353,7 @@ function App() {
             name !== "catalogue" &&
             name !== "composition" &&
             name !== "currency" &&
+            name !== "distribution" &&
             name !== "demonetization" &&
             name !== "edge" &&
             name !== "issuer" &&

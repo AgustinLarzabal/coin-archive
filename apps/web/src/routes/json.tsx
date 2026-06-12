@@ -14,6 +14,7 @@ import {
 import { jsonInspectorMetadata } from "../lib/json-inspector-metadata"
 import type { JsonInspectorQueryKey } from "../lib/json-inspector-metadata"
 import type { JsonInspectorQueries } from "../lib/json-inspector-queries"
+import { ScrollArea } from "@workspace/ui/components/scroll-area"
 
 const coinJsonLimit = 1_000
 
@@ -106,17 +107,16 @@ function RouteComponent() {
           defaultValue={queryEntries[0]?.[0] ?? "coins"}
           className="gap-4 rounded-lg border border-border/60 p-4"
         >
-          <TabsList
-            variant="line"
-            className="w-full justify-start overflow-x-auto whitespace-nowrap"
-          >
-            {queryEntries.map(([queryName, value]) => (
-              <TabsTrigger key={queryName} value={queryName}>
-                {queryName} ({getResultCount(value)})
-                {queryName === "coins" && isTruncated ? "+" : ""}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <ScrollArea>
+            <TabsList variant="line">
+              {queryEntries.map(([queryName, value]) => (
+                <TabsTrigger key={queryName} value={queryName}>
+                  {queryName} ({getResultCount(value)})
+                  {queryName === "coins" && isTruncated ? "+" : ""}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </ScrollArea>
 
           {queryEntries.map(([queryName, value]) => (
             <TabsContent

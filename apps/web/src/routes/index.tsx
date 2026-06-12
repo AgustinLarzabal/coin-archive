@@ -154,34 +154,42 @@ function App() {
   async function updateHomeFilters({
     catalogueCode,
     compositionCode,
+    currencyCode,
     issuerCode,
     rulerCode,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
+    currencyCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) {
     await navigate({
       resetScroll: false,
-      search: (currentSearch) =>
-        updateCoinSearchFilter(
-          updateCoinSearchFilter(
-            updateCoinSearchFilter(
-              updateCoinSearchFilter(
-                currentSearch,
-                "catalogue",
-                catalogueCode
-              ),
-              "composition",
-              compositionCode
-            ),
-            "issuer",
-            issuerCode
-          ),
-          "ruler",
-          rulerCode
-        ),
+      search: (currentSearch) => {
+        const searchWithCatalogue = updateCoinSearchFilter(
+          currentSearch,
+          "catalogue",
+          catalogueCode
+        )
+        const searchWithComposition = updateCoinSearchFilter(
+          searchWithCatalogue,
+          "composition",
+          compositionCode
+        )
+        const searchWithCurrency = updateCoinSearchFilter(
+          searchWithComposition,
+          "currency",
+          currencyCode
+        )
+        const searchWithIssuer = updateCoinSearchFilter(
+          searchWithCurrency,
+          "issuer",
+          issuerCode
+        )
+
+        return updateCoinSearchFilter(searchWithIssuer, "ruler", rulerCode)
+      },
     })
   }
 
@@ -254,10 +262,12 @@ function App() {
       <HomeFilters
         catalogues={filterOptions.catalogues}
         compositions={filterOptions.compositions}
+        currencies={filterOptions.currencies}
         issuers={filterOptions.issuers}
         rulers={filterOptions.rulers}
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
+        selectedCurrencyCode={search.currency}
         selectedIssuerCode={search.issuer}
         selectedRulerCode={search.ruler}
         onFiltersChange={updateHomeFilters}
@@ -267,6 +277,7 @@ function App() {
           ({ name }) =>
             name !== "catalogue" &&
             name !== "composition" &&
+            name !== "currency" &&
             name !== "issuer" &&
             name !== "ruler"
         )

@@ -1,6 +1,7 @@
 import type {
   CatalogueOption,
   CompositionOption,
+  CurrencyOption,
   IssuerOption,
   RulerOption,
 } from "@workspace/db"
@@ -10,25 +11,37 @@ import type {
   Filter,
   FilterFieldConfig,
 } from "@workspace/ui/components/reui/filters"
-import { Crown, FunnelX, Globe, ListFilter, BookImage, Box } from "lucide-react"
+import {
+  Crown,
+  FunnelX,
+  Globe,
+  ListFilter,
+  BookImage,
+  Box,
+  DollarSign,
+} from "lucide-react"
 import {
   getCatalogueOptionLabel,
   getCompositionOptionLabel,
+  getCurrencyOptionLabel,
   getRulerOptionLabel,
 } from "../lib/coin-search"
 
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
+  currencies: CurrencyOption[]
   issuers: IssuerOption[]
   rulers: RulerOption[]
   selectedCatalogueCode?: string
   selectedCompositionCode?: string
+  selectedCurrencyCode?: string
   selectedIssuerCode?: string
   selectedRulerCode?: string
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
+    currencyCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) => Promise<void>
@@ -37,10 +50,12 @@ type HomeFiltersProps = {
 export function HomeFilters({
   catalogues,
   compositions,
+  currencies,
   issuers,
   rulers,
   selectedCatalogueCode,
   selectedCompositionCode,
+  selectedCurrencyCode,
   selectedIssuerCode,
   selectedRulerCode,
   onFiltersChange,
@@ -96,6 +111,19 @@ export function HomeFilters({
           })),
         },
         {
+          key: "currency",
+          label: "Currency",
+          icon: <DollarSign strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: currencies.map((currency) => ({
+            value: currency.code,
+            label: getCurrencyOptionLabel(currency),
+          })),
+        },
+        {
           key: "ruler",
           label: "Ruler",
           icon: <Crown strokeWidth={2} />,
@@ -119,6 +147,9 @@ export function HomeFilters({
     ...(selectedCompositionCode
       ? [createFilter("composition", "is", [selectedCompositionCode])]
       : []),
+    ...(selectedCurrencyCode
+      ? [createFilter("currency", "is", [selectedCurrencyCode])]
+      : []),
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
@@ -136,6 +167,10 @@ export function HomeFilters({
       (filter) => filter.field === "composition"
     )
     const compositionCode = compositionFilter?.values[0]
+    const currencyFilter = nextFilters.find(
+      (filter) => filter.field === "currency"
+    )
+    const currencyCode = currencyFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
@@ -149,6 +184,10 @@ export function HomeFilters({
       compositionCode:
         typeof compositionCode === "string" && compositionCode.length > 0
           ? compositionCode
+          : undefined,
+      currencyCode:
+        typeof currencyCode === "string" && currencyCode.length > 0
+          ? currencyCode
           : undefined,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
@@ -165,6 +204,7 @@ export function HomeFilters({
     await onFiltersChange({
       catalogueCode: undefined,
       compositionCode: undefined,
+      currencyCode: undefined,
       issuerCode: undefined,
       rulerCode: undefined,
     })

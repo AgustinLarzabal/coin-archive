@@ -5,7 +5,7 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, composition, currency, distribution, demonetization, edge, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders catalogue, composition, currency, distribution, demonetization, edge, engraver, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
         catalogues={[
@@ -51,6 +51,15 @@ describe("HomeFilters", () => {
             id: "edge-1",
             code: "reeded",
             name: "Reeded",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
+        engravers={[
+          {
+            id: "engraver-1",
+            code: "georgios-stamatopoulos",
+            name: "Georgios Stamatopoulos",
             createdAt: timestamp,
             updatedAt: timestamp,
           },
@@ -121,6 +130,7 @@ describe("HomeFilters", () => {
         selectedDistributionCode="standard-circulation"
         selectedDemonetization="not-demonetized"
         selectedEdgeCode="reeded"
+        selectedEngraverCode="georgios-stamatopoulos"
         selectedIssuerCode="spain"
         selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
@@ -138,6 +148,7 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Standard circulation")
     expect(markup).toContain("Not demonetized")
     expect(markup).toContain("Reeded")
+    expect(markup).toContain("Georgios Stamatopoulos")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

@@ -158,6 +158,7 @@ function App() {
     distributionCode,
     demonetization,
     edgeCode,
+    engraverCode,
     issuerCode,
     mintCode,
     orientationCode,
@@ -176,6 +177,7 @@ function App() {
       | "unknown"
       | undefined
     edgeCode: string | undefined
+    engraverCode: string | undefined
     issuerCode: string | undefined
     mintCode: string | undefined
     orientationCode: string | undefined
@@ -217,8 +219,13 @@ function App() {
           "edge",
           edgeCode
         )
-        const searchWithIssuer = updateCoinSearchFilter(
+        const searchWithEngraver = updateCoinSearchFilter(
           searchWithEdge,
+          "engraver",
+          engraverCode
+        )
+        const searchWithIssuer = updateCoinSearchFilter(
+          searchWithEngraver,
           "issuer",
           issuerCode
         )
@@ -325,6 +332,7 @@ function App() {
         currencies={filterOptions.currencies}
         distributions={filterOptions.distributions}
         edges={filterOptions.edges}
+        engravers={filterOptions.engravers}
         issuers={filterOptions.issuers}
         mints={filterOptions.mints}
         orientations={filterOptions.orientations}
@@ -338,6 +346,7 @@ function App() {
         selectedDistributionCode={search.distribution}
         selectedDemonetization={search.demonetization}
         selectedEdgeCode={search.edge}
+        selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
         selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
@@ -356,6 +365,7 @@ function App() {
             name !== "distribution" &&
             name !== "demonetization" &&
             name !== "edge" &&
+            name !== "engraver" &&
             name !== "issuer" &&
             name !== "mint" &&
             name !== "orientation" &&

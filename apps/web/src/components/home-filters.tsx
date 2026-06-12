@@ -5,6 +5,7 @@ import type {
   DemonetizationFilterValue,
   DistributionOption,
   EdgeOption,
+  EngraverOption,
   IssuerOption,
   MintOption,
   OrientationOption,
@@ -35,6 +36,7 @@ import {
   Anvil,
   Coins,
   CircleX,
+  PenTool,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -43,6 +45,7 @@ import {
   getCurrencyOptionLabel,
   getDistributionOptionLabel,
   getEdgeOptionLabel,
+  getEngraverOptionLabel,
   getMintOptionLabel,
   getOrientationOptionLabel,
   getRimOptionLabel,
@@ -57,6 +60,7 @@ type HomeFiltersProps = {
   currencies: CurrencyOption[]
   distributions: DistributionOption[]
   edges: EdgeOption[]
+  engravers: EngraverOption[]
   issuers: IssuerOption[]
   mints: MintOption[]
   orientations: OrientationOption[]
@@ -69,6 +73,7 @@ type HomeFiltersProps = {
   selectedCurrencyCode?: string
   selectedDistributionCode?: string
   selectedEdgeCode?: string
+  selectedEngraverCode?: string
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
   selectedMintCode?: string
@@ -84,6 +89,7 @@ type HomeFiltersProps = {
     distributionCode: string | undefined
     demonetization: DemonetizationFilterValue | undefined
     edgeCode: string | undefined
+    engraverCode: string | undefined
     issuerCode: string | undefined
     mintCode: string | undefined
     orientationCode: string | undefined
@@ -100,6 +106,7 @@ export function HomeFilters({
   currencies,
   distributions,
   edges,
+  engravers,
   issuers,
   mints,
   orientations,
@@ -113,6 +120,7 @@ export function HomeFilters({
   selectedDistributionCode,
   selectedDemonetization,
   selectedEdgeCode,
+  selectedEngraverCode,
   selectedIssuerCode,
   selectedMintCode,
   selectedOrientationCode,
@@ -150,6 +158,19 @@ export function HomeFilters({
           options: compositions.map((composition) => ({
             value: composition.code,
             label: getCompositionOptionLabel(composition),
+          })),
+        },
+        {
+          key: "engraver",
+          label: "Engraver",
+          icon: <PenTool strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: engravers.map((engraver) => ({
+            value: engraver.code,
+            label: getEngraverOptionLabel(engraver),
           })),
         },
         {
@@ -325,6 +346,9 @@ export function HomeFilters({
     ...(selectedEdgeCode
       ? [createFilter("edge", "is", [selectedEdgeCode])]
       : []),
+    ...(selectedEngraverCode
+      ? [createFilter("engraver", "is", [selectedEngraverCode])]
+      : []),
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
@@ -369,6 +393,10 @@ export function HomeFilters({
     const demonetization = demonetizationFilter?.values[0]
     const edgeFilter = nextFilters.find((filter) => filter.field === "edge")
     const edgeCode = edgeFilter?.values[0]
+    const engraverFilter = nextFilters.find(
+      (filter) => filter.field === "engraver"
+    )
+    const engraverCode = engraverFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
     const mintFilter = nextFilters.find((filter) => filter.field === "mint")
@@ -415,6 +443,10 @@ export function HomeFilters({
         typeof edgeCode === "string" && edgeCode.length > 0
           ? edgeCode
           : undefined,
+      engraverCode:
+        typeof engraverCode === "string" && engraverCode.length > 0
+          ? engraverCode
+          : undefined,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
@@ -452,6 +484,7 @@ export function HomeFilters({
       distributionCode: undefined,
       demonetization: undefined,
       edgeCode: undefined,
+      engraverCode: undefined,
       issuerCode: undefined,
       mintCode: undefined,
       orientationCode: undefined,

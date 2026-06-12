@@ -27,8 +27,8 @@ export const jsonInspectorMetadata: Record<
   },
   coins: {
     databaseTables: [
-      "catalogue",
       "coin",
+      "catalogue",
       "coin_face",
       "coin_face_engraver",
       "coin_mint",

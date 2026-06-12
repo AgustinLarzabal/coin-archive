@@ -1,25 +1,34 @@
-import type { CatalogueOption, IssuerOption, RulerOption } from "@workspace/db"
+import type {
+  CatalogueOption,
+  CompositionOption,
+  IssuerOption,
+  RulerOption,
+} from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
 import type {
   Filter,
   FilterFieldConfig,
 } from "@workspace/ui/components/reui/filters"
-import { Crown, FunnelX, Globe, ListFilter, BookImage } from "lucide-react"
+import { Crown, FunnelX, Globe, ListFilter, BookImage, Box } from "lucide-react"
 import {
   getCatalogueOptionLabel,
+  getCompositionOptionLabel,
   getRulerOptionLabel,
 } from "../lib/coin-search"
 
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
+  compositions: CompositionOption[]
   issuers: IssuerOption[]
   rulers: RulerOption[]
   selectedCatalogueCode?: string
+  selectedCompositionCode?: string
   selectedIssuerCode?: string
   selectedRulerCode?: string
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
+    compositionCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) => Promise<void>
@@ -27,9 +36,11 @@ type HomeFiltersProps = {
 
 export function HomeFilters({
   catalogues,
+  compositions,
   issuers,
   rulers,
   selectedCatalogueCode,
+  selectedCompositionCode,
   selectedIssuerCode,
   selectedRulerCode,
   onFiltersChange,
@@ -49,6 +60,19 @@ export function HomeFilters({
           options: catalogues.map((catalogue) => ({
             value: catalogue.code,
             label: getCatalogueOptionLabel(catalogue),
+          })),
+        },
+        {
+          key: "composition",
+          label: "Composition",
+          icon: <Box strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: compositions.map((composition) => ({
+            value: composition.code,
+            label: getCompositionOptionLabel(composition),
           })),
         },
         {
@@ -92,6 +116,9 @@ export function HomeFilters({
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
+    ...(selectedCompositionCode
+      ? [createFilter("composition", "is", [selectedCompositionCode])]
+      : []),
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
@@ -105,6 +132,10 @@ export function HomeFilters({
       (filter) => filter.field === "catalogue"
     )
     const catalogueCode = catalogueFilter?.values[0]
+    const compositionFilter = nextFilters.find(
+      (filter) => filter.field === "composition"
+    )
+    const compositionCode = compositionFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
@@ -114,6 +145,10 @@ export function HomeFilters({
       catalogueCode:
         typeof catalogueCode === "string" && catalogueCode.length > 0
           ? catalogueCode
+          : undefined,
+      compositionCode:
+        typeof compositionCode === "string" && compositionCode.length > 0
+          ? compositionCode
           : undefined,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
@@ -129,6 +164,7 @@ export function HomeFilters({
   async function clearFilters() {
     await onFiltersChange({
       catalogueCode: undefined,
+      compositionCode: undefined,
       issuerCode: undefined,
       rulerCode: undefined,
     })

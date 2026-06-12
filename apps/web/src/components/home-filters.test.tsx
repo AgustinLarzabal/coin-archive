@@ -5,7 +5,7 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders catalogue, composition, issuer, and ruler selections in the new home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
         catalogues={[
@@ -13,6 +13,16 @@ describe("HomeFilters", () => {
             id: "catalogue-1",
             code: "KM",
             title: "Standard Catalog of World Coins",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
+        compositions={[
+          {
+            id: "composition-1",
+            code: "silver-900",
+            name: "Silver (.900)",
+            description: null,
             createdAt: timestamp,
             updatedAt: timestamp,
           },
@@ -33,6 +43,7 @@ describe("HomeFilters", () => {
           },
         ]}
         selectedCatalogueCode="KM"
+        selectedCompositionCode="silver-900"
         selectedIssuerCode="spain"
         selectedRulerCode="felipe-vi"
       />
@@ -40,6 +51,7 @@ describe("HomeFilters", () => {
 
     expect(markup).toContain("Standard Catalog of World Coins")
     expect(markup).toContain("KM")
+    expect(markup).toContain("Silver (.900)")
     expect(markup).toContain("Spain")
     expect(markup).toContain("Felipe VI")
     expect(markup).toContain("Clear")

@@ -123,11 +123,6 @@ type CreateRulerGroupInput = {
   name: string
 }
 
-type CreateCatalogueInput = {
-  code: string
-  title: string
-}
-
 type CreateRulerInput = {
   code: string
   name: string
@@ -166,6 +161,23 @@ type CreateCoinThemeInput = {
 type CreateCoinFaceEngraverInput = {
   coinFaceId: string
   engraverId: string
+}
+
+type CreateCatalogueInput = {
+  code: string
+  title: string
+}
+
+export async function createCatalogue({ code, title }: CreateCatalogueInput) {
+  const [createdCatalogue] = await db
+    .insert(catalogue)
+    .values({
+      code,
+      title,
+    })
+    .returning()
+
+  return createdCatalogue
 }
 
 export async function createIssuer({
@@ -217,7 +229,8 @@ export async function createCoin({
     distributionId ?? (await getOrCreateDefaultDistribution()).id
   const resolvedCompositionId =
     compositionId ?? (await getOrCreateDefaultComposition()).id
-  const resolvedCurrencyId = currencyId ?? (await getOrCreateDefaultCurrency()).id
+  const resolvedCurrencyId =
+    currencyId ?? (await getOrCreateDefaultCurrency()).id
 
   const [createdCoin] = await db
     .insert(coin)
@@ -337,7 +350,10 @@ export async function createEngraver({ code, name }: CreateEngraverInput) {
   return createdEngraver
 }
 
-export async function createOrientation({ code, name }: CreateOrientationInput) {
+export async function createOrientation({
+  code,
+  name,
+}: CreateOrientationInput) {
   const [createdOrientation] = await db
     .insert(orientation)
     .values({
@@ -409,18 +425,6 @@ export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
   return createdRulerGroup
 }
 
-export async function createCatalogue({ code, title }: CreateCatalogueInput) {
-  const [createdCatalogue] = await db
-    .insert(catalogue)
-    .values({
-      code,
-      title,
-    })
-    .returning()
-
-  return createdCatalogue
-}
-
 export async function createRuler({
   code,
   name,
@@ -472,10 +476,7 @@ export async function createCoinReference({
   return createdCoinReference
 }
 
-export async function createCoinMint({
-  coinId,
-  mintId,
-}: CreateCoinMintInput) {
+export async function createCoinMint({ coinId, mintId }: CreateCoinMintInput) {
   const [createdCoinMint] = await db
     .insert(coinMint)
     .values({

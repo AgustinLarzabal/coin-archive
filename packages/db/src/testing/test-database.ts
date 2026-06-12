@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { afterAll, beforeEach } from "vitest"
+
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinFace } from "../schema/coin-face"
@@ -38,6 +39,7 @@ export function createTestDatabase(databaseUrl: string) {
 }
 
 export async function clearTestData(database: TestDatabase) {
+  await database.delete(catalogue)
   await database.delete(coinReference)
   await database.delete(coinFaceEngraver)
   await database.delete(coinTheme)
@@ -48,7 +50,6 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(mint)
   await database.delete(ruler)
   await database.delete(rulerGroup)
-  await database.delete(catalogue)
   await database.delete(issuer)
   await database.delete(orientation)
   await database.delete(rim)

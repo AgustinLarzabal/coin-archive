@@ -4,8 +4,8 @@ import { closeDb, db } from "../client"
 import { normalizeCoinComments } from "../normalize-coin-comments"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace  } from "../schema/coin-face"
-import type {CoinFaceSide} from "../schema/coin-face";
+import { coinFace } from "../schema/coin-face"
+import type { CoinFaceSide } from "../schema/coin-face"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -112,6 +112,13 @@ async function seedRecordsByCode<TSeededRecord extends { code: string }>(
   return idsByCode
 }
 
+async function deleteSeededCatalogues() {
+  await deleteSeededRecords(
+    seededCatalogues.map(({ code }) => code),
+    (code) => db.delete(catalogue).where(eq(catalogue.code, code))
+  )
+}
+
 async function deleteSeededIssuers() {
   await deleteSeededRecords(
     seededIssuers.map(({ code }) => code),
@@ -130,13 +137,6 @@ async function deleteSeededRulerGroups() {
   await deleteSeededRecords(
     seededRulerGroups.map(({ code }) => code),
     (code) => db.delete(rulerGroup).where(eq(rulerGroup.code, code))
-  )
-}
-
-async function deleteSeededCatalogues() {
-  await deleteSeededRecords(
-    seededCatalogues.map(({ code }) => code),
-    (code) => db.delete(catalogue).where(eq(catalogue.code, code))
   )
 }
 
@@ -820,6 +820,7 @@ async function seedCoinThemes(
 export async function seedDatabase() {
   await deleteSeededCoins()
 
+  const catalogueIdsByCode = await seedCatalogues()
   const issuerIdsByCode = await seedIssuers()
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
@@ -844,7 +845,6 @@ export async function seedDatabase() {
     distributionIdsByCode
   )
   const rulerIdsByCode = await seedRulers()
-  const catalogueIdsByCode = await seedCatalogues()
 
   const coinFaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
   await seedCoinFaceEngravers(coinFaceIdsByKey, engraverIdsByCode)

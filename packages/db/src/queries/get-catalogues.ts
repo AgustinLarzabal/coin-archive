@@ -5,16 +5,16 @@ import { catalogue } from "../schema/catalogue"
 import type { Catalogue } from "../schema/catalogue"
 
 const getCataloguesSelection = {
-  createdAt: catalogue.createdAt,
-  code: catalogue.code,
   id: catalogue.id,
+  code: catalogue.code,
   title: catalogue.title,
+  createdAt: catalogue.createdAt,
   updatedAt: catalogue.updatedAt,
 }
 
 export type CatalogueOption = Pick<
   Catalogue,
-  "code" | "createdAt" | "id" | "title" | "updatedAt"
+  "id" | "code" | "title" | "createdAt" | "updatedAt"
 >
 
 export async function getCatalogues(): Promise<CatalogueOption[]> {

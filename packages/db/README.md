@@ -54,6 +54,58 @@ The current core relationships map to these tables:
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
 
+## Catalogue model notes
+
+The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:
+
+- a Catalogue row defines only the catalogue identity and display metadata: UUID primary key, required `code`, required `title`, and timestamps
+- `catalogue.code` is the stable archive identity for the external catalogue and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `catalogue.title` is display text only; it helps humans read the source name but is not treated as identity and is allowed to repeat across rows
+- the schema preserves the preferred display casing stored in `catalogue.code`, but uniqueness and filter matching treat codes case-insensitively
+- the schema does not currently trim, slugify, or otherwise normalize `catalogue.code` or `catalogue.title` on write; callers must provide the intended persisted text
+
+Catalogue-specific requirements and constraints:
+
+- every Catalogue must have a non-null `code`
+- every Catalogue must have a non-null `title`
+- Catalogue Codes must be globally unique ignoring case through `catalogue_code_lower_unique_idx`
+- Catalogue Titles do not need to be unique
+- Catalogue primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Catalogue-specific indexes and query implications:
+
+- `catalogue_code_lower_unique_idx` protects the case-insensitive identity rule for catalogue codes
+- `catalogue_code_lookup_idx` supports shared case-insensitive lookups such as catalogue filtering in `getCoins`
+- `catalogue_title_code_sort_idx` supports the shared catalogue option ordering used by `getCatalogues`
+- `getCatalogues` is the package-owned read model for catalogue options and currently returns `id`, `code`, `title`, `createdAt`, and `updatedAt`
+- `getCatalogues` sorts catalogues by `title`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Catalogue can be referenced by many `coin_reference` rows
+- a Coin can hold multiple references from the same Catalogue as long as their normalized `number` values are distinct
+- deleting a Coin cascades to its `coin_reference` rows, which may indirectly free an otherwise referenced Catalogue for deletion later
+- deleting a Catalogue is restricted while any `coin_reference` row still points at it
+- Catalogue References are the join point between a Coin and a Catalogue; do not duplicate reference-number semantics onto the `catalogue` table itself
+
+Normalization and matching notes for Catalogue References:
+
+- `coin_reference.number` is opaque catalogue-assigned text, not a numeric field
+- reference deduplication is per Coin and per Catalogue, not global across the archive
+- equivalent reference numbers are compared by trimming outer whitespace, collapsing internal whitespace, and lowercasing before uniqueness checks
+- catalogue-code filtering in shared queries is case-insensitive
+- reference-number filtering in shared queries is normalized with the same whitespace-collapsing and case-folding rules, then matched as a prefix
+- when both `catalogueCode` and `referenceNumber` are supplied to `getCoins`, both parts must match the same stored `coin_reference` row
+
+Known limitations and non-goals:
+
+- the database does not verify that a Catalogue Code follows any external standard format beyond being present and unique ignoring case
+- the database does not verify that a Catalogue Title is canonical, publication-backed, or synchronized with any outside source
+- the database does not model catalogue editions, volumes, publishers, languages, authors, publication dates, or citation metadata yet
+- the database does not parse or structure catalogue reference numbers into prefixes, numeric parts, suffixes, or variants
+- the database does not currently encode catalogue-specific numbering rules, valid number formats, or cross-catalogue equivalence between references
+
 ## Core ER diagram
 
 ```mermaid
@@ -126,6 +178,7 @@ Consumers should import from `@workspace/db` instead of rebuilding database acce
 - Coin Comments are public display and export data only; they are not filter inputs, search inputs, sort keys, or Coin identity data
 - reuse exported read types from the package when app code needs the package-owned result shape
 - keep schema ownership, SQL behavior, and normalization rules in this package so apps do not drift
+- `getCatalogues` is the shared source for catalogue option lists; keep catalogue ordering and selection logic here rather than reimplementing it in app code
 
 ## Query behavior
 
@@ -141,6 +194,7 @@ The shared `getCoins` query is the package-owned contract for homepage filtering
 
 - `getThemes` returns reusable Theme options sorted by display name, then code
 - `getOrientations` returns reusable Orientation options sorted by display name, then code
+- `getCatalogues` returns reusable Catalogue options sorted by title, then code
 - Orientation is filtered by exact stable Orientation Code through `orientationCode`
 - Orientation filtering is case-insensitive, ignores blank input, returns no Coins for unknown Orientation Codes, and composes with the other `getCoins` filters using AND semantics
 - Coins with unknown Orientation are excluded only when `orientationCode` is present
@@ -148,6 +202,13 @@ The shared `getCoins` query is the package-owned contract for homepage filtering
 - Theme is filtered by exact stable Theme Code through `themeCode`
 - Theme filtering is case-insensitive, ignores blank input, returns no Coins for unknown Theme Codes, and composes with the other `getCoins` filters using AND semantics
 - Theme filtering uses the same attribution-filter pattern as Mint, so a Coin filtered by one matching Theme still returns all of its stored Themes in the nested `themes` collection
+
+- Catalogue is filtered in `getCoins` by exact stable Catalogue Code through `catalogueCode`
+- Reference Number is filtered in `getCoins` by normalized prefix through `referenceNumber`
+- Catalogue Code filtering is case-insensitive, ignores blank input, returns no Coins for unknown Catalogue Codes, and composes with the other `getCoins` filters using AND semantics
+- Reference Number filtering trims outer whitespace, collapses internal whitespace, compares case-insensitively, and composes with the other `getCoins` filters using AND semantics
+- when both `catalogueCode` and `referenceNumber` are present, they must match the same stored Catalogue Reference rather than two different references on the same Coin
+- Catalogue Reference filtering does not change the default newest-first Coin ordering
 
 - Currency is filtered by exact stable Currency Code through `currencyCode`
 - Face Value is filtered by exact stored major-unit numeric values through `minValue` and `maxValue`

@@ -1,0 +1,1 @@
+CREATE INDEX "catalogue_title_code_sort_idx" ON "catalogue" USING btree ("title","code");

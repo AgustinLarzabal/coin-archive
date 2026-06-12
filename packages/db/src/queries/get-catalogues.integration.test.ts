@@ -14,7 +14,7 @@ describe("getCatalogues integration", () => {
     })
     const anotherStandardCatalog = await createCatalogue({
       code: "SCWC",
-      title: "Standard Catalog of World Coins",
+      title: "Another Standard Catalog of World Coins",
     })
     const romanImperialCoinage = await createCatalogue({
       code: "RIC",
@@ -22,13 +22,6 @@ describe("getCatalogues integration", () => {
     })
 
     await expect(getCatalogues()).resolves.toStrictEqual([
-      {
-        id: romanImperialCoinage.id,
-        code: "RIC",
-        title: "Roman Imperial Coinage",
-        createdAt: romanImperialCoinage.createdAt,
-        updatedAt: romanImperialCoinage.updatedAt,
-      },
       {
         id: standardCatalog.id,
         code: "KM",
@@ -39,9 +32,16 @@ describe("getCatalogues integration", () => {
       {
         id: anotherStandardCatalog.id,
         code: "SCWC",
-        title: "Standard Catalog of World Coins",
+        title: "Another Standard Catalog of World Coins",
         createdAt: anotherStandardCatalog.createdAt,
         updatedAt: anotherStandardCatalog.updatedAt,
+      },
+      {
+        id: romanImperialCoinage.id,
+        code: "RIC",
+        title: "Roman Imperial Coinage",
+        createdAt: romanImperialCoinage.createdAt,
+        updatedAt: romanImperialCoinage.updatedAt,
       },
     ])
   })

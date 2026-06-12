@@ -11,6 +11,7 @@ import {
 export const catalogueSchemaNames = {
   codeLowerUniqueIndex: "catalogue_code_lower_unique_idx",
   codeLookupIndex: "catalogue_code_lookup_idx",
+  titleCodeSortIndex: "catalogue_title_code_sort_idx",
 } as const
 
 const timestamptzDateColumn = {
@@ -34,10 +35,19 @@ export const catalogue = pgTable(
       .defaultNow(),
   },
   (catalogue) => [
+    // Enforces case-insensitive uniqueness for stable catalogue codes.
     uniqueIndex(catalogueSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${catalogue.code})`
     ),
-    index(catalogueSchemaNames.codeLookupIndex).on(sql`lower(${catalogue.code})`),
+    // Supports case-insensitive lookups by catalogue code in shared queries.
+    index(catalogueSchemaNames.codeLookupIndex).on(
+      sql`lower(${catalogue.code})`
+    ),
+    // Supports getCatalogues ordering by title, then code.
+    index(catalogueSchemaNames.titleCodeSortIndex).on(
+      catalogue.title,
+      catalogue.code
+    ),
   ]
 )
 

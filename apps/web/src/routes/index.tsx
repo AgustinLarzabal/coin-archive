@@ -152,9 +152,11 @@ function App() {
   }
 
   async function updateHomeFilters({
+    catalogueCode,
     issuerCode,
     rulerCode,
   }: {
+    catalogueCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) {
@@ -162,7 +164,11 @@ function App() {
       resetScroll: false,
       search: (currentSearch) =>
         updateCoinSearchFilter(
-          updateCoinSearchFilter(currentSearch, "issuer", issuerCode),
+          updateCoinSearchFilter(
+            updateCoinSearchFilter(currentSearch, "catalogue", catalogueCode),
+            "issuer",
+            issuerCode
+          ),
           "ruler",
           rulerCode
         ),
@@ -236,14 +242,19 @@ function App() {
   return (
     <div className="p-5">
       <HomeFilters
+        catalogues={filterOptions.catalogues}
         issuers={filterOptions.issuers}
         rulers={filterOptions.rulers}
+        selectedCatalogueCode={search.catalogue}
         selectedIssuerCode={search.issuer}
         selectedRulerCode={search.ruler}
         onFiltersChange={updateHomeFilters}
       />
       {coinCodeFilterConfigs
-        .filter(({ name }) => name !== "issuer" && name !== "ruler")
+        .filter(
+          ({ name }) =>
+            name !== "catalogue" && name !== "issuer" && name !== "ruler"
+        )
         .map(({ name, getItems, ...comboboxProps }) => {
           const items = getItems(filterOptions)
 

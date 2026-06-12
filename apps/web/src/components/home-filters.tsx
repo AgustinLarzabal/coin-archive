@@ -1,27 +1,35 @@
-import type { IssuerOption, RulerOption } from "@workspace/db"
+import type { CatalogueOption, IssuerOption, RulerOption } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
 import type {
   Filter,
   FilterFieldConfig,
 } from "@workspace/ui/components/reui/filters"
-import { Crown, FunnelX, Globe, ListFilter } from "lucide-react"
-import { getRulerOptionLabel } from "../lib/coin-search"
+import { Crown, FunnelX, Globe, ListFilter, BookImage } from "lucide-react"
+import {
+  getCatalogueOptionLabel,
+  getRulerOptionLabel,
+} from "../lib/coin-search"
 
 type HomeFiltersProps = {
+  catalogues: CatalogueOption[]
   issuers: IssuerOption[]
   rulers: RulerOption[]
+  selectedCatalogueCode?: string
   selectedIssuerCode?: string
   selectedRulerCode?: string
   onFiltersChange: (filters: {
+    catalogueCode: string | undefined
     issuerCode: string | undefined
     rulerCode: string | undefined
   }) => Promise<void>
 }
 
 export function HomeFilters({
+  catalogues,
   issuers,
   rulers,
+  selectedCatalogueCode,
   selectedIssuerCode,
   selectedRulerCode,
   onFiltersChange,
@@ -30,6 +38,19 @@ export function HomeFilters({
     {
       group: "Select",
       fields: [
+        {
+          key: "catalogue",
+          label: "Catalogue",
+          icon: <BookImage strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: catalogues.map((catalogue) => ({
+            value: catalogue.code,
+            label: getCatalogueOptionLabel(catalogue),
+          })),
+        },
         {
           key: "issuer",
           label: "Issuer",
@@ -68,6 +89,9 @@ export function HomeFilters({
   ]
 
   const filters: Filter<string>[] = [
+    ...(selectedCatalogueCode
+      ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
+      : []),
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
@@ -77,12 +101,20 @@ export function HomeFilters({
   ]
 
   async function handleFiltersChange(nextFilters: Filter<string>[]) {
+    const catalogueFilter = nextFilters.find(
+      (filter) => filter.field === "catalogue"
+    )
+    const catalogueCode = catalogueFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
     const rulerCode = rulerFilter?.values[0]
 
     await onFiltersChange({
+      catalogueCode:
+        typeof catalogueCode === "string" && catalogueCode.length > 0
+          ? catalogueCode
+          : undefined,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
@@ -95,7 +127,11 @@ export function HomeFilters({
   }
 
   async function clearFilters() {
-    await onFiltersChange({ issuerCode: undefined, rulerCode: undefined })
+    await onFiltersChange({
+      catalogueCode: undefined,
+      issuerCode: undefined,
+      rulerCode: undefined,
+    })
   }
 
   return (

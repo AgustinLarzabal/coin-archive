@@ -5,7 +5,7 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, composition, currency, demonetization, edge, orientation, rim, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders catalogue, composition, currency, demonetization, edge, mint, orientation, rim, shape, minting technique, issuer, and ruler selections in the new home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
         catalogues={[
@@ -46,6 +46,15 @@ describe("HomeFilters", () => {
             updatedAt: timestamp,
           },
         ]}
+        mints={[
+          {
+            id: "mint-1",
+            code: "royal-mint-of-madrid",
+            name: "Royal Mint of Madrid",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
         orientations={[
           {
             id: "orientation-1",
@@ -60,6 +69,24 @@ describe("HomeFilters", () => {
             id: "rim-1",
             code: "raised-both-sides",
             name: "Raised, both sides",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
+        shapes={[
+          {
+            id: "shape-1",
+            code: "round",
+            name: "Round",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          },
+        ]}
+        techniques={[
+          {
+            id: "technique-1",
+            code: "milled",
+            name: "Milled",
             createdAt: timestamp,
             updatedAt: timestamp,
           },
@@ -85,8 +112,11 @@ describe("HomeFilters", () => {
         selectedDemonetization="not-demonetized"
         selectedEdgeCode="reeded"
         selectedIssuerCode="spain"
+        selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
         selectedRimCode="raised-both-sides"
+        selectedShapeCode="round"
+        selectedTechniqueCode="milled"
         selectedRulerCode="felipe-vi"
       />
     )
@@ -97,8 +127,11 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Euro")
     expect(markup).toContain("Not demonetized")
     expect(markup).toContain("Reeded")
+    expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")
+    expect(markup).toContain("Round")
+    expect(markup).toContain("Milled")
     expect(markup).toContain("Spain")
     expect(markup).toContain("Felipe VI")
     expect(markup).toContain("Clear")

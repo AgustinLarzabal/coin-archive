@@ -158,9 +158,12 @@ function App() {
     demonetization,
     edgeCode,
     issuerCode,
+    mintCode,
     orientationCode,
     rimCode,
     rulerCode,
+    shapeCode,
+    techniqueCode,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
@@ -172,9 +175,12 @@ function App() {
       | undefined
     edgeCode: string | undefined
     issuerCode: string | undefined
+    mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
     rulerCode: string | undefined
+    shapeCode: string | undefined
+    techniqueCode: string | undefined
   }) {
     await navigate({
       resetScroll: false,
@@ -209,8 +215,13 @@ function App() {
           "issuer",
           issuerCode
         )
-        const searchWithOrientation = updateCoinSearchFilter(
+        const searchWithMint = updateCoinSearchFilter(
           searchWithIssuer,
+          "mint",
+          mintCode
+        )
+        const searchWithOrientation = updateCoinSearchFilter(
+          searchWithMint,
           "orientation",
           orientationCode
         )
@@ -219,8 +230,18 @@ function App() {
           "rim",
           rimCode
         )
+        const searchWithShape = updateCoinSearchFilter(
+          searchWithRim,
+          "shape",
+          shapeCode
+        )
+        const searchWithTechnique = updateCoinSearchFilter(
+          searchWithShape,
+          "technique",
+          techniqueCode
+        )
 
-        return updateCoinSearchFilter(searchWithRim, "ruler", rulerCode)
+        return updateCoinSearchFilter(searchWithTechnique, "ruler", rulerCode)
       },
     })
   }
@@ -297,18 +318,24 @@ function App() {
         currencies={filterOptions.currencies}
         edges={filterOptions.edges}
         issuers={filterOptions.issuers}
+        mints={filterOptions.mints}
         orientations={filterOptions.orientations}
         rims={filterOptions.rims}
         rulers={filterOptions.rulers}
+        shapes={filterOptions.shapes}
+        techniques={filterOptions.techniques}
         selectedCatalogueCode={search.catalogue}
         selectedCompositionCode={search.composition}
         selectedCurrencyCode={search.currency}
         selectedDemonetization={search.demonetization}
         selectedEdgeCode={search.edge}
         selectedIssuerCode={search.issuer}
+        selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
         selectedRimCode={search.rim}
         selectedRulerCode={search.ruler}
+        selectedShapeCode={search.shape}
+        selectedTechniqueCode={search.technique}
         onFiltersChange={updateHomeFilters}
       />
       {coinCodeFilterConfigs
@@ -320,8 +347,11 @@ function App() {
             name !== "demonetization" &&
             name !== "edge" &&
             name !== "issuer" &&
+            name !== "mint" &&
             name !== "orientation" &&
             name !== "rim" &&
+            name !== "shape" &&
+            name !== "technique" &&
             name !== "ruler"
         )
         .map(({ name, getItems, ...comboboxProps }) => {

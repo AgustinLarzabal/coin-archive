@@ -5,9 +5,12 @@ import type {
   DemonetizationFilterValue,
   EdgeOption,
   IssuerOption,
+  MintOption,
   OrientationOption,
   RimOption,
   RulerOption,
+  ShapeOption,
+  TechniqueOption,
 } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
@@ -27,6 +30,9 @@ import {
   CircleArrowDown,
   BanknoteX,
   Circle,
+  Factory,
+  Diamond,
+  Anvil,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -34,9 +40,12 @@ import {
   getCompositionOptionLabel,
   getCurrencyOptionLabel,
   getEdgeOptionLabel,
+  getMintOptionLabel,
   getOrientationOptionLabel,
   getRimOptionLabel,
   getRulerOptionLabel,
+  getShapeOptionLabel,
+  getTechniqueOptionLabel,
 } from "../lib/coin-search"
 
 type HomeFiltersProps = {
@@ -45,18 +54,24 @@ type HomeFiltersProps = {
   currencies: CurrencyOption[]
   edges: EdgeOption[]
   issuers: IssuerOption[]
+  mints: MintOption[]
   orientations: OrientationOption[]
   rims: RimOption[]
   rulers: RulerOption[]
+  shapes: ShapeOption[]
+  techniques: TechniqueOption[]
   selectedCatalogueCode?: string
   selectedCompositionCode?: string
   selectedCurrencyCode?: string
   selectedEdgeCode?: string
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
+  selectedMintCode?: string
   selectedOrientationCode?: string
   selectedRimCode?: string
   selectedRulerCode?: string
+  selectedShapeCode?: string
+  selectedTechniqueCode?: string
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
@@ -64,9 +79,12 @@ type HomeFiltersProps = {
     demonetization: DemonetizationFilterValue | undefined
     edgeCode: string | undefined
     issuerCode: string | undefined
+    mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
     rulerCode: string | undefined
+    shapeCode: string | undefined
+    techniqueCode: string | undefined
   }) => Promise<void>
 }
 
@@ -76,18 +94,24 @@ export function HomeFilters({
   currencies,
   edges,
   issuers,
+  mints,
   orientations,
   rims,
   rulers,
+  shapes,
+  techniques,
   selectedCatalogueCode,
   selectedCompositionCode,
   selectedCurrencyCode,
   selectedDemonetization,
   selectedEdgeCode,
   selectedIssuerCode,
+  selectedMintCode,
   selectedOrientationCode,
   selectedRimCode,
   selectedRulerCode,
+  selectedShapeCode,
+  selectedTechniqueCode,
   onFiltersChange,
 }: HomeFiltersProps) {
   const fields: FilterFieldConfig<string>[] = [
@@ -180,6 +204,19 @@ export function HomeFilters({
           })),
         },
         {
+          key: "mint",
+          label: "Mint",
+          icon: <Factory strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: mints.map((mint) => ({
+            value: mint.code,
+            label: getMintOptionLabel(mint),
+          })),
+        },
+        {
           key: "orientation",
           label: "Orientation",
           icon: <CircleArrowDown strokeWidth={2} />,
@@ -203,6 +240,32 @@ export function HomeFilters({
           options: rims.map((rim) => ({
             value: rim.code,
             label: getRimOptionLabel(rim),
+          })),
+        },
+        {
+          key: "shape",
+          label: "Shape",
+          icon: <Diamond strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: shapes.map((shape) => ({
+            value: shape.code,
+            label: getShapeOptionLabel(shape),
+          })),
+        },
+        {
+          key: "technique",
+          label: "Minting Technique",
+          icon: <Anvil strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: techniques.map((technique) => ({
+            value: technique.code,
+            label: getTechniqueOptionLabel(technique),
           })),
         },
         {
@@ -241,10 +304,19 @@ export function HomeFilters({
     ...(selectedIssuerCode
       ? [createFilter("issuer", "is", [selectedIssuerCode])]
       : []),
+    ...(selectedMintCode
+      ? [createFilter("mint", "is", [selectedMintCode])]
+      : []),
     ...(selectedOrientationCode
       ? [createFilter("orientation", "is", [selectedOrientationCode])]
       : []),
     ...(selectedRimCode ? [createFilter("rim", "is", [selectedRimCode])] : []),
+    ...(selectedShapeCode
+      ? [createFilter("shape", "is", [selectedShapeCode])]
+      : []),
+    ...(selectedTechniqueCode
+      ? [createFilter("technique", "is", [selectedTechniqueCode])]
+      : []),
     ...(selectedRulerCode
       ? [createFilter("ruler", "is", [selectedRulerCode])]
       : []),
@@ -271,12 +343,20 @@ export function HomeFilters({
     const edgeCode = edgeFilter?.values[0]
     const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
     const issuerCode = issuerFilter?.values[0]
+    const mintFilter = nextFilters.find((filter) => filter.field === "mint")
+    const mintCode = mintFilter?.values[0]
     const orientationFilter = nextFilters.find(
       (filter) => filter.field === "orientation"
     )
     const orientationCode = orientationFilter?.values[0]
     const rimFilter = nextFilters.find((filter) => filter.field === "rim")
     const rimCode = rimFilter?.values[0]
+    const shapeFilter = nextFilters.find((filter) => filter.field === "shape")
+    const shapeCode = shapeFilter?.values[0]
+    const techniqueFilter = nextFilters.find(
+      (filter) => filter.field === "technique"
+    )
+    const techniqueCode = techniqueFilter?.values[0]
     const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
     const rulerCode = rulerFilter?.values[0]
 
@@ -307,12 +387,24 @@ export function HomeFilters({
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
           : undefined,
+      mintCode:
+        typeof mintCode === "string" && mintCode.length > 0
+          ? mintCode
+          : undefined,
       orientationCode:
         typeof orientationCode === "string" && orientationCode.length > 0
           ? orientationCode
           : undefined,
       rimCode:
         typeof rimCode === "string" && rimCode.length > 0 ? rimCode : undefined,
+      shapeCode:
+        typeof shapeCode === "string" && shapeCode.length > 0
+          ? shapeCode
+          : undefined,
+      techniqueCode:
+        typeof techniqueCode === "string" && techniqueCode.length > 0
+          ? techniqueCode
+          : undefined,
       rulerCode:
         typeof rulerCode === "string" && rulerCode.length > 0
           ? rulerCode
@@ -328,9 +420,12 @@ export function HomeFilters({
       demonetization: undefined,
       edgeCode: undefined,
       issuerCode: undefined,
+      mintCode: undefined,
       orientationCode: undefined,
       rimCode: undefined,
       rulerCode: undefined,
+      shapeCode: undefined,
+      techniqueCode: undefined,
     })
   }
 

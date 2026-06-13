@@ -61,11 +61,6 @@ type CreateCoinInput = {
   weight?: number
 }
 
-type CreateDistributionInput = {
-  code: string
-  name: string
-}
-
 type CreateEdgeInput = {
   code: string
   name: string
@@ -214,6 +209,26 @@ export async function createCurrency({
   return createdCurrency
 }
 
+type CreateDistributionInput = {
+  code: string
+  name: string
+}
+
+export async function createDistribution({
+  code,
+  name,
+}: CreateDistributionInput) {
+  const [createdDistribution] = await db
+    .insert(distribution)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdDistribution
+}
+
 export async function createIssuer({
   code,
   isoCode = "ZZ",
@@ -297,21 +312,6 @@ export async function createCoin({
     .returning()
 
   return createdCoin
-}
-
-export async function createDistribution({
-  code,
-  name,
-}: CreateDistributionInput) {
-  const [createdDistribution] = await db
-    .insert(distribution)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdDistribution
 }
 
 export async function createEdge({ code, name }: CreateEdgeInput) {

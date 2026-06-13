@@ -53,11 +53,11 @@ import {
 type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
+type DistributionIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
-type DistributionIdsByCode = Map<string, string>
 type EdgeIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
@@ -383,6 +383,48 @@ async function seedCurrencies(): Promise<CurrencyIdsByCode> {
   )
 }
 
+async function seedDistributions() {
+  for (const seededDistribution of seededDistributions) {
+    await db.execute(sql`
+      insert into "distribution" (
+        "code",
+        "name",
+        "created_at",
+        "updated_at"
+      ) values (
+        ${seededDistribution.code},
+        ${seededDistribution.name},
+        ${sql.param(seededDistribution.createdAt, distribution.createdAt)},
+        ${sql.param(seededDistribution.updatedAt, distribution.updatedAt)}
+      )
+      on conflict ((lower("code"))) do update
+      set
+        "name" = excluded."name",
+        "updated_at" = excluded."updated_at"
+    `)
+  }
+
+  const insertedDistributions = await db
+    .select({
+      id: distribution.id,
+      code: distribution.code,
+    })
+    .from(distribution)
+    .where(
+      inArray(
+        distribution.code,
+        seededDistributions.map(({ code }) => code)
+      )
+    )
+
+  return new Map(
+    insertedDistributions.map((insertedDistribution) => [
+      insertedDistribution.code,
+      insertedDistribution.id,
+    ])
+  ) satisfies DistributionIdsByCode
+}
+
 async function seedMints(): Promise<MintIdsByCode> {
   return seedRecordsByCode(
     seededMints,
@@ -499,58 +541,16 @@ async function seedRims(): Promise<RimIdsByCode> {
   })
 }
 
-async function seedDistributions() {
-  for (const seededDistribution of seededDistributions) {
-    await db.execute(sql`
-      insert into "distribution" (
-        "code",
-        "name",
-        "created_at",
-        "updated_at"
-      ) values (
-        ${seededDistribution.code},
-        ${seededDistribution.name},
-        ${sql.param(seededDistribution.createdAt, distribution.createdAt)},
-        ${sql.param(seededDistribution.updatedAt, distribution.updatedAt)}
-      )
-      on conflict ((lower("code"))) do update
-      set
-        "name" = excluded."name",
-        "updated_at" = excluded."updated_at"
-    `)
-  }
-
-  const insertedDistributions = await db
-    .select({
-      id: distribution.id,
-      code: distribution.code,
-    })
-    .from(distribution)
-    .where(
-      inArray(
-        distribution.code,
-        seededDistributions.map(({ code }) => code)
-      )
-    )
-
-  return new Map(
-    insertedDistributions.map((insertedDistribution) => [
-      insertedDistribution.code,
-      insertedDistribution.id,
-    ])
-  ) satisfies DistributionIdsByCode
-}
-
 async function seedCoins(
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
+  distributionIdsByCode: DistributionIdsByCode,
   edgeIdsByCode: EdgeIdsByCode,
   issuerIdsByCode: IssuerIdsByCode,
   orientationIdsByCode: OrientationIdsByCode,
   shapeIdsByCode: ShapeIdsByCode,
   rimIdsByCode: RimIdsByCode,
-  techniqueIdsByCode: TechniqueIdsByCode,
-  distributionIdsByCode: DistributionIdsByCode
+  techniqueIdsByCode: TechniqueIdsByCode
 ) {
   await db.delete(coin).where(
     inArray(
@@ -567,13 +567,13 @@ async function seedCoins(
           seededCoin,
           compositionIdsByCode,
           currencyIdsByCode,
+          distributionIdsByCode,
           edgeIdsByCode,
           issuerIdsByCode,
           orientationIdsByCode,
           shapeIdsByCode,
           rimIdsByCode,
-          techniqueIdsByCode,
-          distributionIdsByCode
+          techniqueIdsByCode
         )
       )
     )
@@ -823,6 +823,7 @@ export async function seedDatabase() {
   const catalogueIdsByCode = await seedCatalogues()
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
+  const distributionIdsByCode = await seedDistributions()
   const issuerIdsByCode = await seedIssuers()
   const edgeIdsByCode = await seedEdges()
   const mintIdsByCode = await seedMints()
@@ -832,7 +833,6 @@ export async function seedDatabase() {
   const rimIdsByCode = await seedRims()
   const techniqueIdsByCode = await seedTechniques()
   const themeIdsByCode = await seedThemes()
-  const distributionIdsByCode = await seedDistributions()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
     currencyIdsByCode,

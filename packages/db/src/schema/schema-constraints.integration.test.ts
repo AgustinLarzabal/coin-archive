@@ -1345,7 +1345,18 @@ describe("coin schema constraints", () => {
 describe("distribution schema constraints", () => {
   useTestDatabaseIsolation(db)
 
-  it("rejects duplicate distribution codes", async () => {
+  it("rejects distribution codes that are not lowercase slug-style text", async () => {
+    await expectConstraintError(
+      db.insert(distribution).values({
+        code: "Standard Circulation",
+        name: "Standard circulation",
+      }),
+      distributionSchemaNames.codeSlugCheck,
+      "23514"
+    )
+  })
+
+  it("rejects duplicate distribution codes ignoring case", async () => {
     await createDistribution({
       code: "standard-circulation",
       name: "Standard circulation",
@@ -1353,7 +1364,7 @@ describe("distribution schema constraints", () => {
 
     await expectConstraintError(
       db.insert(distribution).values({
-        code: "standard-circulation",
+        code: "STANDARD-CIRCULATION",
         name: "Duplicate Standard circulation",
       }),
       distributionSchemaNames.codeLowerUniqueIndex,

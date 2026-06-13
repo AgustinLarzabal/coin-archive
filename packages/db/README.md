@@ -95,6 +95,45 @@ Known limitations and non-goals:
 - the database does not decompose a Composition into structured percentages, layered alloys, plating metadata, or constituent materials
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Distribution model notes
+
+The `distribution` table models the shared distribution category attached directly to each Coin:
+
+- a Distribution row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `distribution.code` is the stable archive identity for the distribution and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `distribution.name` is display text only; it helps humans read the distribution label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat distribution codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `distribution.name` on write; callers must provide the intended persisted text
+
+Distribution-specific requirements and constraints:
+
+- every Distribution must have a non-null `code`
+- every Distribution must have a non-null `name`
+- Distribution Codes must be globally unique ignoring case through `distribution_code_lower_unique_idx`
+- Distribution Codes must satisfy the lowercase slug-style check enforced by `distribution_code_slug_check`
+- Distribution Names do not need to be unique
+- Distribution primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Distribution-specific indexes and query implications:
+
+- `distribution_code_lower_unique_idx` protects the case-insensitive identity rule for distribution codes
+- `distribution_code_lookup_idx` supports shared case-insensitive lookups such as distribution filtering in `getCoins`
+- `getDistributions` is the package-owned read model for distribution options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getDistributions` sorts distributions by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- every Coin must reference exactly one Distribution through `coin.distribution_id`
+- a Distribution can be referenced by many Coins
+- deleting a Distribution is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Distribution Name is canonical, policy-complete, or aligned with any external cataloguing standard
+- the database does not encode circulation eligibility, issuance intent, legal-tender status, or market availability rules beyond the selected shared category
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Currency model notes
 
 The `currency` table models the reusable denomination unit attached to each Coin's Face Value:

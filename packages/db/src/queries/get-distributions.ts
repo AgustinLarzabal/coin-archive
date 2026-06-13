@@ -5,16 +5,16 @@ import { distribution } from "../schema/distribution"
 import type { Distribution } from "../schema/distribution"
 
 const getDistributionsSelection = {
-  createdAt: distribution.createdAt,
-  code: distribution.code,
   id: distribution.id,
+  code: distribution.code,
   name: distribution.name,
+  createdAt: distribution.createdAt,
   updatedAt: distribution.updatedAt,
 }
 
 export type DistributionOption = Pick<
   Distribution,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getDistributions(): Promise<DistributionOption[]> {

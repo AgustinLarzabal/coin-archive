@@ -36,9 +36,11 @@ export const distribution = pgTable(
       .defaultNow(),
   },
   (distribution) => [
+    // Enforces case-insensitive uniqueness for stable distribution codes.
     uniqueIndex(distributionSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${distribution.code})`
     ),
+    // Supports case-insensitive lookups by distribution code in shared queries.
     index(distributionSchemaNames.codeLookupIndex).on(
       sql`lower(${distribution.code})`
     ),

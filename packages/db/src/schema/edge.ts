@@ -36,7 +36,9 @@ export const edge = pgTable(
       .defaultNow(),
   },
   (edge) => [
+    // Enforces case-insensitive uniqueness for stable edge codes.
     uniqueIndex(edgeSchemaNames.codeLowerUniqueIndex).on(sql`lower(${edge.code})`),
+    // Supports case-insensitive lookups by edge code in shared queries.
     index(edgeSchemaNames.codeLookupIndex).on(sql`lower(${edge.code})`),
     check(
       edgeSchemaNames.codeSlugCheck,

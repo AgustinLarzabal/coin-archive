@@ -319,7 +319,7 @@ describe("edge schema constraints", () => {
     )
   })
 
-  it("rejects duplicate edge codes", async () => {
+  it("rejects duplicate edge codes ignoring case", async () => {
     await db.insert(edge).values({
       code: "reeded",
       name: "Reeded",
@@ -327,7 +327,7 @@ describe("edge schema constraints", () => {
 
     await expectConstraintError(
       db.insert(edge).values({
-        code: "reeded",
+        code: "REEDED",
         name: "Duplicate Reeded",
       }),
       edgeSchemaNames.codeLowerUniqueIndex,

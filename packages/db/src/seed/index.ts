@@ -54,11 +54,11 @@ type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
+type EdgeIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
-type EdgeIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
@@ -133,6 +133,13 @@ async function deleteSeededCurrencies() {
   )
 }
 
+async function deleteSeededEdges() {
+  await deleteSeededRecords(
+    seededEdges.map(({ code }) => code),
+    (code) => db.delete(edge).where(eq(edge.code, code))
+  )
+}
+
 async function deleteSeededIssuers() {
   await deleteSeededRecords(
     seededIssuers.map(({ code }) => code),
@@ -172,13 +179,6 @@ async function deleteSeededEngravers() {
   await deleteSeededRecords(
     seededEngravers.map(({ code }) => code),
     (code) => db.delete(engraver).where(eq(engraver.code, code))
-  )
-}
-
-async function deleteSeededEdges() {
-  await deleteSeededRecords(
-    seededEdges.map(({ code }) => code),
-    (code) => db.delete(edge).where(eq(edge.code, code))
   )
 }
 
@@ -425,6 +425,21 @@ async function seedDistributions() {
   ) satisfies DistributionIdsByCode
 }
 
+async function seedEdges(): Promise<EdgeIdsByCode> {
+  return seedRecordsByCode(
+    seededEdges,
+    deleteSeededEdges,
+    async (seededEdge) => {
+      const [insertedEdge] = await db
+        .insert(edge)
+        .values(seededEdge)
+        .returning({ id: edge.id })
+
+      return insertedEdge.id
+    }
+  )
+}
+
 async function seedMints(): Promise<MintIdsByCode> {
   return seedRecordsByCode(
     seededMints,
@@ -451,21 +466,6 @@ async function seedEngravers(): Promise<EngraverIdsByCode> {
         .returning({ id: engraver.id })
 
       return insertedEngraver.id
-    }
-  )
-}
-
-async function seedEdges(): Promise<EdgeIdsByCode> {
-  return seedRecordsByCode(
-    seededEdges,
-    deleteSeededEdges,
-    async (seededEdge) => {
-      const [insertedEdge] = await db
-        .insert(edge)
-        .values(seededEdge)
-        .returning({ id: edge.id })
-
-      return insertedEdge.id
     }
   )
 }
@@ -824,8 +824,8 @@ export async function seedDatabase() {
   const compositionIdsByCode = await seedCompositions()
   const currencyIdsByCode = await seedCurrencies()
   const distributionIdsByCode = await seedDistributions()
-  const issuerIdsByCode = await seedIssuers()
   const edgeIdsByCode = await seedEdges()
+  const issuerIdsByCode = await seedIssuers()
   const mintIdsByCode = await seedMints()
   const engraverIdsByCode = await seedEngravers()
   const orientationIdsByCode = await seedOrientations()

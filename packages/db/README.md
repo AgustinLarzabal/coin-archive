@@ -176,6 +176,45 @@ Known limitations and non-goals:
 - the database does not model ISO codes, subdivisions, exchange rates, redenomination lineage, or date-bounded validity windows yet
 - the database does not currently prevent semantically overlapping rows with different codes and similar display names
 
+## Edge model notes
+
+The `edge` table models the shared edge treatment attached directly to each Coin:
+
+- an Edge row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `edge.code` is the stable archive identity for the edge and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `edge.name` is display text only; it helps humans read the edge label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat edge codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `edge.name` on write; callers must provide the intended persisted text
+
+Edge-specific requirements and constraints:
+
+- every Edge must have a non-null `code`
+- every Edge must have a non-null `name`
+- Edge Codes must be globally unique ignoring case through `edge_code_lower_unique_idx`
+- Edge Codes must satisfy the lowercase slug-style check enforced by `edge_code_slug_check`
+- Edge Names do not need to be unique
+- Edge primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Edge-specific indexes and query implications:
+
+- `edge_code_lower_unique_idx` protects the case-insensitive identity rule for edge codes
+- `edge_code_lookup_idx` supports shared case-insensitive lookups such as edge filtering in `getCoins`
+- `getEdges` is the package-owned read model for edge options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getEdges` sorts edges by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may reference zero or one Edge through `coin.edge_id`
+- an Edge can be referenced by many Coins
+- deleting an Edge is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that an Edge Name is canonical, source-complete, or aligned with every external cataloguing vocabulary
+- the database does not encode edge lettering, edge description text, or source-specific edge detail on the shared Edge row itself
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

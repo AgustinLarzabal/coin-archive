@@ -5,16 +5,16 @@ import { edge } from "../schema/edge"
 import type { Edge } from "../schema/edge"
 
 const getEdgesSelection = {
-  createdAt: edge.createdAt,
-  code: edge.code,
   id: edge.id,
+  code: edge.code,
   name: edge.name,
+  createdAt: edge.createdAt,
   updatedAt: edge.updatedAt,
 }
 
 export type EdgeOption = Pick<
   Edge,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getEdges(): Promise<EdgeOption[]> {

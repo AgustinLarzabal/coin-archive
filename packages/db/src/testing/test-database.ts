@@ -51,6 +51,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(rim)
   await database.delete(rulerGroup)
   await database.delete(ruler)
+  await database.delete(shape)
   await database.delete(coinReference)
   await database.delete(coinFaceEngraver)
   await database.delete(coinTheme)
@@ -58,7 +59,6 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(coinRuler)
   await database.delete(coinFace)
   await database.delete(coin)
-  await database.delete(shape)
   await database.delete(technique)
   await database.delete(theme)
 }

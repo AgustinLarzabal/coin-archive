@@ -5,16 +5,16 @@ import { shape } from "../schema/shape"
 import type { Shape } from "../schema/shape"
 
 const getShapesSelection = {
-  createdAt: shape.createdAt,
-  code: shape.code,
   id: shape.id,
+  code: shape.code,
   name: shape.name,
+  createdAt: shape.createdAt,
   updatedAt: shape.updatedAt,
 }
 
 export type ShapeOption = Pick<
   Shape,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getShapes(): Promise<ShapeOption[]> {

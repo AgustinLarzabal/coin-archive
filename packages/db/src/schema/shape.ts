@@ -36,7 +36,9 @@ export const shape = pgTable(
       .defaultNow(),
   },
   (shape) => [
+    // Enforces case-insensitive uniqueness for stable shape codes.
     uniqueIndex(shapeSchemaNames.codeLowerUniqueIndex).on(sql`lower(${shape.code})`),
+    // Supports case-insensitive lookups by shape code in shared queries.
     index(shapeSchemaNames.codeLookupIndex).on(sql`lower(${shape.code})`),
     check(
       shapeSchemaNames.codeSlugCheck,

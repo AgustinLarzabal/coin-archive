@@ -637,7 +637,7 @@ describe("shape schema constraints", () => {
     )
   })
 
-  it("rejects duplicate shape codes", async () => {
+  it("rejects duplicate shape codes ignoring case", async () => {
     await db.insert(shape).values({
       code: "round",
       name: "Round",
@@ -645,7 +645,7 @@ describe("shape schema constraints", () => {
 
     await expectConstraintError(
       db.insert(shape).values({
-        code: "round",
+        code: "ROUND",
         name: "Duplicate round",
       }),
       shapeSchemaNames.codeLowerUniqueIndex,

@@ -64,11 +64,6 @@ type CreateTechniqueInput = {
   name: string
 }
 
-type CreateShapeInput = {
-  code: string
-  name: string
-}
-
 type CreateCoinRulerInput = {
   coinId: string
   rulerId: string
@@ -340,6 +335,23 @@ export async function createRuler({
   return createdRuler
 }
 
+type CreateShapeInput = {
+  code: string
+  name: string
+}
+
+export async function createShape({ code, name }: CreateShapeInput) {
+  const [createdShape] = await db
+    .insert(shape)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdShape
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -428,18 +440,6 @@ export async function createTechnique({ code, name }: CreateTechniqueInput) {
     .returning()
 
   return createdTechnique
-}
-
-export async function createShape({ code, name }: CreateShapeInput) {
-  const [createdShape] = await db
-    .insert(shape)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdShape
 }
 
 export async function createCoinRuler({

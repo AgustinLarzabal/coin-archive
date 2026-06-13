@@ -62,8 +62,8 @@ type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
-type CoinIdsByTitle = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
+type CoinIdsByTitle = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
@@ -189,6 +189,13 @@ async function deleteSeededRulers() {
   )
 }
 
+async function deleteSeededShapes() {
+  await deleteSeededRecords(
+    seededShapes.map(({ code }) => code),
+    (code) => db.delete(shape).where(eq(shape.code, code))
+  )
+}
+
 async function deleteSeededCoins() {
   await deleteSeededRecords(
     seededCoins.map(({ title }) => title),
@@ -207,13 +214,6 @@ async function deleteSeededTechniques() {
   await deleteSeededRecords(
     seededTechniques.map(({ code }) => code),
     (code) => db.delete(technique).where(eq(technique.code, code))
-  )
-}
-
-async function deleteSeededShapes() {
-  await deleteSeededRecords(
-    seededShapes.map(({ code }) => code),
-    (code) => db.delete(shape).where(eq(shape.code, code))
   )
 }
 
@@ -496,6 +496,21 @@ async function seedRulers() {
   return rulerIdsByCode
 }
 
+async function seedShapes(): Promise<ShapeIdsByCode> {
+  return seedRecordsByCode(
+    seededShapes,
+    deleteSeededShapes,
+    async (seededShape) => {
+      const [insertedShape] = await db
+        .insert(shape)
+        .values(seededShape)
+        .returning({ id: shape.id })
+
+      return insertedShape.id
+    }
+  )
+}
+
 async function seedThemes(): Promise<ThemeIdsByCode> {
   return seedRecordsByCode(
     seededThemes,
@@ -522,21 +537,6 @@ async function seedTechniques(): Promise<TechniqueIdsByCode> {
         .returning({ id: technique.id })
 
       return insertedTechnique.id
-    }
-  )
-}
-
-async function seedShapes(): Promise<ShapeIdsByCode> {
-  return seedRecordsByCode(
-    seededShapes,
-    deleteSeededShapes,
-    async (seededShape) => {
-      const [insertedShape] = await db
-        .insert(shape)
-        .values(seededShape)
-        .returning({ id: shape.id })
-
-      return insertedShape.id
     }
   )
 }

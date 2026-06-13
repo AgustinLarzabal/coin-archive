@@ -69,17 +69,6 @@ type CreateShapeInput = {
   name: string
 }
 
-type CreateRulerGroupInput = {
-  code: string
-  name: string
-}
-
-type CreateRulerInput = {
-  code: string
-  name: string
-  rulerGroupId?: string
-}
-
 type CreateCoinRulerInput = {
   coinId: string
   rulerId: string
@@ -311,6 +300,46 @@ export async function createRim({ code, name }: CreateRimInput) {
   return createdRim
 }
 
+type CreateRulerGroupInput = {
+  code: string
+  name: string
+}
+
+export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
+  const [createdRulerGroup] = await db
+    .insert(rulerGroup)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdRulerGroup
+}
+
+type CreateRulerInput = {
+  code: string
+  name: string
+  rulerGroupId?: string
+}
+
+export async function createRuler({
+  code,
+  name,
+  rulerGroupId,
+}: CreateRulerInput) {
+  const [createdRuler] = await db
+    .insert(ruler)
+    .values({
+      code,
+      name,
+      rulerGroupId,
+    })
+    .returning()
+
+  return createdRuler
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -411,35 +440,6 @@ export async function createShape({ code, name }: CreateShapeInput) {
     .returning()
 
   return createdShape
-}
-
-export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {
-  const [createdRulerGroup] = await db
-    .insert(rulerGroup)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdRulerGroup
-}
-
-export async function createRuler({
-  code,
-  name,
-  rulerGroupId,
-}: CreateRulerInput) {
-  const [createdRuler] = await db
-    .insert(ruler)
-    .values({
-      code,
-      name,
-      rulerGroupId,
-    })
-    .returning()
-
-  return createdRuler
 }
 
 export async function createCoinRuler({

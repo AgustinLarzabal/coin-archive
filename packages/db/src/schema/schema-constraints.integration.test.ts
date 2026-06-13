@@ -1768,6 +1768,25 @@ describe("ruler group schema constraints", () => {
       "23505"
     )
   })
+
+  it("rejects deleting a ruler group while a ruler still references it", async () => {
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+
+    await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+      rulerGroupId: bourbon.id,
+    })
+
+    await expectConstraintError(
+      db.delete(rulerGroup).where(sql`${rulerGroup.id} = ${bourbon.id}`),
+      "ruler_ruler_group_id_ruler_group_id_fk",
+      "23001"
+    )
+  })
 })
 
 describe("ruler schema constraints", () => {
@@ -1809,24 +1828,6 @@ describe("ruler schema constraints", () => {
     ).resolves.toBeDefined()
   })
 
-  it("rejects deleting a ruler group while a ruler still references it", async () => {
-    const bourbon = await createRulerGroup({
-      code: "house-of-bourbon",
-      name: "House of Bourbon",
-    })
-
-    await createRuler({
-      code: "felipe-vi",
-      name: "Felipe VI",
-      rulerGroupId: bourbon.id,
-    })
-
-    await expectConstraintError(
-      db.delete(rulerGroup).where(sql`${rulerGroup.id} = ${bourbon.id}`),
-      "ruler_ruler_group_id_ruler_group_id_fk",
-      "23001"
-    )
-  })
 })
 
 describe("coin ruler schema constraints", () => {

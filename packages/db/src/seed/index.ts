@@ -175,17 +175,17 @@ async function deleteSeededRims() {
   )
 }
 
-async function deleteSeededRulers() {
-  await deleteSeededRecords(
-    seededRulers.map(({ code }) => code),
-    (code) => db.delete(ruler).where(eq(ruler.code, code))
-  )
-}
-
 async function deleteSeededRulerGroups() {
   await deleteSeededRecords(
     seededRulerGroups.map(({ code }) => code),
     (code) => db.delete(rulerGroup).where(eq(rulerGroup.code, code))
+  )
+}
+
+async function deleteSeededRulers() {
+  await deleteSeededRecords(
+    seededRulers.map(({ code }) => code),
+    (code) => db.delete(ruler).where(eq(ruler.code, code))
   )
 }
 
@@ -215,52 +215,6 @@ async function deleteSeededShapes() {
     seededShapes.map(({ code }) => code),
     (code) => db.delete(shape).where(eq(shape.code, code))
   )
-}
-
-async function seedRulerGroups() {
-  const rulerGroupIdsByCode: RulerGroupIdsByCode = new Map()
-
-  await deleteSeededRulerGroups()
-
-  for (const seededRulerGroup of seededRulerGroups) {
-    const [insertedRulerGroup] = await db
-      .insert(rulerGroup)
-      .values(seededRulerGroup)
-      .returning({ id: rulerGroup.id })
-
-    rulerGroupIdsByCode.set(seededRulerGroup.code, insertedRulerGroup.id)
-  }
-
-  return rulerGroupIdsByCode
-}
-
-async function seedRulers() {
-  const rulerIdsByCode: RulerIdsByCode = new Map()
-
-  await deleteSeededRulers()
-  const rulerGroupIdsByCode = await seedRulerGroups()
-
-  for (const seededRuler of seededRulers) {
-    const { rulerGroupCode, ...seededRulerValues } = seededRuler
-
-    const [insertedRuler] = await db
-      .insert(ruler)
-      .values({
-        ...seededRulerValues,
-        rulerGroupId: rulerGroupCode
-          ? getRequiredSeededId(
-              rulerGroupIdsByCode,
-              rulerGroupCode,
-              "ruler group"
-            )
-          : undefined,
-      })
-      .returning({ id: ruler.id })
-
-    rulerIdsByCode.set(seededRuler.code, insertedRuler.id)
-  }
-
-  return rulerIdsByCode
 }
 
 async function seedCatalogues() {
@@ -494,6 +448,52 @@ async function seedRims(): Promise<RimIdsByCode> {
 
     return insertedRim.id
   })
+}
+
+async function seedRulerGroups() {
+  const rulerGroupIdsByCode: RulerGroupIdsByCode = new Map()
+
+  await deleteSeededRulerGroups()
+
+  for (const seededRulerGroup of seededRulerGroups) {
+    const [insertedRulerGroup] = await db
+      .insert(rulerGroup)
+      .values(seededRulerGroup)
+      .returning({ id: rulerGroup.id })
+
+    rulerGroupIdsByCode.set(seededRulerGroup.code, insertedRulerGroup.id)
+  }
+
+  return rulerGroupIdsByCode
+}
+
+async function seedRulers() {
+  const rulerIdsByCode: RulerIdsByCode = new Map()
+
+  await deleteSeededRulers()
+  const rulerGroupIdsByCode = await seedRulerGroups()
+
+  for (const seededRuler of seededRulers) {
+    const { rulerGroupCode, ...seededRulerValues } = seededRuler
+
+    const [insertedRuler] = await db
+      .insert(ruler)
+      .values({
+        ...seededRulerValues,
+        rulerGroupId: rulerGroupCode
+          ? getRequiredSeededId(
+              rulerGroupIdsByCode,
+              rulerGroupCode,
+              "ruler group"
+            )
+          : undefined,
+      })
+      .returning({ id: ruler.id })
+
+    rulerIdsByCode.set(seededRuler.code, insertedRuler.id)
+  }
+
+  return rulerIdsByCode
 }
 
 async function seedThemes(): Promise<ThemeIdsByCode> {

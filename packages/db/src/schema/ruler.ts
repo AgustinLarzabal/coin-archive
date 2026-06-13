@@ -27,8 +27,8 @@ export const ruler = pgTable(
     id: uuid("id")
       .primaryKey()
       .default(sql`uuidv7()`),
-    name: varchar("name", { length: 255 }).notNull(),
     code: varchar("code", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
     rulerGroupId: uuid("ruler_group_id").references(() => rulerGroup.id, {
       onDelete: "restrict",
     }),
@@ -40,7 +40,9 @@ export const ruler = pgTable(
       .defaultNow(),
   },
   (ruler) => [
+    // Ruler codes are lowercase slug-style, so a plain unique index is enough.
     uniqueIndex(rulerSchemaNames.codeUniqueIndex).on(ruler.code),
+    // Supports joins and filters by the optional flat ruler-group label.
     index(rulerSchemaNames.rulerGroupIdIndex).on(ruler.rulerGroupId),
     check(
       rulerSchemaNames.codeSlugCheck,

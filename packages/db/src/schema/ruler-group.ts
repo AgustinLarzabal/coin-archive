@@ -24,8 +24,8 @@ export const rulerGroup = pgTable(
     id: uuid("id")
       .primaryKey()
       .default(sql`uuidv7()`),
-    name: varchar("name", { length: 255 }).notNull(),
     code: varchar("code", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -34,6 +34,7 @@ export const rulerGroup = pgTable(
       .defaultNow(),
   },
   (rulerGroup) => [
+    // Ruler group codes are lowercase slug-style, so a plain unique index is enough.
     uniqueIndex(rulerGroupSchemaNames.codeUniqueIndex).on(rulerGroup.code),
     check(
       rulerGroupSchemaNames.codeSlugCheck,

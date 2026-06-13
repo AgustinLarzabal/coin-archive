@@ -415,6 +415,84 @@ Known limitations and non-goals:
 - the database does not model face-specific rim applicability, source-specific wording, or uncertainty metadata on the shared Rim row
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Ruler Group model notes
+
+The `ruler_group` table models the shared flat grouping label that may be attached to a Ruler:
+
+- a Ruler Group row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `ruler_group.code` is the stable archive identity for the ruler group and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `ruler_group.name` is display text only; it helps humans read the ruler group label but is not treated as identity and is allowed to repeat across rows
+- ruler group codes are required lowercase slug-style text and are unique as stored
+- the schema does not currently trim, slugify, or otherwise normalize `ruler_group.name` on write; callers must provide the intended persisted text
+
+Ruler Group-specific requirements and constraints:
+
+- every Ruler Group must have a non-null `code`
+- every Ruler Group must have a non-null `name`
+- Ruler Group Codes must be globally unique through `ruler_group_code_unique_idx`
+- Ruler Group Codes must satisfy the lowercase slug-style check enforced by `ruler_group_code_slug_check`
+- Ruler Group Names do not need to be unique
+- Ruler Group primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Ruler Group-specific indexes and query implications:
+
+- `ruler_group_code_unique_idx` protects ruler group identity by code
+- Ruler Groups are currently exposed through `getRulers` as nested optional group data rather than through a standalone query
+
+Relationship and lifecycle notes:
+
+- a Ruler may reference zero or one Ruler Group through `ruler.ruler_group_id`
+- a Ruler Group can be referenced by many Rulers
+- deleting a Ruler Group is restricted while any Ruler still points at it
+
+Known limitations and non-goals:
+
+- the database does not enforce hierarchy or parent-child structure between ruler groups; they are intentionally flat labels
+- the database does not verify that a Ruler Group Name is canonical or aligned with every historical classification scheme
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
+## Ruler model notes
+
+The `ruler` table models the historical person attributed to a Coin, plus an optional flat Ruler Group label:
+
+- a Ruler row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, optional `ruler_group_id`, and timestamps
+- `ruler.code` is the stable archive identity for the ruler and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `ruler.name` is display text only; it helps humans read the ruler label but is not treated as identity and is allowed to repeat across rows
+- `ruler.ruler_group_id` records an optional flat grouping label and does not change the ruler's own identity
+- ruler codes are required lowercase slug-style text and are unique as stored
+- the schema does not currently trim, slugify, or otherwise normalize `ruler.name` on write; callers must provide the intended persisted text
+
+Ruler-specific requirements and constraints:
+
+- every Ruler must have a non-null `code`
+- every Ruler must have a non-null `name`
+- Ruler Codes must be globally unique through `ruler_code_unique_idx`
+- Ruler Codes must satisfy the lowercase slug-style check enforced by `ruler_code_slug_check`
+- `ruler_group_id` is optional
+- Ruler Names do not need to be unique
+- Ruler primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Ruler-specific indexes and query implications:
+
+- `ruler_code_unique_idx` protects ruler identity by code
+- `ruler_ruler_group_id_idx` supports joins and filters by the optional ruler-group label
+- `getRulers` is the package-owned read model for ruler options and currently returns `id`, `code`, `name`, `createdAt`, `updatedAt`, and nested optional `group` data with `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getRulers` sorts rulers by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may be linked to zero or more Rulers through `coin_ruler`
+- a Ruler may reference zero or one Ruler Group through `ruler.ruler_group_id`
+- deleting a Ruler is restricted while any coin attribution still points at it
+
+Known limitations and non-goals:
+
+- the database does not encode reign dates, offices, confidence levels, or attribution notes on the shared Ruler row
+- the database does not make Ruler Group membership imply coin filtering by that group; ruler filters match direct ruler attributions only
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

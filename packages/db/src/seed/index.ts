@@ -64,8 +64,8 @@ type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
-type CoinIdsByTitle = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
+type CoinIdsByTitle = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
 
 function getRequiredSeededId(
@@ -203,17 +203,17 @@ async function deleteSeededTechniques() {
   )
 }
 
-async function deleteSeededCoins() {
-  await deleteSeededRecords(
-    seededCoins.map(({ title }) => title),
-    (title) => db.delete(coin).where(eq(coin.title, title))
-  )
-}
-
 async function deleteSeededThemes() {
   await deleteSeededRecords(
     seededThemes.map(({ code }) => code),
     (code) => db.delete(theme).where(eq(theme.code, code))
+  )
+}
+
+async function deleteSeededCoins() {
+  await deleteSeededRecords(
+    seededCoins.map(({ title }) => title),
+    (title) => db.delete(coin).where(eq(coin.title, title))
   )
 }
 

@@ -36,7 +36,9 @@ export const theme = pgTable(
       .defaultNow(),
   },
   (theme) => [
+    // Enforces case-insensitive uniqueness for stable theme codes.
     uniqueIndex(themeSchemaNames.codeLowerUniqueIndex).on(sql`lower(${theme.code})`),
+    // Supports case-insensitive lookups by theme code in shared queries.
     index(themeSchemaNames.codeLookupIndex).on(sql`lower(${theme.code})`),
     check(
       themeSchemaNames.codeSlugCheck,

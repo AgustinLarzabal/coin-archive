@@ -5,16 +5,16 @@ import { theme } from "../schema/theme"
 import type { Theme } from "../schema/theme"
 
 const getThemesSelection = {
-  createdAt: theme.createdAt,
-  code: theme.code,
   id: theme.id,
+  code: theme.code,
   name: theme.name,
+  createdAt: theme.createdAt,
   updatedAt: theme.updatedAt,
 }
 
 export type ThemeOption = Pick<
   Theme,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getThemes(): Promise<ThemeOption[]> {

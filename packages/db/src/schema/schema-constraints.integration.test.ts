@@ -431,7 +431,7 @@ describe("theme schema constraints", () => {
     )
   })
 
-  it("rejects duplicate theme codes", async () => {
+  it("rejects duplicate theme codes ignoring case", async () => {
     await db.insert(theme).values({
       code: "flag",
       name: "Flag",
@@ -439,7 +439,7 @@ describe("theme schema constraints", () => {
 
     await expectConstraintError(
       db.insert(theme).values({
-        code: "flag",
+        code: "FLAG",
         name: "Duplicate Flag",
       }),
       themeSchemaNames.codeLowerUniqueIndex,

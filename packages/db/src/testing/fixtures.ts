@@ -54,11 +54,6 @@ type CreateCoinInput = {
   weight?: number
 }
 
-type CreateThemeInput = {
-  code: string
-  name: string
-}
-
 type CreateCoinRulerInput = {
   coinId: string
   rulerId: string
@@ -364,6 +359,23 @@ export async function createTechnique({ code, name }: CreateTechniqueInput) {
   return createdTechnique
 }
 
+type CreateThemeInput = {
+  code: string
+  name: string
+}
+
+export async function createTheme({ code, name }: CreateThemeInput) {
+  const [createdTheme] = await db
+    .insert(theme)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdTheme
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -428,18 +440,6 @@ export async function createCoin({
     .returning()
 
   return createdCoin
-}
-
-export async function createTheme({ code, name }: CreateThemeInput) {
-  const [createdTheme] = await db
-    .insert(theme)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdTheme
 }
 
 export async function createCoinRuler({

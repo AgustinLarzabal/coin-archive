@@ -54,11 +54,6 @@ type CreateCoinInput = {
   weight?: number
 }
 
-type CreateMintInput = {
-  code: string
-  name: string
-}
-
 type CreateOrientationInput = {
   code: string
   name: string
@@ -272,6 +267,23 @@ export async function createIssuer({
   return createdIssuer
 }
 
+type CreateMintInput = {
+  code: string
+  name: string
+}
+
+export async function createMint({ code, name }: CreateMintInput) {
+  const [createdMint] = await db
+    .insert(mint)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdMint
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -336,18 +348,6 @@ export async function createCoin({
     .returning()
 
   return createdCoin
-}
-
-export async function createMint({ code, name }: CreateMintInput) {
-  const [createdMint] = await db
-    .insert(mint)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdMint
 }
 
 export async function createOrientation({

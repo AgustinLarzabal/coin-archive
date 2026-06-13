@@ -36,7 +36,9 @@ export const mint = pgTable(
       .defaultNow(),
   },
   (mint) => [
+    // Enforces case-insensitive uniqueness for stable mint codes.
     uniqueIndex(mintSchemaNames.codeLowerUniqueIndex).on(sql`lower(${mint.code})`),
+    // Supports case-insensitive lookups by mint code in shared queries.
     index(mintSchemaNames.codeLookupIndex).on(sql`lower(${mint.code})`),
     check(
       mintSchemaNames.codeSlugCheck,

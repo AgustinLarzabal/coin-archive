@@ -298,6 +298,45 @@ Known limitations and non-goals:
 - the database does not verify that an Issuer Name or ISO Code is historically correct for the coin's issue dates
 - the database does not model richer issuer periods, jurisdiction boundaries, or alternate naming histories yet
 
+## Mint model notes
+
+The `mint` table models the shared producing facility or minting authority that may be attributed to a Coin:
+
+- a Mint row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `mint.code` is the stable archive identity for the mint and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `mint.name` is display text only; it helps humans read the mint label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat mint codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `mint.name` on write; callers must provide the intended persisted text
+
+Mint-specific requirements and constraints:
+
+- every Mint must have a non-null `code`
+- every Mint must have a non-null `name`
+- Mint Codes must be globally unique ignoring case through `mint_code_lower_unique_idx`
+- Mint Codes must satisfy the lowercase slug-style check enforced by `mint_code_slug_check`
+- Mint Names do not need to be unique
+- Mint primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Mint-specific indexes and query implications:
+
+- `mint_code_lower_unique_idx` protects the case-insensitive identity rule for mint codes
+- `mint_code_lookup_idx` supports shared case-insensitive lookups such as mint filtering in `getCoins`
+- `getMints` is the package-owned read model for mint options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getMints` sorts mints by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may be linked to zero or more Mints through `coin_mint`
+- a Mint can be referenced by many `coin_mint` rows
+- deleting a Mint is restricted while any mint attribution still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Mint Name is canonical, geographically precise, or aligned with every external cataloguing vocabulary
+- the database does not model mint marks, operating periods, locations, confidence levels, or source-specific attribution notes yet
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

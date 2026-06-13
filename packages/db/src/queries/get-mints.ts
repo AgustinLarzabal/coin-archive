@@ -5,16 +5,16 @@ import { mint } from "../schema/mint"
 import type { Mint } from "../schema/mint"
 
 const getMintsSelection = {
-  createdAt: mint.createdAt,
-  code: mint.code,
   id: mint.id,
+  code: mint.code,
   name: mint.name,
+  createdAt: mint.createdAt,
   updatedAt: mint.updatedAt,
 }
 
 export type MintOption = Pick<
   Mint,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getMints(): Promise<MintOption[]> {

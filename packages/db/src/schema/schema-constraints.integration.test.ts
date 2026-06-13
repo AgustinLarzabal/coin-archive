@@ -372,7 +372,7 @@ describe("mint schema constraints", () => {
     )
   })
 
-  it("rejects duplicate mint codes", async () => {
+  it("rejects duplicate mint codes ignoring case", async () => {
     await db.insert(mint).values({
       code: "royal-mint-of-madrid",
       name: "Royal Mint of Madrid",
@@ -380,7 +380,7 @@ describe("mint schema constraints", () => {
 
     await expectConstraintError(
       db.insert(mint).values({
-        code: "royal-mint-of-madrid",
+        code: "ROYAL-MINT-OF-MADRID",
         name: "Duplicate Royal Mint of Madrid",
       }),
       mintSchemaNames.codeLowerUniqueIndex,

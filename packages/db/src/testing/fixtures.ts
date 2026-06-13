@@ -66,11 +66,6 @@ type CreateMintInput = {
   name: string
 }
 
-type CreateEngraverInput = {
-  code: string
-  name: string
-}
-
 type CreateOrientationInput = {
   code: string
   name: string
@@ -241,6 +236,23 @@ export async function createEdge({ code, name }: CreateEdgeInput) {
   return createdEdge
 }
 
+type CreateEngraverInput = {
+  code: string
+  name: string
+}
+
+export async function createEngraver({ code, name }: CreateEngraverInput) {
+  const [createdEngraver] = await db
+    .insert(engraver)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdEngraver
+}
+
 export async function createIssuer({
   code,
   isoCode = "ZZ",
@@ -336,18 +348,6 @@ export async function createMint({ code, name }: CreateMintInput) {
     .returning()
 
   return createdMint
-}
-
-export async function createEngraver({ code, name }: CreateEngraverInput) {
-  const [createdEngraver] = await db
-    .insert(engraver)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdEngraver
 }
 
 export async function createOrientation({

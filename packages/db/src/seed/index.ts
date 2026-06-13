@@ -55,6 +55,7 @@ type CompositionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type EdgeIdsByCode = Map<string, string>
+type EngraverIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
@@ -65,7 +66,6 @@ type RimIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
-type EngraverIdsByCode = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
 
 function getRequiredSeededId(
@@ -140,6 +140,13 @@ async function deleteSeededEdges() {
   )
 }
 
+async function deleteSeededEngravers() {
+  await deleteSeededRecords(
+    seededEngravers.map(({ code }) => code),
+    (code) => db.delete(engraver).where(eq(engraver.code, code))
+  )
+}
+
 async function deleteSeededIssuers() {
   await deleteSeededRecords(
     seededIssuers.map(({ code }) => code),
@@ -172,13 +179,6 @@ async function deleteSeededMints() {
   await deleteSeededRecords(
     seededMints.map(({ code }) => code),
     (code) => db.delete(mint).where(eq(mint.code, code))
-  )
-}
-
-async function deleteSeededEngravers() {
-  await deleteSeededRecords(
-    seededEngravers.map(({ code }) => code),
-    (code) => db.delete(engraver).where(eq(engraver.code, code))
   )
 }
 
@@ -440,21 +440,6 @@ async function seedEdges(): Promise<EdgeIdsByCode> {
   )
 }
 
-async function seedMints(): Promise<MintIdsByCode> {
-  return seedRecordsByCode(
-    seededMints,
-    deleteSeededMints,
-    async (seededMint) => {
-      const [insertedMint] = await db
-        .insert(mint)
-        .values(seededMint)
-        .returning({ id: mint.id })
-
-      return insertedMint.id
-    }
-  )
-}
-
 async function seedEngravers(): Promise<EngraverIdsByCode> {
   return seedRecordsByCode(
     seededEngravers,
@@ -466,6 +451,21 @@ async function seedEngravers(): Promise<EngraverIdsByCode> {
         .returning({ id: engraver.id })
 
       return insertedEngraver.id
+    }
+  )
+}
+
+async function seedMints(): Promise<MintIdsByCode> {
+  return seedRecordsByCode(
+    seededMints,
+    deleteSeededMints,
+    async (seededMint) => {
+      const [insertedMint] = await db
+        .insert(mint)
+        .values(seededMint)
+        .returning({ id: mint.id })
+
+      return insertedMint.id
     }
   )
 }

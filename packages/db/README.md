@@ -215,6 +215,45 @@ Known limitations and non-goals:
 - the database does not encode edge lettering, edge description text, or source-specific edge detail on the shared Edge row itself
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Engraver model notes
+
+The `engraver` table models the shared engraver identity used for face-specific engraver attributions:
+
+- an Engraver row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `engraver.code` is the stable archive identity for the engraver and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `engraver.name` is display text only; it helps humans read the engraver label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat engraver codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `engraver.name` on write; callers must provide the intended persisted text
+
+Engraver-specific requirements and constraints:
+
+- every Engraver must have a non-null `code`
+- every Engraver must have a non-null `name`
+- Engraver Codes must be globally unique ignoring case through `engraver_code_lower_unique_idx`
+- Engraver Codes must satisfy the lowercase slug-style check enforced by `engraver_code_slug_check`
+- Engraver Names do not need to be unique
+- Engraver primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Engraver-specific indexes and query implications:
+
+- `engraver_code_lower_unique_idx` protects the case-insensitive identity rule for engraver codes
+- `engraver_code_lookup_idx` supports shared case-insensitive lookups such as engraver filtering in `getCoins`
+- `getEngravers` is the package-owned read model for engraver options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getEngravers` sorts engravers by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- an Engraver may be referenced by zero or more `coin_face_engraver` rows
+- an Engraver attribution always links an Engraver to a specific Coin Face, not directly to the whole Coin
+- deleting an Engraver is restricted while any face attribution still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that an Engraver Name is canonical, complete, or disambiguated across all historical sources
+- the database does not model engraver biographies, date ranges, nationality, signature variants, or confidence levels yet
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

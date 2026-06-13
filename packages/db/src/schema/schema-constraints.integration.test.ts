@@ -1507,7 +1507,7 @@ describe("engraver schema constraints", () => {
     )
   })
 
-  it("rejects duplicate engraver codes", async () => {
+  it("rejects duplicate engraver codes ignoring case", async () => {
     await db.insert(engraver).values({
       code: "georgios-stamatopoulos",
       name: "Georgios Stamatópoulos",
@@ -1515,7 +1515,7 @@ describe("engraver schema constraints", () => {
 
     await expectConstraintError(
       db.insert(engraver).values({
-        code: "georgios-stamatopoulos",
+        code: "GEORGIOS-STAMATOPOULOS",
         name: "Duplicate Geórgios Stamatópoulos",
       }),
       engraverSchemaNames.codeLowerUniqueIndex,

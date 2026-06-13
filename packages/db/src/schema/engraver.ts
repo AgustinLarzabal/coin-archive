@@ -36,9 +36,11 @@ export const engraver = pgTable(
       .defaultNow(),
   },
   (engraver) => [
+    // Enforces case-insensitive uniqueness for stable engraver codes.
     uniqueIndex(engraverSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${engraver.code})`
     ),
+    // Supports case-insensitive lookups by engraver code in shared queries.
     index(engraverSchemaNames.codeLookupIndex).on(sql`lower(${engraver.code})`),
     check(
       engraverSchemaNames.codeSlugCheck,

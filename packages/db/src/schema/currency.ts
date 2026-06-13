@@ -37,9 +37,11 @@ export const currency = pgTable(
       .defaultNow(),
   },
   (currency) => [
+    // Enforces case-insensitive uniqueness for stable currency codes.
     uniqueIndex(currencySchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${currency.code})`
     ),
+    // Supports case-insensitive lookups by currency code in shared queries.
     index(currencySchemaNames.codeLookupIndex).on(sql`lower(${currency.code})`),
     check(
       currencySchemaNames.codeSlugCheck,

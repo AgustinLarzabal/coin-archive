@@ -95,6 +95,48 @@ Known limitations and non-goals:
 - the database does not decompose a Composition into structured percentages, layered alloys, plating metadata, or constituent materials
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Currency model notes
+
+The `currency` table models the reusable denomination unit attached to each Coin's Face Value:
+
+- a Currency row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, required `full_name`, and timestamps
+- `currency.code` is the stable archive identity for the currency and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `currency.name` is display text only; it helps humans read the short currency label but is not treated as identity and is allowed to repeat across rows
+- `currency.full_name` is required shared display text for the fuller currency label and is not treated as identity
+- uniqueness and filter matching treat currency codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `currency.name` or `currency.full_name` on write; callers must provide the intended persisted text
+
+Currency-specific requirements and constraints:
+
+- every Currency must have a non-null `code`
+- every Currency must have a non-null `name`
+- every Currency must have a non-null `full_name`
+- Currency Codes must be globally unique ignoring case through `currency_code_lower_unique_idx`
+- Currency Codes must satisfy the lowercase slug-style check enforced by `currency_code_slug_check`
+- Currency Names do not need to be unique
+- Currency full names do not need to be unique
+- Currency primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Currency-specific indexes and query implications:
+
+- `currency_code_lower_unique_idx` protects the case-insensitive identity rule for currency codes
+- `currency_code_lookup_idx` supports shared case-insensitive lookups such as currency filtering in `getCoins`
+- `getCurrencies` is the package-owned read model for currency options and currently returns `id`, `code`, `name`, `fullName`, `createdAt`, and `updatedAt`
+- `getCurrencies` sorts currencies by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- every Coin must reference exactly one Currency through `coin.currency_id`
+- a Currency can be referenced by many Coins
+- deleting a Currency is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Currency Name or full name is canonical, historically scoped, or aligned with any external monetary standard
+- the database does not model ISO codes, subdivisions, exchange rates, redenomination lineage, or date-bounded validity windows yet
+- the database does not currently prevent semantically overlapping rows with different codes and similar display names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

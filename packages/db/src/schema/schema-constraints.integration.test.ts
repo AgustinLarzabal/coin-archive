@@ -283,6 +283,26 @@ describe("currency schema constraints", () => {
       "23505"
     )
   })
+
+  it("restricts deleting a currency while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await createCoin({
+      title: "Referenced Currency Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(currency).where(sql`${currency.id} = ${currencyId}`),
+      "coin_currency_id_currency_id_fk",
+      "23001"
+    )
+  })
 })
 
 describe("edge schema constraints", () => {

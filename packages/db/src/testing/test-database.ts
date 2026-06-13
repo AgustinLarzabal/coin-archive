@@ -41,6 +41,7 @@ export function createTestDatabase(databaseUrl: string) {
 export async function clearTestData(database: TestDatabase) {
   await database.delete(catalogue)
   await database.delete(composition)
+  await database.delete(currency)
   await database.delete(coinReference)
   await database.delete(coinFaceEngraver)
   await database.delete(coinTheme)
@@ -60,7 +61,6 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(edge)
   await database.delete(engraver)
   await database.delete(distribution)
-  await database.delete(currency)
 }
 
 export function useTestDatabaseIsolation(database: TestDatabase) {

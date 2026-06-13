@@ -71,12 +71,6 @@ type CreateEdgeInput = {
   name: string
 }
 
-type CreateCurrencyInput = {
-  code: string
-  fullName: string
-  name: string
-}
-
 type CreateMintInput = {
   code: string
   name: string
@@ -182,19 +176,42 @@ type CreateCompositionInput = {
 
 export async function createComposition({
   code,
-  description,
   name,
+  description,
 }: CreateCompositionInput) {
   const [createdComposition] = await db
     .insert(composition)
     .values({
       code,
-      description,
       name,
+      description,
     })
     .returning()
 
   return createdComposition
+}
+
+type CreateCurrencyInput = {
+  code: string
+  name: string
+  fullName: string
+}
+
+export async function createCurrency({
+  code,
+  name,
+  fullName,
+}: CreateCurrencyInput) {
+  const [createdCurrency] = await db
+    .insert(currency)
+    .values({
+      code,
+      name,
+      fullName,
+    })
+    .returning()
+
+  return createdCurrency
 }
 
 export async function createIssuer({
@@ -307,23 +324,6 @@ export async function createEdge({ code, name }: CreateEdgeInput) {
     .returning()
 
   return createdEdge
-}
-
-export async function createCurrency({
-  code,
-  fullName,
-  name,
-}: CreateCurrencyInput) {
-  const [createdCurrency] = await db
-    .insert(currency)
-    .values({
-      code,
-      fullName,
-      name,
-    })
-    .returning()
-
-  return createdCurrency
 }
 
 export async function createMint({ code, name }: CreateMintInput) {

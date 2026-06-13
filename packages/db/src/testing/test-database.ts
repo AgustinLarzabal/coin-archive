@@ -39,6 +39,15 @@ export function createTestDatabase(databaseUrl: string) {
 }
 
 export async function clearTestData(database: TestDatabase) {
+  await database.delete(coinFaceEngraver)
+  await database.delete(coinReference)
+  await database.delete(coinTheme)
+  await database.delete(coinMint)
+  await database.delete(coinRuler)
+  await database.delete(coinFace)
+  await database.delete(coin)
+  await database.delete(ruler)
+  await database.delete(rulerGroup)
   await database.delete(catalogue)
   await database.delete(composition)
   await database.delete(currency)
@@ -49,18 +58,9 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(mint)
   await database.delete(orientation)
   await database.delete(rim)
-  await database.delete(rulerGroup)
-  await database.delete(ruler)
   await database.delete(shape)
   await database.delete(technique)
   await database.delete(theme)
-  await database.delete(coinReference)
-  await database.delete(coinFaceEngraver)
-  await database.delete(coinTheme)
-  await database.delete(coinMint)
-  await database.delete(coinRuler)
-  await database.delete(coinFace)
-  await database.delete(coin)
 }
 
 export function useTestDatabaseIsolation(database: TestDatabase) {

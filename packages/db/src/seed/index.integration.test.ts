@@ -183,12 +183,12 @@ describe("seed integration", () => {
     await expect(getIssuers()).resolves.toMatchObject([
       { code: "argentina", isoCode: "AR", name: "Argentina" },
       { code: "buenos-aires", isoCode: "AR", name: "Buenos Aires" },
+      { code: "spain", isoCode: "ES", name: "Spain" },
       {
         code: "united-states",
         isoCode: "US",
         name: "United States of America",
       },
-      { code: "spain", isoCode: "ES", name: "Spain" },
     ])
     await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
     await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)

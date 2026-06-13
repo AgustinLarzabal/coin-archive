@@ -23,13 +23,6 @@ describe("getCatalogues integration", () => {
 
     await expect(getCatalogues()).resolves.toStrictEqual([
       {
-        id: standardCatalog.id,
-        code: "KM",
-        title: "Standard Catalog of World Coins",
-        createdAt: standardCatalog.createdAt,
-        updatedAt: standardCatalog.updatedAt,
-      },
-      {
         id: anotherStandardCatalog.id,
         code: "SCWC",
         title: "Another Standard Catalog of World Coins",
@@ -42,6 +35,13 @@ describe("getCatalogues integration", () => {
         title: "Roman Imperial Coinage",
         createdAt: romanImperialCoinage.createdAt,
         updatedAt: romanImperialCoinage.updatedAt,
+      },
+      {
+        id: standardCatalog.id,
+        code: "KM",
+        title: "Standard Catalog of World Coins",
+        createdAt: standardCatalog.createdAt,
+        updatedAt: standardCatalog.updatedAt,
       },
     ])
   })

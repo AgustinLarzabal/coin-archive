@@ -50,6 +50,7 @@ import {
   seededThemes,
 } from "./seed-data"
 
+type CoinIdsByTitle = Map<string, string>
 type CatalogueIdsByCode = Map<string, string>
 type CompositionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
@@ -65,7 +66,6 @@ type RulerIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
-type CoinIdsByTitle = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
 
 function getRequiredSeededId(
@@ -84,6 +84,13 @@ function getRequiredSeededId(
 
 function getCoinFaceSeedKey(coinTitle: string, side: CoinFaceSide) {
   return `${coinTitle}:${side}`
+}
+
+async function deleteSeededCoins() {
+  await deleteSeededRecords(
+    seededCoins.map(({ title }) => title),
+    (title) => db.delete(coin).where(eq(coin.title, title))
+  )
 }
 
 async function deleteSeededRecords(
@@ -210,10 +217,209 @@ async function deleteSeededThemes() {
   )
 }
 
-async function deleteSeededCoins() {
-  await deleteSeededRecords(
-    seededCoins.map(({ title }) => title),
-    (title) => db.delete(coin).where(eq(coin.title, title))
+async function seedCoins(
+  compositionIdsByCode: CompositionIdsByCode,
+  currencyIdsByCode: CurrencyIdsByCode,
+  distributionIdsByCode: DistributionIdsByCode,
+  edgeIdsByCode: EdgeIdsByCode,
+  issuerIdsByCode: IssuerIdsByCode,
+  orientationIdsByCode: OrientationIdsByCode,
+  shapeIdsByCode: ShapeIdsByCode,
+  rimIdsByCode: RimIdsByCode,
+  techniqueIdsByCode: TechniqueIdsByCode
+) {
+  await db.delete(coin).where(
+    inArray(
+      coin.title,
+      seededCoins.map(({ title }) => title)
+    )
+  )
+
+  const insertedCoins = await db
+    .insert(coin)
+    .values(
+      seededCoins.map((seededCoin) =>
+        mapSeededCoinToInsertValues(
+          seededCoin,
+          compositionIdsByCode,
+          currencyIdsByCode,
+          distributionIdsByCode,
+          edgeIdsByCode,
+          issuerIdsByCode,
+          orientationIdsByCode,
+          shapeIdsByCode,
+          rimIdsByCode,
+          techniqueIdsByCode
+        )
+      )
+    )
+    .returning({ id: coin.id, title: coin.title })
+  const coinIdsByTitle: CoinIdsByTitle = new Map(
+    insertedCoins.map((insertedCoin) => [insertedCoin.title, insertedCoin.id])
+  )
+
+  return coinIdsByTitle
+}
+
+async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
+  if (seededCoinFaces.length === 0) {
+    const coinFaceIdsByKey: CoinFaceIdsByKey = new Map()
+
+    return coinFaceIdsByKey
+  }
+
+  const insertedCoinFaces = await db
+    .insert(coinFace)
+    .values(
+      seededCoinFaces.map((seededCoinFace) => ({
+        coinId: getRequiredSeededId(
+          coinIdsByTitle,
+          seededCoinFace.coinTitle,
+          "coin"
+        ),
+        side: seededCoinFace.side,
+        description: seededCoinFace.description,
+        lettering: seededCoinFace.lettering,
+      }))
+    )
+    .returning({
+      id: coinFace.id,
+      coinId: coinFace.coinId,
+      side: coinFace.side,
+    })
+
+  const coinTitlesById = new Map(
+    [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
+  )
+
+  const coinFaceIdsByKey: CoinFaceIdsByKey = new Map(
+    insertedCoinFaces.map((insertedCoinFace) => {
+      const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
+
+      if (!coinTitle) {
+        throw new Error(
+          `Missing seeded coin title for face ${insertedCoinFace.id}`
+        )
+      }
+
+      return [
+        getCoinFaceSeedKey(coinTitle, insertedCoinFace.side),
+        insertedCoinFace.id,
+      ]
+    })
+  )
+
+  return coinFaceIdsByKey
+}
+
+async function seedCoinFaceEngravers(
+  coinFaceIdsByKey: CoinFaceIdsByKey,
+  engraverIdsByCode: EngraverIdsByCode
+) {
+  if (seededCoinFaceEngravers.length === 0) {
+    return
+  }
+
+  await db.insert(coinFaceEngraver).values(
+    seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
+      coinFaceId: getRequiredSeededId(
+        coinFaceIdsByKey,
+        getCoinFaceSeedKey(
+          seededCoinFaceEngraver.coinTitle,
+          seededCoinFaceEngraver.side
+        ),
+        "coin face"
+      ),
+      engraverId: getRequiredSeededId(
+        engraverIdsByCode,
+        seededCoinFaceEngraver.engraverCode,
+        "engraver"
+      ),
+    }))
+  )
+}
+
+async function seedCoinMints(
+  coinIdsByTitle: CoinIdsByTitle,
+  mintIdsByCode: MintIdsByCode
+) {
+  await db.insert(coinMint).values(
+    seededCoinMints.map((seededCoinMint) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinMint.coinTitle,
+        "coin"
+      ),
+      mintId: getRequiredSeededId(
+        mintIdsByCode,
+        seededCoinMint.mintCode,
+        "mint"
+      ),
+    }))
+  )
+}
+
+async function seedCoinReferences(
+  coinIdsByTitle: CoinIdsByTitle,
+  catalogueIdsByCode: CatalogueIdsByCode
+) {
+  await db.insert(coinReference).values(
+    seededCoinReferences.map((seededCoinReference) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinReference.coinTitle,
+        "coin"
+      ),
+      catalogueId: getRequiredSeededId(
+        catalogueIdsByCode,
+        seededCoinReference.catalogueCode,
+        "catalogue"
+      ),
+      number: seededCoinReference.number,
+      createdAt: seededCoinReference.createdAt,
+      updatedAt: seededCoinReference.updatedAt,
+    }))
+  )
+}
+
+async function seedCoinRulers(
+  coinIdsByTitle: CoinIdsByTitle,
+  rulerIdsByCode: RulerIdsByCode
+) {
+  await db.insert(coinRuler).values(
+    seededCoinRulers.map((seededCoinRuler) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinRuler.coinTitle,
+        "coin"
+      ),
+      rulerId: getRequiredSeededId(
+        rulerIdsByCode,
+        seededCoinRuler.rulerCode,
+        "ruler"
+      ),
+      rulerOrder: seededCoinRuler.rulerOrder,
+    }))
+  )
+}
+
+async function seedCoinThemes(
+  coinIdsByTitle: CoinIdsByTitle,
+  themeIdsByCode: ThemeIdsByCode
+) {
+  await db.insert(coinTheme).values(
+    seededCoinThemes.map((seededCoinTheme) => ({
+      coinId: getRequiredSeededId(
+        coinIdsByTitle,
+        seededCoinTheme.coinTitle,
+        "coin"
+      ),
+      themeId: getRequiredSeededId(
+        themeIdsByCode,
+        seededCoinTheme.themeCode,
+        "theme"
+      ),
+    }))
   )
 }
 
@@ -541,7 +747,8 @@ async function seedThemes(): Promise<ThemeIdsByCode> {
   )
 }
 
-async function seedCoins(
+function mapSeededCoinToInsertValues(
+  seededCoin: (typeof seededCoins)[number],
   compositionIdsByCode: CompositionIdsByCode,
   currencyIdsByCode: CurrencyIdsByCode,
   distributionIdsByCode: DistributionIdsByCode,
@@ -551,129 +758,6 @@ async function seedCoins(
   shapeIdsByCode: ShapeIdsByCode,
   rimIdsByCode: RimIdsByCode,
   techniqueIdsByCode: TechniqueIdsByCode
-) {
-  await db.delete(coin).where(
-    inArray(
-      coin.title,
-      seededCoins.map(({ title }) => title)
-    )
-  )
-
-  const insertedCoins = await db
-    .insert(coin)
-    .values(
-      seededCoins.map((seededCoin) =>
-        mapSeededCoinToInsertValues(
-          seededCoin,
-          compositionIdsByCode,
-          currencyIdsByCode,
-          distributionIdsByCode,
-          edgeIdsByCode,
-          issuerIdsByCode,
-          orientationIdsByCode,
-          shapeIdsByCode,
-          rimIdsByCode,
-          techniqueIdsByCode
-        )
-      )
-    )
-    .returning({ id: coin.id, title: coin.title })
-  const coinIdsByTitle: CoinIdsByTitle = new Map(
-    insertedCoins.map((insertedCoin) => [insertedCoin.title, insertedCoin.id])
-  )
-
-  return coinIdsByTitle
-}
-
-async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
-  if (seededCoinFaces.length === 0) {
-    const coinFaceIdsByKey: CoinFaceIdsByKey = new Map()
-
-    return coinFaceIdsByKey
-  }
-
-  const insertedCoinFaces = await db
-    .insert(coinFace)
-    .values(
-      seededCoinFaces.map((seededCoinFace) => ({
-        coinId: getRequiredSeededId(
-          coinIdsByTitle,
-          seededCoinFace.coinTitle,
-          "coin"
-        ),
-        side: seededCoinFace.side,
-        description: seededCoinFace.description,
-        lettering: seededCoinFace.lettering,
-      }))
-    )
-    .returning({
-      id: coinFace.id,
-      coinId: coinFace.coinId,
-      side: coinFace.side,
-    })
-
-  const coinTitlesById = new Map(
-    [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
-  )
-
-  const coinFaceIdsByKey: CoinFaceIdsByKey = new Map(
-    insertedCoinFaces.map((insertedCoinFace) => {
-      const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
-
-      if (!coinTitle) {
-        throw new Error(
-          `Missing seeded coin title for face ${insertedCoinFace.id}`
-        )
-      }
-
-      return [
-        getCoinFaceSeedKey(coinTitle, insertedCoinFace.side),
-        insertedCoinFace.id,
-      ]
-    })
-  )
-
-  return coinFaceIdsByKey
-}
-
-async function seedCoinFaceEngravers(
-  coinFaceIdsByKey: CoinFaceIdsByKey,
-  engraverIdsByCode: EngraverIdsByCode
-) {
-  if (seededCoinFaceEngravers.length === 0) {
-    return
-  }
-
-  await db.insert(coinFaceEngraver).values(
-    seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
-      coinFaceId: getRequiredSeededId(
-        coinFaceIdsByKey,
-        getCoinFaceSeedKey(
-          seededCoinFaceEngraver.coinTitle,
-          seededCoinFaceEngraver.side
-        ),
-        "coin face"
-      ),
-      engraverId: getRequiredSeededId(
-        engraverIdsByCode,
-        seededCoinFaceEngraver.engraverCode,
-        "engraver"
-      ),
-    }))
-  )
-}
-
-function mapSeededCoinToInsertValues(
-  seededCoin: (typeof seededCoins)[number],
-  compositionIdsByCode: CompositionIdsByCode,
-  currencyIdsByCode: CurrencyIdsByCode,
-  edgeIdsByCode: EdgeIdsByCode,
-  issuerIdsByCode: IssuerIdsByCode,
-  orientationIdsByCode: OrientationIdsByCode,
-  shapeIdsByCode: ShapeIdsByCode,
-  rimIdsByCode: RimIdsByCode,
-  techniqueIdsByCode: TechniqueIdsByCode,
-  distributionIdsByCode: DistributionIdsByCode
 ) {
   const {
     issuerCode,
@@ -733,90 +817,6 @@ function mapSeededCoinToInsertValues(
   }
 }
 
-async function seedCoinRulers(
-  coinIdsByTitle: CoinIdsByTitle,
-  rulerIdsByCode: RulerIdsByCode
-) {
-  await db.insert(coinRuler).values(
-    seededCoinRulers.map((seededCoinRuler) => ({
-      coinId: getRequiredSeededId(
-        coinIdsByTitle,
-        seededCoinRuler.coinTitle,
-        "coin"
-      ),
-      rulerId: getRequiredSeededId(
-        rulerIdsByCode,
-        seededCoinRuler.rulerCode,
-        "ruler"
-      ),
-      rulerOrder: seededCoinRuler.rulerOrder,
-    }))
-  )
-}
-
-async function seedCoinReferences(
-  coinIdsByTitle: CoinIdsByTitle,
-  catalogueIdsByCode: CatalogueIdsByCode
-) {
-  await db.insert(coinReference).values(
-    seededCoinReferences.map((seededCoinReference) => ({
-      coinId: getRequiredSeededId(
-        coinIdsByTitle,
-        seededCoinReference.coinTitle,
-        "coin"
-      ),
-      catalogueId: getRequiredSeededId(
-        catalogueIdsByCode,
-        seededCoinReference.catalogueCode,
-        "catalogue"
-      ),
-      number: seededCoinReference.number,
-      createdAt: seededCoinReference.createdAt,
-      updatedAt: seededCoinReference.updatedAt,
-    }))
-  )
-}
-
-async function seedCoinMints(
-  coinIdsByTitle: CoinIdsByTitle,
-  mintIdsByCode: MintIdsByCode
-) {
-  await db.insert(coinMint).values(
-    seededCoinMints.map((seededCoinMint) => ({
-      coinId: getRequiredSeededId(
-        coinIdsByTitle,
-        seededCoinMint.coinTitle,
-        "coin"
-      ),
-      mintId: getRequiredSeededId(
-        mintIdsByCode,
-        seededCoinMint.mintCode,
-        "mint"
-      ),
-    }))
-  )
-}
-
-async function seedCoinThemes(
-  coinIdsByTitle: CoinIdsByTitle,
-  themeIdsByCode: ThemeIdsByCode
-) {
-  await db.insert(coinTheme).values(
-    seededCoinThemes.map((seededCoinTheme) => ({
-      coinId: getRequiredSeededId(
-        coinIdsByTitle,
-        seededCoinTheme.coinTitle,
-        "coin"
-      ),
-      themeId: getRequiredSeededId(
-        themeIdsByCode,
-        seededCoinTheme.themeCode,
-        "theme"
-      ),
-    }))
-  )
-}
-
 export async function seedDatabase() {
   await deleteSeededCoins()
 
@@ -825,33 +825,32 @@ export async function seedDatabase() {
   const currencyIdsByCode = await seedCurrencies()
   const distributionIdsByCode = await seedDistributions()
   const edgeIdsByCode = await seedEdges()
+  const engraverIdsByCode = await seedEngravers()
   const issuerIdsByCode = await seedIssuers()
   const mintIdsByCode = await seedMints()
-  const engraverIdsByCode = await seedEngravers()
   const orientationIdsByCode = await seedOrientations()
-  const shapeIdsByCode = await seedShapes()
   const rimIdsByCode = await seedRims()
+  const rulerIdsByCode = await seedRulers()
+  const shapeIdsByCode = await seedShapes()
   const techniqueIdsByCode = await seedTechniques()
   const themeIdsByCode = await seedThemes()
   const coinIdsByTitle = await seedCoins(
     compositionIdsByCode,
     currencyIdsByCode,
+    distributionIdsByCode,
     edgeIdsByCode,
     issuerIdsByCode,
     orientationIdsByCode,
     shapeIdsByCode,
     rimIdsByCode,
-    techniqueIdsByCode,
-    distributionIdsByCode
+    techniqueIdsByCode
   )
-  const rulerIdsByCode = await seedRulers()
-
   const coinFaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
   await seedCoinFaceEngravers(coinFaceIdsByKey, engraverIdsByCode)
-  await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
-  await seedCoinThemes(coinIdsByTitle, themeIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
+  await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)
+  await seedCoinThemes(coinIdsByTitle, themeIdsByCode)
 }
 
 function isExecutedDirectly() {

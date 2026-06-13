@@ -29,16 +29,15 @@ import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./defa
 
 type CreateCoinInput = {
   comments?: string | null
-  createdAt: Date
-  diameter?: number
   compositionId?: string
   currencyId?: string
+  diameter?: number
   distributionId?: string
-  faceValueNumericValue?: number
-  faceValueText?: string
   edgeDescription?: string | null
   edgeId?: string
   edgeLettering?: string | null
+  faceValueNumericValue?: number
+  faceValueText?: string
   isDemonetized?: boolean | null
   issuerId: string
   maxYear?: number
@@ -50,8 +49,75 @@ type CreateCoinInput = {
   techniqueId?: string
   thickness?: number
   title: string
-  updatedAt?: Date
   weight?: number
+  createdAt: Date
+  updatedAt?: Date
+}
+
+export async function createCoin({
+  comments,
+  compositionId,
+  currencyId,
+  diameter,
+  distributionId,
+  edgeDescription,
+  edgeId,
+  edgeLettering,
+  faceValueNumericValue = 1,
+  faceValueText = "1 Test Unit",
+  isDemonetized,
+  issuerId,
+  maxYear,
+  mintage,
+  minYear,
+  orientationId,
+  rimId,
+  shapeId,
+  techniqueId,
+  thickness,
+  title,
+  weight,
+  createdAt,
+  updatedAt = createdAt,
+}: CreateCoinInput) {
+  const resolvedDistributionId =
+    distributionId ?? (await getOrCreateDefaultDistribution()).id
+  const resolvedCompositionId =
+    compositionId ?? (await getOrCreateDefaultComposition()).id
+  const resolvedCurrencyId =
+    currencyId ?? (await getOrCreateDefaultCurrency()).id
+
+  const [createdCoin] = await db
+    .insert(coin)
+    .values({
+      comments: normalizeCoinComments(comments),
+      createdAt,
+      compositionId: resolvedCompositionId,
+      currencyId: resolvedCurrencyId,
+      distributionId: resolvedDistributionId,
+      edgeDescription,
+      edgeId,
+      edgeLettering,
+      faceValueNumericValue,
+      faceValueText,
+      isDemonetized,
+      issuerId,
+      maxYear,
+      mintage,
+      minYear,
+      orientationId,
+      rimId,
+      shapeId,
+      techniqueId,
+      diameter,
+      thickness,
+      title,
+      updatedAt,
+      weight,
+    })
+    .returning()
+
+  return createdCoin
 }
 
 type CreateCoinRulerInput = {
@@ -374,72 +440,6 @@ export async function createTheme({ code, name }: CreateThemeInput) {
     .returning()
 
   return createdTheme
-}
-
-export async function createCoin({
-  comments,
-  createdAt,
-  diameter,
-  compositionId,
-  currencyId,
-  distributionId,
-  edgeDescription,
-  edgeId,
-  edgeLettering,
-  faceValueNumericValue = 1,
-  faceValueText = "1 Test Unit",
-  isDemonetized,
-  issuerId,
-  maxYear,
-  mintage,
-  minYear,
-  orientationId,
-  rimId,
-  shapeId,
-  techniqueId,
-  thickness,
-  title,
-  updatedAt = createdAt,
-  weight,
-}: CreateCoinInput) {
-  const resolvedDistributionId =
-    distributionId ?? (await getOrCreateDefaultDistribution()).id
-  const resolvedCompositionId =
-    compositionId ?? (await getOrCreateDefaultComposition()).id
-  const resolvedCurrencyId =
-    currencyId ?? (await getOrCreateDefaultCurrency()).id
-
-  const [createdCoin] = await db
-    .insert(coin)
-    .values({
-      comments: normalizeCoinComments(comments),
-      createdAt,
-      compositionId: resolvedCompositionId,
-      currencyId: resolvedCurrencyId,
-      distributionId: resolvedDistributionId,
-      edgeDescription,
-      edgeId,
-      edgeLettering,
-      faceValueNumericValue,
-      faceValueText,
-      isDemonetized,
-      issuerId,
-      maxYear,
-      mintage,
-      minYear,
-      orientationId,
-      rimId,
-      shapeId,
-      techniqueId,
-      diameter,
-      thickness,
-      title,
-      updatedAt,
-      weight,
-    })
-    .returning()
-
-  return createdCoin
 }
 
 export async function createCoinRuler({

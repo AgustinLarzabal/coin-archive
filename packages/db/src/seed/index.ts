@@ -50,12 +50,12 @@ import {
   seededThemes,
 } from "./seed-data"
 
+type CatalogueIdsByCode = Map<string, string>
+type CompositionIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
-type CatalogueIdsByCode = Map<string, string>
-type CompositionIdsByCode = Map<string, string>
 type DistributionIdsByCode = Map<string, string>
 type CurrencyIdsByCode = Map<string, string>
 type EdgeIdsByCode = Map<string, string>
@@ -119,6 +119,13 @@ async function deleteSeededCatalogues() {
   )
 }
 
+async function deleteSeededCompositions() {
+  await deleteSeededRecords(
+    seededCompositions.map(({ code }) => code),
+    (code) => db.delete(composition).where(eq(composition.code, code))
+  )
+}
+
 async function deleteSeededIssuers() {
   await deleteSeededRecords(
     seededIssuers.map(({ code }) => code),
@@ -144,13 +151,6 @@ async function deleteSeededCoins() {
   await deleteSeededRecords(
     seededCoins.map(({ title }) => title),
     (title) => db.delete(coin).where(eq(coin.title, title))
-  )
-}
-
-async function deleteSeededCompositions() {
-  await deleteSeededRecords(
-    seededCompositions.map(({ code }) => code),
-    (code) => db.delete(composition).where(eq(composition.code, code))
   )
 }
 
@@ -821,8 +821,8 @@ export async function seedDatabase() {
   await deleteSeededCoins()
 
   const catalogueIdsByCode = await seedCatalogues()
-  const issuerIdsByCode = await seedIssuers()
   const compositionIdsByCode = await seedCompositions()
+  const issuerIdsByCode = await seedIssuers()
   const currencyIdsByCode = await seedCurrencies()
   const edgeIdsByCode = await seedEdges()
   const mintIdsByCode = await seedMints()

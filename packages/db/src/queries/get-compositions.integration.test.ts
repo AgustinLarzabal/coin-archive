@@ -10,8 +10,8 @@ describe("getCompositions integration", () => {
   it("returns composition options sorted by name and code", async () => {
     const silver900 = await createComposition({
       code: "silver-900",
-      description: "Ninety percent silver alloy.",
       name: "Silver (.900)",
+      description: "Ninety percent silver alloy.",
     })
     const copperNickel = await createComposition({
       code: "copper-nickel",

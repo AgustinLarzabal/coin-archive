@@ -5,17 +5,17 @@ import { composition } from "../schema/composition"
 import type { Composition } from "../schema/composition"
 
 const getCompositionsSelection = {
-  createdAt: composition.createdAt,
-  code: composition.code,
-  description: composition.description,
   id: composition.id,
+  code: composition.code,
   name: composition.name,
+  description: composition.description,
+  createdAt: composition.createdAt,
   updatedAt: composition.updatedAt,
 }
 
 export type CompositionOption = Pick<
   Composition,
-  "code" | "createdAt" | "description" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "description" | "createdAt" | "updatedAt"
 >
 
 export async function getCompositions(): Promise<CompositionOption[]> {

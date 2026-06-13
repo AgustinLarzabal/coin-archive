@@ -38,9 +38,11 @@ export const composition = pgTable(
       .defaultNow(),
   },
   (composition) => [
+    // Enforces case-insensitive uniqueness for stable composition codes.
     uniqueIndex(compositionSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${composition.code})`
     ),
+    // Supports case-insensitive lookups by composition code in shared queries.
     index(compositionSchemaNames.codeLookupIndex).on(
       sql`lower(${composition.code})`
     ),

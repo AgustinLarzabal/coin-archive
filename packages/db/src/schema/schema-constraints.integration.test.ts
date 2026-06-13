@@ -215,7 +215,7 @@ describe("composition schema constraints", () => {
     )
   })
 
-  it("rejects duplicate composition codes", async () => {
+  it("rejects duplicate composition codes ignoring case", async () => {
     await db.insert(composition).values({
       code: "silver-900",
       name: "Silver (.900)",
@@ -223,7 +223,7 @@ describe("composition schema constraints", () => {
 
     await expectConstraintError(
       db.insert(composition).values({
-        code: "silver-900",
+        code: "SILVER-900",
         name: "Duplicate Silver (.900)",
       }),
       compositionSchemaNames.codeLowerUniqueIndex,

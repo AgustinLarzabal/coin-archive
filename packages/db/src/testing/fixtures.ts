@@ -71,12 +71,6 @@ type CreateEdgeInput = {
   name: string
 }
 
-type CreateCompositionInput = {
-  code: string
-  description?: string | null
-  name: string
-}
-
 type CreateCurrencyInput = {
   code: string
   fullName: string
@@ -178,6 +172,29 @@ export async function createCatalogue({ code, title }: CreateCatalogueInput) {
     .returning()
 
   return createdCatalogue
+}
+
+type CreateCompositionInput = {
+  code: string
+  name: string
+  description?: string | null
+}
+
+export async function createComposition({
+  code,
+  description,
+  name,
+}: CreateCompositionInput) {
+  const [createdComposition] = await db
+    .insert(composition)
+    .values({
+      code,
+      description,
+      name,
+    })
+    .returning()
+
+  return createdComposition
 }
 
 export async function createIssuer({
@@ -290,23 +307,6 @@ export async function createEdge({ code, name }: CreateEdgeInput) {
     .returning()
 
   return createdEdge
-}
-
-export async function createComposition({
-  code,
-  description,
-  name,
-}: CreateCompositionInput) {
-  const [createdComposition] = await db
-    .insert(composition)
-    .values({
-      code,
-      description,
-      name,
-    })
-    .returning()
-
-  return createdComposition
 }
 
 export async function createCurrency({

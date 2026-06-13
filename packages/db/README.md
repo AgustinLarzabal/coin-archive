@@ -54,6 +54,47 @@ The current core relationships map to these tables:
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
 
+## Composition model notes
+
+The `composition` table models the reusable material classification attached directly to each Coin:
+
+- a Composition row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, nullable `description`, and timestamps
+- `composition.code` is the stable archive identity for the composition and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `composition.name` is display text only; it helps humans read the material label but is not treated as identity and is allowed to repeat across rows
+- `composition.description` is optional shared long-form text for extra material context
+- uniqueness and filter matching treat composition codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `composition.name` or `composition.description` on write; callers must provide the intended persisted text
+
+Composition-specific requirements and constraints:
+
+- every Composition must have a non-null `code`
+- every Composition must have a non-null `name`
+- Composition Codes must be globally unique ignoring case through `composition_code_lower_unique_idx`
+- Composition Codes must satisfy the lowercase slug-style check enforced by `composition_code_slug_check`
+- Composition Names do not need to be unique
+- Composition Descriptions are optional
+- Composition primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Composition-specific indexes and query implications:
+
+- `composition_code_lower_unique_idx` protects the case-insensitive identity rule for composition codes
+- `composition_code_lookup_idx` supports shared case-insensitive lookups such as composition filtering in `getCoins`
+- `getCompositions` is the package-owned read model for composition options and currently returns `id`, `code`, `name`, `description`, `createdAt`, and `updatedAt`
+- `getCompositions` sorts compositions by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- every Coin must reference exactly one Composition through `coin.composition_id`
+- a Composition can be referenced by many Coins
+- deleting a Composition is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Composition Name is canonical, chemically precise, or aligned with any external cataloguing standard
+- the database does not decompose a Composition into structured percentages, layered alloys, plating metadata, or constituent materials
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

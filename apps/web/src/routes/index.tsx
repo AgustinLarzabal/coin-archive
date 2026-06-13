@@ -3,9 +3,9 @@ import { createServerFn } from "@tanstack/react-start"
 import type { FormEvent } from "react"
 import type { CoinMeasurements } from "@workspace/db"
 import {
-  applyFaceValueRangeSearch,
   applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
+  applyFaceValueRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCodeOption,
@@ -17,7 +17,6 @@ import {
 } from "../lib/coin-search"
 import type {
   CoinSearch,
-  FaceValueFilterName,
   MeasurementFilterName,
   PositiveNumberFilterName,
   PositiveNumberFilterValue,
@@ -68,19 +67,6 @@ const measurementRangeInputFields = [
     placeholder: "Max thickness (mm)",
   },
 ] as const satisfies ReadonlyArray<RangeInputField<MeasurementFilterName>>
-
-const faceValueRangeInputFields = [
-  {
-    name: "minValue",
-    ariaLabel: "Minimum face value in major units",
-    placeholder: "Min face value",
-  },
-  {
-    name: "maxValue",
-    ariaLabel: "Maximum face value in major units",
-    placeholder: "Max face value",
-  },
-] as const satisfies ReadonlyArray<RangeInputField<FaceValueFilterName>>
 
 const coinMeasurementFields = [
   { key: "weight", label: "Weight", unit: "g" },
@@ -161,6 +147,8 @@ function App() {
     engraverCode,
     fromYear,
     issuerCode,
+    maxValue,
+    minValue,
     mintCode,
     orientationCode,
     rimCode,
@@ -179,6 +167,8 @@ function App() {
     engraverCode: string | undefined
     fromYear: number | undefined
     issuerCode: string | undefined
+    maxValue: PositiveNumberFilterValue
+    minValue: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
@@ -267,9 +257,17 @@ function App() {
           rulerCode
         )
 
-        return applyIssueYearRangeSearch(searchWithRuler, {
-          fromYear,
-          toYear,
+        const searchWithIssueYearRange = applyIssueYearRangeSearch(
+          searchWithRuler,
+          {
+            fromYear,
+            toYear,
+          }
+        )
+
+        return applyFaceValueRangeSearch(searchWithIssueYearRange, {
+          minValue,
+          maxValue,
         })
       },
     })
@@ -315,10 +313,6 @@ function App() {
     }
   }
 
-  const updateFaceValueRange = createPositiveNumberRangeSubmitHandler(
-    faceValueRangeInputFields,
-    applyFaceValueRangeSearch
-  )
   const updateMeasurementRange = createPositiveNumberRangeSubmitHandler(
     measurementRangeInputFields,
     applyMeasurementRangeSearch
@@ -350,6 +344,8 @@ function App() {
         selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
         selectedFromYear={search.fromYear}
+        selectedMaxValue={search.maxValue}
+        selectedMinValue={search.minValue}
         selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
         selectedRimCode={search.rim}
@@ -410,29 +406,6 @@ function App() {
           type="submit"
         >
           Apply reference
-        </button>
-      </form>
-
-      <form
-        className="flex flex-wrap items-end gap-2 py-2"
-        onSubmit={updateFaceValueRange}
-      >
-        {faceValueRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
-          <Input
-            aria-label={ariaLabel}
-            defaultValue={search[name]?.toString() ?? ""}
-            key={`${name}-${search[name] ?? ""}`}
-            name={name}
-            placeholder={placeholder}
-            step="0.000001"
-            type="number"
-          />
-        ))}
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply face value
         </button>
       </form>
 

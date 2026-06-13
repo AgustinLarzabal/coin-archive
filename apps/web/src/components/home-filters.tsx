@@ -28,7 +28,6 @@ import {
   ListFilter,
   BookImage,
   Box,
-  DollarSign,
   CircleDashed,
   CircleArrowDown,
   Circle,
@@ -40,6 +39,7 @@ import {
   PenTool,
   Map,
   SlidersHorizontal,
+  CircleDollarSign,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -62,8 +62,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@workspace/ui/components/popover"
+import { Input } from "@workspace/ui/components/input"
 import { Slider } from "@workspace/ui/components/slider"
 import { useEffect, useState } from "react"
+import type { PositiveNumberFilterValue } from "../lib/coin-search"
 
 const issueYearBounds = {
   min: -1000,
@@ -74,6 +76,24 @@ type CustomRendererProps = {
   values: unknown[]
   onChange: (values: unknown[]) => void
   autoFocus?: boolean
+}
+
+const faceValueRangeInputFields = [
+  {
+    name: "minValue",
+    ariaLabel: "Minimum face value in major units",
+    placeholder: "Min face value",
+  },
+  {
+    name: "maxValue",
+    ariaLabel: "Maximum face value in major units",
+    placeholder: "Max face value",
+  },
+] as const
+
+type FaceValueRangeValue = {
+  maxValue: PositiveNumberFilterValue
+  minValue: PositiveNumberFilterValue
 }
 
 function isIssueYearRangeValue(
@@ -97,6 +117,26 @@ function getIssueYearRangeValue(value: unknown) {
   return {
     min: issueYearBounds.min,
     max: issueYearBounds.max,
+  }
+}
+
+function isFaceValueRangeValue(value: unknown): value is FaceValueRangeValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "minValue" in value &&
+    "maxValue" in value
+  )
+}
+
+function getFaceValueRangeValue(value: unknown): FaceValueRangeValue {
+  if (isFaceValueRangeValue(value)) {
+    return value
+  }
+
+  return {
+    minValue: undefined,
+    maxValue: undefined,
   }
 }
 
@@ -143,7 +183,9 @@ function CustomSliderRangeInput({
           <div className="space-y-4 pt-2.5">
             <Slider
               value={range}
-              onValueChange={(value) => setRange(value)}
+              onValueChange={(value) =>
+                setRange(Array.isArray(value) ? [...value] : [value])
+              }
               max={issueYearBounds.max}
               min={issueYearBounds.min}
               step={1}
@@ -153,6 +195,90 @@ function CustomSliderRangeInput({
               <span>{issueYearBounds.min}</span>
               <span>{issueYearBounds.max}</span>
             </div>
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleApply}>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function CustomFaceValueRangeInput({
+  values,
+  onChange,
+  autoFocus,
+}: CustomRendererProps) {
+  const selectedRange = getFaceValueRangeValue(values[0])
+  const [range, setRange] = useState({
+    minValue: selectedRange.minValue?.toString() ?? "",
+    maxValue: selectedRange.maxValue?.toString() ?? "",
+  })
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => setIsOpen(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [autoFocus])
+
+  const handleApply = () => {
+    onChange([
+      {
+        minValue: range.minValue,
+        maxValue: range.maxValue,
+      },
+    ])
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsOpen(false)
+  }
+
+  const displayValue =
+    range.minValue || range.maxValue
+      ? `${range.minValue || "any"} - ${range.maxValue || "any"}`
+      : "Set range"
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-4"
+        align="start"
+        sideOffset={8}
+        alignOffset={-8}
+      >
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-2">
+            {faceValueRangeInputFields.map(
+              ({ ariaLabel, name, placeholder }) => (
+                <Input
+                  aria-label={ariaLabel}
+                  className="w-36"
+                  key={name}
+                  name={name}
+                  onChange={(event) =>
+                    setRange((currentRange) => ({
+                      ...currentRange,
+                      [name]: event.target.value,
+                    }))
+                  }
+                  placeholder={placeholder}
+                  step="0.000001"
+                  type="number"
+                  value={range[name]}
+                />
+              )
+            )}
           </div>
           <div className="flex items-center justify-end gap-1.5">
             <Button variant="ghost" size="sm" onClick={handleCancel}>
@@ -192,6 +318,8 @@ type HomeFiltersProps = {
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
   selectedFromYear?: number
+  selectedMaxValue?: number
+  selectedMinValue?: number
   selectedMintCode?: string
   selectedOrientationCode?: string
   selectedRimCode?: string
@@ -210,6 +338,8 @@ type HomeFiltersProps = {
     engraverCode: string | undefined
     fromYear: number | undefined
     issuerCode: string | undefined
+    maxValue: PositiveNumberFilterValue
+    minValue: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
@@ -245,6 +375,8 @@ export function HomeFilters({
   selectedEngraverCode,
   selectedIssuerCode,
   selectedFromYear,
+  selectedMaxValue,
+  selectedMinValue,
   selectedMintCode,
   selectedOrientationCode,
   selectedRimCode,
@@ -256,6 +388,8 @@ export function HomeFilters({
   onFiltersChange,
 }: HomeFiltersProps) {
   const [lastAddedValues, setLastAddedValues] = useState<unknown[] | null>(null)
+  const [isFaceValueFilterPending, setIsFaceValueFilterPending] =
+    useState(false)
 
   const fields: FilterFieldConfig[] = [
     {
@@ -271,6 +405,22 @@ export function HomeFilters({
           defaultOperator: "between",
           customRenderer: ({ values, onChange }) => (
             <CustomSliderRangeInput
+              values={values}
+              onChange={onChange}
+              autoFocus={values === lastAddedValues}
+            />
+          ),
+        },
+        {
+          key: "faceValue",
+          label: "Face Value",
+          icon: <CircleDollarSign strokeWidth={2} className="size-3.5" />,
+          type: "custom",
+          className: "w-36",
+          operators: [{ value: "between", label: "between" }],
+          defaultOperator: "between",
+          customRenderer: ({ values, onChange }) => (
+            <CustomFaceValueRangeInput
               values={values}
               onChange={onChange}
               autoFocus={values === lastAddedValues}
@@ -383,7 +533,7 @@ export function HomeFilters({
         {
           key: "currency",
           label: "Currency",
-          icon: <DollarSign strokeWidth={2} />,
+          icon: <CircleDollarSign strokeWidth={2} />,
           type: "select",
           operators: [{ value: "is", label: "is" }],
           searchable: true,
@@ -499,6 +649,18 @@ export function HomeFilters({
           ]),
         ]
       : []),
+    ...(selectedMinValue !== undefined ||
+    selectedMaxValue !== undefined ||
+    isFaceValueFilterPending
+      ? [
+          createFilter("faceValue", "between", [
+            {
+              minValue: selectedMinValue,
+              maxValue: selectedMaxValue,
+            },
+          ]),
+        ]
+      : []),
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
@@ -553,11 +715,21 @@ export function HomeFilters({
       setLastAddedValues(addedFilter.values)
     }
 
+    setIsFaceValueFilterPending(
+      nextFilters.some((filter) => filter.field === "faceValue")
+    )
+
     const issuerYearFilter = nextFilters.find(
       (filter) => filter.field === "issuerYear"
     )
     const issuerYearRange = issuerYearFilter
       ? getIssueYearRangeValue(issuerYearFilter.values[0])
+      : undefined
+    const faceValueFilter = nextFilters.find(
+      (filter) => filter.field === "faceValue"
+    )
+    const faceValueRange = faceValueFilter
+      ? getFaceValueRangeValue(faceValueFilter.values[0])
       : undefined
     const catalogueFilter = nextFilters.find(
       (filter) => filter.field === "catalogue"
@@ -642,6 +814,8 @@ export function HomeFilters({
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
           : undefined,
+      maxValue: faceValueRange?.maxValue,
+      minValue: faceValueRange?.minValue,
       mintCode:
         typeof mintCode === "string" && mintCode.length > 0
           ? mintCode
@@ -673,6 +847,8 @@ export function HomeFilters({
   }
 
   async function clearFilters() {
+    setIsFaceValueFilterPending(false)
+
     await onFiltersChange({
       catalogueCode: undefined,
       compositionCode: undefined,
@@ -683,6 +859,8 @@ export function HomeFilters({
       engraverCode: undefined,
       fromYear: undefined,
       issuerCode: undefined,
+      maxValue: undefined,
+      minValue: undefined,
       mintCode: undefined,
       orientationCode: undefined,
       rimCode: undefined,

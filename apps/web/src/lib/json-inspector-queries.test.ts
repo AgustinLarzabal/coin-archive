@@ -75,9 +75,12 @@ const coin: CoinRecord = {
 }
 
 const issuerOption: IssuerOption = {
+  id: "issuer-1",
   code: "spain",
   isoCode: "ES",
   name: "Spain",
+  createdAt: timestamp,
+  updatedAt: timestamp,
 }
 
 const queries = {

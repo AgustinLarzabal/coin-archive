@@ -120,17 +120,23 @@ describe("HomeFilters", () => {
         ]}
         issuers={[
           {
+            id: "issuer-1",
             code: "spain",
             isoCode: "ES",
             name: "Spain",
+            createdAt: timestamp,
+            updatedAt: timestamp,
           },
         ]}
         onFiltersChange={() => Promise.resolve()}
         rulers={[
           {
+            id: "ruler-1",
             code: "felipe-vi",
             name: "Felipe VI",
+            createdAt: timestamp,
             group: null,
+            updatedAt: timestamp,
           },
         ]}
         selectedCatalogueCode="KM"
@@ -142,6 +148,8 @@ describe("HomeFilters", () => {
         selectedEngraverCode="georgios-stamatopoulos"
         selectedFromYear={1898}
         selectedIssuerCode="spain"
+        selectedMaxValue={2}
+        selectedMinValue={0.5}
         selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
         selectedRimCode="raised-both-sides"
@@ -163,6 +171,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Georgios Stamatopoulos")
     expect(markup).toContain("Issue Year")
     expect(markup).toContain("1898 - 1902")
+    expect(markup).toContain("Face Value")
+    expect(markup).toContain("0.5 - 2")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

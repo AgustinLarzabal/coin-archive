@@ -217,79 +217,6 @@ async function deleteSeededRims() {
   )
 }
 
-function getIssuersReadyToInsert(
-  remainingIssuers: typeof seededIssuers,
-  issuerIdsByCode: IssuerIdsByCode
-) {
-  return remainingIssuers.filter(
-    ({ parentCode }) =>
-      parentCode === undefined || issuerIdsByCode.has(parentCode)
-  )
-}
-
-async function insertSeededIssuer(
-  issuerIdsByCode: IssuerIdsByCode,
-  seededIssuer: (typeof seededIssuers)[number]
-) {
-  const parentIssuerId = seededIssuer.parentCode
-    ? getRequiredSeededId(issuerIdsByCode, seededIssuer.parentCode, "issuer")
-    : undefined
-
-  const [insertedIssuer] = await db
-    .insert(issuer)
-    .values({
-      name: seededIssuer.name,
-      code: seededIssuer.code,
-      isoCode: seededIssuer.isoCode,
-      parentIssuerId,
-      createdAt: seededIssuer.createdAt,
-      updatedAt: seededIssuer.updatedAt,
-    })
-    .returning({ id: issuer.id })
-
-  issuerIdsByCode.set(seededIssuer.code, insertedIssuer.id)
-}
-
-function removeSeededIssuer(
-  remainingIssuers: typeof seededIssuers,
-  seededIssuerCode: string
-) {
-  const seededIssuerIndex = remainingIssuers.findIndex(
-    ({ code }) => code === seededIssuerCode
-  )
-
-  if (seededIssuerIndex < 0) {
-    throw new Error(`Missing seeded issuer ${seededIssuerCode}`)
-  }
-
-  remainingIssuers.splice(seededIssuerIndex, 1)
-}
-
-async function seedIssuers() {
-  const issuerIdsByCode: IssuerIdsByCode = new Map()
-  const remainingIssuers = [...seededIssuers]
-
-  await deleteSeededIssuers()
-
-  while (remainingIssuers.length > 0) {
-    const issuersReadyToInsert = getIssuersReadyToInsert(
-      remainingIssuers,
-      issuerIdsByCode
-    )
-
-    if (issuersReadyToInsert.length === 0) {
-      throw new Error("Unable to resolve seeded issuer parents")
-    }
-
-    for (const seededIssuer of issuersReadyToInsert) {
-      await insertSeededIssuer(issuerIdsByCode, seededIssuer)
-      removeSeededIssuer(remainingIssuers, seededIssuer.code)
-    }
-  }
-
-  return issuerIdsByCode
-}
-
 async function seedRulerGroups() {
   const rulerGroupIdsByCode: RulerGroupIdsByCode = new Map()
 
@@ -453,6 +380,79 @@ async function seedEngravers(): Promise<EngraverIdsByCode> {
       return insertedEngraver.id
     }
   )
+}
+
+function getIssuersReadyToInsert(
+  remainingIssuers: typeof seededIssuers,
+  issuerIdsByCode: IssuerIdsByCode
+) {
+  return remainingIssuers.filter(
+    ({ parentCode }) =>
+      parentCode === undefined || issuerIdsByCode.has(parentCode)
+  )
+}
+
+async function insertSeededIssuer(
+  issuerIdsByCode: IssuerIdsByCode,
+  seededIssuer: (typeof seededIssuers)[number]
+) {
+  const parentIssuerId = seededIssuer.parentCode
+    ? getRequiredSeededId(issuerIdsByCode, seededIssuer.parentCode, "issuer")
+    : undefined
+
+  const [insertedIssuer] = await db
+    .insert(issuer)
+    .values({
+      name: seededIssuer.name,
+      code: seededIssuer.code,
+      isoCode: seededIssuer.isoCode,
+      parentIssuerId,
+      createdAt: seededIssuer.createdAt,
+      updatedAt: seededIssuer.updatedAt,
+    })
+    .returning({ id: issuer.id })
+
+  issuerIdsByCode.set(seededIssuer.code, insertedIssuer.id)
+}
+
+function removeSeededIssuer(
+  remainingIssuers: typeof seededIssuers,
+  seededIssuerCode: string
+) {
+  const seededIssuerIndex = remainingIssuers.findIndex(
+    ({ code }) => code === seededIssuerCode
+  )
+
+  if (seededIssuerIndex < 0) {
+    throw new Error(`Missing seeded issuer ${seededIssuerCode}`)
+  }
+
+  remainingIssuers.splice(seededIssuerIndex, 1)
+}
+
+async function seedIssuers() {
+  const issuerIdsByCode: IssuerIdsByCode = new Map()
+  const remainingIssuers = [...seededIssuers]
+
+  await deleteSeededIssuers()
+
+  while (remainingIssuers.length > 0) {
+    const issuersReadyToInsert = getIssuersReadyToInsert(
+      remainingIssuers,
+      issuerIdsByCode
+    )
+
+    if (issuersReadyToInsert.length === 0) {
+      throw new Error("Unable to resolve seeded issuer parents")
+    }
+
+    for (const seededIssuer of issuersReadyToInsert) {
+      await insertSeededIssuer(issuerIdsByCode, seededIssuer)
+      removeSeededIssuer(remainingIssuers, seededIssuer.code)
+    }
+  }
+
+  return issuerIdsByCode
 }
 
 async function seedMints(): Promise<MintIdsByCode> {

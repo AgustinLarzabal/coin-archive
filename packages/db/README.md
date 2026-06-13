@@ -254,6 +254,50 @@ Known limitations and non-goals:
 - the database does not model engraver biographies, date ranges, nationality, signature variants, or confidence levels yet
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Issuer model notes
+
+The `issuer` table models the historical or legal authority under which a Coin was issued, plus the archive's optional Issuer Grouping hierarchy:
+
+- an Issuer row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, required `iso_code`, optional `parent_issuer_id`, and timestamps
+- `issuer.code` is the stable archive identity for the issuer and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `issuer.name` is display text only; it helps humans read the issuer label but is not treated as identity and is allowed to repeat across rows
+- `issuer.iso_code` is the required uppercase ISO 3166-1 alpha-2 code associated with the issuer and is not treated as the issuer's archive identity
+- `issuer.parent_issuer_id` records optional Issuer Grouping for browsing and filtering; it does not change the issuer's own identity
+- issuer codes are required lowercase slug-style text and are unique as stored
+- the schema does not currently trim, slugify, or otherwise normalize `issuer.name` on write; callers must provide the intended persisted text
+
+Issuer-specific requirements and constraints:
+
+- every Issuer must have a non-null `code`
+- every Issuer must have a non-null `name`
+- every Issuer must have a non-null `iso_code`
+- Issuer Codes must be globally unique through `issuer_code_unique_idx`
+- Issuer Codes must satisfy the lowercase slug-style check enforced by `issuer_code_slug_check`
+- Issuer ISO Codes must satisfy the uppercase two-letter format enforced by `issuer_iso_code_format_check`
+- `parent_issuer_id` is optional, but an Issuer cannot be its own direct parent because of `issuer_parent_issuer_id_self_check`
+- Issuer Names do not need to be unique
+- Issuer primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Issuer-specific indexes and query implications:
+
+- `issuer_code_unique_idx` protects issuer identity by code
+- `issuer_parent_issuer_id_idx` supports Issuer Grouping traversals and joins
+- `getIssuers` is the package-owned read model for issuer options and currently returns `id`, `code`, `name`, `isoCode`, `createdAt`, and `updatedAt`
+- `getIssuers` sorts issuers by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- every Coin must reference exactly one direct Issuer through `coin.issuer_id`
+- an Issuer may have zero or one parent Issuer and may have many child Issuers through Issuer Grouping
+- deleting an Issuer is restricted while any Coin or child Issuer still points at it
+
+Known limitations and non-goals:
+
+- the database does not yet prevent arbitrary multi-row Issuer Grouping cycles; it only blocks self-parenting
+- the database does not verify that an Issuer Name or ISO Code is historically correct for the coin's issue dates
+- the database does not model richer issuer periods, jurisdiction boundaries, or alternate naming histories yet
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

@@ -27,13 +27,6 @@ import { getOrCreateDefaultComposition as getDefaultComposition } from "./defaul
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
 
-type CreateIssuerInput = {
-  code: string
-  isoCode?: string
-  name: string
-  parentIssuerId?: string
-}
-
 type CreateCoinInput = {
   comments?: string | null
   createdAt: Date
@@ -253,18 +246,25 @@ export async function createEngraver({ code, name }: CreateEngraverInput) {
   return createdEngraver
 }
 
+type CreateIssuerInput = {
+  code: string
+  name: string
+  isoCode?: string
+  parentIssuerId?: string
+}
+
 export async function createIssuer({
   code,
-  isoCode = "ZZ",
   name,
+  isoCode = "ZZ",
   parentIssuerId,
 }: CreateIssuerInput) {
   const [createdIssuer] = await db
     .insert(issuer)
     .values({
       code,
-      isoCode,
       name,
+      isoCode,
       parentIssuerId,
     })
     .returning()

@@ -961,6 +961,47 @@ describe("issuer schema constraints", () => {
       "23514"
     )
   })
+
+  it("restricts deleting an issuer while coins still reference it", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    await createCoin({
+      title: "Referenced Issuer Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+
+    await expectConstraintError(
+      db.delete(issuer).where(sql`${issuer.id} = ${issuerId}`),
+      "coin_issuer_id_issuer_id_fk",
+      "23001"
+    )
+  })
+
+  it("restricts deleting an issuer while child issuers still reference it", async () => {
+    const parentIssuer = await createIssuer({
+      code: "roman-empire",
+      isoCode: "IT",
+      name: "Roman Empire",
+    })
+
+    await createIssuer({
+      code: "byzantine-empire",
+      isoCode: "TR",
+      name: "Byzantine Empire",
+      parentIssuerId: parentIssuer.id,
+    })
+
+    await expectConstraintError(
+      db.delete(issuer).where(sql`${issuer.id} = ${parentIssuer.id}`),
+      "issuer_parent_issuer_id_issuer_id_fk",
+      "23001"
+    )
+  })
 })
 
 describe("coin schema constraints", () => {

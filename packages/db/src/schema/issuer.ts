@@ -29,8 +29,8 @@ export const issuer = pgTable(
     id: uuid("id")
       .primaryKey()
       .default(sql`uuidv7()`),
-    name: varchar("name", { length: 255 }).notNull(),
     code: varchar("code", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
     isoCode: varchar("iso_code", { length: 2 }).notNull(),
     parentIssuerId: uuid("parent_issuer_id").references(
       (): AnyPgColumn => issuer.id,
@@ -46,8 +46,11 @@ export const issuer = pgTable(
       .defaultNow(),
   },
   (issuer) => [
+    // Issuer codes are lowercase slug-style, so a plain unique index is enough.
     uniqueIndex(issuerSchemaNames.codeUniqueIndex).on(issuer.code),
+    // Supports parent-child issuer grouping traversals and joins.
     index(issuerSchemaNames.parentIssuerIdIndex).on(issuer.parentIssuerId),
+    // Blocks the trivial issuer-grouping cycle where a row points at itself.
     check(
       issuerSchemaNames.parentIssuerIdSelfCheck,
       sql`${issuer.parentIssuerId} is null or ${issuer.parentIssuerId} <> ${issuer.id}`
@@ -56,6 +59,7 @@ export const issuer = pgTable(
       issuerSchemaNames.codeSlugCheck,
       sql`${issuer.code} ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'`
     ),
+    // Issuer ISO codes are required uppercase ISO 3166-1 alpha-2 values.
     check(
       issuerSchemaNames.isoCodeFormatCheck,
       sql`${issuer.isoCode} ~ '^[A-Z]{2}$'`

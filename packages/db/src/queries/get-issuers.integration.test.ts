@@ -8,37 +8,46 @@ describe("getIssuers integration", () => {
   useTestDatabaseIsolation(db)
 
   it("returns issuer options sorted by name and code", async () => {
-    await createIssuer({
+    const bankOfCanada = await createIssuer({
       code: "bank-of-canada",
-      isoCode: "CA",
       name: "Bank of Canada",
+      isoCode: "CA",
     })
-    await createIssuer({
+    const casaDaMoeda = await createIssuer({
       code: "casa-da-moeda",
+      name: "Issuer",
       isoCode: "BR",
-      name: "Issuer",
     })
-    await createIssuer({
+    const royalMint = await createIssuer({
       code: "royal-mint",
-      isoCode: "GB",
       name: "Issuer",
+      isoCode: "GB",
     })
 
     await expect(getIssuers()).resolves.toStrictEqual([
       {
+        id: bankOfCanada.id,
         code: "bank-of-canada",
-        isoCode: "CA",
         name: "Bank of Canada",
+        isoCode: "CA",
+        createdAt: bankOfCanada.createdAt,
+        updatedAt: bankOfCanada.updatedAt,
       },
       {
+        id: casaDaMoeda.id,
         code: "casa-da-moeda",
-        isoCode: "BR",
         name: "Issuer",
+        isoCode: "BR",
+        createdAt: casaDaMoeda.createdAt,
+        updatedAt: casaDaMoeda.updatedAt,
       },
       {
+        id: royalMint.id,
         code: "royal-mint",
-        isoCode: "GB",
         name: "Issuer",
+        isoCode: "GB",
+        createdAt: royalMint.createdAt,
+        updatedAt: royalMint.updatedAt,
       },
     ])
   })

@@ -5,14 +5,20 @@ import { issuer } from "../schema/issuer"
 import type { Issuer } from "../schema/issuer"
 
 const getIssuersSelection = {
+  id: issuer.id,
   code: issuer.code,
-  isoCode: issuer.isoCode,
   name: issuer.name,
+  isoCode: issuer.isoCode,
+  createdAt: issuer.createdAt,
+  updatedAt: issuer.updatedAt,
 }
 
-export type IssuerOption = Pick<Issuer, "code" | "isoCode" | "name">
+export type IssuerOption = Pick<
+  Issuer,
+  "id" | "code" | "name" | "isoCode" | "createdAt" | "updatedAt"
+>
 
-export async function getIssuers() {
+export async function getIssuers(): Promise<IssuerOption[]> {
   return db
     .select(getIssuersSelection)
     .from(issuer)

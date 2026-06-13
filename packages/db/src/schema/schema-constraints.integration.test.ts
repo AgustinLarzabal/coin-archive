@@ -802,7 +802,7 @@ describe("technique schema constraints", () => {
     )
   })
 
-  it("rejects duplicate technique codes", async () => {
+  it("rejects duplicate technique codes ignoring case", async () => {
     await db.insert(technique).values({
       code: "milled",
       name: "Milled",
@@ -810,7 +810,7 @@ describe("technique schema constraints", () => {
 
     await expectConstraintError(
       db.insert(technique).values({
-        code: "milled",
+        code: "MILLED",
         name: "Duplicate milled",
       }),
       techniqueSchemaNames.codeLowerUniqueIndex,

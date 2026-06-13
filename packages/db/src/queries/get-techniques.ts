@@ -5,16 +5,16 @@ import { technique } from "../schema/technique"
 import type { Technique } from "../schema/technique"
 
 const getTechniquesSelection = {
-  createdAt: technique.createdAt,
-  code: technique.code,
   id: technique.id,
+  code: technique.code,
   name: technique.name,
+  createdAt: technique.createdAt,
   updatedAt: technique.updatedAt,
 }
 
 export type TechniqueOption = Pick<
   Technique,
-  "code" | "createdAt" | "id" | "name" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getTechniques(): Promise<TechniqueOption[]> {

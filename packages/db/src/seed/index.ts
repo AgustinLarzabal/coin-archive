@@ -63,8 +63,8 @@ type RimIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
-type CoinIdsByTitle = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
+type CoinIdsByTitle = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
 type CoinFaceIdsByKey = Map<string, string>
 
@@ -196,6 +196,13 @@ async function deleteSeededShapes() {
   )
 }
 
+async function deleteSeededTechniques() {
+  await deleteSeededRecords(
+    seededTechniques.map(({ code }) => code),
+    (code) => db.delete(technique).where(eq(technique.code, code))
+  )
+}
+
 async function deleteSeededCoins() {
   await deleteSeededRecords(
     seededCoins.map(({ title }) => title),
@@ -207,13 +214,6 @@ async function deleteSeededThemes() {
   await deleteSeededRecords(
     seededThemes.map(({ code }) => code),
     (code) => db.delete(theme).where(eq(theme.code, code))
-  )
-}
-
-async function deleteSeededTechniques() {
-  await deleteSeededRecords(
-    seededTechniques.map(({ code }) => code),
-    (code) => db.delete(technique).where(eq(technique.code, code))
   )
 }
 
@@ -511,21 +511,6 @@ async function seedShapes(): Promise<ShapeIdsByCode> {
   )
 }
 
-async function seedThemes(): Promise<ThemeIdsByCode> {
-  return seedRecordsByCode(
-    seededThemes,
-    deleteSeededThemes,
-    async (seededTheme) => {
-      const [insertedTheme] = await db
-        .insert(theme)
-        .values(seededTheme)
-        .returning({ id: theme.id })
-
-      return insertedTheme.id
-    }
-  )
-}
-
 async function seedTechniques(): Promise<TechniqueIdsByCode> {
   return seedRecordsByCode(
     seededTechniques,
@@ -537,6 +522,21 @@ async function seedTechniques(): Promise<TechniqueIdsByCode> {
         .returning({ id: technique.id })
 
       return insertedTechnique.id
+    }
+  )
+}
+
+async function seedThemes(): Promise<ThemeIdsByCode> {
+  return seedRecordsByCode(
+    seededThemes,
+    deleteSeededThemes,
+    async (seededTheme) => {
+      const [insertedTheme] = await db
+        .insert(theme)
+        .values(seededTheme)
+        .returning({ id: theme.id })
+
+      return insertedTheme.id
     }
   )
 }

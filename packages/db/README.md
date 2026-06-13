@@ -454,6 +454,45 @@ Known limitations and non-goals:
 - the database does not model face-specific rim applicability, source-specific wording, or uncertainty metadata on the shared Rim row
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Technique model notes
+
+The `technique` table models the shared minting-technique classification that may be attached to a Coin:
+
+- a Technique row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `technique.code` is the stable archive identity for the minting technique and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `technique.name` is display text only; it helps humans read the minting-technique label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat technique codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `technique.name` on write; callers must provide the intended persisted text
+
+Technique-specific requirements and constraints:
+
+- every Technique must have a non-null `code`
+- every Technique must have a non-null `name`
+- Technique Codes must be globally unique ignoring case through `technique_code_lower_unique_idx`
+- Technique Codes must satisfy the lowercase slug-style check enforced by `technique_code_slug_check`
+- Technique Names do not need to be unique
+- Technique primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Technique-specific indexes and query implications:
+
+- `technique_code_lower_unique_idx` protects the case-insensitive identity rule for technique codes
+- `technique_code_lookup_idx` supports shared case-insensitive lookups such as technique filtering in `getCoins`
+- `getTechniques` is the package-owned read model for technique options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getTechniques` sorts techniques by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may reference zero or one Technique through `coin.technique_id`
+- a Technique can be referenced by many Coins
+- deleting a Technique is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Technique Name is canonical or aligned with every external cataloguing vocabulary
+- the database does not model source-specific terminology, uncertainty metadata, or more granular process subtypes on the shared Technique row
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Ruler Group model notes
 
 The `ruler_group` table models the shared flat grouping label that may be attached to a Ruler:

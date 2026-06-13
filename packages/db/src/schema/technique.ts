@@ -36,9 +36,11 @@ export const technique = pgTable(
       .defaultNow(),
   },
   (technique) => [
+    // Enforces case-insensitive uniqueness for stable technique codes.
     uniqueIndex(techniqueSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${technique.code})`
     ),
+    // Supports case-insensitive lookups by technique code in shared queries.
     index(techniqueSchemaNames.codeLookupIndex).on(
       sql`lower(${technique.code})`
     ),

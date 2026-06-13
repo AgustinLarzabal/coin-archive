@@ -376,6 +376,45 @@ Known limitations and non-goals:
 - the database does not model specimen-specific rotation, source-specific orientation wording, or uncertainty metadata on the shared Orientation row
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Rim model notes
+
+The `rim` table models the shared face-border treatment classification that may be attached to a Coin:
+
+- a Rim row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `rim.code` is the stable archive identity for the rim and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `rim.name` is display text only; it helps humans read the rim label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat rim codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `rim.name` on write; callers must provide the intended persisted text
+
+Rim-specific requirements and constraints:
+
+- every Rim must have a non-null `code`
+- every Rim must have a non-null `name`
+- Rim Codes must be globally unique ignoring case through `rim_code_lower_unique_idx`
+- Rim Codes must satisfy the lowercase slug-style check enforced by `rim_code_slug_check`
+- Rim Names do not need to be unique
+- Rim primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Rim-specific indexes and query implications:
+
+- `rim_code_lower_unique_idx` protects the case-insensitive identity rule for rim codes
+- `rim_code_lookup_idx` supports shared case-insensitive lookups such as rim filtering in `getCoins`
+- `getRims` is the package-owned read model for rim options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getRims` sorts rims by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may reference zero or one Rim through `coin.rim_id`
+- a Rim can be referenced by many Coins
+- deleting a Rim is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that a Rim Name is canonical or aligned with every external cataloguing vocabulary
+- the database does not model face-specific rim applicability, source-specific wording, or uncertainty metadata on the shared Rim row
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

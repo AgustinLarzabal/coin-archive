@@ -59,10 +59,10 @@ type EngraverIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
 type OrientationIdsByCode = Map<string, string>
+type RimIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
-type RimIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
@@ -168,6 +168,13 @@ async function deleteSeededOrientations() {
   )
 }
 
+async function deleteSeededRims() {
+  await deleteSeededRecords(
+    seededRims.map(({ code }) => code),
+    (code) => db.delete(rim).where(eq(rim.code, code))
+  )
+}
+
 async function deleteSeededRulers() {
   await deleteSeededRecords(
     seededRulers.map(({ code }) => code),
@@ -207,13 +214,6 @@ async function deleteSeededShapes() {
   await deleteSeededRecords(
     seededShapes.map(({ code }) => code),
     (code) => db.delete(shape).where(eq(shape.code, code))
-  )
-}
-
-async function deleteSeededRims() {
-  await deleteSeededRecords(
-    seededRims.map(({ code }) => code),
-    (code) => db.delete(rim).where(eq(rim.code, code))
   )
 }
 
@@ -485,6 +485,17 @@ async function seedOrientations(): Promise<OrientationIdsByCode> {
   )
 }
 
+async function seedRims(): Promise<RimIdsByCode> {
+  return seedRecordsByCode(seededRims, deleteSeededRims, async (seededRim) => {
+    const [insertedRim] = await db
+      .insert(rim)
+      .values(seededRim)
+      .returning({ id: rim.id })
+
+    return insertedRim.id
+  })
+}
+
 async function seedThemes(): Promise<ThemeIdsByCode> {
   return seedRecordsByCode(
     seededThemes,
@@ -528,17 +539,6 @@ async function seedShapes(): Promise<ShapeIdsByCode> {
       return insertedShape.id
     }
   )
-}
-
-async function seedRims(): Promise<RimIdsByCode> {
-  return seedRecordsByCode(seededRims, deleteSeededRims, async (seededRim) => {
-    const [insertedRim] = await db
-      .insert(rim)
-      .values(seededRim)
-      .returning({ id: rim.id })
-
-    return insertedRim.id
-  })
 }
 
 async function seedCoins(

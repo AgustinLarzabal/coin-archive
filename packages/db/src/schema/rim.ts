@@ -36,7 +36,9 @@ export const rim = pgTable(
       .defaultNow(),
   },
   (rim) => [
+    // Enforces case-insensitive uniqueness for stable rim codes.
     uniqueIndex(rimSchemaNames.codeLowerUniqueIndex).on(sql`lower(${rim.code})`),
+    // Supports case-insensitive lookups by rim code in shared queries.
     index(rimSchemaNames.codeLookupIndex).on(sql`lower(${rim.code})`),
     check(
       rimSchemaNames.codeSlugCheck,

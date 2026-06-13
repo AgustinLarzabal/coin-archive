@@ -721,7 +721,7 @@ describe("rim schema constraints", () => {
     )
   })
 
-  it("rejects duplicate rim codes", async () => {
+  it("rejects duplicate rim codes ignoring case", async () => {
     await db.insert(rim).values({
       code: "raised-both-sides",
       name: "Raised, both sides",
@@ -729,7 +729,7 @@ describe("rim schema constraints", () => {
 
     await expectConstraintError(
       db.insert(rim).values({
-        code: "raised-both-sides",
+        code: "RAISED-BOTH-SIDES",
         name: "Duplicate raised rim",
       }),
       rimSchemaNames.codeLowerUniqueIndex,

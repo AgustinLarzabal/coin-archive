@@ -69,11 +69,6 @@ type CreateShapeInput = {
   name: string
 }
 
-type CreateRimInput = {
-  code: string
-  name: string
-}
-
 type CreateRulerGroupInput = {
   code: string
   name: string
@@ -299,6 +294,23 @@ export async function createOrientation({
   return createdOrientation
 }
 
+type CreateRimInput = {
+  code: string
+  name: string
+}
+
+export async function createRim({ code, name }: CreateRimInput) {
+  const [createdRim] = await db
+    .insert(rim)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdRim
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -399,18 +411,6 @@ export async function createShape({ code, name }: CreateShapeInput) {
     .returning()
 
   return createdShape
-}
-
-export async function createRim({ code, name }: CreateRimInput) {
-  const [createdRim] = await db
-    .insert(rim)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdRim
 }
 
 export async function createRulerGroup({ code, name }: CreateRulerGroupInput) {

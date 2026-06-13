@@ -140,6 +140,7 @@ describe("HomeFilters", () => {
         selectedDemonetization="not-demonetized"
         selectedEdgeCode="reeded"
         selectedEngraverCode="georgios-stamatopoulos"
+        selectedFromYear={1898}
         selectedIssuerCode="spain"
         selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
@@ -147,6 +148,7 @@ describe("HomeFilters", () => {
         selectedShapeCode="round"
         selectedTechniqueCode="milled"
         selectedThemeCode="map"
+        selectedToYear={1902}
         selectedRulerCode="felipe-vi"
       />
     )
@@ -159,6 +161,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Not demonetized")
     expect(markup).toContain("Reeded")
     expect(markup).toContain("Georgios Stamatopoulos")
+    expect(markup).toContain("Issue Year")
+    expect(markup).toContain("1898 - 1902")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

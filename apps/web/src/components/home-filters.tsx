@@ -39,6 +39,7 @@ import {
   CircleX,
   PenTool,
   Map,
+  SlidersHorizontal,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -56,6 +57,116 @@ import {
   getTechniqueOptionLabel,
   getThemeOptionLabel,
 } from "../lib/coin-search"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
+import { Slider } from "@workspace/ui/components/slider"
+import { useEffect, useState } from "react"
+
+const issueYearBounds = {
+  min: -1000,
+  max: new Date().getUTCFullYear(),
+} as const
+
+type CustomRendererProps = {
+  values: unknown[]
+  onChange: (values: unknown[]) => void
+  autoFocus?: boolean
+}
+
+function isIssueYearRangeValue(
+  value: unknown
+): value is { min: number; max: number } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "min" in value &&
+    "max" in value &&
+    typeof value.min === "number" &&
+    typeof value.max === "number"
+  )
+}
+
+function getIssueYearRangeValue(value: unknown) {
+  if (isIssueYearRangeValue(value)) {
+    return value
+  }
+
+  return {
+    min: issueYearBounds.min,
+    max: issueYearBounds.max,
+  }
+}
+
+function CustomSliderRangeInput({
+  values,
+  onChange,
+  autoFocus,
+}: CustomRendererProps) {
+  const [range, setRange] = useState<number[]>(
+    isIssueYearRangeValue(values[0])
+      ? [values[0].min, values[0].max]
+      : [issueYearBounds.min, issueYearBounds.max]
+  )
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => setIsOpen(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [autoFocus])
+
+  const handleApply = () => {
+    onChange([{ min: range[0], max: range[1] }])
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsOpen(false)
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger render={<span />}>
+        {range[0]} - {range[1]}
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-4"
+        align="start"
+        sideOffset={8}
+        alignOffset={-8}
+      >
+        <div className="space-y-2.5">
+          <div className="space-y-4 pt-2.5">
+            <Slider
+              value={range}
+              onValueChange={(value) => setRange(value)}
+              max={issueYearBounds.max}
+              min={issueYearBounds.min}
+              step={1}
+              className="w-[200px]"
+            />
+            <div className="flex justify-between ps-1.5 text-xs text-muted-foreground">
+              <span>{issueYearBounds.min}</span>
+              <span>{issueYearBounds.max}</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleApply}>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
@@ -80,6 +191,7 @@ type HomeFiltersProps = {
   selectedEngraverCode?: string
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
+  selectedFromYear?: number
   selectedMintCode?: string
   selectedOrientationCode?: string
   selectedRimCode?: string
@@ -87,6 +199,7 @@ type HomeFiltersProps = {
   selectedShapeCode?: string
   selectedTechniqueCode?: string
   selectedThemeCode?: string
+  selectedToYear?: number
   onFiltersChange: (filters: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
@@ -95,6 +208,7 @@ type HomeFiltersProps = {
     demonetization: DemonetizationFilterValue | undefined
     edgeCode: string | undefined
     engraverCode: string | undefined
+    fromYear: number | undefined
     issuerCode: string | undefined
     mintCode: string | undefined
     orientationCode: string | undefined
@@ -103,6 +217,7 @@ type HomeFiltersProps = {
     shapeCode: string | undefined
     techniqueCode: string | undefined
     themeCode: string | undefined
+    toYear: number | undefined
   }) => Promise<void>
 }
 
@@ -129,6 +244,7 @@ export function HomeFilters({
   selectedEdgeCode,
   selectedEngraverCode,
   selectedIssuerCode,
+  selectedFromYear,
   selectedMintCode,
   selectedOrientationCode,
   selectedRimCode,
@@ -136,9 +252,33 @@ export function HomeFilters({
   selectedShapeCode,
   selectedTechniqueCode,
   selectedThemeCode,
+  selectedToYear,
   onFiltersChange,
 }: HomeFiltersProps) {
-  const fields: FilterFieldConfig<string>[] = [
+  const [lastAddedValues, setLastAddedValues] = useState<unknown[] | null>(null)
+
+  const fields: FilterFieldConfig[] = [
+    {
+      group: "Basic",
+      fields: [
+        {
+          key: "issuerYear",
+          label: "Issue Year",
+          icon: <SlidersHorizontal strokeWidth={2} className="size-3.5" />,
+          type: "custom",
+          className: "w-36",
+          operators: [{ value: "between", label: "between" }],
+          defaultOperator: "between",
+          customRenderer: ({ values, onChange }) => (
+            <CustomSliderRangeInput
+              values={values}
+              onChange={onChange}
+              autoFocus={values === lastAddedValues}
+            />
+          ),
+        },
+      ],
+    },
     {
       group: "Select",
       fields: [
@@ -348,7 +488,17 @@ export function HomeFilters({
     },
   ]
 
-  const filters: Filter<string>[] = [
+  const filters: Filter[] = [
+    ...(selectedFromYear !== undefined || selectedToYear !== undefined
+      ? [
+          createFilter("issuerYear", "between", [
+            {
+              min: selectedFromYear ?? issueYearBounds.min,
+              max: selectedToYear ?? issueYearBounds.max,
+            },
+          ]),
+        ]
+      : []),
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
@@ -394,7 +544,21 @@ export function HomeFilters({
       : []),
   ]
 
-  async function handleFiltersChange(nextFilters: Filter<string>[]) {
+  async function handleFiltersChange(nextFilters: Filter[]) {
+    const addedFilter = nextFilters.find(
+      (nextFilter) => !filters.some((filter) => filter.id === nextFilter.id)
+    )
+
+    if (addedFilter) {
+      setLastAddedValues(addedFilter.values)
+    }
+
+    const issuerYearFilter = nextFilters.find(
+      (filter) => filter.field === "issuerYear"
+    )
+    const issuerYearRange = issuerYearFilter
+      ? getIssueYearRangeValue(issuerYearFilter.values[0])
+      : undefined
     const catalogueFilter = nextFilters.find(
       (filter) => filter.field === "catalogue"
     )
@@ -473,6 +637,7 @@ export function HomeFilters({
         typeof engraverCode === "string" && engraverCode.length > 0
           ? engraverCode
           : undefined,
+      fromYear: issuerYearRange?.min,
       issuerCode:
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
@@ -499,6 +664,7 @@ export function HomeFilters({
         typeof themeCode === "string" && themeCode.length > 0
           ? themeCode
           : undefined,
+      toYear: issuerYearRange?.max,
       rulerCode:
         typeof rulerCode === "string" && rulerCode.length > 0
           ? rulerCode
@@ -515,6 +681,7 @@ export function HomeFilters({
       demonetization: undefined,
       edgeCode: undefined,
       engraverCode: undefined,
+      fromYear: undefined,
       issuerCode: undefined,
       mintCode: undefined,
       orientationCode: undefined,
@@ -523,6 +690,7 @@ export function HomeFilters({
       shapeCode: undefined,
       techniqueCode: undefined,
       themeCode: undefined,
+      toYear: undefined,
     })
   }
 

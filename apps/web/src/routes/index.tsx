@@ -159,6 +159,7 @@ function App() {
     demonetization,
     edgeCode,
     engraverCode,
+    fromYear,
     issuerCode,
     mintCode,
     orientationCode,
@@ -167,18 +168,16 @@ function App() {
     shapeCode,
     techniqueCode,
     themeCode,
+    toYear,
   }: {
     catalogueCode: string | undefined
     compositionCode: string | undefined
     currencyCode: string | undefined
     distributionCode: string | undefined
-    demonetization:
-      | "demonetized"
-      | "not-demonetized"
-      | "unknown"
-      | undefined
+    demonetization: "demonetized" | "not-demonetized" | "unknown" | undefined
     edgeCode: string | undefined
     engraverCode: string | undefined
+    fromYear: number | undefined
     issuerCode: string | undefined
     mintCode: string | undefined
     orientationCode: string | undefined
@@ -187,6 +186,7 @@ function App() {
     shapeCode: string | undefined
     techniqueCode: string | undefined
     themeCode: string | undefined
+    toYear: number | undefined
   }) {
     await navigate({
       resetScroll: false,
@@ -261,8 +261,16 @@ function App() {
           "theme",
           themeCode
         )
+        const searchWithRuler = updateCoinSearchFilter(
+          searchWithTheme,
+          "ruler",
+          rulerCode
+        )
 
-        return updateCoinSearchFilter(searchWithTheme, "ruler", rulerCode)
+        return applyIssueYearRangeSearch(searchWithRuler, {
+          fromYear,
+          toYear,
+        })
       },
     })
   }
@@ -280,21 +288,6 @@ function App() {
       "referenceNumber",
       typeof referenceNumber === "string" ? referenceNumber.trim() : undefined
     )
-  }
-
-  async function updateIssueYearRange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-
-    await navigate({
-      resetScroll: false,
-      search: (currentSearch) =>
-        applyIssueYearRangeSearch(currentSearch, {
-          fromYear: formData.get("fromYear"),
-          toYear: formData.get("toYear"),
-        }),
-    })
   }
 
   function createPositiveNumberRangeSubmitHandler<
@@ -356,6 +349,7 @@ function App() {
         selectedEdgeCode={search.edge}
         selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
+        selectedFromYear={search.fromYear}
         selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
         selectedRimCode={search.rim}
@@ -363,6 +357,7 @@ function App() {
         selectedShapeCode={search.shape}
         selectedTechniqueCode={search.technique}
         selectedThemeCode={search.theme}
+        selectedToYear={search.toYear}
         onFiltersChange={updateHomeFilters}
       />
       {coinCodeFilterConfigs
@@ -415,34 +410,6 @@ function App() {
           type="submit"
         >
           Apply reference
-        </button>
-      </form>
-
-      <form
-        className="flex items-end gap-2 py-2"
-        onSubmit={updateIssueYearRange}
-      >
-        <Input
-          aria-label="Filter from issue year"
-          defaultValue={search.fromYear?.toString() ?? ""}
-          key={`from-year-${search.fromYear ?? ""}`}
-          name="fromYear"
-          placeholder="From year"
-          type="number"
-        />
-        <Input
-          aria-label="Filter to issue year"
-          defaultValue={search.toYear?.toString() ?? ""}
-          key={`to-year-${search.toYear ?? ""}`}
-          name="toYear"
-          placeholder="To year"
-          type="number"
-        />
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply years
         </button>
       </form>
 

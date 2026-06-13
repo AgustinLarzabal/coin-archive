@@ -54,11 +54,6 @@ type CreateCoinInput = {
   weight?: number
 }
 
-type CreateOrientationInput = {
-  code: string
-  name: string
-}
-
 type CreateThemeInput = {
   code: string
   name: string
@@ -284,6 +279,26 @@ export async function createMint({ code, name }: CreateMintInput) {
   return createdMint
 }
 
+type CreateOrientationInput = {
+  code: string
+  name: string
+}
+
+export async function createOrientation({
+  code,
+  name,
+}: CreateOrientationInput) {
+  const [createdOrientation] = await db
+    .insert(orientation)
+    .values({
+      code,
+      name,
+    })
+    .returning()
+
+  return createdOrientation
+}
+
 export async function createCoin({
   comments,
   createdAt,
@@ -348,21 +363,6 @@ export async function createCoin({
     .returning()
 
   return createdCoin
-}
-
-export async function createOrientation({
-  code,
-  name,
-}: CreateOrientationInput) {
-  const [createdOrientation] = await db
-    .insert(orientation)
-    .values({
-      code,
-      name,
-    })
-    .returning()
-
-  return createdOrientation
 }
 
 export async function createTheme({ code, name }: CreateThemeInput) {

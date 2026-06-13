@@ -58,10 +58,10 @@ type EdgeIdsByCode = Map<string, string>
 type EngraverIdsByCode = Map<string, string>
 type IssuerIdsByCode = Map<string, string>
 type MintIdsByCode = Map<string, string>
+type OrientationIdsByCode = Map<string, string>
 type RulerGroupIdsByCode = Map<string, string>
 type RulerIdsByCode = Map<string, string>
 type CoinIdsByTitle = Map<string, string>
-type OrientationIdsByCode = Map<string, string>
 type RimIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
@@ -161,6 +161,13 @@ async function deleteSeededMints() {
   )
 }
 
+async function deleteSeededOrientations() {
+  await deleteSeededRecords(
+    seededOrientations.map(({ code }) => code),
+    (code) => db.delete(orientation).where(eq(orientation.code, code))
+  )
+}
+
 async function deleteSeededRulers() {
   await deleteSeededRecords(
     seededRulers.map(({ code }) => code),
@@ -179,13 +186,6 @@ async function deleteSeededCoins() {
   await deleteSeededRecords(
     seededCoins.map(({ title }) => title),
     (title) => db.delete(coin).where(eq(coin.title, title))
-  )
-}
-
-async function deleteSeededOrientations() {
-  await deleteSeededRecords(
-    seededOrientations.map(({ code }) => code),
-    (code) => db.delete(orientation).where(eq(orientation.code, code))
   )
 }
 

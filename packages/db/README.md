@@ -337,6 +337,45 @@ Known limitations and non-goals:
 - the database does not model mint marks, operating periods, locations, confidence levels, or source-specific attribution notes yet
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
+## Orientation model notes
+
+The `orientation` table models the shared obverse-reverse alignment classification that may be attached to a Coin:
+
+- an Orientation row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- `orientation.code` is the stable archive identity for the orientation and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
+- `orientation.name` is display text only; it helps humans read the orientation label but is not treated as identity and is allowed to repeat across rows
+- uniqueness and filter matching treat orientation codes case-insensitively, while the schema also requires lowercase slug-style text on write
+- the schema does not currently trim, slugify, or otherwise normalize `orientation.name` on write; callers must provide the intended persisted text
+
+Orientation-specific requirements and constraints:
+
+- every Orientation must have a non-null `code`
+- every Orientation must have a non-null `name`
+- Orientation Codes must be globally unique ignoring case through `orientation_code_lower_unique_idx`
+- Orientation Codes must satisfy the lowercase slug-style check enforced by `orientation_code_slug_check`
+- Orientation Names do not need to be unique
+- Orientation primary keys are database-generated UUIDv7 values
+- `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
+
+Orientation-specific indexes and query implications:
+
+- `orientation_code_lower_unique_idx` protects the case-insensitive identity rule for orientation codes
+- `orientation_code_lookup_idx` supports shared case-insensitive lookups such as orientation filtering in `getCoins`
+- `getOrientations` is the package-owned read model for orientation options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
+- `getOrientations` sorts orientations by `name`, then `code`; callers should not depend on insertion order
+
+Relationship and lifecycle notes:
+
+- a Coin may reference zero or one Orientation through `coin.orientation_id`
+- an Orientation can be referenced by many Coins
+- deleting an Orientation is restricted while any Coin still points at it
+
+Known limitations and non-goals:
+
+- the database does not verify that an Orientation Name is canonical or aligned with every external cataloguing vocabulary
+- the database does not model specimen-specific rotation, source-specific orientation wording, or uncertainty metadata on the shared Orientation row
+- the database does not currently prevent semantically overlapping rows with different codes and similar names
+
 ## Catalogue model notes
 
 The `catalogue` table is intentionally small because it models the shared external reference work itself, not the per-Coin reference entry:

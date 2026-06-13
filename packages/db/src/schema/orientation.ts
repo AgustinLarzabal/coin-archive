@@ -36,9 +36,11 @@ export const orientation = pgTable(
       .defaultNow(),
   },
   (orientation) => [
+    // Enforces case-insensitive uniqueness for stable orientation codes.
     uniqueIndex(orientationSchemaNames.codeLowerUniqueIndex).on(
       sql`lower(${orientation.code})`
     ),
+    // Supports case-insensitive lookups by orientation code in shared queries.
     index(orientationSchemaNames.codeLookupIndex).on(
       sql`lower(${orientation.code})`
     ),

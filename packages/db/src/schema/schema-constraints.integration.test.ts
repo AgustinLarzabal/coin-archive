@@ -553,7 +553,7 @@ describe("orientation schema constraints", () => {
     )
   })
 
-  it("rejects duplicate orientation codes", async () => {
+  it("rejects duplicate orientation codes ignoring case", async () => {
     await db.insert(orientation).values({
       code: "coin-alignment",
       name: "Coin alignment",
@@ -561,7 +561,7 @@ describe("orientation schema constraints", () => {
 
     await expectConstraintError(
       db.insert(orientation).values({
-        code: "coin-alignment",
+        code: "COIN-ALIGNMENT",
         name: "Duplicate coin alignment",
       }),
       orientationSchemaNames.codeLowerUniqueIndex,

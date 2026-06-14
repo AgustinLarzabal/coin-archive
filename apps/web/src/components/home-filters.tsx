@@ -65,6 +65,7 @@ import {
 } from "@workspace/ui/components/popover"
 import { Input } from "@workspace/ui/components/input"
 import { Slider } from "@workspace/ui/components/slider"
+import type { FormEvent } from "react"
 import { useEffect, useState } from "react"
 import type { PositiveNumberFilterValue } from "../lib/coin-search"
 
@@ -680,6 +681,7 @@ type HomeFiltersProps = {
   selectedMinWeight?: number
   selectedMintCode?: string
   selectedOrientationCode?: string
+  selectedReferenceNumber?: string
   selectedRimCode?: string
   selectedRulerCode?: string
   selectedShapeCode?: string
@@ -706,6 +708,7 @@ type HomeFiltersProps = {
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
+    referenceNumber: string | undefined
     rimCode: string | undefined
     rulerCode: string | undefined
     shapeCode: string | undefined
@@ -749,6 +752,7 @@ export function HomeFilters({
   selectedMinWeight,
   selectedMintCode,
   selectedOrientationCode,
+  selectedReferenceNumber,
   selectedRimCode,
   selectedRulerCode,
   selectedShapeCode,
@@ -1313,6 +1317,10 @@ export function HomeFilters({
         typeof orientationCode === "string" && orientationCode.length > 0
           ? orientationCode
           : undefined,
+      referenceNumber:
+        typeof catalogueCode === "string" && catalogueCode.length > 0
+          ? selectedReferenceNumber
+          : undefined,
       rimCode:
         typeof rimCode === "string" && rimCode.length > 0 ? rimCode : undefined,
       shapeCode:
@@ -1361,6 +1369,7 @@ export function HomeFilters({
       minWeight: undefined,
       mintCode: undefined,
       orientationCode: undefined,
+      referenceNumber: undefined,
       rimCode: undefined,
       rulerCode: undefined,
       shapeCode: undefined,
@@ -1370,27 +1379,92 @@ export function HomeFilters({
     })
   }
 
+  async function handleReferenceNumberSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!selectedCatalogueCode) {
+      return
+    }
+
+    const formData = new FormData(event.currentTarget)
+    const referenceNumber = formData.get("referenceNumber")
+
+    await onFiltersChange({
+      catalogueCode: selectedCatalogueCode,
+      compositionCode: selectedCompositionCode,
+      currencyCode: selectedCurrencyCode,
+      distributionCode: selectedDistributionCode,
+      demonetization: selectedDemonetization,
+      edgeCode: selectedEdgeCode,
+      engraverCode: selectedEngraverCode,
+      fromYear: selectedFromYear,
+      issuerCode: selectedIssuerCode,
+      maxDiameter: selectedMaxDiameter,
+      maxThickness: selectedMaxThickness,
+      maxValue: selectedMaxValue,
+      maxWeight: selectedMaxWeight,
+      minDiameter: selectedMinDiameter,
+      minThickness: selectedMinThickness,
+      minValue: selectedMinValue,
+      minWeight: selectedMinWeight,
+      mintCode: selectedMintCode,
+      orientationCode: selectedOrientationCode,
+      referenceNumber:
+        typeof referenceNumber === "string" &&
+        referenceNumber.trim().length > 0
+          ? referenceNumber.trim()
+          : undefined,
+      rimCode: selectedRimCode,
+      rulerCode: selectedRulerCode,
+      shapeCode: selectedShapeCode,
+      techniqueCode: selectedTechniqueCode,
+      themeCode: selectedThemeCode,
+      toYear: selectedToYear,
+    })
+  }
+
   return (
-    <div className="mb-5 flex gap-2.5">
-      <div className="flex-1">
-        <Filters
-          filters={filters}
-          fields={fields}
-          onChange={handleFiltersChange}
-          trigger={
-            <Button variant="outline">
-              <ListFilter strokeWidth={2} />
-              Add Filter
-            </Button>
-          }
-        />
+    <div className="mb-5 space-y-2">
+      <div className="flex gap-2.5">
+        <div className="flex-1">
+          <Filters
+            filters={filters}
+            fields={fields}
+            onChange={handleFiltersChange}
+            trigger={
+              <Button variant="outline">
+                <ListFilter strokeWidth={2} />
+                Add Filter
+              </Button>
+            }
+          />
+        </div>
+
+        {filters.length > 0 ? (
+          <Button variant="outline" onClick={clearFilters}>
+            <FunnelX strokeWidth={2} />
+            Clear
+          </Button>
+        ) : null}
       </div>
 
-      {filters.length > 0 ? (
-        <Button variant="outline" onClick={clearFilters}>
-          <FunnelX strokeWidth={2} />
-          Clear
-        </Button>
+      {selectedCatalogueCode ? (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={handleReferenceNumberSubmit}
+        >
+          <Input
+            aria-label="Filter by reference number"
+            className="md:max-w-40"
+            defaultValue={selectedReferenceNumber ?? ""}
+            key={`reference-number-${selectedReferenceNumber ?? ""}`}
+            name="referenceNumber"
+            placeholder="Reference number"
+          />
+          <Button variant="outline" type="submit">
+            Apply reference
+          </Button>
+        </form>
       ) : null}
     </div>
   )

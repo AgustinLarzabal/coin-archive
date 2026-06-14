@@ -158,6 +158,7 @@ describe("HomeFilters", () => {
         selectedMinWeight={6}
         selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
+        selectedReferenceNumber="123"
         selectedRimCode="raised-both-sides"
         selectedShapeCode="round"
         selectedTechniqueCode="milled"
@@ -177,6 +178,9 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Georgios Stamatopoulos")
     expect(markup).toContain("Issue Year")
     expect(markup).toContain("1898 - 1902")
+    expect(markup).toContain("Reference number")
+    expect(markup).toContain("123")
+    expect(markup).toContain("Apply reference")
     expect(markup).toContain("Face Value")
     expect(markup).toContain("0.5 - 2")
     expect(markup).toContain("Weight")

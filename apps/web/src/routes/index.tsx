@@ -1,6 +1,5 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import type { FormEvent } from "react"
 import type { CoinMeasurements } from "@workspace/db"
 import {
   applyMeasurementRangeSearch,
@@ -23,7 +22,6 @@ import { coinCodeFilterConfigs } from "../lib/coin-filter-configs"
 import { CoinListItem } from "../components/coin-list-item"
 import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
 
-import { Input } from "@workspace/ui/components/input"
 import { HomeFilters } from "@/components/home-filters"
 
 const coinMeasurementFields = [
@@ -106,6 +104,7 @@ function App() {
     minWeight,
     mintCode,
     orientationCode,
+    referenceNumber,
     rimCode,
     rulerCode,
     shapeCode,
@@ -132,6 +131,7 @@ function App() {
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
+    referenceNumber: string | undefined
     rimCode: string | undefined
     rulerCode: string | undefined
     shapeCode: string | undefined
@@ -192,8 +192,13 @@ function App() {
           "orientation",
           orientationCode
         )
-        const searchWithRim = updateCoinSearchFilter(
+        const searchWithReferenceNumber = updateCoinSearchFilter(
           searchWithOrientation,
+          "referenceNumber",
+          catalogueCode ? referenceNumber : undefined
+        )
+        const searchWithRim = updateCoinSearchFilter(
+          searchWithReferenceNumber,
           "rim",
           rimCode
         )
@@ -246,21 +251,6 @@ function App() {
     })
   }
 
-  async function updateReferenceNumberFromForm(
-    event: FormEvent<HTMLFormElement>
-  ) {
-    event.preventDefault()
-
-    const referenceNumber = new FormData(event.currentTarget).get(
-      "referenceNumber"
-    )
-
-    await updateSearchFilter(
-      "referenceNumber",
-      typeof referenceNumber === "string" ? referenceNumber.trim() : undefined
-    )
-  }
-
   return (
     <div className="p-5">
       <HomeFilters
@@ -297,6 +287,7 @@ function App() {
         selectedMinWeight={search.minWeight}
         selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
+        selectedReferenceNumber={search.referenceNumber}
         selectedRimCode={search.rim}
         selectedRulerCode={search.ruler}
         selectedShapeCode={search.shape}
@@ -337,26 +328,6 @@ function App() {
             />
           )
         })}
-
-      <form
-        className="flex items-end gap-2 py-2"
-        onSubmit={updateReferenceNumberFromForm}
-      >
-        <Input
-          aria-label="Filter by reference number"
-          className="md:max-w-40"
-          defaultValue={search.referenceNumber ?? ""}
-          key={`reference-number-${search.referenceNumber ?? ""}`}
-          name="referenceNumber"
-          placeholder="Reference number"
-        />
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply reference
-        </button>
-      </form>
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => {

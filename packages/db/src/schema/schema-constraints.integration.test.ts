@@ -1464,7 +1464,7 @@ describe("coin surface schema constraints", () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
-      title: "Single Face Per Side Coin",
+      title: "Single Surface Per Kind Coin",
       compositionId,
       currencyId,
       distributionId,
@@ -1503,7 +1503,7 @@ describe("coin surface schema constraints", () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
-      title: "Invalid Face Side Coin",
+      title: "Invalid Surface Kind Coin",
       compositionId,
       currencyId,
       distributionId,
@@ -1514,7 +1514,7 @@ describe("coin surface schema constraints", () => {
     await expectConstraintError(
       db.execute(sql`
         insert into "coin_surface" ("coin_id", "kind")
-        values (${createdCoin.id}, ${"edge"})
+        values (${createdCoin.id}, ${"invalid-kind"})
       `),
       coinSurfaceSchemaNames.kindCheck,
       "23514"
@@ -1525,7 +1525,7 @@ describe("coin surface schema constraints", () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
-      title: "Deleted Face Detail Coin",
+      title: "Deleted Coin Surface Coin",
       compositionId,
       currencyId,
       distributionId,

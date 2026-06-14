@@ -2,7 +2,11 @@ import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
-import type { CoinFaceKind, CoinSurfaceKind } from "../schema/coin-surface"
+import {
+  coinSurfaceKinds,
+  type CoinFaceKind,
+  type CoinSurfaceKind,
+} from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -27,6 +31,8 @@ import { normalizeCoinComments } from "../normalize-coin-comments"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
+
+const [, , edgeSurfaceKind] = coinSurfaceKinds
 
 type CreateCoinInput = {
   comments?: string | null
@@ -87,6 +93,8 @@ export async function createCoin({
     compositionId ?? (await getOrCreateDefaultComposition()).id
   const resolvedCurrencyId =
     currencyId ?? (await getOrCreateDefaultCurrency()).id
+  const hasLegacyEdgeSurfaceData =
+    edgeDescription !== undefined || edgeLettering !== undefined
 
   const [createdCoin] = await db
     .insert(coin)
@@ -116,10 +124,10 @@ export async function createCoin({
     })
     .returning()
 
-  if (edgeDescription !== undefined || edgeLettering !== undefined) {
+  if (hasLegacyEdgeSurfaceData) {
     await createCoinSurface({
       coinId: createdCoin.id,
-      kind: "edge-surface",
+      kind: edgeSurfaceKind,
       description: edgeDescription,
       lettering: edgeLettering,
     })

@@ -42,10 +42,14 @@ Important model notes:
 The current core relationships map to these tables:
 
 - `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional public plain-text `comments`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
+- `coin_surface`: per-Coin surface detail row for Obverse, Reverse, and Edge Surface description or lettering details
+- `coin_face_engraver`: face-only Engraver Attribution join table from Obverse or Reverse Coin Surface rows to `engraver`
 - `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description`, and timestamps
 - `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
+- `edge`: shared coin-level Edge controlled classification with stable `code`, display `name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
 - `orientation`: shared Orientation record with stable `code`, display `name`, and timestamps
+- `rim`: shared coin-level Rim controlled classification with stable `code`, display `name`, and timestamps
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
 - `coin_ruler`: join table from Coin to Ruler plus per-Coin `ruler_order`
@@ -53,6 +57,18 @@ The current core relationships map to these tables:
 - `coin_theme`: unordered join table from Coin to Theme
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
+
+## Coin Surface storage model notes
+
+The `coin_surface` table stores Coin Surface details for Obverse, Reverse, and Edge Surface rows:
+
+- each Coin may have at most one `coin_surface` row per `kind`
+- `coin_surface.kind` uses the glossary-aligned values `obverse`, `reverse`, and `edge-surface`
+- Obverse, Reverse, and Edge Surface rows can each carry optional `description` and optional `lettering`
+- Coin Surface storage replaces Coin Face as the umbrella storage model for descriptive surface details; avoid using Coin Face for Edge Surface details
+- Edge remains a coin-level controlled classification through `coin.edge_id` and the shared `edge` table
+- Rim remains coin-level through `coin.rim_id` and the shared `rim` table
+- Engraver Attribution remains face-specific through `coin_face_engraver`, so only Obverse and Reverse Coin Surface rows may carry engraver links
 
 ## Composition model notes
 
@@ -212,7 +228,7 @@ Relationship and lifecycle notes:
 Known limitations and non-goals:
 
 - the database does not verify that an Edge Name is canonical, source-complete, or aligned with every external cataloguing vocabulary
-- the database does not encode edge lettering, edge description text, or source-specific edge detail on the shared Edge row itself
+- the database does not encode edge lettering, edge description text, or source-specific edge detail on the shared Edge row itself; those Coin Surface details belong on the Coin's `edge-surface` row in `coin_surface`
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
 ## Engraver model notes
@@ -245,7 +261,7 @@ Engraver-specific indexes and query implications:
 Relationship and lifecycle notes:
 
 - an Engraver may be referenced by zero or more `coin_face_engraver` rows
-- an Engraver attribution always links an Engraver to a specific Coin Face, not directly to the whole Coin
+- Engraver Attribution remains face-specific and always links an Engraver to a specific Obverse or Reverse Coin Surface, not directly to the whole Coin
 - deleting an Engraver is restricted while any face attribution still points at it
 
 Known limitations and non-goals:
@@ -451,7 +467,7 @@ Relationship and lifecycle notes:
 Known limitations and non-goals:
 
 - the database does not verify that a Rim Name is canonical or aligned with every external cataloguing vocabulary
-- the database does not model face-specific rim applicability, source-specific wording, or uncertainty metadata on the shared Rim row
+- the database does not model face-specific rim applicability, source-specific wording, or uncertainty metadata on the shared Rim row; Rim remains coin-level rather than moving onto Coin Surface rows
 - the database does not currently prevent semantically overlapping rows with different codes and similar names
 
 ## Technique model notes
@@ -712,8 +728,11 @@ These are enforced by the current PostgreSQL schema and exercised by package tes
 - Coin to Theme Attribution is unique per `(coin_id, theme_id)`
 - Ruler Attribution Order must be positive and unique per Coin through `(coin_id, ruler_order)`
 - Catalogue Reference is deduplicated by `(coin_id, catalogue_id, normalized number)` where normalization trims outer whitespace, collapses internal whitespace, and compares case-insensitively
+- each Coin may record at most one Coin Surface per kind across Obverse, Reverse, and Edge Surface
+- Engraver Attribution remains face-specific and rejects `edge-surface` attributions
 - deleting a Coin cascades to `coin_ruler`, `coin_theme`, and `coin_reference`
-- deleting referenced Compositions, Issuers, Orientations, Rulers, Ruler Groups, Themes, or Catalogues is restricted while dependent rows still exist
+- deleting Coin Surface rows cascades from their parent Coin, and deleting face Coin Surface rows cascades their face-specific Engraver Attribution rows
+- deleting referenced Compositions, Edges, Engravers, Issuers, Orientations, Rims, Rulers, Ruler Groups, Themes, or Catalogues is restricted while dependent rows still exist
 
 ## Known gaps and future schema work
 

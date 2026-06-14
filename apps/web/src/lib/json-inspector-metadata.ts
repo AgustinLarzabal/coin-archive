@@ -29,7 +29,7 @@ export const jsonInspectorMetadata: Record<
     databaseTables: [
       "coin",
       "catalogue",
-      "coin_face",
+      "coin_surface",
       "coin_face_engraver",
       "coin_mint",
       "coin_reference",
@@ -54,12 +54,14 @@ export const jsonInspectorMetadata: Record<
       "Each coin requires title, issuer, distribution, composition, face value text, positive face value numeric value, and currency.",
       "Issue years must be either fully absent or provided as both minYear and maxYear, and minYear cannot be greater than maxYear.",
       "Weight, diameter, thickness, and mintage are optional but must be positive when present.",
-      "Optional relations such as orientation, edge, shape, rim, technique, mints, themes, rulers, faces, and catalogue references must point to existing rows.",
+      "Optional relations such as orientation, edge, shape, rim, technique, mints, themes, rulers, Coin Surface details, face-only Engraver Attribution rows, and catalogue references must point to existing rows.",
     ],
     limitations: [
       "The /json page shows at most 1000 coin records, even if more rows match the filters.",
       "Deleting an issuer, distribution, composition, currency, or other referenced lookup row is restricted while any coin still points at it.",
-      "Face rows are limited to one obverse and one reverse per coin.",
+      "Coin Surface rows are limited to one obverse, one reverse, and one edge-surface per coin.",
+      "Edge remains a coin-level controlled classification, while Rim remains coin-level.",
+      "Engraver Attribution remains face-specific, so only obverse and reverse Coin Surface rows may carry engraver links.",
       "Ruler ordering is per coin, must be unique per position, and must be greater than zero.",
     ],
     queryNotes: [
@@ -138,7 +140,7 @@ export const jsonInspectorMetadata: Record<
     ],
     limitations: [
       "code is unique case-insensitively.",
-      "An engraver cannot be deleted while coin_face_engraver rows still reference it.",
+      "An engraver cannot be deleted while face-only Engraver Attribution rows still reference it.",
     ],
     queryNotes: [
       "The query returns id, code, name, createdAt, and updatedAt.",

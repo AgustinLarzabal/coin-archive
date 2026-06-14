@@ -16,6 +16,7 @@ import {
 import { engraver } from "./engraver"
 
 export const coinFaceEngraverSchemaNames = {
+  faceOnlyCheck: "coin_face_engraver_face_only_check",
   coinFaceIdIndex: "coin_face_engraver_coin_face_id_idx",
   coinFaceIdKindFk: "coin_face_engraver_coin_face_id_kind_fk",
   coinFaceKindCheck: "coin_face_engraver_coin_face_kind_check",

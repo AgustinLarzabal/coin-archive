@@ -1750,6 +1750,52 @@ describe("coin face engraver schema constraints", () => {
       "23505"
     )
   })
+
+  it("rejects attributing an Engraver to a non-face Coin Surface", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Edge Attribution Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+    const createdFace = await createCoinSurface({
+      coinId: createdCoin.id,
+      kind: obverseKind,
+      description: "Portrait right.",
+    })
+    const createdEngraver = await createEngraver({
+      code: "edge-engraver",
+      name: "Edge Engraver",
+    })
+
+    await expectConstraintError(
+      db.transaction(async (tx) => {
+        await tx.execute(sql`
+          alter table "coin_surface"
+          drop constraint ${sql.raw(coinSurfaceSchemaNames.kindCheck)}
+        `)
+        await tx.execute(sql`
+          update "coin_surface"
+          set "kind" = 'edge'
+          where "id" = ${createdFace.id}
+        `)
+
+        return tx
+          .insert(coinFaceEngraver)
+          .values({
+            coinFaceId: createdFace.id,
+            engraverId: createdEngraver.id,
+          })
+          .returning()
+      }),
+      coinFaceEngraverSchemaNames.faceOnlyCheck,
+      "23514"
+    )
+  })
 })
 
 describe("catalogue schema constraints", () => {

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
-import type { CoinSurfaceKind } from "../schema/coin-surface"
+import type { CoinFaceKind, CoinSurfaceKind } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -146,7 +146,7 @@ type CreateCoinThemeInput = {
 
 type CreateCoinFaceEngraverInput = {
   coinFaceId: string
-  coinFaceKind?: Extract<CoinSurfaceKind, "obverse" | "reverse">
+  coinFaceKind?: CoinFaceKind
   engraverId: string
 }
 
@@ -528,7 +528,7 @@ export async function createCoinFaceEngraver({
   engraverId,
 }: CreateCoinFaceEngraverInput) {
   const resolvedCoinFaceKind =
-    coinFaceKind ?? (await getCoinSurfaceKind(coinFaceId))
+    coinFaceKind ?? (await getCoinFaceKind(coinFaceId))
 
   const [createdCoinFaceEngraver] = await db
     .insert(coinFaceEngraver)
@@ -542,9 +542,7 @@ export async function createCoinFaceEngraver({
   return createdCoinFaceEngraver
 }
 
-async function getCoinSurfaceKind(
-  coinSurfaceId: string
-): Promise<Extract<CoinSurfaceKind, "obverse" | "reverse">> {
+async function getCoinFaceKind(coinSurfaceId: string): Promise<CoinFaceKind> {
   const [matchedSurface] = await db
     .select({
       kind: coinSurface.kind,

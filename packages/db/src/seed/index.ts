@@ -326,11 +326,11 @@ async function seedCoinFaceEngravers(
         coinSurfaceIdsByKey,
         getCoinSurfaceSeedKey(
           seededCoinFaceEngraver.coinTitle,
-          seededCoinFaceEngraver.side
+          seededCoinFaceEngraver.coinFaceKind
         ),
         "coin surface"
       ),
-      coinFaceKind: seededCoinFaceEngraver.side,
+      coinFaceKind: seededCoinFaceEngraver.coinFaceKind,
       engraverId: getRequiredSeededId(
         engraverIdsByCode,
         seededCoinFaceEngraver.engraverCode,

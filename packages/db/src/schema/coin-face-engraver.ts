@@ -9,9 +9,9 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import {
+  coinFaceKinds,
   coinSurface,
-  coinSurfaceKinds,
-  type CoinSurfaceKind,
+  type CoinFaceKind,
 } from "./coin-surface"
 import { engraver } from "./engraver"
 
@@ -22,10 +22,6 @@ export const coinFaceEngraverSchemaNames = {
   coinFaceKindIndex: "coin_face_engraver_coin_face_kind_idx",
   engraverIdIndex: "coin_face_engraver_engraver_id_idx",
 } as const
-const coinFaceKinds = coinSurfaceKinds.filter(
-  (kind): kind is Extract<CoinSurfaceKind, "obverse" | "reverse"> =>
-    kind !== "edge-surface"
-)
 const coinFaceKindsSql = sql.raw(
   `(${coinFaceKinds.map((kind) => `'${kind}'`).join(", ")})`
 )
@@ -37,7 +33,7 @@ export const coinFaceEngraver = pgTable(
       .notNull()
       .$type<string>(),
     coinFaceKind: varchar("coin_face_kind", { length: 16 })
-      .$type<(typeof coinFaceKinds)[number]>()
+      .$type<CoinFaceKind>()
       .notNull(),
     engraverId: uuid("engraver_id")
       .notNull()

@@ -1,4 +1,4 @@
-import type { CoinSurfaceKind } from "../schema/coin-surface"
+import type { CoinFaceKind, CoinSurfaceKind } from "../schema/coin-surface"
 
 type SeededIssuer = {
   name: string
@@ -48,7 +48,7 @@ type SeededEngraver = {
 
 type SeededCoinFaceEngraver = {
   coinTitle: string
-  side: Extract<CoinSurfaceKind, "obverse" | "reverse">
+  coinFaceKind: CoinFaceKind
   engraverCode: string
 }
 
@@ -435,7 +435,7 @@ export const seededEngravers: SeededEngraver[] = [
 export const seededCoinFaceEngravers: SeededCoinFaceEngraver[] = [
   {
     coinTitle: "Spain 2 Euro",
-    side: "reverse",
+    coinFaceKind: "reverse",
     engraverCode: "georgios-stamatopoulos",
   },
 ]

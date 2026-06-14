@@ -107,6 +107,11 @@ type DiameterRangeValue = {
   minDiameter: PositiveNumberFilterValue
 }
 
+type ThicknessRangeValue = {
+  maxThickness: PositiveNumberFilterValue
+  minThickness: PositiveNumberFilterValue
+}
+
 function isIssueYearRangeValue(
   value: unknown
 ): value is { min: number; max: number } {
@@ -188,6 +193,26 @@ function getDiameterRangeValue(value: unknown): DiameterRangeValue {
   return {
     minDiameter: undefined,
     maxDiameter: undefined,
+  }
+}
+
+function isThicknessRangeValue(value: unknown): value is ThicknessRangeValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "minThickness" in value &&
+    "maxThickness" in value
+  )
+}
+
+function getThicknessRangeValue(value: unknown): ThicknessRangeValue {
+  if (isThicknessRangeValue(value)) {
+    return value
+  }
+
+  return {
+    minThickness: undefined,
+    maxThickness: undefined,
   }
 }
 
@@ -529,6 +554,98 @@ function CustomDiameterRangeInput({
   )
 }
 
+function CustomThicknessRangeInput({
+  values,
+  onChange,
+  autoFocus,
+}: CustomRendererProps) {
+  const selectedRange = getThicknessRangeValue(values[0])
+  const [range, setRange] = useState({
+    minThickness: selectedRange.minThickness?.toString() ?? "",
+    maxThickness: selectedRange.maxThickness?.toString() ?? "",
+  })
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => setIsOpen(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [autoFocus])
+
+  const handleApply = () => {
+    onChange([
+      {
+        minThickness: range.minThickness,
+        maxThickness: range.maxThickness,
+      },
+    ])
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsOpen(false)
+  }
+
+  const displayValue =
+    range.minThickness || range.maxThickness
+      ? `${range.minThickness || "any"} - ${range.maxThickness || "any"} mm`
+      : "Set range"
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-4"
+        align="start"
+        sideOffset={8}
+        alignOffset={-8}
+      >
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-2">
+            <Input
+              aria-label="Minimum thickness in millimeters"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  minThickness: event.target.value,
+                }))
+              }
+              placeholder="Min thickness (mm)"
+              step="0.01"
+              type="number"
+              value={range.minThickness}
+            />
+            <Input
+              aria-label="Maximum thickness in millimeters"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  maxThickness: event.target.value,
+                }))
+              }
+              placeholder="Max thickness (mm)"
+              step="0.01"
+              type="number"
+              value={range.maxThickness}
+            />
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleApply}>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
@@ -554,9 +671,11 @@ type HomeFiltersProps = {
   selectedIssuerCode?: string
   selectedFromYear?: number
   selectedMaxDiameter?: number
+  selectedMaxThickness?: number
   selectedMaxValue?: number
   selectedMaxWeight?: number
   selectedMinDiameter?: number
+  selectedMinThickness?: number
   selectedMinValue?: number
   selectedMinWeight?: number
   selectedMintCode?: string
@@ -578,9 +697,11 @@ type HomeFiltersProps = {
     fromYear: number | undefined
     issuerCode: string | undefined
     maxDiameter: PositiveNumberFilterValue
+    maxThickness: PositiveNumberFilterValue
     maxValue: PositiveNumberFilterValue
     maxWeight: PositiveNumberFilterValue
     minDiameter: PositiveNumberFilterValue
+    minThickness: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
@@ -619,9 +740,11 @@ export function HomeFilters({
   selectedIssuerCode,
   selectedFromYear,
   selectedMaxDiameter,
+  selectedMaxThickness,
   selectedMaxValue,
   selectedMaxWeight,
   selectedMinDiameter,
+  selectedMinThickness,
   selectedMinValue,
   selectedMinWeight,
   selectedMintCode,
@@ -639,6 +762,8 @@ export function HomeFilters({
     useState(false)
   const [isWeightFilterPending, setIsWeightFilterPending] = useState(false)
   const [isDiameterFilterPending, setIsDiameterFilterPending] = useState(false)
+  const [isThicknessFilterPending, setIsThicknessFilterPending] =
+    useState(false)
 
   const fields: FilterFieldConfig[] = [
     {
@@ -702,6 +827,22 @@ export function HomeFilters({
           defaultOperator: "between",
           customRenderer: ({ values, onChange }) => (
             <CustomDiameterRangeInput
+              values={values}
+              onChange={onChange}
+              autoFocus={values === lastAddedValues}
+            />
+          ),
+        },
+        {
+          key: "thickness",
+          label: "Thickness",
+          icon: <SlidersHorizontal strokeWidth={2} className="size-3.5" />,
+          type: "custom",
+          className: "w-36",
+          operators: [{ value: "between", label: "between" }],
+          defaultOperator: "between",
+          customRenderer: ({ values, onChange }) => (
+            <CustomThicknessRangeInput
               values={values}
               onChange={onChange}
               autoFocus={values === lastAddedValues}
@@ -966,6 +1107,18 @@ export function HomeFilters({
           ]),
         ]
       : []),
+    ...(selectedMinThickness !== undefined ||
+    selectedMaxThickness !== undefined ||
+    isThicknessFilterPending
+      ? [
+          createFilter("thickness", "between", [
+            {
+              minThickness: selectedMinThickness,
+              maxThickness: selectedMaxThickness,
+            },
+          ]),
+        ]
+      : []),
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
@@ -1029,6 +1182,9 @@ export function HomeFilters({
     setIsDiameterFilterPending(
       nextFilters.some((filter) => filter.field === "diameter")
     )
+    setIsThicknessFilterPending(
+      nextFilters.some((filter) => filter.field === "thickness")
+    )
 
     const issuerYearFilter = nextFilters.find(
       (filter) => filter.field === "issuerYear"
@@ -1051,6 +1207,12 @@ export function HomeFilters({
     )
     const diameterRange = diameterFilter
       ? getDiameterRangeValue(diameterFilter.values[0])
+      : undefined
+    const thicknessFilter = nextFilters.find(
+      (filter) => filter.field === "thickness"
+    )
+    const thicknessRange = thicknessFilter
+      ? getThicknessRangeValue(thicknessFilter.values[0])
       : undefined
     const catalogueFilter = nextFilters.find(
       (filter) => filter.field === "catalogue"
@@ -1136,9 +1298,11 @@ export function HomeFilters({
           ? issuerCode
           : undefined,
       maxDiameter: diameterRange?.maxDiameter,
+      maxThickness: thicknessRange?.maxThickness,
       maxValue: faceValueRange?.maxValue,
       maxWeight: weightRange?.maxWeight,
       minDiameter: diameterRange?.minDiameter,
+      minThickness: thicknessRange?.minThickness,
       minValue: faceValueRange?.minValue,
       minWeight: weightRange?.minWeight,
       mintCode:
@@ -1175,6 +1339,7 @@ export function HomeFilters({
     setIsFaceValueFilterPending(false)
     setIsWeightFilterPending(false)
     setIsDiameterFilterPending(false)
+    setIsThicknessFilterPending(false)
 
     await onFiltersChange({
       catalogueCode: undefined,
@@ -1187,9 +1352,11 @@ export function HomeFilters({
       fromYear: undefined,
       issuerCode: undefined,
       maxDiameter: undefined,
+      maxThickness: undefined,
       maxValue: undefined,
       maxWeight: undefined,
       minDiameter: undefined,
+      minThickness: undefined,
       minValue: undefined,
       minWeight: undefined,
       mintCode: undefined,

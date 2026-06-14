@@ -16,8 +16,6 @@ import {
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
-  MeasurementFilterName,
-  PositiveNumberFilterName,
   PositiveNumberFilterValue,
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
@@ -28,25 +26,6 @@ import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobo
 import { Input } from "@workspace/ui/components/input"
 import { HomeFilters } from "@/components/home-filters"
 
-type RangeInputField<TName extends string> = Readonly<{
-  ariaLabel: string
-  name: TName
-  placeholder: string
-}>
-
-const measurementRangeInputFields = [
-  {
-    name: "minThickness",
-    ariaLabel: "Minimum thickness in millimeters",
-    placeholder: "Min thickness (mm)",
-  },
-  {
-    name: "maxThickness",
-    ariaLabel: "Maximum thickness in millimeters",
-    placeholder: "Max thickness (mm)",
-  },
-] as const satisfies ReadonlyArray<RangeInputField<MeasurementFilterName>>
-
 const coinMeasurementFields = [
   { key: "weight", label: "Weight", unit: "g" },
   { key: "diameter", label: "Diameter", unit: "mm" },
@@ -56,15 +35,6 @@ const coinMeasurementFields = [
   label: string
   unit: string
 }>
-
-function getRangeFromFormData<TName extends PositiveNumberFilterName>(
-  formData: FormData,
-  fields: ReadonlyArray<RangeInputField<TName>>
-): Record<TName, PositiveNumberFilterValue> {
-  return Object.fromEntries(
-    fields.map(({ name }) => [name, formData.get(name)])
-  ) as Record<TName, PositiveNumberFilterValue>
-}
 
 function formatCoinMeasurements(measurements: CoinMeasurements) {
   const labels = coinMeasurementFields
@@ -127,9 +97,11 @@ function App() {
     fromYear,
     issuerCode,
     maxDiameter,
+    maxThickness,
     maxValue,
     maxWeight,
     minDiameter,
+    minThickness,
     minValue,
     minWeight,
     mintCode,
@@ -151,9 +123,11 @@ function App() {
     fromYear: number | undefined
     issuerCode: string | undefined
     maxDiameter: PositiveNumberFilterValue
+    maxThickness: PositiveNumberFilterValue
     maxValue: PositiveNumberFilterValue
     maxWeight: PositiveNumberFilterValue
     minDiameter: PositiveNumberFilterValue
+    minThickness: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
@@ -265,8 +239,8 @@ function App() {
           maxWeight,
           minDiameter,
           maxDiameter,
-          minThickness: currentSearch.minThickness,
-          maxThickness: currentSearch.maxThickness,
+          minThickness,
+          maxThickness,
         })
       },
     })
@@ -285,24 +259,6 @@ function App() {
       "referenceNumber",
       typeof referenceNumber === "string" ? referenceNumber.trim() : undefined
     )
-  }
-
-  const updateMeasurementRange = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-
-    await navigate({
-      resetScroll: false,
-      search: (currentSearch) =>
-        applyMeasurementRangeSearch(currentSearch, {
-          minWeight: currentSearch.minWeight,
-          maxWeight: currentSearch.maxWeight,
-          minDiameter: currentSearch.minDiameter,
-          maxDiameter: currentSearch.maxDiameter,
-          ...getRangeFromFormData(formData, measurementRangeInputFields),
-        }),
-    })
   }
 
   return (
@@ -332,9 +288,11 @@ function App() {
         selectedIssuerCode={search.issuer}
         selectedFromYear={search.fromYear}
         selectedMaxDiameter={search.maxDiameter}
+        selectedMaxThickness={search.maxThickness}
         selectedMaxValue={search.maxValue}
         selectedMaxWeight={search.maxWeight}
         selectedMinDiameter={search.minDiameter}
+        selectedMinThickness={search.minThickness}
         selectedMinValue={search.minValue}
         selectedMinWeight={search.minWeight}
         selectedMintCode={search.mint}
@@ -397,29 +355,6 @@ function App() {
           type="submit"
         >
           Apply reference
-        </button>
-      </form>
-
-      <form
-        className="flex flex-wrap items-end gap-2 py-2"
-        onSubmit={updateMeasurementRange}
-      >
-        {measurementRangeInputFields.map(({ ariaLabel, name, placeholder }) => (
-          <Input
-            aria-label={ariaLabel}
-            defaultValue={search[name]?.toString() ?? ""}
-            key={`${name}-${search[name] ?? ""}`}
-            name={name}
-            placeholder={placeholder}
-            step="0.01"
-            type="number"
-          />
-        ))}
-        <button
-          className="rounded border border-border px-3 py-2"
-          type="submit"
-        >
-          Apply measurements
         </button>
       </form>
 

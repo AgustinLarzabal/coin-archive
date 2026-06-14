@@ -149,9 +149,11 @@ describe("HomeFilters", () => {
         selectedFromYear={1898}
         selectedIssuerCode="spain"
         selectedMaxDiameter={24}
+        selectedMaxThickness={2.1}
         selectedMaxValue={2}
         selectedMaxWeight={7}
         selectedMinDiameter={23}
+        selectedMinThickness={1.9}
         selectedMinValue={0.5}
         selectedMinWeight={6}
         selectedMintCode="royal-mint-of-madrid"
@@ -181,6 +183,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("6 - 7 g")
     expect(markup).toContain("Diameter")
     expect(markup).toContain("23 - 24 mm")
+    expect(markup).toContain("Thickness")
+    expect(markup).toContain("1.9 - 2.1 mm")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

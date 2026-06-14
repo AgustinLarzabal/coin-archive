@@ -252,7 +252,7 @@ function App() {
   }
 
   return (
-    <div className="p-5">
+    <div className="p-6">
       <HomeFilters
         catalogues={filterOptions.catalogues}
         compositions={filterOptions.compositions}

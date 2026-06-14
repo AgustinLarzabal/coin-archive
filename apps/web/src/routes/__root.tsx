@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 
@@ -107,11 +108,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark font-mono">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="relative flex min-h-svh flex-col">
+        <SiteHeader />
         {children}
         <Scripts />
       </body>

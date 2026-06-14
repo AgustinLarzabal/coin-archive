@@ -16,7 +16,6 @@ import {
   updateCoinSearchFilter,
 } from "../lib/coin-search"
 import type {
-  CoinSearch,
   MeasurementFilterName,
   PositiveNumberFilterName,
   PositiveNumberFilterValue,
@@ -36,16 +35,6 @@ type RangeInputField<TName extends string> = Readonly<{
 }>
 
 const measurementRangeInputFields = [
-  {
-    name: "minWeight",
-    ariaLabel: "Minimum weight in grams",
-    placeholder: "Min weight (g)",
-  },
-  {
-    name: "maxWeight",
-    ariaLabel: "Maximum weight in grams",
-    placeholder: "Max weight (g)",
-  },
   {
     name: "minDiameter",
     ariaLabel: "Minimum diameter in millimeters",
@@ -148,7 +137,9 @@ function App() {
     fromYear,
     issuerCode,
     maxValue,
+    maxWeight,
     minValue,
+    minWeight,
     mintCode,
     orientationCode,
     rimCode,
@@ -168,7 +159,9 @@ function App() {
     fromYear: number | undefined
     issuerCode: string | undefined
     maxValue: PositiveNumberFilterValue
+    maxWeight: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
+    minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
@@ -265,9 +258,21 @@ function App() {
           }
         )
 
-        return applyFaceValueRangeSearch(searchWithIssueYearRange, {
-          minValue,
-          maxValue,
+        const searchWithFaceValueRange = applyFaceValueRangeSearch(
+          searchWithIssueYearRange,
+          {
+            minValue,
+            maxValue,
+          }
+        )
+
+        return applyMeasurementRangeSearch(searchWithFaceValueRange, {
+          minWeight,
+          maxWeight,
+          minDiameter: currentSearch.minDiameter,
+          maxDiameter: currentSearch.maxDiameter,
+          minThickness: currentSearch.minThickness,
+          maxThickness: currentSearch.maxThickness,
         })
       },
     })
@@ -288,35 +293,21 @@ function App() {
     )
   }
 
-  function createPositiveNumberRangeSubmitHandler<
-    TName extends PositiveNumberFilterName,
-  >(
-    fields: ReadonlyArray<RangeInputField<TName>>,
-    applyRangeSearch: (
-      currentSearch: CoinSearch,
-      range: Record<TName, PositiveNumberFilterValue>
-    ) => CoinSearch
-  ) {
-    return async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
+  const updateMeasurementRange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
 
-      const formData = new FormData(event.currentTarget)
+    const formData = new FormData(event.currentTarget)
 
-      await navigate({
-        resetScroll: false,
-        search: (currentSearch) =>
-          applyRangeSearch(
-            currentSearch,
-            getRangeFromFormData(formData, fields)
-          ),
-      })
-    }
+    await navigate({
+      resetScroll: false,
+      search: (currentSearch) =>
+        applyMeasurementRangeSearch(currentSearch, {
+          minWeight: currentSearch.minWeight,
+          maxWeight: currentSearch.maxWeight,
+          ...getRangeFromFormData(formData, measurementRangeInputFields),
+        }),
+    })
   }
-
-  const updateMeasurementRange = createPositiveNumberRangeSubmitHandler(
-    measurementRangeInputFields,
-    applyMeasurementRangeSearch
-  )
 
   return (
     <div className="p-5">
@@ -345,7 +336,9 @@ function App() {
         selectedIssuerCode={search.issuer}
         selectedFromYear={search.fromYear}
         selectedMaxValue={search.maxValue}
+        selectedMaxWeight={search.maxWeight}
         selectedMinValue={search.minValue}
+        selectedMinWeight={search.minWeight}
         selectedMintCode={search.mint}
         selectedOrientationCode={search.orientation}
         selectedRimCode={search.rim}

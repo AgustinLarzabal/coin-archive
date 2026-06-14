@@ -149,7 +149,9 @@ describe("HomeFilters", () => {
         selectedFromYear={1898}
         selectedIssuerCode="spain"
         selectedMaxValue={2}
+        selectedMaxWeight={7}
         selectedMinValue={0.5}
+        selectedMinWeight={6}
         selectedMintCode="royal-mint-of-madrid"
         selectedOrientationCode="coin-alignment"
         selectedRimCode="raised-both-sides"
@@ -173,6 +175,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("1898 - 1902")
     expect(markup).toContain("Face Value")
     expect(markup).toContain("0.5 - 2")
+    expect(markup).toContain("Weight")
+    expect(markup).toContain("6 - 7 g")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

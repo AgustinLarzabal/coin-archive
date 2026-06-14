@@ -40,6 +40,7 @@ import {
   Map,
   SlidersHorizontal,
   CircleDollarSign,
+  Scale,
 } from "lucide-react"
 import {
   demonetizationFilterOptions,
@@ -96,6 +97,11 @@ type FaceValueRangeValue = {
   minValue: PositiveNumberFilterValue
 }
 
+type WeightRangeValue = {
+  maxWeight: PositiveNumberFilterValue
+  minWeight: PositiveNumberFilterValue
+}
+
 function isIssueYearRangeValue(
   value: unknown
 ): value is { min: number; max: number } {
@@ -137,6 +143,26 @@ function getFaceValueRangeValue(value: unknown): FaceValueRangeValue {
   return {
     minValue: undefined,
     maxValue: undefined,
+  }
+}
+
+function isWeightRangeValue(value: unknown): value is WeightRangeValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "minWeight" in value &&
+    "maxWeight" in value
+  )
+}
+
+function getWeightRangeValue(value: unknown): WeightRangeValue {
+  if (isWeightRangeValue(value)) {
+    return value
+  }
+
+  return {
+    minWeight: undefined,
+    maxWeight: undefined,
   }
 }
 
@@ -294,6 +320,98 @@ function CustomFaceValueRangeInput({
   )
 }
 
+function CustomWeightRangeInput({
+  values,
+  onChange,
+  autoFocus,
+}: CustomRendererProps) {
+  const selectedRange = getWeightRangeValue(values[0])
+  const [range, setRange] = useState({
+    minWeight: selectedRange.minWeight?.toString() ?? "",
+    maxWeight: selectedRange.maxWeight?.toString() ?? "",
+  })
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => setIsOpen(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [autoFocus])
+
+  const handleApply = () => {
+    onChange([
+      {
+        minWeight: range.minWeight,
+        maxWeight: range.maxWeight,
+      },
+    ])
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsOpen(false)
+  }
+
+  const displayValue =
+    range.minWeight || range.maxWeight
+      ? `${range.minWeight || "any"} - ${range.maxWeight || "any"} g`
+      : "Set range"
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-4"
+        align="start"
+        sideOffset={8}
+        alignOffset={-8}
+      >
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-2">
+            <Input
+              aria-label="Minimum weight in grams"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  minWeight: event.target.value,
+                }))
+              }
+              placeholder="Min weight (g)"
+              step="0.01"
+              type="number"
+              value={range.minWeight}
+            />
+            <Input
+              aria-label="Maximum weight in grams"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  maxWeight: event.target.value,
+                }))
+              }
+              placeholder="Max weight (g)"
+              step="0.01"
+              type="number"
+              value={range.maxWeight}
+            />
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleApply}>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
@@ -319,7 +437,9 @@ type HomeFiltersProps = {
   selectedIssuerCode?: string
   selectedFromYear?: number
   selectedMaxValue?: number
+  selectedMaxWeight?: number
   selectedMinValue?: number
+  selectedMinWeight?: number
   selectedMintCode?: string
   selectedOrientationCode?: string
   selectedRimCode?: string
@@ -339,7 +459,9 @@ type HomeFiltersProps = {
     fromYear: number | undefined
     issuerCode: string | undefined
     maxValue: PositiveNumberFilterValue
+    maxWeight: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
+    minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
     orientationCode: string | undefined
     rimCode: string | undefined
@@ -376,7 +498,9 @@ export function HomeFilters({
   selectedIssuerCode,
   selectedFromYear,
   selectedMaxValue,
+  selectedMaxWeight,
   selectedMinValue,
+  selectedMinWeight,
   selectedMintCode,
   selectedOrientationCode,
   selectedRimCode,
@@ -390,6 +514,7 @@ export function HomeFilters({
   const [lastAddedValues, setLastAddedValues] = useState<unknown[] | null>(null)
   const [isFaceValueFilterPending, setIsFaceValueFilterPending] =
     useState(false)
+  const [isWeightFilterPending, setIsWeightFilterPending] = useState(false)
 
   const fields: FilterFieldConfig[] = [
     {
@@ -421,6 +546,22 @@ export function HomeFilters({
           defaultOperator: "between",
           customRenderer: ({ values, onChange }) => (
             <CustomFaceValueRangeInput
+              values={values}
+              onChange={onChange}
+              autoFocus={values === lastAddedValues}
+            />
+          ),
+        },
+        {
+          key: "weight",
+          label: "Weight",
+          icon: <Scale strokeWidth={2} className="size-3.5" />,
+          type: "custom",
+          className: "w-36",
+          operators: [{ value: "between", label: "between" }],
+          defaultOperator: "between",
+          customRenderer: ({ values, onChange }) => (
+            <CustomWeightRangeInput
               values={values}
               onChange={onChange}
               autoFocus={values === lastAddedValues}
@@ -661,6 +802,18 @@ export function HomeFilters({
           ]),
         ]
       : []),
+    ...(selectedMinWeight !== undefined ||
+    selectedMaxWeight !== undefined ||
+    isWeightFilterPending
+      ? [
+          createFilter("weight", "between", [
+            {
+              minWeight: selectedMinWeight,
+              maxWeight: selectedMaxWeight,
+            },
+          ]),
+        ]
+      : []),
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
@@ -718,6 +871,9 @@ export function HomeFilters({
     setIsFaceValueFilterPending(
       nextFilters.some((filter) => filter.field === "faceValue")
     )
+    setIsWeightFilterPending(
+      nextFilters.some((filter) => filter.field === "weight")
+    )
 
     const issuerYearFilter = nextFilters.find(
       (filter) => filter.field === "issuerYear"
@@ -730,6 +886,10 @@ export function HomeFilters({
     )
     const faceValueRange = faceValueFilter
       ? getFaceValueRangeValue(faceValueFilter.values[0])
+      : undefined
+    const weightFilter = nextFilters.find((filter) => filter.field === "weight")
+    const weightRange = weightFilter
+      ? getWeightRangeValue(weightFilter.values[0])
       : undefined
     const catalogueFilter = nextFilters.find(
       (filter) => filter.field === "catalogue"
@@ -815,7 +975,9 @@ export function HomeFilters({
           ? issuerCode
           : undefined,
       maxValue: faceValueRange?.maxValue,
+      maxWeight: weightRange?.maxWeight,
       minValue: faceValueRange?.minValue,
+      minWeight: weightRange?.minWeight,
       mintCode:
         typeof mintCode === "string" && mintCode.length > 0
           ? mintCode
@@ -848,6 +1010,7 @@ export function HomeFilters({
 
   async function clearFilters() {
     setIsFaceValueFilterPending(false)
+    setIsWeightFilterPending(false)
 
     await onFiltersChange({
       catalogueCode: undefined,
@@ -860,7 +1023,9 @@ export function HomeFilters({
       fromYear: undefined,
       issuerCode: undefined,
       maxValue: undefined,
+      maxWeight: undefined,
       minValue: undefined,
+      minWeight: undefined,
       mintCode: undefined,
       orientationCode: undefined,
       rimCode: undefined,

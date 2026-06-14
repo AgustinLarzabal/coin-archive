@@ -1,5 +1,11 @@
 import type { CoinFaceKind, CoinSurfaceKind } from "../schema/coin-surface"
 
+export type SeededCoinSurfaceDetails = {
+  kind: CoinSurfaceKind
+  description?: string | null
+  lettering?: string | null
+}
+
 type SeededIssuer = {
   name: string
   code: string
@@ -28,6 +34,7 @@ export type SeededCoin = {
   thickness?: number
   minYear?: number
   maxYear?: number
+  surfaces?: SeededCoinSurfaceDetails[]
   createdAt: Date
   updatedAt: Date
 }
@@ -397,31 +404,35 @@ export const seededCoins: SeededCoin[] = [
     thickness: 2.2,
     minYear: 2002,
     maxYear: 2026,
+    surfaces: [
+      {
+        kind: "obverse",
+        description: "Portrait of Felipe VI facing left.",
+        lettering: "FELIPE VI REY DE ESPANA",
+      },
+      {
+        kind: "reverse",
+        description: "Map of Europe with denomination.",
+        lettering: "2 EURO",
+      },
+      {
+        kind: "edge-surface",
+        description: "Finely reeded with incuse lettering.",
+        lettering: "2 **",
+      },
+    ],
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
   },
 ]
 
-export const seededCoinSurfaces: SeededCoinSurface[] = [
-  {
-    coinTitle: "Spain 2 Euro",
-    kind: "obverse",
-    description: "Portrait of Felipe VI facing left.",
-    lettering: "FELIPE VI REY DE ESPANA",
-  },
-  {
-    coinTitle: "Spain 2 Euro",
-    kind: "reverse",
-    description: "Map of Europe with denomination.",
-    lettering: "2 EURO",
-  },
-  {
-    coinTitle: "Spain 2 Euro",
-    kind: "edge-surface",
-    description: "Finely reeded with incuse lettering.",
-    lettering: "2 **",
-  },
-]
+export const seededCoinSurfaces: SeededCoinSurface[] = seededCoins.flatMap(
+  ({ title, surfaces = [] }) =>
+    surfaces.map((surface) => ({
+      coinTitle: title,
+      ...surface,
+    }))
+)
 
 export const seededEngravers: SeededEngraver[] = [
   {

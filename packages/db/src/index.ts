@@ -17,7 +17,11 @@ export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"
 export { catalogue } from "./schema/catalogue"
 export { coin } from "./schema/coin"
-export { coinSurface } from "./schema/coin-surface"
+export {
+  coinSurface,
+  coinFaceKinds,
+  coinSurfaceKinds,
+} from "./schema/coin-surface"
 export { coinFace } from "./schema/coin-face"
 export { coinFaceEngraver } from "./schema/coin-face-engraver"
 export { coinMint } from "./schema/coin-mint"
@@ -90,7 +94,11 @@ export type { RulerOption } from "./queries/get-rulers"
 export type { Shape } from "./schema/shape"
 export type { Technique } from "./schema/technique"
 export type { Coin } from "./schema/coin"
-export type { CoinSurface, CoinSurfaceKind } from "./schema/coin-surface"
+export type {
+  CoinFaceKind,
+  CoinSurface,
+  CoinSurfaceKind,
+} from "./schema/coin-surface"
 export type { CoinFace, CoinFaceSide } from "./schema/coin-face"
 export type { CoinFaceEngraver } from "./schema/coin-face-engraver"
 export type { CoinReference } from "./schema/coin-reference"

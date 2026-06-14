@@ -37,6 +37,7 @@ const [, , edgeSurfaceKind] = coinSurfaceKinds
 type CreateCoinInput = {
   comments?: string | null
   compositionId?: string
+  surfaces?: CreateCoinSurfaceDetailsInput[]
   currencyId?: string
   diameter?: number
   distributionId?: string
@@ -64,6 +65,7 @@ type CreateCoinInput = {
 export async function createCoin({
   comments,
   compositionId,
+  surfaces,
   currencyId,
   diameter,
   distributionId,
@@ -93,8 +95,17 @@ export async function createCoin({
     compositionId ?? (await getOrCreateDefaultComposition()).id
   const resolvedCurrencyId =
     currencyId ?? (await getOrCreateDefaultCurrency()).id
-  const hasLegacyEdgeSurfaceData =
+  const legacyEdgeSurface =
     edgeDescription !== undefined || edgeLettering !== undefined
+      ? [
+          {
+            kind: edgeSurfaceKind,
+            description: edgeDescription,
+            lettering: edgeLettering,
+          } satisfies CreateCoinSurfaceDetailsInput,
+        ]
+      : []
+  const resolvedSurfaces = [...(surfaces ?? []), ...legacyEdgeSurface]
 
   const [createdCoin] = await db
     .insert(coin)
@@ -124,12 +135,12 @@ export async function createCoin({
     })
     .returning()
 
-  if (hasLegacyEdgeSurfaceData) {
+  for (const surface of resolvedSurfaces) {
     await createCoinSurface({
       coinId: createdCoin.id,
-      kind: edgeSurfaceKind,
-      description: edgeDescription,
-      lettering: edgeLettering,
+      kind: surface.kind,
+      description: surface.description,
+      lettering: surface.lettering,
     })
   }
 
@@ -159,6 +170,8 @@ type CreateCoinSurfaceInput = {
   description?: string | null
   lettering?: string | null
 }
+
+type CreateCoinSurfaceDetailsInput = Omit<CreateCoinSurfaceInput, "coinId">
 
 type CreateCoinThemeInput = {
   coinId: string
@@ -522,10 +535,6 @@ export async function createCoinSurface({
     .returning()
 
   return createdCoinSurface
-}
-
-export async function createCoinFace(input: CreateCoinSurfaceInput) {
-  return createCoinSurface(input)
 }
 
 export async function createCoinTheme({

@@ -5,7 +5,6 @@ import { coinSurfaceKinds } from "../schema/coin-surface"
 import {
   createCatalogue,
   createCoin,
-  createCoinFace,
   createCoinFaceEngraver,
   createCoinMint,
   createCoinReference,
@@ -443,18 +442,18 @@ describe("getCoins integration", () => {
       createdAt: new Date("2026-05-04T00:00:00.000Z"),
     })
 
-    await createCoinFace({
+    await createCoinSurface({
       coinId: obverseOnlyCoin.id,
       kind: obverseKind,
       description: "Crowned shield.",
       lettering: "FELIPE VI",
     })
-    await createCoinFace({
+    await createCoinSurface({
       coinId: reverseOnlyCoin.id,
       kind: reverseKind,
       lettering: "2 EURO",
     })
-    await createCoinFace({
+    await createCoinSurface({
       coinId: blankFaceCoin.id,
       kind: obverseKind,
       description: "   ",
@@ -562,11 +561,11 @@ describe("getCoins integration", () => {
       issuerId: spain.id,
       createdAt: new Date("2026-05-05T00:00:00.000Z"),
     })
-    const obverseFace = await createCoinFace({
+    const obverseFace = await createCoinSurface({
       coinId: faceOnlyCoin.id,
       kind: obverseKind,
     })
-    const reverseFace = await createCoinFace({
+    const reverseFace = await createCoinSurface({
       coinId: faceOnlyCoin.id,
       kind: reverseKind,
       lettering: "2 EURO",
@@ -576,7 +575,7 @@ describe("getCoins integration", () => {
       issuerId: spain.id,
       createdAt: new Date("2026-05-04T00:00:00.000Z"),
     })
-    const filteredOutFace = await createCoinFace({
+    const filteredOutFace = await createCoinSurface({
       coinId: filteredOutCoin.id,
       kind: obverseKind,
     })

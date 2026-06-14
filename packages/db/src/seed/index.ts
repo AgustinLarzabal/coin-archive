@@ -27,7 +27,7 @@ import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import {
   seededCatalogues,
-  seededCoinFaces,
+  seededCoinSurfaces,
   seededCoinFaceEngravers,
   seededCoinReferences,
   seededCoinMints,
@@ -261,8 +261,8 @@ async function seedCoins(
   return coinIdsByTitle
 }
 
-async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
-  if (seededCoinFaces.length === 0) {
+async function seedCoinSurfaces(coinIdsByTitle: CoinIdsByTitle) {
+  if (seededCoinSurfaces.length === 0) {
     const coinSurfaceIdsByKey: CoinSurfaceIdsByKey = new Map()
 
     return coinSurfaceIdsByKey
@@ -271,15 +271,15 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
   const insertedCoinSurfaces = await db
     .insert(coinSurface)
     .values(
-      seededCoinFaces.map((seededCoinFace) => ({
+      seededCoinSurfaces.map((seededCoinSurface) => ({
         coinId: getRequiredSeededId(
           coinIdsByTitle,
-          seededCoinFace.coinTitle,
+          seededCoinSurface.coinTitle,
           "coin"
         ),
-        kind: seededCoinFace.side,
-        description: seededCoinFace.description,
-        lettering: seededCoinFace.lettering,
+        kind: seededCoinSurface.kind,
+        description: seededCoinSurface.description,
+        lettering: seededCoinSurface.lettering,
       }))
     )
     .returning({
@@ -330,6 +330,7 @@ async function seedCoinFaceEngravers(
         ),
         "coin surface"
       ),
+      coinFaceKind: seededCoinFaceEngraver.side,
       engraverId: getRequiredSeededId(
         engraverIdsByCode,
         seededCoinFaceEngraver.engraverCode,
@@ -765,8 +766,6 @@ function mapSeededCoinToInsertValues(
     compositionCode,
     currencyCode,
     edgeCode,
-    edgeDescription,
-    edgeLettering,
     orientationCode,
     shapeCode,
     rimCode,
@@ -792,8 +791,6 @@ function mapSeededCoinToInsertValues(
       distributionCode,
       "distribution"
     ),
-    edgeDescription,
-    edgeLettering,
     edgeId: edgeCode
       ? getRequiredSeededId(edgeIdsByCode, edgeCode, "edge")
       : undefined,
@@ -845,7 +842,7 @@ export async function seedDatabase() {
     rimIdsByCode,
     techniqueIdsByCode
   )
-  const coinSurfaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
+  const coinSurfaceIdsByKey = await seedCoinSurfaces(coinIdsByTitle)
   await seedCoinFaceEngravers(coinSurfaceIdsByKey, engraverIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)

@@ -74,7 +74,7 @@ import { shapeSchemaNames } from "./shape"
 import { techniqueSchemaNames } from "./technique"
 import { themeSchemaNames } from "./theme"
 
-const [obverseKind, reverseKind] = coinSurfaceKinds
+const [obverseKind, reverseKind, edgeSurfaceKind] = coinSurfaceKinds
 
 async function expectConstraintError(
   promise: Promise<unknown>,
@@ -1460,7 +1460,7 @@ describe("distribution schema constraints", () => {
 describe("coin surface schema constraints", () => {
   useTestDatabaseIsolation(db)
 
-  it("allows at most one Obverse and at most one Reverse per coin", async () => {
+  it("allows at most one recorded Coin Surface per surface kind on a coin", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1482,6 +1482,11 @@ describe("coin surface schema constraints", () => {
       kind: reverseKind,
       lettering: "FIRST REVERSE",
     })
+    await createCoinSurface({
+      coinId: createdCoin.id,
+      kind: edgeSurfaceKind,
+      description: "Lettered edge.",
+    })
 
     await expectConstraintError(
       createCoinSurface({
@@ -1494,7 +1499,7 @@ describe("coin surface schema constraints", () => {
     )
   })
 
-  it("rejects Coin Surface kinds outside obverse and reverse", async () => {
+  it("rejects Coin Surface kinds outside obverse, reverse, and edge-surface", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1516,7 +1521,7 @@ describe("coin surface schema constraints", () => {
     )
   })
 
-  it("cascades face detail rows when deleting a coin", async () => {
+  it("cascades coin surface rows when deleting a coin", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1537,6 +1542,11 @@ describe("coin surface schema constraints", () => {
       coinId: createdCoin.id,
       kind: reverseKind,
       lettering: "ONE EURO",
+    })
+    await createCoinSurface({
+      coinId: createdCoin.id,
+      kind: edgeSurfaceKind,
+      description: "Incuse edge lettering.",
     })
 
     await db.delete(coin).where(eq(coin.id, createdCoin.id))
@@ -1632,6 +1642,41 @@ describe("engraver schema constraints", () => {
 
 describe("coin face engraver schema constraints", () => {
   useTestDatabaseIsolation(db)
+
+  it("rejects attributing an engraver to an edge surface", async () => {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+    const createdCoin = await createCoin({
+      title: "Edge Surface Engraver Coin",
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+    const createdEdgeSurface = await createCoinSurface({
+      coinId: createdCoin.id,
+      kind: edgeSurfaceKind,
+      lettering: "EDGE LETTERING",
+    })
+    const createdEngraver = await createEngraver({
+      code: "edge-engraver",
+      name: "Edge Engraver",
+    })
+
+    await expectConstraintError(
+      db.execute(sql`
+        insert into "coin_face_engraver" ("coin_face_id", "coin_face_kind", "engraver_id")
+        values (
+          ${createdEdgeSurface.id},
+          ${edgeSurfaceKind},
+          ${createdEngraver.id}
+        )
+      `),
+      coinFaceEngraverSchemaNames.coinFaceKindCheck,
+      "23514"
+    )
+  })
 
   it("cascades face engraver attributions when deleting a face", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =

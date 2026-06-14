@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
@@ -33,9 +34,7 @@ type CreateCoinInput = {
   currencyId?: string
   diameter?: number
   distributionId?: string
-  edgeDescription?: string | null
   edgeId?: string
-  edgeLettering?: string | null
   faceValueNumericValue?: number
   faceValueText?: string
   isDemonetized?: boolean | null
@@ -60,9 +59,7 @@ export async function createCoin({
   currencyId,
   diameter,
   distributionId,
-  edgeDescription,
   edgeId,
-  edgeLettering,
   faceValueNumericValue = 1,
   faceValueText = "1 Test Unit",
   isDemonetized,
@@ -95,9 +92,7 @@ export async function createCoin({
       compositionId: resolvedCompositionId,
       currencyId: resolvedCurrencyId,
       distributionId: resolvedDistributionId,
-      edgeDescription,
       edgeId,
-      edgeLettering,
       faceValueNumericValue,
       faceValueText,
       isDemonetized,
@@ -151,6 +146,7 @@ type CreateCoinThemeInput = {
 
 type CreateCoinFaceEngraverInput = {
   coinFaceId: string
+  coinFaceKind?: Extract<CoinSurfaceKind, "obverse" | "reverse">
   engraverId: string
 }
 
@@ -528,17 +524,44 @@ export async function createCoinTheme({
 
 export async function createCoinFaceEngraver({
   coinFaceId,
+  coinFaceKind,
   engraverId,
 }: CreateCoinFaceEngraverInput) {
+  const resolvedCoinFaceKind =
+    coinFaceKind ?? (await getCoinSurfaceKind(coinFaceId))
+
   const [createdCoinFaceEngraver] = await db
     .insert(coinFaceEngraver)
     .values({
       coinFaceId,
+      coinFaceKind: resolvedCoinFaceKind,
       engraverId,
     })
     .returning()
 
   return createdCoinFaceEngraver
+}
+
+async function getCoinSurfaceKind(
+  coinSurfaceId: string
+): Promise<Extract<CoinSurfaceKind, "obverse" | "reverse">> {
+  const [matchedSurface] = await db
+    .select({
+      kind: coinSurface.kind,
+    })
+    .from(coinSurface)
+    .where(eq(coinSurface.id, coinSurfaceId))
+    .limit(1)
+
+  if (!matchedSurface) {
+    throw new Error(`Missing coin surface ${coinSurfaceId} for engraver fixture`)
+  }
+
+  if (matchedSurface.kind === "edge-surface") {
+    throw new Error("Coin face engravers can only target obverse or reverse")
+  }
+
+  return matchedSurface.kind
 }
 
 async function getOrCreateDefaultDistribution() {

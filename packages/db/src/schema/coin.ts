@@ -101,8 +101,6 @@ export const coin = pgTable(
     edgeId: uuid("edge_id").references(() => edge.id, {
       onDelete: "restrict",
     }),
-    edgeDescription: varchar("edge_description", { length: 4000 }),
-    edgeLettering: varchar("edge_lettering", { length: 4000 }),
     shapeId: uuid("shape_id").references(() => shape.id, {
       onDelete: "restrict",
     }),

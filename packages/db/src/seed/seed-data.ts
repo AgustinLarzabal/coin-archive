@@ -16,8 +16,6 @@ export type SeededCoin = {
   currencyCode: string
   distributionCode: string
   edgeCode?: string
-  edgeDescription?: string
-  edgeLettering?: string
   faceValueNumericValue: number
   faceValueText: string
   issuerCode: string
@@ -34,9 +32,9 @@ export type SeededCoin = {
   updatedAt: Date
 }
 
-type SeededCoinFace = {
+type SeededCoinSurface = {
   coinTitle: string
-  side: CoinSurfaceKind
+  kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
 }
@@ -50,7 +48,7 @@ type SeededEngraver = {
 
 type SeededCoinFaceEngraver = {
   coinTitle: string
-  side: CoinSurfaceKind
+  side: Extract<CoinSurfaceKind, "obverse" | "reverse">
   engraverCode: string
 }
 
@@ -387,8 +385,6 @@ export const seededCoins: SeededCoin[] = [
     currencyCode: "euro",
     distributionCode: "circulating-commemorative",
     edgeCode: "lettered",
-    edgeDescription: "Finely reeded with incuse lettering.",
-    edgeLettering: "2 **",
     faceValueNumericValue: 2,
     faceValueText: "2 Euros",
     issuerCode: "spain",
@@ -406,18 +402,24 @@ export const seededCoins: SeededCoin[] = [
   },
 ]
 
-export const seededCoinFaces: SeededCoinFace[] = [
+export const seededCoinSurfaces: SeededCoinSurface[] = [
   {
     coinTitle: "Spain 2 Euro",
-    side: "obverse",
+    kind: "obverse",
     description: "Portrait of Felipe VI facing left.",
     lettering: "FELIPE VI REY DE ESPANA",
   },
   {
     coinTitle: "Spain 2 Euro",
-    side: "reverse",
+    kind: "reverse",
     description: "Map of Europe with denomination.",
     lettering: "2 EURO",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    kind: "edge-surface",
+    description: "Finely reeded with incuse lettering.",
+    lettering: "2 **",
   },
 ]
 

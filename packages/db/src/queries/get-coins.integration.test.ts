@@ -10,6 +10,7 @@ import {
   createCoinMint,
   createCoinReference,
   createCoinRuler,
+  createCoinSurface,
   createCoinTheme,
   createComposition,
   createCurrency,
@@ -30,7 +31,7 @@ import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getCoins integration", () => {
   useTestDatabaseIsolation(db)
-  const [obverseKind, reverseKind] = coinSurfaceKinds
+  const [obverseKind, reverseKind, edgeSurfaceKind] = coinSurfaceKinds
 
   it("returns recent coins newest first", async () => {
     const athens = await createIssuer({
@@ -1375,16 +1376,12 @@ describe("getCoins integration", () => {
     const textOnlyEdgeCoin = await createCoin({
       title: "Text Only Edge Coin",
       issuerId: spain.id,
-      edgeDescription: "Lettered edge with stars.",
-      edgeLettering: "E PLURIBUS UNUM",
       createdAt: new Date("2026-05-02T00:00:00.000Z"),
     })
     const classifiedEdgeCoin = await createCoin({
       title: "Classified Edge Coin",
       issuerId: spain.id,
       edgeId: reeded.id,
-      edgeDescription: "Alternating grooves.",
-      edgeLettering: "  ",
       createdAt: new Date("2026-05-03T00:00:00.000Z"),
     })
     await createCoin({
@@ -1392,6 +1389,18 @@ describe("getCoins integration", () => {
       issuerId: spain.id,
       edgeId: security.id,
       createdAt: new Date("2026-05-04T00:00:00.000Z"),
+    })
+    await createCoinSurface({
+      coinId: textOnlyEdgeCoin.id,
+      kind: edgeSurfaceKind,
+      description: "Lettered edge with stars.",
+      lettering: "E PLURIBUS UNUM",
+    })
+    await createCoinSurface({
+      coinId: classifiedEdgeCoin.id,
+      kind: edgeSurfaceKind,
+      description: "Alternating grooves.",
+      lettering: "  ",
     })
 
     await expect(getCoins({ limit: 4 })).resolves.toMatchObject([

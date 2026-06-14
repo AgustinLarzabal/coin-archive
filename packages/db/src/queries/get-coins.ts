@@ -27,7 +27,8 @@ import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
-const [obverseSurfaceKind, reverseSurfaceKind] = coinSurfaceKinds
+const [obverseSurfaceKind, reverseSurfaceKind, edgeSurfaceKind] =
+  coinSurfaceKinds
 export const demonetizationFilterValues = [
   "demonetized",
   "not-demonetized",
@@ -38,6 +39,7 @@ export type DemonetizationFilterValue =
   (typeof demonetizationFilterValues)[number]
 
 const parentIssuer = alias(issuer, "parent_issuer")
+const edgeSurface = alias(coinSurface, "edge_surface")
 const obverseSurface = alias(coinSurface, "obverse_face")
 const obverseSurfaceEngraver = alias(
   coinFaceEngraver,
@@ -76,8 +78,8 @@ const getCoinsSelection = {
   edgeId: edge.id,
   edgeCode: edge.code,
   edgeName: edge.name,
-  edgeDescription: coin.edgeDescription,
-  edgeLettering: coin.edgeLettering,
+  edgeDescription: edgeSurface.description,
+  edgeLettering: edgeSurface.lettering,
   edgeCreatedAt: edge.createdAt,
   edgeUpdatedAt: edge.updatedAt,
   shapeId: shape.id,
@@ -559,6 +561,7 @@ function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined 
       from "coin_face_engraver"
       inner join "coin_surface"
         on ${coinFaceEngraver.coinFaceId} = ${coinSurface.id}
+       and ${coinFaceEngraver.coinFaceKind} = ${coinSurface.kind}
       inner join "engraver"
         on ${coinFaceEngraver.engraverId} = ${engraver.id}
       where lower(${engraver.code}) = ${normalizedEngraverCode}
@@ -768,6 +771,13 @@ export function buildGetCoinsQuery(
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(edge, eq(coin.edgeId, edge.id))
+    .leftJoin(
+      edgeSurface,
+      and(
+        eq(coin.id, edgeSurface.coinId),
+        eq(edgeSurface.kind, edgeSurfaceKind)
+      )
+    )
     .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(rim, eq(coin.rimId, rim.id))
@@ -781,7 +791,10 @@ export function buildGetCoinsQuery(
     )
     .leftJoin(
       obverseSurfaceEngraver,
-      eq(obverseSurface.id, obverseSurfaceEngraver.coinFaceId)
+      and(
+        eq(obverseSurface.id, obverseSurfaceEngraver.coinFaceId),
+        eq(obverseSurface.kind, obverseSurfaceEngraver.coinFaceKind)
+      )
     )
     .leftJoin(
       obverseEngraver,
@@ -796,7 +809,10 @@ export function buildGetCoinsQuery(
     )
     .leftJoin(
       reverseSurfaceEngraver,
-      eq(reverseSurface.id, reverseSurfaceEngraver.coinFaceId)
+      and(
+        eq(reverseSurface.id, reverseSurfaceEngraver.coinFaceId),
+        eq(reverseSurface.kind, reverseSurfaceEngraver.coinFaceKind)
+      )
     )
     .leftJoin(
       reverseEngraver,

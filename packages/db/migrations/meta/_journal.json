@@ -43,6 +43,13 @@
       "when": 1781464152709,
       "tag": "0005_big_molecule_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781465053241,
+      "tag": "0006_glossy_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

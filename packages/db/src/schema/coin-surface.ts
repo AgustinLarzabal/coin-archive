@@ -10,7 +10,11 @@ import {
 } from "drizzle-orm/pg-core"
 import { coin } from "./coin"
 
-export const coinSurfaceKinds = ["obverse", "reverse"] as const
+export const coinSurfaceKinds = [
+  "obverse",
+  "reverse",
+  "edge-surface",
+] as const
 export type CoinSurfaceKind = (typeof coinSurfaceKinds)[number]
 const coinSurfaceKindsSql = sql.raw(
   `(${coinSurfaceKinds.map((kind) => `'${kind}'`).join(", ")})`
@@ -18,6 +22,7 @@ const coinSurfaceKindsSql = sql.raw(
 
 export const coinSurfaceSchemaNames = {
   coinIdIndex: "coin_surface_coin_id_idx",
+  idKindUniqueIndex: "coin_surface_id_kind_unique_idx",
   kindCheck: "coin_surface_kind_check",
   kindUniqueIndex: "coin_surface_coin_id_kind_unique_idx",
 } as const
@@ -51,6 +56,10 @@ export const coinSurface = pgTable(
   (coinSurface) => [
     uniqueIndex(coinSurfaceSchemaNames.kindUniqueIndex).on(
       coinSurface.coinId,
+      coinSurface.kind
+    ),
+    uniqueIndex(coinSurfaceSchemaNames.idKindUniqueIndex).on(
+      coinSurface.id,
       coinSurface.kind
     ),
     index(coinSurfaceSchemaNames.coinIdIndex).on(coinSurface.coinId),

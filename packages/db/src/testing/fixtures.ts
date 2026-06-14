@@ -34,7 +34,9 @@ type CreateCoinInput = {
   currencyId?: string
   diameter?: number
   distributionId?: string
+  edgeDescription?: string | null
   edgeId?: string
+  edgeLettering?: string | null
   faceValueNumericValue?: number
   faceValueText?: string
   isDemonetized?: boolean | null
@@ -59,7 +61,9 @@ export async function createCoin({
   currencyId,
   diameter,
   distributionId,
+  edgeDescription,
   edgeId,
+  edgeLettering,
   faceValueNumericValue = 1,
   faceValueText = "1 Test Unit",
   isDemonetized,
@@ -111,6 +115,15 @@ export async function createCoin({
       weight,
     })
     .returning()
+
+  if (edgeDescription !== undefined || edgeLettering !== undefined) {
+    await createCoinSurface({
+      coinId: createdCoin.id,
+      kind: "edge-surface",
+      description: edgeDescription,
+      lettering: edgeLettering,
+    })
+  }
 
   return createdCoin
 }

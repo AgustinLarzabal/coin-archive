@@ -23,6 +23,7 @@ import { CoinListItem } from "../components/coin-list-item"
 import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
 
 import { HomeFilters } from "@/components/home-filters"
+import { CoinCard } from "@/components/coin-card"
 
 const coinMeasurementFields = [
   { key: "weight", label: "Weight", unit: "g" },
@@ -328,6 +329,12 @@ function App() {
             />
           )
         })}
+
+      <div className="grid grid-cols-5 gap-6">
+        {coins.map((coin) => (
+          <CoinCard coin={coin} />
+        ))}
+      </div>
 
       <ul className="space-y-4 py-4">
         {coins.map((coin) => {

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
 import {
@@ -485,6 +486,41 @@ describe("getCoins integration", () => {
         id: noFaceCoin.id,
         obverse: null,
         reverse: null,
+      },
+    ])
+  })
+
+  it("keeps consumer-facing Obverse and Reverse output compatible when details are stored as Coin Surfaces", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const coin = await createCoin({
+      title: "Coin Surface Compatibility Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-05-05T00:00:00.000Z"),
+    })
+
+    await db.execute(sql`
+      insert into "coin_surface" ("coin_id", "kind", "description", "lettering")
+      values
+        (${coin.id}, ${"obverse"}, ${"Portrait right."}, ${"FELIPE VI"}),
+        (${coin.id}, ${"reverse"}, ${"Crowned arms."}, ${"PLUS ULTRA"})
+    `)
+
+    await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
+      {
+        id: coin.id,
+        obverse: {
+          description: "Portrait right.",
+          lettering: "FELIPE VI",
+          engravers: [],
+        },
+        reverse: {
+          description: "Crowned arms.",
+          lettering: "PLUS ULTRA",
+          engravers: [],
+        },
       },
     ])
   })

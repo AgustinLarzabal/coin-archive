@@ -1,5 +1,5 @@
 import { index, pgTable, primaryKey, uuid } from "drizzle-orm/pg-core"
-import { coinFace } from "./coin-face"
+import { coinSurface } from "./coin-surface"
 import { engraver } from "./engraver"
 
 export const coinFaceEngraverSchemaNames = {
@@ -12,7 +12,7 @@ export const coinFaceEngraver = pgTable(
   {
     coinFaceId: uuid("coin_face_id")
       .notNull()
-      .references(() => coinFace.id, {
+      .references(() => coinSurface.id, {
         onDelete: "cascade",
       }),
     engraverId: uuid("engraver_id")

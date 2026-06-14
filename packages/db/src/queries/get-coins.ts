@@ -4,7 +4,7 @@ import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
+import { coinSurface } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -37,10 +37,10 @@ export type DemonetizationFilterValue =
   (typeof demonetizationFilterValues)[number]
 
 const parentIssuer = alias(issuer, "parent_issuer")
-const obverseFace = alias(coinFace, "obverse_face")
+const obverseFace = alias(coinSurface, "obverse_face")
 const obverseFaceEngraver = alias(coinFaceEngraver, "obverse_face_engraver")
 const obverseEngraver = alias(engraver, "obverse_engraver")
-const reverseFace = alias(coinFace, "reverse_face")
+const reverseFace = alias(coinSurface, "reverse_face")
 const reverseFaceEngraver = alias(coinFaceEngraver, "reverse_face_engraver")
 const reverseEngraver = alias(engraver, "reverse_engraver")
 const getCoinsSelection = {
@@ -548,10 +548,10 @@ function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined 
 
   return sql`
     ${coin.id} in (
-      select ${coinFace.coinId}
+      select ${coinSurface.coinId}
       from "coin_face_engraver"
-      inner join "coin_face"
-        on ${coinFaceEngraver.coinFaceId} = ${coinFace.id}
+      inner join "coin_surface"
+        on ${coinFaceEngraver.coinFaceId} = ${coinSurface.id}
       inner join "engraver"
         on ${coinFaceEngraver.engraverId} = ${engraver.id}
       where lower(${engraver.code}) = ${normalizedEngraverCode}
@@ -767,7 +767,7 @@ export function buildGetCoinsQuery(
     .leftJoin(technique, eq(coin.techniqueId, technique.id))
     .leftJoin(
       obverseFace,
-      and(eq(coin.id, obverseFace.coinId), eq(obverseFace.side, "obverse"))
+      and(eq(coin.id, obverseFace.coinId), eq(obverseFace.kind, "obverse"))
     )
     .leftJoin(
       obverseFaceEngraver,
@@ -779,7 +779,7 @@ export function buildGetCoinsQuery(
     )
     .leftJoin(
       reverseFace,
-      and(eq(coin.id, reverseFace.coinId), eq(reverseFace.side, "reverse"))
+      and(eq(coin.id, reverseFace.coinId), eq(reverseFace.kind, "reverse"))
     )
     .leftJoin(
       reverseFaceEngraver,

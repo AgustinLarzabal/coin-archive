@@ -4,7 +4,7 @@ import { afterAll, beforeEach } from "vitest"
 
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
+import { coinSurface } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -44,7 +44,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(coinTheme)
   await database.delete(coinMint)
   await database.delete(coinRuler)
-  await database.delete(coinFace)
+  await database.delete(coinSurface)
   await database.delete(coin)
   await database.delete(ruler)
   await database.delete(rulerGroup)

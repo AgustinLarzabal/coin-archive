@@ -1,4 +1,4 @@
-import type { CoinFaceSide } from "../schema/coin-face"
+import type { CoinSurfaceKind } from "../schema/coin-surface"
 
 type SeededIssuer = {
   name: string
@@ -36,7 +36,7 @@ export type SeededCoin = {
 
 type SeededCoinFace = {
   coinTitle: string
-  side: CoinFaceSide
+  side: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
 }
@@ -50,7 +50,7 @@ type SeededEngraver = {
 
 type SeededCoinFaceEngraver = {
   coinTitle: string
-  side: CoinFaceSide
+  side: CoinSurfaceKind
   engraverCode: string
 }
 

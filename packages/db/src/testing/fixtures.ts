@@ -1,7 +1,7 @@
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
-import type { CoinFaceSide } from "../schema/coin-face"
+import { coinSurface } from "../schema/coin-surface"
+import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -139,7 +139,7 @@ type CreateCoinMintInput = {
 
 type CreateCoinFaceInput = {
   coinId: string
-  side: CoinFaceSide
+  side: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
 }
@@ -488,23 +488,27 @@ export async function createCoinMint({ coinId, mintId }: CreateCoinMintInput) {
   return createdCoinMint
 }
 
-export async function createCoinFace({
+export async function createCoinSurface({
   coinId,
   side,
   description,
   lettering,
 }: CreateCoinFaceInput) {
-  const [createdCoinFace] = await db
-    .insert(coinFace)
+  const [createdCoinSurface] = await db
+    .insert(coinSurface)
     .values({
       coinId,
-      side,
+      kind: side,
       description,
       lettering,
     })
     .returning()
 
-  return createdCoinFace
+  return createdCoinSurface
+}
+
+export async function createCoinFace(input: CreateCoinFaceInput) {
+  return createCoinSurface(input)
 }
 
 export async function createCoinTheme({

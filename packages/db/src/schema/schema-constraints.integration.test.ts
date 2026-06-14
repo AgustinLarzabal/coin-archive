@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   catalogue,
   coin,
-  coinFace,
+  coinSurface,
   coinFaceEngraver,
   coinMint,
   coinReference,
@@ -29,7 +29,7 @@ import {
 import {
   createCatalogue,
   createCoin,
-  createCoinFace,
+  createCoinSurface,
   createCoinFaceEngraver,
   createCoinMint,
   createCoinReference,
@@ -52,7 +52,7 @@ import {
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
-import { coinFaceSchemaNames } from "./coin-face"
+import { coinSurfaceSchemaNames } from "./coin-surface"
 import { coinFaceEngraverSchemaNames } from "./coin-face-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
@@ -1455,7 +1455,7 @@ describe("distribution schema constraints", () => {
   })
 })
 
-describe("coin face schema constraints", () => {
+describe("coin surface schema constraints", () => {
   useTestDatabaseIsolation(db)
 
   it("allows at most one Obverse and at most one Reverse per coin", async () => {
@@ -1470,29 +1470,29 @@ describe("coin face schema constraints", () => {
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
 
-    await createCoinFace({
+    await createCoinSurface({
       coinId: createdCoin.id,
       side: "obverse",
       description: "First obverse description.",
     })
-    await createCoinFace({
+    await createCoinSurface({
       coinId: createdCoin.id,
       side: "reverse",
       lettering: "FIRST REVERSE",
     })
 
     await expectConstraintError(
-      createCoinFace({
+      createCoinSurface({
         coinId: createdCoin.id,
         side: "obverse",
         description: "Duplicate obverse description.",
       }),
-      coinFaceSchemaNames.sideUniqueIndex,
+      coinSurfaceSchemaNames.kindUniqueIndex,
       "23505"
     )
   })
 
-  it("rejects face side values outside obverse and reverse", async () => {
+  it("rejects Coin Surface kinds outside obverse and reverse", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1506,10 +1506,10 @@ describe("coin face schema constraints", () => {
 
     await expectConstraintError(
       db.execute(sql`
-        insert into "coin_face" ("coin_id", "side")
+        insert into "coin_surface" ("coin_id", "kind")
         values (${createdCoin.id}, ${"edge"})
       `),
-      coinFaceSchemaNames.sideCheck,
+      coinSurfaceSchemaNames.kindCheck,
       "23514"
     )
   })
@@ -1526,12 +1526,12 @@ describe("coin face schema constraints", () => {
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
 
-    await createCoinFace({
+    await createCoinSurface({
       coinId: createdCoin.id,
       side: "obverse",
       description: "Portrait right.",
     })
-    await createCoinFace({
+    await createCoinSurface({
       coinId: createdCoin.id,
       side: "reverse",
       lettering: "ONE EURO",
@@ -1542,8 +1542,8 @@ describe("coin face schema constraints", () => {
     await expectCountQueryResult(
       db
         .select({ count: count() })
-        .from(coinFace)
-        .where(eq(coinFace.coinId, createdCoin.id)),
+        .from(coinSurface)
+        .where(eq(coinSurface.coinId, createdCoin.id)),
       0
     )
   })
@@ -1605,7 +1605,7 @@ describe("engraver schema constraints", () => {
       issuerId,
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
-    const createdFace = await createCoinFace({
+    const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
       side: "obverse",
       description: "Portrait left.",
@@ -1642,7 +1642,7 @@ describe("coin face engraver schema constraints", () => {
       issuerId,
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
-    const createdFace = await createCoinFace({
+    const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
       side: "reverse",
       lettering: "2 EURO",
@@ -1657,7 +1657,7 @@ describe("coin face engraver schema constraints", () => {
       engraverId: createdEngraver.id,
     })
 
-    await db.delete(coinFace).where(eq(coinFace.id, createdFace.id))
+    await db.delete(coinSurface).where(eq(coinSurface.id, createdFace.id))
 
     await expectCountQueryResult(
       db
@@ -1679,7 +1679,7 @@ describe("coin face engraver schema constraints", () => {
       issuerId,
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
-    const createdFace = await createCoinFace({
+    const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
       side: "obverse",
       description: "Portrait right.",

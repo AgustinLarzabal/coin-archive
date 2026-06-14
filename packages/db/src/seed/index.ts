@@ -4,8 +4,8 @@ import { closeDb, db } from "../client"
 import { normalizeCoinComments } from "../normalize-coin-comments"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinFace } from "../schema/coin-face"
-import type { CoinFaceSide } from "../schema/coin-face"
+import { coinSurface } from "../schema/coin-surface"
+import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -82,7 +82,7 @@ function getRequiredSeededId(
   return id
 }
 
-function getCoinFaceSeedKey(coinTitle: string, side: CoinFaceSide) {
+function getCoinFaceSeedKey(coinTitle: string, side: CoinSurfaceKind) {
   return `${coinTitle}:${side}`
 }
 
@@ -269,7 +269,7 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
   }
 
   const insertedCoinFaces = await db
-    .insert(coinFace)
+    .insert(coinSurface)
     .values(
       seededCoinFaces.map((seededCoinFace) => ({
         coinId: getRequiredSeededId(
@@ -277,15 +277,15 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
           seededCoinFace.coinTitle,
           "coin"
         ),
-        side: seededCoinFace.side,
+        kind: seededCoinFace.side,
         description: seededCoinFace.description,
         lettering: seededCoinFace.lettering,
       }))
     )
     .returning({
-      id: coinFace.id,
-      coinId: coinFace.coinId,
-      side: coinFace.side,
+      id: coinSurface.id,
+      coinId: coinSurface.coinId,
+      side: coinSurface.kind,
     })
 
   const coinTitlesById = new Map(

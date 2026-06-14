@@ -102,6 +102,11 @@ type WeightRangeValue = {
   minWeight: PositiveNumberFilterValue
 }
 
+type DiameterRangeValue = {
+  maxDiameter: PositiveNumberFilterValue
+  minDiameter: PositiveNumberFilterValue
+}
+
 function isIssueYearRangeValue(
   value: unknown
 ): value is { min: number; max: number } {
@@ -163,6 +168,26 @@ function getWeightRangeValue(value: unknown): WeightRangeValue {
   return {
     minWeight: undefined,
     maxWeight: undefined,
+  }
+}
+
+function isDiameterRangeValue(value: unknown): value is DiameterRangeValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "minDiameter" in value &&
+    "maxDiameter" in value
+  )
+}
+
+function getDiameterRangeValue(value: unknown): DiameterRangeValue {
+  if (isDiameterRangeValue(value)) {
+    return value
+  }
+
+  return {
+    minDiameter: undefined,
+    maxDiameter: undefined,
   }
 }
 
@@ -412,6 +437,98 @@ function CustomWeightRangeInput({
   )
 }
 
+function CustomDiameterRangeInput({
+  values,
+  onChange,
+  autoFocus,
+}: CustomRendererProps) {
+  const selectedRange = getDiameterRangeValue(values[0])
+  const [range, setRange] = useState({
+    minDiameter: selectedRange.minDiameter?.toString() ?? "",
+    maxDiameter: selectedRange.maxDiameter?.toString() ?? "",
+  })
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => setIsOpen(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [autoFocus])
+
+  const handleApply = () => {
+    onChange([
+      {
+        minDiameter: range.minDiameter,
+        maxDiameter: range.maxDiameter,
+      },
+    ])
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setIsOpen(false)
+  }
+
+  const displayValue =
+    range.minDiameter || range.maxDiameter
+      ? `${range.minDiameter || "any"} - ${range.maxDiameter || "any"} mm`
+      : "Set range"
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
+      <PopoverContent
+        className="w-auto p-4"
+        align="start"
+        sideOffset={8}
+        alignOffset={-8}
+      >
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-2">
+            <Input
+              aria-label="Minimum diameter in millimeters"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  minDiameter: event.target.value,
+                }))
+              }
+              placeholder="Min diameter (mm)"
+              step="0.01"
+              type="number"
+              value={range.minDiameter}
+            />
+            <Input
+              aria-label="Maximum diameter in millimeters"
+              className="w-36"
+              onChange={(event) =>
+                setRange((currentRange) => ({
+                  ...currentRange,
+                  maxDiameter: event.target.value,
+                }))
+              }
+              placeholder="Max diameter (mm)"
+              step="0.01"
+              type="number"
+              value={range.maxDiameter}
+            />
+          </div>
+          <div className="flex items-center justify-end gap-1.5">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleApply}>
+              Apply
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
   compositions: CompositionOption[]
@@ -436,8 +553,10 @@ type HomeFiltersProps = {
   selectedDemonetization?: DemonetizationFilterValue
   selectedIssuerCode?: string
   selectedFromYear?: number
+  selectedMaxDiameter?: number
   selectedMaxValue?: number
   selectedMaxWeight?: number
+  selectedMinDiameter?: number
   selectedMinValue?: number
   selectedMinWeight?: number
   selectedMintCode?: string
@@ -458,8 +577,10 @@ type HomeFiltersProps = {
     engraverCode: string | undefined
     fromYear: number | undefined
     issuerCode: string | undefined
+    maxDiameter: PositiveNumberFilterValue
     maxValue: PositiveNumberFilterValue
     maxWeight: PositiveNumberFilterValue
+    minDiameter: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
@@ -497,8 +618,10 @@ export function HomeFilters({
   selectedEngraverCode,
   selectedIssuerCode,
   selectedFromYear,
+  selectedMaxDiameter,
   selectedMaxValue,
   selectedMaxWeight,
+  selectedMinDiameter,
   selectedMinValue,
   selectedMinWeight,
   selectedMintCode,
@@ -515,6 +638,7 @@ export function HomeFilters({
   const [isFaceValueFilterPending, setIsFaceValueFilterPending] =
     useState(false)
   const [isWeightFilterPending, setIsWeightFilterPending] = useState(false)
+  const [isDiameterFilterPending, setIsDiameterFilterPending] = useState(false)
 
   const fields: FilterFieldConfig[] = [
     {
@@ -562,6 +686,22 @@ export function HomeFilters({
           defaultOperator: "between",
           customRenderer: ({ values, onChange }) => (
             <CustomWeightRangeInput
+              values={values}
+              onChange={onChange}
+              autoFocus={values === lastAddedValues}
+            />
+          ),
+        },
+        {
+          key: "diameter",
+          label: "Diameter",
+          icon: <Circle strokeWidth={2} className="size-3.5" />,
+          type: "custom",
+          className: "w-36",
+          operators: [{ value: "between", label: "between" }],
+          defaultOperator: "between",
+          customRenderer: ({ values, onChange }) => (
+            <CustomDiameterRangeInput
               values={values}
               onChange={onChange}
               autoFocus={values === lastAddedValues}
@@ -814,6 +954,18 @@ export function HomeFilters({
           ]),
         ]
       : []),
+    ...(selectedMinDiameter !== undefined ||
+    selectedMaxDiameter !== undefined ||
+    isDiameterFilterPending
+      ? [
+          createFilter("diameter", "between", [
+            {
+              minDiameter: selectedMinDiameter,
+              maxDiameter: selectedMaxDiameter,
+            },
+          ]),
+        ]
+      : []),
     ...(selectedCatalogueCode
       ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
       : []),
@@ -874,6 +1026,9 @@ export function HomeFilters({
     setIsWeightFilterPending(
       nextFilters.some((filter) => filter.field === "weight")
     )
+    setIsDiameterFilterPending(
+      nextFilters.some((filter) => filter.field === "diameter")
+    )
 
     const issuerYearFilter = nextFilters.find(
       (filter) => filter.field === "issuerYear"
@@ -890,6 +1045,12 @@ export function HomeFilters({
     const weightFilter = nextFilters.find((filter) => filter.field === "weight")
     const weightRange = weightFilter
       ? getWeightRangeValue(weightFilter.values[0])
+      : undefined
+    const diameterFilter = nextFilters.find(
+      (filter) => filter.field === "diameter"
+    )
+    const diameterRange = diameterFilter
+      ? getDiameterRangeValue(diameterFilter.values[0])
       : undefined
     const catalogueFilter = nextFilters.find(
       (filter) => filter.field === "catalogue"
@@ -974,8 +1135,10 @@ export function HomeFilters({
         typeof issuerCode === "string" && issuerCode.length > 0
           ? issuerCode
           : undefined,
+      maxDiameter: diameterRange?.maxDiameter,
       maxValue: faceValueRange?.maxValue,
       maxWeight: weightRange?.maxWeight,
+      minDiameter: diameterRange?.minDiameter,
       minValue: faceValueRange?.minValue,
       minWeight: weightRange?.minWeight,
       mintCode:
@@ -1011,6 +1174,7 @@ export function HomeFilters({
   async function clearFilters() {
     setIsFaceValueFilterPending(false)
     setIsWeightFilterPending(false)
+    setIsDiameterFilterPending(false)
 
     await onFiltersChange({
       catalogueCode: undefined,
@@ -1022,8 +1186,10 @@ export function HomeFilters({
       engraverCode: undefined,
       fromYear: undefined,
       issuerCode: undefined,
+      maxDiameter: undefined,
       maxValue: undefined,
       maxWeight: undefined,
+      minDiameter: undefined,
       minValue: undefined,
       minWeight: undefined,
       mintCode: undefined,

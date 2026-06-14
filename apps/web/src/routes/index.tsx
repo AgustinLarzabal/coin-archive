@@ -36,16 +36,6 @@ type RangeInputField<TName extends string> = Readonly<{
 
 const measurementRangeInputFields = [
   {
-    name: "minDiameter",
-    ariaLabel: "Minimum diameter in millimeters",
-    placeholder: "Min diameter (mm)",
-  },
-  {
-    name: "maxDiameter",
-    ariaLabel: "Maximum diameter in millimeters",
-    placeholder: "Max diameter (mm)",
-  },
-  {
     name: "minThickness",
     ariaLabel: "Minimum thickness in millimeters",
     placeholder: "Min thickness (mm)",
@@ -136,8 +126,10 @@ function App() {
     engraverCode,
     fromYear,
     issuerCode,
+    maxDiameter,
     maxValue,
     maxWeight,
+    minDiameter,
     minValue,
     minWeight,
     mintCode,
@@ -158,8 +150,10 @@ function App() {
     engraverCode: string | undefined
     fromYear: number | undefined
     issuerCode: string | undefined
+    maxDiameter: PositiveNumberFilterValue
     maxValue: PositiveNumberFilterValue
     maxWeight: PositiveNumberFilterValue
+    minDiameter: PositiveNumberFilterValue
     minValue: PositiveNumberFilterValue
     minWeight: PositiveNumberFilterValue
     mintCode: string | undefined
@@ -269,8 +263,8 @@ function App() {
         return applyMeasurementRangeSearch(searchWithFaceValueRange, {
           minWeight,
           maxWeight,
-          minDiameter: currentSearch.minDiameter,
-          maxDiameter: currentSearch.maxDiameter,
+          minDiameter,
+          maxDiameter,
           minThickness: currentSearch.minThickness,
           maxThickness: currentSearch.maxThickness,
         })
@@ -304,6 +298,8 @@ function App() {
         applyMeasurementRangeSearch(currentSearch, {
           minWeight: currentSearch.minWeight,
           maxWeight: currentSearch.maxWeight,
+          minDiameter: currentSearch.minDiameter,
+          maxDiameter: currentSearch.maxDiameter,
           ...getRangeFromFormData(formData, measurementRangeInputFields),
         }),
     })
@@ -335,8 +331,10 @@ function App() {
         selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
         selectedFromYear={search.fromYear}
+        selectedMaxDiameter={search.maxDiameter}
         selectedMaxValue={search.maxValue}
         selectedMaxWeight={search.maxWeight}
+        selectedMinDiameter={search.minDiameter}
         selectedMinValue={search.minValue}
         selectedMinWeight={search.minWeight}
         selectedMintCode={search.mint}

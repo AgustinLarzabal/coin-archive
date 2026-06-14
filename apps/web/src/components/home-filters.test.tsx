@@ -148,8 +148,10 @@ describe("HomeFilters", () => {
         selectedEngraverCode="georgios-stamatopoulos"
         selectedFromYear={1898}
         selectedIssuerCode="spain"
+        selectedMaxDiameter={24}
         selectedMaxValue={2}
         selectedMaxWeight={7}
+        selectedMinDiameter={23}
         selectedMinValue={0.5}
         selectedMinWeight={6}
         selectedMintCode="royal-mint-of-madrid"
@@ -177,6 +179,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("0.5 - 2")
     expect(markup).toContain("Weight")
     expect(markup).toContain("6 - 7 g")
+    expect(markup).toContain("Diameter")
+    expect(markup).toContain("23 - 24 mm")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Raised, both sides")

@@ -4,7 +4,7 @@ import { alias } from "drizzle-orm/pg-core"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinSurface } from "../schema/coin-surface"
+import { coinSurface, coinSurfaceKinds } from "../schema/coin-surface"
 import { coinFaceEngraver } from "../schema/coin-face-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -27,6 +27,7 @@ import { theme } from "../schema/theme"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
+const [obverseSurfaceKind, reverseSurfaceKind] = coinSurfaceKinds
 export const demonetizationFilterValues = [
   "demonetized",
   "not-demonetized",
@@ -37,11 +38,17 @@ export type DemonetizationFilterValue =
   (typeof demonetizationFilterValues)[number]
 
 const parentIssuer = alias(issuer, "parent_issuer")
-const obverseFace = alias(coinSurface, "obverse_face")
-const obverseFaceEngraver = alias(coinFaceEngraver, "obverse_face_engraver")
+const obverseSurface = alias(coinSurface, "obverse_face")
+const obverseSurfaceEngraver = alias(
+  coinFaceEngraver,
+  "obverse_face_engraver"
+)
 const obverseEngraver = alias(engraver, "obverse_engraver")
-const reverseFace = alias(coinSurface, "reverse_face")
-const reverseFaceEngraver = alias(coinFaceEngraver, "reverse_face_engraver")
+const reverseSurface = alias(coinSurface, "reverse_face")
+const reverseSurfaceEngraver = alias(
+  coinFaceEngraver,
+  "reverse_face_engraver"
+)
 const reverseEngraver = alias(engraver, "reverse_engraver")
 const getCoinsSelection = {
   id: coin.id,
@@ -88,15 +95,15 @@ const getCoinsSelection = {
   techniqueName: technique.name,
   techniqueCreatedAt: technique.createdAt,
   techniqueUpdatedAt: technique.updatedAt,
-  obverseDescription: obverseFace.description,
-  obverseLettering: obverseFace.lettering,
+  obverseDescription: obverseSurface.description,
+  obverseLettering: obverseSurface.lettering,
   obverseEngraverId: obverseEngraver.id,
   obverseEngraverCode: obverseEngraver.code,
   obverseEngraverName: obverseEngraver.name,
   obverseEngraverCreatedAt: obverseEngraver.createdAt,
   obverseEngraverUpdatedAt: obverseEngraver.updatedAt,
-  reverseDescription: reverseFace.description,
-  reverseLettering: reverseFace.lettering,
+  reverseDescription: reverseSurface.description,
+  reverseLettering: reverseSurface.lettering,
   reverseEngraverId: reverseEngraver.id,
   reverseEngraverCode: reverseEngraver.code,
   reverseEngraverName: reverseEngraver.name,
@@ -766,28 +773,34 @@ export function buildGetCoinsQuery(
     .leftJoin(rim, eq(coin.rimId, rim.id))
     .leftJoin(technique, eq(coin.techniqueId, technique.id))
     .leftJoin(
-      obverseFace,
-      and(eq(coin.id, obverseFace.coinId), eq(obverseFace.kind, "obverse"))
+      obverseSurface,
+      and(
+        eq(coin.id, obverseSurface.coinId),
+        eq(obverseSurface.kind, obverseSurfaceKind)
+      )
     )
     .leftJoin(
-      obverseFaceEngraver,
-      eq(obverseFace.id, obverseFaceEngraver.coinFaceId)
+      obverseSurfaceEngraver,
+      eq(obverseSurface.id, obverseSurfaceEngraver.coinFaceId)
     )
     .leftJoin(
       obverseEngraver,
-      eq(obverseFaceEngraver.engraverId, obverseEngraver.id)
+      eq(obverseSurfaceEngraver.engraverId, obverseEngraver.id)
     )
     .leftJoin(
-      reverseFace,
-      and(eq(coin.id, reverseFace.coinId), eq(reverseFace.kind, "reverse"))
+      reverseSurface,
+      and(
+        eq(coin.id, reverseSurface.coinId),
+        eq(reverseSurface.kind, reverseSurfaceKind)
+      )
     )
     .leftJoin(
-      reverseFaceEngraver,
-      eq(reverseFace.id, reverseFaceEngraver.coinFaceId)
+      reverseSurfaceEngraver,
+      eq(reverseSurface.id, reverseSurfaceEngraver.coinFaceId)
     )
     .leftJoin(
       reverseEngraver,
-      eq(reverseFaceEngraver.engraverId, reverseEngraver.id)
+      eq(reverseSurfaceEngraver.engraverId, reverseEngraver.id)
     )
     .leftJoin(parentIssuer, eq(issuer.parentIssuerId, parentIssuer.id))
     .leftJoin(coinMint, eq(coin.id, coinMint.coinId))

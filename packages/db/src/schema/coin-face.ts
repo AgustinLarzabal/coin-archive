@@ -1,3 +1,4 @@
+// Compatibility re-exports for code that still imports Coin Face names.
 export {
   coinSurface as coinFace,
   coinSurfaceKinds as coinFaceSides,

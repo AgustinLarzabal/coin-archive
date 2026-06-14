@@ -137,9 +137,9 @@ type CreateCoinMintInput = {
   mintId: string
 }
 
-type CreateCoinFaceInput = {
+type CreateCoinSurfaceInput = {
   coinId: string
-  side: CoinSurfaceKind
+  kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
 }
@@ -490,15 +490,15 @@ export async function createCoinMint({ coinId, mintId }: CreateCoinMintInput) {
 
 export async function createCoinSurface({
   coinId,
-  side,
+  kind,
   description,
   lettering,
-}: CreateCoinFaceInput) {
+}: CreateCoinSurfaceInput) {
   const [createdCoinSurface] = await db
     .insert(coinSurface)
     .values({
       coinId,
-      kind: side,
+      kind,
       description,
       lettering,
     })
@@ -507,7 +507,7 @@ export async function createCoinSurface({
   return createdCoinSurface
 }
 
-export async function createCoinFace(input: CreateCoinFaceInput) {
+export async function createCoinFace(input: CreateCoinSurfaceInput) {
   return createCoinSurface(input)
 }
 

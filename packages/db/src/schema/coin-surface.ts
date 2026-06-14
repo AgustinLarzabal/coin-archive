@@ -12,6 +12,9 @@ import { coin } from "./coin"
 
 export const coinSurfaceKinds = ["obverse", "reverse"] as const
 export type CoinSurfaceKind = (typeof coinSurfaceKinds)[number]
+const coinSurfaceKindsSql = sql.raw(
+  `(${coinSurfaceKinds.map((kind) => `'${kind}'`).join(", ")})`
+)
 
 export const coinSurfaceSchemaNames = {
   coinIdIndex: "coin_surface_coin_id_idx",
@@ -53,7 +56,7 @@ export const coinSurface = pgTable(
     index(coinSurfaceSchemaNames.coinIdIndex).on(coinSurface.coinId),
     check(
       coinSurfaceSchemaNames.kindCheck,
-      sql`${coinSurface.kind} in ('obverse', 'reverse')`
+      sql`${coinSurface.kind} in ${coinSurfaceKindsSql}`
     ),
   ]
 )

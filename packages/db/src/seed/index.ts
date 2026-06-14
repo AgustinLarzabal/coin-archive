@@ -66,7 +66,7 @@ type RulerIdsByCode = Map<string, string>
 type ShapeIdsByCode = Map<string, string>
 type TechniqueIdsByCode = Map<string, string>
 type ThemeIdsByCode = Map<string, string>
-type CoinFaceIdsByKey = Map<string, string>
+type CoinSurfaceIdsByKey = Map<string, string>
 
 function getRequiredSeededId(
   idsByKey: Map<string, string>,
@@ -82,8 +82,8 @@ function getRequiredSeededId(
   return id
 }
 
-function getCoinFaceSeedKey(coinTitle: string, side: CoinSurfaceKind) {
-  return `${coinTitle}:${side}`
+function getCoinSurfaceSeedKey(coinTitle: string, kind: CoinSurfaceKind) {
+  return `${coinTitle}:${kind}`
 }
 
 async function deleteSeededCoins() {
@@ -263,12 +263,12 @@ async function seedCoins(
 
 async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
   if (seededCoinFaces.length === 0) {
-    const coinFaceIdsByKey: CoinFaceIdsByKey = new Map()
+    const coinSurfaceIdsByKey: CoinSurfaceIdsByKey = new Map()
 
-    return coinFaceIdsByKey
+    return coinSurfaceIdsByKey
   }
 
-  const insertedCoinFaces = await db
+  const insertedCoinSurfaces = await db
     .insert(coinSurface)
     .values(
       seededCoinFaces.map((seededCoinFace) => ({
@@ -285,35 +285,35 @@ async function seedCoinFaces(coinIdsByTitle: CoinIdsByTitle) {
     .returning({
       id: coinSurface.id,
       coinId: coinSurface.coinId,
-      side: coinSurface.kind,
+      kind: coinSurface.kind,
     })
 
   const coinTitlesById = new Map(
     [...coinIdsByTitle.entries()].map(([title, id]) => [id, title])
   )
 
-  const coinFaceIdsByKey: CoinFaceIdsByKey = new Map(
-    insertedCoinFaces.map((insertedCoinFace) => {
-      const coinTitle = coinTitlesById.get(insertedCoinFace.coinId)
+  const coinSurfaceIdsByKey: CoinSurfaceIdsByKey = new Map(
+    insertedCoinSurfaces.map((insertedCoinSurface) => {
+      const coinTitle = coinTitlesById.get(insertedCoinSurface.coinId)
 
       if (!coinTitle) {
         throw new Error(
-          `Missing seeded coin title for face ${insertedCoinFace.id}`
+          `Missing seeded coin title for surface ${insertedCoinSurface.id}`
         )
       }
 
       return [
-        getCoinFaceSeedKey(coinTitle, insertedCoinFace.side),
-        insertedCoinFace.id,
+        getCoinSurfaceSeedKey(coinTitle, insertedCoinSurface.kind),
+        insertedCoinSurface.id,
       ]
     })
   )
 
-  return coinFaceIdsByKey
+  return coinSurfaceIdsByKey
 }
 
 async function seedCoinFaceEngravers(
-  coinFaceIdsByKey: CoinFaceIdsByKey,
+  coinSurfaceIdsByKey: CoinSurfaceIdsByKey,
   engraverIdsByCode: EngraverIdsByCode
 ) {
   if (seededCoinFaceEngravers.length === 0) {
@@ -323,12 +323,12 @@ async function seedCoinFaceEngravers(
   await db.insert(coinFaceEngraver).values(
     seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
       coinFaceId: getRequiredSeededId(
-        coinFaceIdsByKey,
-        getCoinFaceSeedKey(
+        coinSurfaceIdsByKey,
+        getCoinSurfaceSeedKey(
           seededCoinFaceEngraver.coinTitle,
           seededCoinFaceEngraver.side
         ),
-        "coin face"
+        "coin surface"
       ),
       engraverId: getRequiredSeededId(
         engraverIdsByCode,
@@ -845,8 +845,8 @@ export async function seedDatabase() {
     rimIdsByCode,
     techniqueIdsByCode
   )
-  const coinFaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
-  await seedCoinFaceEngravers(coinFaceIdsByKey, engraverIdsByCode)
+  const coinSurfaceIdsByKey = await seedCoinFaces(coinIdsByTitle)
+  await seedCoinFaceEngravers(coinSurfaceIdsByKey, engraverIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)

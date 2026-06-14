@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
+import { coinSurfaceKinds } from "../schema/coin-surface"
 import {
   createCatalogue,
   createCoin,
@@ -29,6 +30,7 @@ import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getCoins integration", () => {
   useTestDatabaseIsolation(db)
+  const [obverseKind, reverseKind] = coinSurfaceKinds
 
   it("returns recent coins newest first", async () => {
     const athens = await createIssuer({
@@ -442,18 +444,18 @@ describe("getCoins integration", () => {
 
     await createCoinFace({
       coinId: obverseOnlyCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "Crowned shield.",
       lettering: "FELIPE VI",
     })
     await createCoinFace({
       coinId: reverseOnlyCoin.id,
-      side: "reverse",
+      kind: reverseKind,
       lettering: "2 EURO",
     })
     await createCoinFace({
       coinId: blankFaceCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "   ",
       lettering: "\n\t",
     })
@@ -504,8 +506,8 @@ describe("getCoins integration", () => {
     await db.execute(sql`
       insert into "coin_surface" ("coin_id", "kind", "description", "lettering")
       values
-        (${coin.id}, ${"obverse"}, ${"Portrait right."}, ${"FELIPE VI"}),
-        (${coin.id}, ${"reverse"}, ${"Crowned arms."}, ${"PLUS ULTRA"})
+        (${coin.id}, ${obverseKind}, ${"Portrait right."}, ${"FELIPE VI"}),
+        (${coin.id}, ${reverseKind}, ${"Crowned arms."}, ${"PLUS ULTRA"})
     `)
 
     await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
@@ -561,11 +563,11 @@ describe("getCoins integration", () => {
     })
     const obverseFace = await createCoinFace({
       coinId: faceOnlyCoin.id,
-      side: "obverse",
+      kind: obverseKind,
     })
     const reverseFace = await createCoinFace({
       coinId: faceOnlyCoin.id,
-      side: "reverse",
+      kind: reverseKind,
       lettering: "2 EURO",
     })
     const filteredOutCoin = await createCoin({
@@ -575,7 +577,7 @@ describe("getCoins integration", () => {
     })
     const filteredOutFace = await createCoinFace({
       coinId: filteredOutCoin.id,
-      side: "obverse",
+      kind: obverseKind,
     })
     const otherEngraver = await createEngraver({
       code: "other-engraver",

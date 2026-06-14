@@ -52,7 +52,7 @@ import {
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
-import { coinSurfaceSchemaNames } from "./coin-surface"
+import { coinSurfaceKinds, coinSurfaceSchemaNames } from "./coin-surface"
 import { coinFaceEngraverSchemaNames } from "./coin-face-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
@@ -73,6 +73,8 @@ import { rulerGroupSchemaNames } from "./ruler-group"
 import { shapeSchemaNames } from "./shape"
 import { techniqueSchemaNames } from "./technique"
 import { themeSchemaNames } from "./theme"
+
+const [obverseKind, reverseKind] = coinSurfaceKinds
 
 async function expectConstraintError(
   promise: Promise<unknown>,
@@ -1472,19 +1474,19 @@ describe("coin surface schema constraints", () => {
 
     await createCoinSurface({
       coinId: createdCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "First obverse description.",
     })
     await createCoinSurface({
       coinId: createdCoin.id,
-      side: "reverse",
+      kind: reverseKind,
       lettering: "FIRST REVERSE",
     })
 
     await expectConstraintError(
       createCoinSurface({
         coinId: createdCoin.id,
-        side: "obverse",
+        kind: obverseKind,
         description: "Duplicate obverse description.",
       }),
       coinSurfaceSchemaNames.kindUniqueIndex,
@@ -1528,12 +1530,12 @@ describe("coin surface schema constraints", () => {
 
     await createCoinSurface({
       coinId: createdCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "Portrait right.",
     })
     await createCoinSurface({
       coinId: createdCoin.id,
-      side: "reverse",
+      kind: reverseKind,
       lettering: "ONE EURO",
     })
 
@@ -1607,7 +1609,7 @@ describe("engraver schema constraints", () => {
     })
     const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "Portrait left.",
     })
     const createdEngraver = await createEngraver({
@@ -1644,7 +1646,7 @@ describe("coin face engraver schema constraints", () => {
     })
     const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
-      side: "reverse",
+      kind: reverseKind,
       lettering: "2 EURO",
     })
     const createdEngraver = await createEngraver({
@@ -1681,7 +1683,7 @@ describe("coin face engraver schema constraints", () => {
     })
     const createdFace = await createCoinSurface({
       coinId: createdCoin.id,
-      side: "obverse",
+      kind: obverseKind,
       description: "Portrait right.",
     })
     const createdEngraver = await createEngraver({

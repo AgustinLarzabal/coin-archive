@@ -39,11 +39,8 @@ export type SeededCoin = {
   updatedAt: Date
 }
 
-type SeededCoinSurface = {
+type SeededCoinSurface = SeededCoinSurfaceDetails & {
   coinTitle: string
-  kind: CoinSurfaceKind
-  description?: string | null
-  lettering?: string | null
 }
 
 type SeededEngraver = {
@@ -427,12 +424,15 @@ export const seededCoins: SeededCoin[] = [
 ]
 
 export const seededCoinSurfaces: SeededCoinSurface[] = seededCoins.flatMap(
-  ({ title, surfaces = [] }) =>
-    surfaces.map((surface) => ({
-      coinTitle: title,
-      ...surface,
-    }))
+  ({ title, surfaces = [] }) => surfaces.map(addCoinTitle(title))
 )
+
+function addCoinTitle(coinTitle: string) {
+  return (surface: SeededCoinSurfaceDetails): SeededCoinSurface => ({
+    coinTitle,
+    ...surface,
+  })
+}
 
 export const seededEngravers: SeededEngraver[] = [
   {

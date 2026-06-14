@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
-import type { SeededCoin } from "./seed-data"
+import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
 import { seededCoins, seededIssuers } from "./seed-data"
 
 describe("SeededCoin", () => {
@@ -11,12 +11,7 @@ describe("SeededCoin", () => {
 
   it("can express obverse, reverse, and edge surface details directly on a seeded coin", () => {
     expectTypeOf<SeededCoin["surfaces"]>().toEqualTypeOf<
-      | {
-          kind: "obverse" | "reverse" | "edge-surface"
-          description?: string | null | undefined
-          lettering?: string | null | undefined
-        }[]
-      | undefined
+      SeededCoinSurfaceDetails[] | undefined
     >()
 
     expect(

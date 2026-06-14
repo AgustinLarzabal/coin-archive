@@ -2,16 +2,13 @@ import { describe, expect, expectTypeOf, it } from "vitest"
 
 type FixturesModule = typeof import("./fixtures")
 type CreateCoinInput = Parameters<FixturesModule["createCoin"]>[0]
+type CreateCoinSurfaceInput = Parameters<FixturesModule["createCoinSurface"]>[0]
 type IndexModule = typeof import("../index")
 
 describe("testing fixtures", () => {
   it("accepts surface-oriented coin detail input and keeps engraver helpers face-specific", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
-      surfaces?: Array<{
-        kind: "obverse" | "reverse" | "edge-surface"
-        description?: string | null
-        lettering?: string | null
-      }>
+      surfaces?: Array<Omit<CreateCoinSurfaceInput, "coinId">>
     }>()
 
     expectTypeOf<FixturesModule["createCoinSurface"]>().toBeFunction()

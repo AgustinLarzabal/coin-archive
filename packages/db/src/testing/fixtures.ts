@@ -34,6 +34,8 @@ import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./defa
 
 const [, , edgeSurfaceKind] = coinSurfaceKinds
 
+type CreateCoinSurfaceDetailsInput = Omit<CreateCoinSurfaceInput, "coinId">
+
 type CreateCoinInput = {
   comments?: string | null
   compositionId?: string
@@ -90,22 +92,20 @@ export async function createCoin({
   updatedAt = createdAt,
 }: CreateCoinInput) {
   const resolvedDistributionId =
-    distributionId ?? (await getOrCreateDefaultDistribution()).id
+    distributionId ?? (await getDefaultDistribution(db)).id
   const resolvedCompositionId =
-    compositionId ?? (await getOrCreateDefaultComposition()).id
+    compositionId ?? (await getDefaultComposition(db)).id
   const resolvedCurrencyId =
-    currencyId ?? (await getOrCreateDefaultCurrency()).id
-  const legacyEdgeSurface =
-    edgeDescription !== undefined || edgeLettering !== undefined
-      ? [
-          {
-            kind: edgeSurfaceKind,
-            description: edgeDescription,
-            lettering: edgeLettering,
-          } satisfies CreateCoinSurfaceDetailsInput,
-        ]
-      : []
-  const resolvedSurfaces = [...(surfaces ?? []), ...legacyEdgeSurface]
+    currencyId ?? (await getDefaultCurrency(db)).id
+  const resolvedSurfaces = [...(surfaces ?? [])]
+
+  if (edgeDescription !== undefined || edgeLettering !== undefined) {
+    resolvedSurfaces.push({
+      kind: edgeSurfaceKind,
+      description: edgeDescription,
+      lettering: edgeLettering,
+    })
+  }
 
   const [createdCoin] = await db
     .insert(coin)
@@ -170,8 +170,6 @@ type CreateCoinSurfaceInput = {
   description?: string | null
   lettering?: string | null
 }
-
-type CreateCoinSurfaceDetailsInput = Omit<CreateCoinSurfaceInput, "coinId">
 
 type CreateCoinThemeInput = {
   coinId: string

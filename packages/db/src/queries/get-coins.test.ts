@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
+import { coinSurfaceKinds } from "../schema/coin-surface"
 import { createTestDatabase } from "../testing/test-database"
 
 describe("buildGetCoinsQuery", () => {
@@ -15,12 +16,15 @@ describe("buildGetCoinsQuery", () => {
   })
 
   it("limits engraver filtering to face kinds", () => {
+    const engraverCode = "georgios-stamatopoulos"
     const query = buildGetCoinsQuery(db, {
-      engraverCode: "georgios-stamatopoulos",
+      engraverCode,
       limit: 1,
     }).toSQL()
 
     expect(query.sql).toContain('where lower("engraver"."code") = $1')
-    expect(query.sql).toContain('and "coin_surface"."kind" in (')
+    expect(query.params).toEqual(
+      expect.arrayContaining([engraverCode, ...coinSurfaceKinds])
+    )
   })
 })

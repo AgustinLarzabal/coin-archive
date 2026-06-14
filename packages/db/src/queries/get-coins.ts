@@ -29,6 +29,10 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 const defaultGetCoinsLimit = 10
 const [obverseSurfaceKind, reverseSurfaceKind, edgeSurfaceKind] =
   coinSurfaceKinds
+const faceSurfaceKindsSql = sql.join(
+  [sql`${obverseSurfaceKind}`, sql`${reverseSurfaceKind}`],
+  sql`, `
+)
 export const demonetizationFilterValues = [
   "demonetized",
   "not-demonetized",
@@ -550,10 +554,6 @@ function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
 
 function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined {
   const normalizedEngraverCode = normalizeCodeFilter(engraverCode)
-  const faceKindsSql = sql.join(
-    [sql`${obverseSurfaceKind}`, sql`${reverseSurfaceKind}`],
-    sql`, `
-  )
 
   if (normalizedEngraverCode === undefined) {
     return undefined
@@ -569,7 +569,7 @@ function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined 
       inner join "engraver"
         on ${coinFaceEngraver.engraverId} = ${engraver.id}
       where lower(${engraver.code}) = ${normalizedEngraverCode}
-        and ${coinSurface.kind} in (${faceKindsSql})
+        and ${coinSurface.kind} in (${faceSurfaceKindsSql})
     )
   `
 }

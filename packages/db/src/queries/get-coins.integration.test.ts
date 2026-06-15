@@ -370,8 +370,11 @@ describe("getCoins integration", () => {
         },
         orientation: null,
         technique: null,
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
         measurements: {
           weight: null,
           diameter: null,
@@ -463,36 +466,44 @@ describe("getCoins integration", () => {
     await expect(getCoins({ limit: 4 })).resolves.toMatchObject([
       {
         id: blankFaceCoin.id,
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+        },
       },
       {
         id: reverseOnlyCoin.id,
-        obverse: null,
-        reverse: {
-          description: null,
-          lettering: "2 EURO",
-          engravers: [],
+        surfaces: {
+          obverse: null,
+          reverse: {
+            description: null,
+            lettering: "2 EURO",
+            engravers: [],
+          },
         },
       },
       {
         id: obverseOnlyCoin.id,
-        obverse: {
-          description: "Crowned shield.",
-          lettering: "FELIPE VI",
-          engravers: [],
+        surfaces: {
+          obverse: {
+            description: "Crowned shield.",
+            lettering: "FELIPE VI",
+            engravers: [],
+          },
+          reverse: null,
         },
-        reverse: null,
       },
       {
         id: noFaceCoin.id,
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+        },
       },
     ])
   })
 
-  it("keeps consumer-facing Obverse and Reverse output compatible when details are stored as Coin Surfaces", async () => {
+  it("groups Obverse and Reverse Coin Surfaces under surfaces when details are stored as Coin Surfaces", async () => {
     const spain = await createIssuer({
       code: "spain",
       name: "Spain",
@@ -513,15 +524,17 @@ describe("getCoins integration", () => {
     await expect(getCoins({ limit: 1 })).resolves.toMatchObject([
       {
         id: coin.id,
-        obverse: {
-          description: "Portrait right.",
-          lettering: "FELIPE VI",
-          engravers: [],
-        },
-        reverse: {
-          description: "Crowned arms.",
-          lettering: "PLUS ULTRA",
-          engravers: [],
+        surfaces: {
+          obverse: {
+            description: "Portrait right.",
+            lettering: "FELIPE VI",
+            engravers: [],
+          },
+          reverse: {
+            description: "Crowned arms.",
+            lettering: "PLUS ULTRA",
+            engravers: [],
+          },
         },
       },
     ])
@@ -621,32 +634,34 @@ describe("getCoins integration", () => {
     ).resolves.toMatchObject([
       {
         id: faceOnlyCoin.id,
-        obverse: {
-          description: null,
-          lettering: null,
-          engravers: [
-            {
-              id: alpha.id,
-              code: "alpha-engraver",
-              name: "Alpha Engraver",
-            },
-            {
-              id: beta.id,
-              code: "beta-engraver",
-              name: "Alpha Engraver",
-            },
-          ],
-        },
-        reverse: {
-          description: null,
-          lettering: "2 EURO",
-          engravers: [
-            {
-              id: georgios.id,
-              code: "georgios-stamatopoulos",
-              name: "Georgios Stamatópoulos",
-            },
-          ],
+        surfaces: {
+          obverse: {
+            description: null,
+            lettering: null,
+            engravers: [
+              {
+                id: alpha.id,
+                code: "alpha-engraver",
+                name: "Alpha Engraver",
+              },
+              {
+                id: beta.id,
+                code: "beta-engraver",
+                name: "Alpha Engraver",
+              },
+            ],
+          },
+          reverse: {
+            description: null,
+            lettering: "2 EURO",
+            engravers: [
+              {
+                id: georgios.id,
+                code: "georgios-stamatopoulos",
+                name: "Georgios Stamatópoulos",
+              },
+            ],
+          },
         },
       },
     ])
@@ -1408,8 +1423,9 @@ describe("getCoins integration", () => {
         edge: {
           code: "security",
           name: "Security edge",
-          description: null,
-          lettering: null,
+        },
+        surfaces: {
+          edge: null,
         },
       },
       {
@@ -1419,25 +1435,32 @@ describe("getCoins integration", () => {
           id: reeded.id,
           code: "reeded",
           name: "Reeded",
-          description: "Alternating grooves.",
-          lettering: null,
+        },
+        surfaces: {
+          edge: {
+            description: "Alternating grooves.",
+            lettering: null,
+          },
         },
       },
       {
         id: textOnlyEdgeCoin.id,
         title: "Text Only Edge Coin",
-        edge: {
-          id: null,
-          code: null,
-          name: null,
-          description: "Lettered edge with stars.",
-          lettering: "E PLURIBUS UNUM",
+        edge: null,
+        surfaces: {
+          edge: {
+            description: "Lettered edge with stars.",
+            lettering: "E PLURIBUS UNUM",
+          },
         },
       },
       {
         id: noEdgeCoin.id,
         title: "No Edge Coin",
         edge: null,
+        surfaces: {
+          edge: null,
+        },
       },
     ])
 

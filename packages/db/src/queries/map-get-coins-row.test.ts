@@ -242,8 +242,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           id: "edge-1",
           code: "reeded",
           name: "Reeded",
-          description: "Alternating grooves around the circumference.",
-          lettering: "E PLURIBUS UNUM",
           createdAt: edgeCreatedAt,
           updatedAt: edgeUpdatedAt,
         },
@@ -256,8 +254,14 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           createdAt: techniqueCreatedAt,
           updatedAt: techniqueUpdatedAt,
         },
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: {
+            description: "Alternating grooves around the circumference.",
+            lettering: "E PLURIBUS UNUM",
+          },
+        },
         measurements: {
           weight: 4.5,
           diameter: 19.25,
@@ -624,21 +628,25 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
     expect(mapGetCoinsRowsToCoinRecords(rows)).toMatchObject([
       {
         id: "coin-face-1",
-        obverse: {
-          description: "Laureate bust right.",
-          lettering: "ELIZABETH II",
-          engravers: [],
-        },
-        reverse: {
-          description: null,
-          lettering: "ONE DOLLAR",
-          engravers: [],
+        surfaces: {
+          obverse: {
+            description: "Laureate bust right.",
+            lettering: "ELIZABETH II",
+            engravers: [],
+          },
+          reverse: {
+            description: null,
+            lettering: "ONE DOLLAR",
+            engravers: [],
+          },
         },
       },
       {
         id: "coin-face-2",
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+        },
       },
     ])
   })
@@ -830,32 +838,34 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
     expect(mapGetCoinsRowsToCoinRecords(rows)).toMatchObject([
       {
         id: "coin-face-engraver-1",
-        obverse: {
-          description: null,
-          lettering: null,
-          engravers: [
-            {
-              id: "engraver-2",
-              code: "alpha-engraver",
-              name: "Alpha Engraver",
-            },
-            {
-              id: "engraver-1",
-              code: "beta-engraver",
-              name: "Alpha Engraver",
-            },
-          ],
-        },
-        reverse: {
-          description: null,
-          lettering: null,
-          engravers: [
-            {
-              id: "engraver-3",
-              code: "georgios-stamatopoulos",
-              name: "Georgios Stamatópoulos",
-            },
-          ],
+        surfaces: {
+          obverse: {
+            description: null,
+            lettering: null,
+            engravers: [
+              {
+                id: "engraver-2",
+                code: "alpha-engraver",
+                name: "Alpha Engraver",
+              },
+              {
+                id: "engraver-1",
+                code: "beta-engraver",
+                name: "Alpha Engraver",
+              },
+            ],
+          },
+          reverse: {
+            description: null,
+            lettering: null,
+            engravers: [
+              {
+                id: "engraver-3",
+                code: "georgios-stamatopoulos",
+                name: "Georgios Stamatópoulos",
+              },
+            ],
+          },
         },
       },
     ])
@@ -1548,8 +1558,11 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
             updatedAt: new Date("2026-04-11T12:00:00.000Z"),
           },
         ],
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
         orientation: null,
         edge: null,
         shape: null,
@@ -1743,8 +1756,11 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         shape: null,
         rim: null,
         technique: null,
-        obverse: null,
-        reverse: null,
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
         mints: [],
         themes: [],
         rulers: [],
@@ -2005,5 +2021,167 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         mintage: null,
       },
     ])
+  })
+
+  it("groups Coin Surface records under surfaces and keeps coin.edge limited to Edge classification data", () => {
+    const rows: GetCoinsRow[] = [
+      {
+        id: "coin-surface-set-1",
+        title: "Surface Set Test Coin",
+        createdAt,
+        updatedAt,
+        comments: null,
+        isDemonetized: null,
+        mintage: null,
+        minYear: null,
+        maxYear: null,
+        faceValueText: "1 Euro",
+        faceValueNumericValue: 1,
+        currencyId: "currency-1",
+        currencyCode: "euro",
+        currencyName: "Euro",
+        currencyFullName: "Euro (2002-date)",
+        currencyCreatedAt,
+        currencyUpdatedAt,
+        orientationId: null,
+        orientationCode: null,
+        orientationName: null,
+        orientationCreatedAt: null,
+        orientationUpdatedAt: null,
+        edgeId: "edge-1",
+        edgeCode: "lettered",
+        edgeName: "Lettered",
+        edgeDescription: "Incuse legend around the circumference.",
+        edgeLettering: "E PLURIBUS UNUM",
+        edgeCreatedAt,
+        edgeUpdatedAt,
+        shapeId: null,
+        shapeCode: null,
+        shapeName: null,
+        shapeCreatedAt: null,
+        shapeUpdatedAt: null,
+        rimId: null,
+        rimCode: null,
+        rimName: null,
+        rimCreatedAt: null,
+        rimUpdatedAt: null,
+        techniqueId: null,
+        techniqueCode: null,
+        techniqueName: null,
+        techniqueCreatedAt: null,
+        techniqueUpdatedAt: null,
+        obverseDescription: "Laureate bust right.",
+        obverseLettering: "FELIPE VI",
+        obverseEngraverId: "engraver-1",
+        obverseEngraverCode: "alpha-engraver",
+        obverseEngraverName: "Alpha Engraver",
+        obverseEngraverCreatedAt: createdAt,
+        obverseEngraverUpdatedAt: updatedAt,
+        reverseDescription: "Crowned arms.",
+        reverseLettering: "PLUS ULTRA",
+        reverseEngraverId: null,
+        reverseEngraverCode: null,
+        reverseEngraverName: null,
+        reverseEngraverCreatedAt: null,
+        reverseEngraverUpdatedAt: null,
+        weight: null,
+        diameter: null,
+        thickness: null,
+        distributionId: "distribution-1",
+        distributionCode: "standard-circulation",
+        distributionName: "Standard circulation",
+        distributionCreatedAt,
+        distributionUpdatedAt,
+        compositionId: "composition-1",
+        compositionCode: "silver-900",
+        compositionName: "Silver (.900)",
+        compositionDescription: null,
+        compositionCreatedAt,
+        compositionUpdatedAt,
+        issuerId: "issuer-1",
+        issuerCode: "spain",
+        issuerIsoCode: "ES",
+        issuerName: "Spain",
+        issuerCreatedAt,
+        issuerUpdatedAt,
+        parentIssuerId: null,
+        parentIssuerCode: null,
+        parentIssuerIsoCode: null,
+        parentIssuerName: null,
+        parentIssuerCreatedAt: null,
+        parentIssuerUpdatedAt: null,
+        mintId: null,
+        mintCode: null,
+        mintName: null,
+        mintCreatedAt: null,
+        mintUpdatedAt: null,
+        themeId: null,
+        themeCode: null,
+        themeName: null,
+        themeCreatedAt: null,
+        themeUpdatedAt: null,
+        rulerOrder: null,
+        rulerId: null,
+        rulerCode: null,
+        rulerName: null,
+        rulerCreatedAt: null,
+        rulerUpdatedAt: null,
+        rulerGroupId: null,
+        rulerGroupCode: null,
+        rulerGroupName: null,
+        rulerGroupCreatedAt: null,
+        rulerGroupUpdatedAt: null,
+        referenceId: null,
+        referenceType: null,
+        referenceNumber: null,
+        referenceCreatedAt: null,
+        referenceUpdatedAt: null,
+        referenceCatalogueId: null,
+        referenceCatalogueCode: null,
+        referenceCatalogueTitle: null,
+        referenceCatalogueCreatedAt: null,
+        referenceCatalogueUpdatedAt: null,
+      },
+    ]
+
+    const [record] = mapGetCoinsRowsToCoinRecords(rows)
+
+    expect(record).toMatchObject({
+      id: "coin-surface-set-1",
+      edge: {
+        id: "edge-1",
+        code: "lettered",
+        name: "Lettered",
+        createdAt: edgeCreatedAt,
+        updatedAt: edgeUpdatedAt,
+      },
+      surfaces: {
+        obverse: {
+          description: "Laureate bust right.",
+          lettering: "FELIPE VI",
+          engravers: [
+            {
+              id: "engraver-1",
+              code: "alpha-engraver",
+              name: "Alpha Engraver",
+            },
+          ],
+        },
+        reverse: {
+          description: "Crowned arms.",
+          lettering: "PLUS ULTRA",
+          engravers: [],
+        },
+        edge: {
+          description: "Incuse legend around the circumference.",
+          lettering: "E PLURIBUS UNUM",
+        },
+      },
+    })
+    expect(record.edge).not.toHaveProperty("description")
+    expect(record.edge).not.toHaveProperty("lettering")
+    expect(record.surfaces.edge).not.toHaveProperty("engravers")
+    expect(record).not.toHaveProperty("obverse")
+    expect(record).not.toHaveProperty("reverse")
   })
 })

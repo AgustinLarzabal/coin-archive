@@ -1,6 +1,6 @@
 import type {
   CatalogueOption,
-  CoinRecord,
+  CoinListRecord,
   CompositionOption,
   CurrencyOption,
   DistributionOption,
@@ -17,7 +17,7 @@ import type {
 } from "@workspace/db"
 
 export type JsonInspectorQueries = {
-  coins: CoinRecord[]
+  coins: CoinListRecord[]
   issuers: IssuerOption[]
   rulers: RulerOption[]
   catalogues: CatalogueOption[]

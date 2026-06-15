@@ -51,19 +51,21 @@ export type {
   CoinEdge,
   CoinEngraver,
   CoinFaceValue,
-  CoinSurfaceDetails,
+  CoinListEdgeSurface,
   CoinIssueYearRange,
   CoinIssuer,
   CoinRecordMint,
   CoinIssuerParent,
+  CoinListRecord,
   CoinMeasurements,
   CoinOrientation,
-  CoinRecord,
   CoinRim,
   CoinRulerGroup,
   CoinShape,
+  CoinSurfaceSet,
   CoinTechnique,
   CoinThemeRecord,
+  CoinListSurfaceDetails,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetail } from "./queries/get-coin"

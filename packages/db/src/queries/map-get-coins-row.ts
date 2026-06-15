@@ -258,18 +258,27 @@ export type CoinFaceValue = {
   currency: CoinCurrency
 }
 
-export type CoinSurfaceDetails = {
+export type CoinListSurfaceDetails = {
   description: string | null
   lettering: string | null
   engravers: CoinEngraver[]
+}
+
+export type CoinListEdgeSurface = {
+  description: string | null
+  lettering: string | null
+}
+
+export type CoinSurfaceSet = {
+  obverse: CoinListSurfaceDetails | null
+  reverse: CoinListSurfaceDetails | null
+  edge: CoinListEdgeSurface | null
 }
 
 export type CoinEdge = {
   id: string | null
   code: string | null
   name: string | null
-  description: string | null
-  lettering: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -323,7 +332,7 @@ type CoinRecordBase = Pick<
   | "mintage"
 >
 
-export type CoinRecord = CoinRecordBase & {
+export type CoinListRecord = CoinRecordBase & {
   composition: CoinComposition
   distribution: CoinDistribution
   edge: CoinEdge | null
@@ -332,20 +341,19 @@ export type CoinRecord = CoinRecordBase & {
   issuer: CoinIssuer
   measurements: CoinMeasurements
   mints: CoinRecordMint[]
-  obverse: CoinSurfaceDetails | null
   orientation: CoinOrientation | null
   references: CoinCatalogueReference[]
-  reverse: CoinSurfaceDetails | null
   rim: CoinRim | null
   rulers: CoinRuler[]
   shape: CoinShape | null
+  surfaces: CoinSurfaceSet
   technique: CoinTechnique | null
   themes: CoinThemeRecord[]
 }
 
 export type CoinEngraver = CoinCodeNamedRecord
 type CoinEntryCoin = Omit<
-  CoinRecord,
+  CoinListRecord,
   "mints" | "references" | "rulers" | "themes"
 >
 
@@ -477,32 +485,26 @@ function mapEdge({
   edgeId,
   edgeCode,
   edgeName,
-  edgeDescription,
-  edgeLettering,
   edgeCreatedAt,
   edgeUpdatedAt,
 }: GetCoinsEdgeColumns): CoinEdge | null {
-  const description = normalizeOptionalText(edgeDescription)
-  const lettering = normalizeOptionalText(edgeLettering)
   const hasLookup =
     !!edgeId && !!edgeCode && !!edgeName && !!edgeCreatedAt && !!edgeUpdatedAt
 
-  if (!hasLookup && description === null && lettering === null) {
+  if (!hasLookup) {
     return null
   }
 
   return {
-    id: hasLookup ? edgeId : null,
-    code: hasLookup ? edgeCode : null,
-    name: hasLookup ? edgeName : null,
-    description,
-    lettering,
-    createdAt: hasLookup ? edgeCreatedAt : null,
-    updatedAt: hasLookup ? edgeUpdatedAt : null,
+    id: edgeId,
+    code: edgeCode,
+    name: edgeName,
+    createdAt: edgeCreatedAt,
+    updatedAt: edgeUpdatedAt,
   }
 }
 
-function mapCoinSurfaceDetails({
+function mapCoinListSurfaceDetails({
   description,
   lettering,
   engravers,
@@ -510,7 +512,7 @@ function mapCoinSurfaceDetails({
   description?: string | null
   lettering?: string | null
   engravers: CoinEngraver[]
-}): CoinSurfaceDetails | null {
+}): CoinListSurfaceDetails | null {
   const normalizedDescription = normalizeOptionalText(description)
   const normalizedLettering = normalizeOptionalText(lettering)
 
@@ -526,6 +528,26 @@ function mapCoinSurfaceDetails({
     description: normalizedDescription,
     lettering: normalizedLettering,
     engravers,
+  }
+}
+
+function mapCoinListEdgeSurface({
+  description,
+  lettering,
+}: {
+  description?: string | null
+  lettering?: string | null
+}): CoinListEdgeSurface | null {
+  const normalizedDescription = normalizeOptionalText(description)
+  const normalizedLettering = normalizeOptionalText(lettering)
+
+  if (normalizedDescription === null && normalizedLettering === null) {
+    return null
+  }
+
+  return {
+    description: normalizedDescription,
+    lettering: normalizedLettering,
   }
 }
 
@@ -829,8 +851,8 @@ function compareCodeNamedRecords(
 }
 
 function sortSurfaceEngravers(
-  surface: CoinSurfaceDetails | null
-): CoinSurfaceDetails | null {
+  surface: CoinListSurfaceDetails | null
+): CoinListSurfaceDetails | null {
   if (surface === null) {
     return null
   }
@@ -847,11 +869,14 @@ function mapCoinEntry({
   themes,
   rulerAttributions,
   catalogueReferences,
-}: CoinEntry): CoinRecord {
+}: CoinEntry): CoinListRecord {
   return {
     ...coin,
-    obverse: sortSurfaceEngravers(coin.obverse),
-    reverse: sortSurfaceEngravers(coin.reverse),
+    surfaces: {
+      ...coin.surfaces,
+      obverse: sortSurfaceEngravers(coin.surfaces.obverse),
+      reverse: sortSurfaceEngravers(coin.surfaces.reverse),
+    },
     mints: mints.sort(compareCodeNamedRecords),
     themes: themes.sort(compareCodeNamedRecords),
     rulers: rulerAttributions
@@ -905,20 +930,26 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
-    obverse: mapCoinSurfaceDetails({
-      description: row.obverseDescription,
-      lettering: row.obverseLettering,
-      engravers: [],
-    }),
-    reverse: mapCoinSurfaceDetails({
-      description: row.reverseDescription,
-      lettering: row.reverseLettering,
-      engravers: [],
-    }),
     orientation: mapOrientation(row),
     edge: mapEdge(row),
     shape: mapShape(row),
     rim: mapRim(row),
+    surfaces: {
+      obverse: mapCoinListSurfaceDetails({
+        description: row.obverseDescription,
+        lettering: row.obverseLettering,
+        engravers: [],
+      }),
+      reverse: mapCoinListSurfaceDetails({
+        description: row.reverseDescription,
+        lettering: row.reverseLettering,
+        engravers: [],
+      }),
+      edge: mapCoinListEdgeSurface({
+        description: row.edgeDescription,
+        lettering: row.edgeLettering,
+      }),
+    },
     technique: mapTechnique(row),
     measurements: mapMeasurements(row),
     composition: mapComposition(row),
@@ -946,7 +977,7 @@ function createCoinEntry(row: GetCoinsRow): CoinEntry {
 function getCoinSurfaceTextColumns(
   row: GetCoinsRow,
   side: CoinSurfaceSide
-): Pick<CoinSurfaceDetails, "description" | "lettering"> {
+): Pick<CoinListSurfaceDetails, "description" | "lettering"> {
   if (side === "obverse") {
     return {
       description: row.obverseDescription ?? null,
@@ -987,28 +1018,28 @@ function ensureCoinSurfaceDetails(
   coinEntry: CoinEntry,
   side: CoinSurfaceSide
 ) {
-  const existingFace = coinEntry.coin[side]
+  const existingFace = coinEntry.coin.surfaces[side]
 
   if (existingFace !== null) {
     return existingFace
   }
 
-  const mappedSurface = mapCoinSurfaceDetails({
+  const mappedSurface = mapCoinListSurfaceDetails({
     ...getCoinSurfaceTextColumns(row, side),
     engravers: [],
   })
 
   if (mappedSurface === null) {
-    coinEntry.coin[side] = {
+    coinEntry.coin.surfaces[side] = {
       description: null,
       lettering: null,
       engravers: [],
     }
 
-    return coinEntry.coin[side]
+    return coinEntry.coin.surfaces[side]
   }
 
-  coinEntry.coin[side] = mappedSurface
+  coinEntry.coin.surfaces[side] = mappedSurface
 
   return mappedSurface
 }
@@ -1092,7 +1123,7 @@ function addCatalogueReference(row: GetCoinsRow, coinEntry: CoinEntry) {
 
 export function mapGetCoinsRowsToCoinRecords(
   rows: GetCoinsRow[]
-): CoinRecord[] {
+): CoinListRecord[] {
   const coinsById = new Map<string, CoinEntry>()
 
   for (const row of rows) {

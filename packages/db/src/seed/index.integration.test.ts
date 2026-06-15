@@ -354,20 +354,26 @@ describe("seed integration", () => {
         code: "milled",
         name: "Milled",
       },
-      obverse: {
-        description: "Portrait of Felipe VI facing left.",
-        lettering: "FELIPE VI REY DE ESPANA",
-        engravers: [],
-      },
-      reverse: {
-        description: "Map of Europe with denomination.",
-        lettering: "2 EURO",
-        engravers: [
-          {
-            code: "georgios-stamatopoulos",
-            name: "Georgios Stamatópoulos",
-          },
-        ],
+      surfaces: {
+        obverse: {
+          description: "Portrait of Felipe VI facing left.",
+          lettering: "FELIPE VI REY DE ESPANA",
+          engravers: [],
+        },
+        reverse: {
+          description: "Map of Europe with denomination.",
+          lettering: "2 EURO",
+          engravers: [
+            {
+              code: "georgios-stamatopoulos",
+              name: "Georgios Stamatópoulos",
+            },
+          ],
+        },
+        edge: {
+          description: null,
+          lettering: "2 **",
+        },
       },
       issueYearRange: {
         minYear: 2002,

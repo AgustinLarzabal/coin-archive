@@ -24,6 +24,7 @@ import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
 import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
+import type { CoinListRecord } from "./map-get-coins-row"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
 const defaultGetCoinsLimit = 10
@@ -856,7 +857,9 @@ export function buildGetCoinsQuery(
     )
 }
 
-export async function getCoins(options: GetCoinsOptions = {}) {
+export async function getCoins(
+  options: GetCoinsOptions = {}
+): Promise<CoinListRecord[]> {
   const rows = await buildGetCoinsQuery(db, options)
 
   return mapGetCoinsRowsToCoinRecords(rows)

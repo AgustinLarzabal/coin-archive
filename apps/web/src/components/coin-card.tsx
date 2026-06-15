@@ -1,4 +1,4 @@
-import type { CoinRecord } from "@workspace/db"
+import type { CoinListRecord } from "@workspace/db"
 import { Link } from "@tanstack/react-router"
 import {
   Card,
@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/card"
 
 type CoinCardProps = {
-  coin: CoinRecord
+  coin: CoinListRecord
 }
 
 export function CoinCard({ coin }: CoinCardProps) {

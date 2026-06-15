@@ -1,4 +1,4 @@
-import type { CoinRecord } from "@workspace/db"
+import type { CoinListRecord } from "@workspace/db"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { CoinListItem } from "./coin-list-item"
@@ -6,7 +6,7 @@ import { CoinListItem } from "./coin-list-item"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 const multilineComment = "First line\n<em>Second line</em>\n**Third line**"
 
-const baseCoin: CoinRecord = {
+const baseCoin: CoinListRecord = {
   id: "coin-1",
   title: "Theme Test Coin",
   createdAt: timestamp,
@@ -30,8 +30,11 @@ const baseCoin: CoinRecord = {
   technique: null,
   edge: null,
   shape: null,
-  obverse: null,
-  reverse: null,
+  surfaces: {
+    obverse: null,
+    reverse: null,
+    edge: null,
+  },
   measurements: {
     weight: null,
     diameter: null,
@@ -69,7 +72,7 @@ const baseCoin: CoinRecord = {
   references: [],
 }
 
-function renderCoinListItemMarkup(coin: CoinRecord = baseCoin) {
+function renderCoinListItemMarkup(coin: CoinListRecord = baseCoin) {
   return renderToStaticMarkup(
     <CoinListItem
       coin={coin}
@@ -275,8 +278,6 @@ describe("CoinListItem", () => {
         id: "edge-1",
         code: "reeded",
         name: "Reeded",
-        description: "Alternating grooves.",
-        lettering: "E PLURIBUS UNUM",
         createdAt: timestamp,
         updatedAt: timestamp,
       },
@@ -289,14 +290,13 @@ describe("CoinListItem", () => {
   it("omits the Edge row when no Edge name is known", () => {
     const markup = renderCoinListItemMarkup({
       ...baseCoin,
-      edge: {
-        id: null,
-        code: null,
-        name: null,
-        description: "Lettered edge.",
-        lettering: "E PLURIBUS UNUM",
-        createdAt: null,
-        updatedAt: null,
+      edge: null,
+      surfaces: {
+        ...baseCoin.surfaces,
+        edge: {
+          description: "Lettered edge.",
+          lettering: "E PLURIBUS UNUM",
+        },
       },
     })
 

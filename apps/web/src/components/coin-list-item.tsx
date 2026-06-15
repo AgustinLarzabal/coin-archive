@@ -1,12 +1,12 @@
-import type { CoinRecord } from "@workspace/db"
+import type { CoinListRecord } from "@workspace/db"
 
-export function formatThemeNames(themes: CoinRecord["themes"]) {
+export function formatThemeNames(themes: CoinListRecord["themes"]) {
   return themes.map(({ name }) => name).join(", ")
 }
 
 const mintageFormatter = new Intl.NumberFormat("en-US")
 const detailClassName = "text-sm text-muted-foreground"
-type DemonetizationStatus = CoinRecord["isDemonetized"]
+type DemonetizationStatus = CoinListRecord["isDemonetized"]
 
 function formatMintage(mintage: number | null) {
   if (mintage === null) {
@@ -29,7 +29,7 @@ function formatDemonetizationStatus(status: DemonetizationStatus) {
 }
 
 type CoinListItemProps = {
-  coin: CoinRecord
+  coin: CoinListRecord
   issueYearRangeLabel: string
   measurementSummary: string | null
   mintNames: string | null

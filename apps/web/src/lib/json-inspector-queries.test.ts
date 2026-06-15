@@ -1,10 +1,10 @@
-import type { CoinRecord, IssuerOption } from "@workspace/db"
+import type { CoinListRecord, IssuerOption } from "@workspace/db"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { JsonInspectorQueries } from "./json-inspector-queries"
 
 const timestamp = new Date("2026-06-11T00:00:00.000Z")
 
-const coin: CoinRecord = {
+const coin: CoinListRecord = {
   id: "coin-1",
   title: "Spanish Test Coin",
   createdAt: timestamp,
@@ -30,8 +30,11 @@ const coin: CoinRecord = {
   shape: null,
   rim: null,
   technique: null,
-  obverse: null,
-  reverse: null,
+  surfaces: {
+    obverse: null,
+    reverse: null,
+    edge: null,
+  },
   measurements: {
     weight: null,
     diameter: null,

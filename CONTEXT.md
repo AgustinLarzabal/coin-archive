@@ -64,6 +64,10 @@ _Avoid_: Free-text technique search, engraving technique filter, edge technique 
 A describable physical surface of a catalogued coin type or issue: the Obverse, Reverse, or Edge Surface. Coin Surface is the umbrella term for recorded descriptive surface text and lettering, not for controlled physical classifications such as Edge or Rim; missing surface details do not mean the physical surface is absent.
 _Avoid_: Coin face, side, whole-coin description, edge classification, rim classification, required blank surface record, exergue surface, inner-ring surface, outer-ring surface
 
+**Surface Set**:
+The grouped Obverse, Reverse, and Edge Surface records for a Coin. A Surface Set may omit any surface whose details and imagery have not been recorded.
+_Avoid_: Face set, sides, image set, edge classification group
+
 **Coin Face**:
 One of the two broad flat design-bearing surfaces of a catalogued coin type or issue: the Obverse or Reverse. The Edge Surface is a Coin Surface but not a Coin Face.
 _Avoid_: Coin surface, edge surface, side, whole-coin description
@@ -87,6 +91,14 @@ _Avoid_: Obverse description field, reverse description field, edge description 
 **Surface Lettering**:
 The plain text inscription recorded from a Coin Surface as catalogue data, including transcribed symbols, separators, or ornament marks when they are part of the entered inscription. Surface Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
 _Avoid_: Face lettering, edge lettering, parsed inscription, generated text, normalized token sequence, alphabetic-only text
+
+**Surface Image**:
+A catalogue web image URL associated with a specific Coin Surface: Obverse, Reverse, or Edge Surface. A Surface Image belongs to the coin type or issue's surface record and is distinct from Surface Description, Surface Lettering, orientation data, or whole-coin imagery.
+_Avoid_: Coin image, face image, edge classification image, image binary, local file path, image metadata, specimen gallery image
+
+**Surface Thumbnail**:
+The small preview web image URL associated with a specific Coin Surface for compact catalogue presentation. A Surface Thumbnail is separate from the Surface Image used for larger display, may be omitted when the larger Surface Image is acceptable as a preview, and either image may be missing when the archive has not recorded it.
+_Avoid_: Generated preview, icon, cropped face label, image binary, local file path, whole-coin thumbnail
 
 **Engraver**:
 A person credited with creating or engraving a coin face design. An Engraver may be attributed to an Obverse or Reverse, but is not a whole-coin attribution unless both faces are explicitly attributed.

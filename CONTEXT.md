@@ -60,17 +60,33 @@ _Avoid_: Display name, temporary label, generated database identity
 A catalogue filter that returns coins linked directly to the selected Minting Technique. It composes with other catalogue filters using AND semantics, and coins without a Minting Technique are excluded when a minting technique filter is applied.
 _Avoid_: Free-text technique search, engraving technique filter, edge technique filter, unknown-technique match
 
+**Coin Surface**:
+A describable physical surface of a catalogued coin type or issue: the Obverse, Reverse, or Edge Surface. Coin Surface is the umbrella term for recorded descriptive surface text and lettering, not for controlled physical classifications such as Edge or Rim; missing surface details do not mean the physical surface is absent.
+_Avoid_: Coin face, side, whole-coin description, edge classification, rim classification, required blank surface record, exergue surface, inner-ring surface, outer-ring surface
+
+**Coin Face**:
+One of the two broad flat design-bearing surfaces of a catalogued coin type or issue: the Obverse or Reverse. The Edge Surface is a Coin Surface but not a Coin Face.
+_Avoid_: Coin surface, edge surface, side, whole-coin description
+
 **Obverse**:
-The front face description recorded for a catalogued coin type or issue. A coin may have no Obverse description, and its descriptive text and lettering may be known independently.
+The front Coin Face of a catalogued coin type or issue. A coin may have no recorded Obverse surface details, and its descriptive text and lettering may be known independently.
 _Avoid_: Observe, heads, front image, placeholder face text
 
 **Reverse**:
-The back face description recorded for a catalogued coin type or issue. A coin may have no Reverse description, and its descriptive text and lettering may be known independently.
+The back Coin Face of a catalogued coin type or issue. A coin may have no recorded Reverse surface details, and its descriptive text and lettering may be known independently.
 _Avoid_: Tails, back image, placeholder face text
 
-**Face Lettering**:
-The plain text inscription recorded from an Obverse or Reverse as catalogue data. Face Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
-_Avoid_: Parsed inscription, generated text, normalized token sequence
+**Edge Surface**:
+The outer side Coin Surface of a catalogued coin type or issue. A coin may have no recorded Edge Surface details, and its descriptive text and lettering may be known independently from its Edge classification.
+_Avoid_: Edge, rim, third face, side face, edge type
+
+**Surface Description**:
+Free-text descriptive catalogue prose recorded for a Coin Surface at the coin type or issue level. Surface Description preserves entered source or editorial wording and is not parsed into structured motif, device, specimen condition, or image metadata.
+_Avoid_: Obverse description field, reverse description field, edge description field, parsed design motif, specimen wear note, weak strike note, image metadata
+
+**Surface Lettering**:
+The plain text inscription recorded from a Coin Surface as catalogue data, including transcribed symbols, separators, or ornament marks when they are part of the entered inscription. Surface Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
+_Avoid_: Face lettering, edge lettering, parsed inscription, generated text, normalized token sequence, alphabetic-only text
 
 **Engraver**:
 A person credited with creating or engraving a coin face design. An Engraver may be attributed to an Obverse or Reverse, but is not a whole-coin attribution unless both faces are explicitly attributed.
@@ -81,8 +97,8 @@ The globally unique, stable, human-readable catalogue key for an engraver, used 
 _Avoid_: Display name, temporary label, generated database identity
 
 **Engraver Attribution**:
-A catalogue relationship that links an Engraver to the Obverse or Reverse face design they are credited with. Multiple engraver attributions on a single face are unordered unless the archive later defines a face-specific credit order.
-_Avoid_: Coin-level artist tag, mint attribution, issuer attribution, inferred designer
+A catalogue relationship that links an Engraver to the Obverse or Reverse face design they are credited with. Multiple engraver attributions on a single face are unordered unless the archive later defines a face-specific credit order; Engraver Attribution is face-specific, not surface-wide.
+_Avoid_: Surface-wide artist tag, edge engraver attribution, coin-level artist tag, mint attribution, issuer attribution, inferred designer
 
 **Engraver Filter**:
 A catalogue filter that returns coins with the selected Engraver attributed to either the Obverse or Reverse. It composes with other catalogue filters using AND semantics.
@@ -113,16 +129,12 @@ A catalogue filter that returns coins linked directly to the selected Rim. It co
 _Avoid_: Edge filter, edge inscription filter, obverse rim filter, reverse rim filter, unknown-rim match
 
 **Edge**:
-The intended standard physical-description treatment of the coin's outer side surface, using Coin Archive's flat canonical edge vocabulary. A coin has at most one Edge, and coin-specific edge description or lettering details may be known without selecting an Edge.
-_Avoid_: Rim, face border, obverse rim, reverse rim, source-specific edge label
+The intended standard physical-description treatment category of the coin's Edge Surface, using Coin Archive's flat canonical edge vocabulary. A coin has at most one Edge, and coin-specific Surface Description or Surface Lettering details may be known without selecting an Edge.
+_Avoid_: Rim, face border, obverse rim, reverse rim, source-specific edge label, actual edge inscription text
 
 **Edge Code**:
 The unique, stable, human-readable catalogue key for an edge, used to identify the edge in imports, filters, URLs, and administrative lookup. It is unique within edges, uses lowercase slug-style text, and is distinct from the edge's display name.
 _Avoid_: Display name, temporary label, rim code
-
-**Edge Lettering**:
-The plain text inscription recorded from the coin's outer side surface as catalogue data. Edge Lettering preserves the entered source wording and is not parsed into structured inscription tokens.
-_Avoid_: Edge code, parsed inscription, generated text, normalized token sequence
 
 **Edge Filter**:
 A catalogue filter that returns coins linked directly to the selected Edge. It composes with other catalogue filters using AND semantics, and coins without an Edge are excluded when an edge filter is applied.

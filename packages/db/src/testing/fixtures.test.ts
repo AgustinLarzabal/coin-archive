@@ -6,16 +6,15 @@ type CreateCoinSurfaceInput = Parameters<FixturesModule["createCoinSurface"]>[0]
 type IndexModule = typeof import("../index")
 
 describe("testing fixtures", () => {
-  it("accepts surface-oriented coin detail input and keeps engraver helpers face-specific", () => {
+  it("accepts surface-oriented coin detail input and keeps engraver helpers surface-oriented", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
       surfaces?: Array<Omit<CreateCoinSurfaceInput, "coinId">>
     }>()
 
     expectTypeOf<FixturesModule["createCoinSurface"]>().toBeFunction()
-    expectTypeOf<FixturesModule["createCoinFaceEngraver"]>().toBeFunction()
-    expectTypeOf<
-      "createCoinFace" extends keyof FixturesModule ? true : false
-    >().toEqualTypeOf<false>()
+    expectTypeOf<FixturesModule["createCoinSurfaceEngraver"]>().toBeFunction()
+    expectTypeOf<"createCoinFace" extends keyof FixturesModule ? true : false>()
+      .toEqualTypeOf<false>()
   })
 })
 

@@ -5,7 +5,7 @@ import {
   catalogue,
   coin,
   coinSurface,
-  coinFaceEngraver,
+  coinSurfaceEngraver,
   coinMint,
   coinReference,
   coinRuler,
@@ -30,7 +30,7 @@ import {
   createCatalogue,
   createCoin,
   createCoinSurface,
-  createCoinFaceEngraver,
+  createCoinSurfaceEngraver,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -53,7 +53,7 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
 import { coinSurfaceKinds, coinSurfaceSchemaNames } from "./coin-surface"
-import { coinFaceEngraverSchemaNames } from "./coin-face-engraver"
+import { coinSurfaceEngraverSchemaNames } from "./coin-surface-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
 import { coinSchemaNames } from "./coin"
@@ -1627,8 +1627,8 @@ describe("engraver schema constraints", () => {
       name: "Georgios Stamatópoulos",
     })
 
-    await createCoinFaceEngraver({
-      coinFaceId: createdFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: createdFace.id,
       engraverId: createdEngraver.id,
     })
 
@@ -1640,7 +1640,7 @@ describe("engraver schema constraints", () => {
   })
 })
 
-describe("coin face engraver schema constraints", () => {
+describe("coin surface engraver schema constraints", () => {
   useTestDatabaseIsolation(db)
 
   it("rejects attributing an engraver to an edge surface", async () => {
@@ -1673,12 +1673,12 @@ describe("coin face engraver schema constraints", () => {
           ${createdEngraver.id}
         )
       `),
-      coinFaceEngraverSchemaNames.coinFaceKindCheck,
+      coinSurfaceEngraverSchemaNames.faceOnlyCheck,
       "23514"
     )
   })
 
-  it("cascades face engraver attributions when deleting a face", async () => {
+  it("cascades surface engraver attributions when deleting a surface", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1699,8 +1699,8 @@ describe("coin face engraver schema constraints", () => {
       name: "Georgios Stamatópoulos",
     })
 
-    await createCoinFaceEngraver({
-      coinFaceId: createdFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: createdFace.id,
       engraverId: createdEngraver.id,
     })
 
@@ -1709,13 +1709,13 @@ describe("coin face engraver schema constraints", () => {
     await expectCountQueryResult(
       db
         .select({ count: count() })
-        .from(coinFaceEngraver)
-        .where(eq(coinFaceEngraver.coinFaceId, createdFace.id)),
+        .from(coinSurfaceEngraver)
+        .where(eq(coinSurfaceEngraver.coinSurfaceId, createdFace.id)),
       0
     )
   })
 
-  it("rejects duplicate face engraver attributions", async () => {
+  it("rejects duplicate surface engraver attributions", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
     const createdCoin = await createCoin({
@@ -1736,17 +1736,17 @@ describe("coin face engraver schema constraints", () => {
       name: "Georgios Stamatópoulos",
     })
 
-    await createCoinFaceEngraver({
-      coinFaceId: createdFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: createdFace.id,
       engraverId: createdEngraver.id,
     })
 
     await expectConstraintError(
-      createCoinFaceEngraver({
-        coinFaceId: createdFace.id,
+      createCoinSurfaceEngraver({
+        coinSurfaceId: createdFace.id,
         engraverId: createdEngraver.id,
       }),
-      "coin_face_engraver_coin_face_id_engraver_id_pk",
+      "coin_face_engraver_coin_face_id_coin_face_kind_engraver_id_pk",
       "23505"
     )
   })
@@ -1785,15 +1785,15 @@ describe("coin face engraver schema constraints", () => {
         `)
 
         return tx
-          .insert(coinFaceEngraver)
+          .insert(coinSurfaceEngraver)
           .values({
-            coinFaceId: createdFace.id,
-            coinFaceKind: obverseKind,
+            coinSurfaceId: createdFace.id,
+            coinSurfaceKind: obverseKind,
             engraverId: createdEngraver.id,
           })
           .returning()
       }),
-      coinFaceEngraverSchemaNames.faceOnlyCheck,
+      coinSurfaceEngraverSchemaNames.faceOnlyCheck,
       "23514"
     )
   })

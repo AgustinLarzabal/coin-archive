@@ -70,7 +70,7 @@ type GetCoinsTechniqueColumns = {
   techniqueUpdatedAt?: Date | null
 }
 
-type GetCoinsFaceColumns = {
+type GetCoinsSurfaceColumns = {
   obverseDescription?: string | null
   obverseLettering?: string | null
   obverseEngraverId?: string | null
@@ -168,7 +168,7 @@ export type GetCoinsRow = {
   thickness: number | null
 } & GetCoinsCompositionColumns &
   GetCoinsCurrencyColumns &
-  GetCoinsFaceColumns &
+  GetCoinsSurfaceColumns &
   GetCoinsDistributionColumns &
   GetCoinsEdgeColumns &
   GetCoinsIssuerColumns &
@@ -258,7 +258,7 @@ export type CoinFaceValue = {
   currency: CoinCurrency
 }
 
-export type CoinFaceDetails = {
+export type CoinSurfaceDetails = {
   description: string | null
   lettering: string | null
   engravers: CoinEngraver[]
@@ -332,10 +332,10 @@ export type CoinRecord = CoinRecordBase & {
   issuer: CoinIssuer
   measurements: CoinMeasurements
   mints: CoinRecordMint[]
-  obverse: CoinFaceDetails | null
+  obverse: CoinSurfaceDetails | null
   orientation: CoinOrientation | null
   references: CoinCatalogueReference[]
-  reverse: CoinFaceDetails | null
+  reverse: CoinSurfaceDetails | null
   rim: CoinRim | null
   rulers: CoinRuler[]
   shape: CoinShape | null
@@ -349,7 +349,7 @@ type CoinEntryCoin = Omit<
   "mints" | "references" | "rulers" | "themes"
 >
 
-type CoinFaceSide = "obverse" | "reverse"
+type CoinSurfaceSide = "obverse" | "reverse"
 
 type CoinEntry = {
   coin: CoinEntryCoin
@@ -502,7 +502,7 @@ function mapEdge({
   }
 }
 
-function mapCoinFaceDetails({
+function mapCoinSurfaceDetails({
   description,
   lettering,
   engravers,
@@ -510,7 +510,7 @@ function mapCoinFaceDetails({
   description?: string | null
   lettering?: string | null
   engravers: CoinEngraver[]
-}): CoinFaceDetails | null {
+}): CoinSurfaceDetails | null {
   const normalizedDescription = normalizeOptionalText(description)
   const normalizedLettering = normalizeOptionalText(lettering)
 
@@ -677,7 +677,7 @@ function mapMint(row: GetCoinsMintColumns): CoinRecordMint | null {
   })
 }
 
-function mapObverseEngraver(row: GetCoinsFaceColumns): CoinEngraver | null {
+function mapObverseEngraver(row: GetCoinsSurfaceColumns): CoinEngraver | null {
   return mapOptionalCodeNamedRecord({
     id: row.obverseEngraverId ?? null,
     code: row.obverseEngraverCode ?? null,
@@ -687,7 +687,7 @@ function mapObverseEngraver(row: GetCoinsFaceColumns): CoinEngraver | null {
   })
 }
 
-function mapReverseEngraver(row: GetCoinsFaceColumns): CoinEngraver | null {
+function mapReverseEngraver(row: GetCoinsSurfaceColumns): CoinEngraver | null {
   return mapOptionalCodeNamedRecord({
     id: row.reverseEngraverId ?? null,
     code: row.reverseEngraverCode ?? null,
@@ -828,16 +828,16 @@ function compareCodeNamedRecords(
   )
 }
 
-function sortFaceEngravers(
-  face: CoinFaceDetails | null
-): CoinFaceDetails | null {
-  if (face === null) {
+function sortSurfaceEngravers(
+  surface: CoinSurfaceDetails | null
+): CoinSurfaceDetails | null {
+  if (surface === null) {
     return null
   }
 
   return {
-    ...face,
-    engravers: face.engravers.sort(compareEngravers),
+    ...surface,
+    engravers: surface.engravers.sort(compareEngravers),
   }
 }
 
@@ -850,8 +850,8 @@ function mapCoinEntry({
 }: CoinEntry): CoinRecord {
   return {
     ...coin,
-    obverse: sortFaceEngravers(coin.obverse),
-    reverse: sortFaceEngravers(coin.reverse),
+    obverse: sortSurfaceEngravers(coin.obverse),
+    reverse: sortSurfaceEngravers(coin.reverse),
     mints: mints.sort(compareCodeNamedRecords),
     themes: themes.sort(compareCodeNamedRecords),
     rulers: rulerAttributions
@@ -905,12 +905,12 @@ function mapCoinRecord(row: GetCoinsRow): CoinEntryCoin {
     mintage: row.mintage,
     issueYearRange: mapIssueYearRange(row),
     faceValue: mapFaceValue(row),
-    obverse: mapCoinFaceDetails({
+    obverse: mapCoinSurfaceDetails({
       description: row.obverseDescription,
       lettering: row.obverseLettering,
       engravers: [],
     }),
-    reverse: mapCoinFaceDetails({
+    reverse: mapCoinSurfaceDetails({
       description: row.reverseDescription,
       lettering: row.reverseLettering,
       engravers: [],
@@ -943,10 +943,10 @@ function createCoinEntry(row: GetCoinsRow): CoinEntry {
   }
 }
 
-function getCoinFaceTextColumns(
+function getCoinSurfaceTextColumns(
   row: GetCoinsRow,
-  side: CoinFaceSide
-): Pick<CoinFaceDetails, "description" | "lettering"> {
+  side: CoinSurfaceSide
+): Pick<CoinSurfaceDetails, "description" | "lettering"> {
   if (side === "obverse") {
     return {
       description: row.obverseDescription ?? null,
@@ -962,7 +962,7 @@ function getCoinFaceTextColumns(
 
 function mapFaceEngraver(
   row: GetCoinsRow,
-  side: CoinFaceSide
+  side: CoinSurfaceSide
 ): CoinEngraver | null {
   if (side === "obverse") {
     return mapObverseEngraver(row)
@@ -971,9 +971,9 @@ function mapFaceEngraver(
   return mapReverseEngraver(row)
 }
 
-function getSeenFaceEngraverIds(
+function getSeenSurfaceEngraverIds(
   coinEntry: CoinEntry,
-  side: CoinFaceSide
+  side: CoinSurfaceSide
 ): Set<string> {
   if (side === "obverse") {
     return coinEntry.seenObverseEngraverIds
@@ -982,10 +982,10 @@ function getSeenFaceEngraverIds(
   return coinEntry.seenReverseEngraverIds
 }
 
-function ensureCoinFaceDetails(
+function ensureCoinSurfaceDetails(
   row: GetCoinsRow,
   coinEntry: CoinEntry,
-  side: CoinFaceSide
+  side: CoinSurfaceSide
 ) {
   const existingFace = coinEntry.coin[side]
 
@@ -993,12 +993,12 @@ function ensureCoinFaceDetails(
     return existingFace
   }
 
-  const mappedFace = mapCoinFaceDetails({
-    ...getCoinFaceTextColumns(row, side),
+  const mappedSurface = mapCoinSurfaceDetails({
+    ...getCoinSurfaceTextColumns(row, side),
     engravers: [],
   })
 
-  if (mappedFace === null) {
+  if (mappedSurface === null) {
     coinEntry.coin[side] = {
       description: null,
       lettering: null,
@@ -1008,25 +1008,25 @@ function ensureCoinFaceDetails(
     return coinEntry.coin[side]
   }
 
-  coinEntry.coin[side] = mappedFace
+  coinEntry.coin[side] = mappedSurface
 
-  return mappedFace
+  return mappedSurface
 }
 
-function addFaceEngraver(
+function addSurfaceEngraver(
   row: GetCoinsRow,
   coinEntry: CoinEntry,
-  side: CoinFaceSide
+  side: CoinSurfaceSide
 ) {
   const mappedEngraver = mapFaceEngraver(row, side)
-  const seenEngraverIds = getSeenFaceEngraverIds(coinEntry, side)
+  const seenEngraverIds = getSeenSurfaceEngraverIds(coinEntry, side)
 
   if (!mappedEngraver || seenEngraverIds.has(mappedEngraver.id)) {
     return
   }
 
   seenEngraverIds.add(mappedEngraver.id)
-  ensureCoinFaceDetails(row, coinEntry, side).engravers.push(mappedEngraver)
+  ensureCoinSurfaceDetails(row, coinEntry, side).engravers.push(mappedEngraver)
 }
 
 function addMint(row: GetCoinsRow, coinEntry: CoinEntry) {
@@ -1107,8 +1107,8 @@ export function mapGetCoinsRowsToCoinRecords(
     addTheme(row, coinEntry)
     addRulerAttribution(row, coinEntry)
     addCatalogueReference(row, coinEntry)
-    addFaceEngraver(row, coinEntry, "obverse")
-    addFaceEngraver(row, coinEntry, "reverse")
+    addSurfaceEngraver(row, coinEntry, "obverse")
+    addSurfaceEngraver(row, coinEntry, "reverse")
   }
 
   return [...coinsById.values()].map(mapCoinEntry)

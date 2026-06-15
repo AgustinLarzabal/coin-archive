@@ -4,10 +4,10 @@ import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
 import {
   coinSurfaceKinds,
-  type CoinFaceKind,
+  type EngravableCoinSurfaceKind,
   type CoinSurfaceKind,
 } from "../schema/coin-surface"
-import { coinFaceEngraver } from "../schema/coin-face-engraver"
+import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -176,9 +176,9 @@ type CreateCoinThemeInput = {
   themeId: string
 }
 
-type CreateCoinFaceEngraverInput = {
-  coinFaceId: string
-  coinFaceKind?: CoinFaceKind
+type CreateCoinSurfaceEngraverInput = {
+  coinSurfaceId: string
+  coinSurfaceKind?: EngravableCoinSurfaceKind
   engraverId: string
 }
 
@@ -550,27 +550,29 @@ export async function createCoinTheme({
   return createdCoinTheme
 }
 
-export async function createCoinFaceEngraver({
-  coinFaceId,
-  coinFaceKind,
+export async function createCoinSurfaceEngraver({
+  coinSurfaceId,
+  coinSurfaceKind,
   engraverId,
-}: CreateCoinFaceEngraverInput) {
-  const resolvedCoinFaceKind =
-    coinFaceKind ?? (await getCoinFaceKind(coinFaceId))
+}: CreateCoinSurfaceEngraverInput) {
+  const resolvedCoinSurfaceKind =
+    coinSurfaceKind ?? (await getEngravableCoinSurfaceKind(coinSurfaceId))
 
-  const [createdCoinFaceEngraver] = await db
-    .insert(coinFaceEngraver)
+  const [createdCoinSurfaceEngraver] = await db
+    .insert(coinSurfaceEngraver)
     .values({
-      coinFaceId,
-      coinFaceKind: resolvedCoinFaceKind,
+      coinSurfaceId,
+      coinSurfaceKind: resolvedCoinSurfaceKind,
       engraverId,
     })
     .returning()
 
-  return createdCoinFaceEngraver
+  return createdCoinSurfaceEngraver
 }
 
-async function getCoinFaceKind(coinSurfaceId: string): Promise<CoinFaceKind> {
+async function getEngravableCoinSurfaceKind(
+  coinSurfaceId: string
+): Promise<EngravableCoinSurfaceKind> {
   const [matchedSurface] = await db
     .select({
       kind: coinSurface.kind,
@@ -584,7 +586,7 @@ async function getCoinFaceKind(coinSurfaceId: string): Promise<CoinFaceKind> {
   }
 
   if (matchedSurface.kind === "edge-surface") {
-    throw new Error("Coin face engravers can only target obverse or reverse")
+    throw new Error("Coin surface engravers can only target obverse or reverse")
   }
 
   return matchedSurface.kind

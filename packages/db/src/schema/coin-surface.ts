@@ -10,9 +10,10 @@ import {
 } from "drizzle-orm/pg-core"
 import { coin } from "./coin"
 
-export const coinFaceKinds = ["obverse", "reverse"] as const
-export type CoinFaceKind = (typeof coinFaceKinds)[number]
-export const coinSurfaceKinds = [...coinFaceKinds, "edge-surface"] as const
+export const engraverSurfaceKinds = ["obverse", "reverse"] as const
+export type EngravableCoinSurfaceKind =
+  (typeof engraverSurfaceKinds)[number]
+export const coinSurfaceKinds = [...engraverSurfaceKinds, "edge-surface"] as const
 export type CoinSurfaceKind = (typeof coinSurfaceKinds)[number]
 const coinSurfaceKindsSql = sql.raw(
   `(${coinSurfaceKinds.map((kind) => `'${kind}'`).join(", ")})`

@@ -5,7 +5,7 @@ import { coinSurfaceKinds } from "../schema/coin-surface"
 import {
   createCatalogue,
   createCoin,
-  createCoinFaceEngraver,
+  createCoinSurfaceEngraver,
   createCoinMint,
   createCoinReference,
   createCoinRuler,
@@ -596,20 +596,20 @@ describe("getCoins integration", () => {
       coinId: faceOnlyCoin.id,
       mintId: madridMint.id,
     })
-    await createCoinFaceEngraver({
-      coinFaceId: obverseFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: obverseFace.id,
       engraverId: beta.id,
     })
-    await createCoinFaceEngraver({
-      coinFaceId: obverseFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: obverseFace.id,
       engraverId: alpha.id,
     })
-    await createCoinFaceEngraver({
-      coinFaceId: reverseFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: reverseFace.id,
       engraverId: georgios.id,
     })
-    await createCoinFaceEngraver({
-      coinFaceId: filteredOutFace.id,
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: filteredOutFace.id,
       engraverId: otherEngraver.id,
     })
 

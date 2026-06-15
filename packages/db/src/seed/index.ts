@@ -6,7 +6,7 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
 import type { CoinSurfaceKind } from "../schema/coin-surface"
-import { coinFaceEngraver } from "../schema/coin-face-engraver"
+import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
@@ -28,7 +28,7 @@ import { theme } from "../schema/theme"
 import {
   seededCatalogues,
   seededCoinSurfaces,
-  seededCoinFaceEngravers,
+  seededCoinSurfaceEngravers,
   seededCoinReferences,
   seededCoinMints,
   seededCoinRulers,
@@ -312,28 +312,28 @@ async function seedCoinSurfaces(coinIdsByTitle: CoinIdsByTitle) {
   return coinSurfaceIdsByKey
 }
 
-async function seedCoinFaceEngravers(
+async function seedCoinSurfaceEngravers(
   coinSurfaceIdsByKey: CoinSurfaceIdsByKey,
   engraverIdsByCode: EngraverIdsByCode
 ) {
-  if (seededCoinFaceEngravers.length === 0) {
+  if (seededCoinSurfaceEngravers.length === 0) {
     return
   }
 
-  await db.insert(coinFaceEngraver).values(
-    seededCoinFaceEngravers.map((seededCoinFaceEngraver) => ({
-      coinFaceId: getRequiredSeededId(
+  await db.insert(coinSurfaceEngraver).values(
+    seededCoinSurfaceEngravers.map((seededCoinSurfaceEngraver) => ({
+      coinSurfaceId: getRequiredSeededId(
         coinSurfaceIdsByKey,
         getCoinSurfaceSeedKey(
-          seededCoinFaceEngraver.coinTitle,
-          seededCoinFaceEngraver.coinFaceKind
+          seededCoinSurfaceEngraver.coinTitle,
+          seededCoinSurfaceEngraver.coinSurfaceKind
         ),
         "coin surface"
       ),
-      coinFaceKind: seededCoinFaceEngraver.coinFaceKind,
+      coinSurfaceKind: seededCoinSurfaceEngraver.coinSurfaceKind,
       engraverId: getRequiredSeededId(
         engraverIdsByCode,
-        seededCoinFaceEngraver.engraverCode,
+        seededCoinSurfaceEngraver.engraverCode,
         "engraver"
       ),
     }))
@@ -843,7 +843,7 @@ export async function seedDatabase() {
     techniqueIdsByCode
   )
   const coinSurfaceIdsByKey = await seedCoinSurfaces(coinIdsByTitle)
-  await seedCoinFaceEngravers(coinSurfaceIdsByKey, engraverIdsByCode)
+  await seedCoinSurfaceEngravers(coinSurfaceIdsByKey, engraverIdsByCode)
   await seedCoinMints(coinIdsByTitle, mintIdsByCode)
   await seedCoinReferences(coinIdsByTitle, catalogueIdsByCode)
   await seedCoinRulers(coinIdsByTitle, rulerIdsByCode)

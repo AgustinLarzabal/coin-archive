@@ -17,13 +17,8 @@ export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"
 export { catalogue } from "./schema/catalogue"
 export { coin } from "./schema/coin"
-export {
-  coinSurface,
-  coinFaceKinds,
-  coinSurfaceKinds,
-} from "./schema/coin-surface"
-export { coinFace } from "./schema/coin-face"
-export { coinFaceEngraver } from "./schema/coin-face-engraver"
+export { coinSurface, coinSurfaceKinds } from "./schema/coin-surface"
+export { coinSurfaceEngraver } from "./schema/coin-surface-engraver"
 export { coinMint } from "./schema/coin-mint"
 export { coinTheme } from "./schema/coin-theme"
 export { composition } from "./schema/composition"
@@ -55,7 +50,7 @@ export type {
   CoinEdge,
   CoinEngraver,
   CoinFaceValue,
-  CoinFaceDetails,
+  CoinSurfaceDetails,
   CoinIssueYearRange,
   CoinIssuer,
   CoinRecordMint,
@@ -95,12 +90,11 @@ export type { Shape } from "./schema/shape"
 export type { Technique } from "./schema/technique"
 export type { Coin } from "./schema/coin"
 export type {
-  CoinFaceKind,
+  EngravableCoinSurfaceKind,
   CoinSurface,
   CoinSurfaceKind,
 } from "./schema/coin-surface"
-export type { CoinFace, CoinFaceSide } from "./schema/coin-face"
-export type { CoinFaceEngraver } from "./schema/coin-face-engraver"
+export type { CoinSurfaceEngraver } from "./schema/coin-surface-engraver"
 export type { CoinReference } from "./schema/coin-reference"
 export type { CoinRuler } from "./schema/coin-ruler"
 export type { Distribution } from "./schema/distribution"

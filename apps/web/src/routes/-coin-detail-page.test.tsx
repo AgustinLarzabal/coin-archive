@@ -5,7 +5,7 @@ import { CoinDetailPage } from "./coins.$coinId"
 
 const timestamp = new Date("2026-06-15T00:00:00.000Z")
 
-const coin: CoinDetailRecord = {
+const baseCoin: CoinDetailRecord = {
   id: "coin-1",
   title: "Surface Detail Test Coin",
   issuer: {
@@ -48,9 +48,13 @@ const coin: CoinDetailRecord = {
   },
 }
 
+function renderCoinDetailPageMarkup(coin: CoinDetailRecord | null = baseCoin) {
+  return renderToStaticMarkup(<CoinDetailPage coin={coin} />)
+}
+
 describe("CoinDetailPage", () => {
   it("renders detail content from a CoinDetailRecord without rendering surface imagery", () => {
-    const markup = renderToStaticMarkup(<CoinDetailPage coin={coin} />)
+    const markup = renderCoinDetailPageMarkup()
 
     expect(markup).toContain("Surface Detail Test Coin")
     expect(markup).toContain("Spain")

@@ -27,17 +27,17 @@ export const Route = createFileRoute("/coins/$coinId")({
   component: CoinRoute,
 })
 
+type CoinDetailPageProps = {
+  coin: CoinDetailRecord | null
+}
+
 function CoinRoute() {
   const { coin } = Route.useLoaderData()
 
   return <CoinDetailPage coin={coin} />
 }
 
-export function CoinDetailPage({
-  coin,
-}: {
-  coin: CoinDetailRecord | null
-}) {
+export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   if (coin === null) {
     return (
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6 pt-16">

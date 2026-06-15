@@ -1,4 +1,4 @@
-import { count, eq } from "drizzle-orm"
+import { asc, count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import {
   db,
@@ -14,6 +14,8 @@ import {
 } from "../index"
 import { catalogue } from "../schema/catalogue"
 import { coinReference } from "../schema/coin-reference"
+import { coinSurface } from "../schema/coin-surface"
+import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { seedDatabase } from "./index"
@@ -437,5 +439,40 @@ describe("seed integration", () => {
         name: "Milled",
       },
     })
+  })
+
+  it("seeds the Spain 2 Euro surface image URL combinations", async () => {
+    await seedDatabase()
+
+    const spainSurfaceRows = await db
+      .select({
+        kind: coinSurface.kind,
+        thumbnailUrl: coinSurface.thumbnailUrl,
+        imageUrl: coinSurface.imageUrl,
+      })
+      .from(coinSurface)
+      .innerJoin(coin, eq(coin.id, coinSurface.coinId))
+      .where(eq(coin.title, "Spain 2 Euro"))
+      .orderBy(asc(coinSurface.kind))
+
+    expect(spainSurfaceRows).toEqual([
+      {
+        kind: "edge-surface",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
+        imageUrl: null,
+      },
+      {
+        kind: "obverse",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+      },
+      {
+        kind: "reverse",
+        thumbnailUrl: null,
+        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
+      },
+    ])
   })
 })

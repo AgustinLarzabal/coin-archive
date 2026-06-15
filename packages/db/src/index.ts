@@ -68,7 +68,12 @@ export type {
   CoinListSurfaceDetails,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
-export type { CoinDetail } from "./queries/get-coin"
+export type {
+  CoinDetailEdgeSurface,
+  CoinDetailRecord,
+  CoinDetailSurfaceDetails,
+  CoinDetailSurfaceSet,
+} from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"
 export type { CompositionOption } from "./queries/get-compositions"
 export type { CurrencyOption } from "./queries/get-currencies"

@@ -1,5 +1,6 @@
 export { db } from "./client"
 export { getCatalogues } from "./queries/get-catalogues"
+export { buildGetCoinQuery, getCoin } from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
 export { getCurrencies } from "./queries/get-currencies"
 export { getEdges } from "./queries/get-edges"
@@ -65,6 +66,7 @@ export type {
   CoinThemeRecord,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
+export type { CoinDetail } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"
 export type { CompositionOption } from "./queries/get-compositions"
 export type { CurrencyOption } from "./queries/get-currencies"

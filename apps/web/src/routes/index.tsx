@@ -332,7 +332,7 @@ function App() {
 
       <div className="grid grid-cols-5 gap-6">
         {coins.map((coin) => (
-          <CoinCard coin={coin} />
+          <CoinCard coin={coin} key={coin.id} />
         ))}
       </div>
 

@@ -1788,6 +1788,7 @@ describe("coin face engraver schema constraints", () => {
           .insert(coinFaceEngraver)
           .values({
             coinFaceId: createdFace.id,
+            coinFaceKind: obverseKind,
             engraverId: createdEngraver.id,
           })
           .returning()

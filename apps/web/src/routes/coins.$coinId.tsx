@@ -1,3 +1,4 @@
+import type { CoinDetailRecord } from "@workspace/db"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
@@ -29,6 +30,14 @@ export const Route = createFileRoute("/coins/$coinId")({
 function CoinRoute() {
   const { coin } = Route.useLoaderData()
 
+  return <CoinDetailPage coin={coin} />
+}
+
+export function CoinDetailPage({
+  coin,
+}: {
+  coin: CoinDetailRecord | null
+}) {
   if (coin === null) {
     return (
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6 pt-16">

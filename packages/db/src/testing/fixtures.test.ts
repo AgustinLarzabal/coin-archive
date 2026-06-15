@@ -5,6 +5,11 @@ type CreateCoinInput = Parameters<FixturesModule["createCoin"]>[0]
 type CreateCoinSurfaceInput = Parameters<FixturesModule["createCoinSurface"]>[0]
 type IndexModule = typeof import("../index")
 
+const fixtureSurfaceUrls = {
+  thumbnailUrl: "https://example.com/coins/fixture/obverse-thumbnail",
+  imageUrl: "https://example.com/coins/fixture/obverse-image",
+} as const
+
 describe("testing fixtures", () => {
   it("accepts surface-oriented coin detail input and keeps engraver helpers surface-oriented", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
@@ -38,18 +43,12 @@ describe("testing fixtures", () => {
       surfaces: [
         {
           kind: "obverse" as const,
-          thumbnailUrl: "https://example.com/coins/fixture/obverse-thumbnail",
-          imageUrl: "https://example.com/coins/fixture/obverse-image",
+          ...fixtureSurfaceUrls,
         },
       ],
     } satisfies CreateCoinInput
 
-    expect(createCoinInput.surfaces?.[0]?.thumbnailUrl).toBe(
-      "https://example.com/coins/fixture/obverse-thumbnail"
-    )
-    expect(createCoinInput.surfaces?.[0]?.imageUrl).toBe(
-      "https://example.com/coins/fixture/obverse-image"
-    )
+    expect(createCoinInput.surfaces?.[0]).toMatchObject(fixtureSurfaceUrls)
   })
 })
 

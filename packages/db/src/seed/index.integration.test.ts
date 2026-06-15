@@ -145,6 +145,25 @@ const expectedSeededTechniques = [
   },
 ] as const
 
+const expectedSpain2EuroSurfaceRows = [
+  {
+    kind: "edge-surface",
+    thumbnailUrl:
+      "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
+    imageUrl: null,
+  },
+  {
+    kind: "obverse",
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+    imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+  },
+  {
+    kind: "reverse",
+    thumbnailUrl: null,
+    imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
+  },
+] as const
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -444,7 +463,7 @@ describe("seed integration", () => {
   it("seeds the Spain 2 Euro surface image URL combinations", async () => {
     await seedDatabase()
 
-    const spainSurfaceRows = await db
+    const seededSpain2EuroSurfaceRows = await db
       .select({
         kind: coinSurface.kind,
         thumbnailUrl: coinSurface.thumbnailUrl,
@@ -455,24 +474,6 @@ describe("seed integration", () => {
       .where(eq(coin.title, "Spain 2 Euro"))
       .orderBy(asc(coinSurface.kind))
 
-    expect(spainSurfaceRows).toEqual([
-      {
-        kind: "edge-surface",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
-        imageUrl: null,
-      },
-      {
-        kind: "obverse",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/obverse-thumbnail",
-        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
-      },
-      {
-        kind: "reverse",
-        thumbnailUrl: null,
-        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
-      },
-    ])
+    expect(seededSpain2EuroSurfaceRows).toEqual(expectedSpain2EuroSurfaceRows)
   })
 })

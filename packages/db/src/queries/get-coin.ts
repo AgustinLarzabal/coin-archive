@@ -7,11 +7,7 @@ import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
-import type {
-  CoinEdge,
-  CoinEngraver,
-  CoinIssuer,
-} from "./map-get-coins-row"
+import type { CoinEdge, CoinEngraver, CoinIssuer } from "./map-get-coins-row"
 
 const [obverseSurfaceKind, reverseSurfaceKind, edgeSurfaceKind] =
   coinSurfaceKinds
@@ -96,13 +92,23 @@ type GetCoinRow = {
   edgeImageUrl: string | null
 }
 
-type CoinSurfaceSide = "obverse" | "reverse"
+const coinFaces = ["obverse", "reverse"] as const
+
+type CoinFace = (typeof coinFaces)[number]
 
 type CoinSurfaceRecord = {
   description: string | null
   lettering: string | null
   thumbnailUrl: string | null
   imageUrl: string | null
+}
+
+type CoinFaceEngraverRecord = {
+  id: string | null
+  code: string | null
+  name: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 function mapIssuer(row: GetCoinRow): CoinIssuer {
@@ -137,94 +143,125 @@ function mapEdge(row: GetCoinRow): CoinEdge | null {
   }
 }
 
+function hasSurfaceDetails(surface: CoinSurfaceRecord): boolean {
+  return (
+    surface.description !== null ||
+    surface.lettering !== null ||
+    surface.thumbnailUrl !== null ||
+    surface.imageUrl !== null
+  )
+}
+
 function mapSurfaceRecord(
   surface: CoinSurfaceRecord
 ): CoinDetailEdgeSurface | null {
-  if (
-    surface.description === null &&
-    surface.lettering === null &&
-    surface.thumbnailUrl === null &&
-    surface.imageUrl === null
-  ) {
+  if (!hasSurfaceDetails(surface)) {
     return null
   }
 
   return surface
 }
 
+function getFaceEngraverRecord(
+  row: GetCoinRow,
+  face: CoinFace
+): CoinFaceEngraverRecord {
+  switch (face) {
+    case "obverse":
+      return {
+        id: row.obverseEngraverId,
+        code: row.obverseEngraverCode,
+        name: row.obverseEngraverName,
+        createdAt: row.obverseEngraverCreatedAt,
+        updatedAt: row.obverseEngraverUpdatedAt,
+      }
+    case "reverse":
+      return {
+        id: row.reverseEngraverId,
+        code: row.reverseEngraverCode,
+        name: row.reverseEngraverName,
+        createdAt: row.reverseEngraverCreatedAt,
+        updatedAt: row.reverseEngraverUpdatedAt,
+      }
+  }
+}
+
 function mapSurfaceEngraver(
   row: GetCoinRow,
-  side: CoinSurfaceSide
+  face: CoinFace
 ): CoinEngraver | null {
-  const engraverId =
-    side === "obverse" ? row.obverseEngraverId : row.reverseEngraverId
-  const engraverCode =
-    side === "obverse" ? row.obverseEngraverCode : row.reverseEngraverCode
-  const engraverName =
-    side === "obverse" ? row.obverseEngraverName : row.reverseEngraverName
-  const engraverCreatedAt =
-    side === "obverse"
-      ? row.obverseEngraverCreatedAt
-      : row.reverseEngraverCreatedAt
-  const engraverUpdatedAt =
-    side === "obverse"
-      ? row.obverseEngraverUpdatedAt
-      : row.reverseEngraverUpdatedAt
+  const engraver = getFaceEngraverRecord(row, face)
 
   if (
-    engraverId === null ||
-    engraverCode === null ||
-    engraverName === null ||
-    engraverCreatedAt === null ||
-    engraverUpdatedAt === null
+    engraver.id === null ||
+    engraver.code === null ||
+    engraver.name === null ||
+    engraver.createdAt === null ||
+    engraver.updatedAt === null
   ) {
     return null
   }
 
   return {
-    id: engraverId,
-    code: engraverCode,
-    name: engraverName,
-    createdAt: engraverCreatedAt,
-    updatedAt: engraverUpdatedAt,
+    id: engraver.id,
+    code: engraver.code,
+    name: engraver.name,
+    createdAt: engraver.createdAt,
+    updatedAt: engraver.updatedAt,
   }
 }
 
 function getFaceSurfaceRecord(
   row: GetCoinRow,
-  side: CoinSurfaceSide
+  face: CoinFace
 ): CoinSurfaceRecord {
-  if (side === "obverse") {
-    return {
-      description: row.obverseDescription,
-      lettering: row.obverseLettering,
-      thumbnailUrl: row.obverseThumbnailUrl,
-      imageUrl: row.obverseImageUrl,
-    }
+  switch (face) {
+    case "obverse":
+      return {
+        description: row.obverseDescription,
+        lettering: row.obverseLettering,
+        thumbnailUrl: row.obverseThumbnailUrl,
+        imageUrl: row.obverseImageUrl,
+      }
+    case "reverse":
+      return {
+        description: row.reverseDescription,
+        lettering: row.reverseLettering,
+        thumbnailUrl: row.reverseThumbnailUrl,
+        imageUrl: row.reverseImageUrl,
+      }
   }
+}
 
+function getEdgeSurfaceRecord(row: GetCoinRow): CoinSurfaceRecord {
   return {
-    description: row.reverseDescription,
-    lettering: row.reverseLettering,
-    thumbnailUrl: row.reverseThumbnailUrl,
-    imageUrl: row.reverseImageUrl,
+    description: row.edgeDescription,
+    lettering: row.edgeLettering,
+    thumbnailUrl: row.edgeThumbnailUrl,
+    imageUrl: row.edgeImageUrl,
+  }
+}
+
+function createFaceSurfaceDetails(
+  surface: CoinSurfaceRecord
+): CoinDetailSurfaceDetails {
+  return {
+    ...surface,
+    engravers: [],
   }
 }
 
 function mapFaceSurfaceDetails(
   row: GetCoinRow,
-  side: CoinSurfaceSide
+  face: CoinFace
 ): CoinDetailSurfaceDetails | null {
-  const surface = mapSurfaceRecord(getFaceSurfaceRecord(row, side))
+  const surface = mapSurfaceRecord(getFaceSurfaceRecord(row, face))
 
   if (surface === null) {
     return null
   }
 
-  return {
-    ...surface,
-    engravers: [],
-  }
+  return createFaceSurfaceDetails(surface)
 }
 
 function compareEngravers(left: CoinEngraver, right: CoinEngraver): number {
@@ -238,28 +275,43 @@ function compareEngravers(left: CoinEngraver, right: CoinEngraver): number {
 function ensureFaceSurfaceDetails(
   detail: CoinDetailRecord,
   row: GetCoinRow,
-  side: CoinSurfaceSide
+  face: CoinFace
 ): CoinDetailSurfaceDetails {
-  const existingSurface = detail.surfaces[side]
+  const existingSurface = detail.surfaces[face]
 
   if (existingSurface !== null) {
     return existingSurface
   }
 
-  const mappedSurface = mapFaceSurfaceDetails(row, side)
+  const mappedSurface = mapFaceSurfaceDetails(row, face)
 
   if (mappedSurface !== null) {
-    detail.surfaces[side] = mappedSurface
+    detail.surfaces[face] = mappedSurface
 
     return mappedSurface
   }
 
-  detail.surfaces[side] = {
-    ...getFaceSurfaceRecord(row, side),
-    engravers: [],
+  detail.surfaces[face] = createFaceSurfaceDetails(
+    getFaceSurfaceRecord(row, face)
+  )
+
+  return detail.surfaces[face]
+}
+
+function appendUniqueFaceEngraver(
+  detail: CoinDetailRecord,
+  row: GetCoinRow,
+  face: CoinFace,
+  seenEngraverIds: Set<string>
+): void {
+  const mappedEngraver = mapSurfaceEngraver(row, face)
+
+  if (mappedEngraver === null || seenEngraverIds.has(mappedEngraver.id)) {
+    return
   }
 
-  return detail.surfaces[side]
+  seenEngraverIds.add(mappedEngraver.id)
+  ensureFaceSurfaceDetails(detail, row, face).engravers.push(mappedEngraver)
 }
 
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
@@ -277,49 +329,22 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     surfaces: {
       obverse: mapFaceSurfaceDetails(firstRow, "obverse"),
       reverse: mapFaceSurfaceDetails(firstRow, "reverse"),
-      edge: mapSurfaceRecord({
-        description: firstRow.edgeDescription,
-        lettering: firstRow.edgeLettering,
-        thumbnailUrl: firstRow.edgeThumbnailUrl,
-        imageUrl: firstRow.edgeImageUrl,
-      }),
+      edge: mapSurfaceRecord(getEdgeSurfaceRecord(firstRow)),
     },
   }
-  const seenObverseEngraverIds = new Set<string>()
-  const seenReverseEngraverIds = new Set<string>()
+  const seenEngraverIdsByFace: Record<CoinFace, Set<string>> = {
+    obverse: new Set<string>(),
+    reverse: new Set<string>(),
+  }
 
   for (const row of rows) {
-    const mappedObverseEngraver = mapSurfaceEngraver(row, "obverse")
-
-    if (
-      mappedObverseEngraver !== null &&
-      !seenObverseEngraverIds.has(mappedObverseEngraver.id)
-    ) {
-      seenObverseEngraverIds.add(mappedObverseEngraver.id)
-      ensureFaceSurfaceDetails(detail, row, "obverse").engravers.push(
-        mappedObverseEngraver
-      )
-    }
-
-    const mappedReverseEngraver = mapSurfaceEngraver(row, "reverse")
-
-    if (
-      mappedReverseEngraver !== null &&
-      !seenReverseEngraverIds.has(mappedReverseEngraver.id)
-    ) {
-      seenReverseEngraverIds.add(mappedReverseEngraver.id)
-      ensureFaceSurfaceDetails(detail, row, "reverse").engravers.push(
-        mappedReverseEngraver
-      )
+    for (const face of coinFaces) {
+      appendUniqueFaceEngraver(detail, row, face, seenEngraverIdsByFace[face])
     }
   }
 
-  if (detail.surfaces.obverse !== null) {
-    detail.surfaces.obverse.engravers.sort(compareEngravers)
-  }
-
-  if (detail.surfaces.reverse !== null) {
-    detail.surfaces.reverse.engravers.sort(compareEngravers)
+  for (const face of coinFaces) {
+    detail.surfaces[face]?.engravers.sort(compareEngravers)
   }
 
   return detail
@@ -421,7 +446,9 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     )
 }
 
-export async function getCoin(coinId: string): Promise<CoinDetailRecord | null> {
+export async function getCoin(
+  coinId: string
+): Promise<CoinDetailRecord | null> {
   const rows = await buildGetCoinQuery(db, coinId)
 
   return mapCoinDetail(rows)

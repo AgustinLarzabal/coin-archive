@@ -8,6 +8,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
+import type { AnyPgColumn } from "drizzle-orm/pg-core"
 import { coin } from "./coin"
 
 export const engraverSurfaceKinds = ["obverse", "reverse"] as const
@@ -20,16 +21,22 @@ const coinSurfaceKindsSql = sql.raw(
 )
 
 export const coinSurfaceSchemaNames = {
+  imageUrlWebUrlCheck: "coin_surface_image_url_web_url_check",
   coinIdIndex: "coin_surface_coin_id_idx",
   idKindUniqueIndex: "coin_surface_id_kind_unique_idx",
   kindCheck: "coin_surface_kind_check",
   kindUniqueIndex: "coin_surface_coin_id_kind_unique_idx",
+  thumbnailUrlWebUrlCheck: "coin_surface_thumbnail_url_web_url_check",
 } as const
 
 const timestamptzDateColumn = {
   withTimezone: true,
   mode: "date",
 } as const
+
+function absoluteWebUrlCheck(column: AnyPgColumn) {
+  return sql`${column} is null or ${column} ~* '^https?://\\S+$'`
+}
 
 export const coinSurface = pgTable(
   "coin_surface",
@@ -45,6 +52,8 @@ export const coinSurface = pgTable(
     kind: varchar("kind", { length: 16 }).$type<CoinSurfaceKind>().notNull(),
     description: varchar("description", { length: 2000 }),
     lettering: varchar("lettering", { length: 4000 }),
+    thumbnailUrl: varchar("thumbnail_url", { length: 2048 }),
+    imageUrl: varchar("image_url", { length: 2048 }),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -65,6 +74,14 @@ export const coinSurface = pgTable(
     check(
       coinSurfaceSchemaNames.kindCheck,
       sql`${coinSurface.kind} in ${coinSurfaceKindsSql}`
+    ),
+    check(
+      coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
+      absoluteWebUrlCheck(coinSurface.thumbnailUrl)
+    ),
+    check(
+      coinSurfaceSchemaNames.imageUrlWebUrlCheck,
+      absoluteWebUrlCheck(coinSurface.imageUrl)
     ),
   ]
 )

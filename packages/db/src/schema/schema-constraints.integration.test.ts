@@ -1460,6 +1460,20 @@ describe("distribution schema constraints", () => {
 describe("coin surface schema constraints", () => {
   useTestDatabaseIsolation(db)
 
+  async function createSurfaceConstraintCoin(title: string) {
+    const { compositionId, currencyId, distributionId, issuerId } =
+      await createCoinDependencies()
+
+    return createCoin({
+      title,
+      compositionId,
+      currencyId,
+      distributionId,
+      issuerId,
+      createdAt: new Date("2026-06-01T12:00:00.000Z"),
+    })
+  }
+
   it("allows at most one recorded Coin Surface per surface kind on a coin", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
@@ -1558,6 +1572,104 @@ describe("coin surface schema constraints", () => {
         .where(eq(coinSurface.coinId, createdCoin.id)),
       0
     )
+  })
+
+  it("allows nullable surface image URLs and accepts absolute http and https URLs without requiring image-like extensions", async () => {
+    const nullUrlCoin = await createSurfaceConstraintCoin(
+      "Nullable Surface Image URL Coin"
+    )
+    const webUrlCoin = await createSurfaceConstraintCoin(
+      "Valid Surface Image URL Coin"
+    )
+
+    const [nullableSurface] = await Promise.all([
+      createCoinSurface({
+        coinId: nullUrlCoin.id,
+        kind: obverseKind,
+      }),
+      createCoinSurface({
+        coinId: webUrlCoin.id,
+        kind: reverseKind,
+        thumbnailUrl: "HTTP://example.com/coin-surfaces/reverse-thumb",
+        imageUrl:
+          "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
+      }),
+    ])
+
+    const [matchedNullableSurface, matchedWebUrlSurface] = await db
+      .select({
+        coinId: coinSurface.coinId,
+        thumbnailUrl: coinSurface.thumbnailUrl,
+        imageUrl: coinSurface.imageUrl,
+      })
+      .from(coinSurface)
+      .where(
+        sql`${coinSurface.coinId} in (${nullUrlCoin.id}, ${webUrlCoin.id})`
+      )
+      .orderBy(asc(coinSurface.coinId))
+
+    expect(nullableSurface.thumbnailUrl).toBeNull()
+    expect(nullableSurface.imageUrl).toBeNull()
+    expect(matchedNullableSurface).toEqual({
+      coinId: nullUrlCoin.id,
+      thumbnailUrl: null,
+      imageUrl: null,
+    })
+    expect(matchedWebUrlSurface).toEqual({
+      coinId: webUrlCoin.id,
+      thumbnailUrl: "HTTP://example.com/coin-surfaces/reverse-thumb",
+      imageUrl: "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
+    })
+  })
+
+  it("rejects invalid surface thumbnail URLs", async () => {
+    for (const [index, thumbnailUrl] of [
+      "",
+      "   ",
+      " https://example.com/trim-me",
+      "https://example.com/trim-me ",
+      "ftp://example.com/file",
+      "data:image/png;base64,AAAA",
+    ].entries()) {
+      const createdCoin = await createSurfaceConstraintCoin(
+        `Invalid Thumbnail URL Coin ${index}`
+      )
+
+      await expectConstraintError(
+        db.insert(coinSurface).values({
+          coinId: createdCoin.id,
+          kind: obverseKind,
+          thumbnailUrl,
+        }),
+        coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
+        "23514"
+      )
+    }
+  })
+
+  it("rejects invalid surface image URLs", async () => {
+    for (const [index, imageUrl] of [
+      "",
+      "   ",
+      " https://example.com/trim-me",
+      "https://example.com/trim-me ",
+      "file:///tmp/coin.png",
+      "mailto:archive@example.com",
+    ].entries()) {
+      const createdCoin = await createSurfaceConstraintCoin(
+        `Invalid Image URL Coin ${index}`
+      )
+
+      await expectConstraintError(
+        db.insert(coinSurface).values({
+          coinId: createdCoin.id,
+          kind: reverseKind,
+          imageUrl,
+        }),
+        coinSurfaceSchemaNames.imageUrlWebUrlCheck,
+        "23514"
+      )
+    }
   })
 })
 

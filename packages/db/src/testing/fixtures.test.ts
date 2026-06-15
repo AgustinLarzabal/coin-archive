@@ -10,6 +10,12 @@ describe("testing fixtures", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
       surfaces?: Array<Omit<CreateCoinSurfaceInput, "coinId">>
     }>()
+    expectTypeOf<CreateCoinSurfaceInput["thumbnailUrl"]>().toEqualTypeOf<
+      string | null | undefined
+    >()
+    expectTypeOf<CreateCoinSurfaceInput["imageUrl"]>().toEqualTypeOf<
+      string | null | undefined
+    >()
 
     expectTypeOf<FixturesModule["createCoinSurface"]>().toBeFunction()
     expectTypeOf<FixturesModule["createCoinSurfaceEngraver"]>().toBeFunction()

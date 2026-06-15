@@ -28,6 +28,7 @@ import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { db } from "../index"
 import { normalizeCoinComments } from "../normalize-coin-comments"
+import { normalizeOptionalUrl } from "../normalize-optional-url"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
@@ -141,6 +142,8 @@ export async function createCoin({
       kind: surface.kind,
       description: surface.description,
       lettering: surface.lettering,
+      thumbnailUrl: surface.thumbnailUrl,
+      imageUrl: surface.imageUrl,
     })
   }
 
@@ -169,6 +172,8 @@ type CreateCoinSurfaceInput = {
   kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
+  thumbnailUrl?: string | null
+  imageUrl?: string | null
 }
 
 type CreateCoinThemeInput = {
@@ -521,6 +526,8 @@ export async function createCoinSurface({
   kind,
   description,
   lettering,
+  thumbnailUrl,
+  imageUrl,
 }: CreateCoinSurfaceInput) {
   const [createdCoinSurface] = await db
     .insert(coinSurface)
@@ -529,6 +536,8 @@ export async function createCoinSurface({
       kind,
       description,
       lettering,
+      thumbnailUrl: normalizeOptionalUrl(thumbnailUrl),
+      imageUrl: normalizeOptionalUrl(imageUrl),
     })
     .returning()
 

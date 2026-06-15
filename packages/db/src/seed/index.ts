@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url"
 import { eq, inArray, sql } from "drizzle-orm"
 import { closeDb, db } from "../client"
 import { normalizeCoinComments } from "../normalize-coin-comments"
+import { normalizeOptionalUrl } from "../normalize-optional-url"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
@@ -280,6 +281,8 @@ async function seedCoinSurfaces(coinIdsByTitle: CoinIdsByTitle) {
         kind: seededCoinSurface.kind,
         description: seededCoinSurface.description,
         lettering: seededCoinSurface.lettering,
+        thumbnailUrl: normalizeOptionalUrl(seededCoinSurface.thumbnailUrl),
+        imageUrl: normalizeOptionalUrl(seededCoinSurface.imageUrl),
       }))
     )
     .returning({

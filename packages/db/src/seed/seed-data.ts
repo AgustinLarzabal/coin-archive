@@ -7,6 +7,8 @@ export type SeededCoinSurfaceDetails = {
   kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
+  thumbnailUrl?: string | null
+  imageUrl?: string | null
 }
 
 type SeededIssuer = {
@@ -409,16 +411,21 @@ export const seededCoins: SeededCoin[] = [
         kind: "obverse",
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
+        thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
       },
       {
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
+        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
       },
       {
         kind: "edge-surface",
         description: "Finely reeded with incuse lettering.",
         lettering: "2 **",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
       },
     ],
     createdAt: new Date("2026-01-11T00:00:00.000Z"),

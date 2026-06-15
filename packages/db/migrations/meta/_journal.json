@@ -57,6 +57,13 @@
       "when": 1781465000000,
       "tag": "0007_face_only_engraver",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781516521965,
+      "tag": "0008_rich_sentry",
+      "breakpoints": true
     }
   ]
 }

@@ -13,6 +13,12 @@ describe("SeededCoin", () => {
     expectTypeOf<SeededCoin["surfaces"]>().toEqualTypeOf<
       SeededCoinSurfaceDetails[] | undefined
     >()
+    expectTypeOf<SeededCoinSurfaceDetails["thumbnailUrl"]>().toEqualTypeOf<
+      string | null | undefined
+    >()
+    expectTypeOf<SeededCoinSurfaceDetails["imageUrl"]>().toEqualTypeOf<
+      string | null | undefined
+    >()
 
     expect(
       seededCoins.find(({ title }) => title === "Spain 2 Euro")?.surfaces
@@ -21,16 +27,22 @@ describe("SeededCoin", () => {
         kind: "obverse",
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
       },
       {
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
+        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
       },
       {
         kind: "edge-surface",
         description: "Finely reeded with incuse lettering.",
         lettering: "2 **",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
       },
     ])
   })

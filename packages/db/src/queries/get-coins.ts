@@ -30,7 +30,7 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 const defaultGetCoinsLimit = 10
 const [obverseSurfaceKind, reverseSurfaceKind, edgeSurfaceKind] =
   coinSurfaceKinds
-const faceSurfaceKindsSql = sql.join(
+const engravableSurfaceKindsSql = sql.join(
   [sql`${obverseSurfaceKind}`, sql`${reverseSurfaceKind}`],
   sql`, `
 )
@@ -45,16 +45,16 @@ export type DemonetizationFilterValue =
 
 const parentIssuer = alias(issuer, "parent_issuer")
 const edgeSurface = alias(coinSurface, "edge_surface")
-const obverseSurface = alias(coinSurface, "obverse_face")
+const obverseSurface = alias(coinSurface, "obverse_surface")
 const obverseSurfaceEngraver = alias(
   coinSurfaceEngraver,
-  "obverse_face_engraver"
+  "obverse_surface_engraver"
 )
 const obverseEngraver = alias(engraver, "obverse_engraver")
-const reverseSurface = alias(coinSurface, "reverse_face")
+const reverseSurface = alias(coinSurface, "reverse_surface")
 const reverseSurfaceEngraver = alias(
   coinSurfaceEngraver,
-  "reverse_face_engraver"
+  "reverse_surface_engraver"
 )
 const reverseEngraver = alias(engraver, "reverse_engraver")
 const getCoinsSelection = {
@@ -553,7 +553,9 @@ function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
   })
 }
 
-function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined {
+function buildEngraverFilter(
+  engraverCode: string | undefined
+): SQL | undefined {
   const normalizedEngraverCode = normalizeCodeFilter(engraverCode)
 
   if (normalizedEngraverCode === undefined) {
@@ -570,7 +572,7 @@ function buildEngraverFilter(engraverCode: string | undefined): SQL | undefined 
       inner join "engraver"
         on ${coinSurfaceEngraver.engraverId} = ${engraver.id}
       where lower(${engraver.code}) = ${normalizedEngraverCode}
-        and ${coinSurface.kind} in (${faceSurfaceKindsSql})
+        and ${coinSurface.kind} in (${engravableSurfaceKindsSql})
     )
   `
 }

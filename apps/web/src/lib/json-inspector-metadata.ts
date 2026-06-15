@@ -61,7 +61,7 @@ export const jsonInspectorMetadata: Record<
       "The /json page shows at most 1000 coin records, even if more rows match the filters.",
       "Deleting an issuer, distribution, composition, currency, or other referenced lookup row is restricted while any coin still points at it.",
       "Coin Surface rows are limited to one obverse, one reverse, and one edge-surface per coin.",
-      "Coin Surface image URLs must be absolute http:// or https:// web URLs when present.",
+      "Coin Surface thumbnail and image URLs must be absolute http:// or https:// web URLs when present.",
       "Edge remains a coin-level controlled classification, while Rim remains coin-level.",
       "Engraver Attribution remains face-specific, so only obverse and reverse Coin Surface rows may carry engraver links.",
       "Ruler ordering is per coin, must be unique per position, and must be greater than zero.",

@@ -52,7 +52,11 @@ import {
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { catalogueSchemaNames } from "./catalogue"
-import { coinSurfaceKinds, coinSurfaceSchemaNames } from "./coin-surface"
+import {
+  coinSurfaceKinds,
+  coinSurfaceSchemaNames,
+  type CoinSurfaceKind,
+} from "./coin-surface"
 import { coinSurfaceEngraverSchemaNames } from "./coin-surface-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
@@ -99,27 +103,31 @@ async function expectCountQueryResult(
 }
 
 async function createCoinDependencies() {
-  const [createdIssuer, createdDistribution, createdComposition, createdCurrency] =
-    await Promise.all([
-      createIssuer({
-        code: "athens",
-        name: "Athens",
-      }),
-      createDistribution({
-        code: "standard-circulation",
-        name: "Standard circulation",
-      }),
-      createComposition({
-        code: "silver-900",
-        description: "Ninety percent silver alloy.",
-        name: "Silver (.900)",
-      }),
-      createCurrency({
-        code: "euro",
-        fullName: "Euro (2002-date)",
-        name: "Euro",
-      }),
-    ])
+  const [
+    createdIssuer,
+    createdDistribution,
+    createdComposition,
+    createdCurrency,
+  ] = await Promise.all([
+    createIssuer({
+      code: "athens",
+      name: "Athens",
+    }),
+    createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    }),
+    createComposition({
+      code: "silver-900",
+      description: "Ninety percent silver alloy.",
+      name: "Silver (.900)",
+    }),
+    createCurrency({
+      code: "euro",
+      fullName: "Euro (2002-date)",
+      name: "Euro",
+    }),
+  ])
 
   return {
     compositionId: createdComposition.id,
@@ -590,7 +598,9 @@ describe("orientation schema constraints", () => {
     })
 
     await expectConstraintError(
-      db.delete(orientation).where(sql`${orientation.id} = ${createdOrientation.id}`),
+      db
+        .delete(orientation)
+        .where(sql`${orientation.id} = ${createdOrientation.id}`),
       "coin_orientation_id_orientation_id_fk",
       "23001"
     )
@@ -1460,6 +1470,13 @@ describe("distribution schema constraints", () => {
 describe("coin surface schema constraints", () => {
   useTestDatabaseIsolation(db)
 
+  const invalidSurfaceWebUrls = [
+    "",
+    "   ",
+    " https://example.com/trim-me",
+    "https://example.com/trim-me ",
+  ] as const
+
   async function createSurfaceConstraintCoin(title: string) {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
@@ -1472,6 +1489,38 @@ describe("coin surface schema constraints", () => {
       issuerId,
       createdAt: new Date("2026-06-01T12:00:00.000Z"),
     })
+  }
+
+  async function expectInvalidSurfaceUrlConstraintErrors({
+    invalidUrls,
+    createValues,
+    constraintName,
+    titlePrefix,
+  }: {
+    invalidUrls: readonly string[]
+    createValues: (
+      coinId: string,
+      invalidUrl: string
+    ) => {
+      coinId: string
+      kind: CoinSurfaceKind
+      thumbnailUrl?: string
+      imageUrl?: string
+    }
+    constraintName: string
+    titlePrefix: string
+  }) {
+    for (const [index, invalidUrl] of invalidUrls.entries()) {
+      const createdCoin = await createSurfaceConstraintCoin(
+        `${titlePrefix} ${index}`
+      )
+
+      await expectConstraintError(
+        db.insert(coinSurface).values(createValues(createdCoin.id, invalidUrl)),
+        constraintName,
+        "23514"
+      )
+    }
   }
 
   it("allows at most one recorded Coin Surface per surface kind on a coin", async () => {
@@ -1574,7 +1623,7 @@ describe("coin surface schema constraints", () => {
     )
   })
 
-  it("allows nullable surface image URLs and accepts absolute http and https URLs without requiring image-like extensions", async () => {
+  it("allows nullable surface URLs and accepts absolute http and https URLs without requiring image-like extensions", async () => {
     const nullUrlCoin = await createSurfaceConstraintCoin(
       "Nullable Surface Image URL Coin"
     )
@@ -1618,58 +1667,43 @@ describe("coin surface schema constraints", () => {
     expect(matchedWebUrlSurface).toEqual({
       coinId: webUrlCoin.id,
       thumbnailUrl: "HTTP://example.com/coin-surfaces/reverse-thumb",
-      imageUrl: "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
+      imageUrl:
+        "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
     })
   })
 
   it("rejects invalid surface thumbnail URLs", async () => {
-    for (const [index, thumbnailUrl] of [
-      "",
-      "   ",
-      " https://example.com/trim-me",
-      "https://example.com/trim-me ",
-      "ftp://example.com/file",
-      "data:image/png;base64,AAAA",
-    ].entries()) {
-      const createdCoin = await createSurfaceConstraintCoin(
-        `Invalid Thumbnail URL Coin ${index}`
-      )
-
-      await expectConstraintError(
-        db.insert(coinSurface).values({
-          coinId: createdCoin.id,
-          kind: obverseKind,
-          thumbnailUrl,
-        }),
-        coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
-        "23514"
-      )
-    }
+    await expectInvalidSurfaceUrlConstraintErrors({
+      invalidUrls: [
+        ...invalidSurfaceWebUrls,
+        "ftp://example.com/file",
+        "data:image/png;base64,AAAA",
+      ],
+      createValues: (coinId, thumbnailUrl) => ({
+        coinId,
+        kind: obverseKind,
+        thumbnailUrl,
+      }),
+      constraintName: coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
+      titlePrefix: "Invalid Thumbnail URL Coin",
+    })
   })
 
   it("rejects invalid surface image URLs", async () => {
-    for (const [index, imageUrl] of [
-      "",
-      "   ",
-      " https://example.com/trim-me",
-      "https://example.com/trim-me ",
-      "file:///tmp/coin.png",
-      "mailto:archive@example.com",
-    ].entries()) {
-      const createdCoin = await createSurfaceConstraintCoin(
-        `Invalid Image URL Coin ${index}`
-      )
-
-      await expectConstraintError(
-        db.insert(coinSurface).values({
-          coinId: createdCoin.id,
-          kind: reverseKind,
-          imageUrl,
-        }),
-        coinSurfaceSchemaNames.imageUrlWebUrlCheck,
-        "23514"
-      )
-    }
+    await expectInvalidSurfaceUrlConstraintErrors({
+      invalidUrls: [
+        ...invalidSurfaceWebUrls,
+        "file:///tmp/coin.png",
+        "mailto:archive@example.com",
+      ],
+      createValues: (coinId, imageUrl) => ({
+        coinId,
+        kind: reverseKind,
+        imageUrl,
+      }),
+      constraintName: coinSurfaceSchemaNames.imageUrlWebUrlCheck,
+      titlePrefix: "Invalid Image URL Coin",
+    })
   })
 })
 
@@ -2048,7 +2082,6 @@ describe("ruler schema constraints", () => {
       })
     ).resolves.toBeDefined()
   })
-
 })
 
 describe("coin ruler schema constraints", () => {

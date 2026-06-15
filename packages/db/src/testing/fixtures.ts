@@ -27,8 +27,8 @@ import { shape } from "../schema/shape"
 import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { db } from "../index"
+import { normalizeCoinSurfaceUrls } from "../normalize-coin-surface-urls"
 import { normalizeCoinComments } from "../normalize-coin-comments"
-import { normalizeOptionalUrl } from "../normalize-optional-url"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
 import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-currency"
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
@@ -96,8 +96,7 @@ export async function createCoin({
     distributionId ?? (await getDefaultDistribution(db)).id
   const resolvedCompositionId =
     compositionId ?? (await getDefaultComposition(db)).id
-  const resolvedCurrencyId =
-    currencyId ?? (await getDefaultCurrency(db)).id
+  const resolvedCurrencyId = currencyId ?? (await getDefaultCurrency(db)).id
   const resolvedSurfaces = [...(surfaces ?? [])]
 
   if (edgeDescription !== undefined || edgeLettering !== undefined) {
@@ -536,8 +535,10 @@ export async function createCoinSurface({
       kind,
       description,
       lettering,
-      thumbnailUrl: normalizeOptionalUrl(thumbnailUrl),
-      imageUrl: normalizeOptionalUrl(imageUrl),
+      ...normalizeCoinSurfaceUrls({
+        thumbnailUrl,
+        imageUrl,
+      }),
     })
     .returning()
 
@@ -591,7 +592,9 @@ async function getEngravableCoinSurfaceKind(
     .limit(1)
 
   if (!matchedSurface) {
-    throw new Error(`Missing coin surface ${coinSurfaceId} for engraver fixture`)
+    throw new Error(
+      `Missing coin surface ${coinSurfaceId} for engraver fixture`
+    )
   }
 
   if (matchedSurface.kind === "edge-surface") {

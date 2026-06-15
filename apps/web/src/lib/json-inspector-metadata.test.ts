@@ -8,7 +8,7 @@ const coinsRequirements = [
 
 const coinsLimitations = [
   "Coin Surface rows are limited to one obverse, one reverse, and one edge-surface per coin.",
-  "Coin Surface image URLs must be absolute http:// or https:// web URLs when present.",
+  "Coin Surface thumbnail and image URLs must be absolute http:// or https:// web URLs when present.",
   "Engraver Attribution remains face-specific, so only obverse and reverse Coin Surface rows may carry engraver links.",
 ] as const
 

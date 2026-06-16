@@ -13,6 +13,7 @@ export { getTechniques } from "./queries/get-techniques"
 export { getThemes } from "./queries/get-themes"
 export { demonetizationFilterValues } from "./queries/get-coins"
 export { buildGetCoinsQuery, getCoins } from "./queries/get-coins"
+export { getFullCoin } from "./queries/get-full-coin"
 export { getDistributions } from "./queries/get-distributions"
 export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"
@@ -68,12 +69,7 @@ export type {
   CoinListSurfaceDetails,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
-export type {
-  CoinDetailEdgeSurface,
-  CoinDetailRecord,
-  CoinDetailSurfaceDetails,
-  CoinDetailSurfaceSet,
-} from "./queries/get-coin"
+export type { CoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"
 export type { CompositionOption } from "./queries/get-compositions"
 export type { CurrencyOption } from "./queries/get-currencies"

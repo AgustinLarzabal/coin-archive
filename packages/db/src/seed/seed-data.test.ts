@@ -9,6 +9,15 @@ describe("SeededCoin", () => {
     >()
   })
 
+  it("accepts nullable demonetization and mintage fields in seed input", () => {
+    expectTypeOf<SeededCoin["isDemonetized"]>().toEqualTypeOf<
+      boolean | null | undefined
+    >()
+    expectTypeOf<SeededCoin["mintage"]>().toEqualTypeOf<
+      number | null | undefined
+    >()
+  })
+
   it("defines coin surface seed rows directly", () => {
     expectTypeOf<SeededCoinSurfaceDetails["thumbnailUrl"]>().toEqualTypeOf<
       string | null | undefined
@@ -34,6 +43,7 @@ describe("SeededCoin", () => {
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
+        thumbnailUrl: "https://example.com/coins/spain-2-euro/reverse-thumbnail",
         imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
       },
       {
@@ -43,6 +53,7 @@ describe("SeededCoin", () => {
         lettering: "2 **",
         thumbnailUrl:
           "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
+        imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
       },
     ])
   })

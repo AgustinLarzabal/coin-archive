@@ -150,7 +150,7 @@ const expectedSpain2EuroSurfaceRows = [
     kind: "edge-surface",
     thumbnailUrl:
       "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
-    imageUrl: null,
+    imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
   },
   {
     kind: "obverse",
@@ -159,7 +159,7 @@ const expectedSpain2EuroSurfaceRows = [
   },
   {
     kind: "reverse",
-    thumbnailUrl: null,
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/reverse-thumbnail",
     imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
   },
 ] as const
@@ -336,6 +336,8 @@ describe("seed integration", () => {
       title: "Spain 2 Euro",
       comments:
         "Common circulating commemorative format with a national obverse and shared euro reverse.",
+      isDemonetized: false,
+      mintage: 50000000,
       edge: {
         code: "lettered",
         name: "Lettered",

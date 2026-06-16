@@ -165,6 +165,8 @@ export type SeededCoin = {
   faceValueNumericValue: number
   faceValueText: string
   issuerCode: string
+  isDemonetized?: boolean | null
+  mintage?: number | null
   orientationCode?: string
   rimCode?: string
   shapeCode?: string
@@ -557,6 +559,7 @@ export const seededCoinSurfaces: SeededCoinSurface[] = [
     kind: "reverse",
     description: "Map of Europe with denomination.",
     lettering: "2 EURO",
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/reverse-thumbnail",
     imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
   },
   {
@@ -566,6 +569,7 @@ export const seededCoinSurfaces: SeededCoinSurface[] = [
     lettering: "2 **",
     thumbnailUrl:
       "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
+    imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
   },
 ]
 
@@ -794,6 +798,8 @@ export const seededCoins: SeededCoin[] = [
     faceValueNumericValue: 2,
     faceValueText: "2 Euros",
     issuerCode: "spain",
+    isDemonetized: false,
+    mintage: 50000000,
     orientationCode: "medal-alignment",
     techniqueCode: "milled",
     shapeCode: "round",

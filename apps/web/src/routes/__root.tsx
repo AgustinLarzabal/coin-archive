@@ -1,28 +1,27 @@
 import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
+import {
+  getCatalogues,
+  getCompositions,
+  getCurrencies,
+  getDistributions,
+  getEdges,
+  getEngravers,
+  getIssuers,
+  getMints,
+  getOrientations,
+  getRims,
+  getRulers,
+  getShapes,
+  getTechniques,
+  getThemes,
+} from "@workspace/db"
 
 import appCss from "@workspace/ui/globals.css?url"
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {
-    const {
-      getCatalogues,
-      getCompositions,
-      getCurrencies,
-      getDistributions,
-      getEdges,
-      getEngravers,
-      getIssuers,
-      getMints,
-      getOrientations,
-      getRims,
-      getRulers,
-      getShapes,
-      getTechniques,
-      getThemes,
-    } = await import("@workspace/db")
-
     const [
       catalogues,
       compositions,

@@ -1,5 +1,6 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
+import { getCoins } from "@workspace/db"
 import {
   applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
@@ -16,11 +17,7 @@ import { CoinCard } from "@/components/coin-card"
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
-  .handler(async ({ data }) => {
-    const { getCoins } = await import("@workspace/db")
-
-    return { coins: await getCoins(data) }
-  })
+  .handler(async ({ data }) => ({ coins: await getCoins(data) }))
 
 const rootRouteApi = getRouteApi("__root__")
 

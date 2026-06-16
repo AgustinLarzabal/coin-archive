@@ -1,5 +1,6 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
+import { getCoins } from "@workspace/db"
 import {
   Tabs,
   TabsContent,
@@ -21,8 +22,6 @@ const coinJsonLimit = 1_000
 const getJsonQueryData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => {
-    const { getCoins } = await import("@workspace/db")
-
     const coins = await getCoins({
       limit: coinJsonLimit + 1,
       ...data,

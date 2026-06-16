@@ -339,8 +339,6 @@ describe("seed integration", () => {
       edge: {
         code: "lettered",
         name: "Lettered",
-        description: "Finely reeded with incuse lettering.",
-        lettering: "2 **",
       },
       mints: [
         {
@@ -392,7 +390,7 @@ describe("seed integration", () => {
           ],
         },
         edge: {
-          description: null,
+          description: "Finely reeded with incuse lettering.",
           lettering: "2 **",
         },
       },

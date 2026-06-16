@@ -8,11 +8,8 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
-import {
-  coinSurface,
-  engraverSurfaceKinds,
-  type EngravableCoinSurfaceKind,
-} from "./coin-surface"
+import { coinSurface, engraverSurfaceKinds } from "./coin-surface"
+import type { EngravableCoinSurfaceKind } from "./coin-surface"
 import { engraver } from "./engraver"
 
 export const coinSurfaceEngraverSchemaNames = {
@@ -30,9 +27,7 @@ const engraverSurfaceKindsSql = sql.raw(
 export const coinSurfaceEngraver = pgTable(
   "coin_face_engraver",
   {
-    coinSurfaceId: uuid("coin_face_id")
-      .notNull()
-      .$type<string>(),
+    coinSurfaceId: uuid("coin_face_id").notNull().$type<string>(),
     coinSurfaceKind: varchar("coin_face_kind", { length: 16 })
       .$type<EngravableCoinSurfaceKind>()
       .notNull(),

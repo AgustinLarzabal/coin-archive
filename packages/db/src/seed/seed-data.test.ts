@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
-import { seededCoins, seededIssuers } from "./seed-data"
+import { seededCoinSurfaces, seededIssuers } from "./seed-data"
 
 describe("SeededCoin", () => {
   it("accepts nullable comments in seed input", () => {
@@ -9,10 +9,7 @@ describe("SeededCoin", () => {
     >()
   })
 
-  it("can express obverse, reverse, and edge surface details directly on a seeded coin", () => {
-    expectTypeOf<SeededCoin["surfaces"]>().toEqualTypeOf<
-      SeededCoinSurfaceDetails[] | undefined
-    >()
+  it("defines coin surface seed rows directly", () => {
     expectTypeOf<SeededCoinSurfaceDetails["thumbnailUrl"]>().toEqualTypeOf<
       string | null | undefined
     >()
@@ -21,9 +18,10 @@ describe("SeededCoin", () => {
     >()
 
     expect(
-      seededCoins.find(({ title }) => title === "Spain 2 Euro")?.surfaces
+      seededCoinSurfaces.filter(({ coinTitle }) => coinTitle === "Spain 2 Euro")
     ).toEqual([
       {
+        coinTitle: "Spain 2 Euro",
         kind: "obverse",
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
@@ -32,12 +30,14 @@ describe("SeededCoin", () => {
         imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
       },
       {
+        coinTitle: "Spain 2 Euro",
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
         imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
       },
       {
+        coinTitle: "Spain 2 Euro",
         kind: "edge-surface",
         description: "Finely reeded with incuse lettering.",
         lettering: "2 **",

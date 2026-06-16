@@ -3,6 +3,141 @@ import type {
   EngravableCoinSurfaceKind,
 } from "../schema/coin-surface"
 
+type SeededCatalogue = {
+  code: string
+  title: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededComposition = {
+  code: string
+  name: string
+  description?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCurrency = {
+  code: string
+  name: string
+  fullName: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededDistribution = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededEdge = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededEngraver = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededIssuer = {
+  code: string
+  name: string
+  isoCode: string
+  parentCode?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededMint = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededOrientation = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededRim = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededRulerGroup = {
+  name: string
+  code: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededRuler = {
+  name: string
+  code: string
+  rulerGroupCode?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededShape = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededTechnique = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededTheme = {
+  code: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCoinMint = {
+  coinTitle: string
+  mintCode: string
+}
+
+type SeededCoinReference = {
+  coinTitle: string
+  catalogueCode: string
+  number: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type SeededCoinRuler = {
+  coinTitle: string
+  rulerCode: string
+  rulerOrder: number
+}
+
+type SeededCoinSurfaceEngraver = {
+  coinTitle: string
+  coinSurfaceKind: EngravableCoinSurfaceKind
+  engraverCode: string
+}
+
 export type SeededCoinSurfaceDetails = {
   kind: CoinSurfaceKind
   description?: string | null
@@ -11,13 +146,13 @@ export type SeededCoinSurfaceDetails = {
   imageUrl?: string | null
 }
 
-type SeededIssuer = {
-  name: string
-  code: string
-  isoCode: string
-  parentCode?: string
-  createdAt: Date
-  updatedAt: Date
+type SeededCoinSurface = SeededCoinSurfaceDetails & {
+  coinTitle: string
+}
+
+type SeededCoinTheme = {
+  coinTitle: string
+  themeCode: string
 }
 
 export type SeededCoin = {
@@ -39,175 +174,437 @@ export type SeededCoin = {
   thickness?: number
   minYear?: number
   maxYear?: number
-  surfaces?: SeededCoinSurfaceDetails[]
   createdAt: Date
   updatedAt: Date
 }
 
-type SeededCoinSurface = SeededCoinSurfaceDetails & {
-  coinTitle: string
-}
+export const seededCatalogues: SeededCatalogue[] = [
+  {
+    code: "KM",
+    title: "Standard Catalog of World Coins",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+]
 
-type SeededEngraver = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export const seededCompositions: SeededComposition[] = [
+  {
+    code: "silver-900",
+    name: "Silver (.900)",
+    description: "Ninety percent silver alloy.",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "copper",
+    name: "Copper",
+    description: null,
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "copper-nickel",
+    name: "Copper-nickel",
+    description: null,
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "copper-nickel-clad",
+    name: "Copper-nickel clad",
+    description: "Copper core with copper-nickel outer layers.",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
 
-type SeededCoinSurfaceEngraver = {
-  coinTitle: string
-  coinSurfaceKind: EngravableCoinSurfaceKind
-  engraverCode: string
-}
+export const seededCurrencies: SeededCurrency[] = [
+  {
+    code: "euro",
+    name: "Euro",
+    fullName: "Euro (2002-date)",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "argentine-peso",
+    name: "Argentine peso",
+    fullName: "Argentine peso",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "real",
+    name: "Real",
+    fullName: "Real",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "united-states-dollar",
+    name: "United States dollar",
+    fullName: "United States dollar",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
 
-type SeededMint = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export const seededDistributions: SeededDistribution[] = [
+  {
+    code: "standard-circulation",
+    name: "Standard circulation",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "circulating-commemorative",
+    name: "Circulating commemorative",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+]
 
-type SeededOrientation = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export const seededEdges: SeededEdge[] = [
+  {
+    code: "lettered",
+    name: "Lettered",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "reeded",
+    name: "Reeded",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+]
 
-type SeededTheme = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededTechnique = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededShape = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededRim = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededEdge = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededComposition = {
-  code: string
-  name: string
-  description?: string | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededRulerGroup = {
-  name: string
-  code: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededRuler = {
-  name: string
-  code: string
-  rulerGroupCode?: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededCoinRuler = {
-  coinTitle: string
-  rulerCode: string
-  rulerOrder: number
-}
-
-type SeededCatalogue = {
-  code: string
-  title: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededDistribution = {
-  code: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededCoinReference = {
-  coinTitle: string
-  catalogueCode: string
-  number: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-type SeededCoinMint = {
-  coinTitle: string
-  mintCode: string
-}
-
-type SeededCoinTheme = {
-  coinTitle: string
-  themeCode: string
-}
-
-type SeededCurrency = {
-  code: string
-  fullName: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-}
+export const seededEngravers: SeededEngraver[] = [
+  {
+    code: "georgios-stamatopoulos",
+    name: "Georgios Stamatópoulos",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+]
 
 export const seededIssuers: SeededIssuer[] = [
   {
-    name: "Argentina",
     code: "argentina",
+    name: "Argentina",
     isoCode: "AR",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
   {
-    name: "Buenos Aires",
     code: "buenos-aires",
+    name: "Buenos Aires",
     isoCode: "AR",
     parentCode: "argentina",
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
   {
-    name: "United States of America",
     code: "united-states",
+    name: "United States of America",
     isoCode: "US",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
   {
-    name: "Spain",
     code: "spain",
+    name: "Spain",
     isoCode: "ES",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
+
+export const seededMints: SeededMint[] = [
+  {
+    code: "royal-mint-of-madrid",
+    name: "Royal Mint of Madrid",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "buenos-aires-mint",
+    name: "Buenos Aires Mint",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "philadelphia-mint",
+    name: "Philadelphia Mint",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "denver-mint",
+    name: "Denver Mint",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+]
+
+export const seededOrientations: SeededOrientation[] = [
+  {
+    code: "coin-alignment",
+    name: "Coin alignment",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "medal-alignment",
+    name: "Medal alignment",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+]
+
+export const seededRims: SeededRim[] = [
+  {
+    code: "lettered",
+    name: "Lettered",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "plain",
+    name: "Plain",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "raised-both-sides",
+    name: "Raised, both sides",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+]
+
+export const seededRulerGroups: SeededRulerGroup[] = [
+  {
+    name: "House of Bourbon",
+    code: "house-of-bourbon",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+]
+
+export const seededRulers: SeededRuler[] = [
+  {
+    name: "Felipe VI",
+    code: "felipe-vi",
+    rulerGroupCode: "house-of-bourbon",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    name: "Liberty",
+    code: "liberty",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+]
+
+export const seededShapes: SeededShape[] = [
+  {
+    code: "round",
+    name: "Round",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "scalloped",
+    name: "Scalloped",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+]
+
+export const seededTechniques: SeededTechnique[] = [
+  {
+    code: "cast",
+    name: "Cast",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "hammered",
+    name: "Hammered",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "milled",
+    name: "Milled",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+]
+
+export const seededThemes: SeededTheme[] = [
+  {
+    code: "animal",
+    name: "Animal",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "building",
+    name: "Building",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "flag",
+    name: "Flag",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
+  {
+    code: "independence",
+    name: "Independence",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+  {
+    code: "map",
+    name: "Map",
+    createdAt: new Date("2026-01-05T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-05T00:00:00.000Z"),
+  },
+  {
+    code: "plant",
+    name: "Plant",
+    createdAt: new Date("2026-01-06T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-06T00:00:00.000Z"),
+  },
+  {
+    code: "portrait",
+    name: "Portrait",
+    createdAt: new Date("2026-01-07T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-07T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinMints: SeededCoinMint[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    mintCode: "royal-mint-of-madrid",
+  },
+  {
+    coinTitle: "Buenos Aires 8 Reales 1813",
+    mintCode: "buenos-aires-mint",
+  },
+  {
+    coinTitle: "United States Lincoln Cent",
+    mintCode: "philadelphia-mint",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    mintCode: "philadelphia-mint",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    mintCode: "denver-mint",
+  },
+]
+
+export const seededCoinReferences: SeededCoinReference[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    catalogueCode: "KM",
+    number: "1338A",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+]
+
+export const seededCoinRulers: SeededCoinRuler[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "United States Flowing Hair Dollar",
+    rulerCode: "liberty",
+    rulerOrder: 1,
+  },
+]
+
+export const seededCoinSurfaceEngravers: SeededCoinSurfaceEngraver[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    coinSurfaceKind: "reverse",
+    engraverCode: "georgios-stamatopoulos",
+  },
+]
+
+export const seededCoinSurfaces: SeededCoinSurface[] = [
+  {
+    coinTitle: "Spain 2 Euro",
+    kind: "obverse",
+    description: "Portrait of Felipe VI facing left.",
+    lettering: "FELIPE VI REY DE ESPANA",
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+    imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    kind: "reverse",
+    description: "Map of Europe with denomination.",
+    lettering: "2 EURO",
+    imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    kind: "edge-surface",
+    description: "Finely reeded with incuse lettering.",
+    lettering: "2 **",
+    thumbnailUrl:
+      "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
+  },
+]
+
+export const seededCoinThemes: SeededCoinTheme[] = [
+  {
+    coinTitle: "Argentina Sol de Mayo Peso",
+    themeCode: "flag",
+  },
+  {
+    coinTitle: "Buenos Aires 8 Reales 1813",
+    themeCode: "independence",
+  },
+  {
+    coinTitle: "United States Lincoln Cent",
+    themeCode: "portrait",
+  },
+  {
+    coinTitle: "Argentina 20 Centavos",
+    themeCode: "plant",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    themeCode: "animal",
+  },
+  {
+    coinTitle: "United States National Park Quarter",
+    themeCode: "plant",
+  },
+  {
+    coinTitle: "United States Flowing Hair Dollar",
+    themeCode: "portrait",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    themeCode: "building",
+  },
+  {
+    coinTitle: "Spain 2 Euro",
+    themeCode: "map",
   },
 ]
 
@@ -406,411 +803,6 @@ export const seededCoins: SeededCoin[] = [
     thickness: 2.2,
     minYear: 2002,
     maxYear: 2026,
-    surfaces: [
-      {
-        kind: "obverse",
-        description: "Portrait of Felipe VI facing left.",
-        lettering: "FELIPE VI REY DE ESPANA",
-        thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
-        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
-      },
-      {
-        kind: "reverse",
-        description: "Map of Europe with denomination.",
-        lettering: "2 EURO",
-        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
-      },
-      {
-        kind: "edge-surface",
-        description: "Finely reeded with incuse lettering.",
-        lettering: "2 **",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
-      },
-    ],
-    createdAt: new Date("2026-01-11T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
-  },
-]
-
-export const seededCoinSurfaces: SeededCoinSurface[] = seededCoins.flatMap(
-  ({ title, surfaces = [] }) => surfaces.map(addCoinTitle(title))
-)
-
-function addCoinTitle(coinTitle: string) {
-  return (surface: SeededCoinSurfaceDetails): SeededCoinSurface => ({
-    coinTitle,
-    ...surface,
-  })
-}
-
-export const seededEngravers: SeededEngraver[] = [
-  {
-    code: "georgios-stamatopoulos",
-    name: "Georgios Stamatópoulos",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-]
-
-export const seededCoinSurfaceEngravers: SeededCoinSurfaceEngraver[] = [
-  {
-    coinTitle: "Spain 2 Euro",
-    coinSurfaceKind: "reverse",
-    engraverCode: "georgios-stamatopoulos",
-  },
-]
-
-export const seededMints: SeededMint[] = [
-  {
-    code: "royal-mint-of-madrid",
-    name: "Royal Mint of Madrid",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "buenos-aires-mint",
-    name: "Buenos Aires Mint",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "philadelphia-mint",
-    name: "Philadelphia Mint",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-  {
-    code: "denver-mint",
-    name: "Denver Mint",
-    createdAt: new Date("2026-01-04T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
-  },
-]
-
-export const seededOrientations: SeededOrientation[] = [
-  {
-    code: "coin-alignment",
-    name: "Coin alignment",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "medal-alignment",
-    name: "Medal alignment",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-]
-
-export const seededThemes: SeededTheme[] = [
-  {
-    code: "animal",
-    name: "Animal",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "building",
-    name: "Building",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "flag",
-    name: "Flag",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-  {
-    code: "independence",
-    name: "Independence",
-    createdAt: new Date("2026-01-04T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
-  },
-  {
-    code: "map",
-    name: "Map",
-    createdAt: new Date("2026-01-05T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-05T00:00:00.000Z"),
-  },
-  {
-    code: "plant",
-    name: "Plant",
-    createdAt: new Date("2026-01-06T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-06T00:00:00.000Z"),
-  },
-  {
-    code: "portrait",
-    name: "Portrait",
-    createdAt: new Date("2026-01-07T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-07T00:00:00.000Z"),
-  },
-]
-
-export const seededTechniques: SeededTechnique[] = [
-  {
-    code: "cast",
-    name: "Cast",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "hammered",
-    name: "Hammered",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "milled",
-    name: "Milled",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-]
-
-export const seededShapes: SeededShape[] = [
-  {
-    code: "round",
-    name: "Round",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "scalloped",
-    name: "Scalloped",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-] as const
-
-export const seededRims: SeededRim[] = [
-  {
-    code: "lettered",
-    name: "Lettered",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "plain",
-    name: "Plain",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "raised-both-sides",
-    name: "Raised, both sides",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-] as const
-
-export const seededEdges: SeededEdge[] = [
-  {
-    code: "lettered",
-    name: "Lettered",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "reeded",
-    name: "Reeded",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-] as const
-
-export const seededCurrencies: SeededCurrency[] = [
-  {
-    code: "euro",
-    name: "Euro",
-    fullName: "Euro (2002-date)",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "argentine-peso",
-    name: "Argentine peso",
-    fullName: "Argentine peso",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "real",
-    name: "Real",
-    fullName: "Real",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-  {
-    code: "united-states-dollar",
-    name: "United States dollar",
-    fullName: "United States dollar",
-    createdAt: new Date("2026-01-04T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
-  },
-]
-
-export const seededCoinMints: SeededCoinMint[] = [
-  {
-    coinTitle: "Spain 2 Euro",
-    mintCode: "royal-mint-of-madrid",
-  },
-  {
-    coinTitle: "Buenos Aires 8 Reales 1813",
-    mintCode: "buenos-aires-mint",
-  },
-  {
-    coinTitle: "United States Lincoln Cent",
-    mintCode: "philadelphia-mint",
-  },
-  {
-    coinTitle: "United States National Park Quarter",
-    mintCode: "philadelphia-mint",
-  },
-  {
-    coinTitle: "United States National Park Quarter",
-    mintCode: "denver-mint",
-  },
-]
-
-export const seededCoinThemes: SeededCoinTheme[] = [
-  {
-    coinTitle: "Argentina Sol de Mayo Peso",
-    themeCode: "flag",
-  },
-  {
-    coinTitle: "Buenos Aires 8 Reales 1813",
-    themeCode: "independence",
-  },
-  {
-    coinTitle: "United States Lincoln Cent",
-    themeCode: "portrait",
-  },
-  {
-    coinTitle: "Argentina 20 Centavos",
-    themeCode: "plant",
-  },
-  {
-    coinTitle: "United States National Park Quarter",
-    themeCode: "animal",
-  },
-  {
-    coinTitle: "United States National Park Quarter",
-    themeCode: "plant",
-  },
-  {
-    coinTitle: "United States Flowing Hair Dollar",
-    themeCode: "portrait",
-  },
-  {
-    coinTitle: "Spain 2 Euro",
-    themeCode: "building",
-  },
-  {
-    coinTitle: "Spain 2 Euro",
-    themeCode: "map",
-  },
-]
-
-export const seededCompositions: SeededComposition[] = [
-  {
-    code: "silver-900",
-    name: "Silver (.900)",
-    description: "Ninety percent silver alloy.",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "copper",
-    name: "Copper",
-    description: null,
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    code: "copper-nickel",
-    name: "Copper-nickel",
-    description: null,
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-  {
-    code: "copper-nickel-clad",
-    name: "Copper-nickel clad",
-    description: "Copper core with copper-nickel outer layers.",
-    createdAt: new Date("2026-01-04T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
-  },
-]
-
-export const seededDistributions: SeededDistribution[] = [
-  {
-    code: "standard-circulation",
-    name: "Standard circulation",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-  {
-    code: "circulating-commemorative",
-    name: "Circulating commemorative",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-]
-
-export const seededRulerGroups: SeededRulerGroup[] = [
-  {
-    name: "House of Bourbon",
-    code: "house-of-bourbon",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-  },
-]
-
-export const seededRulers: SeededRuler[] = [
-  {
-    name: "Felipe VI",
-    code: "felipe-vi",
-    rulerGroupCode: "house-of-bourbon",
-    createdAt: new Date("2026-01-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-  },
-  {
-    name: "Liberty",
-    code: "liberty",
-    createdAt: new Date("2026-01-03T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
-  },
-]
-
-export const seededCoinRulers: SeededCoinRuler[] = [
-  {
-    coinTitle: "Spain 2 Euro",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "United States Flowing Hair Dollar",
-    rulerCode: "liberty",
-    rulerOrder: 1,
-  },
-]
-
-export const seededCatalogues: SeededCatalogue[] = [
-  {
-    code: "KM",
-    title: "Standard Catalog of World Coins",
-    createdAt: new Date("2026-01-11T00:00:00.000Z"),
-    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
-  },
-]
-
-export const seededCoinReferences: SeededCoinReference[] = [
-  {
-    coinTitle: "Spain 2 Euro",
-    catalogueCode: "KM",
-    number: "1338A",
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
   },

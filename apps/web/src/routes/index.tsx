@@ -1,6 +1,5 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import type { CoinMeasurements } from "@workspace/db"
 import {
   applyMeasurementRangeSearch,
   applyIssueYearRangeSearch,
@@ -8,9 +7,6 @@ import {
   coinListInputSchema,
   coinSearchSchema,
   findSelectedCodeOption,
-  formatMintNames,
-  formatMeasurementLabel,
-  formatIssueYearRangeLabel,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
@@ -19,37 +15,10 @@ import type {
   TextCoinSearchFilterName,
 } from "../lib/coin-search"
 import { coinCodeFilterConfigs } from "../lib/coin-filter-configs"
-import { CoinListItem } from "../components/coin-list-item"
 import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
 
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
-
-const coinMeasurementFields = [
-  { key: "weight", label: "Weight", unit: "g" },
-  { key: "diameter", label: "Diameter", unit: "mm" },
-  { key: "thickness", label: "Thickness", unit: "mm" },
-] as const satisfies ReadonlyArray<{
-  key: keyof CoinMeasurements
-  label: string
-  unit: string
-}>
-
-function formatCoinMeasurements(measurements: CoinMeasurements) {
-  const labels = coinMeasurementFields
-    .map(({ key, label, unit }) =>
-      formatMeasurementLabel(label, measurements[key], unit)
-    )
-    .filter((measurementLabel): measurementLabel is string => {
-      return measurementLabel !== null
-    })
-
-  if (labels.length === 0) {
-    return null
-  }
-
-  return labels.join(" · ")
-}
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -335,25 +304,6 @@ function App() {
           <CoinCard coin={coin} key={coin.id} />
         ))}
       </div>
-
-      <ul className="space-y-4 py-4">
-        {coins.map((coin) => {
-          const measurementSummary = formatCoinMeasurements(coin.measurements)
-          const mintNames = formatMintNames(coin.mints)
-
-          return (
-            <CoinListItem
-              coin={coin}
-              issueYearRangeLabel={formatIssueYearRangeLabel(
-                coin.issueYearRange
-              )}
-              key={coin.id}
-              measurementSummary={measurementSummary}
-              mintNames={mintNames}
-            />
-          )
-        })}
-      </ul>
     </div>
   )
 }

@@ -27,7 +27,7 @@ import { theme } from "../schema/theme"
 import type { CoinListRecord } from "./map-get-coins-row"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
-const defaultGetCoinsLimit = 10
+const defaultGetCoinsLimit = 15
 const [obverseSurfaceKind, reverseSurfaceKind, edgeSurfaceKind] =
   coinSurfaceKinds
 const engravableSurfaceKindsSql = sql.join(

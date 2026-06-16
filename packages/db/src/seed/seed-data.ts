@@ -157,25 +157,25 @@ type SeededCoinTheme = {
 
 export type SeededCoin = {
   comments?: string | null
-  title: string
   compositionCode: string
   currencyCode: string
+  diameter?: number
   distributionCode: string
   edgeCode?: string
   faceValueNumericValue: number
   faceValueText: string
-  issuerCode: string
   isDemonetized?: boolean | null
+  issuerCode: string
+  maxYear?: number
+  minYear?: number
   mintage?: number | null
   orientationCode?: string
   rimCode?: string
   shapeCode?: string
   techniqueCode?: string
-  weight?: number
-  diameter?: number
   thickness?: number
-  minYear?: number
-  maxYear?: number
+  title: string
+  weight?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -184,6 +184,12 @@ export const seededCatalogues: SeededCatalogue[] = [
   {
     code: "KM",
     title: "Standard Catalog of World Coins",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+  {
+    code: "CA",
+    title: "Coin Archive Code",
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
   },
@@ -215,6 +221,13 @@ export const seededCompositions: SeededComposition[] = [
     code: "copper-nickel-clad",
     name: "Copper-nickel clad",
     description: "Copper core with copper-nickel outer layers.",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+  {
+    code: "bimetallic",
+    name: "Bimetallic",
+    description: "Bimetallic description",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
@@ -279,12 +292,30 @@ export const seededEdges: SeededEdge[] = [
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
+  {
+    code: "lettered-signs-numbers-reeded",
+    name: "Lettered-Signs-Numbers (reeded)",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
 ]
 
 export const seededEngravers: SeededEngraver[] = [
   {
     code: "georgios-stamatopoulos",
     name: "Georgios Stamatópoulos",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "pertti-makinen",
+    name: "Pertti Mäkinen",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  {
+    code: "luc-luycx",
+    name: "Luc Luycx",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
@@ -320,6 +351,13 @@ export const seededIssuers: SeededIssuer[] = [
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
+  {
+    code: "finland",
+    name: "Finland",
+    isoCode: "FI",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
 ]
 
 export const seededMints: SeededMint[] = [
@@ -344,6 +382,12 @@ export const seededMints: SeededMint[] = [
   {
     code: "denver-mint",
     name: "Denver Mint",
+    createdAt: new Date("2026-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-04T00:00:00.000Z"),
+  },
+  {
+    code: "mint-of-finland-ltd",
+    name: "Mint of Finland Ltd. (Rahapaja Oy), Vantaa, Finland",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
@@ -383,6 +427,12 @@ export const seededRims: SeededRim[] = [
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
+  {
+    code: "raised-not-decorated-both-sides",
+    name: "Raised. Not decorated. Both sides",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
 ]
 
 export const seededRulerGroups: SeededRulerGroup[] = [
@@ -408,6 +458,12 @@ export const seededRulers: SeededRuler[] = [
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
+  {
+    name: "Republic",
+    code: "republic",
+    createdAt: new Date("2026-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+  },
 ]
 
 export const seededShapes: SeededShape[] = [
@@ -420,6 +476,12 @@ export const seededShapes: SeededShape[] = [
   {
     code: "scalloped",
     name: "Scalloped",
+    createdAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+  },
+  {
+    code: "circular",
+    name: "Circular",
     createdAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
   },
@@ -489,6 +551,12 @@ export const seededThemes: SeededTheme[] = [
     createdAt: new Date("2026-01-07T00:00:00.000Z"),
     updatedAt: new Date("2026-01-07T00:00:00.000Z"),
   },
+  {
+    code: "leaves",
+    name: "Leaves",
+    createdAt: new Date("2026-01-07T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-07T00:00:00.000Z"),
+  },
 ]
 
 export const seededCoinMints: SeededCoinMint[] = [
@@ -512,6 +580,10 @@ export const seededCoinMints: SeededCoinMint[] = [
     coinTitle: "United States National Park Quarter",
     mintCode: "denver-mint",
   },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    mintCode: "mint-of-finland-ltd",
+  },
 ]
 
 export const seededCoinReferences: SeededCoinReference[] = [
@@ -519,6 +591,13 @@ export const seededCoinReferences: SeededCoinReference[] = [
     coinTitle: "Spain 2 Euro",
     catalogueCode: "KM",
     number: "1338A",
+    createdAt: new Date("2026-01-11T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    catalogueCode: "CA",
+    number: "FI-00001",
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
   },
@@ -535,6 +614,11 @@ export const seededCoinRulers: SeededCoinRuler[] = [
     rulerCode: "liberty",
     rulerOrder: 1,
   },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    rulerCode: "republic",
+    rulerOrder: 1,
+  },
 ]
 
 export const seededCoinSurfaceEngravers: SeededCoinSurfaceEngraver[] = [
@@ -542,6 +626,16 @@ export const seededCoinSurfaceEngravers: SeededCoinSurfaceEngraver[] = [
     coinTitle: "Spain 2 Euro",
     coinSurfaceKind: "reverse",
     engraverCode: "georgios-stamatopoulos",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    coinSurfaceKind: "obverse",
+    engraverCode: "pertti-makinen",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    coinSurfaceKind: "reverse",
+    engraverCode: "luc-luycx",
   },
 ]
 
@@ -570,6 +664,24 @@ export const seededCoinSurfaces: SeededCoinSurface[] = [
     thumbnailUrl:
       "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
     imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    kind: "obverse",
+    description:
+      'A stylised pillar from which the sprouts grow upwards with the sprouts representing the enlargement of the European Union and the pillar representing the foundation for growth with the letters "EU" to the left of the pillar, and the date at the top in the outer ring along with the twelve stars of Europe',
+    lettering: "2004 EU M M",
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+    imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    kind: "reverse",
+    description:
+      "A map, next to the face value, shows the European continent without borders",
+    lettering: "2 EURO LL",
+    thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
+    imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
   },
 ]
 
@@ -609,6 +721,14 @@ export const seededCoinThemes: SeededCoinTheme[] = [
   {
     coinTitle: "Spain 2 Euro",
     themeCode: "map",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    themeCode: "map",
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    themeCode: "leaves",
   },
 ]
 
@@ -811,5 +931,29 @@ export const seededCoins: SeededCoin[] = [
     maxYear: 2026,
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),
+  },
+  {
+    comments: "Fifth Enlargement of the European Union",
+    compositionCode: "bimetallic",
+    currencyCode: "euro",
+    diameter: 25.75,
+    distributionCode: "circulating-commemorative",
+    edgeCode: "lettered-signs-numbers-reeded",
+    faceValueNumericValue: 2,
+    faceValueText: "2 Euros",
+    isDemonetized: false,
+    issuerCode: "finland",
+    maxYear: 2004,
+    minYear: 2004,
+    mintage: 1000000,
+    orientationCode: "medal-alignment",
+    rimCode: "raised-not-decorated-both-sides",
+    shapeCode: "circular",
+    techniqueCode: "milled",
+    thickness: 2.2,
+    title: "2 Euros (Enlargement of the European Union)",
+    weight: 8.5,
+    createdAt: new Date("1987-08-24T00:00:00.000Z"),
+    updatedAt: new Date("1987-08-24T00:00:00.000Z"),
   },
 ]

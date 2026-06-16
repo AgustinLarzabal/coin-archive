@@ -42,6 +42,8 @@ import {
   CircleDollarSign,
   Scale,
 } from "lucide-react"
+import type { FormEvent } from "react"
+import { useState } from "react"
 import {
   demonetizationFilterOptions,
   getCatalogueOptionLabel,
@@ -58,594 +60,21 @@ import {
   getTechniqueOptionLabel,
   getThemeOptionLabel,
 } from "../lib/coin-search"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/components/popover"
-import { Input } from "@workspace/ui/components/input"
-import { Slider } from "@workspace/ui/components/slider"
-import type { FormEvent } from "react"
-import { useEffect, useState } from "react"
 import type { PositiveNumberFilterValue } from "../lib/coin-search"
-
-const issueYearBounds = {
-  min: -1000,
-  max: new Date().getUTCFullYear(),
-} as const
-
-type CustomRendererProps = {
-  values: unknown[]
-  onChange: (values: unknown[]) => void
-  autoFocus?: boolean
-}
-
-const faceValueRangeInputFields = [
-  {
-    name: "minValue",
-    ariaLabel: "Minimum face value in major units",
-    placeholder: "Min face value",
-  },
-  {
-    name: "maxValue",
-    ariaLabel: "Maximum face value in major units",
-    placeholder: "Max face value",
-  },
-] as const
-
-type FaceValueRangeValue = {
-  maxValue: PositiveNumberFilterValue
-  minValue: PositiveNumberFilterValue
-}
-
-type WeightRangeValue = {
-  maxWeight: PositiveNumberFilterValue
-  minWeight: PositiveNumberFilterValue
-}
-
-type DiameterRangeValue = {
-  maxDiameter: PositiveNumberFilterValue
-  minDiameter: PositiveNumberFilterValue
-}
-
-type ThicknessRangeValue = {
-  maxThickness: PositiveNumberFilterValue
-  minThickness: PositiveNumberFilterValue
-}
-
-function isIssueYearRangeValue(
-  value: unknown
-): value is { min: number; max: number } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "min" in value &&
-    "max" in value &&
-    typeof value.min === "number" &&
-    typeof value.max === "number"
-  )
-}
-
-function getIssueYearRangeValue(value: unknown) {
-  if (isIssueYearRangeValue(value)) {
-    return value
-  }
-
-  return {
-    min: issueYearBounds.min,
-    max: issueYearBounds.max,
-  }
-}
-
-function isFaceValueRangeValue(value: unknown): value is FaceValueRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minValue" in value &&
-    "maxValue" in value
-  )
-}
-
-function getFaceValueRangeValue(value: unknown): FaceValueRangeValue {
-  if (isFaceValueRangeValue(value)) {
-    return value
-  }
-
-  return {
-    minValue: undefined,
-    maxValue: undefined,
-  }
-}
-
-function isWeightRangeValue(value: unknown): value is WeightRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minWeight" in value &&
-    "maxWeight" in value
-  )
-}
-
-function getWeightRangeValue(value: unknown): WeightRangeValue {
-  if (isWeightRangeValue(value)) {
-    return value
-  }
-
-  return {
-    minWeight: undefined,
-    maxWeight: undefined,
-  }
-}
-
-function isDiameterRangeValue(value: unknown): value is DiameterRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minDiameter" in value &&
-    "maxDiameter" in value
-  )
-}
-
-function getDiameterRangeValue(value: unknown): DiameterRangeValue {
-  if (isDiameterRangeValue(value)) {
-    return value
-  }
-
-  return {
-    minDiameter: undefined,
-    maxDiameter: undefined,
-  }
-}
-
-function isThicknessRangeValue(value: unknown): value is ThicknessRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minThickness" in value &&
-    "maxThickness" in value
-  )
-}
-
-function getThicknessRangeValue(value: unknown): ThicknessRangeValue {
-  if (isThicknessRangeValue(value)) {
-    return value
-  }
-
-  return {
-    minThickness: undefined,
-    maxThickness: undefined,
-  }
-}
-
-function CustomSliderRangeInput({
-  values,
-  onChange,
-  autoFocus,
-}: CustomRendererProps) {
-  const [range, setRange] = useState<number[]>(
-    isIssueYearRangeValue(values[0])
-      ? [values[0].min, values[0].max]
-      : [issueYearBounds.min, issueYearBounds.max]
-  )
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => setIsOpen(true), 400)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFocus])
-
-  const handleApply = () => {
-    onChange([{ min: range[0], max: range[1] }])
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={<span />}>
-        {range[0]} - {range[1]}
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-4"
-        align="start"
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <div className="space-y-2.5">
-          <div className="space-y-4 pt-2.5">
-            <Slider
-              value={range}
-              onValueChange={(value) =>
-                setRange(Array.isArray(value) ? [...value] : [value])
-              }
-              max={issueYearBounds.max}
-              min={issueYearBounds.min}
-              step={1}
-              className="w-[200px]"
-            />
-            <div className="flex justify-between ps-1.5 text-xs text-muted-foreground">
-              <span>{issueYearBounds.min}</span>
-              <span>{issueYearBounds.max}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleApply}>
-              Apply
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function CustomFaceValueRangeInput({
-  values,
-  onChange,
-  autoFocus,
-}: CustomRendererProps) {
-  const selectedRange = getFaceValueRangeValue(values[0])
-  const [range, setRange] = useState({
-    minValue: selectedRange.minValue?.toString() ?? "",
-    maxValue: selectedRange.maxValue?.toString() ?? "",
-  })
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => setIsOpen(true), 400)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFocus])
-
-  const handleApply = () => {
-    onChange([
-      {
-        minValue: range.minValue,
-        maxValue: range.maxValue,
-      },
-    ])
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
-
-  const displayValue =
-    range.minValue || range.maxValue
-      ? `${range.minValue || "any"} - ${range.maxValue || "any"}`
-      : "Set range"
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-4"
-        align="start"
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <div className="space-y-2.5">
-          <div className="flex flex-wrap gap-2">
-            {faceValueRangeInputFields.map(
-              ({ ariaLabel, name, placeholder }) => (
-                <Input
-                  aria-label={ariaLabel}
-                  className="w-36"
-                  key={name}
-                  name={name}
-                  onChange={(event) =>
-                    setRange((currentRange) => ({
-                      ...currentRange,
-                      [name]: event.target.value,
-                    }))
-                  }
-                  placeholder={placeholder}
-                  step="0.000001"
-                  type="number"
-                  value={range[name]}
-                />
-              )
-            )}
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleApply}>
-              Apply
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function CustomWeightRangeInput({
-  values,
-  onChange,
-  autoFocus,
-}: CustomRendererProps) {
-  const selectedRange = getWeightRangeValue(values[0])
-  const [range, setRange] = useState({
-    minWeight: selectedRange.minWeight?.toString() ?? "",
-    maxWeight: selectedRange.maxWeight?.toString() ?? "",
-  })
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => setIsOpen(true), 400)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFocus])
-
-  const handleApply = () => {
-    onChange([
-      {
-        minWeight: range.minWeight,
-        maxWeight: range.maxWeight,
-      },
-    ])
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
-
-  const displayValue =
-    range.minWeight || range.maxWeight
-      ? `${range.minWeight || "any"} - ${range.maxWeight || "any"} g`
-      : "Set range"
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-4"
-        align="start"
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <div className="space-y-2.5">
-          <div className="flex flex-wrap gap-2">
-            <Input
-              aria-label="Minimum weight in grams"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  minWeight: event.target.value,
-                }))
-              }
-              placeholder="Min weight (g)"
-              step="0.01"
-              type="number"
-              value={range.minWeight}
-            />
-            <Input
-              aria-label="Maximum weight in grams"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  maxWeight: event.target.value,
-                }))
-              }
-              placeholder="Max weight (g)"
-              step="0.01"
-              type="number"
-              value={range.maxWeight}
-            />
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleApply}>
-              Apply
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function CustomDiameterRangeInput({
-  values,
-  onChange,
-  autoFocus,
-}: CustomRendererProps) {
-  const selectedRange = getDiameterRangeValue(values[0])
-  const [range, setRange] = useState({
-    minDiameter: selectedRange.minDiameter?.toString() ?? "",
-    maxDiameter: selectedRange.maxDiameter?.toString() ?? "",
-  })
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => setIsOpen(true), 400)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFocus])
-
-  const handleApply = () => {
-    onChange([
-      {
-        minDiameter: range.minDiameter,
-        maxDiameter: range.maxDiameter,
-      },
-    ])
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
-
-  const displayValue =
-    range.minDiameter || range.maxDiameter
-      ? `${range.minDiameter || "any"} - ${range.maxDiameter || "any"} mm`
-      : "Set range"
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-4"
-        align="start"
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <div className="space-y-2.5">
-          <div className="flex flex-wrap gap-2">
-            <Input
-              aria-label="Minimum diameter in millimeters"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  minDiameter: event.target.value,
-                }))
-              }
-              placeholder="Min diameter (mm)"
-              step="0.01"
-              type="number"
-              value={range.minDiameter}
-            />
-            <Input
-              aria-label="Maximum diameter in millimeters"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  maxDiameter: event.target.value,
-                }))
-              }
-              placeholder="Max diameter (mm)"
-              step="0.01"
-              type="number"
-              value={range.maxDiameter}
-            />
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleApply}>
-              Apply
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function CustomThicknessRangeInput({
-  values,
-  onChange,
-  autoFocus,
-}: CustomRendererProps) {
-  const selectedRange = getThicknessRangeValue(values[0])
-  const [range, setRange] = useState({
-    minThickness: selectedRange.minThickness?.toString() ?? "",
-    maxThickness: selectedRange.maxThickness?.toString() ?? "",
-  })
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => setIsOpen(true), 400)
-      return () => clearTimeout(timer)
-    }
-  }, [autoFocus])
-
-  const handleApply = () => {
-    onChange([
-      {
-        minThickness: range.minThickness,
-        maxThickness: range.maxThickness,
-      },
-    ])
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
-
-  const displayValue =
-    range.minThickness || range.maxThickness
-      ? `${range.minThickness || "any"} - ${range.maxThickness || "any"} mm`
-      : "Set range"
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={<span />}>{displayValue}</PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-4"
-        align="start"
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <div className="space-y-2.5">
-          <div className="flex flex-wrap gap-2">
-            <Input
-              aria-label="Minimum thickness in millimeters"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  minThickness: event.target.value,
-                }))
-              }
-              placeholder="Min thickness (mm)"
-              step="0.01"
-              type="number"
-              value={range.minThickness}
-            />
-            <Input
-              aria-label="Maximum thickness in millimeters"
-              className="w-36"
-              onChange={(event) =>
-                setRange((currentRange) => ({
-                  ...currentRange,
-                  maxThickness: event.target.value,
-                }))
-              }
-              placeholder="Max thickness (mm)"
-              step="0.01"
-              type="number"
-              value={range.maxThickness}
-            />
-          </div>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleApply}>
-              Apply
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
+import {
+  CustomDiameterRangeInput,
+  CustomFaceValueRangeInput,
+  CustomSliderRangeInput,
+  CustomThicknessRangeInput,
+  CustomWeightRangeInput,
+  getDiameterRangeValue,
+  getFaceValueRangeValue,
+  getIssueYearRangeValue,
+  getThicknessRangeValue,
+  getWeightRangeValue,
+  issueYearBounds,
+} from "./home-filter-range-inputs"
+import { Input } from "@workspace/ui/components/input"
 
 type HomeFiltersProps = {
   catalogues: CatalogueOption[]
@@ -718,6 +147,90 @@ type HomeFiltersProps = {
   }) => Promise<void>
 }
 
+type HomeFilterValueSet = Parameters<HomeFiltersProps["onFiltersChange"]>[0]
+
+type PendingRangeField = "faceValue" | "weight" | "diameter" | "thickness"
+
+const pendingRangeFields: PendingRangeField[] = [
+  "faceValue",
+  "weight",
+  "diameter",
+  "thickness",
+]
+
+const emptyPendingRangeFilters: Record<PendingRangeField, boolean> = {
+  faceValue: false,
+  weight: false,
+  diameter: false,
+  thickness: false,
+}
+
+const emptyFilterValues: HomeFilterValueSet = {
+  catalogueCode: undefined,
+  compositionCode: undefined,
+  currencyCode: undefined,
+  distributionCode: undefined,
+  demonetization: undefined,
+  edgeCode: undefined,
+  engraverCode: undefined,
+  fromYear: undefined,
+  issuerCode: undefined,
+  maxDiameter: undefined,
+  maxThickness: undefined,
+  maxValue: undefined,
+  maxWeight: undefined,
+  minDiameter: undefined,
+  minThickness: undefined,
+  minValue: undefined,
+  minWeight: undefined,
+  mintCode: undefined,
+  orientationCode: undefined,
+  referenceNumber: undefined,
+  rimCode: undefined,
+  rulerCode: undefined,
+  shapeCode: undefined,
+  techniqueCode: undefined,
+  themeCode: undefined,
+  toYear: undefined,
+}
+
+function getFilterByField(filters: Filter[], field: Filter["field"]) {
+  return filters.find((filter) => filter.field === field)
+}
+
+function hasFilter(filters: Filter[], field: Filter["field"]) {
+  return filters.some((filter) => filter.field === field)
+}
+
+function getSingleFilterValue(filters: Filter[], field: Filter["field"]) {
+  return getFilterByField(filters, field)?.values[0]
+}
+
+function toOptionalString(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? value : undefined
+}
+
+function toOptionalTrimmedString(value: FormDataEntryValue | null) {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : undefined
+}
+
+function toDemonetizationFilterValue(value: unknown) {
+  return value === "demonetized" ||
+    value === "not-demonetized" ||
+    value === "unknown"
+    ? value
+    : undefined
+}
+
+function createOptionalFilter(
+  field: string,
+  value: string | DemonetizationFilterValue | undefined
+) {
+  return value ? [createFilter(field, "is", [value])] : []
+}
+
 export function HomeFilters({
   catalogues,
   compositions,
@@ -762,12 +275,9 @@ export function HomeFilters({
   onFiltersChange,
 }: HomeFiltersProps) {
   const [lastAddedValues, setLastAddedValues] = useState<unknown[] | null>(null)
-  const [isFaceValueFilterPending, setIsFaceValueFilterPending] =
-    useState(false)
-  const [isWeightFilterPending, setIsWeightFilterPending] = useState(false)
-  const [isDiameterFilterPending, setIsDiameterFilterPending] = useState(false)
-  const [isThicknessFilterPending, setIsThicknessFilterPending] =
-    useState(false)
+  const [pendingRangeFilters, setPendingRangeFilters] = useState<
+    Record<PendingRangeField, boolean>
+  >(emptyPendingRangeFilters)
 
   const fields: FilterFieldConfig[] = [
     {
@@ -1077,7 +587,7 @@ export function HomeFilters({
       : []),
     ...(selectedMinValue !== undefined ||
     selectedMaxValue !== undefined ||
-    isFaceValueFilterPending
+    pendingRangeFilters.faceValue
       ? [
           createFilter("faceValue", "between", [
             {
@@ -1089,7 +599,7 @@ export function HomeFilters({
       : []),
     ...(selectedMinWeight !== undefined ||
     selectedMaxWeight !== undefined ||
-    isWeightFilterPending
+    pendingRangeFilters.weight
       ? [
           createFilter("weight", "between", [
             {
@@ -1101,7 +611,7 @@ export function HomeFilters({
       : []),
     ...(selectedMinDiameter !== undefined ||
     selectedMaxDiameter !== undefined ||
-    isDiameterFilterPending
+    pendingRangeFilters.diameter
       ? [
           createFilter("diameter", "between", [
             {
@@ -1113,7 +623,7 @@ export function HomeFilters({
       : []),
     ...(selectedMinThickness !== undefined ||
     selectedMaxThickness !== undefined ||
-    isThicknessFilterPending
+    pendingRangeFilters.thickness
       ? [
           createFilter("thickness", "between", [
             {
@@ -1123,49 +633,21 @@ export function HomeFilters({
           ]),
         ]
       : []),
-    ...(selectedCatalogueCode
-      ? [createFilter("catalogue", "is", [selectedCatalogueCode])]
-      : []),
-    ...(selectedCompositionCode
-      ? [createFilter("composition", "is", [selectedCompositionCode])]
-      : []),
-    ...(selectedCurrencyCode
-      ? [createFilter("currency", "is", [selectedCurrencyCode])]
-      : []),
-    ...(selectedDistributionCode
-      ? [createFilter("distribution", "is", [selectedDistributionCode])]
-      : []),
-    ...(selectedDemonetization
-      ? [createFilter("demonetization", "is", [selectedDemonetization])]
-      : []),
-    ...(selectedEdgeCode
-      ? [createFilter("edge", "is", [selectedEdgeCode])]
-      : []),
-    ...(selectedEngraverCode
-      ? [createFilter("engraver", "is", [selectedEngraverCode])]
-      : []),
-    ...(selectedIssuerCode
-      ? [createFilter("issuer", "is", [selectedIssuerCode])]
-      : []),
-    ...(selectedMintCode
-      ? [createFilter("mint", "is", [selectedMintCode])]
-      : []),
-    ...(selectedOrientationCode
-      ? [createFilter("orientation", "is", [selectedOrientationCode])]
-      : []),
-    ...(selectedRimCode ? [createFilter("rim", "is", [selectedRimCode])] : []),
-    ...(selectedShapeCode
-      ? [createFilter("shape", "is", [selectedShapeCode])]
-      : []),
-    ...(selectedTechniqueCode
-      ? [createFilter("technique", "is", [selectedTechniqueCode])]
-      : []),
-    ...(selectedThemeCode
-      ? [createFilter("theme", "is", [selectedThemeCode])]
-      : []),
-    ...(selectedRulerCode
-      ? [createFilter("ruler", "is", [selectedRulerCode])]
-      : []),
+    ...createOptionalFilter("catalogue", selectedCatalogueCode),
+    ...createOptionalFilter("composition", selectedCompositionCode),
+    ...createOptionalFilter("currency", selectedCurrencyCode),
+    ...createOptionalFilter("distribution", selectedDistributionCode),
+    ...createOptionalFilter("demonetization", selectedDemonetization),
+    ...createOptionalFilter("edge", selectedEdgeCode),
+    ...createOptionalFilter("engraver", selectedEngraverCode),
+    ...createOptionalFilter("issuer", selectedIssuerCode),
+    ...createOptionalFilter("mint", selectedMintCode),
+    ...createOptionalFilter("orientation", selectedOrientationCode),
+    ...createOptionalFilter("rim", selectedRimCode),
+    ...createOptionalFilter("shape", selectedShapeCode),
+    ...createOptionalFilter("technique", selectedTechniqueCode),
+    ...createOptionalFilter("theme", selectedThemeCode),
+    ...createOptionalFilter("ruler", selectedRulerCode),
   ]
 
   async function handleFiltersChange(nextFilters: Filter[]) {
@@ -1177,130 +659,57 @@ export function HomeFilters({
       setLastAddedValues(addedFilter.values)
     }
 
-    setIsFaceValueFilterPending(
-      nextFilters.some((filter) => filter.field === "faceValue")
-    )
-    setIsWeightFilterPending(
-      nextFilters.some((filter) => filter.field === "weight")
-    )
-    setIsDiameterFilterPending(
-      nextFilters.some((filter) => filter.field === "diameter")
-    )
-    setIsThicknessFilterPending(
-      nextFilters.some((filter) => filter.field === "thickness")
+    setPendingRangeFilters(
+      pendingRangeFields.reduce(
+        (nextPendingFilters, field) => ({
+          ...nextPendingFilters,
+          [field]: hasFilter(nextFilters, field),
+        }),
+        emptyPendingRangeFilters
+      )
     )
 
-    const issuerYearFilter = nextFilters.find(
-      (filter) => filter.field === "issuerYear"
-    )
-    const issuerYearRange = issuerYearFilter
-      ? getIssueYearRangeValue(issuerYearFilter.values[0])
+    const issuerYearRange = hasFilter(nextFilters, "issuerYear")
+      ? getIssueYearRangeValue(getSingleFilterValue(nextFilters, "issuerYear"))
       : undefined
-    const faceValueFilter = nextFilters.find(
-      (filter) => filter.field === "faceValue"
-    )
-    const faceValueRange = faceValueFilter
-      ? getFaceValueRangeValue(faceValueFilter.values[0])
+    const faceValueRange = hasFilter(nextFilters, "faceValue")
+      ? getFaceValueRangeValue(getSingleFilterValue(nextFilters, "faceValue"))
       : undefined
-    const weightFilter = nextFilters.find((filter) => filter.field === "weight")
-    const weightRange = weightFilter
-      ? getWeightRangeValue(weightFilter.values[0])
+    const weightRange = hasFilter(nextFilters, "weight")
+      ? getWeightRangeValue(getSingleFilterValue(nextFilters, "weight"))
       : undefined
-    const diameterFilter = nextFilters.find(
-      (filter) => filter.field === "diameter"
-    )
-    const diameterRange = diameterFilter
-      ? getDiameterRangeValue(diameterFilter.values[0])
+    const diameterRange = hasFilter(nextFilters, "diameter")
+      ? getDiameterRangeValue(getSingleFilterValue(nextFilters, "diameter"))
       : undefined
-    const thicknessFilter = nextFilters.find(
-      (filter) => filter.field === "thickness"
-    )
-    const thicknessRange = thicknessFilter
-      ? getThicknessRangeValue(thicknessFilter.values[0])
+    const thicknessRange = hasFilter(nextFilters, "thickness")
+      ? getThicknessRangeValue(getSingleFilterValue(nextFilters, "thickness"))
       : undefined
-    const catalogueFilter = nextFilters.find(
-      (filter) => filter.field === "catalogue"
-    )
-    const catalogueCode = catalogueFilter?.values[0]
-    const compositionFilter = nextFilters.find(
-      (filter) => filter.field === "composition"
-    )
-    const compositionCode = compositionFilter?.values[0]
-    const currencyFilter = nextFilters.find(
-      (filter) => filter.field === "currency"
-    )
-    const currencyCode = currencyFilter?.values[0]
-    const distributionFilter = nextFilters.find(
-      (filter) => filter.field === "distribution"
-    )
-    const distributionCode = distributionFilter?.values[0]
-    const demonetizationFilter = nextFilters.find(
-      (filter) => filter.field === "demonetization"
-    )
-    const demonetization = demonetizationFilter?.values[0]
-    const edgeFilter = nextFilters.find((filter) => filter.field === "edge")
-    const edgeCode = edgeFilter?.values[0]
-    const engraverFilter = nextFilters.find(
-      (filter) => filter.field === "engraver"
-    )
-    const engraverCode = engraverFilter?.values[0]
-    const issuerFilter = nextFilters.find((filter) => filter.field === "issuer")
-    const issuerCode = issuerFilter?.values[0]
-    const mintFilter = nextFilters.find((filter) => filter.field === "mint")
-    const mintCode = mintFilter?.values[0]
-    const orientationFilter = nextFilters.find(
-      (filter) => filter.field === "orientation"
-    )
-    const orientationCode = orientationFilter?.values[0]
-    const rimFilter = nextFilters.find((filter) => filter.field === "rim")
-    const rimCode = rimFilter?.values[0]
-    const shapeFilter = nextFilters.find((filter) => filter.field === "shape")
-    const shapeCode = shapeFilter?.values[0]
-    const techniqueFilter = nextFilters.find(
-      (filter) => filter.field === "technique"
-    )
-    const techniqueCode = techniqueFilter?.values[0]
-    const themeFilter = nextFilters.find((filter) => filter.field === "theme")
-    const themeCode = themeFilter?.values[0]
-    const rulerFilter = nextFilters.find((filter) => filter.field === "ruler")
-    const rulerCode = rulerFilter?.values[0]
+    const catalogueCode = getSingleFilterValue(nextFilters, "catalogue")
+    const compositionCode = getSingleFilterValue(nextFilters, "composition")
+    const currencyCode = getSingleFilterValue(nextFilters, "currency")
+    const distributionCode = getSingleFilterValue(nextFilters, "distribution")
+    const demonetization = getSingleFilterValue(nextFilters, "demonetization")
+    const edgeCode = getSingleFilterValue(nextFilters, "edge")
+    const engraverCode = getSingleFilterValue(nextFilters, "engraver")
+    const issuerCode = getSingleFilterValue(nextFilters, "issuer")
+    const mintCode = getSingleFilterValue(nextFilters, "mint")
+    const orientationCode = getSingleFilterValue(nextFilters, "orientation")
+    const rimCode = getSingleFilterValue(nextFilters, "rim")
+    const shapeCode = getSingleFilterValue(nextFilters, "shape")
+    const techniqueCode = getSingleFilterValue(nextFilters, "technique")
+    const themeCode = getSingleFilterValue(nextFilters, "theme")
+    const rulerCode = getSingleFilterValue(nextFilters, "ruler")
 
     await onFiltersChange({
-      catalogueCode:
-        typeof catalogueCode === "string" && catalogueCode.length > 0
-          ? catalogueCode
-          : undefined,
-      compositionCode:
-        typeof compositionCode === "string" && compositionCode.length > 0
-          ? compositionCode
-          : undefined,
-      currencyCode:
-        typeof currencyCode === "string" && currencyCode.length > 0
-          ? currencyCode
-          : undefined,
-      distributionCode:
-        typeof distributionCode === "string" && distributionCode.length > 0
-          ? distributionCode
-          : undefined,
-      demonetization:
-        demonetization === "demonetized" ||
-        demonetization === "not-demonetized" ||
-        demonetization === "unknown"
-          ? demonetization
-          : undefined,
-      edgeCode:
-        typeof edgeCode === "string" && edgeCode.length > 0
-          ? edgeCode
-          : undefined,
-      engraverCode:
-        typeof engraverCode === "string" && engraverCode.length > 0
-          ? engraverCode
-          : undefined,
+      catalogueCode: toOptionalString(catalogueCode),
+      compositionCode: toOptionalString(compositionCode),
+      currencyCode: toOptionalString(currencyCode),
+      distributionCode: toOptionalString(distributionCode),
+      demonetization: toDemonetizationFilterValue(demonetization),
+      edgeCode: toOptionalString(edgeCode),
+      engraverCode: toOptionalString(engraverCode),
       fromYear: issuerYearRange?.min,
-      issuerCode:
-        typeof issuerCode === "string" && issuerCode.length > 0
-          ? issuerCode
-          : undefined,
+      issuerCode: toOptionalString(issuerCode),
       maxDiameter: diameterRange?.maxDiameter,
       maxThickness: thicknessRange?.maxThickness,
       maxValue: faceValueRange?.maxValue,
@@ -1309,77 +718,29 @@ export function HomeFilters({
       minThickness: thicknessRange?.minThickness,
       minValue: faceValueRange?.minValue,
       minWeight: weightRange?.minWeight,
-      mintCode:
-        typeof mintCode === "string" && mintCode.length > 0
-          ? mintCode
-          : undefined,
-      orientationCode:
-        typeof orientationCode === "string" && orientationCode.length > 0
-          ? orientationCode
-          : undefined,
-      referenceNumber:
-        typeof catalogueCode === "string" && catalogueCode.length > 0
-          ? selectedReferenceNumber
-          : undefined,
-      rimCode:
-        typeof rimCode === "string" && rimCode.length > 0 ? rimCode : undefined,
-      shapeCode:
-        typeof shapeCode === "string" && shapeCode.length > 0
-          ? shapeCode
-          : undefined,
-      techniqueCode:
-        typeof techniqueCode === "string" && techniqueCode.length > 0
-          ? techniqueCode
-          : undefined,
-      themeCode:
-        typeof themeCode === "string" && themeCode.length > 0
-          ? themeCode
-          : undefined,
+      mintCode: toOptionalString(mintCode),
+      orientationCode: toOptionalString(orientationCode),
+      referenceNumber: toOptionalString(catalogueCode)
+        ? selectedReferenceNumber
+        : undefined,
+      rimCode: toOptionalString(rimCode),
+      shapeCode: toOptionalString(shapeCode),
+      techniqueCode: toOptionalString(techniqueCode),
+      themeCode: toOptionalString(themeCode),
       toYear: issuerYearRange?.max,
-      rulerCode:
-        typeof rulerCode === "string" && rulerCode.length > 0
-          ? rulerCode
-          : undefined,
+      rulerCode: toOptionalString(rulerCode),
     })
   }
 
   async function clearFilters() {
-    setIsFaceValueFilterPending(false)
-    setIsWeightFilterPending(false)
-    setIsDiameterFilterPending(false)
-    setIsThicknessFilterPending(false)
+    setPendingRangeFilters(emptyPendingRangeFilters)
 
-    await onFiltersChange({
-      catalogueCode: undefined,
-      compositionCode: undefined,
-      currencyCode: undefined,
-      distributionCode: undefined,
-      demonetization: undefined,
-      edgeCode: undefined,
-      engraverCode: undefined,
-      fromYear: undefined,
-      issuerCode: undefined,
-      maxDiameter: undefined,
-      maxThickness: undefined,
-      maxValue: undefined,
-      maxWeight: undefined,
-      minDiameter: undefined,
-      minThickness: undefined,
-      minValue: undefined,
-      minWeight: undefined,
-      mintCode: undefined,
-      orientationCode: undefined,
-      referenceNumber: undefined,
-      rimCode: undefined,
-      rulerCode: undefined,
-      shapeCode: undefined,
-      techniqueCode: undefined,
-      themeCode: undefined,
-      toYear: undefined,
-    })
+    await onFiltersChange(emptyFilterValues)
   }
 
-  async function handleReferenceNumberSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleReferenceNumberSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault()
 
     if (!selectedCatalogueCode) {
@@ -1390,6 +751,7 @@ export function HomeFilters({
     const referenceNumber = formData.get("referenceNumber")
 
     await onFiltersChange({
+      ...emptyFilterValues,
       catalogueCode: selectedCatalogueCode,
       compositionCode: selectedCompositionCode,
       currencyCode: selectedCurrencyCode,
@@ -1409,11 +771,7 @@ export function HomeFilters({
       minWeight: selectedMinWeight,
       mintCode: selectedMintCode,
       orientationCode: selectedOrientationCode,
-      referenceNumber:
-        typeof referenceNumber === "string" &&
-        referenceNumber.trim().length > 0
-          ? referenceNumber.trim()
-          : undefined,
+      referenceNumber: toOptionalTrimmedString(referenceNumber),
       rimCode: selectedRimCode,
       rulerCode: selectedRulerCode,
       shapeCode: selectedShapeCode,

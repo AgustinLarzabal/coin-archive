@@ -6,16 +6,10 @@ import {
   applyFaceValueRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
-  findSelectedCodeOption,
   getCoinListLoaderDeps,
   updateCoinSearchFilter,
 } from "../lib/coin-search"
-import type {
-  PositiveNumberFilterValue,
-  TextCoinSearchFilterName,
-} from "../lib/coin-search"
-import { coinCodeFilterConfigs } from "../lib/coin-filter-configs"
-import { NamedCodeFilterCombobox } from "../components/named-code-filter-combobox"
+import type { PositiveNumberFilterValue } from "../lib/coin-search"
 
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
@@ -42,17 +36,6 @@ function App() {
   const filterOptions = rootRouteApi.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-
-  async function updateSearchFilter(
-    filterName: TextCoinSearchFilterName,
-    filterValue: string | undefined
-  ) {
-    await navigate({
-      resetScroll: false,
-      search: (currentSearch) =>
-        updateCoinSearchFilter(currentSearch, filterName, filterValue),
-    })
-  }
 
   async function updateHomeFilters({
     catalogueCode,
@@ -266,38 +249,6 @@ function App() {
         selectedToYear={search.toYear}
         onFiltersChange={updateHomeFilters}
       />
-      {coinCodeFilterConfigs
-        .filter(
-          ({ name }) =>
-            name !== "catalogue" &&
-            name !== "composition" &&
-            name !== "currency" &&
-            name !== "distribution" &&
-            name !== "demonetization" &&
-            name !== "edge" &&
-            name !== "engraver" &&
-            name !== "issuer" &&
-            name !== "mint" &&
-            name !== "orientation" &&
-            name !== "rim" &&
-            name !== "shape" &&
-            name !== "technique" &&
-            name !== "theme" &&
-            name !== "ruler"
-        )
-        .map(({ name, getItems, ...comboboxProps }) => {
-          const items = getItems(filterOptions)
-
-          return (
-            <NamedCodeFilterCombobox
-              key={name}
-              items={items}
-              onValueChange={(option) => updateSearchFilter(name, option?.code)}
-              selectedItem={findSelectedCodeOption(items, search[name])}
-              {...comboboxProps}
-            />
-          )
-        })}
 
       <div className="grid grid-cols-5 gap-6">
         {coins.map((coin) => (

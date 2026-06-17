@@ -5,119 +5,9 @@ import { HomeFilters } from "./home-filters"
 const timestamp = new Date("2026-06-08T00:00:00.000Z")
 
 describe("HomeFilters", () => {
-  it("renders catalogue, composition, currency, distribution, demonetization, edge, engraver, mint, orientation, rim, shape, minting technique, theme, issuer, and ruler selections in the new home filter bar", () => {
+  it("renders only the issuer selection in the home filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
-        catalogues={[
-          {
-            id: "catalogue-1",
-            code: "KM",
-            title: "Standard Catalog of World Coins",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        compositions={[
-          {
-            id: "composition-1",
-            code: "silver-900",
-            name: "Silver (.900)",
-            description: null,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        currencies={[
-          {
-            id: "currency-1",
-            code: "euro",
-            name: "Euro",
-            fullName: "Euro (2002-date)",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        distributions={[
-          {
-            id: "distribution-1",
-            code: "standard-circulation",
-            name: "Standard circulation",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        edges={[
-          {
-            id: "edge-1",
-            code: "reeded",
-            name: "Reeded",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        engravers={[
-          {
-            id: "engraver-1",
-            code: "georgios-stamatopoulos",
-            name: "Georgios Stamatopoulos",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        mints={[
-          {
-            id: "mint-1",
-            code: "royal-mint-of-madrid",
-            name: "Royal Mint of Madrid",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        orientations={[
-          {
-            id: "orientation-1",
-            code: "coin-alignment",
-            name: "Coin alignment",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        rims={[
-          {
-            id: "rim-1",
-            code: "raised-both-sides",
-            name: "Raised, both sides",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        shapes={[
-          {
-            id: "shape-1",
-            code: "round",
-            name: "Round",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        techniques={[
-          {
-            id: "technique-1",
-            code: "milled",
-            name: "Milled",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
-        themes={[
-          {
-            id: "theme-1",
-            code: "map",
-            name: "Map",
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          },
-        ]}
         issuers={[
           {
             id: "issuer-1",
@@ -129,74 +19,32 @@ describe("HomeFilters", () => {
           },
         ]}
         onFiltersChange={() => Promise.resolve()}
-        rulers={[
-          {
-            id: "ruler-1",
-            code: "felipe-vi",
-            name: "Felipe VI",
-            createdAt: timestamp,
-            group: null,
-            updatedAt: timestamp,
-          },
-        ]}
-        selectedCatalogueCode="KM"
-        selectedCompositionCode="silver-900"
-        selectedCurrencyCode="euro"
-        selectedDistributionCode="standard-circulation"
-        selectedDemonetization="not-demonetized"
-        selectedEdgeCode="reeded"
-        selectedEngraverCode="georgios-stamatopoulos"
-        selectedFromYear={1898}
         selectedIssuerCode="spain"
-        selectedMaxDiameter={24}
-        selectedMaxThickness={2.1}
-        selectedMaxValue={2}
-        selectedMaxWeight={7}
-        selectedMinDiameter={23}
-        selectedMinThickness={1.9}
-        selectedMinValue={0.5}
-        selectedMinWeight={6}
-        selectedMintCode="royal-mint-of-madrid"
-        selectedOrientationCode="coin-alignment"
-        selectedReferenceNumber="123"
-        selectedRimCode="raised-both-sides"
-        selectedShapeCode="round"
-        selectedTechniqueCode="milled"
-        selectedThemeCode="map"
-        selectedToYear={1902}
-        selectedRulerCode="felipe-vi"
       />
     )
 
-    expect(markup).toContain("Standard Catalog of World Coins")
-    expect(markup).toContain("KM")
-    expect(markup).toContain("Silver (.900)")
-    expect(markup).toContain("Euro")
-    expect(markup).toContain("Standard circulation")
-    expect(markup).toContain("Not demonetized")
-    expect(markup).toContain("Reeded")
-    expect(markup).toContain("Georgios Stamatopoulos")
-    expect(markup).toContain("Issue Year")
-    expect(markup).toContain("1898 - 1902")
-    expect(markup).toContain("Reference number")
-    expect(markup).toContain("123")
-    expect(markup).toContain("Apply reference")
-    expect(markup).toContain("Face Value")
-    expect(markup).toContain("0.5 - 2")
-    expect(markup).toContain("Weight")
-    expect(markup).toContain("6 - 7 g")
-    expect(markup).toContain("Diameter")
-    expect(markup).toContain("23 - 24 mm")
-    expect(markup).toContain("Thickness")
-    expect(markup).toContain("1.9 - 2.1 mm")
-    expect(markup).toContain("Royal Mint of Madrid")
-    expect(markup).toContain("Coin alignment")
-    expect(markup).toContain("Raised, both sides")
-    expect(markup).toContain("Round")
-    expect(markup).toContain("Milled")
-    expect(markup).toContain("Map")
+    expect(markup).toContain("Issuer")
     expect(markup).toContain("Spain")
-    expect(markup).toContain("Felipe VI")
     expect(markup).toContain("Clear")
+    expect(markup).not.toContain("Catalogue")
+    expect(markup).not.toContain("Composition")
+    expect(markup).not.toContain("Currency")
+    expect(markup).not.toContain("Distribution")
+    expect(markup).not.toContain("Demonetization Status")
+    expect(markup).not.toContain("Edge")
+    expect(markup).not.toContain("Engraver")
+    expect(markup).not.toContain("Issue Year")
+    expect(markup).not.toContain("Reference number")
+    expect(markup).not.toContain("Face Value")
+    expect(markup).not.toContain("Weight")
+    expect(markup).not.toContain("Diameter")
+    expect(markup).not.toContain("Thickness")
+    expect(markup).not.toContain("Mint")
+    expect(markup).not.toContain("Orientation")
+    expect(markup).not.toContain("Rim")
+    expect(markup).not.toContain("Shape")
+    expect(markup).not.toContain("Minting Technique")
+    expect(markup).not.toContain("Theme")
+    expect(markup).not.toContain("Ruler")
   })
 })

@@ -2,15 +2,10 @@ import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { getCoins } from "@workspace/db"
 import {
-  applyMeasurementRangeSearch,
-  applyIssueYearRangeSearch,
-  applyFaceValueRangeSearch,
   coinListInputSchema,
   coinSearchSchema,
   getCoinListLoaderDeps,
-  updateCoinSearchFilter,
 } from "../lib/coin-search"
-import type { PositiveNumberFilterValue } from "../lib/coin-search"
 
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
@@ -35,215 +30,21 @@ function App() {
   const navigate = Route.useNavigate()
 
   async function updateHomeFilters({
-    catalogueCode,
-    compositionCode,
-    currencyCode,
-    distributionCode,
-    demonetization,
-    edgeCode,
-    engraverCode,
-    fromYear,
     issuerCode,
-    maxDiameter,
-    maxThickness,
-    maxValue,
-    maxWeight,
-    minDiameter,
-    minThickness,
-    minValue,
-    minWeight,
-    mintCode,
-    orientationCode,
-    referenceNumber,
-    rimCode,
-    rulerCode,
-    shapeCode,
-    techniqueCode,
-    themeCode,
-    toYear,
   }: {
-    catalogueCode: string | undefined
-    compositionCode: string | undefined
-    currencyCode: string | undefined
-    distributionCode: string | undefined
-    demonetization: "demonetized" | "not-demonetized" | "unknown" | undefined
-    edgeCode: string | undefined
-    engraverCode: string | undefined
-    fromYear: number | undefined
     issuerCode: string | undefined
-    maxDiameter: PositiveNumberFilterValue
-    maxThickness: PositiveNumberFilterValue
-    maxValue: PositiveNumberFilterValue
-    maxWeight: PositiveNumberFilterValue
-    minDiameter: PositiveNumberFilterValue
-    minThickness: PositiveNumberFilterValue
-    minValue: PositiveNumberFilterValue
-    minWeight: PositiveNumberFilterValue
-    mintCode: string | undefined
-    orientationCode: string | undefined
-    referenceNumber: string | undefined
-    rimCode: string | undefined
-    rulerCode: string | undefined
-    shapeCode: string | undefined
-    techniqueCode: string | undefined
-    themeCode: string | undefined
-    toYear: number | undefined
   }) {
     await navigate({
       resetScroll: false,
-      search: (currentSearch) => {
-        const searchWithCatalogue = updateCoinSearchFilter(
-          currentSearch,
-          "catalogue",
-          catalogueCode
-        )
-        const searchWithComposition = updateCoinSearchFilter(
-          searchWithCatalogue,
-          "composition",
-          compositionCode
-        )
-        const searchWithCurrency = updateCoinSearchFilter(
-          searchWithComposition,
-          "currency",
-          currencyCode
-        )
-        const searchWithDistribution = updateCoinSearchFilter(
-          searchWithCurrency,
-          "distribution",
-          distributionCode
-        )
-        const searchWithDemonetization = updateCoinSearchFilter(
-          searchWithDistribution,
-          "demonetization",
-          demonetization
-        )
-        const searchWithEdge = updateCoinSearchFilter(
-          searchWithDemonetization,
-          "edge",
-          edgeCode
-        )
-        const searchWithEngraver = updateCoinSearchFilter(
-          searchWithEdge,
-          "engraver",
-          engraverCode
-        )
-        const searchWithIssuer = updateCoinSearchFilter(
-          searchWithEngraver,
-          "issuer",
-          issuerCode
-        )
-        const searchWithMint = updateCoinSearchFilter(
-          searchWithIssuer,
-          "mint",
-          mintCode
-        )
-        const searchWithOrientation = updateCoinSearchFilter(
-          searchWithMint,
-          "orientation",
-          orientationCode
-        )
-        const searchWithReferenceNumber = updateCoinSearchFilter(
-          searchWithOrientation,
-          "referenceNumber",
-          catalogueCode ? referenceNumber : undefined
-        )
-        const searchWithRim = updateCoinSearchFilter(
-          searchWithReferenceNumber,
-          "rim",
-          rimCode
-        )
-        const searchWithShape = updateCoinSearchFilter(
-          searchWithRim,
-          "shape",
-          shapeCode
-        )
-        const searchWithTechnique = updateCoinSearchFilter(
-          searchWithShape,
-          "technique",
-          techniqueCode
-        )
-        const searchWithTheme = updateCoinSearchFilter(
-          searchWithTechnique,
-          "theme",
-          themeCode
-        )
-        const searchWithRuler = updateCoinSearchFilter(
-          searchWithTheme,
-          "ruler",
-          rulerCode
-        )
-
-        const searchWithIssueYearRange = applyIssueYearRangeSearch(
-          searchWithRuler,
-          {
-            fromYear,
-            toYear,
-          }
-        )
-
-        const searchWithFaceValueRange = applyFaceValueRangeSearch(
-          searchWithIssueYearRange,
-          {
-            minValue,
-            maxValue,
-          }
-        )
-
-        return applyMeasurementRangeSearch(searchWithFaceValueRange, {
-          minWeight,
-          maxWeight,
-          minDiameter,
-          maxDiameter,
-          minThickness,
-          maxThickness,
-        })
-      },
+      search: issuerCode ? { issuer: issuerCode } : {},
     })
   }
 
   return (
     <div className="p-6">
       <HomeFilters
-        catalogues={filterOptions.catalogues}
-        compositions={filterOptions.compositions}
-        currencies={filterOptions.currencies}
-        distributions={filterOptions.distributions}
-        edges={filterOptions.edges}
-        engravers={filterOptions.engravers}
         issuers={filterOptions.issuers}
-        mints={filterOptions.mints}
-        orientations={filterOptions.orientations}
-        rims={filterOptions.rims}
-        rulers={filterOptions.rulers}
-        shapes={filterOptions.shapes}
-        techniques={filterOptions.techniques}
-        themes={filterOptions.themes}
-        selectedCatalogueCode={search.catalogue}
-        selectedCompositionCode={search.composition}
-        selectedCurrencyCode={search.currency}
-        selectedDistributionCode={search.distribution}
-        selectedDemonetization={search.demonetization}
-        selectedEdgeCode={search.edge}
-        selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
-        selectedFromYear={search.fromYear}
-        selectedMaxDiameter={search.maxDiameter}
-        selectedMaxThickness={search.maxThickness}
-        selectedMaxValue={search.maxValue}
-        selectedMaxWeight={search.maxWeight}
-        selectedMinDiameter={search.minDiameter}
-        selectedMinThickness={search.minThickness}
-        selectedMinValue={search.minValue}
-        selectedMinWeight={search.minWeight}
-        selectedMintCode={search.mint}
-        selectedOrientationCode={search.orientation}
-        selectedReferenceNumber={search.referenceNumber}
-        selectedRimCode={search.rim}
-        selectedRulerCode={search.ruler}
-        selectedShapeCode={search.shape}
-        selectedTechniqueCode={search.technique}
-        selectedThemeCode={search.theme}
-        selectedToYear={search.toYear}
         onFiltersChange={updateHomeFilters}
       />
 

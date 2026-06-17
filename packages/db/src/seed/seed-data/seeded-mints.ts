@@ -38,8 +38,8 @@ export const seededMints: SeededMint[] = [
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },
   {
-    code: "royal-spanish-mint-fabrica-nacional-de-moneda-y-timbre-fnmt-rcm-madrid-spain",
-    name: "monnaie-de-paris-a-paris-france",
+    code: "monnaie-de-paris-a-paris-france",
+    name: "Monnaie de Paris, Paris, France",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },

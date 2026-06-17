@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
-import { seededCoinSurfaces, seededIssuers } from "./seed-data"
+import { seededCoinSurfaces, seededIssuers, seededMints } from "./seed-data"
 
 describe("SeededCoin", () => {
   it("accepts nullable comments in seed input", () => {
@@ -69,5 +69,11 @@ describe("seededIssuers", () => {
         expect.objectContaining({ code: "spain", isoCode: "ES" }),
       ])
     )
+  })
+})
+
+describe("seededMints", () => {
+  it("uses unique mint codes", () => {
+    expect(new Set(seededMints.map(({ code }) => code)).size).toBe(seededMints.length)
   })
 })

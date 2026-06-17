@@ -31,8 +31,8 @@ export const issuer = pgTable(
       .primaryKey()
       .default(sql`uuidv7()`),
     code: varchar("code", { length: 255 }).notNull(),
-    name: varchar("name", { length: 255 }).notNull(),
     isoCode: varchar("iso_code", { length: 2 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
     parentIssuerId: uuid("parent_issuer_id").references(
       (): AnyPgColumn => issuer.id,
       {

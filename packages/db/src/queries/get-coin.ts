@@ -30,7 +30,7 @@ function mapIssuer(row: GetCoinRow): CoinIssuer {
 }
 
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
-  const [firstRow] = rows
+  const firstRow = rows.at(0)
 
   if (!firstRow) {
     return null

@@ -7,11 +7,11 @@ import type { Issuer } from "../schema/issuer"
 const getIssuersSelection = {
   id: issuer.id,
   code: issuer.code,
-  name: issuer.name,
   isoCode: issuer.isoCode,
+  name: issuer.name,
 }
 
-export type IssuerOption = Pick<Issuer, "id" | "code" | "name" | "isoCode">
+export type IssuerOption = Pick<Issuer, "id" | "code" | "isoCode" | "name">
 
 export async function getIssuers(): Promise<IssuerOption[]> {
   return db

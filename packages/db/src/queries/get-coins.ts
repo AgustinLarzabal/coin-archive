@@ -51,8 +51,8 @@ export function buildGetCoinsQuery(
       title: coin.title,
       issuerId: issuer.id,
       issuerCode: issuer.code,
-      issuerName: issuer.name,
       issuerIsoCode: issuer.isoCode,
+      issuerName: issuer.name,
     })
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))

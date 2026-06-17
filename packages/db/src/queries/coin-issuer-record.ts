@@ -1,8 +1,8 @@
 export type CoinIssuerSummary = {
   id: string
   code: string
-  name: string
   isoCode: string
+  name: string
 }
 
 export type CoinIssuer = CoinIssuerSummary & {

@@ -5,8 +5,8 @@ export type GetCoinsRow = {
   title: string
   issuerId: string
   issuerCode: string
-  issuerName: string
   issuerIsoCode: string
+  issuerName: string
 }
 
 export type CoinListRecord = {
@@ -24,8 +24,8 @@ export function mapGetCoinsRowsToCoinRecords(
     issuer: {
       id: row.issuerId,
       code: row.issuerCode,
-      name: row.issuerName,
       isoCode: row.issuerIsoCode,
+      name: row.issuerName,
     },
   }))
 }

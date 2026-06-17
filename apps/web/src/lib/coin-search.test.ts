@@ -35,6 +35,22 @@ describe("coinSearchSchema", () => {
       })
     ).toStrictEqual(currentSearch)
   })
+
+  it("normalizes issuer search params", () => {
+    expect(
+      coinSearchSchema.parse({
+        issuer: "  SPAIN  ",
+      })
+    ).toStrictEqual(currentSearch)
+  })
+
+  it("drops blank issuer search params", () => {
+    expect(
+      coinSearchSchema.parse({
+        issuer: "   ",
+      })
+    ).toStrictEqual({})
+  })
 })
 
 describe("coinListInputSchema", () => {
@@ -44,6 +60,14 @@ describe("coinListInputSchema", () => {
         issuerCode: "spain",
         catalogueCode: "km",
         minValue: 1,
+      })
+    ).toStrictEqual(baseCoinListLoaderDeps)
+  })
+
+  it("normalizes issuer loader inputs", () => {
+    expect(
+      coinListInputSchema.parse({
+        issuerCode: "  SPAIN  ",
       })
     ).toStrictEqual(baseCoinListLoaderDeps)
   })

@@ -1,13 +1,25 @@
 import { z } from "zod"
 
-const optionalStringSchema = z.string().optional()
+const optionalIssuerCodeSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return undefined
+  }
 
-export const coinSearchSchema = z.object({
-  issuer: optionalStringSchema,
-})
+  const normalizedValue = value.trim().toLowerCase()
+
+  return normalizedValue === "" ? undefined : normalizedValue
+}, z.string().optional())
+
+export const coinSearchSchema = z
+  .object({
+    issuer: optionalIssuerCodeSchema,
+  })
+  .transform((search): { issuer?: string } =>
+    search.issuer ? { issuer: search.issuer } : {}
+  )
 
 export const coinListInputSchema = z.object({
-  issuerCode: optionalStringSchema,
+  issuerCode: optionalIssuerCodeSchema,
 })
 
 export type CoinSearch = z.infer<typeof coinSearchSchema>

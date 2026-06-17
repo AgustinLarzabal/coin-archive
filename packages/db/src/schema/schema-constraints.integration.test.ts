@@ -55,8 +55,8 @@ import { catalogueSchemaNames } from "./catalogue"
 import {
   coinSurfaceKinds,
   coinSurfaceSchemaNames,
-  type CoinSurfaceKind,
 } from "./coin-surface"
+import type { CoinSurfaceKind } from "./coin-surface"
 import { coinSurfaceEngraverSchemaNames } from "./coin-surface-engraver"
 import { coinReferenceSchemaNames } from "./coin-reference"
 import { coinRulerSchemaNames } from "./coin-ruler"
@@ -102,7 +102,7 @@ async function expectCountQueryResult(
   expect(result?.count).toBe(expectedCount)
 }
 
-async function createCoinDependencies() {
+async function createCoinDependencies(codeSuffix = "") {
   const [
     createdIssuer,
     createdDistribution,
@@ -110,20 +110,20 @@ async function createCoinDependencies() {
     createdCurrency,
   ] = await Promise.all([
     createIssuer({
-      code: "athens",
+      code: `athens${codeSuffix}`,
       name: "Athens",
     }),
     createDistribution({
-      code: "standard-circulation",
+      code: `standard-circulation${codeSuffix}`,
       name: "Standard circulation",
     }),
     createComposition({
-      code: "silver-900",
+      code: `silver-900${codeSuffix}`,
       description: "Ninety percent silver alloy.",
       name: "Silver (.900)",
     }),
     createCurrency({
-      code: "euro",
+      code: `euro${codeSuffix}`,
       fullName: "Euro (2002-date)",
       name: "Euro",
     }),
@@ -989,6 +989,29 @@ describe("issuer schema constraints", () => {
     )
   })
 
+  it("rejects an issuer grouping cycle across multiple issuers", async () => {
+    const parentIssuer = await createIssuer({
+      code: "roman-empire",
+      isoCode: "IT",
+      name: "Roman Empire",
+    })
+    const childIssuer = await createIssuer({
+      code: "byzantine-empire",
+      isoCode: "TR",
+      name: "Byzantine Empire",
+      parentIssuerId: parentIssuer.id,
+    })
+
+    await expectConstraintError(
+      db
+        .update(issuer)
+        .set({ parentIssuerId: childIssuer.id })
+        .where(sql`${issuer.id} = ${parentIssuer.id}`),
+      issuerSchemaNames.parentIssuerIdCycleCheck,
+      "23514"
+    )
+  })
+
   it("restricts deleting an issuer while coins still reference it", async () => {
     const { compositionId, currencyId, distributionId, issuerId } =
       await createCoinDependencies()
@@ -1477,9 +1500,13 @@ describe("coin surface schema constraints", () => {
     "https://example.com/trim-me ",
   ] as const
 
+  function getFixtureCodeSuffix(title: string) {
+    return `-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`
+  }
+
   async function createSurfaceConstraintCoin(title: string) {
     const { compositionId, currencyId, distributionId, issuerId } =
-      await createCoinDependencies()
+      await createCoinDependencies(getFixtureCodeSuffix(title))
 
     return createCoin({
       title,

@@ -1,3 +1,5 @@
+import type { CoinListIssuer } from "./coin-issuer-record"
+
 export type GetCoinsRow = {
   id: string
   title: string
@@ -6,24 +8,6 @@ export type GetCoinsRow = {
   issuerName: string
   issuerIsoCode: string
 }
-
-export type CoinIssuerParent = {
-  id: string
-  code: string
-  name: string
-  isoCode: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type CoinIssuer = CoinIssuerParent & {
-  parent: CoinIssuerParent | null
-}
-
-export type CoinListIssuer = Pick<
-  CoinIssuer,
-  "id" | "code" | "name" | "isoCode"
->
 
 export type CoinListRecord = {
   id: string

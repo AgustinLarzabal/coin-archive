@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 import { db } from "../client"
 import { coin } from "../schema/coin"
 import { issuer } from "../schema/issuer"
-import type { CoinIssuer } from "./map-get-coins-row"
+import type { CoinIssuer } from "./coin-issuer-record"
 
 export type CoinDetailRecord = {
   id: string
@@ -17,8 +17,6 @@ type GetCoinRow = {
   issuerCode: string
   issuerIsoCode: string
   issuerName: string
-  issuerCreatedAt: Date
-  issuerUpdatedAt: Date
 }
 
 function mapIssuer(row: GetCoinRow): CoinIssuer {
@@ -27,8 +25,6 @@ function mapIssuer(row: GetCoinRow): CoinIssuer {
     code: row.issuerCode,
     isoCode: row.issuerIsoCode,
     name: row.issuerName,
-    createdAt: row.issuerCreatedAt,
-    updatedAt: row.issuerUpdatedAt,
     parent: null,
   }
 }
@@ -58,8 +54,6 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
-      issuerCreatedAt: issuer.createdAt,
-      issuerUpdatedAt: issuer.updatedAt,
     })
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))

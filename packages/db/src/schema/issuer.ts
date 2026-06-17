@@ -15,6 +15,7 @@ export const issuerSchemaNames = {
   codeUniqueIndex: "issuer_code_unique_idx",
   isoCodeFormatCheck: "issuer_iso_code_format_check",
   parentIssuerIdIndex: "issuer_parent_issuer_id_idx",
+  parentIssuerIdCycleCheck: "issuer_parent_issuer_id_cycle_check",
   parentIssuerIdSelfCheck: "issuer_parent_issuer_id_self_check",
 } as const
 

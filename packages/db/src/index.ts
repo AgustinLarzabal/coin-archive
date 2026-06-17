@@ -42,7 +42,9 @@ export type { GetCoinsOptions } from "./queries/get-coins"
 export type {
   CoinIssuer,
   CoinListIssuer,
-  CoinIssuerParent,
+  CoinIssuerSummary,
+} from "./queries/coin-issuer-record"
+export type {
   CoinListRecord,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"

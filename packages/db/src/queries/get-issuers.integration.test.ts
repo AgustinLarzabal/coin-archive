@@ -30,24 +30,18 @@ describe("getIssuers integration", () => {
         code: "bank-of-canada",
         name: "Bank of Canada",
         isoCode: "CA",
-        createdAt: bankOfCanada.createdAt,
-        updatedAt: bankOfCanada.updatedAt,
       },
       {
         id: casaDaMoeda.id,
         code: "casa-da-moeda",
         name: "Issuer",
         isoCode: "BR",
-        createdAt: casaDaMoeda.createdAt,
-        updatedAt: casaDaMoeda.updatedAt,
       },
       {
         id: royalMint.id,
         code: "royal-mint",
         name: "Issuer",
         isoCode: "GB",
-        createdAt: royalMint.createdAt,
-        updatedAt: royalMint.updatedAt,
       },
     ])
   })

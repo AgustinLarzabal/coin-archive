@@ -27,8 +27,8 @@ function buildIssuerTreeFilter(
       with recursive issuer_tree(id) as (
         select "issuer"."id"
         from "issuer"
-        where lower("issuer"."code") = ${normalizedIssuerCode}
-        union all
+        where "issuer"."code" = ${normalizedIssuerCode}
+        union
         select "child_issuer"."id"
         from "issuer" as "child_issuer"
         inner join issuer_tree on "child_issuer"."parent_issuer_id" = issuer_tree.id

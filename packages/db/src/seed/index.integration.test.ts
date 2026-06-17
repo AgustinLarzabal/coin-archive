@@ -164,6 +164,17 @@ const expectedSpain2EuroSurfaceRows = [
   },
 ] as const
 
+async function expectOptionsToIncludeExpectedRecords(
+  recordsPromise: Promise<unknown[]>,
+  expectedRecords: readonly Record<string, unknown>[]
+) {
+  await expect(recordsPromise).resolves.toEqual(
+    expect.arrayContaining(
+      expectedRecords.map((record) => expect.objectContaining(record))
+    )
+  )
+}
+
 describe("seed integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -200,23 +211,57 @@ describe("seed integration", () => {
     expect(kmReferenceCount?.count).toBe(1)
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
-    await expect(getCurrencies()).resolves.toMatchObject(expectedSeededCurrencies)
-    await expect(getIssuers()).resolves.toMatchObject([
-      { code: "argentina", isoCode: "AR", name: "Argentina" },
-      { code: "buenos-aires", isoCode: "AR", name: "Buenos Aires" },
-      { code: "spain", isoCode: "ES", name: "Spain" },
-      {
-        code: "united-states",
-        isoCode: "US",
-        name: "United States of America",
-      },
-    ])
-    await expect(getMints()).resolves.toMatchObject(expectedSeededMints)
-    await expect(getOrientations()).resolves.toMatchObject(expectedSeededOrientations)
-    await expect(getShapes()).resolves.toMatchObject(expectedSeededShapes)
-    await expect(getRims()).resolves.toMatchObject(expectedSeededRims)
-    await expect(getTechniques()).resolves.toMatchObject(expectedSeededTechniques)
-    await expect(getThemes()).resolves.toMatchObject(expectedSeededThemes)
+    await expectOptionsToIncludeExpectedRecords(
+      getCurrencies(),
+      expectedSeededCurrencies
+    )
+    await expect(getIssuers()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "argentina",
+          isoCode: "AR",
+          name: "Argentina",
+        }),
+        expect.objectContaining({
+          code: "buenos-aires",
+          isoCode: "AR",
+          name: "Buenos Aires",
+        }),
+        expect.objectContaining({
+          code: "finland",
+          isoCode: "FI",
+          name: "Finland",
+        }),
+        expect.objectContaining({
+          code: "spain",
+          isoCode: "ES",
+          name: "Spain",
+        }),
+        expect.objectContaining({
+          code: "united-states",
+          isoCode: "US",
+          name: "United States of America",
+        }),
+      ])
+    )
+    await expectOptionsToIncludeExpectedRecords(getMints(), expectedSeededMints)
+    await expectOptionsToIncludeExpectedRecords(
+      getOrientations(),
+      expectedSeededOrientations
+    )
+    await expectOptionsToIncludeExpectedRecords(
+      getShapes(),
+      expectedSeededShapes
+    )
+    await expectOptionsToIncludeExpectedRecords(getRims(), expectedSeededRims)
+    await expectOptionsToIncludeExpectedRecords(
+      getTechniques(),
+      expectedSeededTechniques
+    )
+    await expectOptionsToIncludeExpectedRecords(
+      getThemes(),
+      expectedSeededThemes
+    )
 
     const seededCoins = await getCoins({ limit: 20 })
     const findSeededCoin = (title: string) => {

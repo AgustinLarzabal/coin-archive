@@ -3,8 +3,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { CoinDetailPage } from "./coins.$coinId"
 
-const timestamp = new Date("2026-06-15T00:00:00.000Z")
-
 const baseCoin: CoinDetailRecord = {
   id: "coin-1",
   title: "Detail Test Coin",
@@ -13,8 +11,6 @@ const baseCoin: CoinDetailRecord = {
     code: "spain",
     isoCode: "ES",
     name: "Spain",
-    createdAt: timestamp,
-    updatedAt: timestamp,
     parent: null,
   },
 }

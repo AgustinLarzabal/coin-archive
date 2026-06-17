@@ -64,6 +64,13 @@
       "when": 1781516521965,
       "tag": "0008_rich_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781740800000,
+      "tag": "0009_prevent_issuer_grouping_cycles",
+      "breakpoints": true
     }
   ]
 }

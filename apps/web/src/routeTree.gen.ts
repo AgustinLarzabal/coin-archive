@@ -9,15 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as JsonRouteImport } from './routes/json'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoinsCoinIdRouteImport } from './routes/coins.$coinId'
 
-const JsonRoute = JsonRouteImport.update({
-  id: '/json',
-  path: '/json',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,43 +25,32 @@ const CoinsCoinIdRoute = CoinsCoinIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/json': typeof JsonRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/json': typeof JsonRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/json': typeof JsonRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/json' | '/coins/$coinId'
+  fullPaths: '/' | '/coins/$coinId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/json' | '/coins/$coinId'
-  id: '__root__' | '/' | '/json' | '/coins/$coinId'
+  to: '/' | '/coins/$coinId'
+  id: '__root__' | '/' | '/coins/$coinId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  JsonRoute: typeof JsonRoute
   CoinsCoinIdRoute: typeof CoinsCoinIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/json': {
-      id: '/json'
-      path: '/json'
-      fullPath: '/json'
-      preLoaderRoute: typeof JsonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -87,7 +70,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  JsonRoute: JsonRoute,
   CoinsCoinIdRoute: CoinsCoinIdRoute,
 }
 export const routeTree = rootRouteImport

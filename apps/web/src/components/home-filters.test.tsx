@@ -2,8 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { HomeFilters } from "./home-filters"
 
-const timestamp = new Date("2026-06-08T00:00:00.000Z")
-
 describe("HomeFilters", () => {
   it("renders only the issuer selection in the home filter bar", () => {
     const markup = renderToStaticMarkup(
@@ -14,8 +12,6 @@ describe("HomeFilters", () => {
             code: "spain",
             isoCode: "ES",
             name: "Spain",
-            createdAt: timestamp,
-            updatedAt: timestamp,
           },
         ]}
         onFiltersChange={() => Promise.resolve()}

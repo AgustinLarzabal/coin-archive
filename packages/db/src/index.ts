@@ -11,7 +11,6 @@ export { getRims } from "./queries/get-rims"
 export { getShapes } from "./queries/get-shapes"
 export { getTechniques } from "./queries/get-techniques"
 export { getThemes } from "./queries/get-themes"
-export { demonetizationFilterValues } from "./queries/get-coins"
 export { buildGetCoinsQuery, getCoins } from "./queries/get-coins"
 export { getFullCoin } from "./queries/get-full-coin"
 export { getDistributions } from "./queries/get-distributions"
@@ -39,34 +38,12 @@ export { rulerGroup } from "./schema/ruler-group"
 export { shape } from "./schema/shape"
 export { technique } from "./schema/technique"
 export { theme } from "./schema/theme"
+export type { GetCoinsOptions } from "./queries/get-coins"
 export type {
-  DemonetizationFilterValue,
-  GetCoinsOptions,
-} from "./queries/get-coins"
-export type {
-  CoinCatalogue,
-  CoinCatalogueReference,
-  CoinComposition,
-  CoinCurrency,
-  CoinDistribution,
-  CoinEdge,
-  CoinEngraver,
-  CoinFaceValue,
-  CoinListEdgeSurface,
-  CoinIssueYearRange,
   CoinIssuer,
-  CoinRecordMint,
+  CoinListIssuer,
   CoinIssuerParent,
   CoinListRecord,
-  CoinMeasurements,
-  CoinOrientation,
-  CoinRim,
-  CoinRulerGroup,
-  CoinShape,
-  CoinSurfaceSet,
-  CoinTechnique,
-  CoinThemeRecord,
-  CoinListSurfaceDetails,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"

@@ -228,234 +228,79 @@ describe("seed integration", () => {
     }
 
     expect(findSeededCoin("United States National Park Quarter")).toMatchObject({
+      id: expect.any(String),
       title: "United States National Park Quarter",
       issuer: {
+        id: expect.any(String),
         code: "united-states",
         isoCode: "US",
         name: "United States of America",
       },
-      mints: [
-        {
-          code: "denver-mint",
-          name: "Denver Mint",
-        },
-        {
-          code: "philadelphia-mint",
-          name: "Philadelphia Mint",
-        },
-      ],
-      themes: [
-        {
-          code: "animal",
-          name: "Animal",
-        },
-        {
-          code: "plant",
-          name: "Plant",
-        },
-      ],
-      issueYearRange: {
-        minYear: 2014,
-        maxYear: 2026,
-      },
-      shape: {
-        code: "round",
-        name: "Round",
-      },
-      rim: {
-        code: "raised-both-sides",
-        name: "Raised, both sides",
-      },
-      composition: {
-        code: "copper-nickel-clad",
-        name: "Copper-nickel clad",
-        description: "Copper core with copper-nickel outer layers.",
-      },
-      measurements: {
-        weight: 8.1,
-        diameter: 26.5,
-        thickness: 2,
-      },
-      orientation: {
-        code: "coin-alignment",
-        name: "Coin alignment",
-      },
-      technique: {
-        code: "milled",
-        name: "Milled",
-      },
-      distribution: {
-        code: "standard-circulation",
-        name: "Standard circulation",
-      },
     })
 
     expect(findSeededCoin("Buenos Aires Transition Half Real")).toMatchObject({
+      id: expect.any(String),
       title: "Buenos Aires Transition Half Real",
       issuer: {
+        id: expect.any(String),
         code: "buenos-aires",
         isoCode: "AR",
         name: "Buenos Aires",
-        parent: {
-          code: "argentina",
-          isoCode: "AR",
-          name: "Argentina",
-        },
-      },
-      composition: {
-        code: "silver-900",
-        name: "Silver (.900)",
-      },
-      issueYearRange: {
-        minYear: -2,
-        maxYear: 0,
-      },
-      measurements: {
-        weight: 3.8,
-        diameter: 18.5,
-        thickness: 1.4,
       },
     })
 
     expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
+      id: expect.any(String),
       title: "Argentina Copper Peso",
-      comments: null,
-      composition: {
-        code: "copper",
-        name: "Copper",
-        description: null,
-      },
-      measurements: {
-        weight: null,
-        diameter: 22,
-        thickness: null,
+      issuer: {
+        id: expect.any(String),
+        code: "argentina",
+        isoCode: "AR",
+        name: "Argentina",
       },
     })
 
     expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
+      id: expect.any(String),
       title: "Spain 2 Euro",
-      comments:
-        "Common circulating commemorative format with a national obverse and shared euro reverse.",
-      isDemonetized: false,
-      mintage: 50000000,
-      edge: {
-        code: "lettered",
-        name: "Lettered",
+      issuer: {
+        id: expect.any(String),
+        code: "spain",
+        isoCode: "ES",
+        name: "Spain",
       },
-      mints: [
-        {
-          code: "royal-mint-of-madrid",
-          name: "Royal Mint of Madrid",
-        },
-      ],
-      themes: [
-        {
-          code: "building",
-          name: "Building",
-        },
-        {
-          code: "map",
-          name: "Map",
-        },
-      ],
-      faceValue: {
-        text: "2 Euros",
-        numericValue: 2,
-        currency: {
-          code: "euro",
-          name: "Euro",
-          fullName: "Euro (2002-date)",
-        },
-      },
-      orientation: {
-        code: "medal-alignment",
-        name: "Medal alignment",
-      },
-      technique: {
-        code: "milled",
-        name: "Milled",
-      },
-      surfaces: {
-        obverse: {
-          description: "Portrait of Felipe VI facing left.",
-          lettering: "FELIPE VI REY DE ESPANA",
-          engravers: [],
-        },
-        reverse: {
-          description: "Map of Europe with denomination.",
-          lettering: "2 EURO",
-          engravers: [
-            {
-              code: "georgios-stamatopoulos",
-              name: "Georgios Stamatópoulos",
-            },
-          ],
-        },
-        edge: {
-          description: "Finely reeded with incuse lettering.",
-          lettering: "2 **",
-        },
-      },
-      issueYearRange: {
-        minYear: 2002,
-        maxYear: 2026,
-      },
-      distribution: {
-        code: "circulating-commemorative",
-        name: "Circulating commemorative",
-      },
-      references: [
-        {
-          type: "catalogue",
-          number: "1338A",
-          catalogue: {
-            code: "KM",
-            title: "Standard Catalog of World Coins",
-          },
-        },
-      ],
-      rulers: [
-        {
-          code: "felipe-vi",
-          name: "Felipe VI",
-          group: {
-            code: "house-of-bourbon",
-            name: "House of Bourbon",
-          },
-        },
-      ],
     })
 
     expect(findSeededCoin("Buenos Aires 8 Reales 1813")).toMatchObject({
-      mints: [
-        {
-          code: "buenos-aires-mint",
-          name: "Buenos Aires Mint",
-        },
-      ],
+      id: expect.any(String),
+      title: "Buenos Aires 8 Reales 1813",
+      issuer: {
+        id: expect.any(String),
+        code: "buenos-aires",
+        isoCode: "AR",
+        name: "Buenos Aires",
+      },
     })
 
     expect(findSeededCoin("United States Lincoln Cent")).toMatchObject({
-      mints: [
-        {
-          code: "philadelphia-mint",
-          name: "Philadelphia Mint",
-        },
-      ],
-    })
-
-    expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
-      orientation: null,
-      technique: null,
-      themes: [],
-      mints: [],
+      id: expect.any(String),
+      title: "United States Lincoln Cent",
+      issuer: {
+        id: expect.any(String),
+        code: "united-states",
+        isoCode: "US",
+        name: "United States of America",
+      },
     })
 
     expect(findSeededCoin("Argentina Convertible Peso")).toMatchObject({
-      comments: null,
-      technique: {
-        code: "milled",
-        name: "Milled",
+      id: expect.any(String),
+      title: "Argentina Convertible Peso",
+      issuer: {
+        id: expect.any(String),
+        code: "argentina",
+        isoCode: "AR",
+        name: "Argentina",
       },
     })
   })

@@ -21,9 +21,7 @@ export function CoinCard({ coin }: CoinCardProps) {
       <Card className="transition-colors hover:bg-muted/30">
         <CardHeader>
           <CardTitle>{coin.title}</CardTitle>
-          <CardDescription>
-            {coin.issuer.name} · {coin.distribution.name}
-          </CardDescription>
+          <CardDescription>{coin.issuer.name}</CardDescription>
         </CardHeader>
       </Card>
     </Link>

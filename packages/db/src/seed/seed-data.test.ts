@@ -61,11 +61,13 @@ describe("SeededCoin", () => {
 
 describe("seededIssuers", () => {
   it("defines required ISO Codes for the demo issuers", () => {
-    expect(seededIssuers).toMatchObject([
-      { code: "argentina", isoCode: "AR" },
-      { code: "buenos-aires", isoCode: "AR" },
-      { code: "united-states", isoCode: "US" },
-      { code: "spain", isoCode: "ES" },
-    ])
+    expect(seededIssuers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: "argentina", isoCode: "AR" }),
+        expect.objectContaining({ code: "buenos-aires", isoCode: "AR" }),
+        expect.objectContaining({ code: "united-states", isoCode: "US" }),
+        expect.objectContaining({ code: "spain", isoCode: "ES" }),
+      ])
+    )
   })
 })

@@ -8,6 +8,7 @@ import {
 import { Slider } from "@workspace/ui/components/slider"
 import type { ReactNode } from "react"
 import { useEffect, useState } from "react"
+import { z } from "zod"
 import type { PositiveNumberFilterValue } from "../lib/coin-search"
 
 export const issueYearBounds = {
@@ -110,22 +111,43 @@ const thicknessRangeInputFields = [
   },
 ] as const satisfies readonly Omit<RangeTextFieldProps, "value" | "onChange">[]
 
-function isIssueYearRangeValue(
-  value: unknown
-): value is { min: number; max: number } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "min" in value &&
-    "max" in value &&
-    typeof value.min === "number" &&
-    typeof value.max === "number"
-  )
-}
+const positiveNumberRangeFieldSchema = z.union([
+  z.string(),
+  z.number().positive(),
+  z.null(),
+  z.undefined(),
+])
+
+const issueYearRangeValueSchema = z.object({
+  min: z.number().int(),
+  max: z.number().int(),
+})
+
+const faceValueRangeValueSchema = z.object({
+  minValue: positiveNumberRangeFieldSchema,
+  maxValue: positiveNumberRangeFieldSchema,
+})
+
+const weightRangeValueSchema = z.object({
+  minWeight: positiveNumberRangeFieldSchema,
+  maxWeight: positiveNumberRangeFieldSchema,
+})
+
+const diameterRangeValueSchema = z.object({
+  minDiameter: positiveNumberRangeFieldSchema,
+  maxDiameter: positiveNumberRangeFieldSchema,
+})
+
+const thicknessRangeValueSchema = z.object({
+  minThickness: positiveNumberRangeFieldSchema,
+  maxThickness: positiveNumberRangeFieldSchema,
+})
 
 export function getIssueYearRangeValue(value: unknown) {
-  if (isIssueYearRangeValue(value)) {
-    return value
+  const parsedValue = issueYearRangeValueSchema.safeParse(value)
+
+  if (parsedValue.success) {
+    return parsedValue.data
   }
 
   return {
@@ -134,18 +156,11 @@ export function getIssueYearRangeValue(value: unknown) {
   }
 }
 
-function isFaceValueRangeValue(value: unknown): value is FaceValueRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minValue" in value &&
-    "maxValue" in value
-  )
-}
-
 export function getFaceValueRangeValue(value: unknown): FaceValueRangeValue {
-  if (isFaceValueRangeValue(value)) {
-    return value
+  const parsedValue = faceValueRangeValueSchema.safeParse(value)
+
+  if (parsedValue.success) {
+    return parsedValue.data
   }
 
   return {
@@ -154,18 +169,11 @@ export function getFaceValueRangeValue(value: unknown): FaceValueRangeValue {
   }
 }
 
-function isWeightRangeValue(value: unknown): value is WeightRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minWeight" in value &&
-    "maxWeight" in value
-  )
-}
-
 export function getWeightRangeValue(value: unknown): WeightRangeValue {
-  if (isWeightRangeValue(value)) {
-    return value
+  const parsedValue = weightRangeValueSchema.safeParse(value)
+
+  if (parsedValue.success) {
+    return parsedValue.data
   }
 
   return {
@@ -174,18 +182,11 @@ export function getWeightRangeValue(value: unknown): WeightRangeValue {
   }
 }
 
-function isDiameterRangeValue(value: unknown): value is DiameterRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minDiameter" in value &&
-    "maxDiameter" in value
-  )
-}
-
 export function getDiameterRangeValue(value: unknown): DiameterRangeValue {
-  if (isDiameterRangeValue(value)) {
-    return value
+  const parsedValue = diameterRangeValueSchema.safeParse(value)
+
+  if (parsedValue.success) {
+    return parsedValue.data
   }
 
   return {
@@ -194,18 +195,11 @@ export function getDiameterRangeValue(value: unknown): DiameterRangeValue {
   }
 }
 
-function isThicknessRangeValue(value: unknown): value is ThicknessRangeValue {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "minThickness" in value &&
-    "maxThickness" in value
-  )
-}
-
 export function getThicknessRangeValue(value: unknown): ThicknessRangeValue {
-  if (isThicknessRangeValue(value)) {
-    return value
+  const parsedValue = thicknessRangeValueSchema.safeParse(value)
+
+  if (parsedValue.success) {
+    return parsedValue.data
   }
 
   return {

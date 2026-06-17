@@ -9,14 +9,9 @@ const getIssuersSelection = {
   code: issuer.code,
   name: issuer.name,
   isoCode: issuer.isoCode,
-  createdAt: issuer.createdAt,
-  updatedAt: issuer.updatedAt,
 }
 
-export type IssuerOption = Pick<
-  Issuer,
-  "id" | "code" | "name" | "isoCode" | "createdAt" | "updatedAt"
->
+export type IssuerOption = Pick<Issuer, "id" | "code" | "name" | "isoCode">
 
 export async function getIssuers(): Promise<IssuerOption[]> {
   return db

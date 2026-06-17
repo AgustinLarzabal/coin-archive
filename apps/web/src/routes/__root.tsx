@@ -1,74 +1,17 @@
+import { NotFound } from "@/components/not-found"
 import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import {
-  getCatalogues,
-  getCompositions,
-  getCurrencies,
-  getDistributions,
-  getEdges,
-  getEngravers,
-  getIssuers,
-  getMints,
-  getOrientations,
-  getRims,
-  getRulers,
-  getShapes,
-  getTechniques,
-  getThemes,
-} from "@workspace/db"
+import { getIssuers } from "@workspace/db"
 
 import appCss from "@workspace/ui/globals.css?url"
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {
-    const [
-      catalogues,
-      compositions,
-      currencies,
-      distributions,
-      edges,
-      engravers,
-      issuers,
-      mints,
-      orientations,
-      rims,
-      rulers,
-      shapes,
-      techniques,
-      themes,
-    ] = await Promise.all([
-      getCatalogues(),
-      getCompositions(),
-      getCurrencies(),
-      getDistributions(),
-      getEdges(),
-      getEngravers(),
-      getIssuers(),
-      getMints(),
-      getOrientations(),
-      getRims(),
-      getRulers(),
-      getShapes(),
-      getTechniques(),
-      getThemes(),
-    ])
+    const [issuers] = await Promise.all([getIssuers()])
 
     return {
-      catalogues,
-      compositions,
-      currencies,
-      distributions,
-      edges,
-      engravers,
       issuers,
-      mints,
-      orientations,
-      rims,
-      rulers,
-      shapes,
-      techniques,
-      themes,
     }
   }
 )
@@ -96,12 +39,7 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  notFoundComponent: () => (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>404</h1>
-      <p>The requested page could not be found.</p>
-    </main>
-  ),
+  notFoundComponent: () => <NotFound />,
   shellComponent: RootDocument,
 })
 

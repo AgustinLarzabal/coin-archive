@@ -3,6 +3,7 @@ import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
 import type { Filter, FilterFieldConfig } from "@workspace/ui/components/reui/filters"
 import { FunnelX, Globe, ListFilter } from "lucide-react"
+import { z } from "zod"
 
 type HomeFiltersProps = {
   issuers: IssuerOption[]
@@ -12,8 +13,12 @@ type HomeFiltersProps = {
   }) => Promise<void>
 }
 
-function toOptionalString(value: unknown) {
-  return typeof value === "string" && value.length > 0 ? value : undefined
+const issuerFilterValueSchema = z.string().trim().min(1)
+
+function toOptionalIssuerCode(value: unknown) {
+  const parsedValue = issuerFilterValueSchema.safeParse(value)
+
+  return parsedValue.success ? parsedValue.data : undefined
 }
 
 function getSingleFilterValue(filters: Filter[], field: Filter["field"]) {
@@ -61,7 +66,7 @@ export function HomeFilters({
     const issuerCode = getSingleFilterValue(nextFilters, "issuer")
 
     await onFiltersChange({
-      issuerCode: toOptionalString(issuerCode),
+      issuerCode: toOptionalIssuerCode(issuerCode),
     })
   }
 

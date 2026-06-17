@@ -9,6 +9,7 @@ import {
 
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
+import { EmptyState } from "@/components/home/empty-state"
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
@@ -41,18 +42,22 @@ function App() {
   }
 
   return (
-    <div className="p-6">
+    <div className="flex h-full flex-1 flex-col p-6">
       <HomeFilters
         issuers={filterOptions.issuers}
         selectedIssuerCode={search.issuer}
         onFiltersChange={updateHomeFilters}
       />
 
-      <div className="grid grid-cols-5 gap-6">
-        {coins.map((coin) => (
-          <CoinCard coin={coin} key={coin.id} />
-        ))}
-      </div>
+      {coins.length === 0 ? (
+        <EmptyState hasActiveFilters={search.issuer !== undefined} />
+      ) : (
+        <div className="grid grid-cols-5 gap-6">
+          {coins.map((coin) => (
+            <CoinCard coin={coin} key={coin.id} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

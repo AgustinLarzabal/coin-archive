@@ -15,7 +15,7 @@ const baseCoin: CoinDetailRecord = {
   },
 }
 
-function renderCoinDetailPageMarkup(coin: CoinDetailRecord | null = baseCoin) {
+function renderCoinDetailPageMarkup(coin: CoinDetailRecord = baseCoin) {
   return renderToStaticMarkup(<CoinDetailPage coin={coin} />)
 }
 

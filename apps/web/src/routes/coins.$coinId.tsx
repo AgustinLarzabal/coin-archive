@@ -1,6 +1,6 @@
-import { getCoin, getFullCoin } from "@workspace/db"
+import { getCoin } from "@workspace/db"
 import type { CoinDetailRecord } from "@workspace/db"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
@@ -14,12 +14,16 @@ const getCoinData = createServerFn({ method: "GET" })
   .inputValidator(coinParamsSchema)
   .handler(async ({ data }) => {
     if (!coinIdSchema.safeParse(data.coinId).success) {
-      return { coin: null }
+      throw notFound()
     }
 
-    await getFullCoin(data.coinId)
+    const coin = await getCoin(data.coinId)
 
-    return { coin: await getCoin(data.coinId) }
+    if (coin === null) {
+      throw notFound()
+    }
+
+    return { coin }
   })
 
 export const Route = createFileRoute("/coins/$coinId")({
@@ -28,7 +32,7 @@ export const Route = createFileRoute("/coins/$coinId")({
 })
 
 type CoinDetailPageProps = {
-  coin: CoinDetailRecord | null
+  coin: CoinDetailRecord
 }
 
 function CoinRoute() {
@@ -38,18 +42,8 @@ function CoinRoute() {
 }
 
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
-  if (coin === null) {
-    return (
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6 pt-16">
-        <p className="text-sm tracking-wider text-muted-foreground uppercase">
-          Coin not found
-        </p>
-      </main>
-    )
-  }
-
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-6 pt-10">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-6 pt-20">
       <h1 className="text-2xl">{coin.title}</h1>
 
       <section className="flex justify-between">

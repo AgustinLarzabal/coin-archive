@@ -1,6 +1,6 @@
 import { getCoin } from "@workspace/db"
 import type { CoinDetailRecord } from "@workspace/db"
-import { createFileRoute, notFound } from "@tanstack/react-router"
+import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { Fragment } from "react"
 import { z } from "zod"
@@ -110,8 +110,6 @@ function CoinRoute() {
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
 
-  console.log("coin", coin)
-
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
@@ -125,13 +123,27 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 alt={coin.issuer.name}
                 className="size-3.5 rounded-full object-cover"
               />
-              <span className="text-xs text-muted-foreground">
+              <Link
+                to="/"
+                search={{ issuer: coin.issuer.code }}
+                className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                title={`Filter homepage by issuer: ${coin.issuer.name}`}
+                aria-label={`Show homepage coins filtered by issuer ${coin.issuer.name}`}
+              >
                 {coin.issuer.name}
-              </span>
+              </Link>
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {coin.distribution.name}
+              <Link
+                to="/"
+                search={{ distribution: coin.distribution.code }}
+                className="underline-offset-4 hover:underline"
+                title={`Filter homepage by distribution: ${coin.distribution.name}`}
+                aria-label={`Show homepage coins filtered by distribution ${coin.distribution.name}`}
+              >
+                {coin.distribution.name}
+              </Link>
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">

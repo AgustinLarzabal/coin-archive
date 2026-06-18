@@ -50,6 +50,8 @@ describe("CoinDetailPage", () => {
 
     expect(markup).toContain("Detail Test Coin")
     expect(markup).toContain("Spain")
+    expect(markup).toContain('href="/?issuer=spain"')
+    expect(markup).toContain('href="/?distribution=standard-circulation"')
     expect(markup).toContain("https://example.com/coins/detail-test/obverse-image")
     expect(markup).toContain("https://example.com/coins/detail-test/reverse-image")
     expect(markup).not.toContain("/finland-2-euro-2004-obverse.jpg")

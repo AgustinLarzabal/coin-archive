@@ -29,7 +29,8 @@ export const coinSchemaNames = {
   distributionIdIndex: "coin_distribution_id_idx",
   currencyIdIndex: "coin_currency_id_idx",
   edgeIdIndex: "coin_edge_id_idx",
-  faceValueNumericValuePositiveCheck: "coin_face_value_numeric_value_positive_check",
+  faceValueNumericValuePositiveCheck:
+    "coin_face_value_numeric_value_positive_check",
   issueYearRangeClosedCheck: "coin_issue_year_range_closed_check",
   issueYearRangeIndex: "coin_issue_year_range_idx",
   issueYearRangeOrderCheck: "coin_issue_year_range_order_check",
@@ -70,11 +71,15 @@ export const coin = pgTable(
       .primaryKey()
       .default(sql`uuidv7()`),
     title: varchar("title", { length: 255 }).notNull(),
+    comments: text("comments"),
+    diameter: numeric("diameter", measurementColumn),
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuer.id, {
         onDelete: "restrict",
       }),
+    thickness: numeric("thickness", measurementColumn),
+    weight: numeric("weight", measurementColumn),
     distributionId: uuid("distribution_id")
       .notNull()
       .references(() => distribution.id, {
@@ -110,14 +115,10 @@ export const coin = pgTable(
     techniqueId: uuid("technique_id").references(() => technique.id, {
       onDelete: "restrict",
     }),
-    comments: text("comments"),
     isDemonetized: boolean("is_demonetized"),
     mintage: bigint("mintage", { mode: "number" }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),
-    weight: numeric("weight", measurementColumn),
-    diameter: numeric("diameter", measurementColumn),
-    thickness: numeric("thickness", measurementColumn),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

@@ -17,14 +17,18 @@ export type CoinDetailRecord = {
   id: string
   title: string
   comments: string | null
+  diameter: number | null
   issuer: CoinIssuer
   surfaces: CoinSurfaceSetRecord
+  thickness: number | null
+  weight: number | null
 }
 
 type GetCoinRow = {
   id: string
   title: string
   comments: string | null
+  diameter: number | null
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
@@ -37,6 +41,8 @@ type GetCoinRow = {
   engraverId: string | null
   engraverCode: string | null
   engraverName: string | null
+  thickness: number | null
+  weight: number | null
 }
 
 function mapIssuer(row: GetCoinRow): CoinIssuer {
@@ -123,8 +129,11 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     id: firstRow.id,
     title: firstRow.title,
     comments: firstRow.comments,
+    diameter: firstRow.diameter,
     issuer: mapIssuer(firstRow),
     surfaces: mapSurfaces(rows),
+    thickness: firstRow.thickness,
+    weight: firstRow.weight,
   }
 
   return detail
@@ -136,6 +145,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       id: coin.id,
       title: coin.title,
       comments: coin.comments,
+      diameter: coin.diameter,
       issuerId: issuer.id,
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
@@ -148,6 +158,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       engraverId: engraver.id,
       engraverCode: engraver.code,
       engraverName: engraver.name,
+      thickness: coin.thickness,
+      weight: coin.weight,
     })
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))

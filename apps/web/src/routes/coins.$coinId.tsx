@@ -121,6 +121,31 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             </span>
           </div>
           <Separator />
+          <div className="flex gap-10">
+            <div className="max-w-[50%] flex-1">
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Weight</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.diameter} gr
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Diameter</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.diameter} mm
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Thickness</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.diameter} mm
+                </span>
+              </div>
+            </div>
+          </div>
+          <Separator />
           <div>
             {coinSurfaces.map((surface) => (
               <div

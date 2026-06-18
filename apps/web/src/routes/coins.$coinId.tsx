@@ -3,6 +3,7 @@ import type { CoinDetailRecord } from "@workspace/db"
 import { createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
+import { ImageZoom } from "@workspace/ui/components/kibo-ui/image-zoom"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -86,12 +87,13 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
         <aside>
           <div className="flex gap-4">
             {faceSurfaces.map(({ label, surface }) => (
-              <img
-                key={label}
-                src={surface.imageUrl ?? surface.thumbnailUrl ?? undefined}
-                alt={`${coin.title} ${label.toLowerCase()}`}
-                width="250"
-              />
+              <ImageZoom key={label}>
+                <img
+                  src={surface.imageUrl ?? surface.thumbnailUrl ?? undefined}
+                  alt={`${coin.title} ${label.toLowerCase()}`}
+                  width="250"
+                />
+              </ImageZoom>
             ))}
           </div>
         </aside>

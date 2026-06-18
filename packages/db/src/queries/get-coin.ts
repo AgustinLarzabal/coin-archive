@@ -24,6 +24,7 @@ export type CoinDetailRecord = {
   comments: string | null
   diameter: number | null
   distribution: CoinDistributionRecord
+  isDemonetized: boolean | null
   issuer: CoinIssuer
   references: CoinReferenceRecord[]
   surfaces: CoinSurfaceSetRecord
@@ -38,6 +39,7 @@ type GetCoinRow = {
   diameter: number | null
   distributionCode: string
   distributionName: string
+  isDemonetized: boolean | null
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
@@ -210,6 +212,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     comments: firstRow.comments,
     diameter: firstRow.diameter,
     distribution: mapDistribution(firstRow),
+    isDemonetized: firstRow.isDemonetized,
     issuer: mapIssuer(firstRow),
     references: mapReferences(rows),
     surfaces: mapSurfaces(rows),
@@ -229,6 +232,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       diameter: coin.diameter,
       distributionCode: distribution.code,
       distributionName: distribution.name,
+      isDemonetized: coin.isDemonetized,
       issuerId: issuer.id,
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,

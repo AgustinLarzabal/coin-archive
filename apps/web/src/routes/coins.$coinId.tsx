@@ -11,6 +11,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
+import { Badge } from "@workspace/ui/components/badge"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -110,12 +111,14 @@ function CoinRoute() {
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
 
+  console.log("coin", coin)
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
 
       <section className="flex justify-between gap-10">
-        <div className="w-full max-w-[60%] space-y-8">
+        <div className="w-full max-w-[60%] space-y-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <img
@@ -161,6 +164,11 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 </Fragment>
               ))}
             </div>
+          </div>
+          <div className="mb-4">
+            {coin.isDemonetized && (
+              <Badge variant="secondary">Demonetized</Badge>
+            )}
           </div>
 
           <Separator />

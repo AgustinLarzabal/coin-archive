@@ -47,6 +47,7 @@ const baseCoin: CoinDetailRecord = {
     code: "standard-circulation",
     name: "Standard circulation",
   },
+  isDemonetized: null,
   issuer: {
     code: "spain",
     isoCode: "ES",

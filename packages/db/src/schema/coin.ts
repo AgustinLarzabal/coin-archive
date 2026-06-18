@@ -78,6 +78,7 @@ export const coin = pgTable(
       .references(() => distribution.id, {
         onDelete: "restrict",
       }),
+    isDemonetized: boolean("is_demonetized"),
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuer.id, {
@@ -115,7 +116,6 @@ export const coin = pgTable(
     techniqueId: uuid("technique_id").references(() => technique.id, {
       onDelete: "restrict",
     }),
-    isDemonetized: boolean("is_demonetized"),
     mintage: bigint("mintage", { mode: "number" }),
     minYear: integer("min_year"),
     maxYear: integer("max_year"),

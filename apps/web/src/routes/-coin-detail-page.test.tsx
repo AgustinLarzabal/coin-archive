@@ -1,7 +1,42 @@
+import type { ComponentPropsWithoutRef } from "react"
 import type { CoinDetailRecord } from "@workspace/db"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { CoinDetailPage } from "./coins.$coinId"
+
+vi.mock("@tanstack/react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
+
+  return {
+    ...actual,
+    Link: ({
+      children,
+      search,
+      to = "",
+      ...props
+    }: ComponentPropsWithoutRef<"a"> & {
+      search?: Record<string, string | undefined>
+      to?: string
+    }) => {
+      const params = new URLSearchParams()
+
+      for (const [key, value] of Object.entries(search ?? {})) {
+        if (value !== undefined) {
+          params.set(key, value)
+        }
+      }
+
+      const query = params.toString()
+      const href = query === "" ? to : `${to}?${query}`
+
+      return (
+        <a href={href} {...props}>
+          {children}
+        </a>
+      )
+    },
+  }
+})
 
 const baseCoin: CoinDetailRecord = {
   id: "coin-1",

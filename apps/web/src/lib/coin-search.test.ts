@@ -14,6 +14,7 @@ const currentSearch = {
 } satisfies CoinSearch
 
 const baseCoinListLoaderDeps = {
+  distributionCode: undefined,
   engraverCode: "john-doe",
   issuerCode: "spain",
 } satisfies CoinListLoaderDeps
@@ -74,7 +75,10 @@ describe("coinListInputSchema", () => {
         catalogueCode: "km",
         minValue: 1,
       })
-    ).toStrictEqual(baseCoinListLoaderDeps)
+    ).toStrictEqual({
+      engraverCode: "john-doe",
+      issuerCode: "spain",
+    })
   })
 
   it("normalizes supported loader inputs", () => {
@@ -116,6 +120,7 @@ describe("getCoinListLoaderDeps", () => {
 
   it("preserves empty search objects", () => {
     expect(getCoinListLoaderDeps({})).toStrictEqual({
+      distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: undefined,
     })

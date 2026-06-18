@@ -67,6 +67,7 @@ export function HomeFilters({
           <Filters
             filters={filters}
             fields={fields}
+            allowMultiple={false}
             onChange={handleFiltersChange}
             trigger={
               <Button variant="outline">

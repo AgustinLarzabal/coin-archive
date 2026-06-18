@@ -8,14 +8,9 @@ const getDistributionsSelection = {
   id: distribution.id,
   code: distribution.code,
   name: distribution.name,
-  createdAt: distribution.createdAt,
-  updatedAt: distribution.updatedAt,
 }
 
-export type DistributionOption = Pick<
-  Distribution,
-  "id" | "code" | "name" | "createdAt" | "updatedAt"
->
+export type DistributionOption = Pick<Distribution, "id" | "code" | "name">
 
 export async function getDistributions(): Promise<DistributionOption[]> {
   return db

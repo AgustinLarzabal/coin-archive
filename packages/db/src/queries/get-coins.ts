@@ -4,6 +4,7 @@ import { db } from "../client"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
+import { distribution } from "../schema/distribution"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import type { CoinListRecord } from "./map-get-coins-row"
@@ -12,33 +13,26 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 const defaultGetCoinsLimit = 15
 
 export type GetCoinsOptions = {
+  distributionCode?: string
   engraverCode?: string
   issuerCode?: string
   limit?: number
 }
 
-function buildIssuerTreeFilter(
-  issuerCode: string | undefined
+function buildDistributionFilter(
+  distributionCode: string | undefined
 ): SQL | undefined {
-  const normalizedIssuerCode = issuerCode?.trim().toLowerCase()
+  const normalizedDistributionCode = distributionCode?.trim().toLowerCase()
 
-  if (!normalizedIssuerCode) {
+  if (!normalizedDistributionCode) {
     return undefined
   }
 
   return sql`
-    ${coin.issuerId} in (
-      with recursive issuer_tree(id) as (
-        select "issuer"."id"
-        from "issuer"
-        where "issuer"."code" = ${normalizedIssuerCode}
-        union
-        select "child_issuer"."id"
-        from "issuer" as "child_issuer"
-        inner join issuer_tree on "child_issuer"."parent_issuer_id" = issuer_tree.id
-      )
-      select issuer_tree.id
-      from issuer_tree
+    ${coin.distributionId} in (
+      select ${distribution.id}
+      from ${distribution}
+      where lower(${distribution.code}) = ${normalizedDistributionCode}
     )
   `
 }
@@ -67,14 +61,46 @@ function buildEngraverFilter(
   `
 }
 
+function buildIssuerTreeFilter(
+  issuerCode: string | undefined
+): SQL | undefined {
+  const normalizedIssuerCode = issuerCode?.trim().toLowerCase()
+
+  if (!normalizedIssuerCode) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.issuerId} in (
+      with recursive issuer_tree(id) as (
+        select "issuer"."id"
+        from "issuer"
+        where "issuer"."code" = ${normalizedIssuerCode}
+        union
+        select "child_issuer"."id"
+        from "issuer" as "child_issuer"
+        inner join issuer_tree on "child_issuer"."parent_issuer_id" = issuer_tree.id
+      )
+      select issuer_tree.id
+      from issuer_tree
+    )
+  `
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
 ) {
-  const { engraverCode, issuerCode, limit = defaultGetCoinsLimit } = options
+  const {
+    distributionCode,
+    engraverCode,
+    issuerCode,
+    limit = defaultGetCoinsLimit,
+  } = options
+  const distributionFilter = buildDistributionFilter(distributionCode)
   const engraverFilter = buildEngraverFilter(engraverCode)
   const issuerFilter = buildIssuerTreeFilter(issuerCode)
-  const filters = [issuerFilter, engraverFilter].filter(
+  const filters = [distributionFilter, issuerFilter, engraverFilter].filter(
     (filter): filter is SQL => filter !== undefined
   )
   const limitedCoinsQuery = database
@@ -89,7 +115,9 @@ export function buildGetCoinsQuery(
     .limit(limit)
 
   const filteredLimitedCoinsQuery =
-    filters.length > 0 ? limitedCoinsQuery.where(and(...filters)) : limitedCoinsQuery
+    filters.length > 0
+      ? limitedCoinsQuery.where(and(...filters))
+      : limitedCoinsQuery
 
   const limitedCoins = filteredLimitedCoinsQuery.as("limited_coins")
 

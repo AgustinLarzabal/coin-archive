@@ -4,6 +4,7 @@ import {
   createCoin,
   createCoinSurface,
   createCoinSurfaceEngraver,
+  createDistribution,
   createEngraver,
   createIssuer,
 } from "../testing/fixtures"
@@ -257,6 +258,55 @@ describe("getCoins integration", () => {
     await expect(getCoins({ issuerCode: "   ", limit: 10 })).resolves.toMatchObject(
       [{ title: "Modern Spain" }]
     )
+  })
+
+  it("filters by distribution code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const standardCirculation = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const circulatingCommemorative = await createDistribution({
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    })
+
+    await createCoin({
+      title: "Standard 1 Euro",
+      issuerId: spain.id,
+      distributionId: standardCirculation.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Commemorative 2 Euro",
+      issuerId: spain.id,
+      distributionId: circulatingCommemorative.id,
+      createdAt: new Date("2026-06-02T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({ distributionCode: "  STANDARD-CIRCULATION  ", limit: 10 })
+    ).resolves.toMatchObject([{ title: "Standard 1 Euro" }])
+  })
+
+  it("ignores blank distribution filters", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+
+    await createCoin({
+      title: "Modern Spain",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+
+    await expect(
+      getCoins({ distributionCode: "   ", limit: 10 })
+    ).resolves.toMatchObject([{ title: "Modern Spain" }])
   })
 
   it("filters by engraver code across obverse and reverse attributions", async () => {

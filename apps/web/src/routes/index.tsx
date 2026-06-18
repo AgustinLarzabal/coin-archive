@@ -33,17 +33,25 @@ function App() {
   const navigate = Route.useNavigate()
 
   async function updateHomeFilters({
+    distributionCode,
     engraverCode,
     issuerCode,
   }: {
+    distributionCode: string | undefined
     engraverCode: string | undefined
     issuerCode: string | undefined
   }) {
     await navigate({
       resetScroll: false,
       search: (currentSearch) => {
-        const searchWithEngraver = updateCoinSearchFilter(
+        const searchWithDistribution = updateCoinSearchFilter(
           currentSearch,
+          "distribution",
+          distributionCode
+        )
+
+        const searchWithEngraver = updateCoinSearchFilter(
+          searchWithDistribution,
           "engraver",
           engraverCode
         )
@@ -56,8 +64,10 @@ function App() {
   return (
     <div className="flex h-full flex-1 flex-col p-6">
       <HomeFilters
+        distributions={filterOptions.distributions}
         engravers={filterOptions.engravers}
         issuers={filterOptions.issuers}
+        selectedDistributionCode={search.distribution}
         selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
         onFiltersChange={updateHomeFilters}

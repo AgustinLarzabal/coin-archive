@@ -16,6 +16,7 @@ import type {
 export type CoinDetailRecord = {
   id: string
   title: string
+  comments: string | null
   issuer: CoinIssuer
   surfaces: CoinSurfaceSetRecord
 }
@@ -23,6 +24,7 @@ export type CoinDetailRecord = {
 type GetCoinRow = {
   id: string
   title: string
+  comments: string | null
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
@@ -120,6 +122,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
   const detail: CoinDetailRecord = {
     id: firstRow.id,
     title: firstRow.title,
+    comments: firstRow.comments,
     issuer: mapIssuer(firstRow),
     surfaces: mapSurfaces(rows),
   }
@@ -132,6 +135,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     .select({
       id: coin.id,
       title: coin.title,
+      comments: coin.comments,
       issuerId: issuer.id,
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,

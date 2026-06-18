@@ -148,6 +148,13 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               </div>
             ))}
           </div>
+          <Separator />
+          <div className="space-y-4">
+            <p className="text-sm font-semibold">Comments</p>
+            <p className="text-sm leading-6 text-muted-foreground">
+              {coin.comments}
+            </p>
+          </div>
         </div>
         <aside className="w-full max-w-[20%]">
           <div className="flex flex-col gap-4">

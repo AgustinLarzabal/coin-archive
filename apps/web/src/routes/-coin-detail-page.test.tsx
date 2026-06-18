@@ -6,6 +6,7 @@ import { CoinDetailPage } from "./coins.$coinId"
 const baseCoin: CoinDetailRecord = {
   id: "coin-1",
   title: "Detail Test Coin",
+  comments: null,
   issuer: {
     code: "spain",
     isoCode: "ES",

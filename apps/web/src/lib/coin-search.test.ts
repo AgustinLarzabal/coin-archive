@@ -3,15 +3,18 @@ import {
   coinListInputSchema,
   coinSearchSchema,
   getCoinListLoaderDeps,
+  hasActiveCoinSearchFilters,
   updateCoinSearchFilter,
 } from "./coin-search"
 import type { CoinListLoaderDeps, CoinSearch } from "./coin-search"
 
 const currentSearch = {
+  engraver: "john-doe",
   issuer: "spain",
 } satisfies CoinSearch
 
 const baseCoinListLoaderDeps = {
+  engraverCode: "john-doe",
   issuerCode: "spain",
 } satisfies CoinListLoaderDeps
 
@@ -25,9 +28,10 @@ function omitFilter<T extends object, TKey extends keyof T>(
 }
 
 describe("coinSearchSchema", () => {
-  it("keeps only issuer and ruler search params", () => {
+  it("keeps only supported coin search params", () => {
     expect(
       coinSearchSchema.parse({
+        engraver: "john-doe",
         issuer: "spain",
         catalogue: "km",
         composition: "silver-900",
@@ -36,27 +40,36 @@ describe("coinSearchSchema", () => {
     ).toStrictEqual(currentSearch)
   })
 
-  it("normalizes issuer search params", () => {
+  it("normalizes supported search params", () => {
     expect(
       coinSearchSchema.parse({
+        engraver: "  JOHN-DOE  ",
         issuer: "  SPAIN  ",
       })
-    ).toStrictEqual(currentSearch)
+    ).toStrictEqual({
+      engraver: "john-doe",
+      issuer: "spain",
+    })
   })
 
-  it("drops blank issuer search params", () => {
+  it("drops blank search params", () => {
     expect(
       coinSearchSchema.parse({
+        engraver: "   ",
         issuer: "   ",
       })
-    ).toStrictEqual({})
+    ).toStrictEqual({
+      engraver: undefined,
+      issuer: undefined,
+    })
   })
 })
 
 describe("coinListInputSchema", () => {
-  it("keeps only issuer and ruler loader inputs", () => {
+  it("keeps only supported loader inputs", () => {
     expect(
       coinListInputSchema.parse({
+        engraverCode: "john-doe",
         issuerCode: "spain",
         catalogueCode: "km",
         minValue: 1,
@@ -64,12 +77,16 @@ describe("coinListInputSchema", () => {
     ).toStrictEqual(baseCoinListLoaderDeps)
   })
 
-  it("normalizes issuer loader inputs", () => {
+  it("normalizes supported loader inputs", () => {
     expect(
       coinListInputSchema.parse({
+        engraverCode: "  JOHN-DOE  ",
         issuerCode: "  SPAIN  ",
       })
-    ).toStrictEqual(baseCoinListLoaderDeps)
+    ).toStrictEqual({
+      engraverCode: "john-doe",
+      issuerCode: "spain",
+    })
   })
 })
 
@@ -84,6 +101,7 @@ describe("updateCoinSearchFilter", () => {
     expect(
       updateCoinSearchFilter(currentSearch, "issuer", "france")
     ).toStrictEqual({
+      engraver: "john-doe",
       issuer: "france",
     })
   })
@@ -98,7 +116,19 @@ describe("getCoinListLoaderDeps", () => {
 
   it("preserves empty search objects", () => {
     expect(getCoinListLoaderDeps({})).toStrictEqual({
+      engraverCode: undefined,
       issuerCode: undefined,
     })
+  })
+})
+
+describe("hasActiveCoinSearchFilters", () => {
+  it("returns true when any supported filter is present", () => {
+    expect(hasActiveCoinSearchFilters({ engraver: "john-doe" })).toBe(true)
+    expect(hasActiveCoinSearchFilters({ issuer: "spain" })).toBe(true)
+  })
+
+  it("returns false for an empty search object", () => {
+    expect(hasActiveCoinSearchFilters({})).toBe(false)
   })
 })

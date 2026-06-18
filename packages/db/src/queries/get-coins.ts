@@ -12,6 +12,7 @@ import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 const defaultGetCoinsLimit = 15
 
 export type GetCoinsOptions = {
+  engraverCode?: string
   issuerCode?: string
   limit?: number
 }
@@ -42,12 +43,40 @@ function buildIssuerTreeFilter(
   `
 }
 
+function buildEngraverFilter(
+  engraverCode: string | undefined
+): SQL | undefined {
+  const normalizedEngraverCode = engraverCode?.trim().toLowerCase()
+
+  if (!normalizedEngraverCode) {
+    return undefined
+  }
+
+  return sql`
+    exists (
+      select 1
+      from "coin_surface"
+      inner join "coin_face_engraver"
+        on "coin_face_engraver"."coin_face_id" = "coin_surface"."id"
+       and "coin_face_engraver"."coin_face_kind" = "coin_surface"."kind"
+      inner join "engraver"
+        on "engraver"."id" = "coin_face_engraver"."engraver_id"
+      where "coin_surface"."coin_id" = ${coin.id}
+        and lower("engraver"."code") = ${normalizedEngraverCode}
+    )
+  `
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
 ) {
-  const { issuerCode, limit = defaultGetCoinsLimit } = options
+  const { engraverCode, issuerCode, limit = defaultGetCoinsLimit } = options
+  const engraverFilter = buildEngraverFilter(engraverCode)
   const issuerFilter = buildIssuerTreeFilter(issuerCode)
+  const filters = [issuerFilter, engraverFilter].filter(
+    (filter): filter is SQL => filter !== undefined
+  )
   const limitedCoinsQuery = database
     .select({
       id: coin.id,
@@ -59,9 +88,8 @@ export function buildGetCoinsQuery(
     .orderBy(desc(coin.createdAt))
     .limit(limit)
 
-  const filteredLimitedCoinsQuery = issuerFilter
-    ? limitedCoinsQuery.where(issuerFilter)
-    : limitedCoinsQuery
+  const filteredLimitedCoinsQuery =
+    filters.length > 0 ? limitedCoinsQuery.where(and(...filters)) : limitedCoinsQuery
 
   const limitedCoins = filteredLimitedCoinsQuery.as("limited_coins")
 

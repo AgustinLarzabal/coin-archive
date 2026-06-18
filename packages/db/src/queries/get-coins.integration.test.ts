@@ -258,4 +258,68 @@ describe("getCoins integration", () => {
       [{ title: "Modern Spain" }]
     )
   })
+
+  it("filters by engraver code across obverse and reverse attributions", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const targetEngraver = await createEngraver({
+      code: "luc-luycx",
+      name: "Luc Luycx",
+    })
+    const otherEngraver = await createEngraver({
+      code: "john-doe",
+      name: "John Doe",
+    })
+
+    const obverseCoin = await createCoin({
+      title: "Obverse Match",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    const reverseCoin = await createCoin({
+      title: "Reverse Match",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-02T00:00:00.000Z"),
+    })
+    const unmatchedCoin = await createCoin({
+      title: "Other Engraver",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-01T00:00:00.000Z"),
+    })
+
+    const obverseSurface = await createCoinSurface({
+      coinId: obverseCoin.id,
+      kind: "obverse",
+    })
+    const reverseSurface = await createCoinSurface({
+      coinId: reverseCoin.id,
+      kind: "reverse",
+    })
+    const unmatchedSurface = await createCoinSurface({
+      coinId: unmatchedCoin.id,
+      kind: "obverse",
+    })
+
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: obverseSurface.id,
+      engraverId: targetEngraver.id,
+    })
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: reverseSurface.id,
+      engraverId: targetEngraver.id,
+    })
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: unmatchedSurface.id,
+      engraverId: otherEngraver.id,
+    })
+
+    await expect(
+      getCoins({ engraverCode: "  LUC-LUYCX  ", limit: 10 })
+    ).resolves.toMatchObject([
+      { title: "Obverse Match" },
+      { title: "Reverse Match" },
+    ])
+  })
 })

@@ -3,9 +3,16 @@ import { describe, expect, it } from "vitest"
 import { HomeFilters } from "./home-filters"
 
 describe("HomeFilters", () => {
-  it("renders only the issuer selection in the home filter bar", () => {
+  it("renders only the supported home filters in the filter bar", () => {
     const markup = renderToStaticMarkup(
       <HomeFilters
+        engravers={[
+          {
+            id: "engraver-1",
+            code: "john-doe",
+            name: "John Doe",
+          },
+        ]}
         issuers={[
           {
             id: "issuer-1",
@@ -15,10 +22,13 @@ describe("HomeFilters", () => {
           },
         ]}
         onFiltersChange={() => Promise.resolve()}
+        selectedEngraverCode="john-doe"
         selectedIssuerCode="spain"
       />
     )
 
+    expect(markup).toContain("Engraver")
+    expect(markup).toContain("John Doe")
     expect(markup).toContain("Issuer")
     expect(markup).toContain("Spain")
     expect(markup).toContain("Clear")
@@ -28,7 +38,7 @@ describe("HomeFilters", () => {
     expect(markup).not.toContain("Distribution")
     expect(markup).not.toContain("Demonetization Status")
     expect(markup).not.toContain("Edge")
-    expect(markup).not.toContain("Engraver")
+    expect(markup).not.toContain("Minting Technique")
     expect(markup).not.toContain("Issue Year")
     expect(markup).not.toContain("Reference number")
     expect(markup).not.toContain("Face Value")
@@ -39,7 +49,6 @@ describe("HomeFilters", () => {
     expect(markup).not.toContain("Orientation")
     expect(markup).not.toContain("Rim")
     expect(markup).not.toContain("Shape")
-    expect(markup).not.toContain("Minting Technique")
     expect(markup).not.toContain("Theme")
     expect(markup).not.toContain("Ruler")
   })

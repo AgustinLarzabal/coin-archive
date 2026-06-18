@@ -49,7 +49,7 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark font-mono">
+    <html lang="en" className="dark font-mono antialiased">
       <head>
         <HeadContent />
       </head>

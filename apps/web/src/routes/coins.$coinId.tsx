@@ -4,6 +4,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import { ImageZoom } from "@workspace/ui/components/kibo-ui/image-zoom"
+import { Separator } from "@workspace/ui/components/separator"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -36,6 +37,64 @@ type CoinDetailPageProps = {
   coin: CoinDetailRecord
 }
 
+type CoinDetailSurfaceView = {
+  key: "obverse" | "reverse" | "edge"
+  label: string
+  description: string | null
+  lettering: string | null
+  imageUrl: string | null
+  thumbnailUrl: string | null
+  engravers: { code: string; name: string }[]
+}
+
+function hasSurfaceMedia(surface: CoinDetailSurfaceView) {
+  return (surface.imageUrl ?? surface.thumbnailUrl) !== null
+}
+
+function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
+  const surfaces = [
+    {
+      key: "obverse",
+      label: "Obverse",
+      surface: coin.surfaces.obverse,
+    },
+    {
+      key: "reverse",
+      label: "Reverse",
+      surface: coin.surfaces.reverse,
+    },
+    {
+      key: "edge",
+      label: "Edge",
+      surface: coin.surfaces.edge,
+    },
+  ] as const
+
+  const mappedSurfaces: CoinDetailSurfaceView[] = []
+
+  for (const { key, label, surface } of surfaces) {
+    if (surface === null) {
+      continue
+    }
+
+    const mappedSurface: CoinDetailSurfaceView = {
+      key,
+      label,
+      description: surface.description,
+      lettering: surface.lettering,
+      imageUrl: surface.imageUrl,
+      thumbnailUrl: surface.thumbnailUrl,
+      engravers: "engravers" in surface ? surface.engravers : [],
+    }
+
+    if (hasSurfaceMedia(mappedSurface)) {
+      mappedSurfaces.push(mappedSurface)
+    }
+  }
+
+  return mappedSurfaces
+}
+
 function CoinRoute() {
   const { coin } = Route.useLoaderData()
 
@@ -43,54 +102,60 @@ function CoinRoute() {
 }
 
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
-  const faceSurfaces = [
-    {
-      label: "Obverse",
-      surface: coin.surfaces.obverse,
-    },
-    {
-      label: "Reverse",
-      surface: coin.surfaces.reverse,
-    },
-    {
-      label: "Edge",
-      surface: coin.surfaces.edge,
-    },
-  ].filter(
-    (
-      entry
-    ): entry is {
-      label: string
-      surface: NonNullable<
-        CoinDetailRecord["surfaces"][keyof CoinDetailRecord["surfaces"]]
-      >
-    } =>
-      entry.surface !== null &&
-      (entry.surface.imageUrl ?? entry.surface.thumbnailUrl) !== null
-  )
+  const coinSurfaces = mapCoinSurfaces(coin)
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-6 pt-20">
-      <h1 className="text-2xl">{coin.title}</h1>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
+      <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
 
-      <section className="flex justify-between">
-        <div>
+      <section className="flex justify-between gap-10">
+        <div className="w-full max-w-[60%] space-y-8">
           <div className="flex items-center gap-2">
             <img
               src={`https://flagcdn.com/${coin.issuer.isoCode.toLowerCase()}.svg`}
               alt={coin.issuer.name}
-              className="size-4 rounded-full object-cover"
+              className="size-3.5 rounded-full object-cover"
             />
-            <span className="text-sm">{coin.issuer.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {coin.issuer.name}
+            </span>
+          </div>
+          <Separator />
+          <div>
+            {coinSurfaces.map((surface) => (
+              <div
+                key={surface.key}
+                className="space-y-4 [&:not(:last-child)]:mb-10"
+              >
+                <p className="text-sm font-semibold">{surface.label}</p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {surface.description}
+                </p>
+                <p className="text-sm">
+                  Lettering:{" "}
+                  <span className="text-sm leading-6 text-muted-foreground">
+                    {surface.lettering}
+                  </span>
+                </p>
+                {surface.engravers.map((engraver) => (
+                  <p key={engraver.code} className="text-sm">
+                    Engraver:{" "}
+                    <span className="text-sm leading-6 text-muted-foreground">
+                      {engraver.name}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
-        <aside>
-          <div className="flex gap-4">
-            {faceSurfaces.map(({ label, surface }) => (
-              <ImageZoom key={label}>
+        <aside className="w-full max-w-[20%]">
+          <div className="flex flex-col gap-4">
+            {coinSurfaces.map((surface) => (
+              <ImageZoom key={surface.key}>
                 <img
                   src={surface.imageUrl ?? surface.thumbnailUrl ?? undefined}
-                  alt={`${coin.title} ${label.toLowerCase()}`}
+                  alt={`${coin.title} ${surface.label.toLowerCase()}`}
                   width="250"
                 />
               </ImageZoom>

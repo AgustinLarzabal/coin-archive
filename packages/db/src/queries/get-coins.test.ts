@@ -14,7 +14,7 @@ describe("buildGetCoinsQuery", () => {
     await client.end()
   })
 
-  it("builds only the issuer filter and selects minimal list fields", () => {
+  it("limits coins before joining optional surface detail", () => {
     const query = buildGetCoinsQuery(db, {
       issuerCode: "spain",
       limit: 1,
@@ -22,7 +22,10 @@ describe("buildGetCoinsQuery", () => {
 
     expect(query.sql).toContain('with recursive issuer_tree(id) as')
     expect(query.sql).not.toContain('"coin_reference"')
-    expect(query.sql).not.toContain('"coin_surface"')
+    expect(query.sql).toContain('"limited_coins"')
+    expect(query.sql).toContain('"coin_surface"')
+    expect(query.sql).toContain('"coin_face_engraver"')
+    expect(query.sql).toContain('"engraver"')
     expect(query.sql).toContain('"issuer"."iso_code"')
     expect(query.params).toEqual(["spain", 1])
   })

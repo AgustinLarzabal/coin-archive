@@ -1,13 +1,23 @@
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { db } from "../client"
 import { coin } from "../schema/coin"
+import { coinSurface } from "../schema/coin-surface"
+import type { CoinSurfaceKind } from "../schema/coin-surface"
+import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
+import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import type { CoinIssuer } from "./coin-issuer-record"
+import type {
+  CoinFaceEngraverRecord,
+  CoinFaceSurfaceRecord,
+  CoinSurfaceSetRecord,
+} from "./coin-surface-record"
 
 export type CoinDetailRecord = {
   id: string
   title: string
   issuer: CoinIssuer
+  surfaces: CoinSurfaceSetRecord
 }
 
 type GetCoinRow = {
@@ -17,16 +27,87 @@ type GetCoinRow = {
   issuerCode: string
   issuerIsoCode: string
   issuerName: string
+  surfaceKind: CoinSurfaceKind | null
+  surfaceDescription: string | null
+  surfaceLettering: string | null
+  surfaceThumbnailUrl: string | null
+  surfaceImageUrl: string | null
+  engraverId: string | null
+  engraverCode: string | null
+  engraverName: string | null
 }
 
 function mapIssuer(row: GetCoinRow): CoinIssuer {
   return {
-    id: row.issuerId,
     code: row.issuerCode,
     isoCode: row.issuerIsoCode,
     name: row.issuerName,
     parent: null,
   }
+}
+
+function mapEngraver(row: GetCoinRow): CoinFaceEngraverRecord | null {
+  if (
+    row.engraverId === null ||
+    row.engraverCode === null ||
+    row.engraverName === null
+  ) {
+    return null
+  }
+
+  return {
+    code: row.engraverCode,
+    name: row.engraverName,
+  }
+}
+
+function mapSurfaces(rows: GetCoinRow[]): CoinSurfaceSetRecord {
+  const surfaces: CoinSurfaceSetRecord = {
+    obverse: null,
+    reverse: null,
+    edge: null,
+  }
+
+  for (const row of rows) {
+    if (row.surfaceKind === null) {
+      continue
+    }
+
+    const surface = {
+      description: row.surfaceDescription,
+      lettering: row.surfaceLettering,
+      thumbnailUrl: row.surfaceThumbnailUrl,
+      imageUrl: row.surfaceImageUrl,
+    }
+
+    if (row.surfaceKind === "edge-surface") {
+      surfaces.edge = surface
+      continue
+    }
+
+    const existingSurface = surfaces[row.surfaceKind]
+    const nextSurface =
+      existingSurface ??
+      ({
+        ...surface,
+        engravers: [],
+      } satisfies CoinFaceSurfaceRecord)
+
+    const mappedEngraver = mapEngraver(row)
+
+    if (
+      mappedEngraver !== null &&
+      !nextSurface.engravers.some(
+        (engraver) => engraver.code === mappedEngraver.code
+      )
+    ) {
+      nextSurface.engravers.push(mappedEngraver)
+    }
+
+    surfaces[row.surfaceKind] = nextSurface
+  }
+
+  return surfaces
 }
 
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
@@ -40,6 +121,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     id: firstRow.id,
     title: firstRow.title,
     issuer: mapIssuer(firstRow),
+    surfaces: mapSurfaces(rows),
   }
 
   return detail
@@ -54,9 +136,26 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
+      surfaceKind: coinSurface.kind,
+      surfaceDescription: coinSurface.description,
+      surfaceLettering: coinSurface.lettering,
+      surfaceThumbnailUrl: coinSurface.thumbnailUrl,
+      surfaceImageUrl: coinSurface.imageUrl,
+      engraverId: engraver.id,
+      engraverCode: engraver.code,
+      engraverName: engraver.name,
     })
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .leftJoin(coinSurface, eq(coinSurface.coinId, coin.id))
+    .leftJoin(
+      coinSurfaceEngraver,
+      and(
+        eq(coinSurfaceEngraver.coinSurfaceId, coinSurface.id),
+        eq(coinSurfaceEngraver.coinSurfaceKind, coinSurface.kind)
+      )
+    )
+    .leftJoin(engraver, eq(coinSurfaceEngraver.engraverId, engraver.id))
     .where(eq(coin.id, coinId))
 }
 

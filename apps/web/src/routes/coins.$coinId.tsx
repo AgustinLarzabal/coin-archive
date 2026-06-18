@@ -42,6 +42,32 @@ function CoinRoute() {
 }
 
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
+  const faceSurfaces = [
+    {
+      label: "Obverse",
+      surface: coin.surfaces.obverse,
+    },
+    {
+      label: "Reverse",
+      surface: coin.surfaces.reverse,
+    },
+    {
+      label: "Edge",
+      surface: coin.surfaces.edge,
+    },
+  ].filter(
+    (
+      entry
+    ): entry is {
+      label: string
+      surface: NonNullable<
+        CoinDetailRecord["surfaces"][keyof CoinDetailRecord["surfaces"]]
+      >
+    } =>
+      entry.surface !== null &&
+      (entry.surface.imageUrl ?? entry.surface.thumbnailUrl) !== null
+  )
+
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-6 pt-20">
       <h1 className="text-2xl">{coin.title}</h1>
@@ -59,8 +85,14 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
         </div>
         <aside>
           <div className="flex gap-4">
-            <img src="/finland-2-euro-2004-obverse.jpg" width="250" />
-            <img src="/finland-2-euro-2004-reverse.jpg" width="250" />
+            {faceSurfaces.map(({ label, surface }) => (
+              <img
+                key={label}
+                src={surface.imageUrl ?? surface.thumbnailUrl ?? undefined}
+                alt={`${coin.title} ${label.toLowerCase()}`}
+                width="250"
+              />
+            ))}
           </div>
         </aside>
       </section>

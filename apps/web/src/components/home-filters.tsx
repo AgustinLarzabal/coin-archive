@@ -1,7 +1,10 @@
 import type { IssuerOption } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { createFilter, Filters } from "@workspace/ui/components/reui/filters"
-import type { Filter, FilterFieldConfig } from "@workspace/ui/components/reui/filters"
+import type {
+  Filter,
+  FilterFieldConfig,
+} from "@workspace/ui/components/reui/filters"
 import { FunnelX, Globe, ListFilter } from "lucide-react"
 import { z } from "zod"
 
@@ -77,7 +80,7 @@ export function HomeFilters({
   }
 
   return (
-    <div className="mb-5 space-y-2">
+    <div className="mb-10">
       <div className="flex gap-2.5">
         <div className="flex-1">
           <Filters

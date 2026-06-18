@@ -1,5 +1,4 @@
 export type CoinIssuerSummary = {
-  id: string
   code: string
   isoCode: string
   name: string

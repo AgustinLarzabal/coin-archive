@@ -13,6 +13,14 @@ type CoinCardProps = {
 }
 
 export function CoinCard({ coin }: CoinCardProps) {
+  const previewImageUrl =
+    coin.surfaces.obverse?.imageUrl ??
+    coin.surfaces.obverse?.thumbnailUrl ??
+    coin.surfaces.reverse?.imageUrl ??
+    coin.surfaces.reverse?.thumbnailUrl ??
+    coin.surfaces.edge?.imageUrl ??
+    coin.surfaces.edge?.thumbnailUrl
+
   return (
     <Link
       className="block outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -22,10 +30,9 @@ export function CoinCard({ coin }: CoinCardProps) {
       <Card className="p-0 pb-4 transition-colors hover:bg-muted/30">
         <CardContent className="flex flex-col gap-5 p-0">
           <div className="relative w-full overflow-hidden">
-            <img
-              src="/finland-2-euro-2004-obverse.jpg"
-              className="object-cover"
-            />
+            {previewImageUrl ? (
+              <img src={previewImageUrl} alt={`${coin.title} preview`} className="object-cover" />
+            ) : null}
           </div>
         </CardContent>
         <CardHeader className="space-y-1">

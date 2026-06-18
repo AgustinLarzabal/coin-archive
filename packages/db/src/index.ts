@@ -45,6 +45,12 @@ export type {
   CoinIssuerSummary,
 } from "./queries/coin-issuer-record"
 export type {
+  CoinFaceEngraverRecord,
+  CoinFaceSurfaceRecord,
+  CoinSurfaceRecord,
+  CoinSurfaceSetRecord,
+} from "./queries/coin-surface-record"
+export type {
   CoinListRecord,
 } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"

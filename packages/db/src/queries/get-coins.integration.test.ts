@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
-import { createCoin, createIssuer } from "../testing/fixtures"
+import {
+  createCoin,
+  createCoinSurface,
+  createCoinSurfaceEngraver,
+  createEngraver,
+  createIssuer,
+} from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getCoins integration", () => {
@@ -66,23 +72,130 @@ describe("getCoins integration", () => {
 
     await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
       {
-        id: expect.any(String),
         title: "Athenian Owl",
         issuer: {
-          id: expect.any(String),
           code: "athens",
           isoCode: "GR",
           name: "Athens",
         },
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
       },
       {
-        id: expect.any(String),
         title: "Spanish Euro",
         issuer: {
-          id: expect.any(String),
           code: "spain",
           isoCode: "ES",
           name: "Spain",
+        },
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
+      },
+    ])
+  })
+
+  it("returns grouped surfaces and face engravers without breaking coin limits", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      isoCode: "ES",
+      name: "Spain",
+    })
+    const portugal = await createIssuer({
+      code: "portugal",
+      isoCode: "PT",
+      name: "Portugal",
+    })
+
+    const detailedCoin = await createCoin({
+      title: "Detailed Spain Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Plain Portugal Coin",
+      issuerId: portugal.id,
+      createdAt: new Date("2026-06-02T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Older Spain Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-01T00:00:00.000Z"),
+    })
+
+    const obverseSurface = await createCoinSurface({
+      coinId: detailedCoin.id,
+      kind: "obverse",
+      description: "Portrait facing left.",
+      lettering: "DETAIL TEST",
+      thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
+      imageUrl: "https://example.com/coins/detail-test/obverse-image",
+    })
+    await createCoinSurface({
+      coinId: detailedCoin.id,
+      kind: "edge-surface",
+      description: "Reeded edge with stars.",
+      lettering: null,
+      thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
+      imageUrl: "https://example.com/coins/detail-test/edge-image",
+    })
+    const firstEngraver = await createEngraver({
+      code: "ana-ruiz",
+      name: "Ana Ruiz",
+    })
+    const secondEngraver = await createEngraver({
+      code: "beatriz-lopez",
+      name: "Beatriz Lopez",
+    })
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: obverseSurface.id,
+      engraverId: firstEngraver.id,
+    })
+    await createCoinSurfaceEngraver({
+      coinSurfaceId: obverseSurface.id,
+      engraverId: secondEngraver.id,
+    })
+
+    await expect(getCoins({ limit: 2 })).resolves.toMatchObject([
+      {
+        title: "Detailed Spain Coin",
+        surfaces: {
+          obverse: {
+            description: "Portrait facing left.",
+            lettering: "DETAIL TEST",
+            thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
+            imageUrl: "https://example.com/coins/detail-test/obverse-image",
+            engravers: [
+              {
+                code: "ana-ruiz",
+                name: "Ana Ruiz",
+              },
+              {
+                code: "beatriz-lopez",
+                name: "Beatriz Lopez",
+              },
+            ],
+          },
+          reverse: null,
+          edge: {
+            description: "Reeded edge with stars.",
+            lettering: null,
+            thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
+            imageUrl: "https://example.com/coins/detail-test/edge-image",
+          },
+        },
+      },
+      {
+        title: "Plain Portugal Coin",
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
         },
       },
     ])

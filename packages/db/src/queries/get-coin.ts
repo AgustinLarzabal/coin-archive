@@ -8,6 +8,7 @@ import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import type { CoinDistributionRecord } from "./coin-distribution-record"
 import type { CoinIssuer } from "./coin-issuer-record"
 import type { CoinReferenceRecord } from "./coin-reference-record"
 import type {
@@ -15,12 +16,14 @@ import type {
   CoinFaceSurfaceRecord,
   CoinSurfaceSetRecord,
 } from "./coin-surface-record"
+import { distribution } from "../schema/distribution"
 
 export type CoinDetailRecord = {
   id: string
   title: string
   comments: string | null
   diameter: number | null
+  distribution: CoinDistributionRecord
   issuer: CoinIssuer
   references: CoinReferenceRecord[]
   surfaces: CoinSurfaceSetRecord
@@ -33,6 +36,8 @@ type GetCoinRow = {
   title: string
   comments: string | null
   diameter: number | null
+  distributionCode: string
+  distributionName: string
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
@@ -59,6 +64,13 @@ function mapIssuer(row: GetCoinRow): CoinIssuer {
     isoCode: row.issuerIsoCode,
     name: row.issuerName,
     parent: null,
+  }
+}
+
+function mapDistribution(row: GetCoinRow): CoinDistributionRecord {
+  return {
+    code: row.distributionCode,
+    name: row.distributionName,
   }
 }
 
@@ -123,6 +135,22 @@ function mapSurfaces(rows: GetCoinRow[]): CoinSurfaceSetRecord {
     surfaces[row.surfaceKind] = nextSurface
   }
 
+  for (const key of ["obverse", "reverse"] as const) {
+    const surface = surfaces[key]
+
+    if (surface !== null) {
+      surface.engravers.sort((left, right) => {
+        const nameComparison = left.name.localeCompare(right.name)
+
+        if (nameComparison !== 0) {
+          return nameComparison
+        }
+
+        return left.code.localeCompare(right.code)
+      })
+    }
+  }
+
   return surfaces
 }
 
@@ -157,7 +185,9 @@ function mapReferences(rows: GetCoinRow[]): CoinReferenceRecord[] {
       return titleComparison
     }
 
-    const codeComparison = left.catalogue.code.localeCompare(right.catalogue.code)
+    const codeComparison = left.catalogue.code.localeCompare(
+      right.catalogue.code
+    )
 
     if (codeComparison !== 0) {
       return codeComparison
@@ -179,6 +209,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     title: firstRow.title,
     comments: firstRow.comments,
     diameter: firstRow.diameter,
+    distribution: mapDistribution(firstRow),
     issuer: mapIssuer(firstRow),
     references: mapReferences(rows),
     surfaces: mapSurfaces(rows),
@@ -196,6 +227,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       title: coin.title,
       comments: coin.comments,
       diameter: coin.diameter,
+      distributionCode: distribution.code,
+      distributionName: distribution.name,
       issuerId: issuer.id,
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
@@ -216,6 +249,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       weight: coin.weight,
     })
     .from(coin)
+    .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(coinReference, eq(coinReference.coinId, coin.id))
     .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))

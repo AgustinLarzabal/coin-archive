@@ -8,6 +8,10 @@ const baseCoin: CoinDetailRecord = {
   title: "Detail Test Coin",
   comments: null,
   diameter: null,
+  distribution: {
+    code: "standard-circulation",
+    name: "Standard circulation",
+  },
   issuer: {
     code: "spain",
     isoCode: "ES",

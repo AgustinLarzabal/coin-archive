@@ -73,6 +73,11 @@ export const coin = pgTable(
     title: varchar("title", { length: 255 }).notNull(),
     comments: text("comments"),
     diameter: numeric("diameter", measurementColumn),
+    distributionId: uuid("distribution_id")
+      .notNull()
+      .references(() => distribution.id, {
+        onDelete: "restrict",
+      }),
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuer.id, {
@@ -80,11 +85,6 @@ export const coin = pgTable(
       }),
     thickness: numeric("thickness", measurementColumn),
     weight: numeric("weight", measurementColumn),
-    distributionId: uuid("distribution_id")
-      .notNull()
-      .references(() => distribution.id, {
-        onDelete: "restrict",
-      }),
     compositionId: uuid("composition_id")
       .notNull()
       .references(() => composition.id, {

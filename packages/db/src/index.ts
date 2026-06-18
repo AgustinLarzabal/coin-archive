@@ -40,6 +40,9 @@ export { technique } from "./schema/technique"
 export { theme } from "./schema/theme"
 export type { GetCoinsOptions } from "./queries/get-coins"
 export type {
+  CoinDistributionRecord,
+} from "./queries/coin-distribution-record"
+export type {
   CoinIssuer,
   CoinListIssuer,
   CoinIssuerSummary,

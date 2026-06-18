@@ -110,6 +110,8 @@ function CoinRoute() {
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
 
+  console.log("coin", coin)
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
@@ -129,6 +131,10 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              {coin.distribution.name}
+            </div>
+            <span className="text-muted-foreground">•</span>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
               {coin.references.map((ref, index) => (
                 <Fragment key={`${ref.catalogue.code}-${ref.number}`}>
                   <Tooltip>
@@ -143,6 +149,36 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 </Fragment>
               ))}
             </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            {coinSurfaces.map((surface) => (
+              <div
+                key={surface.key}
+                className="space-y-4 [&:not(:last-child)]:mb-10"
+              >
+                <p className="text-sm font-semibold">{surface.label}</p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {surface.description}
+                </p>
+                <p className="text-sm">
+                  Lettering:{" "}
+                  <span className="text-sm leading-6 text-muted-foreground">
+                    {surface.lettering}
+                  </span>
+                </p>
+                {surface.engravers.map((engraver) => (
+                  <p key={engraver.code} className="text-sm">
+                    Engraver:{" "}
+                    <span className="text-sm leading-6 text-muted-foreground">
+                      {engraver.name}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            ))}
           </div>
 
           <Separator />
@@ -171,35 +207,9 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               </div>
             </div>
           </div>
+
           <Separator />
-          <div>
-            {coinSurfaces.map((surface) => (
-              <div
-                key={surface.key}
-                className="space-y-4 [&:not(:last-child)]:mb-10"
-              >
-                <p className="text-sm font-semibold">{surface.label}</p>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  {surface.description}
-                </p>
-                <p className="text-sm">
-                  Lettering:{" "}
-                  <span className="text-sm leading-6 text-muted-foreground">
-                    {surface.lettering}
-                  </span>
-                </p>
-                {surface.engravers.map((engraver) => (
-                  <p key={engraver.code} className="text-sm">
-                    Engraver:{" "}
-                    <span className="text-sm leading-6 text-muted-foreground">
-                      {engraver.name}
-                    </span>
-                  </p>
-                ))}
-              </div>
-            ))}
-          </div>
-          <Separator />
+
           <div className="space-y-4">
             <p className="text-sm font-semibold">Comments</p>
             <p className="text-sm leading-6 text-muted-foreground">

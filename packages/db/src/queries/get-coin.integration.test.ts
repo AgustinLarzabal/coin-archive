@@ -90,6 +90,10 @@ describe("getCoin integration", () => {
     expect(detail).toMatchObject({
       id: coin.id,
       title: "Detail Test Coin",
+      distribution: {
+        code: "standard-circulation",
+        name: "Standard circulation",
+      },
       issuer: {
         code: "spain",
         isoCode: "ES",
@@ -117,16 +121,6 @@ describe("getCoin integration", () => {
           lettering: "DETAIL TEST",
           thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
           imageUrl: "https://example.com/coins/detail-test/obverse-image",
-          engravers: [
-            {
-              code: "beatriz-lopez",
-              name: "Beatriz Lopez",
-            },
-            {
-              code: "ana-ruiz",
-              name: "Ana Ruiz",
-            },
-          ],
         },
         reverse: {
           description: "Denomination and wreath.",
@@ -143,5 +137,18 @@ describe("getCoin integration", () => {
         },
       },
     })
+    expect(detail?.surfaces.obverse?.engravers).toHaveLength(2)
+    expect(detail?.surfaces.obverse?.engravers).toEqual(
+      expect.arrayContaining([
+        {
+          code: "beatriz-lopez",
+          name: "Beatriz Lopez",
+        },
+        {
+          code: "ana-ruiz",
+          name: "Ana Ruiz",
+        },
+      ])
+    )
   })
 })

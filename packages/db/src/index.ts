@@ -45,6 +45,10 @@ export type {
   CoinIssuerSummary,
 } from "./queries/coin-issuer-record"
 export type {
+  CoinReferenceCatalogueRecord,
+  CoinReferenceRecord,
+} from "./queries/coin-reference-record"
+export type {
   CoinFaceEngraverRecord,
   CoinFaceSurfaceRecord,
   CoinSurfaceRecord,

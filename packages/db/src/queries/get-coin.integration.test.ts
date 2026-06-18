@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest"
 import { db } from "../index"
 import { getCoin } from "./get-coin"
 import {
+  createCatalogue,
   createCoin,
+  createCoinReference,
   createCoinSurface,
   createCoinSurfaceEngraver,
   createEngraver,
@@ -64,6 +66,24 @@ describe("getCoin integration", () => {
       coinSurfaceId: obverseSurface.id,
       engraverId: firstEngraver.id,
     })
+    const kmCatalogue = await createCatalogue({
+      code: "KM",
+      title: "Krause Mishler",
+    })
+    const cnCatalogue = await createCatalogue({
+      code: "CN",
+      title: "Custom Numismatics",
+    })
+    await createCoinReference({
+      coinId: coin.id,
+      catalogueId: kmCatalogue.id,
+      number: "12",
+    })
+    await createCoinReference({
+      coinId: coin.id,
+      catalogueId: cnCatalogue.id,
+      number: "A-5",
+    })
 
     const detail = await getCoin(coin.id)
 
@@ -75,6 +95,22 @@ describe("getCoin integration", () => {
         isoCode: "ES",
         name: "Spain",
       },
+      references: [
+        {
+          catalogue: {
+            code: "CN",
+            title: "Custom Numismatics",
+          },
+          number: "A-5",
+        },
+        {
+          catalogue: {
+            code: "KM",
+            title: "Krause Mishler",
+          },
+          number: "12",
+        },
+      ],
       surfaces: {
         obverse: {
           description: "Portrait facing left.",

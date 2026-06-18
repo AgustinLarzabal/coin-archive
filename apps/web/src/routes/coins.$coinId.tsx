@@ -2,9 +2,15 @@ import { getCoin } from "@workspace/db"
 import type { CoinDetailRecord } from "@workspace/db"
 import { createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
+import { Fragment } from "react"
 import { z } from "zod"
 import { ImageZoom } from "@workspace/ui/components/kibo-ui/image-zoom"
 import { Separator } from "@workspace/ui/components/separator"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -110,17 +116,37 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
 
       <section className="flex justify-between gap-10">
         <div className="w-full max-w-[60%] space-y-8">
-          <div className="flex items-center gap-2">
-            <img
-              src={`https://flagcdn.com/${coin.issuer.isoCode.toLowerCase()}.svg`}
-              alt={coin.issuer.name}
-              className="size-3.5 rounded-full object-cover"
-            />
-            <span className="text-xs text-muted-foreground">
-              {coin.issuer.name}
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <img
+                src={`https://flagcdn.com/${coin.issuer.isoCode.toLowerCase()}.svg`}
+                alt={coin.issuer.name}
+                className="size-3.5 rounded-full object-cover"
+              />
+              <span className="text-xs text-muted-foreground">
+                {coin.issuer.name}
+              </span>
+            </div>
+            <span className="text-muted-foreground">•</span>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              {coin.references.map((ref, index) => (
+                <Fragment key={`${ref.catalogue.code}-${ref.number}`}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      {ref.catalogue.code}: {ref.number}
+                    </TooltipTrigger>
+                    <TooltipContent>{ref.catalogue.title}</TooltipContent>
+                  </Tooltip>
+                  {index < coin.references.length - 1 ? (
+                    <Separator orientation="vertical" />
+                  ) : null}
+                </Fragment>
+              ))}
+            </div>
           </div>
+
           <Separator />
+
           <div className="flex gap-10">
             <div className="max-w-[50%] flex-1">
               <div className="flex items-center justify-between py-2 text-sm">

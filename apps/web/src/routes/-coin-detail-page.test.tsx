@@ -7,12 +7,14 @@ const baseCoin: CoinDetailRecord = {
   id: "coin-1",
   title: "Detail Test Coin",
   comments: null,
+  diameter: null,
   issuer: {
     code: "spain",
     isoCode: "ES",
     name: "Spain",
     parent: null,
   },
+  references: [],
   surfaces: {
     obverse: {
       description: "Portrait facing left.",
@@ -30,6 +32,8 @@ const baseCoin: CoinDetailRecord = {
     },
     edge: null,
   },
+  thickness: null,
+  weight: null,
 }
 
 function renderCoinDetailPageMarkup(coin: CoinDetailRecord = baseCoin) {
@@ -45,5 +49,31 @@ describe("CoinDetailPage", () => {
     expect(markup).toContain("https://example.com/coins/detail-test/obverse-image")
     expect(markup).toContain("https://example.com/coins/detail-test/reverse-image")
     expect(markup).not.toContain("/finland-2-euro-2004-obverse.jpg")
+  })
+
+  it("renders reference separators only between reference items", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      references: [
+        {
+          catalogue: {
+            code: "KM",
+            title: "Krause Mishler",
+          },
+          number: "1",
+        },
+        {
+          catalogue: {
+            code: "RIC",
+            title: "Roman Imperial Coinage",
+          },
+          number: "2",
+        },
+      ],
+    })
+
+    expect(markup).toContain("KM: 1")
+    expect(markup).toContain("RIC: 2")
+    expect(markup.match(/data-orientation=\"vertical\"/g)).toHaveLength(1)
   })
 })

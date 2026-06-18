@@ -1,12 +1,15 @@
 import { and, eq } from "drizzle-orm"
 import { db } from "../client"
+import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { coinReference } from "../schema/coin-reference"
 import { coinSurface } from "../schema/coin-surface"
 import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import type { CoinIssuer } from "./coin-issuer-record"
+import type { CoinReferenceRecord } from "./coin-reference-record"
 import type {
   CoinFaceEngraverRecord,
   CoinFaceSurfaceRecord,
@@ -19,6 +22,7 @@ export type CoinDetailRecord = {
   comments: string | null
   diameter: number | null
   issuer: CoinIssuer
+  references: CoinReferenceRecord[]
   surfaces: CoinSurfaceSetRecord
   thickness: number | null
   weight: number | null
@@ -33,6 +37,10 @@ type GetCoinRow = {
   issuerCode: string
   issuerIsoCode: string
   issuerName: string
+  referenceId: string | null
+  referenceNumber: string | null
+  referenceCatalogueCode: string | null
+  referenceCatalogueTitle: string | null
   surfaceKind: CoinSurfaceKind | null
   surfaceDescription: string | null
   surfaceLettering: string | null
@@ -118,6 +126,47 @@ function mapSurfaces(rows: GetCoinRow[]): CoinSurfaceSetRecord {
   return surfaces
 }
 
+function mapReferences(rows: GetCoinRow[]): CoinReferenceRecord[] {
+  const references = new Map<string, CoinReferenceRecord>()
+
+  for (const row of rows) {
+    if (
+      row.referenceId === null ||
+      row.referenceNumber === null ||
+      row.referenceCatalogueCode === null ||
+      row.referenceCatalogueTitle === null
+    ) {
+      continue
+    }
+
+    references.set(row.referenceId, {
+      catalogue: {
+        code: row.referenceCatalogueCode,
+        title: row.referenceCatalogueTitle,
+      },
+      number: row.referenceNumber,
+    })
+  }
+
+  return [...references.values()].sort((left, right) => {
+    const titleComparison = left.catalogue.title.localeCompare(
+      right.catalogue.title
+    )
+
+    if (titleComparison !== 0) {
+      return titleComparison
+    }
+
+    const codeComparison = left.catalogue.code.localeCompare(right.catalogue.code)
+
+    if (codeComparison !== 0) {
+      return codeComparison
+    }
+
+    return left.number.localeCompare(right.number)
+  })
+}
+
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
   const firstRow = rows.at(0)
 
@@ -131,6 +180,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     comments: firstRow.comments,
     diameter: firstRow.diameter,
     issuer: mapIssuer(firstRow),
+    references: mapReferences(rows),
     surfaces: mapSurfaces(rows),
     thickness: firstRow.thickness,
     weight: firstRow.weight,
@@ -150,6 +200,10 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
+      referenceId: coinReference.id,
+      referenceNumber: coinReference.number,
+      referenceCatalogueCode: catalogue.code,
+      referenceCatalogueTitle: catalogue.title,
       surfaceKind: coinSurface.kind,
       surfaceDescription: coinSurface.description,
       surfaceLettering: coinSurface.lettering,
@@ -163,6 +217,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     })
     .from(coin)
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .leftJoin(coinReference, eq(coinReference.coinId, coin.id))
+    .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))
     .leftJoin(coinSurface, eq(coinSurface.coinId, coin.id))
     .leftJoin(
       coinSurfaceEngraver,

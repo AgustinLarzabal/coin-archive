@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { getEngravers, getIssuers } from "@workspace/db"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 import appCss from "@workspace/ui/globals.css?url"
 
@@ -54,8 +55,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="relative flex min-h-svh flex-col">
-        <SiteHeader />
-        {children}
+        <TooltipProvider>
+          <SiteHeader />
+          {children}
+        </TooltipProvider>
         <Scripts />
       </body>
     </html>

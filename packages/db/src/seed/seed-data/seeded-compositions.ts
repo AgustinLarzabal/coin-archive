@@ -31,8 +31,8 @@ export const seededCompositions: SeededComposition[] = [
   },
   {
     code: "bimetallic",
-    name: "Bimetallic",
-    description: "Bimetallic description",
+    name: "Copper-Aluminium-Zinc",
+    description: "Ring: 75% Cu, 25% Ni. Core: 75% Cu, 20% Zn, 5% Ni",
     createdAt: new Date("2026-01-04T00:00:00.000Z"),
     updatedAt: new Date("2026-01-04T00:00:00.000Z"),
   },

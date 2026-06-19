@@ -42,6 +42,11 @@ const baseCoin: CoinDetailRecord = {
   id: "coin-1",
   title: "Detail Test Coin",
   comments: null,
+  composition: {
+    code: "copper-nickel",
+    name: "Copper-nickel",
+    description: null,
+  },
   diameter: null,
   distribution: {
     code: "standard-circulation",
@@ -56,6 +61,7 @@ const baseCoin: CoinDetailRecord = {
     parent: null,
   },
   maxYear: 2004,
+  mintage: null,
   minYear: 1999,
   orientation: null,
   references: [],
@@ -139,5 +145,14 @@ describe("CoinDetailPage", () => {
     expect(markup).not.toContain("Years:")
     expect(markup).toContain(">1900</")
     expect(markup).not.toContain(">-<")
+  })
+
+  it("formats mintage with grouped digits", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      mintage: 1250000,
+    })
+
+    expect(markup).toContain("1,250,000")
   })
 })

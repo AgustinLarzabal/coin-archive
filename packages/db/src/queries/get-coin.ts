@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
+import { composition } from "../schema/composition"
 import { coinReference } from "../schema/coin-reference"
 import { coinRuler } from "../schema/coin-ruler"
 import { coinSurface } from "../schema/coin-surface"
@@ -33,17 +34,20 @@ import { theme } from "../schema/theme"
 import type { CoinEdgeRecord } from "./coin-edge-record"
 import type { CoinRimRecord } from "./coin-rim-record"
 import type { CoinThemeRecord } from "./coin-theme-record"
+import type { CoinCompositionRecord } from "./coin-composition-record"
 
 export type CoinDetailRecord = {
   id: string
   title: string
   comments: string | null
+  composition: CoinCompositionRecord
   diameter: number | null
   distribution: CoinDistributionRecord
   edge: CoinEdgeRecord | null
   isDemonetized: boolean | null
   issuer: CoinIssuer
   maxYear: number | null
+  mintage: number | null
   minYear: number | null
   orientation: CoinOrientationRecord | null
   references: CoinReferenceRecord[]
@@ -61,6 +65,9 @@ type GetCoinRow = {
   id: string
   title: string
   comments: string | null
+  compositionCode: string
+  compositionDescription: string | null
+  compositionName: string
   diameter: number | null
   distributionCode: string
   distributionName: string
@@ -75,6 +82,7 @@ type GetCoinRow = {
   issuerIsoCode: string
   issuerName: string
   maxYear: number | null
+  mintage: number | null
   minYear: number | null
   orientationCode: string | null
   orientationName: string | null
@@ -108,6 +116,14 @@ function mapDistribution(row: GetCoinRow): CoinDistributionRecord {
   return {
     code: row.distributionCode,
     name: row.distributionName,
+  }
+}
+
+function mapComposition(row: GetCoinRow): CoinCompositionRecord {
+  return {
+    code: row.compositionCode,
+    name: row.compositionName,
+    description: row.compositionDescription,
   }
 }
 
@@ -396,12 +412,14 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     id: firstRow.id,
     title: firstRow.title,
     comments: firstRow.comments,
+    composition: mapComposition(firstRow),
     diameter: firstRow.diameter,
     distribution: mapDistribution(firstRow),
     edge: mapEdge(firstRow),
     isDemonetized: firstRow.isDemonetized,
     issuer: mapIssuer(firstRow),
     maxYear: firstRow.maxYear,
+    mintage: firstRow.mintage,
     minYear: firstRow.minYear,
     orientation: mapOrientation(firstRow),
     references: mapReferences(rows),
@@ -424,6 +442,9 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       id: coin.id,
       title: coin.title,
       comments: coin.comments,
+      compositionCode: composition.code,
+      compositionDescription: composition.description,
+      compositionName: composition.name,
       diameter: coin.diameter,
       distributionCode: distribution.code,
       distributionName: distribution.name,
@@ -438,6 +459,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
       maxYear: coin.maxYear,
+      mintage: coin.mintage,
       minYear: coin.minYear,
       orientationCode: orientation.code,
       orientationName: orientation.name,
@@ -467,6 +489,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       weight: coin.weight,
     })
     .from(coin)
+    .innerJoin(composition, eq(coin.compositionId, composition.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(edge, eq(coin.edgeId, edge.id))

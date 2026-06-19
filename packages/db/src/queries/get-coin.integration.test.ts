@@ -4,6 +4,7 @@ import { getCoin } from "./get-coin"
 import {
   createCatalogue,
   createCoin,
+  createComposition,
   createCoinReference,
   createCoinRuler,
   createCoinSurface,
@@ -42,6 +43,11 @@ describe("getCoin integration", () => {
       code: "milled",
       name: "Milled",
     })
+    const silverComposition = await createComposition({
+      code: "silver-900",
+      name: "Silver .900",
+      description: "90% silver, 10% copper",
+    })
     const letteredEdge = await createEdge({
       code: "lettered",
       name: "Lettered",
@@ -53,9 +59,11 @@ describe("getCoin integration", () => {
     const coin = await createCoin({
       title: "Detail Test Coin",
       issuerId: spain.id,
+      compositionId: silverComposition.id,
       minYear: 1999,
       maxYear: 2004,
       edgeId: letteredEdge.id,
+      mintage: 1250000,
       orientationId: medalOrientation.id,
       rimId: raisedRim.id,
       shapeId: roundShape.id,
@@ -160,6 +168,11 @@ describe("getCoin integration", () => {
     expect(detail).toMatchObject({
       id: coin.id,
       title: "Detail Test Coin",
+      composition: {
+        code: "silver-900",
+        name: "Silver .900",
+        description: "90% silver, 10% copper",
+      },
       distribution: {
         code: "standard-circulation",
         name: "Standard circulation",
@@ -173,6 +186,7 @@ describe("getCoin integration", () => {
         isoCode: "ES",
         name: "Spain",
       },
+      mintage: 1250000,
       minYear: 1999,
       maxYear: 2004,
       orientation: {

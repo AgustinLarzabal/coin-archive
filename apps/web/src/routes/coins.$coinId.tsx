@@ -54,8 +54,18 @@ type CoinDetailSurfaceView = {
   engravers: { code: string; name: string }[]
 }
 
+const wholeNumberFormatter = new Intl.NumberFormat("en-US")
+
 function hasSurfaceMedia(surface: CoinDetailSurfaceView) {
   return (surface.imageUrl ?? surface.thumbnailUrl) !== null
+}
+
+function formatMintage(mintage: number | null) {
+  if (mintage === null) {
+    return null
+  }
+
+  return wholeNumberFormatter.format(mintage)
 }
 
 function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
@@ -111,8 +121,6 @@ function CoinRoute() {
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
-
-  console.log("coin", coin)
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-20">
@@ -252,6 +260,13 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                   {coin.thickness} mm
                 </span>
               </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Mintage</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {formatMintage(coin.mintage)}
+                </span>
+              </div>
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between py-2 text-sm">
@@ -272,6 +287,18 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 <span>Technique</span>
                 <span className="text-muted-foreground tabular-nums">
                   {coin.technique?.name}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Composition</span>
+                <span className="text-muted-foreground tabular-nums">
+                  <Tooltip>
+                    <TooltipTrigger>{coin.composition.name}</TooltipTrigger>
+                    <TooltipContent>
+                      {coin.composition.description}
+                    </TooltipContent>
+                  </Tooltip>
                 </span>
               </div>
             </div>

@@ -9,9 +9,13 @@ import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
+import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 import type { CoinDistributionRecord } from "./coin-distribution-record"
 import type { CoinIssuer } from "./coin-issuer-record"
+import type { CoinOrientationRecord } from "./coin-orientation-record"
 import type { CoinReferenceRecord } from "./coin-reference-record"
 import type { CoinRulerRecord } from "./coin-ruler-record"
 import type {
@@ -20,6 +24,8 @@ import type {
   CoinSurfaceSetRecord,
 } from "./coin-surface-record"
 import { distribution } from "../schema/distribution"
+import type { CoinShapeRecord } from "./coin-shape-record"
+import type { CoinTechniqueRecord } from "./coin-technique-record"
 
 export type CoinDetailRecord = {
   id: string
@@ -29,9 +35,14 @@ export type CoinDetailRecord = {
   distribution: CoinDistributionRecord
   isDemonetized: boolean | null
   issuer: CoinIssuer
+  maxYear: number | null
+  minYear: number | null
+  orientation: CoinOrientationRecord | null
   references: CoinReferenceRecord[]
   rulers: CoinRulerRecord[]
+  shape: CoinShapeRecord | null
   surfaces: CoinSurfaceSetRecord
+  technique: CoinTechniqueRecord | null
   thickness: number | null
   weight: number | null
 }
@@ -43,11 +54,18 @@ type GetCoinRow = {
   diameter: number | null
   distributionCode: string
   distributionName: string
+  engraverId: string | null
+  engraverCode: string | null
+  engraverName: string | null
   isDemonetized: boolean | null
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
   issuerName: string
+  maxYear: number | null
+  minYear: number | null
+  orientationCode: string | null
+  orientationName: string | null
   referenceId: string | null
   referenceNumber: string | null
   referenceCatalogueCode: string | null
@@ -56,14 +74,15 @@ type GetCoinRow = {
   rulerCode: string | null
   rulerName: string | null
   rulerOrder: number | null
+  shapeCode: string | null
+  shapeName: string | null
   surfaceKind: CoinSurfaceKind | null
   surfaceDescription: string | null
   surfaceLettering: string | null
   surfaceThumbnailUrl: string | null
   surfaceImageUrl: string | null
-  engraverId: string | null
-  engraverCode: string | null
-  engraverName: string | null
+  techniqueCode: string | null
+  techniqueName: string | null
   thickness: number | null
   weight: number | null
 }
@@ -96,6 +115,17 @@ function mapIssuer(row: GetCoinRow): CoinIssuer {
     isoCode: row.issuerIsoCode,
     name: row.issuerName,
     parent: null,
+  }
+}
+
+function mapOrientation(row: GetCoinRow): CoinOrientationRecord | null {
+  if (row.orientationCode === null || row.orientationName === null) {
+    return null
+  }
+
+  return {
+    code: row.orientationCode,
+    name: row.orientationName,
   }
 }
 
@@ -186,6 +216,17 @@ function mapRulers(rows: GetCoinRow[]): CoinRulerRecord[] {
     .map(({ code, name }) => ({ code, name }))
 }
 
+function mapShape(row: GetCoinRow): CoinShapeRecord | null {
+  if (row.shapeCode === null || row.shapeName === null) {
+    return null
+  }
+
+  return {
+    code: row.shapeCode,
+    name: row.shapeName,
+  }
+}
+
 function mapSurfaces(rows: GetCoinRow[]): CoinSurfaceSetRecord {
   const surfaces: CoinSurfaceSetRecord = {
     obverse: null,
@@ -251,6 +292,17 @@ function mapSurfaces(rows: GetCoinRow[]): CoinSurfaceSetRecord {
   return surfaces
 }
 
+function mapTechnique(row: GetCoinRow): CoinTechniqueRecord | null {
+  if (row.techniqueCode === null || row.techniqueName === null) {
+    return null
+  }
+
+  return {
+    code: row.techniqueCode,
+    name: row.techniqueName,
+  }
+}
+
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
   const firstRow = rows.at(0)
 
@@ -266,9 +318,14 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     distribution: mapDistribution(firstRow),
     isDemonetized: firstRow.isDemonetized,
     issuer: mapIssuer(firstRow),
+    maxYear: firstRow.maxYear,
+    minYear: firstRow.minYear,
+    orientation: mapOrientation(firstRow),
     references: mapReferences(rows),
     rulers: mapRulers(rows),
+    shape: mapShape(firstRow),
     surfaces: mapSurfaces(rows),
+    technique: mapTechnique(firstRow),
     thickness: firstRow.thickness,
     weight: firstRow.weight,
   }
@@ -293,6 +350,10 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
+      maxYear: coin.maxYear,
+      minYear: coin.minYear,
+      orientationCode: orientation.code,
+      orientationName: orientation.name,
       referenceId: coinReference.id,
       referenceNumber: coinReference.number,
       referenceCatalogueCode: catalogue.code,
@@ -301,21 +362,27 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       rulerCode: ruler.code,
       rulerName: ruler.name,
       rulerOrder: coinRuler.rulerOrder,
+      shapeCode: shape.code,
+      shapeName: shape.name,
       surfaceKind: coinSurface.kind,
       surfaceDescription: coinSurface.description,
       surfaceLettering: coinSurface.lettering,
       surfaceThumbnailUrl: coinSurface.thumbnailUrl,
       surfaceImageUrl: coinSurface.imageUrl,
+      techniqueCode: technique.code,
+      techniqueName: technique.name,
       thickness: coin.thickness,
       weight: coin.weight,
     })
     .from(coin)
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .leftJoin(orientation, eq(coin.orientationId, orientation.id))
     .leftJoin(coinRuler, eq(coinRuler.coinId, coin.id))
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(coinReference, eq(coinReference.coinId, coin.id))
     .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))
+    .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(coinSurface, eq(coinSurface.coinId, coin.id))
     .leftJoin(
       coinSurfaceEngraver,
@@ -325,6 +392,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       )
     )
     .leftJoin(engraver, eq(coinSurfaceEngraver.engraverId, engraver.id))
+    .leftJoin(technique, eq(coin.techniqueId, technique.id))
     .where(eq(coin.id, coinId))
 }
 

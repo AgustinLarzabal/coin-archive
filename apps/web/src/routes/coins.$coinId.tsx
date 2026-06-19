@@ -12,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
 import { Badge } from "@workspace/ui/components/badge"
-import { runnerImport } from "vite"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -111,8 +110,7 @@ function CoinRoute() {
 
 export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
-
-  console.log("coin", coin)
+  const hasSingleYear = coin.minYear === coin.maxYear
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
@@ -163,7 +161,7 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
 
           <Separator />
 
-          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <Link
               to="/"
               search={{ distribution: coin.distribution.code }}
@@ -173,14 +171,29 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             >
               {coin.distribution.name}
             </Link>
-            {coin.isDemonetized && (
-              <Badge
-                variant="secondary"
-                className="text-[10px] tracking-wider uppercase"
-              >
-                Demonetized
+            <span className="text-muted-foreground">•</span>
+            <div className="flex items-center gap-1">
+              {hasSingleYear ? "Year:" : "Years:"}
+              <Badge variant="outline" className="tracking-wider uppercase">
+                {coin.minYear}
               </Badge>
-            )}
+              {hasSingleYear ? null : (
+                <>
+                  -
+                  <Badge variant="outline" className="tracking-wider uppercase">
+                    {coin.maxYear}
+                  </Badge>
+                </>
+              )}
+            </div>
+            {/* {coin.isDemonetized && ( */}
+            <Badge
+              variant="secondary"
+              className="ml-auto text-[10px] tracking-wider uppercase"
+            >
+              Demonetized
+            </Badge>
+            {/* )} */}
           </div>
 
           <Separator />
@@ -220,7 +233,7 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Weight</span>
                 <span className="text-muted-foreground tabular-nums">
-                  {coin.diameter} gr
+                  {coin.weight} gr
                 </span>
               </div>
               <Separator />
@@ -234,7 +247,29 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Thickness</span>
                 <span className="text-muted-foreground tabular-nums">
-                  {coin.diameter} mm
+                  {coin.thickness} mm
+                </span>
+              </div>
+            </div>
+            <div className="max-w-[50%] flex-1">
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Orientation</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.orientation?.name}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Shape</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.shape?.name}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Technique</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.technique?.name}
                 </span>
               </div>
             </div>

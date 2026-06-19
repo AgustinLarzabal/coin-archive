@@ -10,7 +10,10 @@ import {
   createCoinSurfaceEngraver,
   createEngraver,
   createIssuer,
+  createOrientation,
   createRuler,
+  createShape,
+  createTechnique,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -23,9 +26,26 @@ describe("getCoin integration", () => {
       isoCode: "ES",
       name: "Spain",
     })
+    const medalOrientation = await createOrientation({
+      code: "medal-alignment",
+      name: "Medal alignment",
+    })
+    const roundShape = await createShape({
+      code: "round",
+      name: "Round",
+    })
+    const milledTechnique = await createTechnique({
+      code: "milled",
+      name: "Milled",
+    })
     const coin = await createCoin({
       title: "Detail Test Coin",
       issuerId: spain.id,
+      minYear: 1999,
+      maxYear: 2004,
+      orientationId: medalOrientation.id,
+      shapeId: roundShape.id,
+      techniqueId: milledTechnique.id,
       createdAt: new Date("2026-06-15T00:00:00.000Z"),
     })
     const obverseSurface = await createCoinSurface({
@@ -119,6 +139,12 @@ describe("getCoin integration", () => {
         isoCode: "ES",
         name: "Spain",
       },
+      minYear: 1999,
+      maxYear: 2004,
+      orientation: {
+        code: "medal-alignment",
+        name: "Medal alignment",
+      },
       rulers: [
         {
           code: "detail-ruler-a",
@@ -145,6 +171,10 @@ describe("getCoin integration", () => {
           number: "12",
         },
       ],
+      shape: {
+        code: "round",
+        name: "Round",
+      },
       surfaces: {
         obverse: {
           description: "Portrait facing left.",
@@ -165,6 +195,10 @@ describe("getCoin integration", () => {
           thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
           imageUrl: "https://example.com/coins/detail-test/edge-image",
         },
+      },
+      technique: {
+        code: "milled",
+        name: "Milled",
       },
     })
     expect(detail?.surfaces.obverse?.engravers).toHaveLength(2)

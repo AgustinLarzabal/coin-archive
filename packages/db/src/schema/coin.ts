@@ -84,6 +84,17 @@ export const coin = pgTable(
       .references(() => issuer.id, {
         onDelete: "restrict",
       }),
+    minYear: integer("min_year"),
+    maxYear: integer("max_year"),
+    orientationId: uuid("orientation_id").references(() => orientation.id, {
+      onDelete: "restrict",
+    }),
+    shapeId: uuid("shape_id").references(() => shape.id, {
+      onDelete: "restrict",
+    }),
+    techniqueId: uuid("technique_id").references(() => technique.id, {
+      onDelete: "restrict",
+    }),
     thickness: numeric("thickness", measurementColumn),
     weight: numeric("weight", measurementColumn),
     compositionId: uuid("composition_id")
@@ -101,24 +112,13 @@ export const coin = pgTable(
       .references(() => currency.id, {
         onDelete: "restrict",
       }),
-    orientationId: uuid("orientation_id").references(() => orientation.id, {
-      onDelete: "restrict",
-    }),
     edgeId: uuid("edge_id").references(() => edge.id, {
-      onDelete: "restrict",
-    }),
-    shapeId: uuid("shape_id").references(() => shape.id, {
       onDelete: "restrict",
     }),
     rimId: uuid("rim_id").references(() => rim.id, {
       onDelete: "restrict",
     }),
-    techniqueId: uuid("technique_id").references(() => technique.id, {
-      onDelete: "restrict",
-    }),
     mintage: bigint("mintage", { mode: "number" }),
-    minYear: integer("min_year"),
-    maxYear: integer("max_year"),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

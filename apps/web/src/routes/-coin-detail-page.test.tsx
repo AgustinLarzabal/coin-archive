@@ -54,7 +54,12 @@ const baseCoin: CoinDetailRecord = {
     name: "Spain",
     parent: null,
   },
+  maxYear: 2004,
+  minYear: 1999,
+  orientation: null,
   references: [],
+  rulers: [],
+  shape: null,
   surfaces: {
     obverse: {
       description: "Portrait facing left.",
@@ -72,6 +77,7 @@ const baseCoin: CoinDetailRecord = {
     },
     edge: null,
   },
+  technique: null,
   thickness: null,
   weight: null,
 }
@@ -117,5 +123,18 @@ describe("CoinDetailPage", () => {
     expect(markup).toContain("KM: 1")
     expect(markup).toContain("RIC: 2")
     expect(markup.match(/data-orientation=\"vertical\"/g)).toHaveLength(1)
+  })
+
+  it("renders a singular year label and one badge for single-year coins", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      minYear: 1900,
+      maxYear: 1900,
+    })
+
+    expect(markup).toContain("Year:")
+    expect(markup).not.toContain("Years:")
+    expect(markup).toContain(">1900</")
+    expect(markup).not.toContain(">-<")
   })
 })

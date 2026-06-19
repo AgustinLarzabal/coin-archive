@@ -8,9 +8,11 @@ import {
   createCoinRuler,
   createCoinSurface,
   createCoinSurfaceEngraver,
+  createEdge,
   createEngraver,
   createIssuer,
   createOrientation,
+  createRim,
   createRuler,
   createShape,
   createTechnique,
@@ -38,12 +40,22 @@ describe("getCoin integration", () => {
       code: "milled",
       name: "Milled",
     })
+    const letteredEdge = await createEdge({
+      code: "lettered",
+      name: "Lettered",
+    })
+    const raisedRim = await createRim({
+      code: "raised-both-sides",
+      name: "Raised on both sides",
+    })
     const coin = await createCoin({
       title: "Detail Test Coin",
       issuerId: spain.id,
       minYear: 1999,
       maxYear: 2004,
+      edgeId: letteredEdge.id,
       orientationId: medalOrientation.id,
+      rimId: raisedRim.id,
       shapeId: roundShape.id,
       techniqueId: milledTechnique.id,
       createdAt: new Date("2026-06-15T00:00:00.000Z"),
@@ -134,6 +146,10 @@ describe("getCoin integration", () => {
         code: "standard-circulation",
         name: "Standard circulation",
       },
+      edge: {
+        code: "lettered",
+        name: "Lettered",
+      },
       issuer: {
         code: "spain",
         isoCode: "ES",
@@ -171,6 +187,10 @@ describe("getCoin integration", () => {
           number: "12",
         },
       ],
+      rim: {
+        code: "raised-both-sides",
+        name: "Raised on both sides",
+      },
       shape: {
         code: "round",
         name: "Round",

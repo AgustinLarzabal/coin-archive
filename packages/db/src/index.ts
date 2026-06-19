@@ -42,6 +42,7 @@ export type { GetCoinsOptions } from "./queries/get-coins"
 export type {
   CoinDistributionRecord,
 } from "./queries/coin-distribution-record"
+export type { CoinEdgeRecord } from "./queries/coin-edge-record"
 export type {
   CoinIssuer,
   CoinListIssuer,
@@ -51,6 +52,7 @@ export type {
   CoinReferenceCatalogueRecord,
   CoinReferenceRecord,
 } from "./queries/coin-reference-record"
+export type { CoinRimRecord } from "./queries/coin-rim-record"
 export type {
   CoinFaceEngraverRecord,
   CoinFaceSurfaceRecord,

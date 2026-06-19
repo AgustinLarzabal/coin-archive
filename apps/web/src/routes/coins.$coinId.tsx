@@ -228,8 +228,8 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
 
           <Separator />
 
-          <div className="flex gap-10">
-            <div className="max-w-[50%] flex-1">
+          <div className="mb-0 flex gap-10">
+            <div className="flex-1">
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Weight</span>
                 <span className="text-muted-foreground tabular-nums">
@@ -251,7 +251,7 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 </span>
               </div>
             </div>
-            <div className="max-w-[50%] flex-1">
+            <div className="flex-1">
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Orientation</span>
                 <span className="text-muted-foreground tabular-nums">
@@ -272,6 +272,22 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                   {coin.technique?.name}
                 </span>
               </div>
+            </div>
+          </div>
+          <Separator />
+          <div className="-mt-4 mb-0">
+            <div className="flex items-center justify-between py-2 text-sm">
+              <span>Edge</span>
+              <span className="text-muted-foreground tabular-nums">
+                {coin.edge?.name}
+              </span>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between py-2 text-sm">
+              <span>Rim</span>
+              <span className="text-muted-foreground tabular-nums">
+                {coin.rim?.name}
+              </span>
             </div>
           </div>
 

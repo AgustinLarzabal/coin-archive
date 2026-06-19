@@ -47,6 +47,7 @@ const baseCoin: CoinDetailRecord = {
     code: "standard-circulation",
     name: "Standard circulation",
   },
+  edge: null,
   isDemonetized: null,
   issuer: {
     code: "spain",
@@ -58,6 +59,7 @@ const baseCoin: CoinDetailRecord = {
   minYear: 1999,
   orientation: null,
   references: [],
+  rim: null,
   rulers: [],
   shape: null,
   surfaces: {

@@ -122,8 +122,6 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
 
-  console.log("coin", coin)
-
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>

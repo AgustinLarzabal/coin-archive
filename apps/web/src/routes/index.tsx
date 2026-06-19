@@ -78,7 +78,7 @@ function App() {
       ) : (
         <div className="grid h-full w-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 [@media(min-width:1920px)]:[grid-template-columns:repeat(auto-fit,minmax(0,290px))]">
           {coins.map((coin) => (
-            <CoinCard coin={coin} key={coin.id} />
+            <CoinCard coin={coin} key={coin.id} search={search} />
           ))}
         </div>
       )}

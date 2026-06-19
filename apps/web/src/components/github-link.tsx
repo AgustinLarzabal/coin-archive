@@ -1,5 +1,6 @@
 import { buttonVariants } from "@workspace/ui/components/button"
 import { Icons } from "./icons"
+import { cn } from "@workspace/ui/lib/utils"
 
 export function GitHubLink() {
   return (
@@ -7,11 +8,13 @@ export function GitHubLink() {
       href="https://github.com/AgustinLarzabal/coin-archive"
       target="_blank"
       rel="noreferrer"
-      className={buttonVariants({
-        variant: "ghost",
-        size: "sm",
-        className: "flex items-center justify-center gap-2",
-      })}
+      className={cn(
+        buttonVariants({
+          variant: "ghost",
+          size: "sm",
+        }),
+        "flex items-center justify-center gap-2"
+      )}
     >
       <Icons.GitHub />
       <span className="text-xs text-muted-foreground">GitHub</span>

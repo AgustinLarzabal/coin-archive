@@ -12,6 +12,11 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
 import { Badge } from "@workspace/ui/components/badge"
+import type { CoinSearch } from "../lib/coin-search"
+import { coinSearchSchema } from "../lib/coin-search"
+import { buttonVariants } from "@workspace/ui/components/button"
+import { ChevronLeft } from "lucide-react"
+import { cn } from "@workspace/ui/lib/utils"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -36,12 +41,14 @@ const getCoinData = createServerFn({ method: "GET" })
   })
 
 export const Route = createFileRoute("/coins/$coinId")({
+  validateSearch: coinSearchSchema,
   loader: ({ params }) => getCoinData({ data: params }),
   component: CoinRoute,
 })
 
 type CoinDetailPageProps = {
   coin: CoinDetailRecord
+  backHomeSearch?: CoinSearch
 }
 
 type CoinDetailSurfaceView = {
@@ -114,16 +121,32 @@ function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
 
 function CoinRoute() {
   const { coin } = Route.useLoaderData()
+  const search = Route.useSearch()
 
-  return <CoinDetailPage coin={coin} />
+  return <CoinDetailPage coin={coin} backHomeSearch={search} />
 }
 
-export function CoinDetailPage({ coin }: CoinDetailPageProps) {
+export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-20">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-10 pb-20">
+      <Link
+        to="/"
+        search={backHomeSearch}
+        className={cn(
+          buttonVariants({
+            variant: "link",
+            size: "sm",
+          }),
+          "mb-4 w-fit px-0 text-sm text-muted-foreground"
+        )}
+      >
+        <ChevronLeft />
+        Home
+      </Link>
+
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
 
       <section className="flex justify-between gap-10">
@@ -172,6 +195,17 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
           <Separator />
 
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            {coin.isDemonetized && (
+              <>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] tracking-wider uppercase"
+                >
+                  Demonetized
+                </Badge>
+                <span className="text-muted-foreground">•</span>
+              </>
+            )}
             <Link
               to="/"
               search={{ distribution: coin.distribution.code }}
@@ -181,8 +215,7 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             >
               {coin.distribution.name}
             </Link>
-            <span className="text-muted-foreground">•</span>
-            <div className="flex items-center gap-1">
+            <div className="ml-auto flex items-center gap-1">
               {hasSingleYear ? "Year:" : "Years:"}
               <Badge variant="outline" className="tracking-wider uppercase">
                 {coin.minYear}
@@ -196,14 +229,6 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 </>
               )}
             </div>
-            {/* {coin.isDemonetized && ( */}
-            <Badge
-              variant="secondary"
-              className="ml-auto text-[10px] tracking-wider uppercase"
-            >
-              Demonetized
-            </Badge>
-            {/* )} */}
           </div>
 
           <Separator />

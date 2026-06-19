@@ -101,16 +101,31 @@ const baseCoin: CoinDetailRecord = {
   weight: null,
 }
 
-function renderCoinDetailPageMarkup(coin: CoinDetailRecord = baseCoin) {
-  return renderToStaticMarkup(<CoinDetailPage coin={coin} />)
+function renderCoinDetailPageMarkup(
+  coin: CoinDetailRecord = baseCoin,
+  backHomeSearch?: {
+    distribution?: string
+    engraver?: string
+    issuer?: string
+  }
+) {
+  return renderToStaticMarkup(
+    <CoinDetailPage coin={coin} backHomeSearch={backHomeSearch} />
+  )
 }
 
 describe("CoinDetailPage", () => {
   it("renders detail content from a CoinDetailRecord", () => {
-    const markup = renderCoinDetailPageMarkup()
+    const markup = renderCoinDetailPageMarkup(baseCoin, {
+      distribution: "standard-circulation",
+      issuer: "spain",
+    })
 
     expect(markup).toContain("Detail Test Coin")
     expect(markup).toContain("Spain")
+    expect(markup).toContain(
+      'href="/?distribution=standard-circulation&amp;issuer=spain"'
+    )
     expect(markup).toContain('href="/?issuer=spain"')
     expect(markup).toContain('href="/?distribution=standard-circulation"')
     expect(markup).toContain("https://example.com/coins/detail-test/obverse-image")
@@ -169,13 +184,13 @@ describe("CoinDetailPage", () => {
   it("pluralizes the mint label when a coin has multiple mints", () => {
     const singularMarkup = renderCoinDetailPageMarkup({
       ...baseCoin,
-      mints: [{ id: "mint-1", code: "madrid", name: "Madrid Mint" }],
+      mints: [{ code: "madrid", name: "Madrid Mint" }],
     })
     const pluralMarkup = renderCoinDetailPageMarkup({
       ...baseCoin,
       mints: [
-        { id: "mint-1", code: "madrid", name: "Madrid Mint" },
-        { id: "mint-2", code: "barcelona", name: "Barcelona Mint" },
+        { code: "madrid", name: "Madrid Mint" },
+        { code: "barcelona", name: "Barcelona Mint" },
       ],
     })
 

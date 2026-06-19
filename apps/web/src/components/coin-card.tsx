@@ -7,12 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import type { CoinSearch } from "../lib/coin-search"
 
 type CoinCardProps = {
   coin: CoinListRecord
+  search?: CoinSearch
 }
 
-export function CoinCard({ coin }: CoinCardProps) {
+export function CoinCard({ coin, search }: CoinCardProps) {
   const previewImageUrl =
     coin.surfaces.obverse?.imageUrl ??
     coin.surfaces.obverse?.thumbnailUrl ??
@@ -25,6 +27,7 @@ export function CoinCard({ coin }: CoinCardProps) {
     <Link
       className="block outline-none focus-visible:ring-1 focus-visible:ring-ring"
       params={{ coinId: coin.id }}
+      search={search}
       to="/coins/$coinId"
     >
       <Card className="p-0 pb-4 transition-colors hover:bg-muted/30">

@@ -2,6 +2,7 @@ import type {
   DistributionOption,
   EngraverOption,
   IssuerOption,
+  RulerOption,
   ThemeOption,
 } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
@@ -18,15 +19,18 @@ type HomeFiltersProps = {
   distributions: DistributionOption[]
   engravers: EngraverOption[]
   issuers: IssuerOption[]
+  rulers: RulerOption[]
   themes: ThemeOption[]
   selectedDistributionCode?: string
   selectedEngraverCode?: string
   selectedIssuerCode?: string
+  selectedRulerCode?: string
   selectedThemeCode?: string
   onFiltersChange: (filters: {
     distributionCode: string | undefined
     engraverCode: string | undefined
     issuerCode: string | undefined
+    rulerCode: string | undefined
     themeCode: string | undefined
   }) => Promise<void>
 }
@@ -35,10 +39,12 @@ export function HomeFilters({
   distributions,
   engravers,
   issuers,
+  rulers,
   themes,
   selectedDistributionCode,
   selectedEngraverCode,
   selectedIssuerCode,
+  selectedRulerCode,
   selectedThemeCode,
   onFiltersChange,
 }: HomeFiltersProps) {
@@ -46,6 +52,7 @@ export function HomeFilters({
     selectedDistributionCode,
     selectedEngraverCode,
     selectedIssuerCode,
+    selectedRulerCode,
     selectedThemeCode,
   })
 
@@ -53,6 +60,7 @@ export function HomeFilters({
     distributions,
     engravers,
     issuers,
+    rulers,
     themes,
   })
 
@@ -65,6 +73,7 @@ export function HomeFilters({
       distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: undefined,
+      rulerCode: undefined,
       themeCode: undefined,
     })
   }

@@ -19,6 +19,7 @@ describe("buildGetCoinsQuery", () => {
     const query = buildGetCoinsQuery(db, {
       distributionCode: "standard-circulation",
       issuerCode: "spain",
+      rulerCode: "charles-iii",
       themeCode: "map",
       limit: 1,
     }).toSQL()
@@ -32,8 +33,16 @@ describe("buildGetCoinsQuery", () => {
     expect(query.sql).toContain('"coin_face_engraver"')
     expect(query.sql).toContain('"engraver"')
     expect(query.sql).toContain('"issuer"."iso_code"')
+    expect(query.sql).toContain('"coin_ruler"')
+    expect(query.sql).toContain('"ruler"')
     expect(query.sql).toContain('"coin_theme"')
     expect(query.sql).toContain('"theme"')
-    expect(query.params).toEqual(["standard-circulation", "spain", "map", 1])
+    expect(query.params).toEqual([
+      "standard-circulation",
+      "spain",
+      "charles-iii",
+      "map",
+      1,
+    ])
   })
 })

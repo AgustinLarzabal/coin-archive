@@ -171,7 +171,16 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               {coin.rulers.map((ruler) => (
-                <Fragment key={ruler.code}>{ruler.name}</Fragment>
+                <Link
+                  key={ruler.code}
+                  to="/"
+                  search={{ issuer: coin.issuer.code, ruler: ruler.code }}
+                  className="underline-offset-4 hover:underline"
+                  title={`Filter homepage by issuer ${coin.issuer.name} and ruler ${ruler.name}`}
+                  aria-label={`Show homepage coins filtered by issuer ${coin.issuer.name} and ruler ${ruler.name}`}
+                >
+                  {ruler.name}
+                </Link>
               ))}
             </div>
             <span className="text-muted-foreground">•</span>

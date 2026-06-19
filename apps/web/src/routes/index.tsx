@@ -36,11 +36,13 @@ function App() {
     distributionCode,
     engraverCode,
     issuerCode,
+    rulerCode,
     themeCode,
   }: {
     distributionCode: string | undefined
     engraverCode: string | undefined
     issuerCode: string | undefined
+    rulerCode: string | undefined
     themeCode: string | undefined
   }) {
     await navigate({
@@ -64,7 +66,13 @@ function App() {
           issuerCode
         )
 
-        return updateCoinSearchFilter(searchWithIssuer, "theme", themeCode)
+        const searchWithRuler = updateCoinSearchFilter(
+          searchWithIssuer,
+          "ruler",
+          rulerCode
+        )
+
+        return updateCoinSearchFilter(searchWithRuler, "theme", themeCode)
       },
     })
   }
@@ -75,10 +83,12 @@ function App() {
         distributions={filterOptions.distributions}
         engravers={filterOptions.engravers}
         issuers={filterOptions.issuers}
+        rulers={filterOptions.rulers}
         themes={filterOptions.themes}
         selectedDistributionCode={search.distribution}
         selectedEngraverCode={search.engraver}
         selectedIssuerCode={search.issuer}
+        selectedRulerCode={search.ruler}
         selectedThemeCode={search.theme}
         onFiltersChange={updateHomeFilters}
       />

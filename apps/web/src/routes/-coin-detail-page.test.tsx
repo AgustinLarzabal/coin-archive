@@ -199,6 +199,23 @@ describe("CoinDetailPage", () => {
     expect(pluralMarkup).toContain("Mints")
   })
 
+  it("links rulers to the home issuer and ruler filters", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      rulers: [
+        {
+          code: "charles-iii",
+          name: "Charles III",
+        },
+      ],
+    })
+
+    expect(markup).toContain('href="/?issuer=spain&amp;ruler=charles-iii"')
+    expect(markup).toContain(
+      "Show homepage coins filtered by issuer Spain and ruler Charles III"
+    )
+  })
+
   it("links themes to the home theme filter", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,

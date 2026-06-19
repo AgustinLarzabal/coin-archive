@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest"
 import { db, getCoins } from "../index"
 import {
   createCoin,
+  createCoinRuler,
   createCoinSurface,
   createCoinSurfaceEngraver,
   createCoinTheme,
   createDistribution,
   createEngraver,
   createIssuer,
+  createRuler,
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -417,5 +419,51 @@ describe("getCoins integration", () => {
     await expect(
       getCoins({ themeCode: "  MAP  ", limit: 10 })
     ).resolves.toMatchObject([{ title: "Map Coin" }])
+  })
+
+  it("filters by directly attributed ruler code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const charles = await createRuler({
+      code: "charles-iii",
+      name: "Charles III",
+    })
+    const isabella = await createRuler({
+      code: "isabella-ii",
+      name: "Isabella II",
+    })
+
+    const charlesCoin = await createCoin({
+      title: "Charles Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    const isabellaCoin = await createCoin({
+      title: "Isabella Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-02T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unruled Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-01T00:00:00.000Z"),
+    })
+
+    await createCoinRuler({
+      coinId: charlesCoin.id,
+      rulerId: charles.id,
+      rulerOrder: 1,
+    })
+    await createCoinRuler({
+      coinId: isabellaCoin.id,
+      rulerId: isabella.id,
+      rulerOrder: 1,
+    })
+
+    await expect(
+      getCoins({ rulerCode: "  CHARLES-III  ", limit: 10 })
+    ).resolves.toMatchObject([{ title: "Charles Coin" }])
   })
 })

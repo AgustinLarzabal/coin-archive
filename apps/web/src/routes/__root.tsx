@@ -6,6 +6,7 @@ import {
   getDistributions,
   getEngravers,
   getIssuers,
+  getRulers,
   getThemes,
 } from "@workspace/db"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
@@ -14,17 +15,20 @@ import appCss from "@workspace/ui/globals.css?url"
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {
-    const [distributions, engravers, issuers, themes] = await Promise.all([
-      getDistributions(),
-      getEngravers(),
-      getIssuers(),
-      getThemes(),
-    ])
+    const [distributions, engravers, issuers, rulers, themes] =
+      await Promise.all([
+        getDistributions(),
+        getEngravers(),
+        getIssuers(),
+        getRulers(),
+        getThemes(),
+      ])
 
     return {
       distributions,
       engravers,
       issuers,
+      rulers,
       themes,
     }
   }

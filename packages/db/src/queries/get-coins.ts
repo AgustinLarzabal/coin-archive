@@ -2,12 +2,14 @@ import { and, asc, desc, eq, sql } from "drizzle-orm"
 import type { SQL } from "drizzle-orm"
 import { db } from "../client"
 import { coin } from "../schema/coin"
+import { coinRuler } from "../schema/coin-ruler"
 import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinTheme } from "../schema/coin-theme"
 import { distribution } from "../schema/distribution"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import { ruler } from "../schema/ruler"
 import { theme } from "../schema/theme"
 import type { CoinListRecord } from "./map-get-coins-row"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
@@ -18,6 +20,7 @@ export type GetCoinsOptions = {
   distributionCode?: string
   engraverCode?: string
   issuerCode?: string
+  rulerCode?: string
   themeCode?: string
   limit?: number
 }
@@ -109,6 +112,25 @@ function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
   `
 }
 
+function buildRulerFilter(rulerCode: string | undefined): SQL | undefined {
+  const normalizedRulerCode = rulerCode?.trim().toLowerCase()
+
+  if (!normalizedRulerCode) {
+    return undefined
+  }
+
+  return sql`
+    exists (
+      select 1
+      from ${coinRuler}
+      inner join ${ruler}
+        on ${ruler.id} = ${coinRuler.rulerId}
+      where ${coinRuler.coinId} = ${coin.id}
+        and lower(${ruler.code}) = ${normalizedRulerCode}
+    )
+  `
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
@@ -117,17 +139,20 @@ export function buildGetCoinsQuery(
     distributionCode,
     engraverCode,
     issuerCode,
+    rulerCode,
     themeCode,
     limit = defaultGetCoinsLimit,
   } = options
   const distributionFilter = buildDistributionFilter(distributionCode)
   const engraverFilter = buildEngraverFilter(engraverCode)
   const issuerFilter = buildIssuerTreeFilter(issuerCode)
+  const rulerFilter = buildRulerFilter(rulerCode)
   const themeFilter = buildThemeFilter(themeCode)
   const filters = [
     distributionFilter,
     engraverFilter,
     issuerFilter,
+    rulerFilter,
     themeFilter,
   ].filter((filter): filter is SQL => filter !== undefined)
   const limitedCoinsQuery = database

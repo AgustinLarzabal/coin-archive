@@ -2,6 +2,7 @@ import type {
   DistributionOption,
   EngraverOption,
   IssuerOption,
+  RulerOption,
   ThemeOption,
 } from "@workspace/db"
 import { createFilter } from "@workspace/ui/components/reui/filters"
@@ -9,13 +10,14 @@ import type {
   Filter,
   FilterFieldConfig,
 } from "@workspace/ui/components/reui/filters"
-import { Coins, Globe, Map, PenTool } from "lucide-react"
+import { Coins, Crown, Globe, Map, PenTool } from "lucide-react"
 import { z } from "zod"
 
 export type HomeFilterValues = {
   distributionCode: string | undefined
   engraverCode: string | undefined
   issuerCode: string | undefined
+  rulerCode: string | undefined
   themeCode: string | undefined
 }
 
@@ -39,11 +41,13 @@ export function getHomeFilterFields({
   distributions,
   engravers,
   issuers,
+  rulers,
   themes,
 }: {
   distributions: DistributionOption[]
   engravers: EngraverOption[]
   issuers: IssuerOption[]
+  rulers: RulerOption[]
   themes: ThemeOption[]
 }): FilterFieldConfig[] {
   return [
@@ -97,6 +101,19 @@ export function getHomeFilterFields({
           })),
         },
         {
+          key: "ruler",
+          label: "Ruler",
+          icon: <Crown strokeWidth={2} />,
+          type: "select",
+          operators: [{ value: "is", label: "is" }],
+          searchable: true,
+          className: "w-[320px]",
+          options: rulers.map((ruler) => ({
+            value: ruler.code,
+            label: ruler.name,
+          })),
+        },
+        {
           key: "theme",
           label: "Theme",
           icon: <Map strokeWidth={2} />,
@@ -118,17 +135,20 @@ export function getHomeFilters({
   selectedDistributionCode,
   selectedEngraverCode,
   selectedIssuerCode,
+  selectedRulerCode,
   selectedThemeCode,
 }: {
   selectedDistributionCode?: string
   selectedEngraverCode?: string
   selectedIssuerCode?: string
+  selectedRulerCode?: string
   selectedThemeCode?: string
 }): Filter[] {
   return [
     ...createOptionalFilter("distribution", selectedDistributionCode),
     ...createOptionalFilter("engraver", selectedEngraverCode),
     ...createOptionalFilter("issuer", selectedIssuerCode),
+    ...createOptionalFilter("ruler", selectedRulerCode),
     ...createOptionalFilter("theme", selectedThemeCode),
   ]
 }
@@ -137,12 +157,14 @@ export function getHomeFilterValues(filters: Filter[]): HomeFilterValues {
   const distributionCode = getSingleFilterValue(filters, "distribution")
   const engraverCode = getSingleFilterValue(filters, "engraver")
   const issuerCode = getSingleFilterValue(filters, "issuer")
+  const rulerCode = getSingleFilterValue(filters, "ruler")
   const themeCode = getSingleFilterValue(filters, "theme")
 
   return {
     distributionCode: toOptionalString(distributionCode),
     engraverCode: toOptionalString(engraverCode),
     issuerCode: toOptionalString(issuerCode),
+    rulerCode: toOptionalString(rulerCode),
     themeCode: toOptionalString(themeCode),
   }
 }

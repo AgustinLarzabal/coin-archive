@@ -28,6 +28,14 @@ describe("HomeFilters", () => {
             name: "Spain",
           },
         ]}
+        rulers={[
+          {
+            id: "ruler-1",
+            code: "charles-iii",
+            name: "Charles III",
+            group: null,
+          },
+        ]}
         themes={[
           {
             id: "theme-1",
@@ -39,6 +47,7 @@ describe("HomeFilters", () => {
         selectedDistributionCode="circulation"
         selectedEngraverCode="john-doe"
         selectedIssuerCode="spain"
+        selectedRulerCode="charles-iii"
         selectedThemeCode="map"
       />
     )
@@ -51,6 +60,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Circulation")
     expect(markup).toContain("Theme")
     expect(markup).toContain("Map")
+    expect(markup).toContain("Ruler")
+    expect(markup).toContain("Charles III")
     expect(markup).toContain("Clear")
     expect(markup).not.toContain("Catalogue")
     expect(markup).not.toContain("Composition")
@@ -68,6 +79,5 @@ describe("HomeFilters", () => {
     expect(markup).not.toContain("Orientation")
     expect(markup).not.toContain("Rim")
     expect(markup).not.toContain("Shape")
-    expect(markup).not.toContain("Ruler")
   })
 })

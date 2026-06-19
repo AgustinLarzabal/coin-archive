@@ -10,41 +10,23 @@ const getRulersSelection = {
   id: ruler.id,
   code: ruler.code,
   name: ruler.name,
-  createdAt: ruler.createdAt,
-  updatedAt: ruler.updatedAt,
   groupId: rulerGroup.id,
   groupCode: rulerGroup.code,
   groupName: rulerGroup.name,
-  groupCreatedAt: rulerGroup.createdAt,
-  groupUpdatedAt: rulerGroup.updatedAt,
 }
 
-type RulerGroupOption = Pick<
-  RulerGroup,
-  "id" | "code" | "name" | "createdAt" | "updatedAt"
->
+type RulerGroupOption = Pick<RulerGroup, "id" | "code" | "name">
 
-export type RulerOption = Pick<
-  Ruler,
-  "id" | "code" | "name" | "createdAt" | "updatedAt"
-> & {
+export type RulerOption = Pick<Ruler, "id" | "code" | "name"> & {
   group: RulerGroupOption | null
 }
 
 function buildRulerGroupOption(
   groupId: string | null,
   groupCode: string | null,
-  groupName: string | null,
-  groupCreatedAt: Date | null,
-  groupUpdatedAt: Date | null
+  groupName: string | null
 ): RulerOption["group"] {
-  if (
-    groupId === null ||
-    groupCode === null ||
-    groupName === null ||
-    groupCreatedAt === null ||
-    groupUpdatedAt === null
-  ) {
+  if (groupId === null || groupCode === null || groupName === null) {
     return null
   }
 
@@ -52,8 +34,6 @@ function buildRulerGroupOption(
     id: groupId,
     code: groupCode,
     name: groupName,
-    createdAt: groupCreatedAt,
-    updatedAt: groupUpdatedAt,
   }
 }
 
@@ -64,31 +44,10 @@ export async function getRulers(): Promise<RulerOption[]> {
     .leftJoin(rulerGroup, eq(ruler.rulerGroupId, rulerGroup.id))
     .orderBy(asc(ruler.name), asc(ruler.code))
 
-  return rows.map(
-    ({
-      id,
-      code,
-      name,
-      createdAt,
-      updatedAt,
-      groupId,
-      groupCode,
-      groupName,
-      groupCreatedAt,
-      groupUpdatedAt,
-    }) => ({
-      id,
-      code,
-      name,
-      createdAt,
-      updatedAt,
-      group: buildRulerGroupOption(
-        groupId,
-        groupCode,
-        groupName,
-        groupCreatedAt,
-        groupUpdatedAt
-      ),
-    })
-  )
+  return rows.map(({ id, code, name, groupId, groupCode, groupName }) => ({
+    id,
+    code,
+    name,
+    group: buildRulerGroupOption(groupId, groupCode, groupName),
+  }))
 }

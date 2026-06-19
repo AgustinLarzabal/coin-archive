@@ -383,13 +383,20 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
             <p className="text-sm font-semibold">Themes</p>
             <div className="flex items-center gap-4 text-xs">
               {coin.themes.map((theme) => (
-                <Badge
+                <Link
                   key={theme.code}
-                  variant="outline"
-                  className="text-[10px] tracking-wider uppercase"
+                  to="/"
+                  search={{ theme: theme.code }}
+                  title={`Filter homepage by theme: ${theme.name}`}
+                  aria-label={`Show homepage coins filtered by theme ${theme.name}`}
                 >
-                  {theme.name}
-                </Badge>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] tracking-wider uppercase"
+                  >
+                    {theme.name}
+                  </Badge>
+                </Link>
               ))}
             </div>
           </div>

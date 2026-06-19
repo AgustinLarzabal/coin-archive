@@ -2,23 +2,30 @@ import { NotFound } from "@/components/not-found"
 import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import { getDistributions, getEngravers, getIssuers } from "@workspace/db"
+import {
+  getDistributions,
+  getEngravers,
+  getIssuers,
+  getThemes,
+} from "@workspace/db"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 import appCss from "@workspace/ui/globals.css?url"
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {
-    const [distributions, engravers, issuers] = await Promise.all([
+    const [distributions, engravers, issuers, themes] = await Promise.all([
       getDistributions(),
       getEngravers(),
       getIssuers(),
+      getThemes(),
     ])
 
     return {
       distributions,
       engravers,
       issuers,
+      themes,
     }
   }
 )

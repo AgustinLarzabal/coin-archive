@@ -198,4 +198,25 @@ describe("CoinDetailPage", () => {
     expect(singularMarkup).not.toContain("Mints")
     expect(pluralMarkup).toContain("Mints")
   })
+
+  it("links themes to the home theme filter", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      themes: [
+        {
+          code: "building",
+          name: "Building",
+        },
+        {
+          code: "map",
+          name: "Map",
+        },
+      ],
+    })
+
+    expect(markup).toContain('href="/?theme=building"')
+    expect(markup).toContain('href="/?theme=map"')
+    expect(markup).toContain("Show homepage coins filtered by theme Building")
+    expect(markup).toContain("Show homepage coins filtered by theme Map")
+  })
 })

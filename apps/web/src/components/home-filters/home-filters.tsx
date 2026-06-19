@@ -2,6 +2,7 @@ import type {
   DistributionOption,
   EngraverOption,
   IssuerOption,
+  ThemeOption,
 } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { Filters } from "@workspace/ui/components/reui/filters"
@@ -17,13 +18,16 @@ type HomeFiltersProps = {
   distributions: DistributionOption[]
   engravers: EngraverOption[]
   issuers: IssuerOption[]
+  themes: ThemeOption[]
   selectedDistributionCode?: string
   selectedEngraverCode?: string
   selectedIssuerCode?: string
+  selectedThemeCode?: string
   onFiltersChange: (filters: {
     distributionCode: string | undefined
     engraverCode: string | undefined
     issuerCode: string | undefined
+    themeCode: string | undefined
   }) => Promise<void>
 }
 
@@ -31,21 +35,25 @@ export function HomeFilters({
   distributions,
   engravers,
   issuers,
+  themes,
   selectedDistributionCode,
   selectedEngraverCode,
   selectedIssuerCode,
+  selectedThemeCode,
   onFiltersChange,
 }: HomeFiltersProps) {
   const filters = getHomeFilters({
     selectedDistributionCode,
     selectedEngraverCode,
     selectedIssuerCode,
+    selectedThemeCode,
   })
 
   const fields = getHomeFilterFields({
     distributions,
     engravers,
     issuers,
+    themes,
   })
 
   async function handleFiltersChange(newFilters: Filter[]) {
@@ -57,6 +65,7 @@ export function HomeFilters({
       distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: undefined,
+      themeCode: undefined,
     })
   }
 

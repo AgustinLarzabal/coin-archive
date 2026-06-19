@@ -11,12 +11,14 @@ import type { CoinListLoaderDeps, CoinSearch } from "./coin-search"
 const currentSearch = {
   engraver: "john-doe",
   issuer: "spain",
+  theme: "map",
 } satisfies CoinSearch
 
 const baseCoinListLoaderDeps = {
   distributionCode: undefined,
   engraverCode: "john-doe",
   issuerCode: "spain",
+  themeCode: "map",
 } satisfies CoinListLoaderDeps
 
 function omitFilter<T extends object, TKey extends keyof T>(
@@ -34,6 +36,7 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "john-doe",
         issuer: "spain",
+        theme: "map",
         catalogue: "km",
         composition: "silver-900",
         fromYear: "1900",
@@ -46,10 +49,12 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "  JOHN-DOE  ",
         issuer: "  SPAIN  ",
+        theme: "  MAP  ",
       })
     ).toStrictEqual({
       engraver: "john-doe",
       issuer: "spain",
+      theme: "map",
     })
   })
 
@@ -58,10 +63,12 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "   ",
         issuer: "   ",
+        theme: "   ",
       })
     ).toStrictEqual({
       engraver: undefined,
       issuer: undefined,
+      theme: undefined,
     })
   })
 })
@@ -72,12 +79,14 @@ describe("coinListInputSchema", () => {
       coinListInputSchema.parse({
         engraverCode: "john-doe",
         issuerCode: "spain",
+        themeCode: "map",
         catalogueCode: "km",
         minValue: 1,
       })
     ).toStrictEqual({
       engraverCode: "john-doe",
       issuerCode: "spain",
+      themeCode: "map",
     })
   })
 
@@ -86,10 +95,12 @@ describe("coinListInputSchema", () => {
       coinListInputSchema.parse({
         engraverCode: "  JOHN-DOE  ",
         issuerCode: "  SPAIN  ",
+        themeCode: "  MAP  ",
       })
     ).toStrictEqual({
       engraverCode: "john-doe",
       issuerCode: "spain",
+      themeCode: "map",
     })
   })
 })
@@ -107,6 +118,7 @@ describe("updateCoinSearchFilter", () => {
     ).toStrictEqual({
       engraver: "john-doe",
       issuer: "france",
+      theme: "map",
     })
   })
 })
@@ -123,6 +135,7 @@ describe("getCoinListLoaderDeps", () => {
       distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: undefined,
+      themeCode: undefined,
     })
   })
 })
@@ -131,6 +144,7 @@ describe("hasActiveCoinSearchFilters", () => {
   it("returns true when any supported filter is present", () => {
     expect(hasActiveCoinSearchFilters({ engraver: "john-doe" })).toBe(true)
     expect(hasActiveCoinSearchFilters({ issuer: "spain" })).toBe(true)
+    expect(hasActiveCoinSearchFilters({ theme: "map" })).toBe(true)
   })
 
   it("returns false for an empty search object", () => {

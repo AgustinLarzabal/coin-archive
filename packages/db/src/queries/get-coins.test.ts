@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 import { createTestDatabase } from "../testing/test-database"
+import type { buildGetCoinsQuery as buildGetCoinsQueryType } from "./get-coins"
 
 describe("buildGetCoinsQuery", () => {
   const { client, db } = createTestDatabase("postgres://localhost/test")
-  let buildGetCoinsQuery: typeof import("./get-coins").buildGetCoinsQuery
+  let buildGetCoinsQuery: typeof buildGetCoinsQueryType
 
   beforeAll(async () => {
     vi.stubEnv("DATABASE_URL", "postgres://localhost/test")
@@ -18,6 +19,7 @@ describe("buildGetCoinsQuery", () => {
     const query = buildGetCoinsQuery(db, {
       distributionCode: "standard-circulation",
       issuerCode: "spain",
+      themeCode: "map",
       limit: 1,
     }).toSQL()
 
@@ -30,6 +32,8 @@ describe("buildGetCoinsQuery", () => {
     expect(query.sql).toContain('"coin_face_engraver"')
     expect(query.sql).toContain('"engraver"')
     expect(query.sql).toContain('"issuer"."iso_code"')
-    expect(query.params).toEqual(["standard-circulation", "spain", 1])
+    expect(query.sql).toContain('"coin_theme"')
+    expect(query.sql).toContain('"theme"')
+    expect(query.params).toEqual(["standard-circulation", "spain", "map", 1])
   })
 })

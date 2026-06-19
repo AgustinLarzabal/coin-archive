@@ -8,14 +8,9 @@ const getThemesSelection = {
   id: theme.id,
   code: theme.code,
   name: theme.name,
-  createdAt: theme.createdAt,
-  updatedAt: theme.updatedAt,
 }
 
-export type ThemeOption = Pick<
-  Theme,
-  "id" | "code" | "name" | "createdAt" | "updatedAt"
->
+export type ThemeOption = Pick<Theme, "id" | "code" | "name">
 
 export async function getThemes(): Promise<ThemeOption[]> {
   return db

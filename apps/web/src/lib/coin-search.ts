@@ -14,12 +14,14 @@ export const coinSearchSchema = z.object({
   distribution: optionalStringSchema,
   engraver: optionalStringSchema,
   issuer: optionalStringSchema,
+  theme: optionalStringSchema,
 })
 
 export const coinListInputSchema = z.object({
   distributionCode: optionalStringSchema,
   engraverCode: optionalStringSchema,
   issuerCode: optionalStringSchema,
+  themeCode: optionalStringSchema,
 })
 
 export type CoinSearch = z.infer<typeof coinSearchSchema>
@@ -31,6 +33,7 @@ export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
     distributionCode: search.distribution,
     engraverCode: search.engraver,
     issuerCode: search.issuer,
+    themeCode: search.theme,
   }
 }
 
@@ -38,7 +41,8 @@ export function hasActiveCoinSearchFilters(search: CoinSearch): boolean {
   return (
     search.engraver !== undefined ||
     search.issuer !== undefined ||
-    search.distribution !== undefined
+    search.distribution !== undefined ||
+    search.theme !== undefined
   )
 }
 

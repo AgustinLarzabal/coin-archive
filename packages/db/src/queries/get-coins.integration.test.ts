@@ -4,9 +4,11 @@ import {
   createCoin,
   createCoinSurface,
   createCoinSurfaceEngraver,
+  createCoinTheme,
   createDistribution,
   createEngraver,
   createIssuer,
+  createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -371,5 +373,49 @@ describe("getCoins integration", () => {
       { title: "Obverse Match" },
       { title: "Reverse Match" },
     ])
+  })
+
+  it("filters by theme code case-insensitively", async () => {
+    const spain = await createIssuer({
+      code: "spain",
+      name: "Spain",
+    })
+    const map = await createTheme({
+      code: "map",
+      name: "Map",
+    })
+    const animal = await createTheme({
+      code: "animal",
+      name: "Animal",
+    })
+
+    const mappedCoin = await createCoin({
+      title: "Map Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-03T00:00:00.000Z"),
+    })
+    const animalCoin = await createCoin({
+      title: "Animal Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-02T00:00:00.000Z"),
+    })
+    await createCoin({
+      title: "Unthemed Coin",
+      issuerId: spain.id,
+      createdAt: new Date("2026-06-01T00:00:00.000Z"),
+    })
+
+    await createCoinTheme({
+      coinId: mappedCoin.id,
+      themeId: map.id,
+    })
+    await createCoinTheme({
+      coinId: animalCoin.id,
+      themeId: animal.id,
+    })
+
+    await expect(
+      getCoins({ themeCode: "  MAP  ", limit: 10 })
+    ).resolves.toMatchObject([{ title: "Map Coin" }])
   })
 })

@@ -4,9 +4,11 @@ import { db } from "../client"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
+import { coinTheme } from "../schema/coin-theme"
 import { distribution } from "../schema/distribution"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import { theme } from "../schema/theme"
 import type { CoinListRecord } from "./map-get-coins-row"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
@@ -16,6 +18,7 @@ export type GetCoinsOptions = {
   distributionCode?: string
   engraverCode?: string
   issuerCode?: string
+  themeCode?: string
   limit?: number
 }
 
@@ -87,6 +90,25 @@ function buildIssuerTreeFilter(
   `
 }
 
+function buildThemeFilter(themeCode: string | undefined): SQL | undefined {
+  const normalizedThemeCode = themeCode?.trim().toLowerCase()
+
+  if (!normalizedThemeCode) {
+    return undefined
+  }
+
+  return sql`
+    exists (
+      select 1
+      from ${coinTheme}
+      inner join ${theme}
+        on ${theme.id} = ${coinTheme.themeId}
+      where ${coinTheme.coinId} = ${coin.id}
+        and lower(${theme.code}) = ${normalizedThemeCode}
+    )
+  `
+}
+
 export function buildGetCoinsQuery(
   database: typeof db,
   options: GetCoinsOptions = {}
@@ -95,14 +117,19 @@ export function buildGetCoinsQuery(
     distributionCode,
     engraverCode,
     issuerCode,
+    themeCode,
     limit = defaultGetCoinsLimit,
   } = options
   const distributionFilter = buildDistributionFilter(distributionCode)
   const engraverFilter = buildEngraverFilter(engraverCode)
   const issuerFilter = buildIssuerTreeFilter(issuerCode)
-  const filters = [distributionFilter, issuerFilter, engraverFilter].filter(
-    (filter): filter is SQL => filter !== undefined
-  )
+  const themeFilter = buildThemeFilter(themeCode)
+  const filters = [
+    distributionFilter,
+    engraverFilter,
+    issuerFilter,
+    themeFilter,
+  ].filter((filter): filter is SQL => filter !== undefined)
   const limitedCoinsQuery = database
     .select({
       id: coin.id,
@@ -125,6 +152,9 @@ export function buildGetCoinsQuery(
     .select({
       id: limitedCoins.id,
       title: limitedCoins.title,
+      engraverId: engraver.id,
+      engraverCode: engraver.code,
+      engraverName: engraver.name,
       issuerId: issuer.id,
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
@@ -134,9 +164,6 @@ export function buildGetCoinsQuery(
       surfaceLettering: coinSurface.lettering,
       surfaceThumbnailUrl: coinSurface.thumbnailUrl,
       surfaceImageUrl: coinSurface.imageUrl,
-      engraverId: engraver.id,
-      engraverCode: engraver.code,
-      engraverName: engraver.name,
     })
     .from(limitedCoins)
     .innerJoin(issuer, eq(limitedCoins.issuerId, issuer.id))

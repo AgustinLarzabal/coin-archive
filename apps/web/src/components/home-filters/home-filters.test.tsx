@@ -28,10 +28,18 @@ describe("HomeFilters", () => {
             name: "Spain",
           },
         ]}
+        themes={[
+          {
+            id: "theme-1",
+            code: "map",
+            name: "Map",
+          },
+        ]}
         onFiltersChange={() => Promise.resolve()}
         selectedDistributionCode="circulation"
         selectedEngraverCode="john-doe"
         selectedIssuerCode="spain"
+        selectedThemeCode="map"
       />
     )
 
@@ -41,6 +49,8 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Spain")
     expect(markup).toContain("Distribution")
     expect(markup).toContain("Circulation")
+    expect(markup).toContain("Theme")
+    expect(markup).toContain("Map")
     expect(markup).toContain("Clear")
     expect(markup).not.toContain("Catalogue")
     expect(markup).not.toContain("Composition")
@@ -58,7 +68,6 @@ describe("HomeFilters", () => {
     expect(markup).not.toContain("Orientation")
     expect(markup).not.toContain("Rim")
     expect(markup).not.toContain("Shape")
-    expect(markup).not.toContain("Theme")
     expect(markup).not.toContain("Ruler")
   })
 })

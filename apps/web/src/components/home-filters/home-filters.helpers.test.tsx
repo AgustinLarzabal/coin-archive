@@ -32,15 +32,18 @@ describe("getHomeFilterFields", () => {
           name: "Spain",
         },
       ],
+      themes: [
+        {
+          id: "theme-1",
+          code: "map",
+          name: "Map",
+        },
+      ],
     })
     const selectGroup = fields[0]
 
     expect(fields).toHaveLength(1)
     expect(selectGroup).toBeDefined()
-
-    if (!selectGroup) {
-      throw new Error("Expected a select filter group")
-    }
 
     expect(selectGroup.fields).toBeDefined()
 
@@ -51,19 +54,18 @@ describe("getHomeFilterFields", () => {
     const issuerField = selectGroup.fields[0]
     const distributionField = selectGroup.fields[1]
     const engraverField = selectGroup.fields[2]
+    const themeField = selectGroup.fields[3]
 
-    expect(selectGroup.fields).toHaveLength(3)
+    expect(selectGroup.fields).toHaveLength(4)
     expect(issuerField).toBeDefined()
     expect(distributionField).toBeDefined()
     expect(engraverField).toBeDefined()
-
-    if (!issuerField || !distributionField || !engraverField) {
-      throw new Error("Expected issuer, distribution, and engraver fields")
-    }
+    expect(themeField).toBeDefined()
 
     expect(issuerField.label).toBe("Issuer")
     expect(distributionField.label).toBe("Distribution")
     expect(engraverField.label).toBe("Engraver")
+    expect(themeField.label).toBe("Theme")
     expect(renderToStaticMarkup(<>{issuerField.icon}</>)).toContain("svg")
   })
 })
@@ -75,6 +77,7 @@ describe("getHomeFilters", () => {
         selectedDistributionCode: "circulation",
         selectedEngraverCode: "john-doe",
         selectedIssuerCode: "spain",
+        selectedThemeCode: "map",
       }).map(({ field, operator, values }) => ({
         field,
         operator,
@@ -85,6 +88,7 @@ describe("getHomeFilters", () => {
         createFilter("distribution", "is", ["circulation"]),
         createFilter("engraver", "is", ["john-doe"]),
         createFilter("issuer", "is", ["spain"]),
+        createFilter("theme", "is", ["map"]),
       ].map(({ field, operator, values }) => ({
         field,
         operator,
@@ -101,11 +105,13 @@ describe("getHomeFilterValues", () => {
         createFilter("distribution", "is", [" Circulation "]),
         createFilter("engraver", "is", [" John-Doe "]),
         createFilter("issuer", "is", [" Spain "]),
+        createFilter("theme", "is", [" Map "]),
       ])
     ).toStrictEqual({
       distributionCode: "Circulation",
       engraverCode: "John-Doe",
       issuerCode: "Spain",
+      themeCode: "Map",
     })
   })
 
@@ -115,11 +121,13 @@ describe("getHomeFilterValues", () => {
         createFilter("distribution", "is", ["   "]),
         createFilter("engraver", "is", ["   "]),
         createFilter("issuer", "is", ["spain"]),
+        createFilter("theme", "is", ["   "]),
       ])
     ).toStrictEqual({
       distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: "spain",
+      themeCode: undefined,
     })
   })
 })

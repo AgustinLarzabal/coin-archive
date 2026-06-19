@@ -262,7 +262,15 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
                   <p key={engraver.code} className="text-sm">
                     Engraver:{" "}
                     <span className="text-sm leading-6 text-muted-foreground">
-                      {engraver.name}
+                      <Link
+                        to="/"
+                        search={{ engraver: engraver.code }}
+                        className="underline-offset-4 hover:underline"
+                        title={`Filter homepage by distribution: ${engraver.name}`}
+                        aria-label={`Show homepage coins filtered by distribution ${engraver.name}`}
+                      >
+                        {engraver.name}
+                      </Link>
                     </span>
                   </p>
                 ))}

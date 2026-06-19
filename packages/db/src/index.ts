@@ -45,6 +45,10 @@ export type {
 export type { CoinCompositionRecord } from "./queries/coin-composition-record"
 export type { CoinEdgeRecord } from "./queries/coin-edge-record"
 export type {
+  CoinCurrencyRecord,
+  CoinFaceValueRecord,
+} from "./queries/coin-face-value-record"
+export type {
   CoinIssuer,
   CoinListIssuer,
   CoinIssuerSummary,

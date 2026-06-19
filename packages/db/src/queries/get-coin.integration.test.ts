@@ -11,6 +11,7 @@ import {
   createCoinSurface,
   createCoinSurfaceEngraver,
   createCoinTheme,
+  createCurrency,
   createEdge,
   createEngraver,
   createIssuer,
@@ -50,6 +51,11 @@ describe("getCoin integration", () => {
       name: "Silver .900",
       description: "90% silver, 10% copper",
     })
+    const euro = await createCurrency({
+      code: "euro",
+      name: "Euro",
+      fullName: "Euro",
+    })
     const letteredEdge = await createEdge({
       code: "lettered",
       name: "Lettered",
@@ -62,6 +68,9 @@ describe("getCoin integration", () => {
       title: "Detail Test Coin",
       issuerId: spain.id,
       compositionId: silverComposition.id,
+      currencyId: euro.id,
+      faceValueNumericValue: 2,
+      faceValueText: "2 Euros",
       minYear: 1999,
       maxYear: 2004,
       edgeId: letteredEdge.id,
@@ -198,6 +207,15 @@ describe("getCoin integration", () => {
       edge: {
         code: "lettered",
         name: "Lettered",
+      },
+      faceValue: {
+        text: "2 Euros",
+        numericValue: 2,
+        currency: {
+          code: "euro",
+          name: "Euro",
+          fullName: "Euro",
+        },
       },
       issuer: {
         code: "spain",

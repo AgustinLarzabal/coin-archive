@@ -122,6 +122,8 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
 
+  console.log("coin", coin)
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
@@ -241,6 +243,13 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
           <div className="mb-0 flex gap-10">
             <div className="flex-1">
               <div className="flex items-center justify-between py-2 text-sm">
+                <span>Face Value</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.faceValue.text}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between py-2 text-sm">
                 <span>Weight</span>
                 <span className="text-muted-foreground tabular-nums">
                   {coin.weight} gr
@@ -269,6 +278,13 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               </div>
             </div>
             <div className="flex-1">
+              <div className="flex items-center justify-between py-2 text-sm">
+                <span>Currency</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {coin.faceValue.currency.fullName}
+                </span>
+              </div>
+              <Separator />
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Orientation</span>
                 <span className="text-muted-foreground tabular-nums">

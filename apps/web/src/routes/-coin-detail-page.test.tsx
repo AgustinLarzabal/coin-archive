@@ -53,6 +53,15 @@ const baseCoin: CoinDetailRecord = {
     name: "Standard circulation",
   },
   edge: null,
+  faceValue: {
+    text: "2 Euros",
+    numericValue: 2,
+    currency: {
+      code: "euro",
+      name: "Euro",
+      fullName: "Euro",
+    },
+  },
   isDemonetized: null,
   issuer: {
     code: "spain",

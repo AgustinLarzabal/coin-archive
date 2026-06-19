@@ -16,6 +16,7 @@ import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
 import { shape } from "../schema/shape"
 import { technique } from "../schema/technique"
+import { currency } from "../schema/currency"
 import type { CoinDistributionRecord } from "./coin-distribution-record"
 import type { CoinIssuer } from "./coin-issuer-record"
 import type { CoinOrientationRecord } from "./coin-orientation-record"
@@ -38,6 +39,7 @@ import type { CoinRimRecord } from "./coin-rim-record"
 import type { CoinThemeRecord } from "./coin-theme-record"
 import type { CoinCompositionRecord } from "./coin-composition-record"
 import type { CoinMintRecord } from "./coin-mint-record"
+import type { CoinFaceValueRecord } from "./coin-face-value-record"
 
 export type CoinDetailRecord = {
   id: string
@@ -47,6 +49,7 @@ export type CoinDetailRecord = {
   diameter: number | null
   distribution: CoinDistributionRecord
   edge: CoinEdgeRecord | null
+  faceValue: CoinFaceValueRecord
   isDemonetized: boolean | null
   issuer: CoinIssuer
   maxYear: number | null
@@ -77,6 +80,11 @@ type GetCoinRow = {
   distributionName: string
   edgeCode: string | null
   edgeName: string | null
+  faceValueCurrencyCode: string
+  faceValueCurrencyFullName: string
+  faceValueCurrencyName: string
+  faceValueNumericValue: number
+  faceValueText: string
   engraverId: string | null
   engraverCode: string | null
   engraverName: string | null
@@ -131,6 +139,18 @@ function mapComposition(row: GetCoinRow): CoinCompositionRecord {
     code: row.compositionCode,
     name: row.compositionName,
     description: row.compositionDescription,
+  }
+}
+
+function mapFaceValue(row: GetCoinRow): CoinFaceValueRecord {
+  return {
+    text: row.faceValueText,
+    numericValue: row.faceValueNumericValue,
+    currency: {
+      code: row.faceValueCurrencyCode,
+      name: row.faceValueCurrencyName,
+      fullName: row.faceValueCurrencyFullName,
+    },
   }
 }
 
@@ -462,6 +482,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     diameter: firstRow.diameter,
     distribution: mapDistribution(firstRow),
     edge: mapEdge(firstRow),
+    faceValue: mapFaceValue(firstRow),
     isDemonetized: firstRow.isDemonetized,
     issuer: mapIssuer(firstRow),
     maxYear: firstRow.maxYear,
@@ -497,6 +518,11 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       distributionName: distribution.name,
       edgeCode: edge.code,
       edgeName: edge.name,
+      faceValueCurrencyCode: currency.code,
+      faceValueCurrencyFullName: currency.fullName,
+      faceValueCurrencyName: currency.name,
+      faceValueNumericValue: coin.faceValueNumericValue,
+      faceValueText: coin.faceValueText,
       engraverId: engraver.id,
       engraverCode: engraver.code,
       engraverName: engraver.name,
@@ -540,6 +566,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     })
     .from(coin)
     .innerJoin(composition, eq(coin.compositionId, composition.id))
+    .innerJoin(currency, eq(coin.currencyId, currency.id))
     .innerJoin(distribution, eq(coin.distributionId, distribution.id))
     .innerJoin(issuer, eq(coin.issuerId, issuer.id))
     .leftJoin(edge, eq(coin.edgeId, edge.id))

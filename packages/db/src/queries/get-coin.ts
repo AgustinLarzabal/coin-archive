@@ -4,12 +4,14 @@ import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { composition } from "../schema/composition"
 import { coinReference } from "../schema/coin-reference"
+import { coinMint } from "../schema/coin-mint"
 import { coinRuler } from "../schema/coin-ruler"
 import { coinSurface } from "../schema/coin-surface"
 import type { CoinSurfaceKind } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
 import { ruler } from "../schema/ruler"
 import { shape } from "../schema/shape"
@@ -35,6 +37,7 @@ import type { CoinEdgeRecord } from "./coin-edge-record"
 import type { CoinRimRecord } from "./coin-rim-record"
 import type { CoinThemeRecord } from "./coin-theme-record"
 import type { CoinCompositionRecord } from "./coin-composition-record"
+import type { CoinMintRecord } from "./coin-mint-record"
 
 export type CoinDetailRecord = {
   id: string
@@ -48,6 +51,7 @@ export type CoinDetailRecord = {
   issuer: CoinIssuer
   maxYear: number | null
   mintage: number | null
+  mints: CoinMintRecord[]
   minYear: number | null
   orientation: CoinOrientationRecord | null
   references: CoinReferenceRecord[]
@@ -83,6 +87,9 @@ type GetCoinRow = {
   issuerName: string
   maxYear: number | null
   mintage: number | null
+  mintId: string | null
+  mintCode: string | null
+  mintName: string | null
   minYear: number | null
   orientationCode: string | null
   orientationName: string | null
@@ -160,6 +167,45 @@ function mapIssuer(row: GetCoinRow): CoinIssuer {
     name: row.issuerName,
     parent: null,
   }
+}
+
+function mapMints(rows: GetCoinRow[]): CoinMintRecord[] {
+  const mints = new Map<
+    string,
+    CoinMintRecord & {
+      id: string
+    }
+  >()
+
+  for (const row of rows) {
+    if (row.mintId === null || row.mintCode === null || row.mintName === null) {
+      continue
+    }
+
+    mints.set(row.mintId, {
+      id: row.mintId,
+      code: row.mintCode,
+      name: row.mintName,
+    })
+  }
+
+  return [...mints.values()]
+    .sort((left, right) => {
+      const nameComparison = left.name.localeCompare(right.name)
+
+      if (nameComparison !== 0) {
+        return nameComparison
+      }
+
+      const codeComparison = left.code.localeCompare(right.code)
+
+      if (codeComparison !== 0) {
+        return codeComparison
+      }
+
+      return left.id.localeCompare(right.id)
+    })
+    .map(({ code, name }) => ({ code, name }))
 }
 
 function mapOrientation(row: GetCoinRow): CoinOrientationRecord | null {
@@ -420,6 +466,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     issuer: mapIssuer(firstRow),
     maxYear: firstRow.maxYear,
     mintage: firstRow.mintage,
+    mints: mapMints(rows),
     minYear: firstRow.minYear,
     orientation: mapOrientation(firstRow),
     references: mapReferences(rows),
@@ -460,6 +507,9 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       issuerName: issuer.name,
       maxYear: coin.maxYear,
       mintage: coin.mintage,
+      mintId: mint.id,
+      mintCode: mint.code,
+      mintName: mint.name,
       minYear: coin.minYear,
       orientationCode: orientation.code,
       orientationName: orientation.name,
@@ -499,6 +549,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(coinReference, eq(coinReference.coinId, coin.id))
     .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))
+    .leftJoin(coinMint, eq(coinMint.coinId, coin.id))
+    .leftJoin(mint, eq(coinMint.mintId, mint.id))
     .leftJoin(coinTheme, eq(coinTheme.coinId, coin.id))
     .leftJoin(theme, eq(coinTheme.themeId, theme.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))

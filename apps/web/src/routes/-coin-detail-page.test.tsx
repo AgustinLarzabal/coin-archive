@@ -62,6 +62,7 @@ const baseCoin: CoinDetailRecord = {
   },
   maxYear: 2004,
   mintage: null,
+  mints: [],
   minYear: 1999,
   orientation: null,
   references: [],
@@ -154,5 +155,23 @@ describe("CoinDetailPage", () => {
     })
 
     expect(markup).toContain("1,250,000")
+  })
+
+  it("pluralizes the mint label when a coin has multiple mints", () => {
+    const singularMarkup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      mints: [{ id: "mint-1", code: "madrid", name: "Madrid Mint" }],
+    })
+    const pluralMarkup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      mints: [
+        { id: "mint-1", code: "madrid", name: "Madrid Mint" },
+        { id: "mint-2", code: "barcelona", name: "Barcelona Mint" },
+      ],
+    })
+
+    expect(singularMarkup).toContain("Mint")
+    expect(singularMarkup).not.toContain("Mints")
+    expect(pluralMarkup).toContain("Mints")
   })
 })

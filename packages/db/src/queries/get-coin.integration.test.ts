@@ -4,6 +4,7 @@ import { getCoin } from "./get-coin"
 import {
   createCatalogue,
   createCoin,
+  createCoinMint,
   createComposition,
   createCoinReference,
   createCoinRuler,
@@ -13,6 +14,7 @@ import {
   createEdge,
   createEngraver,
   createIssuer,
+  createMint,
   createOrientation,
   createRim,
   createRuler,
@@ -126,6 +128,14 @@ describe("getCoin integration", () => {
       code: "detail-ruler-a",
       name: "Detail Ruler A",
     })
+    const firstMint = await createMint({
+      code: "madrid-mint",
+      name: "Madrid Mint",
+    })
+    const secondMint = await createMint({
+      code: "barcelona-mint",
+      name: "Barcelona Mint",
+    })
     const firstTheme = await createTheme({
       code: "architecture",
       name: "Architecture",
@@ -162,6 +172,14 @@ describe("getCoin integration", () => {
       coinId: coin.id,
       themeId: secondTheme.id,
     })
+    await createCoinMint({
+      coinId: coin.id,
+      mintId: firstMint.id,
+    })
+    await createCoinMint({
+      coinId: coin.id,
+      mintId: secondMint.id,
+    })
 
     const detail = await getCoin(coin.id)
 
@@ -187,6 +205,16 @@ describe("getCoin integration", () => {
         name: "Spain",
       },
       mintage: 1250000,
+      mints: [
+        {
+          code: "barcelona-mint",
+          name: "Barcelona Mint",
+        },
+        {
+          code: "madrid-mint",
+          name: "Madrid Mint",
+        },
+      ],
       minYear: 1999,
       maxYear: 2004,
       orientation: {

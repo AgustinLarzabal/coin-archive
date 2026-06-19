@@ -49,6 +49,7 @@ export type {
   CoinListIssuer,
   CoinIssuerSummary,
 } from "./queries/coin-issuer-record"
+export type { CoinMintRecord } from "./queries/coin-mint-record"
 export type {
   CoinReferenceCatalogueRecord,
   CoinReferenceRecord,

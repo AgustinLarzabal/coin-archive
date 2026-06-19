@@ -318,6 +318,15 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
                 {coin.rim?.name}
               </span>
             </div>
+            <Separator />
+            <div className="flex justify-between py-2 text-sm">
+              <span>{coin.mints.length > 1 ? "Mints" : "Mint"}</span>
+              <span className="flex flex-col text-muted-foreground tabular-nums">
+                {coin.mints.map((mint) => (
+                  <span key={mint.code}>{mint.name}</span>
+                ))}
+              </span>
+            </div>
           </div>
 
           <Separator />

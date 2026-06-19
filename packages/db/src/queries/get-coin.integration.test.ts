@@ -5,10 +5,12 @@ import {
   createCatalogue,
   createCoin,
   createCoinReference,
+  createCoinRuler,
   createCoinSurface,
   createCoinSurfaceEngraver,
   createEngraver,
   createIssuer,
+  createRuler,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -74,6 +76,14 @@ describe("getCoin integration", () => {
       code: "CN",
       title: "Custom Numismatics",
     })
+    const firstRuler = await createRuler({
+      code: "detail-ruler-b",
+      name: "Detail Ruler B",
+    })
+    const secondRuler = await createRuler({
+      code: "detail-ruler-a",
+      name: "Detail Ruler A",
+    })
     await createCoinReference({
       coinId: coin.id,
       catalogueId: kmCatalogue.id,
@@ -83,6 +93,16 @@ describe("getCoin integration", () => {
       coinId: coin.id,
       catalogueId: cnCatalogue.id,
       number: "A-5",
+    })
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: firstRuler.id,
+      rulerOrder: 2,
+    })
+    await createCoinRuler({
+      coinId: coin.id,
+      rulerId: secondRuler.id,
+      rulerOrder: 1,
     })
 
     const detail = await getCoin(coin.id)
@@ -99,6 +119,16 @@ describe("getCoin integration", () => {
         isoCode: "ES",
         name: "Spain",
       },
+      rulers: [
+        {
+          code: "detail-ruler-a",
+          name: "Detail Ruler A",
+        },
+        {
+          code: "detail-ruler-b",
+          name: "Detail Ruler B",
+        },
+      ],
       references: [
         {
           catalogue: {

@@ -15,7 +15,7 @@ export const seededRulers: SeededRuler[] = [
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
   },
   {
-    name: "Republic",
+    name: "Republic (1919-Today)",
     code: "republic",
     createdAt: new Date("2026-01-03T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),

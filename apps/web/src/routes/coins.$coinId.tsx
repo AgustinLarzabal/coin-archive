@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
 import { Badge } from "@workspace/ui/components/badge"
+import { runnerImport } from "vite"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -138,15 +139,9 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <Link
-                to="/"
-                search={{ distribution: coin.distribution.code }}
-                className="underline-offset-4 hover:underline"
-                title={`Filter homepage by distribution: ${coin.distribution.name}`}
-                aria-label={`Show homepage coins filtered by distribution ${coin.distribution.name}`}
-              >
-                {coin.distribution.name}
-              </Link>
+              {coin.rulers.map((ruler) => (
+                <Fragment key={ruler.code}>{ruler.name}</Fragment>
+              ))}
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -165,9 +160,26 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
               ))}
             </div>
           </div>
-          <div className="mb-4">
+
+          <Separator />
+
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <Link
+              to="/"
+              search={{ distribution: coin.distribution.code }}
+              className="underline-offset-4 hover:underline"
+              title={`Filter homepage by distribution: ${coin.distribution.name}`}
+              aria-label={`Show homepage coins filtered by distribution ${coin.distribution.name}`}
+            >
+              {coin.distribution.name}
+            </Link>
             {coin.isDemonetized && (
-              <Badge variant="secondary">Demonetized</Badge>
+              <Badge
+                variant="secondary"
+                className="text-[10px] tracking-wider uppercase"
+              >
+                Demonetized
+              </Badge>
             )}
           </div>
 

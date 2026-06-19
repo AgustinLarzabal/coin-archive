@@ -53,6 +53,7 @@ export type {
   CoinReferenceRecord,
 } from "./queries/coin-reference-record"
 export type { CoinRimRecord } from "./queries/coin-rim-record"
+export type { CoinThemeRecord } from "./queries/coin-theme-record"
 export type {
   CoinFaceEngraverRecord,
   CoinFaceSurfaceRecord,

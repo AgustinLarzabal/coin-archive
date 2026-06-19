@@ -80,6 +80,7 @@ const baseCoin: CoinDetailRecord = {
     edge: null,
   },
   technique: null,
+  themes: [],
   thickness: null,
   weight: null,
 }

@@ -28,8 +28,11 @@ import type { CoinShapeRecord } from "./coin-shape-record"
 import type { CoinTechniqueRecord } from "./coin-technique-record"
 import { edge } from "../schema/edge"
 import { rim } from "../schema/rim"
+import { coinTheme } from "../schema/coin-theme"
+import { theme } from "../schema/theme"
 import type { CoinEdgeRecord } from "./coin-edge-record"
 import type { CoinRimRecord } from "./coin-rim-record"
+import type { CoinThemeRecord } from "./coin-theme-record"
 
 export type CoinDetailRecord = {
   id: string
@@ -49,6 +52,7 @@ export type CoinDetailRecord = {
   shape: CoinShapeRecord | null
   surfaces: CoinSurfaceSetRecord
   technique: CoinTechniqueRecord | null
+  themes: CoinThemeRecord[]
   thickness: number | null
   weight: number | null
 }
@@ -93,6 +97,9 @@ type GetCoinRow = {
   surfaceImageUrl: string | null
   techniqueCode: string | null
   techniqueName: string | null
+  themeId: string | null
+  themeCode: string | null
+  themeName: string | null
   thickness: number | null
   weight: number | null
 }
@@ -335,6 +342,49 @@ function mapTechnique(row: GetCoinRow): CoinTechniqueRecord | null {
   }
 }
 
+function mapThemes(rows: GetCoinRow[]): CoinThemeRecord[] {
+  const themes = new Map<
+    string,
+    CoinThemeRecord & {
+      id: string
+    }
+  >()
+
+  for (const row of rows) {
+    if (
+      row.themeId === null ||
+      row.themeCode === null ||
+      row.themeName === null
+    ) {
+      continue
+    }
+
+    themes.set(row.themeId, {
+      id: row.themeId,
+      code: row.themeCode,
+      name: row.themeName,
+    })
+  }
+
+  return [...themes.values()]
+    .sort((left, right) => {
+      const nameComparison = left.name.localeCompare(right.name)
+
+      if (nameComparison !== 0) {
+        return nameComparison
+      }
+
+      const codeComparison = left.code.localeCompare(right.code)
+
+      if (codeComparison !== 0) {
+        return codeComparison
+      }
+
+      return left.id.localeCompare(right.id)
+    })
+    .map(({ code, name }) => ({ code, name }))
+}
+
 function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
   const firstRow = rows.at(0)
 
@@ -360,6 +410,7 @@ function mapCoinDetail(rows: GetCoinRow[]): CoinDetailRecord | null {
     shape: mapShape(firstRow),
     surfaces: mapSurfaces(rows),
     technique: mapTechnique(firstRow),
+    themes: mapThemes(rows),
     thickness: firstRow.thickness,
     weight: firstRow.weight,
   }
@@ -409,6 +460,9 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       surfaceImageUrl: coinSurface.imageUrl,
       techniqueCode: technique.code,
       techniqueName: technique.name,
+      themeId: theme.id,
+      themeCode: theme.code,
+      themeName: theme.name,
       thickness: coin.thickness,
       weight: coin.weight,
     })
@@ -422,6 +476,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
     .leftJoin(ruler, eq(coinRuler.rulerId, ruler.id))
     .leftJoin(coinReference, eq(coinReference.coinId, coin.id))
     .leftJoin(catalogue, eq(coinReference.catalogueId, catalogue.id))
+    .leftJoin(coinTheme, eq(coinTheme.coinId, coin.id))
+    .leftJoin(theme, eq(coinTheme.themeId, theme.id))
     .leftJoin(shape, eq(coin.shapeId, shape.id))
     .leftJoin(coinSurface, eq(coinSurface.coinId, coin.id))
     .leftJoin(

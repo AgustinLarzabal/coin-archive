@@ -8,6 +8,7 @@ import {
   createCoinRuler,
   createCoinSurface,
   createCoinSurfaceEngraver,
+  createCoinTheme,
   createEdge,
   createEngraver,
   createIssuer,
@@ -16,6 +17,7 @@ import {
   createRuler,
   createShape,
   createTechnique,
+  createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -116,6 +118,14 @@ describe("getCoin integration", () => {
       code: "detail-ruler-a",
       name: "Detail Ruler A",
     })
+    const firstTheme = await createTheme({
+      code: "architecture",
+      name: "Architecture",
+    })
+    const secondTheme = await createTheme({
+      code: "animals",
+      name: "Animals",
+    })
     await createCoinReference({
       coinId: coin.id,
       catalogueId: kmCatalogue.id,
@@ -135,6 +145,14 @@ describe("getCoin integration", () => {
       coinId: coin.id,
       rulerId: secondRuler.id,
       rulerOrder: 1,
+    })
+    await createCoinTheme({
+      coinId: coin.id,
+      themeId: firstTheme.id,
+    })
+    await createCoinTheme({
+      coinId: coin.id,
+      themeId: secondTheme.id,
     })
 
     const detail = await getCoin(coin.id)
@@ -220,6 +238,16 @@ describe("getCoin integration", () => {
         code: "milled",
         name: "Milled",
       },
+      themes: [
+        {
+          code: "animals",
+          name: "Animals",
+        },
+        {
+          code: "architecture",
+          name: "Architecture",
+        },
+      ],
     })
     expect(detail?.surfaces.obverse?.engravers).toHaveLength(2)
     expect(detail?.surfaces.obverse?.engravers).toEqual(

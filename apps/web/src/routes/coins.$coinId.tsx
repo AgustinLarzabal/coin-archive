@@ -112,8 +112,10 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
 
+  console.log("coin", coin)
+
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 pt-20">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-20">
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
 
       <section className="flex justify-between gap-10">
@@ -275,7 +277,7 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             </div>
           </div>
           <Separator />
-          <div className="-mt-4 mb-0">
+          <div className="-mt-4">
             <div className="flex items-center justify-between py-2 text-sm">
               <span>Edge</span>
               <span className="text-muted-foreground tabular-nums">
@@ -298,6 +300,23 @@ export function CoinDetailPage({ coin }: CoinDetailPageProps) {
             <p className="text-sm leading-6 text-muted-foreground">
               {coin.comments}
             </p>
+          </div>
+
+          <Separator />
+
+          <div className="flex flex-col space-y-4">
+            <p className="text-sm font-semibold">Themes</p>
+            <div className="flex items-center gap-4 text-xs">
+              {coin.themes.map((theme) => (
+                <Badge
+                  key={theme.code}
+                  variant="outline"
+                  className="text-[10px] tracking-wider uppercase"
+                >
+                  {theme.name}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
         <aside className="w-full max-w-[20%]">

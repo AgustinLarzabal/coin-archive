@@ -58,6 +58,257 @@ The current core relationships map to these tables:
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
 
+## Field optionality
+
+Legend:
+
+- `required`: `NOT NULL` and must be provided
+- `defaulted`: `NOT NULL`, but the database supplies a value
+- `optional`: nullable
+
+### `catalogue`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `title` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `composition`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `description` | optional |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `currency`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `fullName` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `distribution`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `edge`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `engraver`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `issuer`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `isoCode` | required |
+| `name` | required |
+| `parentIssuerId` | optional |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `mint`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `orientation`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `rim`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `shape`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `technique`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `theme`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `ruler_group`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `ruler`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `code` | required |
+| `name` | required |
+| `rulerGroupId` | optional |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `coin`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `title` | required |
+| `comments` | optional |
+| `diameter` | optional |
+| `distributionId` | required |
+| `isDemonetized` | optional |
+| `issuerId` | required |
+| `minYear` | optional |
+| `maxYear` | optional |
+| `orientationId` | optional |
+| `shapeId` | optional |
+| `techniqueId` | optional |
+| `thickness` | optional |
+| `weight` | optional |
+| `compositionId` | required |
+| `faceValueText` | required |
+| `faceValueNumericValue` | required |
+| `currencyId` | required |
+| `edgeId` | optional |
+| `rimId` | optional |
+| `mintage` | optional |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `coin_surface`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `coinId` | required |
+| `kind` | required |
+| `description` | optional |
+| `lettering` | optional |
+| `thumbnailUrl` | optional |
+| `imageUrl` | optional |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `coin_reference`
+
+| Field | Status |
+|---|---|
+| `id` | defaulted |
+| `coinId` | required |
+| `catalogueId` | required |
+| `number` | required |
+| `createdAt` | defaulted |
+| `updatedAt` | defaulted |
+
+### `coin_mint`
+
+| Field | Status |
+|---|---|
+| `coinId` | required |
+| `mintId` | required |
+
+### `coin_theme`
+
+| Field | Status |
+|---|---|
+| `coinId` | required |
+| `themeId` | required |
+
+### `coin_ruler`
+
+| Field | Status |
+|---|---|
+| `coinId` | required |
+| `rulerId` | required |
+| `rulerOrder` | required |
+
+### `coin_face_engraver`
+
+| Field | Status |
+|---|---|
+| `coinSurfaceId` | required |
+| `coinSurfaceKind` | required |
+| `engraverId` | required |
+
+Additional notes:
+
+- In `coin`, `minYear` and `maxYear` are individually optional, but the schema requires them to be both set or both null.
+- In `coin`, `isDemonetized` is nullable, so the database currently allows `true`, `false`, or `null`.
+
 ## Coin Surface storage model notes
 
 The `coin_surface` table stores Coin Surface details for Obverse, Reverse, and Edge Surface rows:

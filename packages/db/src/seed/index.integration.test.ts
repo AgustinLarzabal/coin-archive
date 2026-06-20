@@ -19,6 +19,7 @@ import { coinSurface } from "../schema/coin-surface"
 import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
+import { seededCoinRulers } from "./seed-data"
 import { seedDatabase } from "./index"
 
 const expectedSeededCurrencies = [
@@ -164,6 +165,9 @@ const expectedSpain2EuroSurfaceRows = [
     imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
   },
 ] as const
+
+const expectedPublishedCoinWithoutRulerMessage =
+  'Seed import rejected coin "Spain 2 Euro" because published Coins require at least one Ruler Attribution. Seed data is the current published Coin validation seam; low-level fixtures remain flexible.'
 
 function findCoinRecordByTitle<
   TCoinRecord extends {
@@ -390,6 +394,33 @@ describe("seed integration", () => {
       .orderBy(asc(coinSurface.kind))
 
     expect(seededSpain2EuroSurfaceRows).toEqual(expectedSpain2EuroSurfaceRows)
+  })
+
+  it("rejects published seed data without a ruler attribution while leaving low-level fixtures outside that seam", async () => {
+    const coinTitle = "Spain 2 Euro"
+    const firstRemovedIndex = seededCoinRulers.findIndex(
+      (seededCoinRuler) => seededCoinRuler.coinTitle === coinTitle
+    )
+    const removedSeededCoinRulers = seededCoinRulers.filter(
+      (seededCoinRuler) => seededCoinRuler.coinTitle === coinTitle
+    )
+
+    expect(firstRemovedIndex).toBeGreaterThanOrEqual(0)
+    expect(removedSeededCoinRulers.length).toBeGreaterThan(0)
+
+    seededCoinRulers.splice(firstRemovedIndex, removedSeededCoinRulers.length)
+
+    try {
+      await expect(seedDatabase()).rejects.toThrow(
+        expectedPublishedCoinWithoutRulerMessage
+      )
+    } finally {
+      seededCoinRulers.splice(
+        firstRemovedIndex,
+        0,
+        ...removedSeededCoinRulers
+      )
+    }
   })
 
   it("exposes seeded coin ruler attributions through direct catalogue reads", async () => {

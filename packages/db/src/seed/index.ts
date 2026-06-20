@@ -816,7 +816,34 @@ function mapSeededCoinToInsertValues(
   }
 }
 
+function getMissingRulerAttributionErrorMessage(coinTitle: string) {
+  return `Seed import rejected coin "${coinTitle}" because published Coins require at least one Ruler Attribution. Seed data is the current published Coin validation seam; low-level fixtures remain flexible.`
+}
+
+function assertSeededCoinsHaveRequiredRulerAttributions() {
+  const rulerAttributionCountByCoinTitle = new Map<string, number>()
+
+  for (const seededCoinRuler of seededCoinRulers) {
+    const currentCount =
+      rulerAttributionCountByCoinTitle.get(seededCoinRuler.coinTitle) ?? 0
+
+    rulerAttributionCountByCoinTitle.set(
+      seededCoinRuler.coinTitle,
+      currentCount + 1
+    )
+  }
+
+  for (const seededCoin of seededCoins) {
+    if ((rulerAttributionCountByCoinTitle.get(seededCoin.title) ?? 0) > 0) {
+      continue
+    }
+
+    throw new Error(getMissingRulerAttributionErrorMessage(seededCoin.title))
+  }
+}
+
 export async function seedDatabase() {
+  assertSeededCoinsHaveRequiredRulerAttributions()
   await deleteSeededCoins()
 
   const catalogueIdsByCode = await seedCatalogues()

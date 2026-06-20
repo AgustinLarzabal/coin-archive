@@ -76,7 +76,7 @@ describe("getHomeFilterFields", () => {
     expect(distributionField.label).toBe("Distribution")
     expect(engraverField.label).toBe("Engraver")
     expect(themeField.label).toBe("Theme")
-    expect(rulerField.label).toBe("Ruler")
+    expect(rulerField.label).toBe("Ruling authority")
     expect(renderToStaticMarkup(<>{issuerField.icon}</>)).toContain("svg")
   })
 })

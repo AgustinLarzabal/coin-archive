@@ -176,8 +176,8 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
                   to="/"
                   search={{ issuer: coin.issuer.code, ruler: ruler.code }}
                   className="underline-offset-4 hover:underline"
-                  title={`Filter homepage by issuer ${coin.issuer.name} and ruler ${ruler.name}`}
-                  aria-label={`Show homepage coins filtered by issuer ${coin.issuer.name} and ruler ${ruler.name}`}
+                  title={`Filter homepage by issuer ${coin.issuer.name} and ruling authority ${ruler.name}`}
+                  aria-label={`Show homepage coins filtered by issuer ${coin.issuer.name} and ruling authority ${ruler.name}`}
                 >
                   {ruler.name}
                 </Link>

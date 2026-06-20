@@ -102,7 +102,7 @@ export function getHomeFilterFields({
         },
         {
           key: "ruler",
-          label: "Ruler",
+          label: "Ruling authority",
           icon: <Crown strokeWidth={2} />,
           type: "select",
           operators: [{ value: "is", label: "is" }],

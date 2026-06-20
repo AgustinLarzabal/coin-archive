@@ -60,7 +60,7 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Circulation")
     expect(markup).toContain("Theme")
     expect(markup).toContain("Map")
-    expect(markup).toContain("Ruler")
+    expect(markup).toContain("Ruling authority")
     expect(markup).toContain("Charles III")
     expect(markup).toContain("Clear")
     expect(markup).not.toContain("Catalogue")

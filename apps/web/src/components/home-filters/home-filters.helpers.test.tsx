@@ -1,6 +1,7 @@
 import { createFilter } from "@workspace/ui/components/reui/filters"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
+import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"
 import {
   getHomeFilterFields,
   getHomeFilters,
@@ -76,7 +77,7 @@ describe("getHomeFilterFields", () => {
     expect(distributionField.label).toBe("Distribution")
     expect(engraverField.label).toBe("Engraver")
     expect(themeField.label).toBe("Theme")
-    expect(rulerField.label).toBe("Ruling authority")
+    expect(rulerField.label).toBe(RULER_FILTER_LABEL)
     expect(renderToStaticMarkup(<>{issuerField.icon}</>)).toContain("svg")
   })
 })

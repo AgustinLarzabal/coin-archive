@@ -12,6 +12,7 @@ import type {
 } from "@workspace/ui/components/reui/filters"
 import { Coins, Crown, Globe, Map, PenTool } from "lucide-react"
 import { z } from "zod"
+import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"
 
 export type HomeFilterValues = {
   distributionCode: string | undefined
@@ -102,7 +103,7 @@ export function getHomeFilterFields({
         },
         {
           key: "ruler",
-          label: "Ruling authority",
+          label: RULER_FILTER_LABEL,
           icon: <Crown strokeWidth={2} />,
           type: "select",
           operators: [{ value: "is", label: "is" }],

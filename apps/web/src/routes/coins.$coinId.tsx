@@ -14,6 +14,7 @@ import {
 import { Badge } from "@workspace/ui/components/badge"
 import type { CoinSearch } from "../lib/coin-search"
 import { coinSearchSchema } from "../lib/coin-search"
+import { getIssuerRulerFilterDescription } from "../lib/ruler-filter"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
@@ -170,18 +171,25 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {coin.rulers.map((ruler) => (
-                <Link
-                  key={ruler.code}
-                  to="/"
-                  search={{ issuer: coin.issuer.code, ruler: ruler.code }}
-                  className="underline-offset-4 hover:underline"
-                  title={`Filter homepage by issuer ${coin.issuer.name} and ruling authority ${ruler.name}`}
-                  aria-label={`Show homepage coins filtered by issuer ${coin.issuer.name} and ruling authority ${ruler.name}`}
-                >
-                  {ruler.name}
-                </Link>
-              ))}
+              {coin.rulers.map((ruler) => {
+                const filterDescription = getIssuerRulerFilterDescription(
+                  coin.issuer.name,
+                  ruler.name
+                )
+
+                return (
+                  <Link
+                    key={ruler.code}
+                    to="/"
+                    search={{ issuer: coin.issuer.code, ruler: ruler.code }}
+                    className="underline-offset-4 hover:underline"
+                    title={`Filter homepage by ${filterDescription}`}
+                    aria-label={`Show homepage coins filtered by ${filterDescription}`}
+                  >
+                    {ruler.name}
+                  </Link>
+                )
+              })}
             </div>
             <span className="text-muted-foreground">•</span>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">

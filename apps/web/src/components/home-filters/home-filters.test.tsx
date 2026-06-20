@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
+import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"
 import { HomeFilters } from "./home-filters"
 
 describe("HomeFilters", () => {
@@ -60,7 +61,7 @@ describe("HomeFilters", () => {
     expect(markup).toContain("Circulation")
     expect(markup).toContain("Theme")
     expect(markup).toContain("Map")
-    expect(markup).toContain("Ruling authority")
+    expect(markup).toContain(RULER_FILTER_LABEL)
     expect(markup).toContain("Charles III")
     expect(markup).toContain("Clear")
     expect(markup).not.toContain("Catalogue")

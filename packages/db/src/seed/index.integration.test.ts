@@ -165,6 +165,25 @@ const expectedSpain2EuroSurfaceRows = [
   },
 ] as const
 
+function findCoinRecordByTitle<
+  TCoinRecord extends {
+    title: string
+  },
+>(coinRecords: TCoinRecord[], title: string) {
+  const coinRecord = coinRecords.find((record) => record.title === title)
+
+  expect(
+    coinRecord,
+    `Expected seeded coin "${title}" in getCoins results`
+  ).toBeDefined()
+
+  if (coinRecord === undefined) {
+    throw new Error(`Expected seeded coin "${title}" in getCoins results`)
+  }
+
+  return coinRecord
+}
+
 async function expectOptionsToIncludeExpectedRecords(
   recordsPromise: Promise<unknown[]>,
   expectedRecords: readonly Record<string, unknown>[]
@@ -185,27 +204,27 @@ describe("seed integration", () => {
 
     const kmCatalogueCount = (
       await db
-      .select({ count: count() })
-      .from(catalogue)
-      .where(eq(catalogue.code, "KM"))
+        .select({ count: count() })
+        .from(catalogue)
+        .where(eq(catalogue.code, "KM"))
     ).at(0)
     const kmReferenceCount = (
       await db
-      .select({ count: count() })
-      .from(coinReference)
-      .where(eq(coinReference.number, "1338A"))
+        .select({ count: count() })
+        .from(coinReference)
+        .where(eq(coinReference.number, "1338A"))
     ).at(0)
     const standardCirculationCount = (
       await db
-      .select({ count: count() })
-      .from(distribution)
-      .where(eq(distribution.code, "standard-circulation"))
+        .select({ count: count() })
+        .from(distribution)
+        .where(eq(distribution.code, "standard-circulation"))
     ).at(0)
     const circulatingCommemorativeCount = (
       await db
-      .select({ count: count() })
-      .from(distribution)
-      .where(eq(distribution.code, "circulating-commemorative"))
+        .select({ count: count() })
+        .from(distribution)
+        .where(eq(distribution.code, "circulating-commemorative"))
     ).at(0)
 
     expect(kmCatalogueCount?.count).toBe(1)
@@ -265,15 +284,10 @@ describe("seed integration", () => {
     )
 
     const seededCoins = await getCoins({ limit: 20 })
-    const findSeededCoin = (title: string) => {
-      const seededCoin = seededCoins.find((coinRecord) => coinRecord.title === title)
 
-      expect(seededCoin, `Expected seeded coin "${title}" in getCoins results`).toBeDefined()
-
-      return seededCoin
-    }
-
-    expect(findSeededCoin("United States National Park Quarter")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "United States National Park Quarter")
+    ).toMatchObject({
       id: expect.any(String),
       title: "United States National Park Quarter",
       issuer: {
@@ -284,7 +298,9 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("Buenos Aires Transition Half Real")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "Buenos Aires Transition Half Real")
+    ).toMatchObject({
       id: expect.any(String),
       title: "Buenos Aires Transition Half Real",
       issuer: {
@@ -295,7 +311,9 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("Argentina Copper Peso")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "Argentina Copper Peso")
+    ).toMatchObject({
       id: expect.any(String),
       title: "Argentina Copper Peso",
       issuer: {
@@ -306,7 +324,7 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("Spain 2 Euro")).toMatchObject({
+    expect(findCoinRecordByTitle(seededCoins, "Spain 2 Euro")).toMatchObject({
       id: expect.any(String),
       title: "Spain 2 Euro",
       issuer: {
@@ -317,7 +335,9 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("Buenos Aires 8 Reales 1813")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "Buenos Aires 8 Reales 1813")
+    ).toMatchObject({
       id: expect.any(String),
       title: "Buenos Aires 8 Reales 1813",
       issuer: {
@@ -328,7 +348,9 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("United States Lincoln Cent")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "United States Lincoln Cent")
+    ).toMatchObject({
       id: expect.any(String),
       title: "United States Lincoln Cent",
       issuer: {
@@ -339,7 +361,9 @@ describe("seed integration", () => {
       },
     })
 
-    expect(findSeededCoin("Argentina Convertible Peso")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, "Argentina Convertible Peso")
+    ).toMatchObject({
       id: expect.any(String),
       title: "Argentina Convertible Peso",
       issuer: {
@@ -372,17 +396,13 @@ describe("seed integration", () => {
     await seedDatabase()
 
     const seededCoins = await getCoins({ limit: 20 })
-    const spain2EuroId = seededCoins.find(
-      ({ title }) => title === "Spain 2 Euro"
-    )?.id
-    const buenosAiresId = seededCoins.find(
-      ({ title }) => title === "Buenos Aires 8 Reales 1813"
-    )?.id
+    const spain2Euro = findCoinRecordByTitle(seededCoins, "Spain 2 Euro")
+    const buenosAiresCoin = findCoinRecordByTitle(
+      seededCoins,
+      "Buenos Aires 8 Reales 1813"
+    )
 
-    expect(spain2EuroId).toBeDefined()
-    expect(buenosAiresId).toBeDefined()
-
-    await expect(getCoin(spain2EuroId ?? "")).resolves.toMatchObject({
+    await expect(getCoin(spain2Euro.id)).resolves.toMatchObject({
       title: "Spain 2 Euro",
       rulers: [
         {
@@ -391,7 +411,7 @@ describe("seed integration", () => {
         },
       ],
     })
-    await expect(getCoin(buenosAiresId ?? "")).resolves.toMatchObject({
+    await expect(getCoin(buenosAiresCoin.id)).resolves.toMatchObject({
       title: "Buenos Aires 8 Reales 1813",
       rulers: [
         {

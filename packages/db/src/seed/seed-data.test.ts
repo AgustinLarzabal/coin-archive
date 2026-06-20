@@ -8,6 +8,10 @@ import {
   seededMints,
 } from "./seed-data"
 
+function getSortedCoinTitles(records: { title: string }[]) {
+  return records.map(({ title }) => title).sort()
+}
+
 describe("SeededCoin", () => {
   it("accepts nullable comments in seed input", () => {
     expectTypeOf<SeededCoin["comments"]>().toEqualTypeOf<
@@ -49,7 +53,8 @@ describe("SeededCoin", () => {
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
-        thumbnailUrl: "https://example.com/coins/spain-2-euro/reverse-thumbnail",
+        thumbnailUrl:
+          "https://example.com/coins/spain-2-euro/reverse-thumbnail",
         imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
       },
       {
@@ -80,21 +85,20 @@ describe("seededIssuers", () => {
 
 describe("seededMints", () => {
   it("uses unique mint codes", () => {
-    expect(new Set(seededMints.map(({ code }) => code)).size).toBe(seededMints.length)
+    expect(new Set(seededMints.map(({ code }) => code)).size).toBe(
+      seededMints.length
+    )
   })
 })
 
 describe("seededCoinRulers", () => {
   it("assigns at least one ruler attribution to every seeded coin", () => {
-    const coinTitlesWithRulerAttributions = new Set(
-      seededCoinRulers.map(({ coinTitle }) => coinTitle)
-    )
+    const coinTitlesWithRulerAttributions = [
+      ...new Set(seededCoinRulers.map(({ coinTitle }) => coinTitle)),
+    ].sort()
 
-    expect(seededCoins.map(({ title }) => title)).toEqual(
-      expect.arrayContaining([...coinTitlesWithRulerAttributions])
-    )
-    expect([...coinTitlesWithRulerAttributions]).toEqual(
-      expect.arrayContaining(seededCoins.map(({ title }) => title))
+    expect(coinTitlesWithRulerAttributions).toEqual(
+      getSortedCoinTitles(seededCoins)
     )
   })
 })

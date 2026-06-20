@@ -42,23 +42,23 @@ export const seededCoinRulers: SeededCoinRuler[] = [
     rulerOrder: 1,
   },
   {
-    coinTitle: "Spain 2 Euro",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
     coinTitle: "United States Flowing Hair Dollar",
     rulerCode: "liberty",
     rulerOrder: 1,
   },
   {
-    coinTitle: "2 Euros (Enlargement of the European Union)",
-    rulerCode: "republic-of-finland",
+    coinTitle: "Argentina Convertible Peso",
+    rulerCode: "argentine-republic",
     rulerOrder: 1,
   },
   {
-    coinTitle: "Argentina Convertible Peso",
-    rulerCode: "argentine-republic",
+    coinTitle: "Spain 2 Euro",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "2 Euros (Enlargement of the European Union)",
+    rulerCode: "republic-of-finland",
     rulerOrder: 1,
   },
 ]

@@ -2,7 +2,8 @@ import { getCoin } from "@workspace/db"
 import type { CoinDetailRecord } from "@workspace/db"
 import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import { Fragment, type ReactNode } from "react"
+import { Fragment } from "react"
+import type { ReactNode } from "react"
 import { z } from "zod"
 import { ImageZoom } from "@workspace/ui/components/kibo-ui/image-zoom"
 import { Separator } from "@workspace/ui/components/separator"
@@ -167,7 +168,7 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
       key: "rulers",
       content: (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{RULER_FILTER_LABEL}</span>
+          {/* <span>{RULER_FILTER_LABEL}</span> */}
           <div className="flex items-center gap-4">
             {coin.rulers.map((ruler) => {
               const filterDescription = getIssuerRulerFilterDescription(

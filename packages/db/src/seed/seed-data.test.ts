@@ -1,6 +1,12 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
-import { seededCoinSurfaces, seededIssuers, seededMints } from "./seed-data"
+import {
+  seededCoinRulers,
+  seededCoinSurfaces,
+  seededCoins,
+  seededIssuers,
+  seededMints,
+} from "./seed-data"
 
 describe("SeededCoin", () => {
   it("accepts nullable comments in seed input", () => {
@@ -75,5 +81,20 @@ describe("seededIssuers", () => {
 describe("seededMints", () => {
   it("uses unique mint codes", () => {
     expect(new Set(seededMints.map(({ code }) => code)).size).toBe(seededMints.length)
+  })
+})
+
+describe("seededCoinRulers", () => {
+  it("assigns at least one ruler attribution to every seeded coin", () => {
+    const coinTitlesWithRulerAttributions = new Set(
+      seededCoinRulers.map(({ coinTitle }) => coinTitle)
+    )
+
+    expect(seededCoins.map(({ title }) => title)).toEqual(
+      expect.arrayContaining([...coinTitlesWithRulerAttributions])
+    )
+    expect([...coinTitlesWithRulerAttributions]).toEqual(
+      expect.arrayContaining(seededCoins.map(({ title }) => title))
+    )
   })
 })

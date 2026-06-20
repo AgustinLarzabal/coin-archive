@@ -195,7 +195,7 @@ export const seededCoins: SeededCoin[] = [
     weight: 8.5,
     diameter: 25.75,
     thickness: 2.2,
-    minYear: 2002,
+    minYear: 2015,
     maxYear: 2026,
     createdAt: new Date("2026-01-11T00:00:00.000Z"),
     updatedAt: new Date("2026-01-11T00:00:00.000Z"),

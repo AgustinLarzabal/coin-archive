@@ -2,6 +2,7 @@ import { asc, count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import {
   db,
+  getCoin,
   getCoins,
   getIssuers,
   getCurrencies,
@@ -365,5 +366,55 @@ describe("seed integration", () => {
       .orderBy(asc(coinSurface.kind))
 
     expect(seededSpain2EuroSurfaceRows).toEqual(expectedSpain2EuroSurfaceRows)
+  })
+
+  it("exposes seeded coin ruler attributions through direct catalogue reads", async () => {
+    await seedDatabase()
+
+    const seededCoins = await getCoins({ limit: 20 })
+    const spain2EuroId = seededCoins.find(
+      ({ title }) => title === "Spain 2 Euro"
+    )?.id
+    const buenosAiresId = seededCoins.find(
+      ({ title }) => title === "Buenos Aires 8 Reales 1813"
+    )?.id
+
+    expect(spain2EuroId).toBeDefined()
+    expect(buenosAiresId).toBeDefined()
+
+    await expect(getCoin(spain2EuroId ?? "")).resolves.toMatchObject({
+      title: "Spain 2 Euro",
+      rulers: [
+        {
+          code: "felipe-vi",
+          name: "Felipe VI",
+        },
+      ],
+    })
+    await expect(getCoin(buenosAiresId ?? "")).resolves.toMatchObject({
+      title: "Buenos Aires 8 Reales 1813",
+      rulers: [
+        {
+          code: "province-of-buenos-aires",
+          name: "Province of Buenos Aires",
+        },
+      ],
+    })
+  })
+
+  it("keeps seeded ruler filtering exact to direct attributions", async () => {
+    await seedDatabase()
+
+    const filteredCoins = await getCoins({
+      rulerCode: "  ARGENTINE-REPUBLIC  ",
+      limit: 20,
+    })
+
+    expect(filteredCoins.map(({ title }) => title)).toEqual([
+      "Argentina Convertible Peso",
+      "Argentina Copper Peso",
+      "Argentina 20 Centavos",
+      "Argentina Sol de Mayo Peso",
+    ])
   })
 })

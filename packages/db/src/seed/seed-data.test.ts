@@ -68,6 +68,18 @@ describe("SeededCoin", () => {
       },
     ])
   })
+
+  it("has at least one ruler attribution for every seeded coin", () => {
+    const coinTitlesWithRulers = new Set(
+      seededCoinRulers.map(({ coinTitle }) => coinTitle)
+    )
+
+    expect(
+      seededCoins
+        .map(({ title }) => title)
+        .filter((title) => !coinTitlesWithRulers.has(title))
+    ).toEqual([])
+  })
 })
 
 describe("seededIssuers", () => {

@@ -253,12 +253,16 @@ A catalogue filter that returns coins linked to the selected issuer and coins li
 _Avoid_: Exact issuer match only
 
 **Ruler**:
-A historical ruling authority attributed to a coin, including people, offices, regimes, symbolic authorities, and explicit unknown-authority placeholders when needed. A ruler has a display name and a globally unique ruler code. A coin is attributed to one or more rulers.
-_Avoid_: Issuer, mint, monarch-only attribution, person-only attribution
+The historical ruling authority attributed to a coin, including people, offices, regimes, symbolic authorities, and explicit unknown-authority placeholders when needed. A ruler has a display name and a globally unique ruler code. A coin is attributed to one or more rulers.
+_Avoid_: Issuer, mint, monarch-only attribution, person-only attribution, missing ruler attribution
 
 **Ruler Code**:
 The globally unique, stable, human-readable catalogue key for a ruler, used to identify the ruler in filters, URLs, imports, and administrative lookup. It uses lowercase slug-style text and is distinct from the ruler's display name.
 _Avoid_: Display name, temporary label, generated database identity
+
+**Ruler Attribution**:
+A catalogue relationship that links a Coin to one Ruler whose authority is attributed to that coin type or issue. Every Coin has one or more ruler attributions, and multiple ruler attributions on a single Coin are ordered by the attributed authorities' relevance to the coin issue, earliest first unless a catalogue source gives a more specific conventional display order.
+_Avoid_: Missing ruler, no-ruler attribution, issuer attribution, ruler hierarchy
 
 **Ruler Group**:
 A named catalogue grouping associated with a ruler, such as a dynasty, house, office lineage, or comparable historical grouping. A ruler group has a display name and a globally unique ruler group code. Rulers may belong to zero or one ruler group, and ruler groups are flat labels rather than hierarchical groupings.

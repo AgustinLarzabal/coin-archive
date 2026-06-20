@@ -16,6 +16,10 @@ import { Badge } from "@workspace/ui/components/badge"
 import type { CoinSearch } from "../lib/coin-search"
 import { coinSearchSchema } from "../lib/coin-search"
 import {
+  getCoinPreviewImageUrl,
+  getSurfaceImageUrl,
+} from "../lib/coin-images"
+import {
   getIssuerRulerFilterDescription,
   RULER_FILTER_LABEL,
 } from "../lib/ruler-filter"
@@ -73,10 +77,6 @@ type CoinMetadataItemView = {
 
 const wholeNumberFormatter = new Intl.NumberFormat("en-US")
 
-function hasSurfaceMedia(surface: CoinDetailSurfaceView) {
-  return (surface.imageUrl ?? surface.thumbnailUrl) !== null
-}
-
 function formatMintage(mintage: number | null) {
   if (mintage === null) {
     return null
@@ -121,9 +121,7 @@ function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
       engravers: "engravers" in surface ? surface.engravers : [],
     }
 
-    if (hasSurfaceMedia(mappedSurface)) {
-      mappedSurfaces.push(mappedSurface)
-    }
+    mappedSurfaces.push(mappedSurface)
   }
 
   return mappedSurfaces
@@ -168,7 +166,7 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
       key: "rulers",
       content: (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {/* <span>{RULER_FILTER_LABEL}</span> */}
+          <span>{RULER_FILTER_LABEL}</span>
           <div className="flex items-center gap-4">
             {coin.rulers.map((ruler) => {
               const filterDescription = getIssuerRulerFilterDescription(
@@ -469,15 +467,25 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
         </div>
         <aside className="w-full max-w-[20%]">
           <div className="flex flex-col gap-4">
-            {coinSurfaces.map((surface) => (
-              <ImageZoom key={surface.key}>
+            {coinSurfaces.length > 0 ? (
+              coinSurfaces.map((surface) => (
+                <ImageZoom key={surface.key}>
+                  <img
+                    src={getSurfaceImageUrl(surface)}
+                    alt={`${coin.title} ${surface.label.toLowerCase()}`}
+                    width="250"
+                  />
+                </ImageZoom>
+              ))
+            ) : (
+              <ImageZoom>
                 <img
-                  src={surface.imageUrl ?? surface.thumbnailUrl ?? undefined}
-                  alt={`${coin.title} ${surface.label.toLowerCase()}`}
+                  src={getCoinPreviewImageUrl(coin.surfaces)}
+                  alt={`${coin.title} placeholder`}
                   width="250"
                 />
               </ImageZoom>
-            ))}
+            )}
           </div>
         </aside>
       </section>

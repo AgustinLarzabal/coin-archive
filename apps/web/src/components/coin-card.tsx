@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import type { CoinSearch } from "../lib/coin-search"
+import { getCoinPreviewImageUrl } from "../lib/coin-images"
 
 type CoinCardProps = {
   coin: CoinListRecord
@@ -15,13 +16,7 @@ type CoinCardProps = {
 }
 
 export function CoinCard({ coin, search }: CoinCardProps) {
-  const previewImageUrl =
-    coin.surfaces.obverse?.imageUrl ??
-    coin.surfaces.obverse?.thumbnailUrl ??
-    coin.surfaces.reverse?.imageUrl ??
-    coin.surfaces.reverse?.thumbnailUrl ??
-    coin.surfaces.edge?.imageUrl ??
-    coin.surfaces.edge?.thumbnailUrl
+  const previewImageUrl = getCoinPreviewImageUrl(coin.surfaces)
 
   return (
     <Link
@@ -33,9 +28,7 @@ export function CoinCard({ coin, search }: CoinCardProps) {
       <Card className="p-0 pb-4 transition-colors hover:bg-muted/30">
         <CardContent className="flex flex-col gap-5 p-0">
           <div className="relative w-full overflow-hidden">
-            {previewImageUrl ? (
-              <img src={previewImageUrl} alt={`${coin.title} preview`} className="object-cover" />
-            ) : null}
+            <img src={previewImageUrl} alt={`${coin.title} preview`} className="object-cover" />
           </div>
         </CardContent>
         <CardHeader className="space-y-1">

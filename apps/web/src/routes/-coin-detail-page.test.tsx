@@ -133,6 +133,43 @@ describe("CoinDetailPage", () => {
     expect(markup).not.toContain("/finland-2-euro-2004-obverse.jpg")
   })
 
+  it("falls back to the placeholder image when a surface has no images", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      surfaces: {
+        obverse: {
+          ...baseCoin.surfaces.obverse!,
+          imageUrl: null,
+          thumbnailUrl: null,
+        },
+        reverse: {
+          ...baseCoin.surfaces.reverse!,
+          imageUrl: null,
+          thumbnailUrl: null,
+        },
+        edge: null,
+      },
+    })
+
+    expect(markup).toContain("/placeholder-coin.svg")
+    expect(markup).toContain("Portrait facing left.")
+    expect(markup).toContain("Denomination and wreath.")
+  })
+
+  it("renders the placeholder image when the coin has no surfaces", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      surfaces: {
+        obverse: null,
+        reverse: null,
+        edge: null,
+      },
+    })
+
+    expect(markup).toContain("/placeholder-coin.svg")
+    expect(markup).toContain('alt="Detail Test Coin placeholder"')
+  })
+
   it("renders reference separators only between reference items", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,

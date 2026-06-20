@@ -169,6 +169,31 @@ const expectedSpain2EuroSurfaceRows = [
 const expectedPublishedCoinWithoutRulerMessage =
   'Seed import rejected coin "Spain 2 Euro" because published Coins require at least one Ruler Attribution. Seed data is the current published Coin validation seam; low-level fixtures remain flexible.'
 
+function removeSeededCoinRulersForCoinTitle(coinTitle: string) {
+  const originalSeededCoinRulers = [...seededCoinRulers]
+  const seededCoinRulersToKeep = originalSeededCoinRulers.filter(
+    (seededCoinRuler) => seededCoinRuler.coinTitle !== coinTitle
+  )
+  const removedSeededCoinRulerCount =
+    originalSeededCoinRulers.length - seededCoinRulersToKeep.length
+
+  expect(removedSeededCoinRulerCount).toBeGreaterThan(0)
+
+  seededCoinRulers.splice(
+    0,
+    seededCoinRulers.length,
+    ...seededCoinRulersToKeep
+  )
+
+  return () => {
+    seededCoinRulers.splice(
+      0,
+      seededCoinRulers.length,
+      ...originalSeededCoinRulers
+    )
+  }
+}
+
 function findCoinRecordByTitle<
   TCoinRecord extends {
     title: string
@@ -397,29 +422,16 @@ describe("seed integration", () => {
   })
 
   it("rejects published seed data without a ruler attribution while leaving low-level fixtures outside that seam", async () => {
-    const coinTitle = "Spain 2 Euro"
-    const firstRemovedIndex = seededCoinRulers.findIndex(
-      (seededCoinRuler) => seededCoinRuler.coinTitle === coinTitle
+    const restoreSeededCoinRulers = removeSeededCoinRulersForCoinTitle(
+      "Spain 2 Euro"
     )
-    const removedSeededCoinRulers = seededCoinRulers.filter(
-      (seededCoinRuler) => seededCoinRuler.coinTitle === coinTitle
-    )
-
-    expect(firstRemovedIndex).toBeGreaterThanOrEqual(0)
-    expect(removedSeededCoinRulers.length).toBeGreaterThan(0)
-
-    seededCoinRulers.splice(firstRemovedIndex, removedSeededCoinRulers.length)
 
     try {
       await expect(seedDatabase()).rejects.toThrow(
         expectedPublishedCoinWithoutRulerMessage
       )
     } finally {
-      seededCoinRulers.splice(
-        firstRemovedIndex,
-        0,
-        ...removedSeededCoinRulers
-      )
+      restoreSeededCoinRulers()
     }
   })
 

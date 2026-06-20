@@ -821,20 +821,12 @@ function getMissingRulerAttributionErrorMessage(coinTitle: string) {
 }
 
 function assertSeededCoinsHaveRequiredRulerAttributions() {
-  const rulerAttributionCountByCoinTitle = new Map<string, number>()
-
-  for (const seededCoinRuler of seededCoinRulers) {
-    const currentCount =
-      rulerAttributionCountByCoinTitle.get(seededCoinRuler.coinTitle) ?? 0
-
-    rulerAttributionCountByCoinTitle.set(
-      seededCoinRuler.coinTitle,
-      currentCount + 1
-    )
-  }
+  const coinTitlesWithRulerAttributions = new Set(
+    seededCoinRulers.map(({ coinTitle }) => coinTitle)
+  )
 
   for (const seededCoin of seededCoins) {
-    if ((rulerAttributionCountByCoinTitle.get(seededCoin.title) ?? 0) > 0) {
+    if (coinTitlesWithRulerAttributions.has(seededCoin.title)) {
       continue
     }
 

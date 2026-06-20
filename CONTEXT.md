@@ -5,7 +5,7 @@ Coin Archive is a catalog of physical coins from across history. The context exi
 ## Language
 
 **Coin**:
-A catalogued physical coin type or issue in the archive, not an individual owned example. A coin has exactly one direct issuer, may have zero or more ruler attributions, and may have zero or more mint attributions. A coin may later be described by historical, geographic, minting, material, inscription, image, and reference information.
+A catalogued physical coin type or issue in the archive, not an individual owned example. A coin has exactly one direct issuer, one or more ruler attributions, and may have zero or more mint attributions. A coin may later be described by historical, geographic, minting, material, inscription, image, and reference information.
 _Avoid_: Coina, specimen, item
 
 **Coin Title**:
@@ -253,8 +253,8 @@ A catalogue filter that returns coins linked to the selected issuer and coins li
 _Avoid_: Exact issuer match only
 
 **Ruler**:
-A historical person whose reign or office is attributed to a coin. A ruler has a display name and a globally unique ruler code. A coin may be attributed to zero, one, or many rulers.
-_Avoid_: Issuer, mint, monarch-only attribution
+A historical ruling authority attributed to a coin, including people, offices, regimes, symbolic authorities, and explicit unknown-authority placeholders when needed. A ruler has a display name and a globally unique ruler code. A coin is attributed to one or more rulers.
+_Avoid_: Issuer, mint, monarch-only attribution, person-only attribution
 
 **Ruler Code**:
 The globally unique, stable, human-readable catalogue key for a ruler, used to identify the ruler in filters, URLs, imports, and administrative lookup. It uses lowercase slug-style text and is distinct from the ruler's display name.

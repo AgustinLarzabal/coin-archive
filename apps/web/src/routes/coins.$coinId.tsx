@@ -130,6 +130,8 @@ function CoinRoute() {
 export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasSingleYear = coin.minYear === coin.maxYear
+  const hasRulers = coin.rulers.length > 0
+  const hasReferences = coin.references.length > 0
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-10 pb-20">
@@ -169,44 +171,55 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
                 {coin.issuer.name}
               </Link>
             </div>
-            <span className="text-muted-foreground">•</span>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {coin.rulers.map((ruler) => {
-                const filterDescription = getIssuerRulerFilterDescription(
-                  coin.issuer.name,
-                  ruler.name
-                )
+            {hasRulers ? (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Ruling authority</span>
+                  <div className="flex items-center gap-4">
+                    {coin.rulers.map((ruler) => {
+                      const filterDescription = getIssuerRulerFilterDescription(
+                        coin.issuer.name,
+                        ruler.name
+                      )
 
-                return (
-                  <Link
-                    key={ruler.code}
-                    to="/"
-                    search={{ issuer: coin.issuer.code, ruler: ruler.code }}
-                    className="underline-offset-4 hover:underline"
-                    title={`Filter homepage by ${filterDescription}`}
-                    aria-label={`Show homepage coins filtered by ${filterDescription}`}
-                  >
-                    {ruler.name}
-                  </Link>
-                )
-              })}
-            </div>
-            <span className="text-muted-foreground">•</span>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {coin.references.map((ref, index) => (
-                <Fragment key={`${ref.catalogue.code}-${ref.number}`}>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      {ref.catalogue.code}: {ref.number}
-                    </TooltipTrigger>
-                    <TooltipContent>{ref.catalogue.title}</TooltipContent>
-                  </Tooltip>
-                  {index < coin.references.length - 1 ? (
-                    <Separator orientation="vertical" />
-                  ) : null}
-                </Fragment>
-              ))}
-            </div>
+                      return (
+                        <Link
+                          key={ruler.code}
+                          to="/"
+                          search={{ issuer: coin.issuer.code, ruler: ruler.code }}
+                          className="underline-offset-4 hover:underline"
+                          title={`Filter homepage by ${filterDescription}`}
+                          aria-label={`Show homepage coins filtered by ${filterDescription}`}
+                        >
+                          {ruler.name}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : null}
+            {hasReferences ? (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  {coin.references.map((ref, index) => (
+                    <Fragment key={`${ref.catalogue.code}-${ref.number}`}>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          {ref.catalogue.code}: {ref.number}
+                        </TooltipTrigger>
+                        <TooltipContent>{ref.catalogue.title}</TooltipContent>
+                      </Tooltip>
+                      {index < coin.references.length - 1 ? (
+                        <Separator orientation="vertical" />
+                      ) : null}
+                    </Fragment>
+                  ))}
+                </div>
+              </>
+            ) : null}
           </div>
 
           <Separator />

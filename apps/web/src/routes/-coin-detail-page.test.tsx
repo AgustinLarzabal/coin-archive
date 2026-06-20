@@ -210,6 +210,7 @@ describe("CoinDetailPage", () => {
       ],
     })
 
+    expect(markup).toContain("Ruling authority")
     expect(markup).toContain('href="/?issuer=spain&amp;ruler=charles-iii"')
     expect(markup).toContain(
       "Show homepage coins filtered by issuer Spain and ruling authority Charles III"

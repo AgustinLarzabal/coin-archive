@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { db } from "../index"
-import { getCoin } from "./get-coin"
+import { buildGetCoinQuery, getCoin } from "./get-coin"
 import {
   createCatalogue,
   createCoin,
@@ -27,6 +27,28 @@ import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getCoin integration", () => {
   useTestDatabaseIsolation(db)
+
+  it("keeps the base detail query free of one-to-many cartesian joins", () => {
+    const query = buildGetCoinQuery(db, "coin-id").toSQL()
+
+    expect(query.sql).toContain('from "coin"')
+    expect(query.sql).toContain('"composition"."name"')
+    expect(query.sql).toContain('"currency"."full_name"')
+    expect(query.sql).toContain('"distribution"."name"')
+    expect(query.sql).toContain('"issuer"."iso_code"')
+    expect(query.sql).not.toContain('"coin_reference"')
+    expect(query.sql).not.toContain('"catalogue"')
+    expect(query.sql).not.toContain('"coin_ruler"')
+    expect(query.sql).not.toContain('"ruler"')
+    expect(query.sql).not.toContain('"coin_mint"')
+    expect(query.sql).not.toContain('"mint"')
+    expect(query.sql).not.toContain('"coin_theme"')
+    expect(query.sql).not.toContain('"theme"')
+    expect(query.sql).not.toContain('"coin_surface"')
+    expect(query.sql).not.toContain('"coin_face_engraver"')
+    expect(query.sql).not.toContain('"engraver"')
+    expect(query.params).toEqual(["coin-id"])
+  })
 
   it("returns the coin detail fields used by the detail page", async () => {
     const spain = await createIssuer({
@@ -322,5 +344,11 @@ describe("getCoin integration", () => {
         },
       ])
     )
+  })
+
+  it("returns null when the coin does not exist", async () => {
+    await expect(
+      getCoin("00000000-0000-0000-0000-000000000000")
+    ).resolves.toBeNull()
   })
 })

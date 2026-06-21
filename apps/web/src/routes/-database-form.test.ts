@@ -57,8 +57,8 @@ describe("submitCreateCatalogue", () => {
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: "Catalogue Code cannot be blank",
-        title: "Catalogue Title must be 255 characters or fewer",
+        code: "Catalogue Code cannot be blank.",
+        title: "Catalogue Title must be 255 characters or fewer.",
       },
     })
 
@@ -121,6 +121,62 @@ describe("submitCreateCatalogue", () => {
 })
 
 describe("submitUpdateCatalogue", () => {
+  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
+    await expect(
+      submitUpdateCatalogue(null, {
+        id: VALID_CATALOGUE_ID,
+        code: "KM",
+        title: "Standard Catalog of World Coins",
+      })
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: CATALOGUE_AUTHORIZATION_ERROR,
+    })
+
+    await expect(
+      submitUpdateCatalogue(
+        { role: "collector" },
+        {
+          id: VALID_CATALOGUE_ID,
+          code: "KM",
+          title: "Standard Catalog of World Coins",
+        }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: CATALOGUE_AUTHORIZATION_ERROR,
+    })
+  })
+
+  it("maps Zod update validation issues into typed field errors", async () => {
+    const updateCatalogue = vi.fn()
+
+    await expect(
+      submitUpdateCatalogue(
+        { role: "editor" },
+        {
+          id: VALID_CATALOGUE_ID,
+          code: " ",
+          title: "".padStart(256, "R"),
+        },
+        {
+          createCatalogue: vi.fn(),
+          updateCatalogue,
+        }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {
+        code: "Catalogue Code cannot be blank.",
+        title: "Catalogue Title must be 255 characters or fewer.",
+      },
+    })
+
+    expect(updateCatalogue).not.toHaveBeenCalled()
+  })
+
   it("returns a missing-row form error when the update target no longer exists", async () => {
     await expect(
       submitUpdateCatalogue(
@@ -175,6 +231,36 @@ describe("submitUpdateCatalogue", () => {
           id: VALID_CATALOGUE_ID,
           code: "RIC",
           title: "Roman Imperial Coinage",
+        },
+        {
+          createCatalogue: vi.fn(),
+          updateCatalogue,
+        }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Saved.",
+    })
+
+    expect(updateCatalogue).toHaveBeenCalledWith({
+      id: VALID_CATALOGUE_ID,
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+  })
+
+  it("trims Catalogue fields before updating a Catalogue", async () => {
+    const updateCatalogue = vi.fn().mockResolvedValue({
+      id: VALID_CATALOGUE_ID,
+    })
+
+    await expect(
+      submitUpdateCatalogue(
+        { role: "editor" },
+        {
+          id: VALID_CATALOGUE_ID,
+          code: " RIC ",
+          title: " Roman Imperial Coinage ",
         },
         {
           createCatalogue: vi.fn(),

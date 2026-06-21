@@ -7,7 +7,7 @@ import type { CollectorWithRole } from "../lib/collector-role"
 type CatalogueFieldName = "code" | "title"
 
 export const CATALOGUE_AUTHORIZATION_ERROR =
-  "You are not authorized to maintain Catalogues."
+  "Only Editors and Admins can maintain Catalogues."
 export const CATALOGUE_DUPLICATE_CODE_ERROR =
   "A Catalogue with this code already exists."
 export const CATALOGUE_GENERIC_SAVE_ERROR =
@@ -20,14 +20,14 @@ const DUPLICATE_CATALOGUE_CODE_CONSTRAINT = "catalogue_code_lower_unique_idx"
 const catalogueCodeSchema = z
   .string()
   .trim()
-  .min(1, "Catalogue Code cannot be blank")
-  .max(255, "Catalogue Code must be 255 characters or fewer")
+  .min(1, "Catalogue Code cannot be blank.")
+  .max(255, "Catalogue Code must be 255 characters or fewer.")
 
 const catalogueTitleSchema = z
   .string()
   .trim()
-  .min(1, "Catalogue Title cannot be blank")
-  .max(255, "Catalogue Title must be 255 characters or fewer")
+  .min(1, "Catalogue Title cannot be blank.")
+  .max(255, "Catalogue Title must be 255 characters or fewer.")
 
 export const createCatalogueInputSchema = z.object({
   code: catalogueCodeSchema,

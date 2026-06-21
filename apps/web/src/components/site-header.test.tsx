@@ -88,7 +88,7 @@ function createCollectorSession({
 }: {
   email?: string
   name?: string
-  role?: "collector" | "editor" | "admin"
+  role?: "collector" | "editor" | "admin" | null
 } = {}): CollectorSession {
   return {
     session: {
@@ -150,6 +150,28 @@ describe("SiteHeaderContent", () => {
     expect(markup).toContain('href="/settings"')
     expect(markup).not.toContain('href="/database"')
     expect(markup).not.toContain("Sign in")
+  })
+
+  it("hides private navigation for signed-in Collectors with an invalid role", () => {
+    const session = createCollectorSession()
+    const sessionWithInvalidRole = {
+      ...session,
+      user: {
+        ...session.user,
+        role: "owner",
+      },
+    } as unknown as CollectorSession
+
+    const markup = renderToStaticMarkup(
+      <SiteHeaderContent
+        loginRedirectTarget="/"
+        session={sessionWithInvalidRole}
+      />
+    )
+
+    expect(markup).toContain("Sign out")
+    expect(markup).not.toContain('href="/settings"')
+    expect(markup).not.toContain('href="/database"')
   })
 
   it.each([

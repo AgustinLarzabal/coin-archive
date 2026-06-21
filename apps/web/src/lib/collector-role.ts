@@ -1,20 +1,18 @@
 import type { CollectorRole } from "@workspace/auth/client"
 import { isCollectorRole } from "@workspace/auth/client"
 
-type CollectorWithRole = {
+export type CollectorWithRole = {
   role?: string | null
 }
 
 export function getCollectorRole(
   collector: CollectorWithRole | null
 ): CollectorRole | null {
-  if (
-    collector === null ||
-    collector.role === null ||
-    collector.role === undefined
-  ) {
+  const role = collector?.role
+
+  if (role === null || role === undefined) {
     return null
   }
 
-  return isCollectorRole(collector.role) ? collector.role : null
+  return isCollectorRole(role) ? role : null
 }

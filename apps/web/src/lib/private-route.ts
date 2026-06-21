@@ -1,6 +1,7 @@
 import { hasEditorAccess } from "@workspace/auth/client"
 
 import { getCollectorRole } from "./collector-role"
+import type { CollectorWithRole } from "./collector-role"
 import { getSafeAuthRedirect } from "./auth-redirect"
 
 type CollectorRouteRedirect =
@@ -19,10 +20,6 @@ type EditorRouteAccess =
       isAllowed: boolean
     }
   | CollectorRouteRedirect
-
-type CollectorWithRole = {
-  role?: string | null
-}
 
 export function getCollectorRouteRedirect(
   isSignedIn: boolean,

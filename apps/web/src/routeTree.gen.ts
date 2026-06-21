@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoinsCoinIdRouteImport } from './routes/coins.$coinId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -23,6 +24,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatabaseRoute = DatabaseRouteImport.update({
+  id: '/database',
+  path: '/database',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,6 +49,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/database': typeof DatabaseRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/database': typeof DatabaseRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/database': typeof DatabaseRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/settings' | '/coins/$coinId' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/database'
+    | '/login'
+    | '/settings'
+    | '/coins/$coinId'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/settings' | '/coins/$coinId' | '/api/auth/$'
+  to:
+    | '/'
+    | '/database'
+    | '/login'
+    | '/settings'
+    | '/coins/$coinId'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
+    | '/database'
     | '/login'
     | '/settings'
     | '/coins/$coinId'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DatabaseRoute: typeof DatabaseRoute
   LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
   CoinsCoinIdRoute: typeof CoinsCoinIdRoute
@@ -99,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/database': {
+      id: '/database'
+      path: '/database'
+      fullPath: '/database'
+      preLoaderRoute: typeof DatabaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DatabaseRoute: DatabaseRoute,
   LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
   CoinsCoinIdRoute: CoinsCoinIdRoute,

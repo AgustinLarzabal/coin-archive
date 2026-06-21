@@ -38,4 +38,15 @@ describe("startGoogleSignIn", () => {
       callbackURL: "/",
     })
   })
+
+  it("falls back to the catalogue root for blocked in-app callback targets", async () => {
+    const { startGoogleSignIn } = await import("./google-sign-in")
+
+    await startGoogleSignIn("/login")
+
+    expect(signInSocial).toHaveBeenCalledWith({
+      provider: "google",
+      callbackURL: "/",
+    })
+  })
 })

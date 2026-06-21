@@ -26,22 +26,16 @@ describe("getDistributions integration", () => {
         id: circulatingCommemorative.id,
         code: "circulating-commemorative",
         name: "Circulating commemorative",
-        createdAt: circulatingCommemorative.createdAt,
-        updatedAt: circulatingCommemorative.updatedAt,
       },
       {
         id: circulationVariant.id,
         code: "circulation-variant",
         name: "Standard circulation",
-        createdAt: circulationVariant.createdAt,
-        updatedAt: circulationVariant.updatedAt,
       },
       {
         id: standardCirculation.id,
         code: "standard-circulation",
         name: "Standard circulation",
-        createdAt: standardCirculation.createdAt,
-        updatedAt: standardCirculation.updatedAt,
       },
     ])
   })

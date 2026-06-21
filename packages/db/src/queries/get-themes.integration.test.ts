@@ -26,22 +26,16 @@ describe("getThemes integration", () => {
         id: building.id,
         code: "building",
         name: "Building",
-        createdAt: building.createdAt,
-        updatedAt: building.updatedAt,
       },
       {
         id: animal.id,
         code: "animal",
         name: "Theme",
-        createdAt: animal.createdAt,
-        updatedAt: animal.updatedAt,
       },
       {
         id: portrait.id,
         code: "portrait",
         name: "Theme",
-        createdAt: portrait.createdAt,
-        updatedAt: portrait.updatedAt,
       },
     ])
   })

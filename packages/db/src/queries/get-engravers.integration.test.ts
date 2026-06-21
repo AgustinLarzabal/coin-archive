@@ -26,22 +26,16 @@ describe("getEngravers integration", () => {
         id: barth.id,
         code: "barth",
         name: "Barth",
-        createdAt: barth.createdAt,
-        updatedAt: barth.updatedAt,
       },
       {
         id: durand.id,
         code: "durand",
         name: "Engraver",
-        createdAt: durand.createdAt,
-        updatedAt: durand.updatedAt,
       },
       {
         id: ortiz.id,
         code: "ortiz",
         name: "Engraver",
-        createdAt: ortiz.createdAt,
-        updatedAt: ortiz.updatedAt,
       },
     ])
   })

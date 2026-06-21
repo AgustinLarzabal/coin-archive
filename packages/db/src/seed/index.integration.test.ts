@@ -320,7 +320,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "United States National Park Quarter",
       issuer: {
-        id: expect.any(String),
         code: "united-states",
         isoCode: "US",
         name: "United States of America",
@@ -333,7 +332,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "Buenos Aires Transition Half Real",
       issuer: {
-        id: expect.any(String),
         code: "buenos-aires",
         isoCode: "AR",
         name: "Buenos Aires",
@@ -346,7 +344,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "Argentina Copper Peso",
       issuer: {
-        id: expect.any(String),
         code: "argentina",
         isoCode: "AR",
         name: "Argentina",
@@ -357,7 +354,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "Spain 2 Euro",
       issuer: {
-        id: expect.any(String),
         code: "spain",
         isoCode: "ES",
         name: "Spain",
@@ -370,7 +366,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "Buenos Aires 8 Reales 1813",
       issuer: {
-        id: expect.any(String),
         code: "buenos-aires",
         isoCode: "AR",
         name: "Buenos Aires",
@@ -383,7 +378,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "United States Lincoln Cent",
       issuer: {
-        id: expect.any(String),
         code: "united-states",
         isoCode: "US",
         name: "United States of America",
@@ -396,7 +390,6 @@ describe("seed integration", () => {
       id: expect.any(String),
       title: "Argentina Convertible Peso",
       issuer: {
-        id: expect.any(String),
         code: "argentina",
         isoCode: "AR",
         name: "Argentina",

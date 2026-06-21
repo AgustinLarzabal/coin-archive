@@ -12,6 +12,11 @@ const loginSearchSchema = z.object({
   redirect: z.string().optional(),
 })
 
+type LoginSearch = z.infer<typeof loginSearchSchema>
+type LoginPageProps = {
+  redirectTarget: string
+}
+
 const getAuthSession = createServerFn({ method: "GET" }).handler(async () => {
   const [{ auth }, { getRequestHeaders }] = await Promise.all([
     import("@workspace/auth/server"),
@@ -23,14 +28,16 @@ const getAuthSession = createServerFn({ method: "GET" }).handler(async () => {
   })
 })
 
+function getLoginRedirectTarget(search: LoginSearch) {
+  return getSafeAuthRedirect(search.redirect)
+}
+
 export const Route = createFileRoute("/login")({
   validateSearch: loginSearchSchema,
   beforeLoad: async ({ search }) => {
     const session = await getAuthSession()
-    const redirectTarget = getAuthenticatedLoginRedirect(
-      session !== null,
-      search.redirect
-    )
+    const isSignedIn = session !== null
+    const redirectTarget = getAuthenticatedLoginRedirect(isSignedIn, search.redirect)
 
     if (redirectTarget !== null) {
       throw redirect({
@@ -43,12 +50,16 @@ export const Route = createFileRoute("/login")({
 
 function LoginRoute() {
   const search = Route.useSearch()
-  const redirectTarget = getSafeAuthRedirect(search.redirect)
+  const redirectTarget = getLoginRedirectTarget(search)
 
   return <LoginPage redirectTarget={redirectTarget} />
 }
 
-export function LoginPage({ redirectTarget }: { redirectTarget: string }) {
+export function LoginPage({ redirectTarget }: LoginPageProps) {
+  function handleGoogleSignIn() {
+    void startGoogleSignIn(redirectTarget)
+  }
+
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <section className="w-full max-w-md rounded-2xl border bg-card p-8 shadow-sm">
@@ -61,9 +72,7 @@ export function LoginPage({ redirectTarget }: { redirectTarget: string }) {
         <button
           className="mt-6 w-full rounded-md border px-4 py-3 text-sm font-medium"
           type="button"
-          onClick={() => {
-            void startGoogleSignIn(redirectTarget)
-          }}
+          onClick={handleGoogleSignIn}
         >
           Continue with Google
         </button>

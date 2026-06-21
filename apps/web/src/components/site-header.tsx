@@ -1,6 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
-import type { CollectorRole } from "@workspace/auth/client"
 import { hasEditorAccess, isCollectorRole } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { getSafeAuthRedirect } from "../lib/auth-redirect"
@@ -11,6 +10,17 @@ type PrivateNavigationLink = {
   label: string
   to: "/database" | "/settings"
 }
+
+const settingsNavigationLink: PrivateNavigationLink = {
+  label: "Settings",
+  to: "/settings",
+}
+
+const catalogueMaintenanceNavigationLink: PrivateNavigationLink = {
+  label: "Catalogue Maintenance",
+  to: "/database",
+}
+
 type SiteHeaderContentProps = {
   loginRedirectTarget: string
   onSignOut?: () => Promise<void> | void
@@ -46,37 +56,17 @@ export function getLoginRedirectTarget({
 export function getPrivateNavigationLinks(
   session: CollectorSession | null
 ): PrivateNavigationLink[] {
-  const role = getCollectorRole(session)
-
-  if (role === null) {
-    return []
-  }
-
-  const links: PrivateNavigationLink[] = [
-    {
-      label: "Settings",
-      to: "/settings",
-    },
-  ]
-
-  if (hasEditorAccess(role)) {
-    links.unshift({
-      label: "Catalogue Maintenance",
-      to: "/database",
-    })
-  }
-
-  return links
-}
-
-function getCollectorRole(session: CollectorSession | null): CollectorRole | null {
   const role = session?.user.role
 
   if (role === undefined || role === null || !isCollectorRole(role)) {
-    return null
+    return []
   }
 
-  return role
+  if (hasEditorAccess(role)) {
+    return [catalogueMaintenanceNavigationLink, settingsNavigationLink]
+  }
+
+  return [settingsNavigationLink]
 }
 
 export function SiteHeader() {
@@ -141,40 +131,40 @@ export function SiteHeaderContent({
             </nav>
           ) : null}
           <div className="flex items-center gap-2">
-          {session === null ? (
-            <Link
-              to="/login"
-              search={signInSearch}
-              className={buttonVariants({
-                size: "sm",
-                variant: "outline",
-              })}
-            >
-              Sign in
-            </Link>
-          ) : (
-            <>
-              <p className="text-right text-xs leading-tight text-muted-foreground">
-                Signed in as{" "}
-                <span className="font-medium text-foreground">
-                  {collectorLabel}
-                </span>
-              </p>
-              <button
-                type="button"
+            {session === null ? (
+              <Link
+                to="/login"
+                search={signInSearch}
                 className={buttonVariants({
                   size: "sm",
-                  variant: "ghost",
+                  variant: "outline",
                 })}
-                onClick={() => {
-                  void onSignOut?.()
-                }}
               >
-                Sign out
-              </button>
-            </>
-          )}
-          <GitHubLink />
+                Sign in
+              </Link>
+            ) : (
+              <>
+                <p className="text-right text-xs leading-tight text-muted-foreground">
+                  Signed in as{" "}
+                  <span className="font-medium text-foreground">
+                    {collectorLabel}
+                  </span>
+                </p>
+                <button
+                  type="button"
+                  className={buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  })}
+                  onClick={() => {
+                    void onSignOut?.()
+                  }}
+                >
+                  Sign out
+                </button>
+              </>
+            )}
+            <GitHubLink />
           </div>
         </div>
       </div>

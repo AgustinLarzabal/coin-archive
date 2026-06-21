@@ -150,27 +150,32 @@ describe("SiteHeaderContent", () => {
     expect(markup).not.toContain("Sign in")
   })
 
-  it("shows Catalogue Maintenance only for Editors and Admins", () => {
-    const editorMarkup = renderToStaticMarkup(
-      <SiteHeaderContent
-        loginRedirectTarget="/"
-        session={createCollectorSession({ role: "editor" })}
-      />
-    )
-    const adminMarkup = renderToStaticMarkup(
-      <SiteHeaderContent
-        loginRedirectTarget="/"
-        session={createCollectorSession({ role: "admin" })}
-      />
-    )
+  it.each([
+    { role: "collector", showsCatalogueMaintenance: false },
+    { role: "editor", showsCatalogueMaintenance: true },
+    { role: "admin", showsCatalogueMaintenance: true },
+  ] as const)(
+    "shows private navigation for $role access",
+    ({ role, showsCatalogueMaintenance }) => {
+      const markup = renderToStaticMarkup(
+        <SiteHeaderContent
+          loginRedirectTarget="/"
+          session={createCollectorSession({ role })}
+        />
+      )
 
-    expect(editorMarkup).toContain('href="/settings"')
-    expect(editorMarkup).toContain('href="/database"')
-    expect(editorMarkup).toContain("Catalogue Maintenance")
-    expect(adminMarkup).toContain('href="/settings"')
-    expect(adminMarkup).toContain('href="/database"')
-    expect(adminMarkup).toContain("Catalogue Maintenance")
-  })
+      expect(markup).toContain('href="/settings"')
+
+      if (showsCatalogueMaintenance) {
+        expect(markup).toContain('href="/database"')
+        expect(markup).toContain("Catalogue Maintenance")
+        return
+      }
+
+      expect(markup).not.toContain('href="/database"')
+      expect(markup).not.toContain("Catalogue Maintenance")
+    }
+  )
 
   it("wires the sign-out action from the header button", async () => {
     const onSignOut = vi.fn(async () => {})

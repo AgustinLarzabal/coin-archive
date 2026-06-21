@@ -1,9 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
+import type {
+  createCoin,
+  createCoinSurface,
+  createCoinSurfaceEngraver,
+} from "./fixtures"
+import type { coinSurfaceKinds } from "../index"
 
-type FixturesModule = typeof import("./fixtures")
-type CreateCoinInput = Parameters<FixturesModule["createCoin"]>[0]
-type CreateCoinSurfaceInput = Parameters<FixturesModule["createCoinSurface"]>[0]
-type IndexModule = typeof import("../index")
+type CreateCoinInput = Parameters<typeof createCoin>[0]
+type CreateCoinSurfaceInput = Parameters<typeof createCoinSurface>[0]
 
 const fixtureSurfaceUrls = {
   thumbnailUrl: "https://example.com/coins/fixture/obverse-thumbnail",
@@ -22,9 +26,16 @@ describe("testing fixtures", () => {
       string | null | undefined
     >()
 
-    expectTypeOf<FixturesModule["createCoinSurface"]>().toBeFunction()
-    expectTypeOf<FixturesModule["createCoinSurfaceEngraver"]>().toBeFunction()
-    expectTypeOf<"createCoinFace" extends keyof FixturesModule ? true : false>()
+    expectTypeOf<typeof createCoinSurface>().toBeFunction()
+    expectTypeOf<typeof createCoinSurfaceEngraver>().toBeFunction()
+    expectTypeOf<
+      "createCoinFace" extends
+        | "createCoin"
+        | "createCoinSurface"
+        | "createCoinSurfaceEngraver"
+        ? true
+        : false
+    >()
       .toEqualTypeOf<false>()
   })
 
@@ -48,13 +59,13 @@ describe("testing fixtures", () => {
       ],
     } satisfies CreateCoinInput
 
-    expect(createCoinInput.surfaces?.[0]).toMatchObject(fixtureSurfaceUrls)
+    expect(createCoinInput.surfaces[0]).toMatchObject(fixtureSurfaceUrls)
   })
 })
 
 describe("database package exports", () => {
   it("exports coin surface kinds under the surface terminology", () => {
-    expectTypeOf<IndexModule["coinSurfaceKinds"]>().toEqualTypeOf<
+    expectTypeOf<typeof coinSurfaceKinds>().toEqualTypeOf<
       readonly ["obverse", "reverse", "edge-surface"]
     >()
   })

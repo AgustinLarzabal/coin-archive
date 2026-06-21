@@ -1,12 +1,7 @@
 import { eq } from "drizzle-orm"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
-import { coinSurface } from "../schema/coin-surface"
-import {
-  coinSurfaceKinds,
-  type EngravableCoinSurfaceKind,
-  type CoinSurfaceKind,
-} from "../schema/coin-surface"
+import { coinSurface, coinSurfaceKinds } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -34,6 +29,8 @@ import { getOrCreateDefaultCurrency as getDefaultCurrency } from "./default-curr
 import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./default-distribution"
 
 const [, , edgeSurfaceKind] = coinSurfaceKinds
+type CoinSurfaceKind = (typeof coinSurfaceKinds)[number]
+type EngravableCoinSurfaceKind = Exclude<CoinSurfaceKind, typeof edgeSurfaceKind>
 
 type CreateCoinSurfaceDetailsInput = Omit<CreateCoinSurfaceInput, "coinId">
 
@@ -590,12 +587,6 @@ async function getEngravableCoinSurfaceKind(
     .from(coinSurface)
     .where(eq(coinSurface.id, coinSurfaceId))
     .limit(1)
-
-  if (!matchedSurface) {
-    throw new Error(
-      `Missing coin surface ${coinSurfaceId} for engraver fixture`
-    )
-  }
 
   if (matchedSurface.kind === "edge-surface") {
     throw new Error("Coin surface engravers can only target obverse or reverse")

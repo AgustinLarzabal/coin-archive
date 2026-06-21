@@ -1,11 +1,12 @@
 import type { ComponentPropsWithoutRef } from "react"
 import type { CoinDetailRecord } from "@workspace/db"
+import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import { CoinDetailPage } from "./coins.$coinId"
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
+  const actual = await importOriginal<typeof TanstackReactRouter>()
 
   return {
     ...actual,
@@ -193,7 +194,7 @@ describe("CoinDetailPage", () => {
 
     expect(markup).toContain("KM: 1")
     expect(markup).toContain("RIC: 2")
-    expect(markup.match(/data-orientation=\"vertical\"/g)).toHaveLength(1)
+    expect(markup.match(/data-orientation="vertical"/g)).toHaveLength(1)
   })
 
   it("renders a singular year label and one badge for single-year coins", () => {

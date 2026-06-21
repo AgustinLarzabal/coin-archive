@@ -1,11 +1,12 @@
 import type { ComponentPropsWithoutRef } from "react"
 import type { CoinListRecord } from "@workspace/db"
+import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import { CoinCard } from "./coin-card"
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
+  const actual = await importOriginal<typeof TanstackReactRouter>()
 
   return {
     ...actual,

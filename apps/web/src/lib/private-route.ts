@@ -17,7 +17,10 @@ type CollectorRouteRedirect =
 
 type EditorRouteAccess =
   | {
-      isAllowed: boolean
+      isAllowed: false
+    }
+  | {
+      isAllowed: true
     }
   | CollectorRouteRedirect
 

@@ -7,23 +7,33 @@ import {
   CatalogueMaintenancePage,
 } from "./database"
 
+const TEST_CATALOGUE_TIMESTAMP = new Date("2026-01-01T00:00:00.000Z")
+
+function buildCatalogue(overrides: {
+  id: string
+  code: string
+  title: string
+}): CatalogueOption {
+  return {
+    ...overrides,
+    createdAt: TEST_CATALOGUE_TIMESTAMP,
+    updatedAt: TEST_CATALOGUE_TIMESTAMP,
+  }
+}
+
 describe("CatalogueMaintenancePage", () => {
   it("renders a semantic Catalogue maintenance list in the shared private-page presentation", () => {
     const catalogues: CatalogueOption[] = [
-      {
+      buildCatalogue({
         id: "catalogue-2",
         code: "RIC",
         title: "Roman Imperial Coinage",
-        createdAt: new Date("2026-01-01T00:00:00.000Z"),
-        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-      },
-      {
+      }),
+      buildCatalogue({
         id: "catalogue-1",
         code: "KM",
         title: "Standard Catalog of World Coins",
-        createdAt: new Date("2026-01-01T00:00:00.000Z"),
-        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-      },
+      }),
     ]
     const markup = renderToStaticMarkup(
       <CatalogueMaintenancePage catalogues={catalogues} />

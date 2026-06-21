@@ -14,11 +14,17 @@ const DATABASE_PAGE_DESCRIPTION = "Maintain existing Catalogues."
 const DATABASE_SECTION_CLASS_NAME =
   "space-y-3 rounded-2xl border bg-card p-6 shadow-sm"
 
-const getCatalogueMaintenanceData = createServerFn({ method: "GET" }).handler(
-  async () => ({
-    catalogues: await getCatalogues(),
-  })
-)
+type CatalogueMaintenancePageProps = {
+  catalogues: CatalogueOption[]
+}
+
+type CatalogueMaintenanceTableProps = {
+  catalogues: CatalogueOption[]
+}
+
+const getCatalogueMaintenanceCatalogues = createServerFn({
+  method: "GET",
+}).handler(() => getCatalogues())
 
 export const Route = createFileRoute("/database")({
   loader: async () => {
@@ -32,22 +38,28 @@ export const Route = createFileRoute("/database")({
       throw redirect(access)
     }
 
+    if (!access.isAllowed) {
+      return access
+    }
+
+    const catalogues = await getCatalogueMaintenanceCatalogues()
+
     return {
       ...access,
-      ...(access.isAllowed ? await getCatalogueMaintenanceData() : {}),
+      catalogues,
     }
   },
   component: DatabasePage,
 })
 
 function DatabasePage() {
-  const { catalogues = [], isAllowed } = Route.useLoaderData()
+  const loaderData = Route.useLoaderData()
 
-  return isAllowed ? (
-    <CatalogueMaintenancePage catalogues={catalogues} />
-  ) : (
-    <CatalogueMaintenanceAccessDeniedPage />
-  )
+  if (!loaderData.isAllowed) {
+    return <CatalogueMaintenanceAccessDeniedPage />
+  }
+
+  return <CatalogueMaintenancePage catalogues={loaderData.catalogues} />
 }
 
 type CatalogueMaintenanceScaffoldProps = {
@@ -78,13 +90,9 @@ export function CatalogueMaintenancePage({
   )
 }
 
-type CatalogueMaintenancePageProps = {
-  catalogues: CatalogueOption[]
-}
-
 function CatalogueMaintenanceTable({
   catalogues,
-}: CatalogueMaintenancePageProps) {
+}: CatalogueMaintenanceTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[28rem] border-collapse text-left text-sm">

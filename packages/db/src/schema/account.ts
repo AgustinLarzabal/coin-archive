@@ -6,16 +6,12 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core"
 
+import { authSchemaTimestamptzDateColumn } from "./auth-schema"
 import { user } from "./user"
 
 export const accountSchemaNames = {
   providerAccountUniqueIndex: "account_provider_id_account_id_unique_idx",
   userIdIndex: "account_user_id_idx",
-} as const
-
-const timestamptzDateColumn = {
-  withTimezone: true,
-  mode: "date",
 } as const
 
 export const account = pgTable(
@@ -29,18 +25,21 @@ export const account = pgTable(
     providerId: text("provider_id").notNull(),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
-    accessTokenExpiresAt: timestamp("access_token_expires_at", timestamptzDateColumn),
+    accessTokenExpiresAt: timestamp(
+      "access_token_expires_at",
+      authSchemaTimestamptzDateColumn
+    ),
     refreshTokenExpiresAt: timestamp(
       "refresh_token_expires_at",
-      timestamptzDateColumn
+      authSchemaTimestamptzDateColumn
     ),
     scope: text("scope"),
     idToken: text("id_token"),
     password: text("password"),
-    createdAt: timestamp("created_at", timestamptzDateColumn)
+    createdAt: timestamp("created_at", authSchemaTimestamptzDateColumn)
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", timestamptzDateColumn)
+    updatedAt: timestamp("updated_at", authSchemaTimestamptzDateColumn)
       .notNull()
       .defaultNow(),
   },

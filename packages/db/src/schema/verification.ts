@@ -5,13 +5,10 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core"
 
+import { authSchemaTimestamptzDateColumn } from "./auth-schema"
+
 export const verificationSchemaNames = {
   identifierValueUniqueIndex: "verification_identifier_value_unique_idx",
-} as const
-
-const timestamptzDateColumn = {
-  withTimezone: true,
-  mode: "date",
 } as const
 
 export const verification = pgTable(
@@ -20,11 +17,11 @@ export const verification = pgTable(
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
-    expiresAt: timestamp("expires_at", timestamptzDateColumn).notNull(),
-    createdAt: timestamp("created_at", timestamptzDateColumn)
+    expiresAt: timestamp("expires_at", authSchemaTimestamptzDateColumn).notNull(),
+    createdAt: timestamp("created_at", authSchemaTimestamptzDateColumn)
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", timestamptzDateColumn)
+    updatedAt: timestamp("updated_at", authSchemaTimestamptzDateColumn)
       .notNull()
       .defaultNow(),
   },

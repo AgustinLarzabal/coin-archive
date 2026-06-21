@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
+import { setAuthTestEnvironment } from "./test-environment"
+
 const sourceDirectory = dirname(fileURLToPath(import.meta.url))
 
 describe("auth package entrypoints", () => {
@@ -25,11 +27,7 @@ describe("auth package entrypoints", () => {
   })
 
   it("keeps the server entrypoint separate from the client entrypoint", async () => {
-    process.env.DATABASE_URL = "postgresql://coin_archive:coin_archive@localhost:5432/coin_archive"
-    process.env.BETTER_AUTH_SECRET = "test-secret"
-    process.env.BETTER_AUTH_URL = "http://localhost:3000"
-    process.env.GOOGLE_CLIENT_ID = "test-google-client-id"
-    process.env.GOOGLE_CLIENT_SECRET = "test-google-client-secret"
+    setAuthTestEnvironment()
 
     const source = await import("./server")
     const serverFile = await readFile(resolve(sourceDirectory, "server.ts"), "utf8")

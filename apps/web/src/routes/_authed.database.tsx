@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react"
 import type { FormEvent, ReactNode } from "react"
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
+import { createFileRoute, useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CatalogueOption } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
@@ -9,7 +9,7 @@ import { Plus, RotateCcw, Save } from "lucide-react"
 
 import { PrivatePage } from "../components/private-page"
 import { getAuthSession } from "../lib/auth-session"
-import { getEditorRouteAccess } from "../lib/private-route"
+import { getEditorRouteAuthorization } from "../lib/private-route"
 import type {
   CatalogueFieldErrors,
   CatalogueMutationResult,
@@ -22,7 +22,6 @@ import {
   updateCatalogueInputSchema,
 } from "./-database-form"
 
-const DATABASE_ROUTE_PATH = "/database"
 const DATABASE_PAGE_TITLE = "Catalogue Maintenance"
 const DATABASE_PAGE_DESCRIPTION = "Create and maintain Catalogues."
 const DATABASE_SECTION_CLASS_NAME =
@@ -74,26 +73,19 @@ const updateCatalogueMaintenanceCatalogue = createServerFn({
     return submitUpdateCatalogue(collector, data)
   })
 
-export const Route = createFileRoute("/database")({
+export const Route = createFileRoute("/_authed/database")({
   loader: async () => {
     const session = await getAuthSession()
-    const access = getEditorRouteAccess(
-      session?.user ?? null,
-      DATABASE_ROUTE_PATH
-    )
+    const authorization = getEditorRouteAuthorization(session?.user ?? null)
 
-    if ("to" in access) {
-      throw redirect(access)
-    }
-
-    if (!access.isAllowed) {
-      return access
+    if (!authorization.isAllowed) {
+      return authorization
     }
 
     const catalogues = await getCatalogueMaintenanceCatalogues()
 
     return {
-      ...access,
+      ...authorization,
       catalogues,
     }
   },

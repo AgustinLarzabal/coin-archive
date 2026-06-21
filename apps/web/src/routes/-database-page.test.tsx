@@ -18,7 +18,7 @@ vi.mock("@tanstack/react-router", async () => {
 import {
   CatalogueMaintenanceAccessDeniedPage,
   CatalogueMaintenancePage,
-} from "./database"
+} from "./_authed.database"
 
 const TEST_CATALOGUE_TIMESTAMP = new Date("2026-01-01T00:00:00.000Z")
 

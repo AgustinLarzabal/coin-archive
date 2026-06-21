@@ -24,6 +24,14 @@ type EditorRouteAccess =
     }
   | CollectorRouteRedirect
 
+type EditorRouteAuthorization =
+  | {
+      isAllowed: false
+    }
+  | {
+      isAllowed: true
+    }
+
 export function getCollectorRouteRedirect(
   isSignedIn: boolean,
   redirectTarget: string
@@ -65,5 +73,21 @@ export function getEditorRouteAccess(
 
   return {
     isAllowed: role !== null && hasEditorAccess(role),
+  }
+}
+
+export function getEditorRouteAuthorization(
+  collector: CollectorWithRole | null
+): EditorRouteAuthorization {
+  const role = getCollectorRole(collector)
+
+  if (role === null || !hasEditorAccess(role)) {
+    return {
+      isAllowed: false,
+    }
+  }
+
+  return {
+    isAllowed: true,
   }
 }

@@ -22,6 +22,7 @@ import { shape } from "../schema/shape"
 import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { db } from "../index"
+import { createCatalogue as createCatalogueRecord } from "../mutations/create-catalogue"
 import { normalizeCoinSurfaceUrls } from "../normalize-coin-surface-urls"
 import { normalizeCoinComments } from "../normalize-coin-comments"
 import { getOrCreateDefaultComposition as getDefaultComposition } from "./default-composition"
@@ -189,15 +190,7 @@ type CreateCatalogueInput = {
 }
 
 export async function createCatalogue({ code, title }: CreateCatalogueInput) {
-  const [createdCatalogue] = await db
-    .insert(catalogue)
-    .values({
-      code,
-      title,
-    })
-    .returning()
-
-  return createdCatalogue
+  return createCatalogueRecord({ code, title })
 }
 
 type CreateCompositionInput = {

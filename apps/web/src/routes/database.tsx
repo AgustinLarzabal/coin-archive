@@ -16,6 +16,7 @@ import type {
 } from "./-database-form"
 import {
   createCatalogueInputSchema,
+  getCatalogueFieldErrors,
   submitCreateCatalogue,
   submitUpdateCatalogue,
   updateCatalogueInputSchema,
@@ -38,6 +39,11 @@ type CatalogueMaintenanceTableProps = {
 type CatalogueDraft = {
   code: string
   title: string
+}
+
+const EMPTY_CATALOGUE_DRAFT: CatalogueDraft = {
+  code: "",
+  title: "",
 }
 
 const getCatalogueMaintenanceCatalogues = createServerFn({
@@ -134,64 +140,71 @@ function CatalogueMaintenanceScaffold({
   )
 }
 
-function clearCatalogueFeedback(
-  setFieldErrors: (errors: CatalogueFieldErrors) => void,
-  setFormError: (error: string | null) => void,
-  setSuccessMessage: (message: string | null) => void
-) {
-  setFieldErrors({})
-  setFormError(null)
-  setSuccessMessage(null)
-}
-
-function applyCatalogueMutationResult(
-  result: CatalogueMutationResult,
-  setFieldErrors: (errors: CatalogueFieldErrors) => void,
-  setFormError: (error: string | null) => void,
-  setSuccessMessage: (message: string | null) => void
-) {
-  if (result.status === "success") {
-    setFieldErrors({})
-    setFormError(null)
-    setSuccessMessage(result.message)
-    return true
-  }
-
-  setFieldErrors(result.fieldErrors)
-  setFormError(result.formError ?? null)
-  setSuccessMessage(null)
-  return false
-}
-
-function getClientValidationResult(
+function validateCatalogueDraft(
   draft: CatalogueDraft,
   catalogueId?: string
 ): CatalogueMutationResult | null {
-  const parsedInput =
-    catalogueId === undefined
-      ? createCatalogueInputSchema.safeParse(draft)
-      : updateCatalogueInputSchema.safeParse({
-          id: catalogueId,
-          ...draft,
-        })
+  if (catalogueId === undefined) {
+    const parsedInput = createCatalogueInputSchema.safeParse(draft)
+
+    if (parsedInput.success) {
+      return null
+    }
+
+    return {
+      status: "error",
+      fieldErrors: getCatalogueFieldErrors(parsedInput.error.issues),
+    }
+  }
+
+  const parsedInput = updateCatalogueInputSchema.safeParse({
+    id: catalogueId,
+    ...draft,
+  })
 
   if (parsedInput.success) {
     return null
   }
 
-  const fieldErrors: CatalogueFieldErrors = {}
+  return {
+    status: "error",
+    fieldErrors: getCatalogueFieldErrors(parsedInput.error.issues),
+  }
+}
 
-  for (const issue of parsedInput.error.issues) {
-    const field = issue.path.at(0)
+function useCatalogueFormFeedback() {
+  const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
+  const [formError, setFormError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-    if (field === "code" || field === "title") {
-      fieldErrors[field] = issue.message
+  function clear() {
+    setFieldErrors({})
+    setFormError(null)
+    setSuccessMessage(null)
+  }
+
+  function apply(result: CatalogueMutationResult) {
+    if (result.status === "success") {
+      setFieldErrors({})
+      setFormError(null)
+      setSuccessMessage(result.message)
+      return true
     }
+
+    setFieldErrors(result.fieldErrors)
+    setFormError(result.formError ?? null)
+    setSuccessMessage(null)
+    return false
   }
 
   return {
-    status: "error",
     fieldErrors,
+    formError,
+    successMessage,
+    setFieldErrors,
+    setFormError,
+    clear,
+    apply,
   }
 }
 
@@ -216,27 +229,23 @@ export function CatalogueMaintenancePage({
 function CatalogueCreateForm() {
   const router = useRouter()
   const createCatalogue = useServerFn(createCatalogueMaintenanceCatalogue)
-  const [draft, setDraft] = useState<CatalogueDraft>({
-    code: "",
-    title: "",
-  })
-  const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [draft, setDraft] = useState<CatalogueDraft>(EMPTY_CATALOGUE_DRAFT)
+  const {
+    apply,
+    clear,
+    fieldErrors,
+    formError,
+    successMessage,
+  } = useCatalogueFormFeedback()
   const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const validationResult = getClientValidationResult(draft)
+    const validationResult = validateCatalogueDraft(draft)
 
     if (validationResult !== null) {
-      applyCatalogueMutationResult(
-        validationResult,
-        setFieldErrors,
-        setFormError,
-        setSuccessMessage
-      )
+      apply(validationResult)
       return
     }
 
@@ -246,21 +255,13 @@ function CatalogueCreateForm() {
       const result = await createCatalogue({
         data: draft,
       })
-      const isSuccess = applyCatalogueMutationResult(
-        result,
-        setFieldErrors,
-        setFormError,
-        setSuccessMessage
-      )
+      const isSuccess = apply(result)
 
       if (!isSuccess) {
         return
       }
 
-      setDraft({
-        code: "",
-        title: "",
-      })
+      setDraft(EMPTY_CATALOGUE_DRAFT)
       await router.invalidate()
     } finally {
       setIsPending(false)
@@ -271,7 +272,7 @@ function CatalogueCreateForm() {
     field: keyof CatalogueDraft,
     value: CatalogueDraft[keyof CatalogueDraft]
   ) {
-    clearCatalogueFeedback(setFieldErrors, setFormError, setSuccessMessage)
+    clear()
     setDraft((currentDraft) => ({
       ...currentDraft,
       [field]: value,
@@ -371,9 +372,15 @@ function CatalogueMaintenanceRow({
     code: catalogue.code,
     title: catalogue.title,
   })
-  const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const {
+    apply,
+    clear,
+    fieldErrors,
+    formError,
+    setFieldErrors,
+    setFormError,
+    successMessage,
+  } = useCatalogueFormFeedback()
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
@@ -383,7 +390,7 @@ function CatalogueMaintenanceRow({
     })
     setFieldErrors({})
     setFormError(null)
-  }, [catalogue.code, catalogue.title])
+  }, [catalogue.code, catalogue.title, setFieldErrors, setFormError])
 
   const isDirty =
     draft.code !== catalogue.code || draft.title !== catalogue.title
@@ -392,7 +399,7 @@ function CatalogueMaintenanceRow({
     field: keyof CatalogueDraft,
     value: CatalogueDraft[keyof CatalogueDraft]
   ) {
-    clearCatalogueFeedback(setFieldErrors, setFormError, setSuccessMessage)
+    clear()
     setDraft((currentDraft) => ({
       ...currentDraft,
       [field]: value,
@@ -404,21 +411,16 @@ function CatalogueMaintenanceRow({
       code: catalogue.code,
       title: catalogue.title,
     })
-    clearCatalogueFeedback(setFieldErrors, setFormError, setSuccessMessage)
+    clear()
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const validationResult = getClientValidationResult(draft, catalogue.id)
+    const validationResult = validateCatalogueDraft(draft, catalogue.id)
 
     if (validationResult !== null) {
-      applyCatalogueMutationResult(
-        validationResult,
-        setFieldErrors,
-        setFormError,
-        setSuccessMessage
-      )
+      apply(validationResult)
       return
     }
 
@@ -431,12 +433,7 @@ function CatalogueMaintenanceRow({
           ...draft,
         },
       })
-      const isSuccess = applyCatalogueMutationResult(
-        result,
-        setFieldErrors,
-        setFormError,
-        setSuccessMessage
-      )
+      const isSuccess = apply(result)
 
       if (!isSuccess) {
         return

@@ -81,7 +81,9 @@ function hasCatalogueMaintenanceAccess(collector: CollectorWithRole | null) {
   return role !== null && hasEditorAccess(role)
 }
 
-function getFieldErrors(issues: z.ZodIssue[]): CatalogueFieldErrors {
+export function getCatalogueFieldErrors(
+  issues: z.ZodIssue[]
+): CatalogueFieldErrors {
   const fieldErrors: CatalogueFieldErrors = {}
 
   for (const issue of issues) {
@@ -98,7 +100,7 @@ function getFieldErrors(issues: z.ZodIssue[]): CatalogueFieldErrors {
 function createValidationError(issues: z.ZodIssue[]): CatalogueMutationResult {
   return {
     status: "error",
-    fieldErrors: getFieldErrors(issues),
+    fieldErrors: getCatalogueFieldErrors(issues),
   }
 }
 

@@ -210,6 +210,18 @@ describe("CoinDetailPage", () => {
     expect(markup).not.toContain(">-<")
   })
 
+  it("omits the year block when the issue year range is unknown", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      minYear: null,
+      maxYear: null,
+    })
+
+    expect(markup).not.toContain("Year:")
+    expect(markup).not.toContain("Years:")
+    expect(markup).not.toContain(">null</")
+  })
+
   it("formats mintage with grouped digits", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,

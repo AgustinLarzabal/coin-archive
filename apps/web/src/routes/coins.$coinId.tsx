@@ -136,7 +136,10 @@ function CoinRoute() {
 
 export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
-  const hasSingleYear = coin.minYear === coin.maxYear
+  const hasKnownIssueYearRange =
+    coin.minYear !== null && coin.maxYear !== null
+  const hasSingleYear =
+    hasKnownIssueYearRange && coin.minYear === coin.maxYear
   const metadataItems: CoinMetadataItemView[] = [
     {
       key: "issuer",
@@ -271,20 +274,25 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
             >
               {coin.distribution.name}
             </Link>
-            <div className="ml-auto flex items-center gap-1">
-              {hasSingleYear ? "Year:" : "Years:"}
-              <Badge variant="outline" className="tracking-wider uppercase">
-                {coin.minYear}
-              </Badge>
-              {hasSingleYear ? null : (
-                <>
-                  -
-                  <Badge variant="outline" className="tracking-wider uppercase">
-                    {coin.maxYear}
-                  </Badge>
-                </>
-              )}
-            </div>
+            {hasKnownIssueYearRange ? (
+              <div className="ml-auto flex items-center gap-1">
+                {hasSingleYear ? "Year:" : "Years:"}
+                <Badge variant="outline" className="tracking-wider uppercase">
+                  {coin.minYear}
+                </Badge>
+                {hasSingleYear ? null : (
+                  <>
+                    -
+                    <Badge
+                      variant="outline"
+                      className="tracking-wider uppercase"
+                    >
+                      {coin.maxYear}
+                    </Badge>
+                  </>
+                )}
+              </div>
+            ) : null}
           </div>
 
           <Separator />

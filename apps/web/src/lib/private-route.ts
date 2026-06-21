@@ -1,6 +1,6 @@
-import type { CollectorRole } from "@workspace/auth/client"
-import { hasEditorAccess, isCollectorRole } from "@workspace/auth/client"
+import { hasEditorAccess } from "@workspace/auth/client"
 
+import { getCollectorRole } from "./collector-role"
 import { getSafeAuthRedirect } from "./auth-redirect"
 
 type CollectorRouteRedirect =
@@ -22,20 +22,6 @@ type EditorRouteAccess =
 
 type CollectorWithRole = {
   role?: string | null
-}
-
-function getCollectorRole(
-  collector: CollectorWithRole | null
-): CollectorRole | null {
-  if (
-    collector === null ||
-    collector.role === null ||
-    collector.role === undefined
-  ) {
-    return null
-  }
-
-  return isCollectorRole(collector.role) ? collector.role : null
 }
 
 export function getCollectorRouteRedirect(

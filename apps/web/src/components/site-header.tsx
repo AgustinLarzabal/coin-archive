@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
-import { hasEditorAccess, isCollectorRole } from "@workspace/auth/client"
+import { hasEditorAccess } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
+import { getCollectorRole } from "../lib/collector-role"
 import { getSafeAuthRedirect } from "../lib/auth-redirect"
 import { GitHubLink } from "./github-link"
 
@@ -56,9 +57,9 @@ export function getLoginRedirectTarget({
 export function getPrivateNavigationLinks(
   session: CollectorSession | null
 ): PrivateNavigationLink[] {
-  const role = session?.user.role
+  const role = getCollectorRole(session?.user ?? null)
 
-  if (role === undefined || role === null || !isCollectorRole(role)) {
+  if (role === null) {
     return []
   }
 

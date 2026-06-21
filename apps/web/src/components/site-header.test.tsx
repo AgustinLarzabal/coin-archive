@@ -129,6 +129,8 @@ describe("SiteHeaderContent", () => {
     expect(markup).toContain("Coin Archive")
     expect(markup).toContain("Sign in")
     expect(markup).toContain("/login?redirect=%2Fcoins%2Fcoin-1")
+    expect(markup).not.toContain('href="/settings"')
+    expect(markup).not.toContain('href="/database"')
     expect(markup).not.toContain("Sign out")
   })
 

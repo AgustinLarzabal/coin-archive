@@ -11,7 +11,6 @@ import {
 
 import {
   authSchemaTimestamptzDateColumn,
-  collectorRoleValues,
   defaultCollectorRole,
 } from "./auth-schema"
 

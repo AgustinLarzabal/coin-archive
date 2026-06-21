@@ -1,11 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
 import {
   getAuthenticatedLoginRedirect,
   getSafeAuthRedirect,
 } from "../lib/auth-redirect"
+import { getAuthSession } from "../lib/auth-session"
 import { startGoogleSignIn } from "../lib/google-sign-in"
 
 const loginSearchSchema = z.object({
@@ -16,17 +16,6 @@ type LoginSearch = z.infer<typeof loginSearchSchema>
 type LoginPageProps = {
   redirectTarget: string
 }
-
-const getAuthSession = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ auth }, { getRequestHeaders }] = await Promise.all([
-    import("@workspace/auth/server"),
-    import("@tanstack/react-start/server"),
-  ])
-
-  return auth.api.getSession({
-    headers: getRequestHeaders(),
-  })
-})
 
 function getLoginRedirectTarget(search: LoginSearch) {
   return getSafeAuthRedirect(search.redirect)

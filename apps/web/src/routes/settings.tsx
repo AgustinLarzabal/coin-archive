@@ -1,27 +1,17 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { createServerFn } from "@tanstack/react-start"
 
 import { PrivatePage } from "../components/private-page"
+import { getAuthSession } from "../lib/auth-session"
 import { getCollectorRouteRedirect } from "../lib/private-route"
 
 const SETTINGS_ROUTE_PATH = "/settings"
 
-const getAuthSession = createServerFn({ method: "GET" }).handler(async () => {
-  const [{ auth }, { getRequestHeaders }] = await Promise.all([
-    import("@workspace/auth/server"),
-    import("@tanstack/react-start/server"),
-  ])
-
-  return auth.api.getSession({
-    headers: getRequestHeaders(),
-  })
-})
-
 export const Route = createFileRoute("/settings")({
   beforeLoad: async () => {
     const session = await getAuthSession()
+    const isSignedIn = session !== null
     const loginRedirect = getCollectorRouteRedirect(
-      session !== null,
+      isSignedIn,
       SETTINGS_ROUTE_PATH
     )
 

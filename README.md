@@ -63,24 +63,29 @@ Useful database maintenance commands:
 
 For the current demo catalogue, resetting and reseeding local data is an acceptable workflow when schema or seed content changes: `pnpm db:reset`, `pnpm db:start`, `pnpm db:migrate`, then `pnpm db:seed`.
 
-## Measurement demo
+## Homepage filter demo
 
-After `pnpm db:seed`, the homepage demo data includes Coins with:
+The homepage currently ships five exact-match filters:
 
-- all three measurements known, such as `Argentina Convertible Peso`
-- only Diameter known, such as `Argentina Copper Peso`
-- Weight and Diameter known but unknown Thickness, such as `United States Lincoln Cent`
+- `issuer`
+- `distribution`
+- `engraver`
+- `ruler`
+- `theme`
 
-Homepage measurement filters use grams for Weight, millimeters for Diameter, and millimeters for Thickness. The public URL search parameters are `minWeight`, `maxWeight`, `minDiameter`, `maxDiameter`, `minThickness`, and `maxThickness`.
+These are the only homepage URL search parameters currently accepted by the app search schema, the home filter UI, and the `getCoins` query contract.
 
-Measurement filters compose with each other and with the other homepage filters using AND semantics. Coins with unknown values are excluded only for the specific measurement being filtered. For example, a Weight filter excludes Coins with unknown Weight but still allows unknown Diameter or Thickness.
+After `pnpm db:seed`, the seeded demo data supports quick manual checks:
 
-The seeded demo data is arranged so local manual checks are easy:
+- `issuer=spain` matches `Spain 2 Euro`
+- `distribution=standard-circulation` matches the standard circulation examples in the demo catalogue
+- `engraver=mariano-benlliure` matches `Spain 2 Euro`
+- `ruler=charles-iii` matches the seeded Charles III examples
+- `theme=map` matches `Spain 2 Euro`
 
-- `minWeight=6&maxWeight=7` matches `Argentina Convertible Peso` only
-- `minDiameter=23&maxDiameter=24` matches `Argentina Convertible Peso` and `Buenos Aires 5 Decimos`
-- `minThickness=1.9&maxThickness=2.1` matches `Argentina Convertible Peso`, `Buenos Aires 8 Reales 1813`, and `United States National Park Quarter`
-- combining all three ranges narrows the result to `Argentina Convertible Peso`
+The supported homepage filters compose with each other using AND semantics. For example, `issuer=spain&theme=map` keeps the Spain Euro example only.
+
+Other catalogue dimensions in [`CONTEXT.md`](/CONTEXT.md), such as measurement, mint, orientation, currency, and numeric face value, are real domain concepts but are not currently shipped as homepage filters. Keep the root README aligned with the app contract; use [`packages/db/README.md`](/packages/db/README.md) and the glossary for deeper domain and schema context.
 
 ## Composition demo
 
@@ -89,27 +94,6 @@ After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and 
 - shared seeded Compositions include `Silver (.900)`, `Copper`, `Copper-nickel`, and `Copper-nickel clad`
 - seeded Coins intentionally reuse those Compositions across multiple records rather than embedding free-text material labels per Coin
 - deleting a Composition that is still referenced by a Coin is rejected by the database
-
-## Mint demo
-
-After `pnpm db:seed`, the demo catalogue includes reusable Mints, the homepage supports exact Mint filtering through the singular `mint` URL parameter, and Coin cards show a visible `Mints:` row when a Coin has one or more Mint Attributions.
-
-- shared seeded Mints include `Royal Mint of Madrid`, `Buenos Aires Mint`, `Philadelphia Mint`, and `Denver Mint`
-- the demo data includes `Spain 2 Euro` with `Royal Mint of Madrid`
-- the demo data includes `Buenos Aires 8 Reales 1813` with `Buenos Aires Mint`
-- the demo data includes `United States Lincoln Cent` with `Philadelphia Mint`
-- the demo data includes `United States National Park Quarter` with both `Philadelphia Mint` and `Denver Mint`
-- the homepage keeps the debug JSON block for manual verification, and each Coin record includes `mints`
-- Mint filters compose with the other homepage filters using AND semantics
-
-The seeded demo data supports quick manual checks:
-
-- `mint=royal-mint-of-madrid` matches `Spain 2 Euro`, shows `Mints: Royal Mint of Madrid`, and includes `mints` in that Coin's debug JSON
-- `mint=buenos-aires-mint` matches `Buenos Aires 8 Reales 1813`
-- `mint=philadelphia-mint` matches `United States Lincoln Cent` and `United States National Park Quarter`
-- `mint=denver-mint` matches `United States National Park Quarter`, showing the multi-mint demo Coin
-- `mint=philadelphia-mint&currency=united-states-dollar` keeps both United States Mint examples
-- `mint=philadelphia-mint&composition=copper-nickel-clad` narrows the result to `United States National Park Quarter`
 
 ## Theme demo
 
@@ -127,42 +111,8 @@ The seeded demo data supports quick manual checks:
 - `theme=map` matches `Spain 2 Euro`, shows `Themes: Building, Map`, and includes `themes` in that Coin's debug JSON
 - `theme=animal` matches `United States National Park Quarter`
 - `theme=portrait` matches `Argentina Sol de Mayo Peso`
-- `theme=building&currency=euro` keeps the Spain Euro example only
+- `theme=building&issuer=spain` keeps the Spain Euro example only
 - `theme=MAP` behaves the same as `theme=map`
-
-## Orientation demo
-
-After `pnpm db:seed`, the demo catalogue includes reusable Orientations, the homepage supports exact Orientation filtering through the singular `orientation` URL parameter, and Coin cards show a visible `Orientation:` row when a Coin has a known Orientation.
-
-- shared seeded Orientations include `Coin alignment` and `Medal alignment`
-- the demo data includes `Spain 2 Euro` with `Medal alignment`
-- the demo data includes `United States National Park Quarter` with `Coin alignment`
-- the demo data keeps `Argentina Copper Peso` without an Orientation so unknown Orientation behavior remains visible
-- the homepage keeps the debug JSON block for manual verification, and each Coin record includes `orientation`
-- Orientation filters compose with the other homepage filters using AND semantics
-
-The seeded demo data supports quick manual checks:
-
-- `orientation=medal-alignment` matches `Spain 2 Euro`, shows `Orientation: Medal alignment`, and includes `orientation` in that Coin's debug JSON
-- `orientation=coin-alignment` matches the seeded United States and Buenos Aires examples with known Coin alignment
-- `orientation=COIN-ALIGNMENT` behaves the same as `orientation=coin-alignment`
-- `orientation=medal-alignment&currency=euro` keeps the Spain Euro example only
-
-## Face Value and Currency demo
-
-After `pnpm db:seed`, every demo Coin also has a required Face Value with a reusable Currency, and the homepage supports exact Currency plus numeric Face Value range filtering.
-
-- shared seeded Currencies include `Euro`, `Argentine peso`, `Real`, and `United States dollar`
-- the demo data includes `Spain 2 Euro` with Face Value text `2 Euros`, numeric value `2`, Currency `Euro`, and Issue Year Range `2002-2026`
-- homepage Currency URLs use the stable Currency Code in `currency`
-- homepage Face Value range URLs use `minValue` and `maxValue`
-- Currency and Face Value filters compose with the existing homepage filters using AND semantics
-
-The seeded demo data supports quick manual checks:
-
-- `currency=euro` matches the Spain Euro example only
-- `minValue=0.5&maxValue=1` matches `Buenos Aires 5 Decimos`, `Buenos Aires Transition Half Real`, `Argentina Sol de Mayo Peso`, `Argentina Copper Peso`, `Argentina Convertible Peso`, and `United States Flowing Hair Dollar`
-- `currency=argentine-peso&minValue=0.2&maxValue=1` narrows the results to Argentine peso denominations in that numeric range
 
 Seed data is for local exploration and manual verification only. Automated behavior tests should use purpose-built fixtures instead of depending on seeded titles or seeded IDs.
 

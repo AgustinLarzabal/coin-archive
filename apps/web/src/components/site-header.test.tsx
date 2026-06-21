@@ -1,6 +1,7 @@
 import { isValidElement } from "react"
+import type React from "react"
 import type { ReactElement, ReactNode } from "react"
-import { authClient } from "@workspace/auth/client"
+import type { authClient } from "@workspace/auth/client"
 import {
   getCollectorIdentityLabel,
   getLoginRedirectTarget,
@@ -189,5 +190,15 @@ describe("getLoginRedirectTarget", () => {
         searchStr: "?issuer=spain",
       })
     ).toBe("/coins/coin-1?issuer=spain#details")
+  })
+
+  it("falls back to the catalogue when already on the login page", () => {
+    expect(
+      getLoginRedirectTarget({
+        hash: "",
+        pathname: "/login",
+        searchStr: "",
+      })
+    ).toBe("/")
   })
 })

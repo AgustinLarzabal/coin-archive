@@ -26,6 +26,7 @@ describe("getSafeAuthRedirect", () => {
     expect(getAuthenticatedLoginRedirect(true, "/coins/coin-1")).toBe(
       "/coins/coin-1"
     )
+    expect(getAuthenticatedLoginRedirect(true, "/login")).toBe("/")
     expect(getAuthenticatedLoginRedirect(true, "https://example.com")).toBe("/")
   })
 })

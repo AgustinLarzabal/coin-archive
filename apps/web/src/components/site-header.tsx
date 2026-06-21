@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
+import { getSafeAuthRedirect } from "../lib/auth-redirect"
 import { GitHubLink } from "./github-link"
 
 type CollectorSession = typeof authClient.$Infer.Session
@@ -33,7 +34,7 @@ export function getLoginRedirectTarget({
 }) {
   const redirectTarget = `${pathname}${searchStr}${hash}`
 
-  return redirectTarget === "" ? "/" : redirectTarget
+  return getSafeAuthRedirect(redirectTarget)
 }
 
 export function SiteHeader() {

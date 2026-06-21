@@ -538,7 +538,7 @@ const flattenFields = <T = unknown,>(
 
 const getFieldsMap = <T = unknown,>(
   fields: FilterFieldsConfig<T>
-): Record<string, FilterFieldConfig<T>> => {
+): Partial<Record<string, FilterFieldConfig<T>>> => {
   const flatFields = flattenFields(fields)
   return flatFields.reduce(
     (acc, field) => {
@@ -593,6 +593,9 @@ const createOperatorsFromI18n = (
 export const DEFAULT_OPERATORS: Record<string, FilterOperator[]> =
   createOperatorsFromI18n(DEFAULT_I18N)
 
+type OperatorMap = ReturnType<typeof createOperatorsFromI18n>
+type OperatorFieldType = keyof OperatorMap
+
 // Helper function to get operators for a field
 const getOperatorsForField = <T = unknown,>(
   field: FilterFieldConfig<T>,
@@ -616,7 +619,10 @@ const getOperatorsForField = <T = unknown,>(
     return operators.multiselect
   }
 
-  return operators[fieldType] || operators.select
+  const operatorKey: OperatorFieldType =
+    fieldType === "text" || fieldType === "custom" ? fieldType : "select"
+
+  return operators[operatorKey]
 }
 
 interface FilterOperatorDropdownProps<T = unknown> {
@@ -724,13 +730,15 @@ function SelectOptionsPopover<T = unknown>({
   }, [highlightedIndex, open, baseId])
 
   const isMultiSelect = field.type === "multiselect" || values.length > 1
-  const effectiveValues =
-    (field.value !== undefined ? (field.value as T[]) : values) || []
+  const effectiveValues = field.value ?? values
+  const fieldOptions = field.options ?? []
 
-  const selectedOptions =
-    field.options?.filter((opt) => effectiveValues.includes(opt.value)) || []
-  const unselectedOptions =
-    field.options?.filter((opt) => !effectiveValues.includes(opt.value)) || []
+  const selectedOptions = fieldOptions.filter((opt) =>
+    effectiveValues.includes(opt.value)
+  )
+  const unselectedOptions = fieldOptions.filter(
+    (opt) => !effectiveValues.includes(opt.value)
+  )
 
   // Filter options based on search input
   const filteredSelectedOptions = selectedOptions // Keep all selected visible
@@ -797,30 +805,28 @@ function SelectOptionsPopover<T = unknown>({
               } else if (e.key === "Enter" && highlightedIndex >= 0) {
                 e.preventDefault()
                 const option = allFilteredOptions[highlightedIndex]
-                if (option) {
-                  const isSelected = effectiveValues.includes(option.value as T)
-                  const next = isSelected
-                    ? (effectiveValues.filter((v) => v !== option.value) as T[])
-                    : isMultiSelect
-                      ? ([...effectiveValues, option.value] as T[])
-                      : ([option.value] as T[])
+                const isSelected = effectiveValues.includes(option.value)
+                const next = isSelected
+                  ? effectiveValues.filter((v) => v !== option.value)
+                  : isMultiSelect
+                    ? [...effectiveValues, option.value]
+                    : [option.value]
 
-                  if (
-                    !isSelected &&
-                    isMultiSelect &&
-                    field.maxSelections &&
-                    next.length > field.maxSelections
-                  ) {
-                    return
-                  }
-
-                  if (field.onValueChange) {
-                    field.onValueChange(next)
-                  } else {
-                    onChange(next)
-                  }
-                  if (!isMultiSelect) handleClose()
+                if (
+                  !isSelected &&
+                  isMultiSelect &&
+                  field.maxSelections &&
+                  next.length > field.maxSelections
+                ) {
+                  return
                 }
+
+                if (field.onValueChange) {
+                  field.onValueChange(next)
+                } else {
+                  onChange(next)
+                }
+                if (!isMultiSelect) handleClose()
               }
               e.stopPropagation()
             }}
@@ -867,7 +873,7 @@ function SelectOptionsPopover<T = unknown>({
                       onCheckedChange={() => {
                         const next = effectiveValues.filter(
                           (v) => v !== option.value
-                        ) as T[]
+                        )
                         if (field.onValueChange) {
                           field.onValueChange(next)
                         } else {
@@ -955,9 +961,9 @@ function SelectOptionsPopover<T = unknown>({
   return (
     <DropdownMenu
       open={open}
-      onOpenChange={(open) => {
-        setOpen(open)
-        if (!open) {
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+        if (!isOpen) {
           setTimeout(() => setSearchInput(""), 200)
         }
       }}
@@ -967,7 +973,7 @@ function SelectOptionsPopover<T = unknown>({
           <Button variant="outline" size={context.size}>
             <div className="flex items-center gap-1.5">
               {field.customValueRenderer ? (
-                field.customValueRenderer(values, field.options || [])
+                field.customValueRenderer(values, fieldOptions)
               ) : (
                 <>
                   {selectedOptions.length > 0 && (
@@ -1282,14 +1288,9 @@ function FilterSubmenuContent<T = unknown>({
               } else if (e.key === "Enter" && highlightedIndex >= 0) {
                 e.preventDefault()
                 const option = filteredOptions[highlightedIndex]
-                if (option) {
-                  onToggle(
-                    option.value as T,
-                    currentValues.includes(option.value)
-                  )
-                  if (!isMultiSelect) {
-                    onBack?.()
-                  }
+                onToggle(option.value, currentValues.includes(option.value))
+                if (!isMultiSelect) {
+                  onBack?.()
                 }
               } else if (e.key === "Escape") {
                 e.preventDefault()
@@ -1329,14 +1330,9 @@ function FilterSubmenuContent<T = unknown>({
               } else if (e.key === "Enter" && highlightedIndex >= 0) {
                 e.preventDefault()
                 const option = filteredOptions[highlightedIndex]
-                if (option) {
-                  onToggle(
-                    option.value as T,
-                    currentValues.includes(option.value)
-                  )
-                  if (!isMultiSelect) {
-                    onBack?.()
-                  }
+                onToggle(option.value, currentValues.includes(option.value))
+                if (!isMultiSelect) {
+                  onBack?.()
                 }
               } else if (e.key === "Escape") {
                 e.preventDefault()
@@ -1374,9 +1370,7 @@ function FilterSubmenuContent<T = unknown>({
                       onSelect={(e) => {
                         if (isMultiSelect) e.preventDefault()
                       }}
-                      onCheckedChange={() =>
-                        onToggle(option.value as T, isSelected)
-                      }
+                      onCheckedChange={() => onToggle(option.value, isSelected)}
                     >
                       {option.icon && option.icon}
                       <span className="truncate">{option.label}</span>
@@ -1522,21 +1516,17 @@ export function Filters<T = unknown>({
   const addFilter = useCallback(
     (fieldKey: string) => {
       const field = fieldsMap[fieldKey]
-      if (field && field.key) {
-        const defaultOperator =
-          field.defaultOperator ||
-          (field.type === "multiselect" ? "is_any_of" : "is")
-        const defaultValues: unknown[] = field.type === "text" ? [""] : []
-        const newFilter = createFilter<T>(
-          fieldKey,
-          defaultOperator,
-          defaultValues as T[]
-        )
-        setLastAddedFilterId(newFilter.id)
-        onChange([...filters, newFilter])
-        setAddFilterOpen(false)
-        setMenuSearchInput("")
-      }
+      if (!field) return
+
+      const defaultOperator =
+        field.defaultOperator ||
+        (field.type === "multiselect" ? "is_any_of" : "is")
+      const defaultValues: T[] = field.type === "text" ? ["" as T] : []
+      const newFilter = createFilter<T>(fieldKey, defaultOperator, defaultValues)
+      setLastAddedFilterId(newFilter.id)
+      onChange([...filters, newFilter])
+      setAddFilterOpen(false)
+      setMenuSearchInput("")
     },
     [fieldsMap, filters, onChange]
   )
@@ -1655,7 +1645,6 @@ export function Filters<T = unknown>({
                         ) {
                           const field = filteredFields[highlightedIndex]
                           const hasSubMenu =
-                            field &&
                             (field.type === "select" ||
                               field.type === "multiselect") &&
                             field.options?.length
@@ -1793,10 +1782,8 @@ export function Filters<T = unknown>({
                                   onToggle={(value, isSelected) => {
                                     if (isMultiSelect) {
                                       const nextValues = isSelected
-                                        ? (currentValues.filter(
-                                            (v) => v !== value
-                                          ) as T[])
-                                        : ([...currentValues, value] as T[])
+                                        ? currentValues.filter((v) => v !== value)
+                                        : [...currentValues, value]
 
                                       if (sessionFilter) {
                                         if (nextValues.length === 0) {

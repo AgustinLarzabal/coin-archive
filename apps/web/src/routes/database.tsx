@@ -1,5 +1,8 @@
 import type { ReactNode } from "react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
+import { getCatalogues } from "@workspace/db"
+import type { CatalogueOption } from "@workspace/db"
 
 import { PrivatePage } from "../components/private-page"
 import { getAuthSession } from "../lib/auth-session"
@@ -7,10 +10,15 @@ import { getEditorRouteAccess } from "../lib/private-route"
 
 const DATABASE_ROUTE_PATH = "/database"
 const DATABASE_PAGE_TITLE = "Catalogue Maintenance"
-const DATABASE_PAGE_DESCRIPTION =
-  "Maintain catalogue data here as Editor and Admin tools are added."
+const DATABASE_PAGE_DESCRIPTION = "Maintain existing Catalogues."
 const DATABASE_SECTION_CLASS_NAME =
   "space-y-3 rounded-2xl border bg-card p-6 shadow-sm"
+
+const getCatalogueMaintenanceData = createServerFn({ method: "GET" }).handler(
+  async () => ({
+    catalogues: await getCatalogues(),
+  })
+)
 
 export const Route = createFileRoute("/database")({
   loader: async () => {
@@ -24,16 +32,19 @@ export const Route = createFileRoute("/database")({
       throw redirect(access)
     }
 
-    return access
+    return {
+      ...access,
+      ...(access.isAllowed ? await getCatalogueMaintenanceData() : {}),
+    }
   },
   component: DatabasePage,
 })
 
 function DatabasePage() {
-  const { isAllowed } = Route.useLoaderData()
+  const { catalogues = [], isAllowed } = Route.useLoaderData()
 
   return isAllowed ? (
-    <CatalogueMaintenancePage />
+    <CatalogueMaintenancePage catalogues={catalogues} />
   ) : (
     <CatalogueMaintenanceAccessDeniedPage />
   )
@@ -56,14 +67,49 @@ function CatalogueMaintenanceScaffold({
   )
 }
 
-export function CatalogueMaintenancePage() {
+export function CatalogueMaintenancePage({
+  catalogues,
+}: CatalogueMaintenancePageProps) {
   return (
     <CatalogueMaintenanceScaffold>
       <h2 className="text-lg font-semibold">Catalogues</h2>
-      <p className="text-sm text-muted-foreground">
-        Catalogue maintenance for Catalogues will appear here later.
-      </p>
+      <CatalogueMaintenanceTable catalogues={catalogues} />
     </CatalogueMaintenanceScaffold>
+  )
+}
+
+type CatalogueMaintenancePageProps = {
+  catalogues: CatalogueOption[]
+}
+
+function CatalogueMaintenanceTable({
+  catalogues,
+}: CatalogueMaintenancePageProps) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b">
+            <th className="py-2 pr-4 font-medium" scope="col">
+              Code
+            </th>
+            <th className="py-2 font-medium" scope="col">
+              Title
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {catalogues.map((catalogue) => (
+            <tr className="border-b last:border-b-0" key={catalogue.id}>
+              <td className="py-3 pr-4 align-top font-medium">
+                {catalogue.code}
+              </td>
+              <td className="py-3 align-top">{catalogue.title}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 

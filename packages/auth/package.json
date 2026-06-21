@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-auth": "^1.6.20",
+    "@workspace/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@tanstack/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  }
+}

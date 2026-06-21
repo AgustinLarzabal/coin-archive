@@ -71,6 +71,13 @@
       "when": 1781740800000,
       "tag": "0009_prevent_issuer_grouping_cycles",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782033993465,
+      "tag": "0010_dapper_yellowjacket",
+      "breakpoints": true
     }
   ]
 }

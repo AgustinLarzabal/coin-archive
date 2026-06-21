@@ -5,6 +5,7 @@ const databaseUrl = getDatabaseUrl()
 
 export default defineConfig({
   schema: [
+    "./src/schema/account.ts",
     "./src/schema/catalogue.ts",
     "./src/schema/coin.ts",
     "./src/schema/coin-surface.ts",
@@ -23,10 +24,13 @@ export default defineConfig({
     "./src/schema/rim.ts",
     "./src/schema/ruler-group.ts",
     "./src/schema/ruler.ts",
+    "./src/schema/session.ts",
     "./src/schema/shape.ts",
     "./src/schema/technique.ts",
     "./src/schema/coin-ruler.ts",
     "./src/schema/theme.ts",
+    "./src/schema/user.ts",
+    "./src/schema/verification.ts",
   ],
   out: "./migrations",
   dialect: "postgresql",

@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { afterAll, beforeEach } from "vitest"
 
+import { account } from "../schema/account"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
@@ -21,9 +22,12 @@ import { orientation } from "../schema/orientation"
 import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
+import { session } from "../schema/session"
 import { shape } from "../schema/shape"
 import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
+import { user } from "../schema/user"
+import { verification } from "../schema/verification"
 
 type TestDatabase = ReturnType<typeof drizzle>
 
@@ -39,6 +43,9 @@ export function createTestDatabase(databaseUrl: string) {
 }
 
 export async function clearTestData(database: TestDatabase) {
+  await database.delete(account)
+  await database.delete(session)
+  await database.delete(verification)
   await database.delete(coinSurfaceEngraver)
   await database.delete(coinReference)
   await database.delete(coinTheme)
@@ -61,6 +68,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(shape)
   await database.delete(technique)
   await database.delete(theme)
+  await database.delete(user)
 }
 
 export function useTestDatabaseIsolation(database: TestDatabase) {

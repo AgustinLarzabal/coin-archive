@@ -4,6 +4,8 @@ import { z } from "zod"
 import { getCollectorRole } from "../lib/collector-role"
 import type { CollectorWithRole } from "../lib/collector-role"
 
+type CatalogueFieldName = "code" | "title"
+
 export const CATALOGUE_AUTHORIZATION_ERROR =
   "You are not authorized to maintain Catalogues."
 export const CATALOGUE_DUPLICATE_CODE_ERROR =
@@ -11,6 +13,9 @@ export const CATALOGUE_DUPLICATE_CODE_ERROR =
 export const CATALOGUE_GENERIC_SAVE_ERROR =
   "Unable to save Catalogue right now."
 export const CATALOGUE_MISSING_ERROR = "Catalogue no longer exists."
+
+const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
+const DUPLICATE_CATALOGUE_CODE_CONSTRAINT = "catalogue_code_lower_unique_idx"
 
 const catalogueCodeSchema = z
   .string()
@@ -33,7 +38,7 @@ export const updateCatalogueInputSchema = createCatalogueInputSchema.extend({
   id: z.uuid(),
 })
 
-export type CatalogueFieldErrors = Partial<Record<"code" | "title", string>>
+export type CatalogueFieldErrors = Partial<Record<CatalogueFieldName, string>>
 
 export type CatalogueMutationResult =
   | {
@@ -81,6 +86,10 @@ function hasCatalogueMaintenanceAccess(collector: CollectorWithRole | null) {
   return role !== null && hasEditorAccess(role)
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
 export function getCatalogueFieldErrors(
   issues: z.ZodIssue[]
 ): CatalogueFieldErrors {
@@ -105,16 +114,21 @@ function createValidationError(issues: z.ZodIssue[]): CatalogueMutationResult {
 }
 
 function isDuplicateCatalogueCodeError(error: unknown) {
+  if (!isObjectRecord(error)) {
+    return false
+  }
+
+  const postgresError = "cause" in error ? error.cause : error
+
+  if (!isObjectRecord(postgresError)) {
+    return false
+  }
+
   return (
-    typeof error === "object" &&
-    error !== null &&
-    "cause" in error &&
-    typeof error.cause === "object" &&
-    error.cause !== null &&
-    "code" in error.cause &&
-    error.cause.code === "23505" &&
-    "constraint_name" in error.cause &&
-    error.cause.constraint_name === "catalogue_code_lower_unique_idx"
+    "code" in postgresError &&
+    postgresError.code === DUPLICATE_KEY_POSTGRES_ERROR_CODE &&
+    "constraint_name" in postgresError &&
+    postgresError.constraint_name === DUPLICATE_CATALOGUE_CODE_CONSTRAINT
   )
 }
 

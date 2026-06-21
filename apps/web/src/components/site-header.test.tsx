@@ -1,5 +1,6 @@
 import { isValidElement } from "react"
 import type { ReactElement, ReactNode } from "react"
+import { authClient } from "@workspace/auth/client"
 import {
   getCollectorIdentityLabel,
   getLoginRedirectTarget,
@@ -8,6 +9,11 @@ import {
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
+
+type CollectorSession = typeof authClient.$Infer.Session
+type HeaderButtonElement = ReactElement<{
+  onClick?: () => Promise<void> | void
+}>
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof TanstackReactRouter>()
@@ -74,6 +80,43 @@ function findElement(
   return findElement(elementNode.props.children, predicate)
 }
 
+function createCollectorSession({
+  email = "collector@example.com",
+  name = "",
+}: {
+  email?: string
+  name?: string
+} = {}): CollectorSession {
+  return {
+    session: {
+      id: "session-1",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: "collector-1",
+      expiresAt: new Date(),
+      token: "token-1",
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: "collector-1",
+      name,
+      email,
+      emailVerified: true,
+      image: null,
+      role: "collector",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  }
+}
+
+function findButtonElement(node: ReactNode): HeaderButtonElement | null {
+  const button = findElement(node, (candidate) => candidate.type === "button")
+
+  return button as HeaderButtonElement | null
+}
+
 describe("SiteHeaderContent", () => {
   it("shows a sign-in path to signed-out visitors", () => {
     const markup = renderToStaticMarkup(
@@ -90,28 +133,10 @@ describe("SiteHeaderContent", () => {
     const markup = renderToStaticMarkup(
       <SiteHeaderContent
         loginRedirectTarget="/"
-        session={{
-          session: {
-            id: "session-1",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            userId: "collector-1",
-            expiresAt: new Date(),
-            token: "token-1",
-            ipAddress: null,
-            userAgent: null,
-          },
-          user: {
-            id: "collector-1",
-            name: "Ada Lovelace",
-            email: "ada@example.com",
-            emailVerified: true,
-            image: null,
-            role: "collector",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        }}
+        session={createCollectorSession({
+          email: "ada@example.com",
+          name: "Ada Lovelace",
+        })}
       />
     )
 
@@ -125,37 +150,13 @@ describe("SiteHeaderContent", () => {
     const element = SiteHeaderContent({
       loginRedirectTarget: "/",
       onSignOut,
-      session: {
-        session: {
-          id: "session-1",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          userId: "collector-1",
-          expiresAt: new Date(),
-          token: "token-1",
-          ipAddress: null,
-          userAgent: null,
-        },
-        user: {
-          id: "collector-1",
-          name: "",
-          email: "collector@example.com",
-          emailVerified: true,
-          image: null,
-          role: "collector",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      },
+      session: createCollectorSession(),
     })
-    const button = findElement(
-      element,
-      (candidate) => candidate.type === "button"
-    )
+    const button = findButtonElement(element)
 
     expect(button).not.toBeNull()
 
-    await (button?.props as { onClick: () => Promise<void> | void }).onClick()
+    await button?.props.onClick?.()
 
     expect(onSignOut).toHaveBeenCalledTimes(1)
   })

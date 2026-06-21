@@ -1,13 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
-import { cn } from "@workspace/ui/lib/utils"
 import { GitHubLink } from "./github-link"
 
 type CollectorSession = typeof authClient.$Infer.Session
 type SiteHeaderContentProps = {
   loginRedirectTarget: string
-  onSignOut?: () => Promise<unknown>
+  onSignOut?: () => Promise<void> | void
   session: CollectorSession | null
 }
 
@@ -32,7 +31,9 @@ export function getLoginRedirectTarget({
   pathname: string
   searchStr: string
 }) {
-  return `${pathname}${searchStr}${hash}` || "/"
+  const redirectTarget = `${pathname}${searchStr}${hash}`
+
+  return redirectTarget === "" ? "/" : redirectTarget
 }
 
 export function SiteHeader() {
@@ -66,6 +67,8 @@ export function SiteHeaderContent({
 }: SiteHeaderContentProps) {
   const signInSearch =
     loginRedirectTarget === "/" ? {} : { redirect: loginRedirectTarget }
+  const collectorLabel =
+    session === null ? null : getCollectorIdentityLabel(session.user)
 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-background">
@@ -93,17 +96,15 @@ export function SiteHeaderContent({
               <p className="text-right text-xs leading-tight text-muted-foreground">
                 Signed in as{" "}
                 <span className="font-medium text-foreground">
-                  {getCollectorIdentityLabel(session.user)}
+                  {collectorLabel}
                 </span>
               </p>
               <button
                 type="button"
-                className={cn(
-                  buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  })
-                )}
+                className={buttonVariants({
+                  size: "sm",
+                  variant: "ghost",
+                })}
                 onClick={() => {
                   void onSignOut?.()
                 }}

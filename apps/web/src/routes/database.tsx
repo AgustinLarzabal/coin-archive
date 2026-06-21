@@ -144,23 +144,13 @@ function validateCatalogueDraft(
   draft: CatalogueDraft,
   catalogueId?: string
 ): CatalogueMutationResult | null {
-  if (catalogueId === undefined) {
-    const parsedInput = createCatalogueInputSchema.safeParse(draft)
-
-    if (parsedInput.success) {
-      return null
-    }
-
-    return {
-      status: "error",
-      fieldErrors: getCatalogueFieldErrors(parsedInput.error.issues),
-    }
-  }
-
-  const parsedInput = updateCatalogueInputSchema.safeParse({
-    id: catalogueId,
-    ...draft,
-  })
+  const parsedInput =
+    catalogueId === undefined
+      ? createCatalogueInputSchema.safeParse(draft)
+      : updateCatalogueInputSchema.safeParse({
+          id: catalogueId,
+          ...draft,
+        })
 
   if (parsedInput.success) {
     return null
@@ -230,13 +220,8 @@ function CatalogueCreateForm() {
   const router = useRouter()
   const createCatalogue = useServerFn(createCatalogueMaintenanceCatalogue)
   const [draft, setDraft] = useState<CatalogueDraft>(EMPTY_CATALOGUE_DRAFT)
-  const {
-    apply,
-    clear,
-    fieldErrors,
-    formError,
-    successMessage,
-  } = useCatalogueFormFeedback()
+  const { apply, clear, fieldErrors, formError, successMessage } =
+    useCatalogueFormFeedback()
   const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

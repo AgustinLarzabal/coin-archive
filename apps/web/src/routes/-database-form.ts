@@ -4,8 +4,6 @@ import { z } from "zod"
 import { getCollectorRole } from "../lib/collector-role"
 import type { CollectorWithRole } from "../lib/collector-role"
 
-type CatalogueFieldName = "code" | "title"
-
 export const CATALOGUE_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Catalogues."
 export const CATALOGUE_DUPLICATE_CODE_ERROR =
@@ -16,6 +14,7 @@ export const CATALOGUE_MISSING_ERROR = "Catalogue no longer exists."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const DUPLICATE_CATALOGUE_CODE_CONSTRAINT = "catalogue_code_lower_unique_idx"
+const CATALOGUE_FIELD_NAMES = ["code", "title"] as const
 
 const catalogueCodeSchema = z
   .string()
@@ -37,6 +36,8 @@ export const createCatalogueInputSchema = z.object({
 export const updateCatalogueInputSchema = createCatalogueInputSchema.extend({
   id: z.uuid(),
 })
+
+type CatalogueFieldName = (typeof CATALOGUE_FIELD_NAMES)[number]
 
 export type CatalogueFieldErrors = Partial<Record<CatalogueFieldName, string>>
 
@@ -80,10 +81,34 @@ function createAuthorizationError(): CatalogueMutationResult {
   }
 }
 
+function createFieldErrorResult(
+  fieldErrors: CatalogueFieldErrors
+): CatalogueMutationResult {
+  return {
+    status: "error",
+    fieldErrors,
+  }
+}
+
+function createFormErrorResult(formError: string): CatalogueMutationResult {
+  return {
+    status: "error",
+    fieldErrors: {},
+    formError,
+  }
+}
+
 function hasCatalogueMaintenanceAccess(collector: CollectorWithRole | null) {
   const role = getCollectorRole(collector)
 
   return role !== null && hasEditorAccess(role)
+}
+
+function isCatalogueFieldName(field: unknown): field is CatalogueFieldName {
+  return (
+    typeof field === "string" &&
+    CATALOGUE_FIELD_NAMES.includes(field as CatalogueFieldName)
+  )
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -98,7 +123,7 @@ export function getCatalogueFieldErrors(
   for (const issue of issues) {
     const field = issue.path.at(0)
 
-    if (field === "code" || field === "title") {
+    if (isCatalogueFieldName(field)) {
       fieldErrors[field] = issue.message
     }
   }
@@ -107,10 +132,7 @@ export function getCatalogueFieldErrors(
 }
 
 function createValidationError(issues: z.ZodIssue[]): CatalogueMutationResult {
-  return {
-    status: "error",
-    fieldErrors: getCatalogueFieldErrors(issues),
-  }
+  return createFieldErrorResult(getCatalogueFieldErrors(issues))
 }
 
 function isDuplicateCatalogueCodeError(error: unknown) {
@@ -134,18 +156,32 @@ function isDuplicateCatalogueCodeError(error: unknown) {
 
 function createPersistenceError(error: unknown): CatalogueMutationResult {
   if (isDuplicateCatalogueCodeError(error)) {
+    return createFieldErrorResult({
+      code: CATALOGUE_DUPLICATE_CODE_ERROR,
+    })
+  }
+
+  return createFormErrorResult(CATALOGUE_GENERIC_SAVE_ERROR)
+}
+
+function validateCatalogueInput<TSchema extends z.ZodType>(
+  schema: TSchema,
+  input: z.input<TSchema>
+):
+  | { success: true; data: z.output<TSchema> }
+  | { success: false; result: CatalogueMutationResult } {
+  const parsedInput = schema.safeParse(input)
+
+  if (!parsedInput.success) {
     return {
-      status: "error",
-      fieldErrors: {
-        code: CATALOGUE_DUPLICATE_CODE_ERROR,
-      },
+      success: false,
+      result: createValidationError(parsedInput.error.issues),
     }
   }
 
   return {
-    status: "error",
-    fieldErrors: {},
-    formError: CATALOGUE_GENERIC_SAVE_ERROR,
+    success: true,
+    data: parsedInput.data,
   }
 }
 
@@ -158,17 +194,20 @@ export async function submitCreateCatalogue(
     return createAuthorizationError()
   }
 
-  const parsedInput = createCatalogueInputSchema.safeParse(input)
+  const validationResult = validateCatalogueInput(
+    createCatalogueInputSchema,
+    input
+  )
 
-  if (!parsedInput.success) {
-    return createValidationError(parsedInput.error.issues)
+  if (!validationResult.success) {
+    return validationResult.result
   }
 
   const resolvedDependencies =
     dependencies ?? (await getDefaultCatalogueMutationDependencies())
 
   try {
-    await resolvedDependencies.createCatalogue(parsedInput.data)
+    await resolvedDependencies.createCatalogue(validationResult.data)
 
     return {
       status: "success",
@@ -188,10 +227,13 @@ export async function submitUpdateCatalogue(
     return createAuthorizationError()
   }
 
-  const parsedInput = updateCatalogueInputSchema.safeParse(input)
+  const validationResult = validateCatalogueInput(
+    updateCatalogueInputSchema,
+    input
+  )
 
-  if (!parsedInput.success) {
-    return createValidationError(parsedInput.error.issues)
+  if (!validationResult.success) {
+    return validationResult.result
   }
 
   const resolvedDependencies =
@@ -199,15 +241,11 @@ export async function submitUpdateCatalogue(
 
   try {
     const updatedCatalogue = await resolvedDependencies.updateCatalogue(
-      parsedInput.data
+      validationResult.data
     )
 
     if (updatedCatalogue === null) {
-      return {
-        status: "error",
-        fieldErrors: {},
-        formError: CATALOGUE_MISSING_ERROR,
-      }
+      return createFormErrorResult(CATALOGUE_MISSING_ERROR)
     }
 
     return {

@@ -10,37 +10,54 @@ import {
 } from "./-database-form"
 
 const VALID_CATALOGUE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const STANDARD_CATALOGUE = {
+  code: "KM",
+  title: "Standard Catalog of World Coins",
+}
+const ROMAN_CATALOGUE = {
+  code: "RIC",
+  title: "Roman Imperial Coinage",
+}
+
+function createDependencies(overrides?: {
+  createCatalogue?: ReturnType<typeof vi.fn>
+}) {
+  return {
+    createCatalogue: vi.fn(),
+    updateCatalogue: vi.fn(),
+    ...overrides,
+  }
+}
+
+function updateDependencies(overrides?: {
+  updateCatalogue?: ReturnType<typeof vi.fn>
+}) {
+  return {
+    createCatalogue: vi.fn(),
+    updateCatalogue: vi.fn(),
+    ...overrides,
+  }
+}
+
+const authorizationErrorResult = {
+  status: "error" as const,
+  fieldErrors: {},
+  formError: CATALOGUE_AUTHORIZATION_ERROR,
+}
 
 describe("submitCreateCatalogue", () => {
   it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
     await expect(
-      submitCreateCatalogue(null, {
-        code: "KM",
-        title: "Standard Catalog of World Coins",
-      })
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
-    })
+      submitCreateCatalogue(null, STANDARD_CATALOGUE)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
-      submitCreateCatalogue(
-        { role: "collector" },
-        {
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
-    })
+      submitCreateCatalogue({ role: "collector" }, STANDARD_CATALOGUE)
+    ).resolves.toStrictEqual(authorizationErrorResult)
   })
 
   it("maps Zod validation issues into typed field errors", async () => {
-    const createCatalogue = vi.fn()
+    const dependencies = createDependencies()
 
     await expect(
       submitCreateCatalogue(
@@ -49,10 +66,7 @@ describe("submitCreateCatalogue", () => {
           code: "  ",
           title: "".padStart(256, "A"),
         },
-        {
-          createCatalogue,
-          updateCatalogue: vi.fn(),
-        }
+        dependencies
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -62,26 +76,48 @@ describe("submitCreateCatalogue", () => {
       },
     })
 
-    expect(createCatalogue).not.toHaveBeenCalled()
+    expect(dependencies.createCatalogue).not.toHaveBeenCalled()
+  })
+
+  it("trims Catalogue fields before creating a Catalogue", async () => {
+    const dependencies = createDependencies({
+      createCatalogue: vi.fn().mockResolvedValue({
+        id: VALID_CATALOGUE_ID,
+      }),
+    })
+
+    await expect(
+      submitCreateCatalogue(
+        { role: "editor" },
+        {
+          code: " KM ",
+          title: " Standard Catalog of World Coins ",
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Catalogue added.",
+    })
+
+    expect(dependencies.createCatalogue).toHaveBeenCalledWith(
+      STANDARD_CATALOGUE
+    )
   })
 
   it("maps duplicate Catalogue codes to the Code field", async () => {
     await expect(
       submitCreateCatalogue(
         { role: "admin" },
-        {
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        },
-        {
+        STANDARD_CATALOGUE,
+        createDependencies({
           createCatalogue: vi.fn().mockRejectedValue({
             cause: {
               code: "23505",
               constraint_name: "catalogue_code_lower_unique_idx",
             },
           }),
-          updateCatalogue: vi.fn(),
-        }
+        })
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -92,66 +128,47 @@ describe("submitCreateCatalogue", () => {
   })
 
   it("returns a success result for valid create submissions", async () => {
-    const createCatalogue = vi.fn().mockResolvedValue({
-      id: VALID_CATALOGUE_ID,
+    const dependencies = createDependencies({
+      createCatalogue: vi.fn().mockResolvedValue({
+        id: VALID_CATALOGUE_ID,
+      }),
     })
 
     await expect(
       submitCreateCatalogue(
         { role: "editor" },
-        {
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        },
-        {
-          createCatalogue,
-          updateCatalogue: vi.fn(),
-        }
+        STANDARD_CATALOGUE,
+        dependencies
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Catalogue added.",
     })
 
-    expect(createCatalogue).toHaveBeenCalledWith({
-      code: "KM",
-      title: "Standard Catalog of World Coins",
-    })
+    expect(dependencies.createCatalogue).toHaveBeenCalledWith(
+      STANDARD_CATALOGUE
+    )
   })
 })
 
 describe("submitUpdateCatalogue", () => {
+  const updateInput = {
+    id: VALID_CATALOGUE_ID,
+    ...STANDARD_CATALOGUE,
+  }
+
   it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
     await expect(
-      submitUpdateCatalogue(null, {
-        id: VALID_CATALOGUE_ID,
-        code: "KM",
-        title: "Standard Catalog of World Coins",
-      })
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
-    })
+      submitUpdateCatalogue(null, updateInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
-      submitUpdateCatalogue(
-        { role: "collector" },
-        {
-          id: VALID_CATALOGUE_ID,
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
-    })
+      submitUpdateCatalogue({ role: "collector" }, updateInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
   })
 
   it("maps Zod update validation issues into typed field errors", async () => {
-    const updateCatalogue = vi.fn()
+    const dependencies = updateDependencies()
 
     await expect(
       submitUpdateCatalogue(
@@ -161,10 +178,7 @@ describe("submitUpdateCatalogue", () => {
           code: " ",
           title: "".padStart(256, "R"),
         },
-        {
-          createCatalogue: vi.fn(),
-          updateCatalogue,
-        }
+        dependencies
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -174,22 +188,17 @@ describe("submitUpdateCatalogue", () => {
       },
     })
 
-    expect(updateCatalogue).not.toHaveBeenCalled()
+    expect(dependencies.updateCatalogue).not.toHaveBeenCalled()
   })
 
   it("returns a missing-row form error when the update target no longer exists", async () => {
     await expect(
       submitUpdateCatalogue(
         { role: "editor" },
-        {
-          id: VALID_CATALOGUE_ID,
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        },
-        {
-          createCatalogue: vi.fn(),
+        updateInput,
+        updateDependencies({
           updateCatalogue: vi.fn().mockResolvedValue(null),
-        }
+        })
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -202,15 +211,10 @@ describe("submitUpdateCatalogue", () => {
     await expect(
       submitUpdateCatalogue(
         { role: "admin" },
-        {
-          id: VALID_CATALOGUE_ID,
-          code: "KM",
-          title: "Standard Catalog of World Coins",
-        },
-        {
-          createCatalogue: vi.fn(),
+        updateInput,
+        updateDependencies({
           updateCatalogue: vi.fn().mockRejectedValue(new Error("boom")),
-        }
+        })
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -220,8 +224,10 @@ describe("submitUpdateCatalogue", () => {
   })
 
   it("returns a success result for valid update submissions", async () => {
-    const updateCatalogue = vi.fn().mockResolvedValue({
-      id: VALID_CATALOGUE_ID,
+    const dependencies = updateDependencies({
+      updateCatalogue: vi.fn().mockResolvedValue({
+        id: VALID_CATALOGUE_ID,
+      }),
     })
 
     await expect(
@@ -229,29 +235,26 @@ describe("submitUpdateCatalogue", () => {
         { role: "editor" },
         {
           id: VALID_CATALOGUE_ID,
-          code: "RIC",
-          title: "Roman Imperial Coinage",
+          ...ROMAN_CATALOGUE,
         },
-        {
-          createCatalogue: vi.fn(),
-          updateCatalogue,
-        }
+        dependencies
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Saved.",
     })
 
-    expect(updateCatalogue).toHaveBeenCalledWith({
+    expect(dependencies.updateCatalogue).toHaveBeenCalledWith({
       id: VALID_CATALOGUE_ID,
-      code: "RIC",
-      title: "Roman Imperial Coinage",
+      ...ROMAN_CATALOGUE,
     })
   })
 
   it("trims Catalogue fields before updating a Catalogue", async () => {
-    const updateCatalogue = vi.fn().mockResolvedValue({
-      id: VALID_CATALOGUE_ID,
+    const dependencies = updateDependencies({
+      updateCatalogue: vi.fn().mockResolvedValue({
+        id: VALID_CATALOGUE_ID,
+      }),
     })
 
     await expect(
@@ -262,20 +265,16 @@ describe("submitUpdateCatalogue", () => {
           code: " RIC ",
           title: " Roman Imperial Coinage ",
         },
-        {
-          createCatalogue: vi.fn(),
-          updateCatalogue,
-        }
+        dependencies
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Saved.",
     })
 
-    expect(updateCatalogue).toHaveBeenCalledWith({
+    expect(dependencies.updateCatalogue).toHaveBeenCalledWith({
       id: VALID_CATALOGUE_ID,
-      code: "RIC",
-      title: "Roman Imperial Coinage",
+      ...ROMAN_CATALOGUE,
     })
   })
 })

@@ -4,9 +4,9 @@ import { z } from "zod"
 import {
   getAuthenticatedLoginRedirect,
   getSafeAuthRedirect,
-} from "../lib/auth-redirect"
-import { getAuthSession } from "../lib/auth-session"
-import { startGoogleSignIn } from "../lib/google-sign-in"
+} from "../../lib/auth-redirect"
+import { getAuthSession } from "../../lib/auth-session"
+import { startGoogleSignIn } from "../../lib/google-sign-in"
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -21,12 +21,15 @@ function getLoginRedirectTarget(search: LoginSearch) {
   return getSafeAuthRedirect(search.redirect)
 }
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/(public)/login")({
   validateSearch: loginSearchSchema,
   beforeLoad: async ({ search }) => {
     const session = await getAuthSession()
     const isSignedIn = session !== null
-    const redirectTarget = getAuthenticatedLoginRedirect(isSignedIn, search.redirect)
+    const redirectTarget = getAuthenticatedLoginRedirect(
+      isSignedIn,
+      search.redirect
+    )
 
     if (redirectTarget !== null) {
       throw redirect({

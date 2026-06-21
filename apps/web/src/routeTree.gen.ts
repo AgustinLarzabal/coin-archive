@@ -9,19 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoinsCoinIdRouteImport } from './routes/coins.$coinId'
 import { Route as AuthedSettingsRouteImport } from './routes/_authed.settings'
 import { Route as AuthedDatabaseRouteImport } from './routes/_authed.database'
+import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
@@ -46,6 +41,11 @@ const AuthedDatabaseRoute = AuthedDatabaseRouteImport.update({
   path: '/database',
   getParentRoute: () => AuthedRoute,
 } as any)
+const publicLoginRoute = publicLoginRouteImport.update({
+  id: '/(public)/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -54,7 +54,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/login': typeof publicLoginRoute
   '/database': typeof AuthedDatabaseRoute
   '/settings': typeof AuthedSettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -62,7 +62,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
+  '/login': typeof publicLoginRoute
   '/database': typeof AuthedDatabaseRoute
   '/settings': typeof AuthedSettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -72,7 +72,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
-  '/login': typeof LoginRoute
+  '/(public)/login': typeof publicLoginRoute
   '/_authed/database': typeof AuthedDatabaseRoute
   '/_authed/settings': typeof AuthedSettingsRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
@@ -99,7 +99,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authed'
-    | '/login'
+    | '/(public)/login'
     | '/_authed/database'
     | '/_authed/settings'
     | '/coins/$coinId'
@@ -109,20 +109,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  publicLoginRoute: typeof publicLoginRoute
   CoinsCoinIdRoute: typeof CoinsCoinIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed': {
       id: '/_authed'
       path: ''
@@ -158,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDatabaseRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/(public)/login': {
+      id: '/(public)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof publicLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -184,7 +184,7 @@ const AuthedRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
-  LoginRoute: LoginRoute,
+  publicLoginRoute: publicLoginRoute,
   CoinsCoinIdRoute: CoinsCoinIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

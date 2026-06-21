@@ -1,10 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
+import type { CollectorRole } from "@workspace/auth/client"
+import { hasEditorAccess, isCollectorRole } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { getSafeAuthRedirect } from "../lib/auth-redirect"
 import { GitHubLink } from "./github-link"
 
 type CollectorSession = typeof authClient.$Infer.Session
+type PrivateNavigationLink = {
+  label: string
+  to: "/database" | "/settings"
+}
 type SiteHeaderContentProps = {
   loginRedirectTarget: string
   onSignOut?: () => Promise<void> | void
@@ -35,6 +41,42 @@ export function getLoginRedirectTarget({
   const redirectTarget = `${pathname}${searchStr}${hash}`
 
   return getSafeAuthRedirect(redirectTarget)
+}
+
+export function getPrivateNavigationLinks(
+  session: CollectorSession | null
+): PrivateNavigationLink[] {
+  const role = getCollectorRole(session)
+
+  if (role === null) {
+    return []
+  }
+
+  const links: PrivateNavigationLink[] = [
+    {
+      label: "Settings",
+      to: "/settings",
+    },
+  ]
+
+  if (hasEditorAccess(role)) {
+    links.unshift({
+      label: "Catalogue Maintenance",
+      to: "/database",
+    })
+  }
+
+  return links
+}
+
+function getCollectorRole(session: CollectorSession | null): CollectorRole | null {
+  const role = session?.user.role
+
+  if (role === undefined || role === null || !isCollectorRole(role)) {
+    return null
+  }
+
+  return role
 }
 
 export function SiteHeader() {
@@ -70,6 +112,7 @@ export function SiteHeaderContent({
     loginRedirectTarget === "/" ? {} : { redirect: loginRedirectTarget }
   const collectorLabel =
     session === null ? null : getCollectorIdentityLabel(session.user)
+  const privateNavigationLinks = getPrivateNavigationLinks(session)
 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-background">
@@ -80,7 +123,24 @@ export function SiteHeaderContent({
         >
           Coin Archive
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {privateNavigationLinks.length > 0 ? (
+            <nav aria-label="Private" className="flex items-center gap-2">
+              {privateNavigationLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  })}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
+          <div className="flex items-center gap-2">
           {session === null ? (
             <Link
               to="/login"
@@ -115,6 +175,7 @@ export function SiteHeaderContent({
             </>
           )}
           <GitHubLink />
+          </div>
         </div>
       </div>
     </header>

@@ -84,9 +84,11 @@ function findElement(
 function createCollectorSession({
   email = "collector@example.com",
   name = "",
+  role = "collector",
 }: {
   email?: string
   name?: string
+  role?: "collector" | "editor" | "admin"
 } = {}): CollectorSession {
   return {
     session: {
@@ -105,7 +107,7 @@ function createCollectorSession({
       email,
       emailVerified: true,
       image: null,
-      role: "collector",
+      role,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -143,7 +145,31 @@ describe("SiteHeaderContent", () => {
 
     expect(markup).toContain("Ada Lovelace")
     expect(markup).toContain("Sign out")
+    expect(markup).toContain('href="/settings"')
+    expect(markup).not.toContain('href="/database"')
     expect(markup).not.toContain("Sign in")
+  })
+
+  it("shows Catalogue Maintenance only for Editors and Admins", () => {
+    const editorMarkup = renderToStaticMarkup(
+      <SiteHeaderContent
+        loginRedirectTarget="/"
+        session={createCollectorSession({ role: "editor" })}
+      />
+    )
+    const adminMarkup = renderToStaticMarkup(
+      <SiteHeaderContent
+        loginRedirectTarget="/"
+        session={createCollectorSession({ role: "admin" })}
+      />
+    )
+
+    expect(editorMarkup).toContain('href="/settings"')
+    expect(editorMarkup).toContain('href="/database"')
+    expect(editorMarkup).toContain("Catalogue Maintenance")
+    expect(adminMarkup).toContain('href="/settings"')
+    expect(adminMarkup).toContain('href="/database"')
+    expect(adminMarkup).toContain("Catalogue Maintenance")
   })
 
   it("wires the sign-out action from the header button", async () => {

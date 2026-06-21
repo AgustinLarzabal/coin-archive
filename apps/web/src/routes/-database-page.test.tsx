@@ -1,6 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import type { CatalogueOption } from "@workspace/db"
+
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual<typeof import("@tanstack/react-router")>(
+    "@tanstack/react-router"
+  )
+
+  return {
+    ...actual,
+    useRouter: () => ({
+      invalidate: vi.fn().mockResolvedValue(undefined),
+    }),
+  }
+})
 
 import {
   CatalogueMaintenanceAccessDeniedPage,
@@ -22,7 +35,7 @@ function buildCatalogue(overrides: {
 }
 
 describe("CatalogueMaintenancePage", () => {
-  it("renders a semantic Catalogue maintenance list in the shared private-page presentation", () => {
+  it("renders Catalogue create and edit forms in the shared private-page presentation", () => {
     const catalogues: CatalogueOption[] = [
       buildCatalogue({
         id: "catalogue-2",
@@ -40,20 +53,28 @@ describe("CatalogueMaintenancePage", () => {
     )
 
     expect(markup).toContain("Catalogue Maintenance")
-    expect(markup).toContain("Maintain existing Catalogues.")
+    expect(markup).toContain("Create and maintain Catalogues.")
     expect(markup).toContain("Catalogues")
+    expect(markup).toContain("Catalogue Code")
+    expect(markup).toContain("Catalogue Title")
+    expect(markup).toContain("Add Catalogue")
     expect(markup).toContain("<table")
     expect(markup).toContain("<thead")
     expect(markup).toContain("<tbody")
     expect(markup).toContain(">Code<")
     expect(markup).toContain(">Title<")
-    expect(markup).toContain(">RIC<")
-    expect(markup).toContain(">Roman Imperial Coinage<")
-    expect(markup).toContain(">KM<")
-    expect(markup).toContain(">Standard Catalog of World Coins<")
-    expect(markup).not.toContain(
-      "Catalogue maintenance for Catalogues will appear here later."
+    expect(markup).toContain(">Actions<")
+    expect(markup).toContain('name="code" value="RIC"')
+    expect(markup).toContain('name="title" value="Roman Imperial Coinage"')
+    expect(markup).toContain('name="code" value="KM"')
+    expect(markup).toContain(
+      'name="title" value="Standard Catalog of World Coins"'
     )
+    expect(markup).toContain('placeholder="KM"')
+    expect(markup).toContain('placeholder="Standard Catalog of World Coins"')
+    expect(markup).toContain("Save</button>")
+    expect(markup).toContain('disabled=""')
+    expect(markup).not.toContain(">Reset<")
   })
 })
 

@@ -1,4 +1,5 @@
 export { db } from "./client"
+export { createCatalogue, updateCatalogue } from "./mutations/catalogue"
 export { getCatalogues } from "./queries/get-catalogues"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
@@ -42,9 +43,7 @@ export { theme } from "./schema/theme"
 export { user } from "./schema/user"
 export { verification } from "./schema/verification"
 export type { GetCoinsOptions } from "./queries/get-coins"
-export type {
-  CoinDistributionRecord,
-} from "./queries/coin-distribution-record"
+export type { CoinDistributionRecord } from "./queries/coin-distribution-record"
 export type { CoinCompositionRecord } from "./queries/coin-composition-record"
 export type { CoinEdgeRecord } from "./queries/coin-edge-record"
 export type {
@@ -69,9 +68,7 @@ export type {
   CoinSurfaceRecord,
   CoinSurfaceSetRecord,
 } from "./queries/coin-surface-record"
-export type {
-  CoinListRecord,
-} from "./queries/map-get-coins-row"
+export type { CoinListRecord } from "./queries/map-get-coins-row"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"

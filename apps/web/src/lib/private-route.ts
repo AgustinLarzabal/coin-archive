@@ -1,3 +1,4 @@
+import type { CollectorRole } from "@workspace/auth/client"
 import { hasEditorAccess, isCollectorRole } from "@workspace/auth/client"
 
 import { getSafeAuthRedirect } from "./auth-redirect"
@@ -18,6 +19,24 @@ type EditorRouteAccess =
       isAllowed: boolean
     }
   | CollectorRouteRedirect
+
+type CollectorWithRole = {
+  role?: string | null
+}
+
+function getCollectorRole(
+  collector: CollectorWithRole | null
+): CollectorRole | null {
+  if (
+    collector === null ||
+    collector.role === null ||
+    collector.role === undefined
+  ) {
+    return null
+  }
+
+  return isCollectorRole(collector.role) ? collector.role : null
+}
 
 export function getCollectorRouteRedirect(
   isSignedIn: boolean,
@@ -44,7 +63,7 @@ export function getCollectorRouteRedirect(
 }
 
 export function getEditorRouteAccess(
-  collector: { role?: string | null } | null,
+  collector: CollectorWithRole | null,
   redirectTarget: string
 ): EditorRouteAccess {
   const loginRedirect = getCollectorRouteRedirect(
@@ -56,17 +75,9 @@ export function getEditorRouteAccess(
     return loginRedirect
   }
 
-  if (collector === null) {
-    return {
-      isAllowed: false,
-    }
-  }
+  const role = getCollectorRole(collector)
 
   return {
-    isAllowed:
-      collector.role !== null &&
-      collector.role !== undefined &&
-      isCollectorRole(collector.role) &&
-      hasEditorAccess(collector.role),
+    isAllowed: role !== null && hasEditorAccess(role),
   }
 }

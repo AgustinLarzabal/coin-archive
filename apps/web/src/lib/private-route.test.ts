@@ -36,6 +36,15 @@ describe("getEditorRouteAccess", () => {
     })
   })
 
+  it("denies signed-in Collectors without a valid editor role", () => {
+    expect(getEditorRouteAccess({ role: null }, "/database")).toEqual({
+      isAllowed: false,
+    })
+    expect(getEditorRouteAccess({ role: "owner" }, "/database")).toEqual({
+      isAllowed: false,
+    })
+  })
+
   it("allows Editors and Admins", () => {
     expect(getEditorRouteAccess({ role: "editor" }, "/database")).toEqual({
       isAllowed: true,

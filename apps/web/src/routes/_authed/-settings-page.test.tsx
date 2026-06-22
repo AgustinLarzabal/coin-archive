@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { SettingsPage } from "./settings"
+import { SettingsPage } from "./-settings-page"
 
 describe("SettingsPage", () => {
   it("renders the Settings placeholder in the shared private-page presentation", () => {

@@ -66,10 +66,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="relative flex min-h-svh flex-col">
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+      <body className="relative">
+        <TooltipProvider>{children}</TooltipProvider>
         <Scripts />
       </body>
     </html>

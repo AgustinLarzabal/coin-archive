@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 
 import { getAuthSession } from "../../lib/auth-session"
 import { getCollectorRouteRedirect } from "../../lib/private-route"
+import { AuthedHeader } from "@/components/authed-header"
 
 function getRouteRedirectTarget(location: {
   hash: string
@@ -21,7 +22,9 @@ export const Route = createFileRoute("/_authed")({
       )
 
       if (loginRedirect === null) {
-        throw new Error("Missing login redirect for unauthenticated route access.")
+        throw new Error(
+          "Missing login redirect for unauthenticated route access."
+        )
       }
 
       throw redirect(loginRedirect)
@@ -34,9 +37,12 @@ export const Route = createFileRoute("/_authed")({
 
 function AuthedRouteComponent() {
   return (
-    <div className="min-h-svh">
-      <div className="grow p-4 md:px-8 md:py-6">
-        <Outlet />
+    <div className="flex min-h-svh flex-col">
+      <div className="flex h-screen flex-col md:ml-[70px]">
+        <AuthedHeader />
+        <div className="grow p-4 md:px-8 md:py-6">
+          <Outlet />
+        </div>
       </div>
     </div>
   )

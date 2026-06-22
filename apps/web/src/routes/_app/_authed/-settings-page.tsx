@@ -1,4 +1,4 @@
-import { PrivatePage } from "../../components/private-page"
+import { PrivatePage } from "../../../components/private-page"
 
 export function SettingsPage() {
   return (

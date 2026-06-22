@@ -13,16 +13,16 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
 import { Badge } from "@workspace/ui/components/badge"
-import type { CoinSearch } from "../../lib/coin-search"
-import { coinSearchSchema } from "../../lib/coin-search"
+import type { CoinSearch } from "../../../lib/coin-search"
+import { coinSearchSchema } from "../../../lib/coin-search"
 import {
   getCoinPreviewImageUrl,
   getSurfaceImageUrl,
-} from "../../lib/coin-images"
+} from "../../../lib/coin-images"
 import {
   getIssuerRulerFilterDescription,
   RULER_FILTER_LABEL,
-} from "../../lib/ruler-filter"
+} from "../../../lib/ruler-filter"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
@@ -49,7 +49,7 @@ const getCoinData = createServerFn({ method: "GET" })
     return { coin }
   })
 
-export const Route = createFileRoute("/(public)/coins/$coinId")({
+export const Route = createFileRoute("/_app/(public)/coins/$coinId")({
   validateSearch: coinSearchSchema,
   loader: ({ params }) => getCoinData({ data: params }),
   component: CoinRoute,

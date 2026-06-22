@@ -7,9 +7,9 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Plus, RotateCcw, Save } from "lucide-react"
 
-import { PrivatePage } from "../../components/private-page"
-import { getAuthSession } from "../../lib/auth-session"
-import { getEditorRouteAuthorization } from "../../lib/private-route"
+import { PrivatePage } from "../../../components/private-page"
+import { getAuthSession } from "../../../lib/auth-session"
+import { getEditorRouteAuthorization } from "../../../lib/private-route"
 import type {
   CatalogueFieldErrors,
   CatalogueMutationResult,
@@ -73,7 +73,7 @@ const updateCatalogueMaintenanceCatalogue = createServerFn({
     return submitUpdateCatalogue(collector, data)
   })
 
-export const Route = createFileRoute("/_authed/database")({
+export const Route = createFileRoute("/_app/_authed/database")({
   loader: async ({ context }) => {
     const authorization = getEditorRouteAuthorization(context.session.user)
 

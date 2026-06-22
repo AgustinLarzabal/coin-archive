@@ -1,14 +1,20 @@
-import { createFileRoute, getRouteApi } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
-import { getCoins } from "@workspace/db"
+import {
+  getCoins,
+  getDistributions,
+  getEngravers,
+  getIssuers,
+  getRulers,
+  getThemes,
+} from "@workspace/db"
 import {
   coinListInputSchema,
   coinSearchSchema,
   getCoinListLoaderDeps,
   hasActiveCoinSearchFilters,
   updateCoinSearchFilter,
-} from "../../lib/coin-search"
-
+} from "../../../lib/coin-search"
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
 import { EmptyState } from "@/components/home/empty-state"
@@ -17,18 +23,46 @@ const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
   .handler(async ({ data }) => ({ coins: await getCoins(data) }))
 
-const rootRouteApi = getRouteApi("__root__")
+const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const [distributions, engravers, issuers, rulers, themes] =
+      await Promise.all([
+        getDistributions(),
+        getEngravers(),
+        getIssuers(),
+        getRulers(),
+        getThemes(),
+      ])
 
-export const Route = createFileRoute("/(public)/")({
+    return {
+      distributions,
+      engravers,
+      issuers,
+      rulers,
+      themes,
+    }
+  }
+)
+
+export const Route = createFileRoute("/_app/(public)/")({
   validateSearch: coinSearchSchema,
   loaderDeps: ({ search }) => getCoinListLoaderDeps(search),
-  loader: ({ deps }) => getCoinListData({ data: deps }),
+  loader: async ({ deps }) => {
+    const [coinListData, filterOptions] = await Promise.all([
+      getCoinListData({ data: deps }),
+      getCoinFilterOptions(),
+    ])
+
+    return {
+      ...coinListData,
+      filterOptions,
+    }
+  },
   component: App,
 })
 
 function App() {
-  const { coins } = Route.useLoaderData()
-  const filterOptions = rootRouteApi.useLoaderData()
+  const { coins, filterOptions } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
 

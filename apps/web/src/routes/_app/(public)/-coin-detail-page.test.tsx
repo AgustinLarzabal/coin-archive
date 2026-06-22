@@ -3,7 +3,7 @@ import type { CoinDetailRecord } from "@workspace/db"
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"
+import { RULER_FILTER_LABEL } from "../../../lib/ruler-filter"
 import { CoinDetailPage } from "./coins.$coinId"
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {

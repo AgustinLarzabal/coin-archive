@@ -4,10 +4,10 @@ import { z } from "zod"
 import {
   getAuthenticatedLoginRedirect,
   getSafeAuthRedirect,
-} from "../../lib/auth-redirect"
-import { OAuthSignIn } from "../../components/o-auth-signin"
-import { getEnabledProviders } from "../../lib/enabled-providers"
-import { getAuthSession } from "../../lib/auth-session"
+} from "../../../lib/auth-redirect"
+import { OAuthSignIn } from "../../../components/o-auth-signin"
+import { getEnabledProviders } from "../../../lib/enabled-providers"
+import { getAuthSession } from "../../../lib/auth-session"
 import { authClient } from "@workspace/auth/client"
 
 const loginSearchSchema = z.object({
@@ -23,7 +23,7 @@ function getLoginRedirectTarget(search: LoginSearch) {
   return getSafeAuthRedirect(search.redirect)
 }
 
-export const Route = createFileRoute("/(public)/login")({
+export const Route = createFileRoute("/_app/(public)/login")({
   validateSearch: loginSearchSchema,
   beforeLoad: async ({ search }) => {
     const session = await getAuthSession()

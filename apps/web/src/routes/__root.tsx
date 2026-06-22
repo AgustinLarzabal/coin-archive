@@ -1,41 +1,10 @@
 import { NotFound } from "@/components/not-found"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
-import { createServerFn } from "@tanstack/react-start"
-import {
-  getDistributions,
-  getEngravers,
-  getIssuers,
-  getRulers,
-  getThemes,
-} from "@workspace/db"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 import appCss from "@workspace/ui/globals.css?url"
 
-const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const [distributions, engravers, issuers, rulers, themes] =
-      await Promise.all([
-        getDistributions(),
-        getEngravers(),
-        getIssuers(),
-        getRulers(),
-        getThemes(),
-      ])
-
-    return {
-      distributions,
-      engravers,
-      issuers,
-      rulers,
-      themes,
-    }
-  }
-)
-
 export const Route = createRootRoute({
-  loader: () => getCoinFilterOptions(),
-  staleTime: Infinity,
   head: () => ({
     meta: [
       {

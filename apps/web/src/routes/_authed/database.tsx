@@ -8,7 +8,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Plus, RotateCcw, Save } from "lucide-react"
 
 import { PrivatePage } from "../../components/private-page"
-import { getAuthSession } from "../../lib/auth-session"
+import { getRequestAuthSession } from "../../lib/auth-session"
 import { getEditorRouteAuthorization } from "../../lib/private-route"
 import type {
   CatalogueFieldErrors,
@@ -74,9 +74,8 @@ const updateCatalogueMaintenanceCatalogue = createServerFn({
   })
 
 export const Route = createFileRoute("/_authed/database")({
-  loader: async () => {
-    const session = await getAuthSession()
-    const authorization = getEditorRouteAuthorization(session?.user ?? null)
+  loader: async ({ context }) => {
+    const authorization = getEditorRouteAuthorization(context.session.user)
 
     if (!authorization.isAllowed) {
       return authorization
@@ -103,14 +102,7 @@ function DatabasePage() {
 }
 
 async function getCatalogueMutationCollector() {
-  const [{ auth }, { getRequestHeaders }] = await Promise.all([
-    import("@workspace/auth/server"),
-    import("@tanstack/react-start/server"),
-  ])
-
-  const session = await auth.api.getSession({
-    headers: getRequestHeaders(),
-  })
+  const session = await getRequestAuthSession()
 
   return session?.user ?? null
 }

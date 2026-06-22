@@ -14,14 +14,20 @@ function getRouteRedirectTarget(location: {
 export const Route = createFileRoute("/_authed")({
   beforeLoad: async ({ location }) => {
     const session = await getAuthSession()
-    const loginRedirect = getCollectorRouteRedirect(
-      session !== null,
-      getRouteRedirectTarget(location)
-    )
+    if (session === null) {
+      const loginRedirect = getCollectorRouteRedirect(
+        false,
+        getRouteRedirectTarget(location)
+      )
 
-    if (loginRedirect !== null) {
+      if (loginRedirect === null) {
+        throw new Error("Missing login redirect for unauthenticated route access.")
+      }
+
       throw redirect(loginRedirect)
     }
+
+    return { session }
   },
   component: AuthedRouteComponent,
 })

@@ -44,29 +44,30 @@ describe("SeededCoin", () => {
         kind: "obverse",
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/obverse-thumbnail",
-        imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
       {
         coinTitle: "Spain 2 Euro",
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/reverse-thumbnail",
-        imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
+        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
       {
         coinTitle: "Spain 2 Euro",
         kind: "edge-surface",
         description: "Finely reeded with incuse lettering.",
         lettering: "2 **",
-        thumbnailUrl:
-          "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
-        imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
+        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
     ])
+  })
+
+  it("seeds at least 30 coins", () => {
+    expect(seededCoins.length).toBeGreaterThanOrEqual(30)
   })
 
   it("has at least one ruler attribution for every seeded coin", () => {

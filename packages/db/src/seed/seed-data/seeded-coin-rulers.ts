@@ -61,4 +61,99 @@ export const seededCoinRulers: SeededCoinRuler[] = [
     rulerCode: "republic-of-finland",
     rulerOrder: 1,
   },
+  {
+    coinTitle: "Spain 1 Euro",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Spain 50 Euro Cent",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Spain 10 Euro Cent",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Finland 2 Euro",
+    rulerCode: "republic-of-finland",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Finland 1 Euro",
+    rulerCode: "republic-of-finland",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Finland 50 Euro Cent",
+    rulerCode: "republic-of-finland",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "United States Washington Quarter",
+    rulerCode: "united-states-of-america",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "United States Sacagawea Dollar",
+    rulerCode: "united-states-of-america",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "United States Buffalo Nickel",
+    rulerCode: "liberty",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Argentina 10 Centavos",
+    rulerCode: "argentine-republic",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Argentina 50 Centavos",
+    rulerCode: "argentine-republic",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Argentina 2 Pesos",
+    rulerCode: "argentine-republic",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Buenos Aires 2 Reales",
+    rulerCode: "province-of-buenos-aires",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Buenos Aires 1 Real",
+    rulerCode: "province-of-buenos-aires",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Buenos Aires 2 Decimos",
+    rulerCode: "province-of-buenos-aires",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Finland 10 Euro Cent",
+    rulerCode: "republic-of-finland",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Spain 5 Euro Cent",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "Spain 20 Euro Cent",
+    rulerCode: "felipe-vi",
+    rulerOrder: 1,
+  },
+  {
+    coinTitle: "United States Mercury Dime",
+    rulerCode: "liberty",
+    rulerOrder: 1,
+  },
 ]

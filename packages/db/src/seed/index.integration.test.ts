@@ -150,19 +150,18 @@ const expectedSeededTechniques = [
 const expectedSpain2EuroSurfaceRows = [
   {
     kind: "edge-surface",
-    thumbnailUrl:
-      "https://example.com/coins/spain-2-euro/edge-surface-thumbnail",
-    imageUrl: "https://example.com/coins/spain-2-euro/edge-surface-image",
+    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: "http://localhost:3000/placeholder-coin.svg",
   },
   {
     kind: "obverse",
-    thumbnailUrl: "https://example.com/coins/spain-2-euro/obverse-thumbnail",
-    imageUrl: "https://example.com/coins/spain-2-euro/obverse-image",
+    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: "http://localhost:3000/placeholder-coin.svg",
   },
   {
     kind: "reverse",
-    thumbnailUrl: "https://example.com/coins/spain-2-euro/reverse-thumbnail",
-    imageUrl: "https://example.com/coins/spain-2-euro/reverse-image",
+    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: "http://localhost:3000/placeholder-coin.svg",
   },
 ] as const
 
@@ -312,7 +311,7 @@ describe("seed integration", () => {
       expectedSeededThemes
     )
 
-    const seededCoins = await getCoins({ limit: 20 })
+    const seededCoins = await getCoins({ limit: 30 })
 
     expect(
       findCoinRecordByTitle(seededCoins, "United States National Park Quarter")
@@ -431,7 +430,7 @@ describe("seed integration", () => {
   it("exposes seeded coin ruler attributions through direct catalogue reads", async () => {
     await seedDatabase()
 
-    const seededCoins = await getCoins({ limit: 20 })
+    const seededCoins = await getCoins({ limit: 30 })
     const spain2Euro = findCoinRecordByTitle(seededCoins, "Spain 2 Euro")
     const buenosAiresCoin = findCoinRecordByTitle(
       seededCoins,
@@ -463,10 +462,13 @@ describe("seed integration", () => {
 
     const filteredCoins = await getCoins({
       rulerCode: "  ARGENTINE-REPUBLIC  ",
-      limit: 20,
+      limit: 30,
     })
 
     expect(filteredCoins.map(({ title }) => title)).toEqual([
+      "Argentina 2 Pesos",
+      "Argentina 50 Centavos",
+      "Argentina 10 Centavos",
       "Argentina Convertible Peso",
       "Argentina Copper Peso",
       "Argentina 20 Centavos",

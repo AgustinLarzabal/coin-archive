@@ -3,7 +3,6 @@ import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { UserMenu } from "./user-menu"
-import { GitHubLink } from "./github-link"
 
 export function getLoginRedirectTarget({
   hash,
@@ -34,7 +33,6 @@ export function Header() {
 
   return (
     <header className="z-10 flex h-[70px] items-center justify-end gap-4 border-b bg-background px-6">
-      <GitHubLink />
       <div>
         {session === null ? (
           <Link

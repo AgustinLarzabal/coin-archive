@@ -14,7 +14,7 @@ import { theme } from "../schema/theme"
 import type { CoinListRecord } from "./map-get-coins-row"
 import { mapGetCoinsRowsToCoinRecords } from "./map-get-coins-row"
 
-const defaultGetCoinsLimit = 15
+const defaultGetCoinsLimit = 30
 
 export type GetCoinsOptions = {
   distributionCode?: string

@@ -8,7 +8,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Plus, RotateCcw, Save } from "lucide-react"
 
 import { PrivatePage } from "../../components/private-page"
-import { getRequestAuthSession } from "../../lib/auth-session"
+import { getAuthSession } from "../../lib/auth-session"
 import { getEditorRouteAuthorization } from "../../lib/private-route"
 import type {
   CatalogueFieldErrors,
@@ -102,7 +102,7 @@ function DatabasePage() {
 }
 
 async function getCatalogueMutationCollector() {
-  const session = await getRequestAuthSession()
+  const session = await getAuthSession()
 
   return session?.user ?? null
 }

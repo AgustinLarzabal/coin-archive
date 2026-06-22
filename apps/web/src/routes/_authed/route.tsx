@@ -3,6 +3,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 import { getAuthSession } from "../../lib/auth-session"
 import { getCollectorRouteRedirect } from "../../lib/private-route"
 import { AuthedHeader } from "@/components/authed-header"
+import { Sidebar } from "@/components/sidebar"
 
 function getRouteRedirectTarget(location: {
   hash: string
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authed")({
 function AuthedRouteComponent() {
   return (
     <div className="flex min-h-svh flex-col">
+      <Sidebar />
       <div className="flex h-screen flex-col md:ml-[70px]">
         <AuthedHeader />
         <div className="grow p-4 md:px-8 md:py-6">

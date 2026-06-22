@@ -5,6 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar"
+import { Button } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,18 +24,25 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Avatar>
-            {session?.user.image && (
-              <AvatarImage
-                src={session.user.image}
-                alt={session.user.name}
-                className="grayscale"
-              />
-            )}
-            <AvatarFallback>
-              {session?.user.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-full p-0"
+          >
+            <Avatar>
+              {session?.user.image && (
+                <AvatarImage
+                  src={session.user.image}
+                  alt={session.user.name}
+                  className="grayscale"
+                />
+              )}
+              <AvatarFallback>
+                {session?.user.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
         }
       />
 

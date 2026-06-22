@@ -1,5 +1,4 @@
 import { NotFound } from "@/components/not-found"
-import { SiteHeader } from "@/components/site-header"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import {
@@ -69,7 +68,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="relative flex min-h-svh flex-col">
         <TooltipProvider>
-          <SiteHeader />
           {children}
         </TooltipProvider>
         <Scripts />

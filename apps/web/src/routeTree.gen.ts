@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
+import { Route as publicRouteRouteImport } from './routes/(public)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as AuthedDatabaseRouteImport } from './routes/_authed/database'
@@ -21,10 +22,14 @@ const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const publicIndexRoute = publicIndexRouteImport.update({
-  id: '/(public)/',
-  path: '/',
+const publicRouteRoute = publicRouteRouteImport.update({
+  id: '/(public)',
   getParentRoute: () => rootRouteImport,
+} as any)
+const publicIndexRoute = publicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => publicRouteRoute,
 } as any)
 const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
   id: '/settings',
@@ -37,9 +42,9 @@ const AuthedDatabaseRoute = AuthedDatabaseRouteImport.update({
   getParentRoute: () => AuthedRouteRoute,
 } as any)
 const publicLoginRoute = publicLoginRouteImport.update({
-  id: '/(public)/login',
+  id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -47,9 +52,9 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicCoinsCoinIdRoute = publicCoinsCoinIdRouteImport.update({
-  id: '/(public)/coins/$coinId',
+  id: '/coins/$coinId',
   path: '/coins/$coinId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -70,6 +75,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/(public)': typeof publicRouteRouteWithChildren
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/(public)/login': typeof publicLoginRoute
   '/_authed/database': typeof AuthedDatabaseRoute
@@ -97,6 +103,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
   id:
     | '__root__'
+    | '/(public)'
     | '/_authed'
     | '/(public)/login'
     | '/_authed/database'
@@ -107,10 +114,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  publicRouteRoute: typeof publicRouteRouteWithChildren
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
-  publicLoginRoute: typeof publicLoginRoute
-  publicIndexRoute: typeof publicIndexRoute
-  publicCoinsCoinIdRoute: typeof publicCoinsCoinIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -123,12 +128,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(public)': {
+      id: '/(public)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(public)/': {
       id: '/(public)/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/_authed/settings': {
       id: '/_authed/settings'
@@ -149,7 +161,7 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof publicLoginRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -163,10 +175,26 @@ declare module '@tanstack/react-router' {
       path: '/coins/$coinId'
       fullPath: '/coins/$coinId'
       preLoaderRoute: typeof publicCoinsCoinIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
   }
 }
+
+interface publicRouteRouteChildren {
+  publicLoginRoute: typeof publicLoginRoute
+  publicIndexRoute: typeof publicIndexRoute
+  publicCoinsCoinIdRoute: typeof publicCoinsCoinIdRoute
+}
+
+const publicRouteRouteChildren: publicRouteRouteChildren = {
+  publicLoginRoute: publicLoginRoute,
+  publicIndexRoute: publicIndexRoute,
+  publicCoinsCoinIdRoute: publicCoinsCoinIdRoute,
+}
+
+const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
+  publicRouteRouteChildren,
+)
 
 interface AuthedRouteRouteChildren {
   AuthedDatabaseRoute: typeof AuthedDatabaseRoute
@@ -183,10 +211,8 @@ const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  publicRouteRoute: publicRouteRouteWithChildren,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
-  publicLoginRoute: publicLoginRoute,
-  publicIndexRoute: publicIndexRoute,
-  publicCoinsCoinIdRoute: publicCoinsCoinIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

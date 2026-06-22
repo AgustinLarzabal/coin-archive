@@ -7,9 +7,9 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Plus, RotateCcw, Save } from "lucide-react"
 
-import { PrivatePage } from "../components/private-page"
-import { getAuthSession } from "../lib/auth-session"
-import { getEditorRouteAuthorization } from "../lib/private-route"
+import { PrivatePage } from "../../components/private-page"
+import { getAuthSession } from "../../lib/auth-session"
+import { getEditorRouteAuthorization } from "../../lib/private-route"
 import type {
   CatalogueFieldErrors,
   CatalogueMutationResult,
@@ -219,6 +219,8 @@ function CatalogueCreateForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    clear()
+
     const validationResult = validateCatalogueDraft(draft)
 
     if (validationResult !== null) {
@@ -232,119 +234,81 @@ function CatalogueCreateForm() {
       const result = await createCatalogue({
         data: draft,
       })
-      const isSuccess = apply(result)
+      const shouldReset = apply(result)
 
-      if (!isSuccess) {
-        return
+      if (shouldReset) {
+        setDraft(EMPTY_CATALOGUE_DRAFT)
+        await router.invalidate()
       }
-
-      setDraft(EMPTY_CATALOGUE_DRAFT)
-      await router.invalidate()
     } finally {
       setIsPending(false)
     }
   }
 
-  function handleDraftChange(
-    field: keyof CatalogueDraft,
-    value: CatalogueDraft[keyof CatalogueDraft]
-  ) {
-    clear()
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      [field]: value,
-    }))
-  }
-
   return (
-    <form className="space-y-3 rounded-xl border p-4" onSubmit={handleSubmit}>
-      <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)_auto] md:items-start">
-        <div className="space-y-1">
-          <label
-            className="text-xs font-medium"
-            htmlFor="catalogue-create-code"
-          >
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="catalogue-code">
             Catalogue Code
           </label>
           <Input
-            id="catalogue-create-code"
+            id="catalogue-code"
             name="code"
-            placeholder="KM"
             value={draft.code}
-            aria-invalid={fieldErrors.code !== undefined}
-            onChange={(event) => handleDraftChange("code", event.target.value)}
+            placeholder="KM"
+            onChange={(event) =>
+              setDraft((currentDraft) => ({
+                ...currentDraft,
+                code: event.target.value,
+              }))
+            }
           />
-          <CatalogueFieldError message={fieldErrors.code} />
+          {fieldErrors.code ? (
+            <p className="text-sm text-destructive">{fieldErrors.code}</p>
+          ) : null}
         </div>
-        <div className="space-y-1">
-          <label
-            className="text-xs font-medium"
-            htmlFor="catalogue-create-title"
-          >
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="catalogue-title">
             Catalogue Title
           </label>
           <Input
-            id="catalogue-create-title"
+            id="catalogue-title"
             name="title"
-            placeholder="Standard Catalog of World Coins"
             value={draft.title}
-            aria-invalid={fieldErrors.title !== undefined}
-            onChange={(event) => handleDraftChange("title", event.target.value)}
+            placeholder="Standard Catalog of World Coins"
+            onChange={(event) =>
+              setDraft((currentDraft) => ({
+                ...currentDraft,
+                title: event.target.value,
+              }))
+            }
           />
-          <CatalogueFieldError message={fieldErrors.title} />
-        </div>
-        <div className="flex items-end">
-          <Button disabled={isPending} type="submit">
-            <Plus />
-            Add Catalogue
-          </Button>
+          {fieldErrors.title ? (
+            <p className="text-sm text-destructive">{fieldErrors.title}</p>
+          ) : null}
         </div>
       </div>
-      <CatalogueFormFeedback
-        formError={formError}
-        successMessage={successMessage}
-      />
+      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {successMessage ? (
+        <p className="text-sm text-emerald-700">{successMessage}</p>
+      ) : null}
+      <Button className="gap-2" type="submit" disabled={isPending}>
+        <Plus className="size-4" />
+        Add Catalogue
+      </Button>
     </form>
   )
 }
 
-function CatalogueMaintenanceTable({
-  catalogues,
-}: CatalogueMaintenanceTableProps) {
-  return (
-    <div className="overflow-x-auto rounded-xl border">
-      <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="py-2 pr-4 pl-4 font-medium" scope="col">
-              Code
-            </th>
-            <th className="py-2 pr-4 font-medium" scope="col">
-              Title
-            </th>
-            <th className="py-2 pr-4 font-medium" scope="col">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {catalogues.map((catalogue) => (
-            <CatalogueMaintenanceRow catalogue={catalogue} key={catalogue.id} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
+type CatalogueEditFormProps = {
+  catalogue: CatalogueOption
 }
 
-function CatalogueMaintenanceRow({
-  catalogue,
-}: {
-  catalogue: CatalogueOption
-}) {
+function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
+  const formId = useId()
   const router = useRouter()
   const updateCatalogue = useServerFn(updateCatalogueMaintenanceCatalogue)
-  const formId = useId()
   const [draft, setDraft] = useState<CatalogueDraft>({
     code: catalogue.code,
     title: catalogue.title,
@@ -359,6 +323,8 @@ function CatalogueMaintenanceRow({
     successMessage,
   } = useCatalogueFormFeedback()
   const [isPending, setIsPending] = useState(false)
+  const hasChanges =
+    draft.code !== catalogue.code || draft.title !== catalogue.title
 
   useEffect(() => {
     setDraft({
@@ -369,30 +335,10 @@ function CatalogueMaintenanceRow({
     setFormError(null)
   }, [catalogue.code, catalogue.title, setFieldErrors, setFormError])
 
-  const isDirty =
-    draft.code !== catalogue.code || draft.title !== catalogue.title
-
-  function handleDraftChange(
-    field: keyof CatalogueDraft,
-    value: CatalogueDraft[keyof CatalogueDraft]
-  ) {
-    clear()
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      [field]: value,
-    }))
-  }
-
-  function handleReset() {
-    setDraft({
-      code: catalogue.code,
-      title: catalogue.title,
-    })
-    clear()
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    clear()
 
     const validationResult = validateCatalogueDraft(draft, catalogue.id)
 
@@ -410,94 +356,123 @@ function CatalogueMaintenanceRow({
           ...draft,
         },
       })
-      const isSuccess = apply(result)
+      const shouldRefresh = apply(result)
 
-      if (!isSuccess) {
-        return
+      if (shouldRefresh) {
+        await router.invalidate()
       }
-
-      await router.invalidate()
     } finally {
       setIsPending(false)
     }
   }
 
-  return (
-    <tr className="border-b last:border-b-0">
-      <td className="p-4 align-top">
-        <Input
-          form={formId}
-          name="code"
-          value={draft.code}
-          aria-invalid={fieldErrors.code !== undefined}
-          onChange={(event) => handleDraftChange("code", event.target.value)}
-        />
-        <CatalogueFieldError message={fieldErrors.code} />
-      </td>
-      <td className="p-4 align-top">
-        <Input
-          form={formId}
-          name="title"
-          value={draft.title}
-          aria-invalid={fieldErrors.title !== undefined}
-          onChange={(event) => handleDraftChange("title", event.target.value)}
-        />
-        <CatalogueFieldError message={fieldErrors.title} />
-      </td>
-      <td className="p-4 align-top">
-        <form id={formId} onSubmit={handleSubmit} />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button disabled={!isDirty || isPending} form={formId} type="submit">
-            <Save />
-            Save
-          </Button>
-          {isDirty ? (
-            <Button onClick={handleReset} type="button" variant="outline">
-              <RotateCcw />
-              Reset
-            </Button>
-          ) : null}
-        </div>
-        <CatalogueFormFeedback
-          formError={formError}
-          successMessage={successMessage}
-        />
-      </td>
-    </tr>
-  )
-}
-
-function CatalogueFieldError({ message }: { message?: string }) {
-  if (message === undefined) {
-    return null
+  function handleReset() {
+    clear()
+    setDraft({
+      code: catalogue.code,
+      title: catalogue.title,
+    })
   }
 
   return (
-    <p className="mt-1 text-xs text-destructive" role="alert">
-      {message}
-    </p>
+    <>
+      <form id={formId} onSubmit={handleSubmit} />
+      <tr className="border-t align-top">
+        <td className="p-4">
+          <div className="space-y-2">
+            <Input
+              form={formId}
+              name="code"
+              value={draft.code}
+              placeholder="KM"
+              disabled={isPending}
+              onChange={(event) =>
+                setDraft((currentDraft) => ({
+                  ...currentDraft,
+                  code: event.target.value,
+                }))
+              }
+            />
+            {fieldErrors.code ? (
+              <p className="text-sm text-destructive">{fieldErrors.code}</p>
+            ) : null}
+          </div>
+        </td>
+        <td className="p-4">
+          <div className="space-y-2">
+            <Input
+              form={formId}
+              name="title"
+              value={draft.title}
+              placeholder="Standard Catalog of World Coins"
+              disabled={isPending}
+              onChange={(event) =>
+                setDraft((currentDraft) => ({
+                  ...currentDraft,
+                  title: event.target.value,
+                }))
+              }
+            />
+            {fieldErrors.title ? (
+              <p className="text-sm text-destructive">{fieldErrors.title}</p>
+            ) : null}
+          </div>
+        </td>
+        <td className="space-y-2 p-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              className="gap-2"
+              form={formId}
+              type="submit"
+              size="sm"
+              disabled={!hasChanges || isPending}
+            >
+              <Save className="size-4" />
+              Save
+            </Button>
+            <Button
+              className="gap-2"
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!hasChanges || isPending}
+              onClick={handleReset}
+            >
+              <RotateCcw className="size-4" />
+              Reset
+            </Button>
+          </div>
+          {formError ? (
+            <p className="text-sm text-destructive">{formError}</p>
+          ) : null}
+          {successMessage ? (
+            <p className="text-sm text-emerald-700">{successMessage}</p>
+          ) : null}
+        </td>
+      </tr>
+    </>
   )
 }
 
-function CatalogueFormFeedback({
-  formError,
-  successMessage,
-}: {
-  formError: string | null
-  successMessage: string | null
-}) {
+function CatalogueMaintenanceTable({
+  catalogues,
+}: CatalogueMaintenanceTableProps) {
   return (
-    <div className="mt-2 space-y-1">
-      {formError !== null ? (
-        <p className="text-xs text-destructive" role="alert">
-          {formError}
-        </p>
-      ) : null}
-      {successMessage !== null ? (
-        <p className="text-xs text-foreground" role="status">
-          {successMessage}
-        </p>
-      ) : null}
+    <div className="overflow-x-auto">
+      <table className="min-w-full border-separate border-spacing-0 rounded-xl border">
+        <thead className="bg-muted/50 text-left text-sm">
+          <tr>
+            <th className="px-4 py-3 font-medium">Code</th>
+            <th className="px-4 py-3 font-medium">Title</th>
+            <th className="px-4 py-3 font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {catalogues.map((catalogue) => (
+            <CatalogueEditForm key={catalogue.id} catalogue={catalogue} />
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -505,10 +480,12 @@ function CatalogueFormFeedback({
 export function CatalogueMaintenanceAccessDeniedPage() {
   return (
     <CatalogueMaintenanceScaffold>
-      <h2 className="text-lg font-semibold">Access denied</h2>
-      <p className="text-sm text-muted-foreground">
-        Only Editors and Admins can access catalogue maintenance.
-      </p>
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold">Access denied</h2>
+        <p className="text-sm text-muted-foreground">
+          Only Editors and Admins can access catalogue maintenance.
+        </p>
+      </div>
     </CatalogueMaintenanceScaffold>
   )
 }

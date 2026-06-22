@@ -1,8 +1,8 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 
-import { AuthedRouteLayout } from "../components/authed-route-layout"
-import { getAuthSession } from "../lib/auth-session"
-import { getCollectorRouteRedirect } from "../lib/private-route"
+import { AuthedRouteLayout } from "../../components/authed-route-layout"
+import { getAuthSession } from "../../lib/auth-session"
+import { getCollectorRouteRedirect } from "../../lib/private-route"
 
 function getRouteRedirectTarget(location: {
   hash: string

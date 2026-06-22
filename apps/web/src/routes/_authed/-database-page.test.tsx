@@ -18,7 +18,7 @@ vi.mock("@tanstack/react-router", async () => {
 import {
   CatalogueMaintenanceAccessDeniedPage,
   CatalogueMaintenancePage,
-} from "./_authed.database"
+} from "./database"
 
 const TEST_CATALOGUE_TIMESTAMP = new Date("2026-01-01T00:00:00.000Z")
 
@@ -77,7 +77,7 @@ describe("CatalogueMaintenancePage", () => {
     expect(markup).toMatch(/<form id="[^"]+"><\/form>/)
     expect(markup).toMatch(/form="[^"]+"[^>]+name="code"/)
     expect(markup).toMatch(/form="[^"]+"[^>]+name="title"/)
-    expect(markup).not.toContain(">Reset<")
+    expect(markup).toContain("Reset</button>")
   })
 })
 

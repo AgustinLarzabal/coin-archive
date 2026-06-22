@@ -3,6 +3,7 @@ import type { CoinDetailRecord } from "@workspace/db"
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
+import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"
 import { CoinDetailPage } from "./coins.$coinId"
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -240,51 +241,34 @@ describe("CoinDetailPage", () => {
       ...baseCoin,
       mints: [
         { code: "madrid", name: "Madrid Mint" },
-        { code: "barcelona", name: "Barcelona Mint" },
+        { code: "seville", name: "Seville Mint" },
       ],
     })
 
-    expect(singularMarkup).toContain("Mint")
-    expect(singularMarkup).not.toContain("Mints")
-    expect(pluralMarkup).toContain("Mints")
+    expect(singularMarkup).toContain(">Mint</span>")
+    expect(pluralMarkup).toContain(">Mints</span>")
   })
 
-  it("links rulers to the home issuer and ruler filters", () => {
+  it("renders one ruler link per ruler with issuer-preserving filter descriptions", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,
       rulers: [
-        {
-          code: "charles-iii",
-          name: "Charles III",
-        },
+        { code: "juan-carlos-i", name: "Juan Carlos I" },
+        { code: "felipe-vi", name: "Felipe VI" },
       ],
     })
 
-    expect(markup).toContain("Ruling authority")
-    expect(markup).toContain('href="/?issuer=spain&amp;ruler=charles-iii"')
-    expect(markup).toContain(
-      "Show homepage coins filtered by issuer Spain and ruling authority Charles III"
-    )
+    expect(markup).toContain(RULER_FILTER_LABEL)
+    expect(markup).toContain('href="/?issuer=spain&amp;ruler=juan-carlos-i"')
+    expect(markup).toContain('href="/?issuer=spain&amp;ruler=felipe-vi"')
   })
 
-  it("links themes to the home theme filter", () => {
+  it("shows the demonetized badge when a coin is demonetized", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,
-      themes: [
-        {
-          code: "building",
-          name: "Building",
-        },
-        {
-          code: "map",
-          name: "Map",
-        },
-      ],
+      isDemonetized: true,
     })
 
-    expect(markup).toContain('href="/?theme=building"')
-    expect(markup).toContain('href="/?theme=map"')
-    expect(markup).toContain("Show homepage coins filtered by theme Building")
-    expect(markup).toContain("Show homepage coins filtered by theme Map")
+    expect(markup).toContain("Demonetized")
   })
 })

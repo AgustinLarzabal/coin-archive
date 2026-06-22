@@ -7,7 +7,7 @@ import {
   getCoinListLoaderDeps,
   hasActiveCoinSearchFilters,
   updateCoinSearchFilter,
-} from "../lib/coin-search"
+} from "../../lib/coin-search"
 
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
@@ -19,7 +19,7 @@ const getCoinListData = createServerFn({ method: "GET" })
 
 const rootRouteApi = getRouteApi("__root__")
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/(public)/")({
   validateSearch: coinSearchSchema,
   loaderDeps: ({ search }) => getCoinListLoaderDeps(search),
   loader: ({ deps }) => getCoinListData({ data: deps }),

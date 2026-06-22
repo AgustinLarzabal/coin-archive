@@ -28,10 +28,10 @@ export const Route = createFileRoute("/_authed")({
 
 function AuthedRouteComponent() {
   return (
-    <main className="flex flex-1 justify-center p-6">
-      <div className="w-full max-w-3xl">
+    <div className="min-h-svh">
+      <div className="grow p-4 md:px-8 md:py-6">
         <Outlet />
       </div>
-    </main>
+    </div>
   )
 }

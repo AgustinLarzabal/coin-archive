@@ -1,10 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { LoginPage } from "./login"
 
 describe("LoginPage", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it("renders Google as the only sign-in method", () => {
+    vi.stubEnv("VITE_AUTH_GOOGLE_ENABLED", "true")
+
     const markup = renderToStaticMarkup(
       <LoginPage redirectTarget="/coins/coin-1" />
     )

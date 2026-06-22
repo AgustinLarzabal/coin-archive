@@ -7,6 +7,13 @@ export const authClient = createAuthClient({
   plugins: [inferAdditionalFields<typeof auth>()],
 })
 
-export { collectorRoleValues, hasAdminAccess, hasEditorAccess, isCollectorRole } from "./roles"
+export {
+  collectorRoleValues,
+  hasAdminAccess,
+  hasEditorAccess,
+  isCollectorRole,
+} from "./roles"
 
 export type { CollectorRole } from "./roles"
+
+export type OAuthProvider = "google"

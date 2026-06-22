@@ -5,8 +5,10 @@ import {
   getAuthenticatedLoginRedirect,
   getSafeAuthRedirect,
 } from "../../lib/auth-redirect"
+import { OAuthSignIn } from "../../components/o-auth-signin"
+import { getEnabledProviders } from "../../lib/enabled-providers"
 import { getAuthSession } from "../../lib/auth-session"
-import { startGoogleSignIn } from "../../lib/google-sign-in"
+import { authClient } from "@workspace/auth/client"
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
@@ -48,27 +50,32 @@ function LoginRoute() {
 }
 
 export function LoginPage({ redirectTarget }: LoginPageProps) {
-  function handleGoogleSignIn() {
-    void startGoogleSignIn(redirectTarget)
-  }
+  const callbackURL = getSafeAuthRedirect(redirectTarget)
+  const enabledProviders = getEnabledProviders()
 
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <section className="w-full max-w-md rounded-2xl border bg-card p-8 shadow-sm">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">Sign in</h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in with Google to continue as a Collector.
+    <div className="flex flex-1 items-center justify-center p-6">
+      <div className="flex w-full max-w-sm flex-col space-y-8">
+        <div className="space-y-4 text-center">
+          <h1 className="font-serif text-lg">Welcome to Coin Archive</h1>
+          <p className="font-sans text-sm text-muted-foreground">
+            Sign in or create an account
           </p>
         </div>
-        <button
-          className="mt-6 w-full rounded-md border px-4 py-3 text-sm font-medium"
-          type="button"
-          onClick={handleGoogleSignIn}
-        >
-          Continue with Google
-        </button>
-      </section>
-    </main>
+
+        {enabledProviders.length > 0 && (
+          <>
+            <div>
+              <OAuthSignIn
+                providers={enabledProviders}
+                onProviderClick={(provider) =>
+                  authClient.signIn.social({ provider, callbackURL })
+                }
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }

@@ -6,6 +6,7 @@ import viteReact from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 
 const config = defineConfig({
+  envDir: fileURLToPath(new URL("../../", import.meta.url)),
   resolve: {
     alias: {
       "@workspace/auth/client": fileURLToPath(

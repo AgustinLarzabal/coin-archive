@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_authed/settings")({
   component: SettingsPage,
 })
 
-function SettingsPage() {
+export function SettingsPage() {
   return (
     <PrivatePage
       title="Settings"

@@ -1,6 +1,5 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 
-import { AuthedRouteLayout } from "../../components/authed-route-layout"
 import { getAuthSession } from "../../lib/auth-session"
 import { getCollectorRouteRedirect } from "../../lib/private-route"
 
@@ -29,8 +28,10 @@ export const Route = createFileRoute("/_authed")({
 
 function AuthedRouteComponent() {
   return (
-    <AuthedRouteLayout>
-      <Outlet />
-    </AuthedRouteLayout>
+    <main className="flex flex-1 justify-center p-6">
+      <div className="w-full max-w-3xl">
+        <Outlet />
+      </div>
+    </main>
   )
 }

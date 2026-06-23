@@ -32,7 +32,7 @@ function buildCatalogue(overrides: {
 }
 
 describe("CatalogueMaintenancePage", () => {
-  it("renders Catalogue create and edit forms", () => {
+  it("renders the catalogues table", () => {
     const catalogues: CatalogueOption[] = [
       buildCatalogue({
         id: "catalogue-2",
@@ -49,33 +49,20 @@ describe("CatalogueMaintenancePage", () => {
       <CatalogueMaintenancePage catalogues={catalogues} />
     )
 
-    expect(markup).toContain("Catalogues")
-    expect(markup).toContain(
-      "Add a Catalogue or edit an existing Catalogue Code and Catalogue Title."
-    )
-    expect(markup).toContain("Catalogue Code")
-    expect(markup).toContain("Catalogue Title")
-    expect(markup).toContain("Add Catalogue")
+    expect(markup).toContain("Filter catalogues...")
     expect(markup).toContain("<table")
     expect(markup).toContain("<thead")
     expect(markup).toContain("<tbody")
-    expect(markup).toContain(">Code<")
-    expect(markup).toContain(">Title<")
-    expect(markup).toContain(">Actions<")
-    expect(markup).toContain('name="code" value="RIC"')
-    expect(markup).toContain('name="title" value="Roman Imperial Coinage"')
-    expect(markup).toContain('name="code" value="KM"')
-    expect(markup).toContain(
-      'name="title" value="Standard Catalog of World Coins"'
-    )
-    expect(markup).toContain('placeholder="KM"')
-    expect(markup).toContain('placeholder="Standard Catalog of World Coins"')
-    expect(markup).toContain("Save</button>")
+    expect(markup).toContain("Code")
+    expect(markup).toContain("Title")
+    expect(markup).toContain("RIC")
+    expect(markup).toContain("Roman Imperial Coinage")
+    expect(markup).toContain("KM")
+    expect(markup).toContain("Standard Catalog of World Coins")
+    expect(markup).toContain('aria-label="Actions"')
+    expect(markup).toContain("Previous</button>")
+    expect(markup).toContain("Next</button>")
     expect(markup).toContain('disabled=""')
-    expect(markup).toMatch(/<form id="[^"]+"><\/form>/)
-    expect(markup).toMatch(/form="[^"]+"[^>]+name="code"/)
-    expect(markup).toMatch(/form="[^"]+"[^>]+name="title"/)
-    expect(markup).toContain("Reset</button>")
   })
 })
 

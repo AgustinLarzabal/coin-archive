@@ -4,10 +4,10 @@ import { SecondaryMenu } from "@/components/secondary-menu"
 import { getEditorRouteAuthorization } from "@/lib/private-route"
 import {
   CatalogueMaintenanceAccessDeniedPage,
-  CatalogueMaintenancePage,
   databaseSecondaryMenuItems,
   getCatalogueMaintenanceCatalogues,
 } from "./-database-page"
+import { CataloguesTable } from "@/components/catalogues-table"
 
 export const Route = createFileRoute("/_app/_authed/database/catalogues")({
   loader: async ({ context }) => {
@@ -39,7 +39,7 @@ function DatabaseCataloguesComponent() {
       <SecondaryMenu items={[...databaseSecondaryMenuItems]} />
 
       <main className="mt-8">
-        <CatalogueMaintenancePage catalogues={loaderData.catalogues} />
+        <CataloguesTable catalogues={loaderData.catalogues} />
       </main>
     </div>
   )

@@ -18,7 +18,7 @@ import {
 } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type MutableRefObject } from "react"
 
 import type { CollectorDeletionResult } from "../routes/_app/_authed/-collector-deletion-form"
 
@@ -29,6 +29,8 @@ type DeleteCollectorProfileProps = {
   onDeleted: (redirectTo: "/") => void | Promise<void>
 }
 
+type CollectorDeletionSubmitLock = MutableRefObject<boolean>
+
 export function isCollectorDeletionReady(
   confirmationPhrase: string,
   isPending: boolean
@@ -36,11 +38,9 @@ export function isCollectorDeletionReady(
   return confirmationPhrase === "DELETE" && !isPending
 }
 
-type CollectorDeletionRequestDependencies = {
+type RequestCollectorDeletionOptions = {
   confirmationPhrase: string
-  isSubmittingRef: {
-    current: boolean
-  }
+  submitLock: CollectorDeletionSubmitLock
   onDeleteCollectorProfile: DeleteCollectorProfileProps["onDeleteCollectorProfile"]
   onDeleted: DeleteCollectorProfileProps["onDeleted"]
   setConfirmationError: (error: string | null) => void
@@ -51,19 +51,19 @@ type CollectorDeletionRequestDependencies = {
 
 export async function requestCollectorDeletion({
   confirmationPhrase,
-  isSubmittingRef,
+  submitLock,
   onDeleteCollectorProfile,
   onDeleted,
   setConfirmationError,
   setFormError,
   setIsOpen,
   setIsPending,
-}: CollectorDeletionRequestDependencies) {
-  if (isSubmittingRef.current) {
+}: RequestCollectorDeletionOptions): Promise<void> {
+  if (submitLock.current) {
     return
   }
 
-  isSubmittingRef.current = true
+  submitLock.current = true
   setConfirmationError(null)
   setFormError(null)
   setIsPending(true)
@@ -82,7 +82,7 @@ export async function requestCollectorDeletion({
     setConfirmationError(result.fieldErrors.confirmationPhrase ?? null)
     setFormError(result.formError ?? null)
   } finally {
-    isSubmittingRef.current = false
+    submitLock.current = false
     setIsPending(false)
   }
 }
@@ -96,10 +96,10 @@ export function DeleteCollectorProfile({
   const [formError, setFormError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
-  const isSubmittingRef = useRef(false)
+  const submitLock = useRef(false)
 
   function resetDialogState() {
-    isSubmittingRef.current = false
+    submitLock.current = false
     setConfirmationPhrase("")
     setConfirmationError(null)
     setFormError(null)
@@ -117,7 +117,7 @@ export function DeleteCollectorProfile({
   async function handleDeleteCollectorProfile() {
     await requestCollectorDeletion({
       confirmationPhrase,
-      isSubmittingRef,
+      submitLock,
       onDeleteCollectorProfile,
       onDeleted,
       setConfirmationError,

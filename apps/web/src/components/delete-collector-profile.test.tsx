@@ -7,6 +7,35 @@ import {
   requestCollectorDeletion,
 } from "./delete-collector-profile"
 
+function createDeletionRequestOptions() {
+  const deletionRequest = {
+    resolve:
+      null as
+        | ((value: { status: "success"; redirectTo: "/" }) => void)
+        | null,
+  }
+  const onDeleteCollectorProfile = vi.fn(
+    () =>
+      new Promise<{ status: "success"; redirectTo: "/" }>((resolve) => {
+        deletionRequest.resolve = resolve
+      })
+  )
+
+  return {
+    options: {
+      confirmationPhrase: "DELETE" as const,
+      submitLock: { current: false },
+      onDeleteCollectorProfile,
+      onDeleted: vi.fn(),
+      setConfirmationError: vi.fn(),
+      setFormError: vi.fn(),
+      setIsOpen: vi.fn(),
+      setIsPending: vi.fn(),
+    },
+    deletionRequest,
+  }
+}
+
 describe("DeleteCollectorProfile", () => {
   it("renders Collector Deletion language and keeps the destructive action disabled until DELETE is entered", () => {
     const markup = renderToStaticMarkup(
@@ -30,62 +59,27 @@ describe("DeleteCollectorProfile", () => {
   })
 
   it("ignores repeated submit attempts while a Collector Deletion request is pending", async () => {
-    let resolveDeletion:
-      | ((value: { status: "success"; redirectTo: "/" }) => void)
-      | null = null
-    const onDeleteCollectorProfile = vi.fn(
-      () =>
-        new Promise<{ status: "success"; redirectTo: "/" }>((resolve) => {
-          resolveDeletion = resolve
-        })
-    )
-    const onDeleted = vi.fn()
-    const setConfirmationError = vi.fn()
-    const setFormError = vi.fn()
-    const setIsOpen = vi.fn()
-    const setIsPending = vi.fn()
-    const isSubmittingRef = {
-      current: false,
-    }
+    const { options, deletionRequest } = createDeletionRequestOptions()
 
-    const firstRequest = requestCollectorDeletion({
-      confirmationPhrase: "DELETE",
-      isSubmittingRef,
-      onDeleteCollectorProfile,
-      onDeleted,
-      setConfirmationError,
-      setFormError,
-      setIsOpen,
-      setIsPending,
-    })
+    const firstRequest = requestCollectorDeletion(options)
+    const secondRequest = requestCollectorDeletion(options)
 
-    const secondRequest = requestCollectorDeletion({
-      confirmationPhrase: "DELETE",
-      isSubmittingRef,
-      onDeleteCollectorProfile,
-      onDeleted,
-      setConfirmationError,
-      setFormError,
-      setIsOpen,
-      setIsPending,
-    })
+    expect(options.onDeleteCollectorProfile).toHaveBeenCalledTimes(1)
+    expect(options.setIsPending).toHaveBeenCalledTimes(1)
+    expect(options.setIsPending).toHaveBeenNthCalledWith(1, true)
 
-    expect(onDeleteCollectorProfile).toHaveBeenCalledTimes(1)
-    expect(setIsPending).toHaveBeenCalledTimes(1)
-    expect(setIsPending).toHaveBeenNthCalledWith(1, true)
+    expect(deletionRequest.resolve).not.toBeNull()
 
-    expect(resolveDeletion).not.toBeNull()
-
-    resolveDeletion!({
+    deletionRequest.resolve!({
       status: "success",
       redirectTo: "/",
     })
 
     await Promise.all([firstRequest, secondRequest])
 
-    expect(onDeleted).toHaveBeenCalledWith("/")
-    expect(setIsOpen).toHaveBeenCalledWith(false)
-    expect(setIsPending).toHaveBeenLastCalledWith(false)
-    expect(isSubmittingRef.current).toBe(false)
+    expect(options.onDeleted).toHaveBeenCalledWith("/")
+    expect(options.setIsOpen).toHaveBeenCalledWith(false)
+    expect(options.setIsPending).toHaveBeenLastCalledWith(false)
+    expect(options.submitLock.current).toBe(false)
   })
 })

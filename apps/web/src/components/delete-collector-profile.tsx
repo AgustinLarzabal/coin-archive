@@ -18,7 +18,7 @@ import {
 } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import type { CollectorDeletionResult } from "../routes/_app/_authed/-collector-deletion-form"
 
@@ -36,6 +36,57 @@ export function isCollectorDeletionReady(
   return confirmationPhrase === "DELETE" && !isPending
 }
 
+type CollectorDeletionRequestDependencies = {
+  confirmationPhrase: string
+  isSubmittingRef: {
+    current: boolean
+  }
+  onDeleteCollectorProfile: DeleteCollectorProfileProps["onDeleteCollectorProfile"]
+  onDeleted: DeleteCollectorProfileProps["onDeleted"]
+  setConfirmationError: (error: string | null) => void
+  setFormError: (error: string | null) => void
+  setIsOpen: (isOpen: boolean) => void
+  setIsPending: (isPending: boolean) => void
+}
+
+export async function requestCollectorDeletion({
+  confirmationPhrase,
+  isSubmittingRef,
+  onDeleteCollectorProfile,
+  onDeleted,
+  setConfirmationError,
+  setFormError,
+  setIsOpen,
+  setIsPending,
+}: CollectorDeletionRequestDependencies) {
+  if (isSubmittingRef.current) {
+    return
+  }
+
+  isSubmittingRef.current = true
+  setConfirmationError(null)
+  setFormError(null)
+  setIsPending(true)
+
+  try {
+    const result = await onDeleteCollectorProfile({
+      confirmationPhrase,
+    })
+
+    if (result.status === "success") {
+      setIsOpen(false)
+      await onDeleted(result.redirectTo)
+      return
+    }
+
+    setConfirmationError(result.fieldErrors.confirmationPhrase ?? null)
+    setFormError(result.formError ?? null)
+  } finally {
+    isSubmittingRef.current = false
+    setIsPending(false)
+  }
+}
+
 export function DeleteCollectorProfile({
   onDeleteCollectorProfile,
   onDeleted,
@@ -45,8 +96,10 @@ export function DeleteCollectorProfile({
   const [formError, setFormError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const isSubmittingRef = useRef(false)
 
   function resetDialogState() {
+    isSubmittingRef.current = false
     setConfirmationPhrase("")
     setConfirmationError(null)
     setFormError(null)
@@ -62,26 +115,16 @@ export function DeleteCollectorProfile({
   }, [isOpen])
 
   async function handleDeleteCollectorProfile() {
-    setConfirmationError(null)
-    setFormError(null)
-    setIsPending(true)
-
-    try {
-      const result = await onDeleteCollectorProfile({
-        confirmationPhrase,
-      })
-
-      if (result.status === "success") {
-        setIsOpen(false)
-        await onDeleted(result.redirectTo)
-        return
-      }
-
-      setConfirmationError(result.fieldErrors.confirmationPhrase ?? null)
-      setFormError(result.formError ?? null)
-    } finally {
-      setIsPending(false)
-    }
+    await requestCollectorDeletion({
+      confirmationPhrase,
+      isSubmittingRef,
+      onDeleteCollectorProfile,
+      onDeleted,
+      setConfirmationError,
+      setFormError,
+      setIsOpen,
+      setIsPending,
+    })
   }
 
   return (

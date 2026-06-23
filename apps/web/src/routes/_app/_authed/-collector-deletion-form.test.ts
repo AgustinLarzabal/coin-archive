@@ -51,6 +51,25 @@ describe("submitCollectorDeletion", () => {
     expect(dependencies.deleteCollectorIdentity).not.toHaveBeenCalled()
   })
 
+  it("returns a typed inline field error when the confirmation phrase is missing", async () => {
+    const dependencies = createDependencies()
+
+    await expect(
+      submitCollectorDeletion(
+        currentCollector,
+        { confirmationPhrase: "" },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {
+        confirmationPhrase: COLLECTOR_DELETION_CONFIRMATION_ERROR,
+      },
+    })
+
+    expect(dependencies.deleteCollectorIdentity).not.toHaveBeenCalled()
+  })
+
   it("deletes the current Collector derived from the request session", async () => {
     const dependencies = createDependencies({
       deleteCollectorIdentity: vi.fn().mockResolvedValue({

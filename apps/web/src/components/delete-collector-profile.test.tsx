@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   DeleteCollectorProfile,
   isCollectorDeletionReady,
+  requestCollectorDeletion,
 } from "./delete-collector-profile"
 
 describe("DeleteCollectorProfile", () => {
@@ -26,5 +27,65 @@ describe("DeleteCollectorProfile", () => {
     expect(isCollectorDeletionReady("delete", false)).toBe(false)
     expect(isCollectorDeletionReady("DELETE", true)).toBe(false)
     expect(isCollectorDeletionReady("DELETE", false)).toBe(true)
+  })
+
+  it("ignores repeated submit attempts while a Collector Deletion request is pending", async () => {
+    let resolveDeletion:
+      | ((value: { status: "success"; redirectTo: "/" }) => void)
+      | null = null
+    const onDeleteCollectorProfile = vi.fn(
+      () =>
+        new Promise<{ status: "success"; redirectTo: "/" }>((resolve) => {
+          resolveDeletion = resolve
+        })
+    )
+    const onDeleted = vi.fn()
+    const setConfirmationError = vi.fn()
+    const setFormError = vi.fn()
+    const setIsOpen = vi.fn()
+    const setIsPending = vi.fn()
+    const isSubmittingRef = {
+      current: false,
+    }
+
+    const firstRequest = requestCollectorDeletion({
+      confirmationPhrase: "DELETE",
+      isSubmittingRef,
+      onDeleteCollectorProfile,
+      onDeleted,
+      setConfirmationError,
+      setFormError,
+      setIsOpen,
+      setIsPending,
+    })
+
+    const secondRequest = requestCollectorDeletion({
+      confirmationPhrase: "DELETE",
+      isSubmittingRef,
+      onDeleteCollectorProfile,
+      onDeleted,
+      setConfirmationError,
+      setFormError,
+      setIsOpen,
+      setIsPending,
+    })
+
+    expect(onDeleteCollectorProfile).toHaveBeenCalledTimes(1)
+    expect(setIsPending).toHaveBeenCalledTimes(1)
+    expect(setIsPending).toHaveBeenNthCalledWith(1, true)
+
+    expect(resolveDeletion).not.toBeNull()
+
+    resolveDeletion!({
+      status: "success",
+      redirectTo: "/",
+    })
+
+    await Promise.all([firstRequest, secondRequest])
+
+    expect(onDeleted).toHaveBeenCalledWith("/")
+    expect(setIsOpen).toHaveBeenCalledWith(false)
+    expect(setIsPending).toHaveBeenLastCalledWith(false)
+    expect(isSubmittingRef.current).toBe(false)
   })
 })

@@ -197,4 +197,31 @@ describe("deleteCollectorIdentity integration", () => {
     expect(remainingAccounts?.count).toBe(0)
     expect(remainingSessions?.count).toBe(0)
   })
+
+  it("returns null when the same Collector Deletion is requested again after success", async () => {
+    await db.insert(user).values({
+      id: "collector-1",
+      name: "Collector One",
+      email: "collector@example.com",
+      emailVerified: true,
+      role: "collector",
+    })
+
+    await expect(
+      deleteCollectorIdentity({
+        collectorId: "collector-1",
+      })
+    ).resolves.toMatchObject({
+      status: "deleted",
+      collector: {
+        id: "collector-1",
+      },
+    })
+
+    await expect(
+      deleteCollectorIdentity({
+        collectorId: "collector-1",
+      })
+    ).resolves.toBeNull()
+  })
 })

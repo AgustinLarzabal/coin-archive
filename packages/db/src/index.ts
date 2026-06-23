@@ -47,6 +47,7 @@ export type { GetCoinsOptions } from "./queries/get-coins"
 export type { CoinDistributionRecord } from "./queries/coin-distribution-record"
 export type { CoinCompositionRecord } from "./queries/coin-composition-record"
 export type { CoinEdgeRecord } from "./queries/coin-edge-record"
+export type { DeleteCollectorIdentityResult } from "./mutations/delete-collector-identity"
 export type {
   CoinCurrencyRecord,
   CoinFaceValueRecord,

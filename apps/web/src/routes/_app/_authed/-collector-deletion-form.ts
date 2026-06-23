@@ -1,4 +1,5 @@
 import { z } from "zod"
+import type { DeleteCollectorIdentityResult } from "@workspace/db"
 
 export const COLLECTOR_DELETION_UNAUTHENTICATED_ERROR =
   "You must be signed in to delete your Collector profile."
@@ -32,21 +33,10 @@ export type CollectorDeletionResult =
 
 type CollectorDeletionInput = z.input<typeof collectorDeletionInputSchema>
 
-type DeletedCollectorIdentity =
-  | {
-      status: "deleted"
-      collector: {
-        id: string
-      }
-    }
-  | {
-      status: "blocked-last-admin"
-    }
-
 type CollectorDeletionDependencies = {
   deleteCollectorIdentity: (
     collectorId: string
-  ) => Promise<DeletedCollectorIdentity | null>
+  ) => Promise<DeleteCollectorIdentityResult | null>
 }
 
 type CollectorIdentity = {

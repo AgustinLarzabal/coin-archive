@@ -18,7 +18,7 @@ export type DeleteCollectorIdentityResult =
 
 export async function deleteCollectorIdentity({
   collectorId,
-}: DeleteCollectorIdentityInput) {
+}: DeleteCollectorIdentityInput): Promise<DeleteCollectorIdentityResult | null> {
   return db.transaction(async (tx) => {
     const existingCollector = (
       await tx.select().from(user).where(eq(user.id, collectorId)).limit(1)

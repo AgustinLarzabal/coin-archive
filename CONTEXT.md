@@ -10,18 +10,22 @@ _Avoid_: Coina, specimen, item
 
 **Collector**:
 A person who signs in to Coin Archive. A Collector may later receive permissions to maintain catalogue data.
-_Avoid_: User, account, visitor
+_Avoid_: User, account, visitor, Personal Account
 
 **Collector Role**:
 The permission level assigned to a Collector. A Collector Role starts as collector-only and may later distinguish catalogue maintenance and access-management responsibilities.
 _Avoid_: User type, account type
+
+**Collector Deletion**:
+The irreversible removal of a Collector's Coin Archive sign-in identity. Collector Deletion does not remove catalogue data.
+_Avoid_: Account deletion, user deletion, profile deactivation, catalogue deletion
 
 **Editor**:
 A Collector Role for a Collector trusted to maintain catalogue data.
 _Avoid_: Curator, contributor
 
 **Admin**:
-A Collector Role for a Collector trusted to manage elevated access for other Collectors.
+A Collector Role for a Collector trusted to manage elevated access for other Collectors. The last Admin represents the archive's remaining access-management authority and must not be removed without first assigning another Admin.
 _Avoid_: Superuser, owner
 
 **Coin Title**:

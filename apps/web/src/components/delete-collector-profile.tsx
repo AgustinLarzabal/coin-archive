@@ -32,7 +32,7 @@ type DeleteCollectorProfileProps = {
 export function isCollectorDeletionReady(
   confirmationPhrase: string,
   isPending: boolean
-) {
+): boolean {
   return confirmationPhrase === "DELETE" && !isPending
 }
 
@@ -46,15 +46,19 @@ export function DeleteCollectorProfile({
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
 
+  function resetDialogState() {
+    setConfirmationPhrase("")
+    setConfirmationError(null)
+    setFormError(null)
+    setIsPending(false)
+  }
+
   useEffect(() => {
     if (isOpen) {
       return
     }
 
-    setConfirmationPhrase("")
-    setConfirmationError(null)
-    setFormError(null)
-    setIsPending(false)
+    resetDialogState()
   }, [isOpen])
 
   async function handleDeleteCollectorProfile() {

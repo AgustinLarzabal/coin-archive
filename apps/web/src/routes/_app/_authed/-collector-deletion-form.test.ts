@@ -17,6 +17,10 @@ function createDependencies(overrides?: {
 }
 
 describe("submitCollectorDeletion", () => {
+  const currentCollector = {
+    id: "collector-1",
+  }
+
   it("returns an inline authentication error for signed-out deletion attempts", async () => {
     await expect(
       submitCollectorDeletion(null, { confirmationPhrase: "DELETE" })
@@ -32,10 +36,7 @@ describe("submitCollectorDeletion", () => {
 
     await expect(
       submitCollectorDeletion(
-        {
-          id: "collector-1",
-          role: "collector",
-        },
+        currentCollector,
         { confirmationPhrase: "delete" },
         dependencies
       )
@@ -55,17 +56,15 @@ describe("submitCollectorDeletion", () => {
         id: "collector-1",
       }),
     })
+    const forgedInput = {
+      confirmationPhrase: "DELETE",
+      collectorId: "collector-2",
+    }
 
     await expect(
       submitCollectorDeletion(
-        {
-          id: "collector-1",
-          role: "collector",
-        },
-        {
-          confirmationPhrase: "DELETE",
-          collectorId: "collector-2",
-        } as never,
+        currentCollector,
+        forgedInput,
         dependencies
       )
     ).resolves.toStrictEqual({
@@ -81,10 +80,7 @@ describe("submitCollectorDeletion", () => {
   it("returns a generic form error for unexpected persistence failures", async () => {
     await expect(
       submitCollectorDeletion(
-        {
-          id: "collector-1",
-          role: "collector",
-        },
+        currentCollector,
         { confirmationPhrase: "DELETE" },
         createDependencies({
           deleteCollectorIdentity: vi.fn().mockRejectedValue(new Error("boom")),
@@ -100,10 +96,7 @@ describe("submitCollectorDeletion", () => {
   it("returns an inline authentication error when the current Collector row is already gone", async () => {
     await expect(
       submitCollectorDeletion(
-        {
-          id: "collector-1",
-          role: "collector",
-        },
+        currentCollector,
         { confirmationPhrase: "DELETE" },
         createDependencies({
           deleteCollectorIdentity: vi.fn().mockResolvedValue(null),

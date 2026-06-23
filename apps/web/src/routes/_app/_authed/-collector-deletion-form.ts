@@ -30,13 +30,18 @@ export type CollectorDeletionResult =
 
 type CollectorDeletionInput = z.input<typeof collectorDeletionInputSchema>
 
+type DeletedCollectorIdentity = {
+  id: string
+}
+
 type CollectorDeletionDependencies = {
-  deleteCollectorIdentity: (collectorId: string) => Promise<unknown | null>
+  deleteCollectorIdentity: (
+    collectorId: string
+  ) => Promise<DeletedCollectorIdentity | null>
 }
 
 type CollectorIdentity = {
   id?: string | null
-  role?: string | null
 }
 
 async function getDefaultCollectorDeletionDependencies(): Promise<CollectorDeletionDependencies> {

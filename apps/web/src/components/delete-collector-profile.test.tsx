@@ -82,4 +82,34 @@ describe("DeleteCollectorProfile", () => {
     expect(options.setIsPending).toHaveBeenLastCalledWith(false)
     expect(options.submitLock.current).toBe(false)
   })
+
+  it("surfaces inline recovery guidance when the current Collector is the last Admin", async () => {
+    const options = {
+      confirmationPhrase: "DELETE" as const,
+      submitLock: { current: false },
+      onDeleteCollectorProfile: vi.fn().mockResolvedValue({
+        status: "error" as const,
+        fieldErrors: {},
+        formError: "Assign another Admin before deleting your Collector profile.",
+      }),
+      onDeleted: vi.fn(),
+      setConfirmationError: vi.fn(),
+      setFormError: vi.fn(),
+      setIsOpen: vi.fn(),
+      setIsPending: vi.fn(),
+    }
+
+    await requestCollectorDeletion(options)
+
+    expect(options.onDeleted).not.toHaveBeenCalled()
+    expect(options.setIsOpen).not.toHaveBeenCalledWith(false)
+    expect(options.setConfirmationError).toHaveBeenCalledWith(null)
+    expect(options.setFormError).toHaveBeenCalledWith(null)
+    expect(options.setFormError).toHaveBeenLastCalledWith(
+      "Assign another Admin before deleting your Collector profile."
+    )
+    expect(options.setIsPending).toHaveBeenNthCalledWith(1, true)
+    expect(options.setIsPending).toHaveBeenLastCalledWith(false)
+    expect(options.submitLock.current).toBe(false)
+  })
 })

@@ -11,9 +11,9 @@ function SharedShellRouteComponent() {
   return (
     <div className="relative min-h-svh">
       <Sidebar />
-      <div className="flex min-h-svh flex-1 flex-col md:ml-[70px]">
+      <div className="flex min-h-svh grow flex-col md:ml-[70px]">
         <Header />
-        <div className="flex flex-1 flex-col">
+        <div className="flex grow flex-col">
           <Outlet />
         </div>
         <Footer />

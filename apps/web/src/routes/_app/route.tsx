@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_app")({
 
 function SharedShellRouteComponent() {
   return (
-    <div className="min-h-svh">
+    <div className="relative min-h-svh">
       <Sidebar />
       <div className="flex flex-1 flex-col md:ml-[70px]">
         <Header />

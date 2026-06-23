@@ -10,7 +10,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed top-0 z-50 hidden h-screen shrink-0 flex-col items-center justify-between pb-4 transition-[width] duration-200 ease-in-out md:flex",
+        "desktop:overflow-hidden desktop:rounded-tl-[10px] desktop:rounded-bl-[10px] ease-&lsqb;cubic-bezier(0.4,0,0.2,1)&rsqb; fixed top-0 z-50 hidden h-screen flex-shrink-0 flex-col items-center justify-between pb-4 transition-all duration-200 md:flex",
         "border-r border-border bg-background",
         isExpanded ? "w-[240px]" : "w-[70px]"
       )}
@@ -19,11 +19,11 @@ export function Sidebar() {
     >
       <div
         className={cn(
-          "absolute top-0 left-0 flex h-[70px] items-center justify-center border-b border-border bg-background transition-[width] duration-200 ease-in-out",
+          "ease-&lsqb;cubic-bezier(0.4,0,0.2,1)&rsqb; absolute top-0 left-0 flex h-[70px] items-center justify-center border-b border-border bg-background transition-all duration-200",
           isExpanded ? "w-full" : "w-[69px]"
         )}
       >
-        <Link to="/" className="absolute left-[22px] transition-none">
+        <Link to="/" className="absolute left-[20px] transition-none">
           <Icons.LogoSmall />
         </Link>
       </div>

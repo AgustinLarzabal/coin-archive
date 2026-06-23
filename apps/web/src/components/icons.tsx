@@ -1,3 +1,5 @@
+import { ChevronDown, Database, LayoutDashboard, Settings } from "lucide-react"
+
 type SVGIconProps = {
   size?: number
   stroke?: string
@@ -92,4 +94,8 @@ export const Icons = {
       ></path>
     </SVGIcon>
   ),
+  ChevronDown: ChevronDown,
+  Database: Database,
+  Overview: LayoutDashboard,
+  Settings: Settings,
 }

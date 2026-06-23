@@ -112,7 +112,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col">
+    <div className="flex h-full flex-1 flex-col p-6">
       <HomeFilters
         distributions={filterOptions.distributions}
         engravers={filterOptions.engravers}

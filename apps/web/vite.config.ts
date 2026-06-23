@@ -9,6 +9,7 @@ const config = defineConfig({
   envDir: fileURLToPath(new URL("../../", import.meta.url)),
   resolve: {
     alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
       "@workspace/auth/client": fileURLToPath(
         new URL("../../packages/auth/src/client.ts", import.meta.url)
       ),

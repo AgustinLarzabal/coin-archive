@@ -18,9 +18,10 @@ import {
 } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
-import { useEffect, useRef, useState, type MutableRefObject } from "react"
+import { useEffect, useRef, useState } from "react"
+import type { MutableRefObject } from "react"
 
-import type { CollectorDeletionResult } from "../routes/_app/_authed/-collector-deletion-form"
+import type { CollectorDeletionResult } from "@/lib/collector-deletion"
 
 type DeleteCollectorProfileProps = {
   onDeleteCollectorProfile: (input: {
@@ -92,7 +93,9 @@ export function DeleteCollectorProfile({
   onDeleted,
 }: DeleteCollectorProfileProps) {
   const [confirmationPhrase, setConfirmationPhrase] = useState("")
-  const [confirmationError, setConfirmationError] = useState<string | null>(null)
+  const [confirmationError, setConfirmationError] = useState<string | null>(
+    null
+  )
   const [formError, setFormError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
@@ -132,9 +135,9 @@ export function DeleteCollectorProfile({
       <CardHeader>
         <CardTitle>Delete Collector profile</CardTitle>
         <CardDescription>
-          Permanently remove your Collector sign-in identity. Collector
-          Deletion is immediate, irreversible, removes linked sign-in sessions,
-          and does not delete catalogue data.
+          Permanently remove your Collector sign-in identity. Collector Deletion
+          is immediate, irreversible, removes linked sign-in sessions, and does
+          not delete catalogue data.
         </CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-end">
@@ -146,9 +149,9 @@ export function DeleteCollectorProfile({
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Collector profile</AlertDialogTitle>
               <AlertDialogDescription>
-                This immediately and permanently deletes your Collector
-                sign-in identity, linked OAuth account records, and sessions.
-                Catalogue data remains in Coin Archive.
+                This immediately and permanently deletes your Collector sign-in
+                identity, linked OAuth account records, and sessions. Catalogue
+                data remains in Coin Archive.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -178,9 +181,9 @@ export function DeleteCollectorProfile({
               <Button
                 variant="destructive"
                 onClick={handleDeleteCollectorProfile}
-                disabled={
-                  !isCollectorDeletionReady(confirmationPhrase, isPending)
-                }
+                // disabled={
+                //   !isCollectorDeletionReady(confirmationPhrase, isPending)
+                // }
               >
                 Delete Collector profile
               </Button>

@@ -11,10 +11,11 @@ const icons = {
   "/settings": () => <Icons.Settings size={20} />,
 } as const
 type CollectorSession = typeof authClient.$Infer.Session
-type NavigationPath = "/" | "/database" | "/settings"
+type NavigationPath = "/" | "/database" | "/database/catalogues" | "/settings"
+type NavigationParentPath = keyof typeof icons
 
 type NavigationItem = {
-  to: NavigationPath
+  to: NavigationParentPath
   label: string
   children?: NavigationChild[]
 }
@@ -26,7 +27,7 @@ type NavigationChild = {
 
 type PrivateNavigationLink = {
   label: string
-  to: Exclude<NavigationPath, "/">
+  to: Exclude<NavigationParentPath, "/">
 }
 
 const publicNavigationItems: NavigationItem[] = [
@@ -283,14 +284,20 @@ export function getPrivateNavigationLinks(
 }
 
 function getPrivateNavigationItem(link: PrivateNavigationLink): NavigationItem {
-  if (link.to === "/settings") {
+  if (link.to === "/database") {
     return {
       ...link,
-      children: [{ to: "/settings", label: "General" }],
+      children: [
+        { to: "/database", label: "General" },
+        { to: "/database/catalogues", label: "Catalogs" },
+      ],
     }
   }
 
-  return link
+  return {
+    ...link,
+    children: [{ to: "/settings", label: "General" }],
+  }
 }
 
 function isNavigationItemActive(to: NavigationPath, pathname: string) {

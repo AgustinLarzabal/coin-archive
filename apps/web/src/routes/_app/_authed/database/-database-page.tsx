@@ -1,31 +1,29 @@
 import { useEffect, useId, useState } from "react"
-import type { FormEvent, ReactNode } from "react"
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import type { FormEvent } from "react"
+import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CatalogueOption } from "@workspace/db"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Plus, RotateCcw, Save } from "lucide-react"
 
-import { PrivatePage } from "../../../components/private-page"
-import { getAuthSession } from "../../../lib/auth-session"
-import { getEditorRouteAuthorization } from "../../../lib/private-route"
+import { getAuthSession } from "@/lib/auth-session"
 import type {
   CatalogueFieldErrors,
   CatalogueMutationResult,
-} from "./-database-form"
+} from "@/lib/catalogue-maintenance"
 import {
   createCatalogueInputSchema,
   getCatalogueFieldErrors,
   submitCreateCatalogue,
   submitUpdateCatalogue,
   updateCatalogueInputSchema,
-} from "./-database-form"
+} from "@/lib/catalogue-maintenance"
 
-const DATABASE_PAGE_TITLE = "Catalogue Maintenance"
-const DATABASE_PAGE_DESCRIPTION = "Create and maintain Catalogues."
-const DATABASE_SECTION_CLASS_NAME =
-  "space-y-4 rounded-2xl border bg-card p-6 shadow-sm"
+export const databaseSecondaryMenuItems = [
+  { to: "/database", label: "General" },
+  { to: "/database/catalogues", label: "Catalogs" },
+] as const
 
 type CatalogueMaintenancePageProps = {
   catalogues: CatalogueOption[]
@@ -45,7 +43,7 @@ const EMPTY_CATALOGUE_DRAFT: CatalogueDraft = {
   title: "",
 }
 
-const getCatalogueMaintenanceCatalogues = createServerFn({
+export const getCatalogueMaintenanceCatalogues = createServerFn({
   method: "GET",
 }).handler(async () => {
   const { getCatalogues } = await import("@workspace/db")
@@ -73,55 +71,41 @@ const updateCatalogueMaintenanceCatalogue = createServerFn({
     return submitUpdateCatalogue(collector, data)
   })
 
-export const Route = createFileRoute("/_app/_authed/database")({
-  loader: async ({ context }) => {
-    const authorization = getEditorRouteAuthorization(context.session.user)
+export function CatalogueMaintenancePage({
+  catalogues,
+}: CatalogueMaintenancePageProps) {
+  return (
+    <div>
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold">Catalogues</h2>
+        <p className="text-sm text-muted-foreground">
+          Add a Catalogue or edit an existing Catalogue Code and Catalogue
+          Title.
+        </p>
+      </div>
+      <CatalogueCreateForm />
+      <CatalogueMaintenanceTable catalogues={catalogues} />
+    </div>
+  )
+}
 
-    if (!authorization.isAllowed) {
-      return authorization
-    }
-
-    const catalogues = await getCatalogueMaintenanceCatalogues()
-
-    return {
-      ...authorization,
-      catalogues,
-    }
-  },
-  component: DatabasePage,
-})
-
-function DatabasePage() {
-  const loaderData = Route.useLoaderData()
-
-  if (!loaderData.isAllowed) {
-    return <CatalogueMaintenanceAccessDeniedPage />
-  }
-
-  return <CatalogueMaintenancePage catalogues={loaderData.catalogues} />
+export function CatalogueMaintenanceAccessDeniedPage() {
+  return (
+    <div>
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold">Access denied</h2>
+        <p className="text-sm text-muted-foreground">
+          Only Editors and Admins can access catalogue maintenance.
+        </p>
+      </div>
+    </div>
+  )
 }
 
 async function getCatalogueMutationCollector() {
   const session = await getAuthSession()
 
   return session?.user ?? null
-}
-
-type CatalogueMaintenanceScaffoldProps = {
-  children: ReactNode
-}
-
-function CatalogueMaintenanceScaffold({
-  children,
-}: CatalogueMaintenanceScaffoldProps) {
-  return (
-    <PrivatePage
-      title={DATABASE_PAGE_TITLE}
-      description={DATABASE_PAGE_DESCRIPTION}
-    >
-      <section className={DATABASE_SECTION_CLASS_NAME}>{children}</section>
-    </PrivatePage>
-  )
 }
 
 function validateCatalogueDraft(
@@ -182,24 +166,6 @@ function useCatalogueFormFeedback() {
   }
 }
 
-export function CatalogueMaintenancePage({
-  catalogues,
-}: CatalogueMaintenancePageProps) {
-  return (
-    <CatalogueMaintenanceScaffold>
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold">Catalogues</h2>
-        <p className="text-sm text-muted-foreground">
-          Add a Catalogue or edit an existing Catalogue Code and Catalogue
-          Title.
-        </p>
-      </div>
-      <CatalogueCreateForm />
-      <CatalogueMaintenanceTable catalogues={catalogues} />
-    </CatalogueMaintenanceScaffold>
-  )
-}
-
 function CatalogueCreateForm() {
   const router = useRouter()
   const createCatalogue = useServerFn(createCatalogueMaintenanceCatalogue)
@@ -247,14 +213,12 @@ function CatalogueCreateForm() {
           <Input
             id="catalogue-code"
             name="code"
-            value={draft.code}
             placeholder="KM"
+            value={draft.code}
             onChange={(event) =>
-              setDraft((currentDraft) => ({
-                ...currentDraft,
-                code: event.target.value,
-              }))
+              setDraft((current) => ({ ...current, code: event.target.value }))
             }
+            aria-invalid={fieldErrors.code !== undefined}
           />
           {fieldErrors.code ? (
             <p className="text-sm text-destructive">{fieldErrors.code}</p>
@@ -267,25 +231,25 @@ function CatalogueCreateForm() {
           <Input
             id="catalogue-title"
             name="title"
-            value={draft.title}
             placeholder="Standard Catalog of World Coins"
+            value={draft.title}
             onChange={(event) =>
-              setDraft((currentDraft) => ({
-                ...currentDraft,
-                title: event.target.value,
-              }))
+              setDraft((current) => ({ ...current, title: event.target.value }))
             }
+            aria-invalid={fieldErrors.title !== undefined}
           />
           {fieldErrors.title ? (
             <p className="text-sm text-destructive">{fieldErrors.title}</p>
           ) : null}
         </div>
       </div>
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}
-      <Button className="gap-2" type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         <Plus className="size-4" />
         Add Catalogue
       </Button>
@@ -293,12 +257,7 @@ function CatalogueCreateForm() {
   )
 }
 
-type CatalogueEditFormProps = {
-  catalogue: CatalogueOption
-}
-
-function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
-  const formId = useId()
+function CatalogueEditForm({ catalogue }: { catalogue: CatalogueOption }) {
   const router = useRouter()
   const updateCatalogue = useServerFn(updateCatalogueMaintenanceCatalogue)
   const [draft, setDraft] = useState<CatalogueDraft>({
@@ -310,13 +269,12 @@ function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
     clear,
     fieldErrors,
     formError,
+    successMessage,
     setFieldErrors,
     setFormError,
-    successMessage,
   } = useCatalogueFormFeedback()
   const [isPending, setIsPending] = useState(false)
-  const hasChanges =
-    draft.code !== catalogue.code || draft.title !== catalogue.title
+  const formId = useId()
 
   useEffect(() => {
     setDraft({
@@ -326,6 +284,9 @@ function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
     setFieldErrors({})
     setFormError(null)
   }, [catalogue.code, catalogue.title, setFieldErrors, setFormError])
+
+  const hasChanges =
+    draft.code !== catalogue.code || draft.title !== catalogue.title
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -375,15 +336,12 @@ function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
             <Input
               form={formId}
               name="code"
-              value={draft.code}
               placeholder="KM"
-              disabled={isPending}
+              value={draft.code}
               onChange={(event) =>
-                setDraft((currentDraft) => ({
-                  ...currentDraft,
-                  code: event.target.value,
-                }))
+                setDraft((current) => ({ ...current, code: event.target.value }))
               }
+              aria-invalid={fieldErrors.code !== undefined}
             />
             {fieldErrors.code ? (
               <p className="text-sm text-destructive">{fieldErrors.code}</p>
@@ -395,15 +353,15 @@ function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
             <Input
               form={formId}
               name="title"
-              value={draft.title}
               placeholder="Standard Catalog of World Coins"
-              disabled={isPending}
+              value={draft.title}
               onChange={(event) =>
-                setDraft((currentDraft) => ({
-                  ...currentDraft,
+                setDraft((current) => ({
+                  ...current,
                   title: event.target.value,
                 }))
               }
+              aria-invalid={fieldErrors.title !== undefined}
             />
             {fieldErrors.title ? (
               <p className="text-sm text-destructive">{fieldErrors.title}</p>
@@ -413,21 +371,19 @@ function CatalogueEditForm({ catalogue }: CatalogueEditFormProps) {
         <td className="space-y-2 p-4">
           <div className="flex flex-wrap gap-2">
             <Button
-              className="gap-2"
-              form={formId}
               type="submit"
+              form={formId}
               size="sm"
-              disabled={!hasChanges || isPending}
+              disabled={isPending || !hasChanges}
             >
               <Save className="size-4" />
               Save
             </Button>
             <Button
-              className="gap-2"
               type="button"
               variant="outline"
               size="sm"
-              disabled={!hasChanges || isPending}
+              disabled={isPending || !hasChanges}
               onClick={handleReset}
             >
               <RotateCcw className="size-4" />
@@ -466,18 +422,5 @@ function CatalogueMaintenanceTable({
         </tbody>
       </table>
     </div>
-  )
-}
-
-export function CatalogueMaintenanceAccessDeniedPage() {
-  return (
-    <CatalogueMaintenanceScaffold>
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Access denied</h2>
-        <p className="text-sm text-muted-foreground">
-          Only Editors and Admins can access catalogue maintenance.
-        </p>
-      </div>
-    </CatalogueMaintenanceScaffold>
   )
 }

@@ -6,7 +6,7 @@ import {
   COLLECTOR_DELETION_LAST_ADMIN_ERROR,
   COLLECTOR_DELETION_UNAUTHENTICATED_ERROR,
   submitCollectorDeletion,
-} from "./-collector-deletion-form"
+} from "./collector-deletion"
 
 function createDependencies(overrides?: {
   deleteCollectorIdentity?: ReturnType<typeof vi.fn>
@@ -85,11 +85,7 @@ describe("submitCollectorDeletion", () => {
     }
 
     await expect(
-      submitCollectorDeletion(
-        currentCollector,
-        forgedInput,
-        dependencies
-      )
+      submitCollectorDeletion(currentCollector, forgedInput, dependencies)
     ).resolves.toStrictEqual({
       status: "success",
       redirectTo: "/",

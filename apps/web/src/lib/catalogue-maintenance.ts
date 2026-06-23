@@ -1,8 +1,8 @@
 import { hasEditorAccess } from "@workspace/auth/client"
 import { z } from "zod"
 
-import { getCollectorRole } from "../../../lib/collector-role"
-import type { CollectorWithRole } from "../../../lib/collector-role"
+import { getCollectorRole } from "./collector-role"
+import type { CollectorWithRole } from "./collector-role"
 
 export const CATALOGUE_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Catalogues."

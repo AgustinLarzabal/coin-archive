@@ -7,7 +7,7 @@ import {
   CATALOGUE_MISSING_ERROR,
   submitCreateCatalogue,
   submitUpdateCatalogue,
-} from "./-database-form"
+} from "./catalogue-maintenance"
 
 const VALID_CATALOGUE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const STANDARD_CATALOGUE = {

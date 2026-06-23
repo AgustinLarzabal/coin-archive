@@ -1,11 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import type { CatalogueOption } from "@workspace/db"
+import {
+  CatalogueMaintenanceAccessDeniedPage,
+  CatalogueMaintenancePage,
+} from "./-database-page"
 
 vi.mock("@tanstack/react-router", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-router")>(
-    "@tanstack/react-router"
-  )
+  const actual = await vi.importActual("@tanstack/react-router")
 
   return {
     ...actual,
@@ -14,11 +16,6 @@ vi.mock("@tanstack/react-router", async () => {
     }),
   }
 })
-
-import {
-  CatalogueMaintenanceAccessDeniedPage,
-  CatalogueMaintenancePage,
-} from "./database"
 
 const TEST_CATALOGUE_TIMESTAMP = new Date("2026-01-01T00:00:00.000Z")
 
@@ -35,7 +32,7 @@ function buildCatalogue(overrides: {
 }
 
 describe("CatalogueMaintenancePage", () => {
-  it("renders Catalogue create and edit forms in the shared private-page presentation", () => {
+  it("renders Catalogue create and edit forms", () => {
     const catalogues: CatalogueOption[] = [
       buildCatalogue({
         id: "catalogue-2",
@@ -52,9 +49,10 @@ describe("CatalogueMaintenancePage", () => {
       <CatalogueMaintenancePage catalogues={catalogues} />
     )
 
-    expect(markup).toContain("Catalogue Maintenance")
-    expect(markup).toContain("Create and maintain Catalogues.")
     expect(markup).toContain("Catalogues")
+    expect(markup).toContain(
+      "Add a Catalogue or edit an existing Catalogue Code and Catalogue Title."
+    )
     expect(markup).toContain("Catalogue Code")
     expect(markup).toContain("Catalogue Title")
     expect(markup).toContain("Add Catalogue")
@@ -87,7 +85,6 @@ describe("CatalogueMaintenanceAccessDeniedPage", () => {
       <CatalogueMaintenanceAccessDeniedPage />
     )
 
-    expect(markup).toContain("Catalogue Maintenance")
     expect(markup).toContain("Access denied")
     expect(markup).toContain(
       "Only Editors and Admins can access catalogue maintenance."

@@ -7,12 +7,14 @@ import {
   requestCollectorDeletion,
 } from "./delete-collector-profile"
 
+const lastAdminRecoveryMessage =
+  "Assign another Admin before deleting your Collector profile."
+
 function createDeletionRequestOptions() {
   const deletionRequest = {
-    resolve:
-      null as
-        | ((value: { status: "success"; redirectTo: "/" }) => void)
-        | null,
+    resolve: null as
+      | ((value: { status: "success"; redirectTo: "/" }) => void)
+      | null,
   }
   const onDeleteCollectorProfile = vi.fn(
     () =>
@@ -33,6 +35,23 @@ function createDeletionRequestOptions() {
       setIsPending: vi.fn(),
     },
     deletionRequest,
+  }
+}
+
+function createDeletionErrorOptions(formError: string) {
+  return {
+    confirmationPhrase: "DELETE" as const,
+    submitLock: { current: false },
+    onDeleteCollectorProfile: vi.fn().mockResolvedValue({
+      status: "error" as const,
+      fieldErrors: {},
+      formError,
+    }),
+    onDeleted: vi.fn(),
+    setConfirmationError: vi.fn(),
+    setFormError: vi.fn(),
+    setIsOpen: vi.fn(),
+    setIsPending: vi.fn(),
   }
 }
 
@@ -84,20 +103,7 @@ describe("DeleteCollectorProfile", () => {
   })
 
   it("surfaces inline recovery guidance when the current Collector is the last Admin", async () => {
-    const options = {
-      confirmationPhrase: "DELETE" as const,
-      submitLock: { current: false },
-      onDeleteCollectorProfile: vi.fn().mockResolvedValue({
-        status: "error" as const,
-        fieldErrors: {},
-        formError: "Assign another Admin before deleting your Collector profile.",
-      }),
-      onDeleted: vi.fn(),
-      setConfirmationError: vi.fn(),
-      setFormError: vi.fn(),
-      setIsOpen: vi.fn(),
-      setIsPending: vi.fn(),
-    }
+    const options = createDeletionErrorOptions(lastAdminRecoveryMessage)
 
     await requestCollectorDeletion(options)
 
@@ -106,7 +112,7 @@ describe("DeleteCollectorProfile", () => {
     expect(options.setConfirmationError).toHaveBeenCalledWith(null)
     expect(options.setFormError).toHaveBeenCalledWith(null)
     expect(options.setFormError).toHaveBeenLastCalledWith(
-      "Assign another Admin before deleting your Collector profile."
+      lastAdminRecoveryMessage
     )
     expect(options.setIsPending).toHaveBeenNthCalledWith(1, true)
     expect(options.setIsPending).toHaveBeenLastCalledWith(false)

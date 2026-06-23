@@ -6,40 +6,100 @@ import { deleteCollectorIdentity } from "./delete-collector-identity"
 import { createCoin, createIssuer } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
+const collectorDeletionSessionExpiresAt = new Date("2027-01-01T00:00:00.000Z")
+
+async function insertCollectorWithAuthRecords({
+  collectorId,
+  accountId,
+  email,
+  name,
+  role,
+}: {
+  collectorId: string
+  accountId: string
+  email: string
+  name: string
+  role: "admin" | "collector" | "editor"
+}) {
+  await db.insert(user).values({
+    id: collectorId,
+    name,
+    email,
+    emailVerified: true,
+    role,
+  })
+
+  await db.insert(account).values({
+    id: `account-${collectorId}`,
+    userId: collectorId,
+    accountId,
+    providerId: "google",
+  })
+
+  await db.insert(session).values({
+    id: `session-${collectorId}`,
+    userId: collectorId,
+    token: `session-${collectorId}`,
+    expiresAt: collectorDeletionSessionExpiresAt,
+  })
+}
+
+async function createCatalogueCoinForDeletionTest({
+  createdAt,
+  issuerCode,
+  issuerName,
+  title,
+}: {
+  createdAt: Date
+  issuerCode: string
+  issuerName: string
+  title: string
+}) {
+  const createdIssuer = await createIssuer({
+    code: issuerCode,
+    name: issuerName,
+  })
+
+  return createCoin({
+    createdAt,
+    issuerId: createdIssuer.id,
+    title,
+  })
+}
+
+async function selectTableCount(
+  table: typeof user | typeof account | typeof session
+) {
+  return (await db.select({ count: count() }).from(table)).at(0)?.count ?? 0
+}
+
+async function expectCoinToRemain(coinId: string, title: string) {
+  const persistedCoin = (
+    await db.select().from(coin).where(eq(coin.id, coinId))
+  ).at(0)
+
+  expect(persistedCoin).toMatchObject({
+    id: coinId,
+    title,
+  })
+}
+
 describe("deleteCollectorIdentity integration", () => {
   useTestDatabaseIsolation(db)
 
   it("allows an Editor to self-delete while preserving catalogue data", async () => {
-    const createdIssuer = await createIssuer({
-      code: "editor-delete-issuer",
-      name: "Editor Delete Issuer",
-    })
-
-    await db.insert(user).values({
-      id: "editor-1",
-      name: "Editor One",
+    await insertCollectorWithAuthRecords({
+      collectorId: "editor-1",
+      accountId: "google-editor-1",
       email: "editor@example.com",
-      emailVerified: true,
+      name: "Editor One",
       role: "editor",
     })
 
-    await db.insert(account).values({
-      id: "account-editor-1",
-      userId: "editor-1",
-      accountId: "google-editor-1",
-      providerId: "google",
-    })
-
-    await db.insert(session).values({
-      id: "session-editor-1",
-      userId: "editor-1",
-      token: "session-editor-1",
-      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
-    })
-
-    const createdCoin = await createCoin({
+    const createdCoin = await createCatalogueCoinForDeletionTest({
       createdAt: new Date("2026-01-02T00:00:00.000Z"),
-      issuerId: createdIssuer.id,
+      issuerCode: "editor-delete-issuer",
+      issuerName: "Editor Delete Issuer",
       title: "Editor Collector Deletion Test Coin",
     })
 
@@ -55,60 +115,29 @@ describe("deleteCollectorIdentity integration", () => {
       },
     })
 
-    const remainingCollectors = (
-      await db.select({ count: count() }).from(user)
-    ).at(0)
-    const remainingAccounts = (
-      await db.select({ count: count() }).from(account)
-    ).at(0)
-    const remainingSessions = (
-      await db.select({ count: count() }).from(session)
-    ).at(0)
-    const persistedCoin = (
-      await db.select().from(coin).where(eq(coin.id, createdCoin.id))
-    ).at(0)
-
-    expect(remainingCollectors?.count).toBe(0)
-    expect(remainingAccounts?.count).toBe(0)
-    expect(remainingSessions?.count).toBe(0)
-    expect(persistedCoin).toMatchObject({
-      id: createdCoin.id,
-      title: "Editor Collector Deletion Test Coin",
-    })
+    expect(await selectTableCount(user)).toBe(0)
+    expect(await selectTableCount(account)).toBe(0)
+    expect(await selectTableCount(session)).toBe(0)
+    await expectCoinToRemain(
+      createdCoin.id,
+      "Editor Collector Deletion Test Coin"
+    )
   })
 
   it("removes the Collector identity plus linked auth records while preserving catalogue data and allowing a fresh Collector later", async () => {
     const collectorEmail = "collector@example.com"
-    const createdIssuer = await createIssuer({
-      code: "collector-delete-issuer",
-      name: "Collector Delete Issuer",
-    })
-
-    await db.insert(user).values({
-      id: "collector-1",
-      name: "Collector One",
+    await insertCollectorWithAuthRecords({
+      collectorId: "collector-1",
+      accountId: "google-account-1",
       email: collectorEmail,
-      emailVerified: true,
+      name: "Collector One",
       role: "collector",
     })
 
-    await db.insert(account).values({
-      id: "account-1",
-      userId: "collector-1",
-      accountId: "google-account-1",
-      providerId: "google",
-    })
-
-    await db.insert(session).values({
-      id: "session-1",
-      userId: "collector-1",
-      token: "session-token-1",
-      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
-    })
-
-    const createdCoin = await createCoin({
+    const createdCoin = await createCatalogueCoinForDeletionTest({
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
-      issuerId: createdIssuer.id,
+      issuerCode: "collector-delete-issuer",
+      issuerName: "Collector Delete Issuer",
       title: "Collector Deletion Test Coin",
     })
 
@@ -124,26 +153,10 @@ describe("deleteCollectorIdentity integration", () => {
       },
     })
 
-    const remainingCollectors = (
-      await db.select({ count: count() }).from(user)
-    ).at(0)
-    const remainingAccounts = (
-      await db.select({ count: count() }).from(account)
-    ).at(0)
-    const remainingSessions = (
-      await db.select({ count: count() }).from(session)
-    ).at(0)
-    const persistedCoin = (
-      await db.select().from(coin).where(eq(coin.id, createdCoin.id))
-    ).at(0)
-
-    expect(remainingCollectors?.count).toBe(0)
-    expect(remainingAccounts?.count).toBe(0)
-    expect(remainingSessions?.count).toBe(0)
-    expect(persistedCoin).toMatchObject({
-      id: createdCoin.id,
-      title: "Collector Deletion Test Coin",
-    })
+    expect(await selectTableCount(user)).toBe(0)
+    expect(await selectTableCount(account)).toBe(0)
+    expect(await selectTableCount(session)).toBe(0)
+    await expectCoinToRemain(createdCoin.id, "Collector Deletion Test Coin")
 
     const [recreatedCollector] = await db
       .insert(user)
@@ -159,26 +172,12 @@ describe("deleteCollectorIdentity integration", () => {
   })
 
   it("blocks Collector Deletion for the last persisted Admin", async () => {
-    await db.insert(user).values({
-      id: "admin-1",
-      name: "Admin One",
-      email: "admin-one@example.com",
-      emailVerified: true,
-      role: "admin",
-    })
-
-    await db.insert(account).values({
-      id: "account-admin-1",
-      userId: "admin-1",
+    await insertCollectorWithAuthRecords({
+      collectorId: "admin-1",
       accountId: "google-admin-1",
-      providerId: "google",
-    })
-
-    await db.insert(session).values({
-      id: "session-admin-1",
-      userId: "admin-1",
-      token: "session-admin-1",
-      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
+      email: "admin-one@example.com",
+      name: "Admin One",
+      role: "admin",
     })
 
     await expect(
@@ -189,61 +188,32 @@ describe("deleteCollectorIdentity integration", () => {
       status: "blocked-last-admin",
     })
 
-    const remainingCollectors = (
-      await db.select({ count: count() }).from(user)
-    ).at(0)
-    const remainingAccounts = (
-      await db.select({ count: count() }).from(account)
-    ).at(0)
-    const remainingSessions = (
-      await db.select({ count: count() }).from(session)
-    ).at(0)
-
-    expect(remainingCollectors?.count).toBe(1)
-    expect(remainingAccounts?.count).toBe(1)
-    expect(remainingSessions?.count).toBe(1)
+    expect(await selectTableCount(user)).toBe(1)
+    expect(await selectTableCount(account)).toBe(1)
+    expect(await selectTableCount(session)).toBe(1)
   })
 
   it("allows an Admin to self-delete when another persisted Admin remains", async () => {
-    const createdIssuer = await createIssuer({
-      code: "admin-delete-issuer",
-      name: "Admin Delete Issuer",
-    })
-
-    await db.insert(user).values([
-      {
-        id: "admin-1",
-        name: "Admin One",
-        email: "admin-one@example.com",
-        emailVerified: true,
-        role: "admin",
-      },
-      {
-        id: "admin-2",
-        name: "Admin Two",
-        email: "admin-two@example.com",
-        emailVerified: true,
-        role: "admin",
-      },
-    ])
-
-    await db.insert(account).values({
-      id: "account-admin-1",
-      userId: "admin-1",
+    await insertCollectorWithAuthRecords({
+      collectorId: "admin-1",
       accountId: "google-admin-1",
-      providerId: "google",
+      email: "admin-one@example.com",
+      name: "Admin One",
+      role: "admin",
     })
 
-    await db.insert(session).values({
-      id: "session-admin-1",
-      userId: "admin-1",
-      token: "session-admin-1",
-      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
+    await db.insert(user).values({
+      id: "admin-2",
+      name: "Admin Two",
+      email: "admin-two@example.com",
+      emailVerified: true,
+      role: "admin",
     })
 
-    const createdCoin = await createCoin({
+    const createdCoin = await createCatalogueCoinForDeletionTest({
       createdAt: new Date("2026-01-03T00:00:00.000Z"),
-      issuerId: createdIssuer.id,
+      issuerCode: "admin-delete-issuer",
+      issuerName: "Admin Delete Issuer",
       title: "Admin Collector Deletion Test Coin",
     })
 
@@ -270,18 +240,15 @@ describe("deleteCollectorIdentity integration", () => {
     const remainingSessions = (
       await db.select({ count: count() }).from(session)
     ).at(0)
-    const persistedCoin = (
-      await db.select().from(coin).where(eq(coin.id, createdCoin.id))
-    ).at(0)
 
     expect(remainingAdmins).toHaveLength(1)
     expect(remainingAdmins.at(0)?.id).toBe("admin-2")
     expect(remainingAccounts?.count).toBe(0)
     expect(remainingSessions?.count).toBe(0)
-    expect(persistedCoin).toMatchObject({
-      id: createdCoin.id,
-      title: "Admin Collector Deletion Test Coin",
-    })
+    await expectCoinToRemain(
+      createdCoin.id,
+      "Admin Collector Deletion Test Coin"
+    )
   })
 
   it("returns null when the same Collector Deletion is requested again after success", async () => {

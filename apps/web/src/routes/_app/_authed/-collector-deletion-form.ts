@@ -4,6 +4,8 @@ export const COLLECTOR_DELETION_UNAUTHENTICATED_ERROR =
   "You must be signed in to delete your Collector profile."
 export const COLLECTOR_DELETION_CONFIRMATION_ERROR =
   "Type DELETE exactly to confirm Collector Deletion."
+export const COLLECTOR_DELETION_LAST_ADMIN_ERROR =
+  "Assign another Admin before deleting your Collector profile."
 export const COLLECTOR_DELETION_GENERIC_ERROR =
   "Unable to delete your Collector profile right now."
 
@@ -30,9 +32,16 @@ export type CollectorDeletionResult =
 
 type CollectorDeletionInput = z.input<typeof collectorDeletionInputSchema>
 
-type DeletedCollectorIdentity = {
-  id: string
-}
+type DeletedCollectorIdentity =
+  | {
+      status: "deleted"
+      collector: {
+        id: string
+      }
+    }
+  | {
+      status: "blocked-last-admin"
+    }
 
 type CollectorDeletionDependencies = {
   deleteCollectorIdentity: (
@@ -99,6 +108,10 @@ export async function submitCollectorDeletion(
 
     if (deletedCollector === null) {
       return createFormErrorResult(COLLECTOR_DELETION_UNAUTHENTICATED_ERROR)
+    }
+
+    if (deletedCollector.status === "blocked-last-admin") {
+      return createFormErrorResult(COLLECTOR_DELETION_LAST_ADMIN_ERROR)
     }
 
     return {

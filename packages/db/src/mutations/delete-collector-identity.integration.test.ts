@@ -49,8 +49,11 @@ describe("deleteCollectorIdentity integration", () => {
         collectorId: "collector-1",
       })
     ).resolves.toMatchObject({
-      id: "collector-1",
-      email: collectorEmail,
+      status: "deleted",
+      collector: {
+        id: "collector-1",
+        email: collectorEmail,
+      },
     })
 
     const remainingCollectors = (
@@ -85,5 +88,113 @@ describe("deleteCollectorIdentity integration", () => {
       .returning()
 
     expect(recreatedCollector.role).toBe("collector")
+  })
+
+  it("blocks Collector Deletion for the last persisted Admin", async () => {
+    await db.insert(user).values({
+      id: "admin-1",
+      name: "Admin One",
+      email: "admin-one@example.com",
+      emailVerified: true,
+      role: "admin",
+    })
+
+    await db.insert(account).values({
+      id: "account-admin-1",
+      userId: "admin-1",
+      accountId: "google-admin-1",
+      providerId: "google",
+    })
+
+    await db.insert(session).values({
+      id: "session-admin-1",
+      userId: "admin-1",
+      token: "session-admin-1",
+      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
+    })
+
+    await expect(
+      deleteCollectorIdentity({
+        collectorId: "admin-1",
+      })
+    ).resolves.toStrictEqual({
+      status: "blocked-last-admin",
+    })
+
+    const remainingCollectors = (
+      await db.select({ count: count() }).from(user)
+    ).at(0)
+    const remainingAccounts = (
+      await db.select({ count: count() }).from(account)
+    ).at(0)
+    const remainingSessions = (
+      await db.select({ count: count() }).from(session)
+    ).at(0)
+
+    expect(remainingCollectors?.count).toBe(1)
+    expect(remainingAccounts?.count).toBe(1)
+    expect(remainingSessions?.count).toBe(1)
+  })
+
+  it("allows an Admin to self-delete when another persisted Admin remains", async () => {
+    await db.insert(user).values([
+      {
+        id: "admin-1",
+        name: "Admin One",
+        email: "admin-one@example.com",
+        emailVerified: true,
+        role: "admin",
+      },
+      {
+        id: "admin-2",
+        name: "Admin Two",
+        email: "admin-two@example.com",
+        emailVerified: true,
+        role: "admin",
+      },
+    ])
+
+    await db.insert(account).values({
+      id: "account-admin-1",
+      userId: "admin-1",
+      accountId: "google-admin-1",
+      providerId: "google",
+    })
+
+    await db.insert(session).values({
+      id: "session-admin-1",
+      userId: "admin-1",
+      token: "session-admin-1",
+      expiresAt: new Date("2027-01-01T00:00:00.000Z"),
+    })
+
+    await expect(
+      deleteCollectorIdentity({
+        collectorId: "admin-1",
+      })
+    ).resolves.toMatchObject({
+      status: "deleted",
+      collector: {
+        id: "admin-1",
+        role: "admin",
+      },
+    })
+
+    const remainingAdmins = await db
+      .select()
+      .from(user)
+      .where(eq(user.role, "admin"))
+
+    const remainingAccounts = (
+      await db.select({ count: count() }).from(account)
+    ).at(0)
+    const remainingSessions = (
+      await db.select({ count: count() }).from(session)
+    ).at(0)
+
+    expect(remainingAdmins).toHaveLength(1)
+    expect(remainingAdmins.at(0)?.id).toBe("admin-2")
+    expect(remainingAccounts?.count).toBe(0)
+    expect(remainingSessions?.count).toBe(0)
   })
 })

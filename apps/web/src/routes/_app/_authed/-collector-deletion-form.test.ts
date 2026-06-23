@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   COLLECTOR_DELETION_CONFIRMATION_ERROR,
   COLLECTOR_DELETION_GENERIC_ERROR,
+  COLLECTOR_DELETION_LAST_ADMIN_ERROR,
   COLLECTOR_DELETION_UNAUTHENTICATED_ERROR,
   submitCollectorDeletion,
 } from "./-collector-deletion-form"
@@ -53,7 +54,10 @@ describe("submitCollectorDeletion", () => {
   it("deletes the current Collector derived from the request session", async () => {
     const dependencies = createDependencies({
       deleteCollectorIdentity: vi.fn().mockResolvedValue({
-        id: "collector-1",
+        status: "deleted",
+        collector: {
+          id: "collector-1",
+        },
       }),
     })
     const forgedInput = {
@@ -106,6 +110,24 @@ describe("submitCollectorDeletion", () => {
       status: "error",
       fieldErrors: {},
       formError: COLLECTOR_DELETION_UNAUTHENTICATED_ERROR,
+    })
+  })
+
+  it("returns an inline form error when the current Collector is the last Admin", async () => {
+    await expect(
+      submitCollectorDeletion(
+        currentCollector,
+        { confirmationPhrase: "DELETE" },
+        createDependencies({
+          deleteCollectorIdentity: vi.fn().mockResolvedValue({
+            status: "blocked-last-admin",
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: COLLECTOR_DELETION_LAST_ADMIN_ERROR,
     })
   })
 })

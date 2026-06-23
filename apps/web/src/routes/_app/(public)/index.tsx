@@ -112,7 +112,7 @@ function App() {
   }
 
   return (
-    <div>
+    <>
       <HomeFilters
         distributions={filterOptions.distributions}
         engravers={filterOptions.engravers}
@@ -136,6 +136,6 @@ function App() {
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }

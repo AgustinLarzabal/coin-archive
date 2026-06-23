@@ -54,7 +54,7 @@ export function LoginPage({ redirectTarget }: LoginPageProps) {
   const enabledProviders = getEnabledProviders()
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
+    <div className="flex grow items-center justify-center p-6">
       <div className="flex w-full max-w-sm flex-col space-y-8">
         <div className="space-y-4 text-center">
           <h1 className="font-serif text-lg">Welcome to Coin Archive</h1>

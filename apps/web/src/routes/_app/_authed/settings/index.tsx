@@ -1,5 +1,5 @@
 import { DeleteCollectorProfile } from "@/components/delete-collector-profile"
-import { SecondaryMenu } from "@/components/secondary-menu"
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 
@@ -25,21 +25,17 @@ function SettingsIndexComponent() {
   const deleteCurrentCollectorProfile = useServerFn(deleteCollectorProfile)
 
   return (
-    <div className="max-w-3xl">
-      <SecondaryMenu items={[{ to: "/settings", label: "General" }]} />
-
-      <main className="mt-8 space-y-12">
-        <DeleteCollectorProfile
-          onDeleteCollectorProfile={({ confirmationPhrase }) =>
-            deleteCurrentCollectorProfile({
-              data: {
-                confirmationPhrase,
-              },
-            })
-          }
-          onDeleted={(redirectTo) => navigate({ to: redirectTo })}
-        />
-      </main>
-    </div>
+    <main className="mt-8">
+      <DeleteCollectorProfile
+        onDeleteCollectorProfile={({ confirmationPhrase }) =>
+          deleteCurrentCollectorProfile({
+            data: {
+              confirmationPhrase,
+            },
+          })
+        }
+        onDeleted={(redirectTo) => navigate({ to: redirectTo })}
+      />
+    </main>
   )
 }

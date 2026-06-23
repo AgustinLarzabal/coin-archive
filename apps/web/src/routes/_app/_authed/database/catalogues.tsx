@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { SecondaryMenu } from "@/components/secondary-menu"
 import { getEditorRouteAuthorization } from "@/lib/private-route"
 import {
   CatalogueMaintenanceAccessDeniedPage,
-  databaseSecondaryMenuItems,
   getCatalogueMaintenanceCatalogues,
 } from "./-database-page"
 import { CataloguesTable } from "@/components/catalogues-table"
@@ -35,12 +33,8 @@ function DatabaseCataloguesComponent() {
   }
 
   return (
-    <div className="max-w-3xl">
-      <SecondaryMenu items={[...databaseSecondaryMenuItems]} />
-
-      <main className="mt-8">
-        <CataloguesTable catalogues={loaderData.catalogues} />
-      </main>
-    </div>
+    <main className="mt-8">
+      <CataloguesTable catalogues={loaderData.catalogues} />
+    </main>
   )
 }

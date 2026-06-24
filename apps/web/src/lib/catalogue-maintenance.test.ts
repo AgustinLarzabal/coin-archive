@@ -6,6 +6,7 @@ import {
   CATALOGUE_GENERIC_SAVE_ERROR,
   CATALOGUE_IN_USE_DELETE_ERROR,
   CATALOGUE_MISSING_ERROR,
+  hasCatalogueMaintenanceAccess,
   submitCreateCatalogue,
   submitDeleteCatalogue,
   submitUpdateCatalogue,
@@ -59,6 +60,20 @@ const authorizationErrorResult = {
   fieldErrors: {},
   formError: CATALOGUE_AUTHORIZATION_ERROR,
 }
+
+describe("hasCatalogueMaintenanceAccess", () => {
+  it("rejects signed-out and non-editor Collectors", () => {
+    expect(hasCatalogueMaintenanceAccess(null)).toBe(false)
+    expect(hasCatalogueMaintenanceAccess({ role: "collector" })).toBe(false)
+    expect(hasCatalogueMaintenanceAccess({ role: null })).toBe(false)
+    expect(hasCatalogueMaintenanceAccess({ role: "owner" })).toBe(false)
+  })
+
+  it("allows Editors and Admins", () => {
+    expect(hasCatalogueMaintenanceAccess({ role: "editor" })).toBe(true)
+    expect(hasCatalogueMaintenanceAccess({ role: "admin" })).toBe(true)
+  })
+})
 
 describe("submitCreateCatalogue", () => {
   it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {

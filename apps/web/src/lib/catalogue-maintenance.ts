@@ -61,6 +61,11 @@ export type CatalogueMutationResult =
       message: string
     }
 
+export type CatalogueAuthorizationErrorResult = {
+  status: "error"
+  formError: typeof CATALOGUE_AUTHORIZATION_ERROR
+}
+
 type CreateCatalogueInput = z.input<typeof createCatalogueInputSchema>
 type UpdateCatalogueInput = z.input<typeof updateCatalogueInputSchema>
 type DeleteCatalogueInput = z.input<typeof deleteCatalogueInputSchema>
@@ -86,11 +91,17 @@ async function getDefaultCatalogueMutationDependencies(): Promise<CatalogueMutat
   }
 }
 
-function createAuthorizationError(): CatalogueMutationResult {
+export function createCatalogueAuthorizationError(): CatalogueAuthorizationErrorResult {
   return {
     status: "error",
-    fieldErrors: {},
     formError: CATALOGUE_AUTHORIZATION_ERROR,
+  }
+}
+
+function createAuthorizationError(): CatalogueMutationResult {
+  return {
+    ...createCatalogueAuthorizationError(),
+    fieldErrors: {},
   }
 }
 
@@ -111,7 +122,9 @@ function createFormErrorResult(formError: string): CatalogueMutationResult {
   }
 }
 
-function hasCatalogueMaintenanceAccess(collector: CollectorWithRole | null) {
+export function hasCatalogueMaintenanceAccess(
+  collector: CollectorWithRole | null
+) {
   const role = getCollectorRole(collector)
 
   return role !== null && hasEditorAccess(role)

@@ -2,7 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 
 import { getAuthSession } from "../../../lib/auth-session"
 import { getLocationRedirectTarget } from "../../../lib/auth-redirect"
-import { getCollectorRouteRedirect } from "../../../lib/private-route"
+import { getCollectorRouteRedirect } from "../../../lib/route-authorization"
 
 export const Route = createFileRoute("/_app/_authed")({
   beforeLoad: async ({ location }) => {

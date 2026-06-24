@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import {
   getCollectorRouteRedirect,
-  getEditorRouteAccess,
-} from "./private-route"
+  getEditorRouteAuthorization,
+} from "./route-authorization"
 
 describe("getCollectorRouteRedirect", () => {
   it("redirects signed-out visitors to sign in with the intended destination preserved", () => {
@@ -20,36 +20,27 @@ describe("getCollectorRouteRedirect", () => {
   })
 })
 
-describe("getEditorRouteAccess", () => {
-  it("redirects signed-out visitors to sign in with the intended destination preserved", () => {
-    expect(getEditorRouteAccess(null, "/database")).toEqual({
-      search: {
-        redirect: "/database",
-      },
-      to: "/login",
-    })
-  })
-
+describe("getEditorRouteAuthorization", () => {
   it("denies signed-in Collectors without editor access", () => {
-    expect(getEditorRouteAccess({ role: "collector" }, "/database")).toEqual({
+    expect(getEditorRouteAuthorization({ role: "collector" })).toEqual({
       isAllowed: false,
     })
   })
 
   it("denies signed-in Collectors without a valid editor role", () => {
-    expect(getEditorRouteAccess({ role: null }, "/database")).toEqual({
+    expect(getEditorRouteAuthorization({ role: null })).toEqual({
       isAllowed: false,
     })
-    expect(getEditorRouteAccess({ role: "owner" }, "/database")).toEqual({
+    expect(getEditorRouteAuthorization({ role: "owner" })).toEqual({
       isAllowed: false,
     })
   })
 
   it("allows Editors and Admins", () => {
-    expect(getEditorRouteAccess({ role: "editor" }, "/database")).toEqual({
+    expect(getEditorRouteAuthorization({ role: "editor" })).toEqual({
       isAllowed: true,
     })
-    expect(getEditorRouteAccess({ role: "admin" }, "/database")).toEqual({
+    expect(getEditorRouteAuthorization({ role: "admin" })).toEqual({
       isAllowed: true,
     })
   })

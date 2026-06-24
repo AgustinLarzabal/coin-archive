@@ -39,7 +39,8 @@ export async function updateCatalogue({
   id,
   ...fields
 }: UpdateCatalogueInput): Promise<Catalogue | null> {
-  const [updatedCatalogue] = await db
+  const updatedCatalogue = (
+    await db
     .update(catalogue)
     .set({
       ...trimCatalogueFields(fields),
@@ -47,17 +48,28 @@ export async function updateCatalogue({
     })
     .where(eq(catalogue.id, id))
     .returning()
+  ).at(0)
 
-  return updatedCatalogue ?? null
+  if (!updatedCatalogue) {
+    return null
+  }
+
+  return updatedCatalogue
 }
 
 export async function deleteCatalogue({
   id,
 }: DeleteCatalogueInput): Promise<Catalogue | null> {
-  const [deletedCatalogue] = await db
+  const deletedCatalogue = (
+    await db
     .delete(catalogue)
     .where(eq(catalogue.id, id))
     .returning()
+  ).at(0)
 
-  return deletedCatalogue ?? null
+  if (!deletedCatalogue) {
+    return null
+  }
+
+  return deletedCatalogue
 }

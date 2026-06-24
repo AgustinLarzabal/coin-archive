@@ -20,7 +20,7 @@ function getButtonMarkup(markup: string, label: string): string {
     throw new Error(`Unable to find button with label: ${label}`)
   }
 
-  return buttonMatch[1] ?? ""
+  return buttonMatch[1]
 }
 
 function createDeletionRequestOptions() {

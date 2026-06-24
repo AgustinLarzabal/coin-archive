@@ -52,7 +52,7 @@ export function createCatalogueColumns(
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="icon-sm" aria-label="Actions">
-                  <Icons.Ellipsis />
+                  <Icons.More />
                 </Button>
               }
             />

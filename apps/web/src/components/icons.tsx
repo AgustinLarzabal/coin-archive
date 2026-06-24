@@ -4,6 +4,7 @@ import {
   Database,
   Ellipsis,
   LayoutDashboard,
+  EllipsisVertical,
   Settings,
 } from "lucide-react"
 
@@ -104,7 +105,8 @@ export const Icons = {
   ArrowUpDown: ArrowUpDown,
   ChevronDown: ChevronDown,
   Database: Database,
-  Ellipsis: Ellipsis,
+  More: Ellipsis,
+  MoreVertical: EllipsisVertical,
   Overview: LayoutDashboard,
   Settings: Settings,
 }

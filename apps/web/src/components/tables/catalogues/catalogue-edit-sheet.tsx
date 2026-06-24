@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet"
@@ -26,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog"
 import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
@@ -58,11 +56,8 @@ export function CatalogueEditSheet({
   const router = useRouter()
   const deleteCatalogue = useServerFn(deleteCatalogueMaintenanceCatalogue)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-
-  useEffect(() => {
-    setDeleteError(null)
-  }, [catalogue?.id, open])
 
   async function handleDeleteCatalogue() {
     if (!catalogue) {
@@ -85,7 +80,9 @@ export function CatalogueEditSheet({
         return
       }
 
-      setDeleteError(result.formError ?? "Unable to delete Catalogue right now.")
+      setDeleteError(
+        result.formError ?? "Unable to delete Catalogue right now."
+      )
     } finally {
       setIsDeletePending(false)
     }
@@ -93,40 +90,39 @@ export function CatalogueEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent showCloseButton={false}>
+        <SheetHeader className="flex-row items-center justify-between">
           <SheetTitle>Edit Catalogue</SheetTitle>
-          <SheetDescription>
-            Update the catalogue code and title.
-          </SheetDescription>
-        </SheetHeader>
 
-        {catalogue?.id && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full p-0"
-                />
-              }
-            >
-              <Icons.Ellipsis className="size-5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent sideOffset={10} align="end">
-              <AlertDialog>
-                <AlertDialogTrigger
+          {catalogue?.id && (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger
                   render={
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onSelect={(e) => e.preventDefault()}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full p-0"
                     />
                   }
                 >
-                  Delete
-                </AlertDialogTrigger>
+                  <Icons.MoreVertical className="size-5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={10} align="end">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Catalogue?</AlertDialogTitle>
@@ -139,10 +135,14 @@ export function CatalogueEditSheet({
                     <p className="text-sm text-destructive">{deleteError}</p>
                   ) : null}
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeletePending}>
+                    <AlertDialogCancel
+                      variant="outline"
+                      disabled={isDeletePending}
+                    >
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
+                      variant="destructive"
                       disabled={isDeletePending}
                       onClick={handleDeleteCatalogue}
                     >
@@ -151,9 +151,9 @@ export function CatalogueEditSheet({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            </>
+          )}
+        </SheetHeader>
 
         {catalogue ? (
           <CatalogueEditForm

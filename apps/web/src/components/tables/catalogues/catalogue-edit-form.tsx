@@ -3,7 +3,6 @@ import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CatalogueOption } from "@workspace/db"
-import { Button } from "@workspace/ui/components/button"
 import {
   Field,
   FieldError,
@@ -11,7 +10,7 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { RotateCcw, Save } from "lucide-react"
+import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type {
@@ -143,14 +142,6 @@ export function CatalogueEditForm({
     }
   }
 
-  function handleReset() {
-    clearFeedback()
-    setDraft({
-      code: catalogue.code,
-      title: catalogue.title,
-    })
-  }
-
   return (
     <form
       id="database-catalogue-edit-form"
@@ -208,19 +199,14 @@ export function CatalogueEditForm({
       ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
-        <Button type="submit" disabled={isPending || !hasChanges}>
-          <Save className="size-4" />
-          Save
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={isPending || !hasChanges}
-          onClick={handleReset}
+        <SubmitButton
+          type="submit"
+          isSubmitting={isPending}
+          disabled={!hasChanges}
+          className="w-full"
         >
-          <RotateCcw className="size-4" />
-          Reset
-        </Button>
+          Save
+        </SubmitButton>
       </div>
     </form>
   )

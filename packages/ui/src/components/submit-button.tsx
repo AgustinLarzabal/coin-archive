@@ -14,7 +14,11 @@ export function SubmitButton({
   disabled?: boolean
 } & ButtonPrimitive.Props) {
   return (
-    <Button variant="outline" size="icon" aria-label="Submit">
+    <Button
+      disabled={disabled || isSubmitting}
+      aria-busy={isSubmitting}
+      {...props}
+    >
       <span className={cn(isSubmitting && "invisible")}>{children}</span>
       {isSubmitting && (
         <div className="absolute inset-0 flex items-center justify-center">

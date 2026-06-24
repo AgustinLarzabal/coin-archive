@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const drizzleMock = vi.fn((client: unknown) => ({ client }))
+const drizzleMock = vi.fn((client: unknown, config?: unknown) => ({
+  client,
+  config,
+}))
 const postgresMock = vi.fn(() => "postgres-client")
 
 vi.mock("drizzle-orm/postgres-js", () => ({
@@ -38,16 +41,21 @@ describe("createDatabase", () => {
   })
 
   it("wraps the postgres client with drizzle", async () => {
-    const { createDatabase } = await import("./database")
+    const { createDatabase, databaseSchema } = await import("./database")
 
     const database = createDatabase("postgres://example")
 
     expect(postgresMock).toHaveBeenCalledTimes(1)
-    expect(drizzleMock).toHaveBeenCalledWith("postgres-client")
+    expect(drizzleMock).toHaveBeenCalledWith("postgres-client", {
+      schema: databaseSchema,
+    })
     expect(database).toEqual({
       client: "postgres-client",
       db: {
         client: "postgres-client",
+        config: {
+          schema: databaseSchema,
+        },
       },
     })
   })

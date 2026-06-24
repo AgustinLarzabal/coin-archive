@@ -1,6 +1,62 @@
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
+import { account } from "./schema/account"
+import { catalogue } from "./schema/catalogue"
+import { coin } from "./schema/coin"
+import { coinReference } from "./schema/coin-reference"
+import { coinMint } from "./schema/coin-mint"
+import { coinRuler } from "./schema/coin-ruler"
+import { coinSurface } from "./schema/coin-surface"
+import { coinSurfaceEngraver } from "./schema/coin-surface-engraver"
+import { coinTheme } from "./schema/coin-theme"
+import { composition } from "./schema/composition"
+import { currency } from "./schema/currency"
+import { distribution } from "./schema/distribution"
+import { edge } from "./schema/edge"
+import { engraver } from "./schema/engraver"
+import { issuer } from "./schema/issuer"
+import { mint } from "./schema/mint"
+import { orientation } from "./schema/orientation"
+import { rim } from "./schema/rim"
+import { ruler } from "./schema/ruler"
+import { rulerGroup } from "./schema/ruler-group"
+import { session } from "./schema/session"
+import { shape } from "./schema/shape"
+import { technique } from "./schema/technique"
+import { theme } from "./schema/theme"
+import { user } from "./schema/user"
+import { verification } from "./schema/verification"
+
+export const databaseSchema = {
+  account,
+  catalogue,
+  coin,
+  coinMint,
+  coinReference,
+  coinRuler,
+  coinSurface,
+  coinSurfaceEngraver,
+  coinTheme,
+  composition,
+  currency,
+  distribution,
+  edge,
+  engraver,
+  issuer,
+  mint,
+  orientation,
+  rim,
+  ruler,
+  rulerGroup,
+  session,
+  shape,
+  technique,
+  theme,
+  user,
+  verification,
+} as const
+
 export function createDatabaseClient(databaseUrl: string) {
   return postgres(databaseUrl, {
     connection: {
@@ -18,6 +74,8 @@ export function createDatabase(databaseUrl: string) {
 
   return {
     client,
-    db: drizzle(client),
+    db: drizzle(client, {
+      schema: databaseSchema,
+    }),
   }
 }

@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { afterAll, beforeEach } from "vitest"
 
+import { databaseSchema } from "../database"
 import { account } from "../schema/account"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
@@ -29,7 +30,7 @@ import { theme } from "../schema/theme"
 import { user } from "../schema/user"
 import { verification } from "../schema/verification"
 
-type TestDatabase = ReturnType<typeof drizzle>
+type TestDatabase = ReturnType<typeof createTestDatabase>["db"]
 
 export function createTestDatabase(databaseUrl: string) {
   const client = postgres(databaseUrl, {
@@ -38,7 +39,9 @@ export function createTestDatabase(databaseUrl: string) {
 
   return {
     client,
-    db: drizzle(client),
+    db: drizzle(client, {
+      schema: databaseSchema,
+    }),
   }
 }
 

@@ -7,7 +7,7 @@ export const coinReferenceSchemaNames = {
   coinIdIndex: "coin_reference_coin_id_idx",
   catalogueIdIndex: "coin_reference_catalogue_id_idx",
   coinIdCatalogueIdNormalizedNumberUniqueIndex:
-    "coin_reference_coin_id_catalogue_id_normalized_number_unique_idx",
+    "coin_reference_coin_catalogue_number_unique_idx",
 } as const
 
 const timestamptzDateColumn = {

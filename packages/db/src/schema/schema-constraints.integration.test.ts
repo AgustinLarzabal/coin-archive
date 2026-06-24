@@ -2441,7 +2441,7 @@ describe("coin reference schema constraints", () => {
         catalogueId: km.id,
         number: " 1338   a ",
       }),
-      "coin_reference_coin_id_catalogue_id_normalized_number_unique_id",
+      coinReferenceSchemaNames.coinIdCatalogueIdNormalizedNumberUniqueIndex,
       "23505"
     )
   })

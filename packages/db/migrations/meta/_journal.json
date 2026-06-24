@@ -78,6 +78,13 @@
       "when": 1782033993465,
       "tag": "0010_dapper_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782323578379,
+      "tag": "0011_bitter_emma_frost",
+      "breakpoints": true
     }
   ]
 }

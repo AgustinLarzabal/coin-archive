@@ -253,7 +253,7 @@ CREATE INDEX "coin_theme_coin_id_idx" ON "coin_theme" USING btree ("coin_id");--
 CREATE INDEX "coin_theme_theme_id_idx" ON "coin_theme" USING btree ("theme_id");--> statement-breakpoint
 CREATE INDEX "coin_reference_coin_id_idx" ON "coin_reference" USING btree ("coin_id");--> statement-breakpoint
 CREATE INDEX "coin_reference_catalogue_id_idx" ON "coin_reference" USING btree ("catalogue_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "coin_reference_coin_id_catalogue_id_normalized_number_unique_idx" ON "coin_reference" USING btree ("coin_id","catalogue_id",lower(regexp_replace(btrim("number"), '\s+', ' ', 'g')));--> statement-breakpoint
+CREATE UNIQUE INDEX "coin_reference_coin_catalogue_number_unique_idx" ON "coin_reference" USING btree ("coin_id","catalogue_id",lower(regexp_replace(btrim("number"), '\s+', ' ', 'g')));--> statement-breakpoint
 CREATE UNIQUE INDEX "composition_code_lower_unique_idx" ON "composition" USING btree (lower("code"));--> statement-breakpoint
 CREATE INDEX "composition_code_lookup_idx" ON "composition" USING btree (lower("code"));--> statement-breakpoint
 CREATE UNIQUE INDEX "currency_code_lower_unique_idx" ON "currency" USING btree (lower("code"));--> statement-breakpoint

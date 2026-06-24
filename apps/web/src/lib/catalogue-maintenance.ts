@@ -11,9 +11,14 @@ export const CATALOGUE_DUPLICATE_CODE_ERROR =
 export const CATALOGUE_GENERIC_SAVE_ERROR =
   "Unable to save Catalogue right now."
 export const CATALOGUE_MISSING_ERROR = "Catalogue no longer exists."
+export const CATALOGUE_IN_USE_DELETE_ERROR =
+  "Catalogue cannot be deleted while coin references still use it."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const DUPLICATE_CATALOGUE_CODE_CONSTRAINT = "catalogue_code_lower_unique_idx"
+const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
+const CATALOGUE_IN_USE_DELETE_CONSTRAINT =
+  "coin_reference_catalogue_id_catalogue_id_fk"
 const CATALOGUE_FIELD_NAMES = ["code", "title"] as const
 
 const catalogueCodeSchema = z
@@ -37,6 +42,10 @@ export const updateCatalogueInputSchema = createCatalogueInputSchema.extend({
   id: z.uuid(),
 })
 
+export const deleteCatalogueInputSchema = z.object({
+  id: z.uuid(),
+})
+
 type CatalogueFieldName = (typeof CATALOGUE_FIELD_NAMES)[number]
 
 export type CatalogueFieldErrors = Partial<Record<CatalogueFieldName, string>>
@@ -54,9 +63,11 @@ export type CatalogueMutationResult =
 
 type CreateCatalogueInput = z.input<typeof createCatalogueInputSchema>
 type UpdateCatalogueInput = z.input<typeof updateCatalogueInputSchema>
+type DeleteCatalogueInput = z.input<typeof deleteCatalogueInputSchema>
 
 type CatalogueMutationDependencies = {
   createCatalogue: (input: { code: string; title: string }) => Promise<unknown>
+  deleteCatalogue: (input: { id: string }) => Promise<unknown | null>
   updateCatalogue: (input: {
     id: string
     code: string
@@ -65,10 +76,12 @@ type CatalogueMutationDependencies = {
 }
 
 async function getDefaultCatalogueMutationDependencies(): Promise<CatalogueMutationDependencies> {
-  const { createCatalogue, updateCatalogue } = await import("@workspace/db")
+  const { createCatalogue, deleteCatalogue, updateCatalogue } =
+    await import("@workspace/db")
 
   return {
     createCatalogue,
+    deleteCatalogue,
     updateCatalogue,
   }
 }
@@ -154,11 +167,34 @@ function isDuplicateCatalogueCodeError(error: unknown) {
   )
 }
 
+function isCatalogueInUseDeleteError(error: unknown) {
+  if (!isObjectRecord(error)) {
+    return false
+  }
+
+  const postgresError = "cause" in error ? error.cause : error
+
+  if (!isObjectRecord(postgresError)) {
+    return false
+  }
+
+  return (
+    "code" in postgresError &&
+    postgresError.code === FK_VIOLATION_POSTGRES_ERROR_CODE &&
+    "constraint_name" in postgresError &&
+    postgresError.constraint_name === CATALOGUE_IN_USE_DELETE_CONSTRAINT
+  )
+}
+
 function createPersistenceError(error: unknown): CatalogueMutationResult {
   if (isDuplicateCatalogueCodeError(error)) {
     return createFieldErrorResult({
       code: CATALOGUE_DUPLICATE_CODE_ERROR,
     })
+  }
+
+  if (isCatalogueInUseDeleteError(error)) {
+    return createFormErrorResult(CATALOGUE_IN_USE_DELETE_ERROR)
   }
 
   return createFormErrorResult(CATALOGUE_GENERIC_SAVE_ERROR)
@@ -251,6 +287,45 @@ export async function submitUpdateCatalogue(
     return {
       status: "success",
       message: "Saved.",
+    }
+  } catch (error) {
+    return createPersistenceError(error)
+  }
+}
+
+export async function submitDeleteCatalogue(
+  collector: CollectorWithRole | null,
+  input: DeleteCatalogueInput,
+  dependencies?: CatalogueMutationDependencies
+): Promise<CatalogueMutationResult> {
+  if (!hasCatalogueMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  const validationResult = validateCatalogueInput(
+    deleteCatalogueInputSchema,
+    input
+  )
+
+  if (!validationResult.success) {
+    return validationResult.result
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultCatalogueMutationDependencies())
+
+  try {
+    const deletedCatalogue = await resolvedDependencies.deleteCatalogue(
+      validationResult.data
+    )
+
+    if (deletedCatalogue === null) {
+      return createFormErrorResult(CATALOGUE_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Catalogue deleted.",
     }
   } catch (error) {
     return createPersistenceError(error)

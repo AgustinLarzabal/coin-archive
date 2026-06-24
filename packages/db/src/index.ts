@@ -1,5 +1,9 @@
 export { db } from "./client"
-export { createCatalogue, updateCatalogue } from "./mutations/catalogue"
+export {
+  createCatalogue,
+  deleteCatalogue,
+  updateCatalogue,
+} from "./mutations/catalogue"
 export { getCatalogues } from "./queries/get-catalogues"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"

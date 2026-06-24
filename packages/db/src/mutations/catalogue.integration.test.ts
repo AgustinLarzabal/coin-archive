@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 
-import { coinReference, db } from "../index"
+import { catalogue, coinReference, db } from "../index"
 import {
   createCatalogue as createCatalogueFixture,
   createCoin,
@@ -9,7 +9,7 @@ import {
   createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createCatalogue, updateCatalogue } from "./catalogue"
+import { createCatalogue, deleteCatalogue, updateCatalogue } from "./catalogue"
 
 describe("catalogue mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -94,6 +94,14 @@ describe("catalogue mutations integration", () => {
         id: "7281ad03-635d-4214-a936-c49681664e65",
         code: "KM",
         title: "Standard Catalog of World Coins",
+      })
+    ).resolves.toBeNull()
+  })
+
+  it("returns null when deleting a missing Catalogue", async () => {
+    await expect(
+      deleteCatalogue({
+        id: "7281ad03-635d-4214-a936-c49681664e65",
       })
     ).resolves.toBeNull()
   })
@@ -197,5 +205,60 @@ describe("catalogue mutations integration", () => {
     expect(updatedCatalogue?.updatedAt.getTime()).toBeGreaterThan(
       createdCatalogue.updatedAt.getTime()
     )
+  })
+
+  it("deletes a Catalogue that has no Coin References", async () => {
+    const createdCatalogue = await createCatalogueFixture({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+
+    await expect(
+      deleteCatalogue({
+        id: createdCatalogue.id,
+      })
+    ).resolves.toMatchObject({
+      id: createdCatalogue.id,
+      code: "KM",
+    })
+
+    const persistedCatalogue = await db.query.catalogue.findFirst({
+      where: eq(catalogue.id, createdCatalogue.id),
+    })
+
+    expect(persistedCatalogue).toBeUndefined()
+  })
+
+  it("rejects deleting a Catalogue while Coin References still use it", async () => {
+    const createdCatalogue = await createCatalogueFixture({
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+    })
+    const createdIssuer = await createIssuer({
+      code: "test-issuer",
+      name: "Test Issuer",
+    })
+    const createdCoin = await createCoin({
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      issuerId: createdIssuer.id,
+      title: "Test Coin",
+    })
+
+    await createCoinReference({
+      catalogueId: createdCatalogue.id,
+      coinId: createdCoin.id,
+      number: "123",
+    })
+
+    await expect(
+      deleteCatalogue({
+        id: createdCatalogue.id,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_reference_catalogue_id_catalogue_id_fk",
+      }),
+    })
   })
 })

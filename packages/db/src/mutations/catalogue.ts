@@ -13,6 +13,10 @@ type UpdateCatalogueInput = CatalogueFields & {
   id: string
 }
 
+type DeleteCatalogueInput = {
+  id: string
+}
+
 function trimCatalogueFields({ code, title }: CatalogueFields) {
   return {
     code: code.trim(),
@@ -45,4 +49,15 @@ export async function updateCatalogue({
     .returning()
 
   return updatedCatalogue ?? null
+}
+
+export async function deleteCatalogue({
+  id,
+}: DeleteCatalogueInput): Promise<Catalogue | null> {
+  const [deletedCatalogue] = await db
+    .delete(catalogue)
+    .where(eq(catalogue.id, id))
+    .returning()
+
+  return deletedCatalogue ?? null
 }

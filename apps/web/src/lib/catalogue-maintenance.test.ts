@@ -4,8 +4,10 @@ import {
   CATALOGUE_AUTHORIZATION_ERROR,
   CATALOGUE_DUPLICATE_CODE_ERROR,
   CATALOGUE_GENERIC_SAVE_ERROR,
+  CATALOGUE_IN_USE_DELETE_ERROR,
   CATALOGUE_MISSING_ERROR,
   submitCreateCatalogue,
+  submitDeleteCatalogue,
   submitUpdateCatalogue,
 } from "./catalogue-maintenance"
 
@@ -24,6 +26,7 @@ function createDependencies(overrides?: {
 }) {
   return {
     createCatalogue: vi.fn(),
+    deleteCatalogue: vi.fn(),
     updateCatalogue: vi.fn(),
     ...overrides,
   }
@@ -34,6 +37,18 @@ function updateDependencies(overrides?: {
 }) {
   return {
     createCatalogue: vi.fn(),
+    deleteCatalogue: vi.fn(),
+    updateCatalogue: vi.fn(),
+    ...overrides,
+  }
+}
+
+function deleteDependencies(overrides?: {
+  deleteCatalogue?: ReturnType<typeof vi.fn>
+}) {
+  return {
+    createCatalogue: vi.fn(),
+    deleteCatalogue: vi.fn(),
     updateCatalogue: vi.fn(),
     ...overrides,
   }
@@ -276,5 +291,92 @@ describe("submitUpdateCatalogue", () => {
       id: VALID_CATALOGUE_ID,
       ...ROMAN_CATALOGUE,
     })
+  })
+})
+
+describe("submitDeleteCatalogue", () => {
+  const deleteInput = {
+    id: VALID_CATALOGUE_ID,
+  }
+
+  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
+    await expect(
+      submitDeleteCatalogue(null, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+
+    await expect(
+      submitDeleteCatalogue({ role: "collector" }, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("maps validation issues into typed field errors", async () => {
+    const dependencies = deleteDependencies()
+
+    await expect(
+      submitDeleteCatalogue(
+        { role: "editor" },
+        { id: "not-a-uuid" },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+    })
+
+    expect(dependencies.deleteCatalogue).not.toHaveBeenCalled()
+  })
+
+  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    await expect(
+      submitDeleteCatalogue(
+        { role: "editor" },
+        deleteInput,
+        deleteDependencies({
+          deleteCatalogue: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: CATALOGUE_MISSING_ERROR,
+    })
+  })
+
+  it("maps restricted deletes to a form error", async () => {
+    await expect(
+      submitDeleteCatalogue(
+        { role: "admin" },
+        deleteInput,
+        deleteDependencies({
+          deleteCatalogue: vi.fn().mockRejectedValue({
+            cause: {
+              code: "23001",
+              constraint_name: "coin_reference_catalogue_id_catalogue_id_fk",
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: CATALOGUE_IN_USE_DELETE_ERROR,
+    })
+  })
+
+  it("returns a success result for valid delete submissions", async () => {
+    const dependencies = deleteDependencies({
+      deleteCatalogue: vi.fn().mockResolvedValue({
+        id: VALID_CATALOGUE_ID,
+      }),
+    })
+
+    await expect(
+      submitDeleteCatalogue({ role: "editor" }, deleteInput, dependencies)
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Catalogue deleted.",
+    })
+
+    expect(dependencies.deleteCatalogue).toHaveBeenCalledWith(deleteInput)
   })
 })

@@ -2,8 +2,21 @@ import { describe, expect, it } from "vitest"
 
 import {
   getAuthenticatedLoginRedirect,
+  getLocationRedirectTarget,
   getSafeAuthRedirect,
 } from "./auth-redirect"
+
+describe("getLocationRedirectTarget", () => {
+  it("preserves pathname, search, and hash in router order", () => {
+    expect(
+      getLocationRedirectTarget({
+        hash: "#details",
+        pathname: "/coins/coin-1",
+        searchStr: "?issuer=spain",
+      })
+    ).toBe("/coins/coin-1?issuer=spain#details")
+  })
+})
 
 describe("getSafeAuthRedirect", () => {
   it("keeps safe in-app redirects", () => {

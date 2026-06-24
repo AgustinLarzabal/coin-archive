@@ -1,15 +1,8 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router"
 
 import { getAuthSession } from "../../../lib/auth-session"
+import { getLocationRedirectTarget } from "../../../lib/auth-redirect"
 import { getCollectorRouteRedirect } from "../../../lib/private-route"
-
-function getRouteRedirectTarget(location: {
-  hash: string
-  pathname: string
-  searchStr: string
-}) {
-  return `${location.pathname}${location.searchStr}${location.hash}`
-}
 
 export const Route = createFileRoute("/_app/_authed")({
   beforeLoad: async ({ location }) => {
@@ -17,7 +10,7 @@ export const Route = createFileRoute("/_app/_authed")({
     if (session === null) {
       const loginRedirect = getCollectorRouteRedirect(
         false,
-        getRouteRedirectTarget(location)
+        getLocationRedirectTarget(location)
       )
 
       if (loginRedirect === null) {

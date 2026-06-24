@@ -1,4 +1,7 @@
-import { getSafeAuthRedirect } from "@/lib/auth-redirect"
+import {
+  getLocationRedirectTarget,
+  getSafeAuthRedirect,
+} from "@/lib/auth-redirect"
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
@@ -13,7 +16,11 @@ export function getLoginRedirectTarget({
   pathname: string
   searchStr: string
 }) {
-  const redirectTarget = `${pathname}${searchStr}${hash}`
+  const redirectTarget = getLocationRedirectTarget({
+    hash,
+    pathname,
+    searchStr,
+  })
 
   return getSafeAuthRedirect(redirectTarget)
 }

@@ -2,10 +2,24 @@ const AUTH_REDIRECT_FALLBACK = "/"
 const AUTH_REDIRECT_ORIGIN = "http://coin-archive.local"
 const AUTH_REDIRECT_DISALLOWED_PATHS = ["/login"] as const
 
+type RedirectLocation = {
+  hash: string
+  pathname: string
+  searchStr: string
+}
+
 function isDisallowedAuthRedirectPath(pathname: string): boolean {
   return AUTH_REDIRECT_DISALLOWED_PATHS.some(
     (disallowedPath) => disallowedPath === pathname
   )
+}
+
+export function getLocationRedirectTarget({
+  hash,
+  pathname,
+  searchStr,
+}: RedirectLocation): string {
+  return `${pathname}${searchStr}${hash}`
 }
 
 export function getSafeAuthRedirect(redirect: string | undefined): string {

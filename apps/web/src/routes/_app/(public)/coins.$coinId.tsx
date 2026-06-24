@@ -19,10 +19,6 @@ import {
   getCoinPreviewImageUrl,
   getSurfaceImageUrl,
 } from "../../../lib/coin-images"
-import {
-  getIssuerRulerFilterDescription,
-  RULER_FILTER_LABEL,
-} from "../../../lib/ruler-filter"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
@@ -136,10 +132,8 @@ function CoinRoute() {
 
 export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
-  const hasKnownIssueYearRange =
-    coin.minYear !== null && coin.maxYear !== null
-  const hasSingleYear =
-    hasKnownIssueYearRange && coin.minYear === coin.maxYear
+  const hasKnownIssueYearRange = coin.minYear !== null && coin.maxYear !== null
+  const hasSingleYear = hasKnownIssueYearRange && coin.minYear === coin.maxYear
   const metadataItems: CoinMetadataItemView[] = [
     {
       key: "issuer",
@@ -169,22 +163,16 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
       key: "rulers",
       content: (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{RULER_FILTER_LABEL}</span>
           <div className="flex items-center gap-4">
             {coin.rulers.map((ruler) => {
-              const filterDescription = getIssuerRulerFilterDescription(
-                coin.issuer.name,
-                ruler.name
-              )
-
               return (
                 <Link
                   key={ruler.code}
                   to="/"
                   search={{ issuer: coin.issuer.code, ruler: ruler.code }}
                   className="underline-offset-4 hover:underline"
-                  title={`Filter homepage by ${filterDescription}`}
-                  aria-label={`Show homepage coins filtered by ${filterDescription}`}
+                  title={`Filter homepage by ${`issuer ${coin.issuer.name} and "Ruling authority" ${ruler.name}`}`}
+                  aria-label={`Show homepage coins filtered by ${`issuer ${coin.issuer.name} and "Ruling authority" ${ruler.name}`}`}
                 >
                   {ruler.name}
                 </Link>

@@ -7,7 +7,6 @@ import {
   createCatalogueAuthorizationError,
   hasCatalogueMaintenanceAccess,
 } from "@/lib/catalogue-maintenance"
-import { createServerFn } from "@tanstack/react-start"
 
 type CatalogueMaintenanceCataloguesResult =
   | {
@@ -57,18 +56,9 @@ export async function loadCatalogueMaintenanceCatalogues(
   }
 }
 
-export const getCatalogueMaintenanceCatalogues = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const { getAuthSession } = await import("@/lib/auth-session")
-  const session = await getAuthSession()
-
-  return loadCatalogueMaintenanceCatalogues(session?.user ?? null)
-})
-
 export const Route = createFileRoute("/_app/_authed/database/catalogues")({
-  loader: async () => {
-    const result = await getCatalogueMaintenanceCatalogues()
+  loader: async ({ context }) => {
+    const result = await loadCatalogueMaintenanceCatalogues(context.session.user)
 
     if (result.status === "error") {
       return {

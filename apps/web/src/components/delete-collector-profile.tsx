@@ -181,9 +181,9 @@ export function DeleteCollectorProfile({
               <Button
                 variant="destructive"
                 onClick={handleDeleteCollectorProfile}
-                // disabled={
-                //   !isCollectorDeletionReady(confirmationPhrase, isPending)
-                // }
+                disabled={
+                  !isCollectorDeletionReady(confirmationPhrase, isPending)
+                }
               >
                 Delete Collector profile
               </Button>

@@ -10,6 +10,19 @@ import {
 const lastAdminRecoveryMessage =
   "Assign another Admin before deleting your Collector profile."
 
+function getButtonMarkup(markup: string, label: string): string {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const buttonMatch = markup.match(
+    new RegExp(`<button([^>]*)>${escapedLabel}</button>`)
+  )
+
+  if (!buttonMatch) {
+    throw new Error(`Unable to find button with label: ${label}`)
+  }
+
+  return buttonMatch[1] ?? ""
+}
+
 function createDeletionRequestOptions() {
   const deletionRequest = {
     resolve: null as
@@ -67,7 +80,15 @@ describe("DeleteCollectorProfile", () => {
     expect(markup).toContain("Delete Collector profile")
     expect(markup).toContain("Collector Deletion is immediate, irreversible")
     expect(markup).toContain("does not delete catalogue data")
-    expect(markup).toContain("Delete Collector profile</button>")
+
+    const deleteButtonMarkup = getButtonMarkup(
+      markup,
+      "Delete Collector profile"
+    )
+
+    expect(deleteButtonMarkup).toContain("disabled")
+    expect(isCollectorDeletionReady("DELETE", false)).toBe(true)
+    expect(isCollectorDeletionReady("DELETE", true)).toBe(false)
   })
 
   it("enables the destructive action only for the exact confirmation phrase while not pending", () => {

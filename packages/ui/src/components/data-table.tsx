@@ -2,6 +2,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  Table as TanStackTable,
 } from "@tanstack/react-table"
 import {
   flexRender,
@@ -21,17 +22,19 @@ import {
   TableRow,
 } from "./table"
 import { Button } from "./button"
+import type { ReactNode } from "react"
 import { useState } from "react"
-import { Input } from "./input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  toolbar?: (table: TanStackTable<TData>) => ReactNode
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  toolbar,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -53,15 +56,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter catalogues..."
-          value={table.getColumn("title")?.getFilterValue() as string}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-        />
-      </div>
+      {toolbar ? (
+        <div className="flex items-center py-4">{toolbar(table)}</div>
+      ) : null}
       <div className="overflow-hidden border">
         <Table>
           <TableHeader>

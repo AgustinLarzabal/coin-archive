@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { CataloguesTable } from "@/components/catalogues-table"
+import { CataloguesTable } from "@/components/tables/catalogues/catalogues-table"
 import { createServerFn } from "@tanstack/react-start"
 
 export const getCatalogueMaintenanceCatalogues = createServerFn({

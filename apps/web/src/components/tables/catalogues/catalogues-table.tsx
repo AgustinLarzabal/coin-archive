@@ -2,8 +2,9 @@ import { useMemo, useState } from "react"
 import type { CatalogueOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { createCatalogueColumns } from "./tables/catalogues/columns"
-import { CatalogueEditSheet } from "./tables/catalogues/catalogue-edit-sheet"
+import { createCatalogueColumns } from "./columns"
+import { CatalogueEditSheet } from "./catalogue-edit-sheet"
+import { CataloguesTableToolbar } from "./catalogues-table-toolbar"
 
 type CatalogueTableProps = {
   catalogues: CatalogueOption[]
@@ -32,7 +33,11 @@ export function CataloguesTable({ catalogues }: CatalogueTableProps) {
 
   return (
     <>
-      <DataTable columns={columns} data={catalogues} />
+      <DataTable
+        columns={columns}
+        data={catalogues}
+        toolbar={(table) => <CataloguesTableToolbar table={table} />}
+      />
       <CatalogueEditSheet
         catalogue={editingCatalogue}
         open={isEditSheetOpen}

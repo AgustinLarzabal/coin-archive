@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_app/_authed")({
 
 function AuthedRouteComponent() {
   return (
-    <div className="grow p-4 md:px-8 md:py-6">
+    <div className="grid grow p-4 md:px-8 md:py-6">
       <Outlet />
     </div>
   )

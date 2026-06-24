@@ -1,40 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { getEditorRouteAuthorization } from "@/lib/private-route"
-import {
-  CatalogueMaintenanceAccessDeniedPage,
-  getCatalogueMaintenanceCatalogues,
-} from "./-database-page"
 import { CataloguesTable } from "@/components/catalogues-table"
+import { createServerFn } from "@tanstack/react-start"
+
+export const getCatalogueMaintenanceCatalogues = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const { getCatalogues } = await import("@workspace/db")
+
+  return getCatalogues()
+})
 
 export const Route = createFileRoute("/_app/_authed/database/catalogues")({
-  loader: async ({ context }) => {
-    const authorization = getEditorRouteAuthorization(context.session.user)
-
-    if (!authorization.isAllowed) {
-      return authorization
-    }
-
+  loader: async () => {
     const catalogues = await getCatalogueMaintenanceCatalogues()
 
-    return {
-      ...authorization,
-      catalogues,
-    }
+    return { catalogues }
   },
   component: DatabaseCataloguesComponent,
 })
 
 function DatabaseCataloguesComponent() {
-  const loaderData = Route.useLoaderData()
-
-  if (!loaderData.isAllowed) {
-    return <CatalogueMaintenanceAccessDeniedPage />
-  }
+  const { catalogues } = Route.useLoaderData()
 
   return (
     <main className="mt-8">
-      <CataloguesTable catalogues={loaderData.catalogues} />
+      <CataloguesTable catalogues={catalogues} />
     </main>
   )
 }

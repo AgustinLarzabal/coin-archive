@@ -30,6 +30,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteCatalogue } from "@/lib/catalogue-maintenance"
+import { CatalogueCreateForm } from "./catalogue-create-form"
 import { CatalogueEditForm } from "./catalogue-edit-form"
 
 type CatalogueEditSheetProps = {
@@ -92,7 +93,9 @@ export function CatalogueEditSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>Edit Catalogue</SheetTitle>
+          <SheetTitle>
+            {catalogue ? "Edit Catalogue" : "Create Catalogue"}
+          </SheetTitle>
 
           {catalogue?.id && (
             <>
@@ -160,7 +163,9 @@ export function CatalogueEditSheet({
             catalogue={catalogue}
             onSaved={() => onOpenChange(false)}
           />
-        ) : null}
+        ) : (
+          <CatalogueCreateForm onCreated={() => onOpenChange(false)} />
+        )}
       </SheetContent>
     </Sheet>
   )

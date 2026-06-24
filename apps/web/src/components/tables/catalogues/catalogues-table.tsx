@@ -31,12 +31,22 @@ export function CataloguesTable({ catalogues }: CatalogueTableProps) {
     }
   }
 
+  function handleCreateCatalogue() {
+    setEditingCatalogue(null)
+    setIsEditSheetOpen(true)
+  }
+
   return (
     <>
       <DataTable
         columns={columns}
         data={catalogues}
-        toolbar={(table) => <CataloguesTableToolbar table={table} />}
+        toolbar={(table) => (
+          <CataloguesTableToolbar
+            table={table}
+            onCreateCatalogue={handleCreateCatalogue}
+          />
+        )}
       />
       <CatalogueEditSheet
         catalogue={editingCatalogue}

@@ -2,8 +2,8 @@ import { useState } from "react"
 import type { CompositionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { compositionColumns } from "./columns"
-import { CompositionCreateSheet } from "./composition-create-sheet"
+import { createCompositionColumns } from "./columns"
+import { CompositionEditSheet } from "./composition-edit-sheet"
 import { CompositionsTableToolbar } from "./compositions-table-toolbar"
 
 type CompositionsTableProps = {
@@ -29,11 +29,17 @@ export function CompositionsTable({
   compositions,
 }: CompositionsTableProps) {
   const [nameFilter, setNameFilter] = useState("")
-  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
+  const [activeComposition, setActiveComposition] =
+    useState<CompositionOption | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const filteredCompositions = filterCompositionsByName(
     compositions,
     nameFilter
   )
+  const compositionColumns = createCompositionColumns((composition) => {
+    setActiveComposition(composition)
+    setIsSheetOpen(true)
+  })
 
   return (
     <>
@@ -43,14 +49,24 @@ export function CompositionsTable({
         toolbar={() => (
           <CompositionsTableToolbar
             nameFilter={nameFilter}
-            onCreateComposition={() => setIsCreateSheetOpen(true)}
+            onCreateComposition={() => {
+              setActiveComposition(null)
+              setIsSheetOpen(true)
+            }}
             onNameFilterChange={setNameFilter}
           />
         )}
       />
-      <CompositionCreateSheet
-        open={isCreateSheetOpen}
-        onOpenChange={setIsCreateSheetOpen}
+      <CompositionEditSheet
+        composition={activeComposition}
+        open={isSheetOpen}
+        onOpenChange={(open) => {
+          setIsSheetOpen(open)
+
+          if (!open) {
+            setActiveComposition(null)
+          }
+        }}
       />
     </>
   )

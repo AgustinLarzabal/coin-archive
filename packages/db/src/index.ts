@@ -4,7 +4,11 @@ export {
   deleteCatalogue,
   updateCatalogue,
 } from "./mutations/catalogue"
-export { createComposition } from "./mutations/composition"
+export {
+  createComposition,
+  deleteComposition,
+  updateComposition,
+} from "./mutations/composition"
 export { getCatalogues } from "./queries/get-catalogues"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"

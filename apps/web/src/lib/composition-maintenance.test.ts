@@ -4,9 +4,13 @@ import {
   COMPOSITION_AUTHORIZATION_ERROR,
   COMPOSITION_DUPLICATE_CODE_ERROR,
   COMPOSITION_GENERIC_SAVE_ERROR,
+  COMPOSITION_IN_USE_DELETE_ERROR,
   COMPOSITION_INVALID_CODE_ERROR,
+  COMPOSITION_MISSING_ERROR,
   hasCompositionMaintenanceAccess,
   submitCreateComposition,
+  submitDeleteComposition,
+  submitUpdateComposition,
 } from "./composition-maintenance"
 
 const VALID_COMPOSITION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
@@ -18,9 +22,13 @@ const SILVER_COMPOSITION = {
 
 function createDependencies(overrides?: {
   createComposition?: ReturnType<typeof vi.fn>
+  deleteComposition?: ReturnType<typeof vi.fn>
+  updateComposition?: ReturnType<typeof vi.fn>
 }) {
   return {
     createComposition: vi.fn(),
+    deleteComposition: vi.fn(),
+    updateComposition: vi.fn(),
     ...overrides,
   }
 }
@@ -189,6 +197,103 @@ describe("submitCreateComposition", () => {
       status: "error",
       fieldErrors: {},
       formError: COMPOSITION_GENERIC_SAVE_ERROR,
+    })
+  })
+})
+
+describe("submitUpdateComposition", () => {
+  const updateInput = {
+    id: VALID_COMPOSITION_ID,
+    ...SILVER_COMPOSITION,
+  }
+
+  it("returns a missing-row form error when the update target no longer exists", async () => {
+    await expect(
+      submitUpdateComposition(
+        { role: "editor" },
+        updateInput,
+        createDependencies({
+          updateComposition: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: COMPOSITION_MISSING_ERROR,
+    })
+  })
+
+  it("trims Composition fields before updating a Composition", async () => {
+    const dependencies = createDependencies({
+      updateComposition: vi.fn().mockResolvedValue({
+        id: VALID_COMPOSITION_ID,
+      }),
+    })
+
+    await expect(
+      submitUpdateComposition(
+        { role: "editor" },
+        {
+          id: VALID_COMPOSITION_ID,
+          code: " silver-900 ",
+          name: " Silver (.900) ",
+          description: "  Ninety percent silver alloy.  ",
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Saved.",
+    })
+
+    expect(dependencies.updateComposition).toHaveBeenCalledWith({
+      id: VALID_COMPOSITION_ID,
+      code: "silver-900",
+      name: "Silver (.900)",
+      description: "Ninety percent silver alloy.",
+    })
+  })
+})
+
+describe("submitDeleteComposition", () => {
+  const deleteInput = {
+    id: VALID_COMPOSITION_ID,
+  }
+
+  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    await expect(
+      submitDeleteComposition(
+        { role: "editor" },
+        deleteInput,
+        createDependencies({
+          deleteComposition: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: COMPOSITION_MISSING_ERROR,
+    })
+  })
+
+  it("maps restricted deletes to a Composition-specific form error", async () => {
+    await expect(
+      submitDeleteComposition(
+        { role: "admin" },
+        deleteInput,
+        createDependencies({
+          deleteComposition: vi.fn().mockRejectedValue({
+            cause: {
+              code: "23001",
+              constraint_name: "coin_composition_id_composition_id_fk",
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: COMPOSITION_IN_USE_DELETE_ERROR,
     })
   })
 })

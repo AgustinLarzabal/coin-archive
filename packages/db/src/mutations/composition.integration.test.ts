@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest"
 
 import { db } from "../index"
-import { createComposition as createCompositionFixture } from "../testing/fixtures"
+import {
+  createCoin,
+  createComposition as createCompositionFixture,
+  createIssuer,
+} from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createComposition } from "./composition"
+import {
+  createComposition,
+  deleteComposition,
+  updateComposition,
+} from "./composition"
 
 describe("composition mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -81,5 +89,114 @@ describe("composition mutations integration", () => {
 
     expect(firstComposition.name).toBe(secondComposition.name)
     expect(firstComposition.id).not.toBe(secondComposition.id)
+  })
+
+  it("trims Composition fields and updates updatedAt when updating a Composition", async () => {
+    const existingComposition = await createCompositionFixture({
+      code: "silver-900",
+      name: "Silver (.900)",
+      description: "Before update",
+    })
+
+    const updatedComposition = await updateComposition({
+      id: existingComposition.id,
+      code: " silver-925 ",
+      name: " Silver (.925) ",
+      description: "  Sterling-adjacent test detail.  ",
+    })
+
+    expect(updatedComposition).toMatchObject({
+      id: existingComposition.id,
+      code: "silver-925",
+      name: "Silver (.925)",
+      description: "Sterling-adjacent test detail.",
+    })
+    expect(updatedComposition?.updatedAt.getTime()).toBeGreaterThanOrEqual(
+      existingComposition.updatedAt.getTime()
+    )
+  })
+
+  it("persists blank Composition Description as null when updating a Composition", async () => {
+    const existingComposition = await createCompositionFixture({
+      code: "copper-nickel",
+      name: "Copper-nickel",
+      description: "Before update",
+    })
+
+    await expect(
+      updateComposition({
+        id: existingComposition.id,
+        code: "copper-nickel",
+        name: "Copper-nickel",
+        description: "   ",
+      })
+    ).resolves.toMatchObject({
+      id: existingComposition.id,
+      description: null,
+    })
+  })
+
+  it("returns null when updating a missing Composition", async () => {
+    await expect(
+      updateComposition({
+        id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+        code: "silver-900",
+        name: "Silver (.900)",
+        description: null,
+      })
+    ).resolves.toBeNull()
+  })
+
+  it("returns null when deleting a missing Composition", async () => {
+    await expect(
+      deleteComposition({
+        id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+      })
+    ).resolves.toBeNull()
+  })
+
+  it("deletes an unused Composition", async () => {
+    const existingComposition = await createCompositionFixture({
+      code: "billon",
+      name: "Billon",
+    })
+
+    await expect(
+      deleteComposition({
+        id: existingComposition.id,
+      })
+    ).resolves.toMatchObject({
+      id: existingComposition.id,
+      code: "billon",
+    })
+  })
+
+  it("rejects deleting a Composition while Coins still use it", async () => {
+    const issuer = await createIssuer({
+      code: "test-issuer",
+      name: "Test Issuer",
+    })
+    const existingComposition = await createCompositionFixture({
+      code: "in-use-composition",
+      name: "In Use Composition",
+    })
+
+    await createCoin({
+      issuerId: issuer.id,
+      compositionId: existingComposition.id,
+      title: "Composition Restrict Delete Coin",
+      createdAt: new Date("2026-06-25T00:00:00.000Z"),
+    })
+
+    await expect(
+      deleteComposition({
+        id: existingComposition.id,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_composition_id_composition_id_fk",
+      }),
+    })
   })
 })

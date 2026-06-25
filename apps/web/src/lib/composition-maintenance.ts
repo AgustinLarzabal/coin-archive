@@ -10,14 +10,20 @@ export const COMPOSITION_DUPLICATE_CODE_ERROR =
   "A Composition with this code already exists."
 export const COMPOSITION_GENERIC_SAVE_ERROR =
   "Unable to save Composition right now."
+export const COMPOSITION_MISSING_ERROR = "Composition no longer exists."
+export const COMPOSITION_IN_USE_DELETE_ERROR =
+  "Composition cannot be deleted while Coins still use it."
 export const COMPOSITION_INVALID_CODE_ERROR =
   "Composition Code must use lowercase letters, numbers, and hyphens only."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
+const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
 const DUPLICATE_COMPOSITION_CODE_CONSTRAINT =
   "composition_code_lower_unique_idx"
 const INVALID_COMPOSITION_CODE_CONSTRAINT = "composition_code_slug_check"
+const COMPOSITION_IN_USE_DELETE_CONSTRAINT =
+  "coin_composition_id_composition_id_fk"
 const COMPOSITION_FIELD_NAMES = ["code", "name", "description"] as const
 
 const compositionCodeSchema = z
@@ -52,6 +58,14 @@ export const createCompositionInputSchema = z.object({
   description: compositionDescriptionSchema,
 })
 
+export const updateCompositionInputSchema = createCompositionInputSchema.extend({
+  id: z.uuid(),
+})
+
+export const deleteCompositionInputSchema = z.object({
+  id: z.uuid(),
+})
+
 type CompositionFieldName = (typeof COMPOSITION_FIELD_NAMES)[number]
 
 export type CompositionFieldErrors = Partial<
@@ -76,16 +90,25 @@ export type CompositionAuthorizationErrorResult = {
 
 type CreateCompositionInput = z.input<typeof createCompositionInputSchema>
 type CreateCompositionData = z.output<typeof createCompositionInputSchema>
+type UpdateCompositionInput = z.input<typeof updateCompositionInputSchema>
+type UpdateCompositionData = z.output<typeof updateCompositionInputSchema>
+type DeleteCompositionInput = z.input<typeof deleteCompositionInputSchema>
+type DeleteCompositionData = z.output<typeof deleteCompositionInputSchema>
 
 type CompositionMutationDependencies = {
   createComposition: (input: CreateCompositionData) => Promise<unknown>
+  deleteComposition: (input: DeleteCompositionData) => Promise<unknown | null>
+  updateComposition: (input: UpdateCompositionData) => Promise<unknown | null>
 }
 
 async function getDefaultCompositionMutationDependencies(): Promise<CompositionMutationDependencies> {
-  const { createComposition } = await import("@workspace/db")
+  const { createComposition, deleteComposition, updateComposition } =
+    await import("@workspace/db")
 
   return {
     createComposition,
+    deleteComposition,
+    updateComposition,
   }
 }
 
@@ -205,6 +228,16 @@ function createPersistenceError(error: unknown): CompositionMutationResult {
   if (
     matchesPostgresConstraint(
       error,
+      FK_VIOLATION_POSTGRES_ERROR_CODE,
+      COMPOSITION_IN_USE_DELETE_CONSTRAINT
+    )
+  ) {
+    return createFormErrorResult(COMPOSITION_IN_USE_DELETE_ERROR)
+  }
+
+  if (
+    matchesPostgresConstraint(
+      error,
       CHECK_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_COMPOSITION_CODE_CONSTRAINT
     )
@@ -217,12 +250,13 @@ function createPersistenceError(error: unknown): CompositionMutationResult {
   return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
 }
 
-function validateCreateCompositionInput(
-  input: CreateCompositionInput
+function validateCompositionInput<TSchema extends z.ZodType>(
+  schema: TSchema,
+  input: z.input<TSchema>
 ):
-  | { success: true; data: CreateCompositionData }
+  | { success: true; data: z.output<TSchema> }
   | { success: false; result: CompositionMutationResult } {
-  const parsedInput = createCompositionInputSchema.safeParse(input)
+  const parsedInput = schema.safeParse(input)
 
   if (!parsedInput.success) {
     return {
@@ -246,7 +280,10 @@ export async function submitCreateComposition(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCreateCompositionInput(input)
+  const validationResult = validateCompositionInput(
+    createCompositionInputSchema,
+    input
+  )
 
   if (!validationResult.success) {
     return validationResult.result
@@ -261,6 +298,84 @@ export async function submitCreateComposition(
     return {
       status: "success",
       message: "Composition added.",
+    }
+  } catch (error) {
+    return createPersistenceError(error)
+  }
+}
+
+export async function submitUpdateComposition(
+  collector: CollectorWithRole | null,
+  input: UpdateCompositionInput,
+  dependencies?: CompositionMutationDependencies
+): Promise<CompositionMutationResult> {
+  if (!hasCompositionMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  const validationResult = validateCompositionInput(
+    updateCompositionInputSchema,
+    input
+  )
+
+  if (!validationResult.success) {
+    return validationResult.result
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultCompositionMutationDependencies())
+
+  try {
+    const updatedComposition = await resolvedDependencies.updateComposition(
+      validationResult.data
+    )
+
+    if (updatedComposition === null) {
+      return createFormErrorResult(COMPOSITION_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Saved.",
+    }
+  } catch (error) {
+    return createPersistenceError(error)
+  }
+}
+
+export async function submitDeleteComposition(
+  collector: CollectorWithRole | null,
+  input: DeleteCompositionInput,
+  dependencies?: CompositionMutationDependencies
+): Promise<CompositionMutationResult> {
+  if (!hasCompositionMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  const validationResult = validateCompositionInput(
+    deleteCompositionInputSchema,
+    input
+  )
+
+  if (!validationResult.success) {
+    return validationResult.result
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultCompositionMutationDependencies())
+
+  try {
+    const deletedComposition = await resolvedDependencies.deleteComposition(
+      validationResult.data
+    )
+
+    if (deletedComposition === null) {
+      return createFormErrorResult(COMPOSITION_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Composition deleted.",
     }
   } catch (error) {
     return createPersistenceError(error)

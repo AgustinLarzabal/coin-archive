@@ -28,7 +28,10 @@ import { Button } from "@workspace/ui/components/button"
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
-import { submitDeleteComposition } from "@/lib/composition-maintenance"
+import {
+  COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE,
+  submitDeleteComposition,
+} from "@/lib/composition-maintenance"
 
 import { CompositionCreateForm } from "./composition-create-form"
 import { CompositionEditForm } from "./composition-edit-form"
@@ -39,14 +42,14 @@ type CompositionMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION =
-  "This permanently deletes the Composition. Every Coin has exactly one Composition, so existing Coins must be reassigned to another Composition before this Composition can be deleted."
+const COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
+  COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE.replace(
+    "those Coins",
+    "existing Coins"
+  )
 
-export function canDeleteCompositionFromSheet(
-  composition: CompositionOption | null
-) {
-  return composition !== null
-}
+export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION =
+  `This permanently deletes the Composition. ${COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
 const deleteCompositionAction = createServerFn({
   method: "POST",
@@ -112,7 +115,7 @@ export function CompositionMaintenanceSheet({
             {composition ? "Edit Composition" : "Create Composition"}
           </SheetTitle>
 
-          {canDeleteCompositionFromSheet(composition) ? (
+          {composition !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger

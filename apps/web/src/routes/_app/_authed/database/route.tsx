@@ -6,6 +6,7 @@ import { AccessDenied } from "@/components/access-denied"
 export const databaseSecondaryMenuItems = [
   { to: "/database", label: "General" },
   { to: "/database/catalogues", label: "Catalogs" },
+  { to: "/database/compositions", label: "Compositions" },
 ] as const
 
 export const Route = createFileRoute("/_app/_authed/database")({

@@ -1,0 +1,80 @@
+import { describe, expect, it, vi } from "vitest"
+
+import { CATALOGUE_AUTHORIZATION_ERROR } from "@/lib/catalogue-maintenance"
+
+import { loadCompositionMaintenanceCompositions } from "./compositions"
+import { databaseSecondaryMenuItems } from "./route"
+
+describe("databaseSecondaryMenuItems", () => {
+  it("includes the read-only Compositions page in the database secondary menu", () => {
+    expect(databaseSecondaryMenuItems).toContainEqual({
+      to: "/database/compositions",
+      label: "Compositions",
+    })
+  })
+})
+
+describe("loadCompositionMaintenanceCompositions", () => {
+  it("rejects unauthenticated access at the child-route boundary", async () => {
+    const getCompositions = vi.fn()
+
+    await expect(
+      loadCompositionMaintenanceCompositions(null, { getCompositions })
+    ).resolves.toStrictEqual({
+      status: "error",
+      formError: CATALOGUE_AUTHORIZATION_ERROR,
+    })
+
+    expect(getCompositions).not.toHaveBeenCalled()
+  })
+
+  it("rejects signed-in Collectors without editor access", async () => {
+    const getCompositions = vi.fn()
+
+    await expect(
+      loadCompositionMaintenanceCompositions(
+        { role: "collector" },
+        { getCompositions }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      formError: CATALOGUE_AUTHORIZATION_ERROR,
+    })
+
+    expect(getCompositions).not.toHaveBeenCalled()
+  })
+
+  it("returns composition data for Editors and Admins", async () => {
+    const compositions = [
+      {
+        id: "0d624d9c-3592-46d1-868e-d395d89f2783",
+        code: "silver-900",
+        name: "Silver (.900)",
+        description: "Ninety percent silver alloy.",
+        createdAt: new Date("2026-06-24T12:00:00.000Z"),
+        updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+      },
+    ]
+    const getCompositions = vi.fn().mockResolvedValue(compositions)
+
+    await expect(
+      loadCompositionMaintenanceCompositions(
+        { role: "editor" },
+        { getCompositions }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      compositions,
+    })
+
+    await expect(
+      loadCompositionMaintenanceCompositions(
+        { role: "admin" },
+        { getCompositions }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      compositions,
+    })
+  })
+})

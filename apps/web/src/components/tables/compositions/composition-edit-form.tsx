@@ -30,12 +30,6 @@ type CompositionDraft = {
   description: string
 }
 
-type NormalizedCompositionDraft = {
-  code: string
-  name: string
-  description: string
-}
-
 type CompositionEditFormProps = {
   composition: CompositionOption
   onSaved?: () => void
@@ -82,13 +76,11 @@ function createCompositionDraft(
 
 function normalizeDraftForComparison(
   draft: CompositionDraft
-): NormalizedCompositionDraft {
-  const trimmedDescription = draft.description.trim()
-
+): CompositionDraft {
   return {
     code: draft.code.trim(),
     name: draft.name.trim(),
-    description: trimmedDescription,
+    description: draft.description.trim(),
   }
 }
 

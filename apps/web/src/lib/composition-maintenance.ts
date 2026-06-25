@@ -96,6 +96,9 @@ type UpdateCompositionInput = z.input<typeof updateCompositionInputSchema>
 type UpdateCompositionData = z.output<typeof updateCompositionInputSchema>
 type DeleteCompositionInput = z.input<typeof deleteCompositionInputSchema>
 type DeleteCompositionData = z.output<typeof deleteCompositionInputSchema>
+type ValidationResult<TData> =
+  | { success: true; data: TData }
+  | { success: false; result: CompositionMutationResult }
 
 type CompositionMutationDependencies = {
   createComposition: (input: CreateCompositionData) => Promise<unknown>
@@ -257,9 +260,7 @@ function createPersistenceError(error: unknown): CompositionMutationResult {
 function validateCompositionInput<TSchema extends z.ZodType>(
   schema: TSchema,
   input: z.input<TSchema>
-):
-  | { success: true; data: z.output<TSchema> }
-  | { success: false; result: CompositionMutationResult } {
+): ValidationResult<z.output<TSchema>> {
   const parsedInput = schema.safeParse(input)
 
   if (!parsedInput.success) {
@@ -275,6 +276,24 @@ function validateCompositionInput<TSchema extends z.ZodType>(
   }
 }
 
+function validateCreateCompositionInput(
+  input: CreateCompositionInput
+): ValidationResult<CreateCompositionData> {
+  return validateCompositionInput(createCompositionInputSchema, input)
+}
+
+function validateUpdateCompositionInput(
+  input: UpdateCompositionInput
+): ValidationResult<UpdateCompositionData> {
+  return validateCompositionInput(updateCompositionInputSchema, input)
+}
+
+function validateDeleteCompositionInput(
+  input: DeleteCompositionInput
+): ValidationResult<DeleteCompositionData> {
+  return validateCompositionInput(deleteCompositionInputSchema, input)
+}
+
 export async function submitCreateComposition(
   collector: CollectorWithRole | null,
   input: CreateCompositionInput,
@@ -284,10 +303,7 @@ export async function submitCreateComposition(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCompositionInput(
-    createCompositionInputSchema,
-    input
-  )
+  const validationResult = validateCreateCompositionInput(input)
 
   if (!validationResult.success) {
     return validationResult.result
@@ -317,10 +333,7 @@ export async function submitUpdateComposition(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCompositionInput(
-    updateCompositionInputSchema,
-    input
-  )
+  const validationResult = validateUpdateCompositionInput(input)
 
   if (!validationResult.success) {
     return validationResult.result
@@ -356,10 +369,7 @@ export async function submitDeleteComposition(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCompositionInput(
-    deleteCompositionInputSchema,
-    input
-  )
+  const validationResult = validateDeleteCompositionInput(input)
 
   if (!validationResult.success) {
     return validationResult.result

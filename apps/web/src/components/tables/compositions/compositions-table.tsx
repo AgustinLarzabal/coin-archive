@@ -3,7 +3,7 @@ import type { CompositionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
 import { createCompositionColumns } from "./columns"
-import { CompositionEditSheet } from "./composition-edit-sheet"
+import { CompositionMaintenanceSheet } from "./composition-maintenance-sheet"
 import { CompositionsTableToolbar } from "./compositions-table-toolbar"
 
 type CompositionsTableProps = {
@@ -26,15 +26,15 @@ export function filterCompositionsByName(
 }
 
 export function CompositionsTable({ compositions }: CompositionsTableProps) {
-  const [editingComposition, setEditingComposition] =
+  const [selectedComposition, setSelectedComposition] =
     useState<CompositionOption | null>(null)
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [nameFilter, setNameFilter] = useState("")
   const columns = useMemo(
     () =>
       createCompositionColumns((composition) => {
-        setEditingComposition(composition)
-        setIsEditSheetOpen(true)
+        setSelectedComposition(composition)
+        setIsMaintenanceSheetOpen(true)
       }),
     []
   )
@@ -43,17 +43,17 @@ export function CompositionsTable({ compositions }: CompositionsTableProps) {
     nameFilter
   )
 
-  function handleEditSheetOpenChange(open: boolean) {
-    setIsEditSheetOpen(open)
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
 
     if (!open) {
-      setEditingComposition(null)
+      setSelectedComposition(null)
     }
   }
 
   function handleCreateComposition() {
-    setEditingComposition(null)
-    setIsEditSheetOpen(true)
+    setSelectedComposition(null)
+    setIsMaintenanceSheetOpen(true)
   }
 
   return (
@@ -69,10 +69,10 @@ export function CompositionsTable({ compositions }: CompositionsTableProps) {
           />
         )}
       />
-      <CompositionEditSheet
-        composition={editingComposition}
-        open={isEditSheetOpen}
-        onOpenChange={handleEditSheetOpenChange}
+      <CompositionMaintenanceSheet
+        composition={selectedComposition}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>
   )

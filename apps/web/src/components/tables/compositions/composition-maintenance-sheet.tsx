@@ -33,7 +33,7 @@ import { submitDeleteComposition } from "@/lib/composition-maintenance"
 import { CompositionCreateForm } from "./composition-create-form"
 import { CompositionEditForm } from "./composition-edit-form"
 
-type CompositionEditSheetProps = {
+type CompositionMaintenanceSheetProps = {
   composition: CompositionOption | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -49,11 +49,11 @@ const deleteCompositionAction = createServerFn({
     return submitDeleteComposition(session?.user ?? null, data)
   })
 
-export function CompositionEditSheet({
+export function CompositionMaintenanceSheet({
   composition,
   open,
   onOpenChange,
-}: CompositionEditSheetProps) {
+}: CompositionMaintenanceSheetProps) {
   const router = useRouter()
   const deleteComposition = useServerFn(deleteCompositionAction)
   const [deleteError, setDeleteError] = useState<string | null>(null)

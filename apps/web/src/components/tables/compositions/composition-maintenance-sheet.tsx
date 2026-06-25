@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CompositionOption } from "@workspace/db"
@@ -39,6 +39,15 @@ type CompositionMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
+export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION =
+  "This permanently deletes the Composition. Every Coin has exactly one Composition, so existing Coins must be reassigned to another Composition before this Composition can be deleted."
+
+export function canDeleteCompositionFromSheet(
+  composition: CompositionOption | null
+) {
+  return composition !== null
+}
+
 const deleteCompositionAction = createServerFn({
   method: "POST",
 })
@@ -59,6 +68,12 @@ export function CompositionMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
+
+  useEffect(() => {
+    setDeleteError(null)
+    setIsDeleteDialogOpen(false)
+    setIsDeletePending(false)
+  }, [composition?.id, open])
 
   async function handleDeleteComposition() {
     if (!composition) {
@@ -97,7 +112,7 @@ export function CompositionMaintenanceSheet({
             {composition ? "Edit Composition" : "Create Composition"}
           </SheetTitle>
 
-          {composition?.id ? (
+          {canDeleteCompositionFromSheet(composition) ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -130,8 +145,7 @@ export function CompositionMaintenanceSheet({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Composition?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This permanently deletes the Composition. Existing Coins
-                      must be reassigned first.
+                      {COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   {deleteError ? (

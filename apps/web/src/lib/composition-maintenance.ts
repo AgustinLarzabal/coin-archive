@@ -12,7 +12,7 @@ export const COMPOSITION_GENERIC_SAVE_ERROR =
   "Unable to save Composition right now."
 export const COMPOSITION_MISSING_ERROR = "Composition no longer exists."
 export const COMPOSITION_IN_USE_DELETE_ERROR =
-  "Composition cannot be deleted while Coins still use it."
+  "Composition cannot be deleted while Coins still use it. Every Coin has exactly one Composition, so those Coins must be reassigned to another Composition before this Composition can be deleted."
 export const COMPOSITION_INVALID_CODE_ERROR =
   "Composition Code must use lowercase letters, numbers, and hyphens only."
 

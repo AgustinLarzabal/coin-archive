@@ -8,14 +8,14 @@ type CreateCompositionInput = {
   description?: string | null
 }
 
-function normalizeDescription(description?: string | null) {
-  const trimmedDescription = description?.trim()
+function trimOrNull(value?: string | null) {
+  const trimmedValue = value?.trim()
 
-  if (!trimmedDescription) {
+  if (!trimmedValue) {
     return null
   }
 
-  return trimmedDescription
+  return trimmedValue
 }
 
 function normalizeCompositionFields({
@@ -26,7 +26,7 @@ function normalizeCompositionFields({
   return {
     code: code.trim(),
     name: name.trim(),
-    description: normalizeDescription(description),
+    description: trimOrNull(description),
   }
 }
 

@@ -39,7 +39,7 @@ const EMPTY_DRAFT: CompositionDraft = {
   description: "",
 }
 
-const createCompositionMaintenanceComposition = createServerFn({
+const createCompositionAction = createServerFn({
   method: "POST",
 })
   .inputValidator((data: CompositionDraft) => data)
@@ -72,7 +72,7 @@ export function CompositionCreateForm({
   onCreated,
 }: CompositionCreateFormProps) {
   const router = useRouter()
-  const createComposition = useServerFn(createCompositionMaintenanceComposition)
+  const createComposition = useServerFn(createCompositionAction)
   const [draft, setDraft] = useState<CompositionDraft>(EMPTY_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -93,6 +93,16 @@ export function CompositionCreateForm({
     setFieldErrors(result.fieldErrors)
     setFormError(result.formError ?? null)
     return false
+  }
+
+  function updateDraft<FieldName extends keyof CompositionDraft>(
+    field: FieldName,
+    value: CompositionDraft[FieldName]
+  ) {
+    setDraft((current) => ({
+      ...current,
+      [field]: value,
+    }))
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,12 +148,7 @@ export function CompositionCreateForm({
             id="new-composition-code"
             name="code"
             value={draft.code}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                code: event.target.value,
-              }))
-            }
+            onChange={(event) => updateDraft("code", event.target.value)}
             aria-invalid={fieldErrors.code !== undefined}
             placeholder="silver-900"
             autoComplete="off"
@@ -158,12 +163,7 @@ export function CompositionCreateForm({
             id="new-composition-name"
             name="name"
             value={draft.name}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                name: event.target.value,
-              }))
-            }
+            onChange={(event) => updateDraft("name", event.target.value)}
             aria-invalid={fieldErrors.name !== undefined}
             placeholder="Silver (.900)"
             autoComplete="off"
@@ -181,10 +181,7 @@ export function CompositionCreateForm({
             name="description"
             value={draft.description}
             onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                description: event.target.value,
-              }))
+              updateDraft("description", event.target.value)
             }
             aria-invalid={fieldErrors.description !== undefined}
             placeholder="Optional alloy, layer, or part details."

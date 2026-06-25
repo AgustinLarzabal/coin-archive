@@ -75,13 +75,10 @@ export type CompositionAuthorizationErrorResult = {
 }
 
 type CreateCompositionInput = z.input<typeof createCompositionInputSchema>
+type CreateCompositionData = z.output<typeof createCompositionInputSchema>
 
 type CompositionMutationDependencies = {
-  createComposition: (input: {
-    code: string
-    name: string
-    description: string | null
-  }) => Promise<unknown>
+  createComposition: (input: CreateCompositionData) => Promise<unknown>
 }
 
 async function getDefaultCompositionMutationDependencies(): Promise<CompositionMutationDependencies> {
@@ -162,52 +159,56 @@ function createValidationError(issues: z.ZodIssue[]): CompositionMutationResult 
   return createFieldErrorResult(getCompositionFieldErrors(issues))
 }
 
-function isDuplicateCompositionCodeError(error: unknown) {
+function getPostgresError(error: unknown) {
   if (!isObjectRecord(error)) {
-    return false
+    return null
   }
 
   const postgresError = "cause" in error ? error.cause : error
 
   if (!isObjectRecord(postgresError)) {
-    return false
+    return null
   }
 
-  return (
-    "code" in postgresError &&
-    postgresError.code === DUPLICATE_KEY_POSTGRES_ERROR_CODE &&
-    "constraint_name" in postgresError &&
-    postgresError.constraint_name === DUPLICATE_COMPOSITION_CODE_CONSTRAINT
-  )
+  return postgresError
 }
 
-function isInvalidCompositionCodeError(error: unknown) {
-  if (!isObjectRecord(error)) {
-    return false
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (!isObjectRecord(postgresError)) {
-    return false
-  }
+function matchesPostgresConstraint(
+  error: unknown,
+  code: string,
+  constraintName: string
+) {
+  const postgresError = getPostgresError(error)
 
   return (
+    postgresError !== null &&
     "code" in postgresError &&
-    postgresError.code === CHECK_VIOLATION_POSTGRES_ERROR_CODE &&
+    postgresError.code === code &&
     "constraint_name" in postgresError &&
-    postgresError.constraint_name === INVALID_COMPOSITION_CODE_CONSTRAINT
+    postgresError.constraint_name === constraintName
   )
 }
 
 function createPersistenceError(error: unknown): CompositionMutationResult {
-  if (isDuplicateCompositionCodeError(error)) {
+  if (
+    matchesPostgresConstraint(
+      error,
+      DUPLICATE_KEY_POSTGRES_ERROR_CODE,
+      DUPLICATE_COMPOSITION_CODE_CONSTRAINT
+    )
+  ) {
     return createFieldErrorResult({
       code: COMPOSITION_DUPLICATE_CODE_ERROR,
     })
   }
 
-  if (isInvalidCompositionCodeError(error)) {
+  if (
+    matchesPostgresConstraint(
+      error,
+      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+      INVALID_COMPOSITION_CODE_CONSTRAINT
+    )
+  ) {
     return createFieldErrorResult({
       code: COMPOSITION_INVALID_CODE_ERROR,
     })
@@ -216,13 +217,12 @@ function createPersistenceError(error: unknown): CompositionMutationResult {
   return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
 }
 
-function validateCompositionInput<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: z.input<TSchema>
+function validateCreateCompositionInput(
+  input: CreateCompositionInput
 ):
-  | { success: true; data: z.output<TSchema> }
+  | { success: true; data: CreateCompositionData }
   | { success: false; result: CompositionMutationResult } {
-  const parsedInput = schema.safeParse(input)
+  const parsedInput = createCompositionInputSchema.safeParse(input)
 
   if (!parsedInput.success) {
     return {
@@ -246,10 +246,7 @@ export async function submitCreateComposition(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCompositionInput(
-    createCompositionInputSchema,
-    input
-  )
+  const validationResult = validateCreateCompositionInput(input)
 
   if (!validationResult.success) {
     return validationResult.result

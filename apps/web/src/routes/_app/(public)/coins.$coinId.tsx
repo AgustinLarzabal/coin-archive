@@ -19,6 +19,7 @@ import {
   getCoinPreviewImageUrl,
   getSurfaceImageUrl,
 } from "../../../lib/coin-images"
+import { RULER_FILTER_LABEL } from "../../../lib/ruler-filter"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
@@ -171,8 +172,8 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
                   to="/"
                   search={{ issuer: coin.issuer.code, ruler: ruler.code }}
                   className="underline-offset-4 hover:underline"
-                  title={`Filter homepage by ${`issuer ${coin.issuer.name} and "Ruling authority" ${ruler.name}`}`}
-                  aria-label={`Show homepage coins filtered by ${`issuer ${coin.issuer.name} and "Ruling authority" ${ruler.name}`}`}
+                  title={`Filter homepage by ${`issuer ${coin.issuer.name} and "${RULER_FILTER_LABEL}" ${ruler.name}`}`}
+                  aria-label={`Show homepage coins filtered by ${`issuer ${coin.issuer.name} and "${RULER_FILTER_LABEL}" ${ruler.name}`}`}
                 >
                   {ruler.name}
                 </Link>

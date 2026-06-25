@@ -4,21 +4,20 @@ import type { CatalogueOption } from "@workspace/db"
 import { AccessDenied } from "@/components/access-denied"
 import { CataloguesTable } from "@/components/tables/catalogues/catalogues-table"
 import {
+  type CatalogueAuthorizationErrorResult,
   createCatalogueAuthorizationError,
   hasCatalogueMaintenanceAccess,
 } from "@/lib/catalogue-maintenance"
+import type { CollectorWithRole } from "@/lib/collector-role"
 
-type CatalogueMaintenanceCataloguesResult =
-  | {
-      status: "error"
-      formError: string
-    }
+type LoadCatalogueMaintenanceCataloguesResult =
+  | CatalogueAuthorizationErrorResult
   | {
       status: "success"
       catalogues: CatalogueOption[]
     }
 
-type CatalogueMaintenanceCataloguesLoaderData =
+type CatalogueMaintenanceLoaderData =
   | {
       isAllowed: false
     }
@@ -27,11 +26,11 @@ type CatalogueMaintenanceCataloguesLoaderData =
       catalogues: CatalogueOption[]
     }
 
-type CatalogueMaintenanceReadDependencies = {
+type CatalogueReadDependencies = {
   getCatalogues: () => Promise<CatalogueOption[]>
 }
 
-async function getDefaultCatalogueMaintenanceReadDependencies(): Promise<CatalogueMaintenanceReadDependencies> {
+async function getDefaultCatalogueReadDependencies(): Promise<CatalogueReadDependencies> {
   const { getCatalogues } = await import("@workspace/db")
 
   return {
@@ -40,19 +39,19 @@ async function getDefaultCatalogueMaintenanceReadDependencies(): Promise<Catalog
 }
 
 export async function loadCatalogueMaintenanceCatalogues(
-  collector: { role?: string | null } | null,
-  dependencies?: CatalogueMaintenanceReadDependencies
-): Promise<CatalogueMaintenanceCataloguesResult> {
+  collector: CollectorWithRole | null,
+  dependencies?: CatalogueReadDependencies
+): Promise<LoadCatalogueMaintenanceCataloguesResult> {
   if (!hasCatalogueMaintenanceAccess(collector)) {
     return createCatalogueAuthorizationError()
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCatalogueMaintenanceReadDependencies())
+  const { getCatalogues } =
+    dependencies ?? (await getDefaultCatalogueReadDependencies())
 
   return {
     status: "success",
-    catalogues: await resolvedDependencies.getCatalogues(),
+    catalogues: await getCatalogues(),
   }
 }
 
@@ -63,13 +62,13 @@ export const Route = createFileRoute("/_app/_authed/database/catalogues")({
     if (result.status === "error") {
       return {
         isAllowed: false,
-      } satisfies CatalogueMaintenanceCataloguesLoaderData
+      } satisfies CatalogueMaintenanceLoaderData
     }
 
     return {
       isAllowed: true,
       catalogues: result.catalogues,
-    } satisfies CatalogueMaintenanceCataloguesLoaderData
+    } satisfies CatalogueMaintenanceLoaderData
   },
   component: DatabaseCataloguesComponent,
 })

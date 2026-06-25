@@ -4,21 +4,20 @@ import type { CompositionOption } from "@workspace/db"
 import { AccessDenied } from "@/components/access-denied"
 import { CompositionsTable } from "@/components/tables/compositions/compositions-table"
 import {
+  type CatalogueAuthorizationErrorResult,
   createCatalogueAuthorizationError,
   hasCatalogueMaintenanceAccess,
 } from "@/lib/catalogue-maintenance"
+import type { CollectorWithRole } from "@/lib/collector-role"
 
-type CompositionMaintenanceCompositionsResult =
-  | {
-      status: "error"
-      formError: string
-    }
+type LoadCompositionMaintenanceCompositionsResult =
+  | CatalogueAuthorizationErrorResult
   | {
       status: "success"
       compositions: CompositionOption[]
     }
 
-type CompositionMaintenanceCompositionsLoaderData =
+type CompositionMaintenanceLoaderData =
   | {
       isAllowed: false
     }
@@ -27,11 +26,11 @@ type CompositionMaintenanceCompositionsLoaderData =
       compositions: CompositionOption[]
     }
 
-type CompositionMaintenanceReadDependencies = {
+type CompositionReadDependencies = {
   getCompositions: () => Promise<CompositionOption[]>
 }
 
-async function getDefaultCompositionMaintenanceReadDependencies(): Promise<CompositionMaintenanceReadDependencies> {
+async function getDefaultCompositionReadDependencies(): Promise<CompositionReadDependencies> {
   const { getCompositions } = await import("@workspace/db")
 
   return {
@@ -40,19 +39,19 @@ async function getDefaultCompositionMaintenanceReadDependencies(): Promise<Compo
 }
 
 export async function loadCompositionMaintenanceCompositions(
-  collector: { role?: string | null } | null,
-  dependencies?: CompositionMaintenanceReadDependencies
-): Promise<CompositionMaintenanceCompositionsResult> {
+  collector: CollectorWithRole | null,
+  dependencies?: CompositionReadDependencies
+): Promise<LoadCompositionMaintenanceCompositionsResult> {
   if (!hasCatalogueMaintenanceAccess(collector)) {
     return createCatalogueAuthorizationError()
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCompositionMaintenanceReadDependencies())
+  const { getCompositions } =
+    dependencies ?? (await getDefaultCompositionReadDependencies())
 
   return {
     status: "success",
-    compositions: await resolvedDependencies.getCompositions(),
+    compositions: await getCompositions(),
   }
 }
 
@@ -65,13 +64,13 @@ export const Route = createFileRoute("/_app/_authed/database/compositions")({
     if (result.status === "error") {
       return {
         isAllowed: false,
-      } satisfies CompositionMaintenanceCompositionsLoaderData
+      } satisfies CompositionMaintenanceLoaderData
     }
 
     return {
       isAllowed: true,
       compositions: result.compositions,
-    } satisfies CompositionMaintenanceCompositionsLoaderData
+    } satisfies CompositionMaintenanceLoaderData
   },
   component: DatabaseCompositionsComponent,
 })

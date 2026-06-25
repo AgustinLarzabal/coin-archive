@@ -15,7 +15,7 @@ export function filterCompositionsByName(
 ): CompositionOption[] {
   const normalizedNameFilter = nameFilter.trim().toLocaleLowerCase()
 
-  if (normalizedNameFilter.length === 0) {
+  if (normalizedNameFilter === "") {
     return compositions
   }
 

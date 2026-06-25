@@ -28,7 +28,13 @@ const compositions: CompositionOption[] = [
 ]
 
 describe("filterCompositionsByName", () => {
-  it("filters Compositions by Composition Name only", () => {
+  it("returns all compositions when the filter is blank", () => {
+    expect(filterCompositionsByName(compositions, "")).toStrictEqual(
+      compositions
+    )
+  })
+
+  it("filters by composition name only", () => {
     expect(filterCompositionsByName(compositions, "silver")).toStrictEqual([
       compositions[1],
     ])
@@ -42,7 +48,7 @@ describe("filterCompositionsByName", () => {
 })
 
 describe("CompositionsTable", () => {
-  it("renders Composition Code, Name, and Description with empty text for missing descriptions and contained long text", () => {
+  it("renders code, name, and description with empty text for missing descriptions", () => {
     const markup = renderToStaticMarkup(
       <CompositionsTable compositions={compositions} />
     )

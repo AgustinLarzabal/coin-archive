@@ -3,6 +3,7 @@ import type { CompositionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
 import { compositionColumns } from "./columns"
+import { CompositionCreateSheet } from "./composition-create-sheet"
 import { CompositionsTableToolbar } from "./compositions-table-toolbar"
 
 type CompositionsTableProps = {
@@ -28,21 +29,29 @@ export function CompositionsTable({
   compositions,
 }: CompositionsTableProps) {
   const [nameFilter, setNameFilter] = useState("")
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const filteredCompositions = filterCompositionsByName(
     compositions,
     nameFilter
   )
 
   return (
-    <DataTable
-      columns={compositionColumns}
-      data={filteredCompositions}
-      toolbar={() => (
-        <CompositionsTableToolbar
-          nameFilter={nameFilter}
-          onNameFilterChange={setNameFilter}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={compositionColumns}
+        data={filteredCompositions}
+        toolbar={() => (
+          <CompositionsTableToolbar
+            nameFilter={nameFilter}
+            onCreateComposition={() => setIsCreateSheetOpen(true)}
+            onNameFilterChange={setNameFilter}
+          />
+        )}
+      />
+      <CompositionCreateSheet
+        open={isCreateSheetOpen}
+        onOpenChange={setIsCreateSheetOpen}
+      />
+    </>
   )
 }

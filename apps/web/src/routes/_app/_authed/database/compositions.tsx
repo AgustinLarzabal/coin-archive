@@ -4,14 +4,14 @@ import type { CompositionOption } from "@workspace/db"
 import { AccessDenied } from "@/components/access-denied"
 import { CompositionsTable } from "@/components/tables/compositions/compositions-table"
 import {
-  type CatalogueAuthorizationErrorResult,
-  createCatalogueAuthorizationError,
-  hasCatalogueMaintenanceAccess,
-} from "@/lib/catalogue-maintenance"
+  type CompositionAuthorizationErrorResult,
+  createCompositionAuthorizationError,
+  hasCompositionMaintenanceAccess,
+} from "@/lib/composition-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadCompositionMaintenanceCompositionsResult =
-  | CatalogueAuthorizationErrorResult
+  | CompositionAuthorizationErrorResult
   | {
       status: "success"
       compositions: CompositionOption[]
@@ -42,8 +42,8 @@ export async function loadCompositionMaintenanceCompositions(
   collector: CollectorWithRole | null,
   dependencies?: CompositionReadDependencies
 ): Promise<LoadCompositionMaintenanceCompositionsResult> {
-  if (!hasCatalogueMaintenanceAccess(collector)) {
-    return createCatalogueAuthorizationError()
+  if (!hasCompositionMaintenanceAccess(collector)) {
+    return createCompositionAuthorizationError()
   }
 
   const { getCompositions } =

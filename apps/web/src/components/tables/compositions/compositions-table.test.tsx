@@ -59,6 +59,7 @@ describe("CompositionsTable", () => {
     expect(markup).toContain("Copper-nickel")
     expect(markup).toContain("Silver (.900)")
     expect(markup).toContain("Filter compositions by name...")
+    expect(markup).toContain(">Create</button>")
     expect(markup).toContain(
       "max-w-[32rem] whitespace-pre-wrap break-words"
     )

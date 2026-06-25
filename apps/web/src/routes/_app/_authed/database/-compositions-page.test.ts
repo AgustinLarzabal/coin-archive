@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { CATALOGUE_AUTHORIZATION_ERROR } from "@/lib/catalogue-maintenance"
+import { COMPOSITION_AUTHORIZATION_ERROR } from "@/lib/composition-maintenance"
 
 import { loadCompositionMaintenanceCompositions } from "./compositions"
 import { databaseSecondaryMenuItems } from "./route"
@@ -22,7 +22,7 @@ describe("loadCompositionMaintenanceCompositions", () => {
       loadCompositionMaintenanceCompositions(null, { getCompositions })
     ).resolves.toStrictEqual({
       status: "error",
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
+      formError: COMPOSITION_AUTHORIZATION_ERROR,
     })
 
     expect(getCompositions).not.toHaveBeenCalled()
@@ -38,7 +38,7 @@ describe("loadCompositionMaintenanceCompositions", () => {
       )
     ).resolves.toStrictEqual({
       status: "error",
-      formError: CATALOGUE_AUTHORIZATION_ERROR,
+      formError: COMPOSITION_AUTHORIZATION_ERROR,
     })
 
     expect(getCompositions).not.toHaveBeenCalled()

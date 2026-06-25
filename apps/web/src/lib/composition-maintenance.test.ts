@@ -22,8 +22,28 @@ const SILVER_COMPOSITION = {
 
 function createDependencies(overrides?: {
   createComposition?: ReturnType<typeof vi.fn>
-  deleteComposition?: ReturnType<typeof vi.fn>
+}) {
+  return {
+    createComposition: vi.fn(),
+    deleteComposition: vi.fn(),
+    updateComposition: vi.fn(),
+    ...overrides,
+  }
+}
+
+function updateDependencies(overrides?: {
   updateComposition?: ReturnType<typeof vi.fn>
+}) {
+  return {
+    createComposition: vi.fn(),
+    deleteComposition: vi.fn(),
+    updateComposition: vi.fn(),
+    ...overrides,
+  }
+}
+
+function deleteDependencies(overrides?: {
+  deleteComposition?: ReturnType<typeof vi.fn>
 }) {
   return {
     createComposition: vi.fn(),
@@ -212,7 +232,7 @@ describe("submitUpdateComposition", () => {
       submitUpdateComposition(
         { role: "editor" },
         updateInput,
-        createDependencies({
+        updateDependencies({
           updateComposition: vi.fn().mockResolvedValue(null),
         })
       )
@@ -224,7 +244,7 @@ describe("submitUpdateComposition", () => {
   })
 
   it("trims Composition fields before updating a Composition", async () => {
-    const dependencies = createDependencies({
+    const dependencies = updateDependencies({
       updateComposition: vi.fn().mockResolvedValue({
         id: VALID_COMPOSITION_ID,
       }),
@@ -265,7 +285,7 @@ describe("submitDeleteComposition", () => {
       submitDeleteComposition(
         { role: "editor" },
         deleteInput,
-        createDependencies({
+        deleteDependencies({
           deleteComposition: vi.fn().mockResolvedValue(null),
         })
       )
@@ -281,7 +301,7 @@ describe("submitDeleteComposition", () => {
       submitDeleteComposition(
         { role: "admin" },
         deleteInput,
-        createDependencies({
+        deleteDependencies({
           deleteComposition: vi.fn().mockRejectedValue({
             cause: {
               code: "23001",

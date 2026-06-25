@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { CompositionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
@@ -29,44 +29,52 @@ export function CompositionsTable({
   compositions,
 }: CompositionsTableProps) {
   const [nameFilter, setNameFilter] = useState("")
-  const [activeComposition, setActiveComposition] =
+  const [editingComposition, setEditingComposition] =
     useState<CompositionOption | null>(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const filteredCompositions = filterCompositionsByName(
     compositions,
     nameFilter
   )
-  const compositionColumns = createCompositionColumns((composition) => {
-    setActiveComposition(composition)
-    setIsSheetOpen(true)
-  })
+  const columns = useMemo(
+    () =>
+      createCompositionColumns((composition) => {
+        setEditingComposition(composition)
+        setIsEditSheetOpen(true)
+      }),
+    []
+  )
+
+  function handleEditSheetOpenChange(open: boolean) {
+    setIsEditSheetOpen(open)
+
+    if (!open) {
+      setEditingComposition(null)
+    }
+  }
+
+  function handleCreateComposition() {
+    setEditingComposition(null)
+    setIsEditSheetOpen(true)
+  }
 
   return (
     <>
       <DataTable
-        columns={compositionColumns}
+        columns={columns}
         data={filteredCompositions}
         toolbar={() => (
           <CompositionsTableToolbar
             nameFilter={nameFilter}
-            onCreateComposition={() => {
-              setActiveComposition(null)
-              setIsSheetOpen(true)
-            }}
+            onCreateComposition={handleCreateComposition}
             onNameFilterChange={setNameFilter}
           />
         )}
       />
       <CompositionEditSheet
-        composition={activeComposition}
-        open={isSheetOpen}
-        onOpenChange={(open) => {
-          setIsSheetOpen(open)
-
-          if (!open) {
-            setActiveComposition(null)
-          }
-        }}
+        composition={editingComposition}
+        open={isEditSheetOpen}
+        onOpenChange={handleEditSheetOpenChange}
       />
     </>
   )

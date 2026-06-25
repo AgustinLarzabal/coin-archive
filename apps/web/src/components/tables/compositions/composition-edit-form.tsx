@@ -73,6 +73,19 @@ function normalizeCompositionDraft({
   }
 }
 
+function hasCompositionChanges(
+  composition: CompositionOption,
+  draft: CompositionDraft
+) {
+  const normalizedDraft = normalizeCompositionDraft(draft)
+
+  return (
+    normalizedDraft.code !== composition.code ||
+    normalizedDraft.name !== composition.name ||
+    normalizedDraft.description !== composition.description
+  )
+}
+
 function getInitialDraft(composition: CompositionOption): CompositionDraft {
   return {
     code: composition.code,
@@ -92,7 +105,9 @@ export function CompositionEditForm({
 }: CompositionEditFormProps) {
   const router = useRouter()
   const updateComposition = useServerFn(updateCompositionAction)
-  const [draft, setDraft] = useState<CompositionDraft>(getInitialDraft(composition))
+  const [draft, setDraft] = useState<CompositionDraft>(() =>
+    getInitialDraft(composition)
+  )
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -105,15 +120,7 @@ export function CompositionEditForm({
     setSuccessMessage(null)
   }, [composition])
 
-  const hasChanges = (() => {
-    const normalizedDraft = normalizeCompositionDraft(draft)
-
-    return (
-      normalizedDraft.code !== composition.code ||
-      normalizedDraft.name !== composition.name ||
-      normalizedDraft.description !== composition.description
-    )
-  })()
+  const hasChanges = hasCompositionChanges(composition, draft)
 
   function clearFeedback() {
     setFieldErrors({})

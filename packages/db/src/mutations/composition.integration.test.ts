@@ -44,7 +44,7 @@ describe("composition mutations integration", () => {
     })
   })
 
-  it("rejects duplicate Composition Codes ignoring case", async () => {
+  it("rejects duplicate Composition Codes after normalization", async () => {
     await createCompositionFixture({
       code: "silver-900",
       name: "Silver (.900)",
@@ -52,7 +52,7 @@ describe("composition mutations integration", () => {
 
     await expect(
       createComposition({
-        code: "SILVER-900",
+        code: " silver-900 ",
         name: "Duplicate Silver (.900)",
       })
     ).rejects.toMatchObject({
@@ -136,7 +136,7 @@ describe("composition mutations integration", () => {
     })
   })
 
-  it("returns null when updating a missing Composition", async () => {
+  it("returns null when the Composition update target no longer exists", async () => {
     await expect(
       updateComposition({
         id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
@@ -145,6 +145,41 @@ describe("composition mutations integration", () => {
         description: null,
       })
     ).resolves.toBeNull()
+  })
+
+  it("preserves existing Coin relationships when a Composition Code changes", async () => {
+    const issuer = await createIssuer({
+      code: "issuer-for-composition-update",
+      name: "Issuer for Composition Update",
+    })
+    const createdComposition = await createComposition({
+      code: "silver-900",
+      name: "Silver (.900)",
+    })
+    const createdCoin = await createCoin({
+      issuerId: issuer.id,
+      compositionId: createdComposition.id,
+      title: "Composition-linked coin",
+      createdAt: new Date("2026-06-25T12:00:00.000Z"),
+    })
+
+    const updatedComposition = await updateComposition({
+      id: createdComposition.id,
+      code: "silver-925",
+      name: "Silver (.925)",
+      description: "Sterling silver alloy.",
+    })
+
+    expect(updatedComposition).toMatchObject({
+      id: createdComposition.id,
+      code: "silver-925",
+    })
+
+    const persistedCoin = await db.query.coin.findFirst({
+      where: (coin, { eq }) => eq(coin.id, createdCoin.id),
+    })
+
+    expect(persistedCoin?.compositionId).toBe(createdComposition.id)
   })
 
   it("returns null when deleting a missing Composition", async () => {

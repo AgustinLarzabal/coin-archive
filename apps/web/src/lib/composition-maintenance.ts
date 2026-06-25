@@ -58,9 +58,11 @@ export const createCompositionInputSchema = z.object({
   description: compositionDescriptionSchema,
 })
 
-export const updateCompositionInputSchema = createCompositionInputSchema.extend({
-  id: z.uuid(),
-})
+export const updateCompositionInputSchema = createCompositionInputSchema.extend(
+  {
+    id: z.uuid(),
+  }
+)
 
 export const deleteCompositionInputSchema = z.object({
   id: z.uuid(),
@@ -178,7 +180,9 @@ export function getCompositionFieldErrors(
   return fieldErrors
 }
 
-function createValidationError(issues: z.ZodIssue[]): CompositionMutationResult {
+function createValidationError(
+  issues: z.ZodIssue[]
+): CompositionMutationResult {
   return createFieldErrorResult(getCompositionFieldErrors(issues))
 }
 

@@ -25,17 +25,11 @@ export function filterCompositionsByName(
   )
 }
 
-export function CompositionsTable({
-  compositions,
-}: CompositionsTableProps) {
-  const [nameFilter, setNameFilter] = useState("")
+export function CompositionsTable({ compositions }: CompositionsTableProps) {
   const [editingComposition, setEditingComposition] =
     useState<CompositionOption | null>(null)
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
-  const filteredCompositions = filterCompositionsByName(
-    compositions,
-    nameFilter
-  )
+  const [nameFilter, setNameFilter] = useState("")
   const columns = useMemo(
     () =>
       createCompositionColumns((composition) => {
@@ -43,6 +37,10 @@ export function CompositionsTable({
         setIsEditSheetOpen(true)
       }),
     []
+  )
+  const filteredCompositions = filterCompositionsByName(
+    compositions,
+    nameFilter
   )
 
   function handleEditSheetOpenChange(open: boolean) {

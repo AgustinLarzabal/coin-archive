@@ -30,6 +30,17 @@ type CompositionDraft = {
   description: string
 }
 
+type NormalizedCompositionDraft = {
+  code: string
+  name: string
+  description: string
+}
+
+type CompositionEditFormProps = {
+  composition: CompositionOption
+  onSaved?: () => void
+}
+
 const updateCompositionAction = createServerFn({
   method: "POST",
 })
@@ -59,34 +70,9 @@ function validateCompositionDraft(
   }
 }
 
-function normalizeCompositionDraft({
-  code,
-  name,
-  description,
-}: CompositionDraft) {
-  const normalizedDescription = description.trim()
-
-  return {
-    code: code.trim(),
-    name: name.trim(),
-    description: normalizedDescription === "" ? null : normalizedDescription,
-  }
-}
-
-function hasCompositionChanges(
-  composition: CompositionOption,
-  draft: CompositionDraft
-) {
-  const normalizedDraft = normalizeCompositionDraft(draft)
-
-  return (
-    normalizedDraft.code !== composition.code ||
-    normalizedDraft.name !== composition.name ||
-    normalizedDraft.description !== composition.description
-  )
-}
-
-function getInitialDraft(composition: CompositionOption): CompositionDraft {
+function createCompositionDraft(
+  composition: CompositionOption
+): CompositionDraft {
   return {
     code: composition.code,
     name: composition.name,
@@ -94,9 +80,32 @@ function getInitialDraft(composition: CompositionOption): CompositionDraft {
   }
 }
 
-type CompositionEditFormProps = {
-  composition: CompositionOption
-  onSaved?: () => void
+function normalizeDraftForComparison(
+  draft: CompositionDraft
+): NormalizedCompositionDraft {
+  const trimmedDescription = draft.description.trim()
+
+  return {
+    code: draft.code.trim(),
+    name: draft.name.trim(),
+    description: trimmedDescription,
+  }
+}
+
+export function hasCompositionEditChanges(
+  composition: CompositionOption,
+  draft: CompositionDraft
+) {
+  const normalizedCurrent = normalizeDraftForComparison(
+    createCompositionDraft(composition)
+  )
+  const normalizedDraft = normalizeDraftForComparison(draft)
+
+  return (
+    normalizedDraft.code !== normalizedCurrent.code ||
+    normalizedDraft.name !== normalizedCurrent.name ||
+    normalizedDraft.description !== normalizedCurrent.description
+  )
 }
 
 export function CompositionEditForm({
@@ -105,8 +114,8 @@ export function CompositionEditForm({
 }: CompositionEditFormProps) {
   const router = useRouter()
   const updateComposition = useServerFn(updateCompositionAction)
-  const [draft, setDraft] = useState<CompositionDraft>(() =>
-    getInitialDraft(composition)
+  const [draft, setDraft] = useState<CompositionDraft>(
+    createCompositionDraft(composition)
   )
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -114,13 +123,11 @@ export function CompositionEditForm({
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
-    setDraft(getInitialDraft(composition))
+    setDraft(createCompositionDraft(composition))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
   }, [composition])
-
-  const hasChanges = hasCompositionChanges(composition, draft)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -250,7 +257,7 @@ export function CompositionEditForm({
         <SubmitButton
           type="submit"
           isSubmitting={isPending}
-          disabled={!hasChanges}
+          disabled={!hasCompositionEditChanges(composition, draft)}
           className="w-full"
         >
           Save

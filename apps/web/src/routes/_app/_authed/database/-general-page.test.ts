@@ -1,0 +1,64 @@
+import { describe, expect, it, vi } from "vitest"
+
+import { loadDatabaseGeneralSummaryCounts } from "./index"
+
+describe("loadDatabaseGeneralSummaryCounts", () => {
+  it("rejects unauthenticated access at the child-route boundary", async () => {
+    const getDatabaseGeneralSummaryCounts = vi.fn()
+
+    await expect(
+      loadDatabaseGeneralSummaryCounts(null, {
+        getDatabaseGeneralSummaryCounts,
+      })
+    ).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
+  })
+
+  it("rejects signed-in Collectors without editor access", async () => {
+    const getDatabaseGeneralSummaryCounts = vi.fn()
+
+    await expect(
+      loadDatabaseGeneralSummaryCounts(
+        { role: "collector" },
+        { getDatabaseGeneralSummaryCounts }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
+  })
+
+  it("returns summary counts for Editors and Admins", async () => {
+    const counts = {
+      catalogues: 3,
+      compositions: 5,
+      currencies: 2,
+      distributions: 4,
+    }
+    const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)
+
+    await expect(
+      loadDatabaseGeneralSummaryCounts(
+        { role: "editor" },
+        { getDatabaseGeneralSummaryCounts }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      counts,
+    })
+
+    await expect(
+      loadDatabaseGeneralSummaryCounts(
+        { role: "admin" },
+        { getDatabaseGeneralSummaryCounts }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      counts,
+    })
+  })
+})

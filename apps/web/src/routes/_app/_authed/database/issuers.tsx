@@ -38,12 +38,6 @@ async function getDefaultIssuerReadDependencies(): Promise<IssuerReadDependencie
   }
 }
 
-async function resolveIssuerReadDependencies(
-  dependencies?: IssuerReadDependencies
-): Promise<IssuerReadDependencies> {
-  return dependencies ?? getDefaultIssuerReadDependencies()
-}
-
 export async function loadIssuerMaintenanceIssuers(
   collector: CollectorWithRole | null,
   dependencies?: IssuerReadDependencies
@@ -55,7 +49,7 @@ export async function loadIssuerMaintenanceIssuers(
   }
 
   const { getIssuerMaintenanceRecords } =
-    await resolveIssuerReadDependencies(dependencies)
+    dependencies ?? (await getDefaultIssuerReadDependencies())
 
   return {
     status: "success",

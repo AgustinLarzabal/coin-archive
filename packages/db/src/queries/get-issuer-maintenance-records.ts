@@ -18,18 +18,18 @@ const getIssuerMaintenanceSelection = {
   },
 }
 
+type IssuerMaintenanceParentRecord = {
+  id: string
+  code: string
+  name: string
+}
+
 export type IssuerMaintenanceRecord = {
   id: string
   code: string
   isoCode: string
   name: string
-  parent:
-    | {
-        id: string
-        code: string
-        name: string
-      }
-    | null
+  parent: IssuerMaintenanceParentRecord | null
 }
 
 export async function getIssuerMaintenanceRecords(): Promise<

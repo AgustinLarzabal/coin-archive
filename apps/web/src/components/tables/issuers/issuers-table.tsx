@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { createIssuerColumns } from "./columns"
+import { issuerColumns } from "./columns"
 import { IssuersTableToolbar } from "./issuers-table-toolbar"
 
 type IssuersTableProps = {
@@ -20,23 +20,23 @@ export function filterIssuers(
   }
 
   return issuers.filter((issuer) =>
-    [
-      issuer.name,
-      issuer.code,
-      issuer.isoCode,
-      issuer.parent?.name ?? "",
-    ].some((value) => value.toLocaleLowerCase().includes(normalizedFilterValue))
+    getIssuerFilterValues(issuer).some((value) =>
+      value.toLocaleLowerCase().includes(normalizedFilterValue)
+    )
   )
+}
+
+function getIssuerFilterValues(issuer: IssuerMaintenanceRecord): string[] {
+  return [issuer.name, issuer.code, issuer.isoCode, issuer.parent?.name ?? ""]
 }
 
 export function IssuersTable({ issuers }: IssuersTableProps) {
   const [filterValue, setFilterValue] = useState("")
-  const columns = useMemo(() => createIssuerColumns(), [])
   const filteredIssuers = filterIssuers(issuers, filterValue)
 
   return (
     <DataTable
-      columns={columns}
+      columns={issuerColumns}
       data={filteredIssuers}
       toolbar={() => (
         <IssuersTableToolbar

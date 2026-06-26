@@ -30,7 +30,7 @@ import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
   ENGRAVER_GENERIC_SAVE_ERROR,
-  ENGRAVER_IN_USE_DELETE_ERROR,
+  ENGRAVER_IN_USE_DELETE_GUIDANCE,
   submitDeleteEngraver,
 } from "@/lib/engraver-maintenance"
 
@@ -45,10 +45,7 @@ type EngraverMaintenanceSheetProps = {
 }
 
 export const ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Engraver. ${ENGRAVER_IN_USE_DELETE_ERROR.replace(
-    "Engraver cannot be deleted while Engraver Attributions still use it. ",
-    ""
-  )}`
+  `This permanently deletes the Engraver. ${ENGRAVER_IN_USE_DELETE_GUIDANCE}`
 
 const deleteEngraverAction = createServerFn({
   method: "POST",

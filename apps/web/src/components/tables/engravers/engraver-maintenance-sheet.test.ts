@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { ENGRAVER_IN_USE_DELETE_ERROR } from "@/lib/engraver-maintenance"
+import { ENGRAVER_IN_USE_DELETE_GUIDANCE } from "@/lib/engraver-maintenance"
 
 import {
   ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION,
@@ -117,10 +117,7 @@ describe("ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Engraver"
     )
     expect(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      ENGRAVER_IN_USE_DELETE_ERROR.replace(
-        "Engraver cannot be deleted while Engraver Attributions still use it. ",
-        ""
-      )
+      ENGRAVER_IN_USE_DELETE_GUIDANCE
     )
   })
 })

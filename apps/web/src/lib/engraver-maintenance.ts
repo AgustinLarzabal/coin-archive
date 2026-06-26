@@ -11,8 +11,10 @@ export const ENGRAVER_DUPLICATE_CODE_ERROR =
 export const ENGRAVER_GENERIC_SAVE_ERROR =
   "Unable to save Engraver right now."
 export const ENGRAVER_MISSING_ERROR = "Engraver no longer exists."
+export const ENGRAVER_IN_USE_DELETE_GUIDANCE =
+  "Remove those Engraver Attributions before deleting the Engraver."
 export const ENGRAVER_IN_USE_DELETE_ERROR =
-  "Engraver cannot be deleted while Engraver Attributions still use it. Remove those Engraver Attributions before deleting the Engraver."
+  `Engraver cannot be deleted while Engraver Attributions still use it. ${ENGRAVER_IN_USE_DELETE_GUIDANCE}`
 export const ENGRAVER_INVALID_CODE_ERROR =
   "Engraver Code must use lowercase letters, numbers, and hyphens only."
 

@@ -298,6 +298,28 @@ describe("submitUpdateEngraver", () => {
     })
   })
 
+  it("maps Engraver Code slug check failures to the Engraver Code field during update", async () => {
+    await expect(
+      submitUpdateEngraver(
+        { role: "admin" },
+        updateInput,
+        createDependencies({
+          updateEngraver: vi.fn().mockRejectedValue({
+            cause: {
+              code: "23514",
+              constraint_name: "engraver_code_slug_check",
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {
+        code: ENGRAVER_INVALID_CODE_ERROR,
+      },
+    })
+  })
+
   it("returns a generic form error for unexpected update persistence failures", async () => {
     await expect(
       submitUpdateEngraver(

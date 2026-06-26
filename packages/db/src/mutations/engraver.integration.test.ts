@@ -92,6 +92,84 @@ describe("engraver mutations integration", () => {
     })
   })
 
+  it("updates the Engraver timestamp in place", async () => {
+    const existingEngraver = await createEngraverFixture({
+      code: "barth",
+      name: "Barth",
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 5))
+
+    const updatedEngraver = await updateEngraver({
+      id: existingEngraver.id,
+      code: "durand",
+      name: "Durand",
+    })
+
+    expect(updatedEngraver).toMatchObject({
+      id: existingEngraver.id,
+      createdAt: existingEngraver.createdAt,
+    })
+    expect(updatedEngraver?.updatedAt.getTime()).toBeGreaterThan(
+      existingEngraver.updatedAt.getTime()
+    )
+  })
+
+  it("rejects duplicate Engraver Codes case-insensitively during update", async () => {
+    const existingEngraver = await createEngraverFixture({
+      code: "barth",
+      name: "Barth",
+    })
+    const conflictingEngraver = await createEngraverFixture({
+      code: "durand",
+      name: "Durand",
+    })
+
+    await expect(
+      updateEngraver({
+        id: conflictingEngraver.id,
+        code: " BARTH ",
+        name: "Updated Durand",
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23505",
+        constraint_name: "engraver_code_lower_unique_idx",
+      }),
+    })
+
+    await expect(
+      db.query.engraver.findFirst({
+        where: (engraver, { eq }) => eq(engraver.id, conflictingEngraver.id),
+      })
+    ).resolves.toMatchObject({
+      id: conflictingEngraver.id,
+      code: "durand",
+      name: "Durand",
+    })
+    expect(existingEngraver.code).toBe("barth")
+  })
+
+  it("rejects invalid Engraver Codes during update instead of silently normalizing them", async () => {
+    const existingEngraver = await createEngraverFixture({
+      code: "barth",
+      name: "Barth",
+    })
+
+    await expect(
+      updateEngraver({
+        id: existingEngraver.id,
+        code: "Barth",
+        name: "Updated Barth",
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23514",
+        constraint_name: "engraver_code_slug_check",
+      }),
+    })
+  })
+
   it("returns null when the Engraver update target no longer exists", async () => {
     await expect(
       updateEngraver({

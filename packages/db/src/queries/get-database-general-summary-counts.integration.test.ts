@@ -6,6 +6,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEngraver,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -44,12 +45,21 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "standard-circulation",
       name: "Standard circulation",
     })
+    await createEngraver({
+      code: "barth",
+      name: "Barth",
+    })
+    await createEngraver({
+      code: "durand",
+      name: "Durand",
+    })
 
     await expect(getDatabaseGeneralSummaryCounts()).resolves.toStrictEqual({
       catalogues: 2,
       compositions: 1,
       currencies: 3,
       distributions: 1,
+      engravers: 2,
     })
   })
 
@@ -59,6 +69,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       compositions: 0,
       currencies: 0,
       distributions: 0,
+      engravers: 0,
     })
   })
 })

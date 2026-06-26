@@ -52,6 +52,7 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       compositions: 5,
       currencies: 2,
       distributions: 4,
+      engravers: 6,
     }
     const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)
     const allowedRoles = ["editor", "admin"] as const

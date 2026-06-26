@@ -32,6 +32,11 @@ export const databaseMaintenanceSections = [
     label: "Distributions",
     countKey: "distributions",
   },
+  {
+    to: "/database/engravers",
+    label: "Engravers",
+    countKey: "engravers",
+  },
 ] as const satisfies readonly DatabaseMaintenanceSection[]
 
 const [
@@ -39,6 +44,7 @@ const [
   compositionsSection,
   currenciesSection,
   distributionsSection,
+  engraversSection,
 ] = databaseMaintenanceSections
 
 export const databaseSecondaryMenuItems = [
@@ -47,4 +53,5 @@ export const databaseSecondaryMenuItems = [
   { to: compositionsSection.to, label: compositionsSection.label },
   { to: currenciesSection.to, label: currenciesSection.label },
   { to: distributionsSection.to, label: distributionsSection.label },
+  { to: engraversSection.to, label: engraversSection.label },
 ] as const

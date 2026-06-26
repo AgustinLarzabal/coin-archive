@@ -19,6 +19,7 @@ type NavigationPath =
   | "/database/compositions"
   | "/database/currencies"
   | "/database/distributions"
+  | "/database/engravers"
   | "/settings"
 type NavigationParentPath = keyof typeof icons
 

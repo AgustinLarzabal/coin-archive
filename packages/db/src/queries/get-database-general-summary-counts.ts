@@ -5,12 +5,14 @@ import { catalogue } from "../schema/catalogue"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
+import { engraver } from "../schema/engraver"
 
 export type DatabaseGeneralSummaryCounts = {
   catalogues: number
   compositions: number
   currencies: number
   distributions: number
+  engravers: number
 }
 
 async function getCount(
@@ -20,12 +22,13 @@ async function getCount(
 }
 
 export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneralSummaryCounts> {
-  const [catalogues, compositions, currencies, distributions] =
+  const [catalogues, compositions, currencies, distributions, engravers] =
     await Promise.all([
       getCount(db.select({ count: count() }).from(catalogue)),
       getCount(db.select({ count: count() }).from(composition)),
       getCount(db.select({ count: count() }).from(currency)),
       getCount(db.select({ count: count() }).from(distribution)),
+      getCount(db.select({ count: count() }).from(engraver)),
     ])
 
   return {
@@ -33,5 +36,6 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
     compositions,
     currencies,
     distributions,
+    engravers,
   }
 }

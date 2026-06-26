@@ -189,7 +189,7 @@ A catalogue filter that returns coins whose Demonetization Status is demonetized
 _Avoid_: Circulation filter, distribution filter, legal tender checkbox
 
 **Currency**:
-The reusable monetary unit used by a coin's Face Value, such as Euro, Argentine peso, or United States dollar. A Currency has a short display name and a full display name for historical disambiguation. A Currency is distinct from an Issuer and does not imply which authority issued a specific Coin.
+The reusable monetary unit used by a coin's Face Value, such as Euro, Argentine peso, or United States dollar. A Currency has a short display name and a full display name for historical disambiguation, and neither display name is a unique identity. A Currency is distinct from an Issuer and does not imply which authority issued a specific Coin.
 _Avoid_: Issuer, denomination, exchange rate, market value
 
 **Currency Code**:

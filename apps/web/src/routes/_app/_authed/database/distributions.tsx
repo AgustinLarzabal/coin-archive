@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { DistributionsTable } from "@/components/tables/distributions/distributions-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
+  type DistributionAuthorizationErrorResult,
   createDistributionAuthorizationError,
   hasDistributionMaintenanceAccess,
 } from "@/lib/distribution-maintenance"
-import type { DistributionAuthorizationErrorResult } from "@/lib/distribution-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadDistributionMaintenanceDistributionsResult =

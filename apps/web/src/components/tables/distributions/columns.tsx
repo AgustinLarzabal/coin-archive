@@ -1,15 +1,13 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type { DistributionOption } from "@workspace/db"
 
-export function createDistributionColumns(): ColumnDef<DistributionOption>[] {
-  return [
-    {
-      accessorKey: "code",
-      header: "Code",
-    },
-    {
-      accessorKey: "name",
-      header: "Name",
-    },
-  ]
-}
+export const distributionColumns: ColumnDef<DistributionOption>[] = [
+  {
+    accessorKey: "code",
+    header: "Code",
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+]

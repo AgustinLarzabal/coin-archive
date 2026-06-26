@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { DistributionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { createDistributionColumns } from "./columns"
+import { distributionColumns } from "./columns"
 import { DistributionMaintenanceSheet } from "./distribution-maintenance-sheet"
 import { DistributionsTableToolbar } from "./distributions-table-toolbar"
 
@@ -14,16 +14,19 @@ export function DistributionsTable({
   distributions,
 }: DistributionsTableProps) {
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
-  const columns = useMemo(() => createDistributionColumns(), [])
+
+  function handleCreateDistribution() {
+    setIsMaintenanceSheetOpen(true)
+  }
 
   return (
     <>
       <DataTable
-        columns={columns}
+        columns={distributionColumns}
         data={distributions}
         toolbar={() => (
           <DistributionsTableToolbar
-            onCreateDistribution={() => setIsMaintenanceSheetOpen(true)}
+            onCreateDistribution={handleCreateDistribution}
           />
         )}
       />

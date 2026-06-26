@@ -1,36 +1,28 @@
 import { Link } from "@tanstack/react-router"
 import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
 
-type DatabaseGeneralSummaryRow = {
-  count: number
-  href: "/database/catalogues" | "/database/compositions" | "/database/currencies" | "/database/distributions"
-  label: "Catalogues" | "Compositions" | "Currencies" | "Distributions"
-}
-
-const tableRows = (
-  counts: DatabaseGeneralSummaryCounts
-): DatabaseGeneralSummaryRow[] => [
+const summaryRecordTypes = [
   {
+    countKey: "catalogues",
     label: "Catalogues",
     href: "/database/catalogues",
-    count: counts.catalogues,
   },
   {
+    countKey: "compositions",
     label: "Compositions",
     href: "/database/compositions",
-    count: counts.compositions,
   },
   {
+    countKey: "currencies",
     label: "Currencies",
     href: "/database/currencies",
-    count: counts.currencies,
   },
   {
+    countKey: "distributions",
     label: "Distributions",
     href: "/database/distributions",
-    count: counts.distributions,
   },
-]
+] as const
 
 export function DatabaseGeneralSummaryTable({
   counts,
@@ -46,14 +38,17 @@ export function DatabaseGeneralSummaryTable({
         </tr>
       </thead>
       <tbody>
-        {tableRows(counts).map((row) => (
-          <tr key={row.href} className="border-b last:border-b-0">
+        {summaryRecordTypes.map((recordType) => (
+          <tr key={recordType.href} className="border-b last:border-b-0">
             <td className="py-3 pr-4">
-              <Link to={row.href} className="underline underline-offset-4">
-                {row.label}
+              <Link
+                to={recordType.href}
+                className="underline underline-offset-4"
+              >
+                {recordType.label}
               </Link>
             </td>
-            <td className="py-3">{row.count}</td>
+            <td className="py-3">{counts[recordType.countKey]}</td>
           </tr>
         ))}
       </tbody>

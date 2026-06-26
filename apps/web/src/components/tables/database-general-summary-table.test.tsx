@@ -26,6 +26,13 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
 describe("DatabaseGeneralSummaryTable", () => {
   it("renders a plain summary table with stable linked rows and zero counts", () => {
+    const expectedRows = [
+      { href: "/database/catalogues", label: "Catalogues", count: 0 },
+      { href: "/database/compositions", label: "Compositions", count: 12 },
+      { href: "/database/currencies", label: "Currencies", count: 7 },
+      { href: "/database/distributions", label: "Distributions", count: 1 },
+    ] as const
+
     const markup = renderToStaticMarkup(
       <DatabaseGeneralSummaryTable
         counts={{
@@ -39,17 +46,11 @@ describe("DatabaseGeneralSummaryTable", () => {
 
     expect(markup).toContain("Record type")
     expect(markup).toContain("Count")
-    expect(markup).toContain('href="/database/catalogues"')
-    expect(markup).toContain(">Catalogues</a>")
-    expect(markup).toContain(">0<")
-    expect(markup).toContain('href="/database/compositions"')
-    expect(markup).toContain(">Compositions</a>")
-    expect(markup).toContain(">12<")
-    expect(markup).toContain('href="/database/currencies"')
-    expect(markup).toContain(">Currencies</a>")
-    expect(markup).toContain(">7<")
-    expect(markup).toContain('href="/database/distributions"')
-    expect(markup).toContain(">Distributions</a>")
-    expect(markup).toContain(">1<")
+
+    for (const expectedRow of expectedRows) {
+      expect(markup).toContain(`href="${expectedRow.href}"`)
+      expect(markup).toContain(`>${expectedRow.label}</a>`)
+      expect(markup).toContain(`>${expectedRow.count}<`)
+    }
   })
 })

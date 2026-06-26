@@ -40,25 +40,18 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       distributions: 4,
     }
     const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)
+    const allowedRoles = ["editor", "admin"] as const
 
-    await expect(
-      loadDatabaseGeneralSummaryCounts(
-        { role: "editor" },
-        { getDatabaseGeneralSummaryCounts }
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      counts,
-    })
-
-    await expect(
-      loadDatabaseGeneralSummaryCounts(
-        { role: "admin" },
-        { getDatabaseGeneralSummaryCounts }
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      counts,
-    })
+    for (const role of allowedRoles) {
+      await expect(
+        loadDatabaseGeneralSummaryCounts(
+          { role },
+          { getDatabaseGeneralSummaryCounts }
+        )
+      ).resolves.toStrictEqual({
+        status: "success",
+        counts,
+      })
+    }
   })
 })

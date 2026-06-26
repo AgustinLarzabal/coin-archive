@@ -38,20 +38,24 @@ async function getDefaultDatabaseGeneralReadDependencies(): Promise<DatabaseGene
   }
 }
 
+async function resolveDatabaseGeneralReadDependencies(
+  dependencies?: DatabaseGeneralReadDependencies
+): Promise<DatabaseGeneralReadDependencies> {
+  return dependencies ?? getDefaultDatabaseGeneralReadDependencies()
+}
+
 export async function loadDatabaseGeneralSummaryCounts(
   collector: CollectorWithRole | null,
   dependencies?: DatabaseGeneralReadDependencies
 ): Promise<LoadDatabaseGeneralSummaryCountsResult> {
-  const authorization = getEditorRouteAuthorization(collector)
-
-  if (!authorization.isAllowed) {
+  if (!getEditorRouteAuthorization(collector).isAllowed) {
     return {
       status: "error",
     }
   }
 
   const { getDatabaseGeneralSummaryCounts } =
-    dependencies ?? (await getDefaultDatabaseGeneralReadDependencies())
+    await resolveDatabaseGeneralReadDependencies(dependencies)
 
   return {
     status: "success",

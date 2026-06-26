@@ -13,19 +13,25 @@ export type DatabaseGeneralSummaryCounts = {
   distributions: number
 }
 
+async function getCount(
+  query: Promise<Array<{ count: number }>>
+): Promise<number> {
+  return (await query).at(0)?.count ?? 0
+}
+
 export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneralSummaryCounts> {
-  const [catalogueResult, compositionResult, currencyResult, distributionResult] =
+  const [catalogues, compositions, currencies, distributions] =
     await Promise.all([
-      db.select({ count: count() }).from(catalogue),
-      db.select({ count: count() }).from(composition),
-      db.select({ count: count() }).from(currency),
-      db.select({ count: count() }).from(distribution),
+      getCount(db.select({ count: count() }).from(catalogue)),
+      getCount(db.select({ count: count() }).from(composition)),
+      getCount(db.select({ count: count() }).from(currency)),
+      getCount(db.select({ count: count() }).from(distribution)),
     ])
 
   return {
-    catalogues: catalogueResult.at(0)?.count ?? 0,
-    compositions: compositionResult.at(0)?.count ?? 0,
-    currencies: currencyResult.at(0)?.count ?? 0,
-    distributions: distributionResult.at(0)?.count ?? 0,
+    catalogues,
+    compositions,
+    currencies,
+    distributions,
   }
 }

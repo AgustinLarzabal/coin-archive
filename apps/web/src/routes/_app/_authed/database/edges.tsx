@@ -40,12 +40,6 @@ async function getDefaultEdgeReadDependencies(): Promise<EdgeReadDependencies> {
   }
 }
 
-async function resolveEdgeReadDependencies(
-  dependencies?: EdgeReadDependencies
-): Promise<EdgeReadDependencies> {
-  return dependencies ?? getDefaultEdgeReadDependencies()
-}
-
 export async function loadEdgeMaintenanceEdges(
   collector: CollectorWithRole | null,
   dependencies?: EdgeReadDependencies
@@ -54,7 +48,7 @@ export async function loadEdgeMaintenanceEdges(
     return createEdgeAuthorizationError()
   }
 
-  const { getEdges } = await resolveEdgeReadDependencies(dependencies)
+  const { getEdges } = dependencies ?? (await getDefaultEdgeReadDependencies())
 
   return {
     status: "success",

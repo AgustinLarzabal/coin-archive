@@ -43,7 +43,13 @@ type EdgeMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const EDGE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Edge. ${EDGE_IN_USE_DELETE_ERROR.replace("Edge cannot be deleted while Coins still use it. ", "")}`
+const EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE = EDGE_IN_USE_DELETE_ERROR.replace(
+  "Edge cannot be deleted while Coins still use it. ",
+  ""
+)
+
+export const EDGE_DELETE_CONFIRMATION_DESCRIPTION =
+  `This permanently deletes the Edge. ${EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
 
 const deleteEdgeAction = createServerFn({
   method: "POST",
@@ -66,6 +72,7 @@ export function EdgeMaintenanceSheet({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
   const isEditingEdge = edge !== null
+  const sheetTitle = isEditingEdge ? "Edit Edge" : "Create Edge"
 
   function resetDeleteState() {
     setDeleteError(null)
@@ -108,7 +115,7 @@ export function EdgeMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{edge ? "Edit Edge" : "Create Edge"}</SheetTitle>
+          <SheetTitle>{sheetTitle}</SheetTitle>
 
           {isEditingEdge ? (
             <>
@@ -170,7 +177,7 @@ export function EdgeMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {edge ? (
+        {isEditingEdge ? (
           <EdgeEditForm edge={edge} onSaved={() => onOpenChange(false)} />
         ) : (
           <EdgeCreateForm onCreated={() => onOpenChange(false)} />

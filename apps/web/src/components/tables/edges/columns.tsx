@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 
-import { Icons } from "../../icons"
+import { Icons } from "@/components/icons"
 
 export function createEdgeColumns(
   onEditEdge: (edge: EdgeOption) => void

@@ -1,7 +1,12 @@
 import type { CurrencyOption } from "@workspace/db"
+import { createElement } from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { hasCurrencyEditChanges } from "./currency-edit-form"
+import {
+  CurrencyEditForm,
+  hasCurrencyEditChanges,
+} from "./currency-edit-form"
 
 const currency: CurrencyOption = {
   id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
@@ -31,5 +36,22 @@ describe("hasCurrencyEditChanges", () => {
         fullName: "Argentine peso",
       })
     ).toBe(true)
+  })
+})
+
+describe("CurrencyEditForm", () => {
+  it("renders explicit Currency field labels with the current values and disables Save until something changed", () => {
+    const markup = renderToStaticMarkup(
+      createElement(CurrencyEditForm, { currency })
+    )
+
+    expect(markup).toContain("Currency Code")
+    expect(markup).toContain("Currency Name")
+    expect(markup).toContain("Currency Full Name")
+    expect(markup).toContain('value="united-states-dollar"')
+    expect(markup).toContain('value="Dollar"')
+    expect(markup).toContain('value="United States dollar"')
+    expect(markup).toContain(">Save</span>")
+    expect(markup).toContain("disabled")
   })
 })

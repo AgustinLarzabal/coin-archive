@@ -13,6 +13,10 @@ type UpdateDistributionInput = DistributionFields & {
   id: string
 }
 
+type DeleteDistributionInput = {
+  id: string
+}
+
 function normalizeDistributionFields({ code, name }: DistributionFields) {
   return {
     code: code.trim(),
@@ -45,4 +49,15 @@ export async function updateDistribution({
     .returning()
 
   return updatedDistribution ?? null
+}
+
+export async function deleteDistribution({
+  id,
+}: DeleteDistributionInput): Promise<Distribution | null> {
+  const [deletedDistribution] = await db
+    .delete(distribution)
+    .where(eq(distribution.id, id))
+    .returning()
+
+  return deletedDistribution ?? null
 }

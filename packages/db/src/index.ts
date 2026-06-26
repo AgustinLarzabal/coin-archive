@@ -11,6 +11,7 @@ export {
 } from "./mutations/composition"
 export {
   createDistribution,
+  deleteDistribution,
   updateDistribution,
 } from "./mutations/distribution"
 export {

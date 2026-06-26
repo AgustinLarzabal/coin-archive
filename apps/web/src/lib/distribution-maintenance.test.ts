@@ -4,10 +4,12 @@ import {
   DISTRIBUTION_AUTHORIZATION_ERROR,
   DISTRIBUTION_DUPLICATE_CODE_ERROR,
   DISTRIBUTION_GENERIC_SAVE_ERROR,
+  DISTRIBUTION_IN_USE_DELETE_ERROR,
   DISTRIBUTION_INVALID_CODE_ERROR,
   DISTRIBUTION_MISSING_ERROR,
   hasDistributionMaintenanceAccess,
   submitCreateDistribution,
+  submitDeleteDistribution,
   submitUpdateDistribution,
 } from "./distribution-maintenance"
 
@@ -19,10 +21,12 @@ const STANDARD_CIRCULATION = {
 
 function createDependencies(overrides?: {
   createDistribution?: ReturnType<typeof vi.fn>
+  deleteDistribution?: ReturnType<typeof vi.fn>
   updateDistribution?: ReturnType<typeof vi.fn>
 }) {
   return {
     createDistribution: vi.fn(),
+    deleteDistribution: vi.fn(),
     updateDistribution: vi.fn(),
     ...overrides,
   }
@@ -314,5 +318,92 @@ describe("submitUpdateDistribution", () => {
       fieldErrors: {},
       formError: DISTRIBUTION_GENERIC_SAVE_ERROR,
     })
+  })
+})
+
+describe("submitDeleteDistribution", () => {
+  const deleteInput = {
+    id: VALID_DISTRIBUTION_ID,
+  }
+
+  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
+    await expect(
+      submitDeleteDistribution(null, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+
+    await expect(
+      submitDeleteDistribution({ role: "collector" }, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("maps validation issues into typed field errors", async () => {
+    const dependencies = createDependencies()
+
+    await expect(
+      submitDeleteDistribution(
+        { role: "editor" },
+        { id: "not-a-uuid" },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+    })
+
+    expect(dependencies.deleteDistribution).not.toHaveBeenCalled()
+  })
+
+  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    await expect(
+      submitDeleteDistribution(
+        { role: "editor" },
+        deleteInput,
+        createDependencies({
+          deleteDistribution: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: DISTRIBUTION_MISSING_ERROR,
+    })
+  })
+
+  it("maps restricted deletes to a Distribution-specific form error", async () => {
+    await expect(
+      submitDeleteDistribution(
+        { role: "admin" },
+        deleteInput,
+        createDependencies({
+          deleteDistribution: vi.fn().mockRejectedValue({
+            cause: {
+              code: "23001",
+              constraint_name: "coin_distribution_id_distribution_id_fk",
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: DISTRIBUTION_IN_USE_DELETE_ERROR,
+    })
+  })
+
+  it("returns a success result for valid delete submissions", async () => {
+    const dependencies = createDependencies({
+      deleteDistribution: vi.fn().mockResolvedValue({
+        id: VALID_DISTRIBUTION_ID,
+      }),
+    })
+
+    await expect(
+      submitDeleteDistribution({ role: "editor" }, deleteInput, dependencies)
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Distribution deleted.",
+    })
+
+    expect(dependencies.deleteDistribution).toHaveBeenCalledWith(deleteInput)
   })
 })

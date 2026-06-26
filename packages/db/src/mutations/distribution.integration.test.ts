@@ -7,7 +7,11 @@ import {
   createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createDistribution, updateDistribution } from "./distribution"
+import {
+  createDistribution,
+  deleteDistribution,
+  updateDistribution,
+} from "./distribution"
 
 describe("distribution mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -132,5 +136,58 @@ describe("distribution mutations integration", () => {
     })
 
     expect(persistedCoin?.distributionId).toBe(createdDistribution.id)
+  })
+
+  it("returns null when deleting a missing Distribution", async () => {
+    await expect(
+      deleteDistribution({
+        id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+      })
+    ).resolves.toBeNull()
+  })
+
+  it("deletes an unused Distribution", async () => {
+    const existingDistribution = await createDistributionFixture({
+      code: "obsolete-distribution",
+      name: "Obsolete distribution",
+    })
+
+    await expect(
+      deleteDistribution({
+        id: existingDistribution.id,
+      })
+    ).resolves.toMatchObject({
+      id: existingDistribution.id,
+      code: "obsolete-distribution",
+    })
+  })
+
+  it("rejects deleting a Distribution while Coins still use it", async () => {
+    const issuer = await createIssuer({
+      code: "issuer-for-distribution-delete",
+      name: "Issuer for Distribution Delete",
+    })
+    const existingDistribution = await createDistributionFixture({
+      code: "in-use-distribution",
+      name: "In Use Distribution",
+    })
+
+    await createCoin({
+      issuerId: issuer.id,
+      distributionId: existingDistribution.id,
+      title: "Distribution Restrict Delete Coin",
+      createdAt: new Date("2026-06-26T00:00:00.000Z"),
+    })
+
+    await expect(
+      deleteDistribution({
+        id: existingDistribution.id,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_distribution_id_distribution_id_fk",
+      }),
+    })
   })
 })

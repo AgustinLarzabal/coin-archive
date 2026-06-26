@@ -11,14 +11,21 @@ export const DISTRIBUTION_DUPLICATE_CODE_ERROR =
 export const DISTRIBUTION_GENERIC_SAVE_ERROR =
   "Unable to save Distribution right now."
 export const DISTRIBUTION_MISSING_ERROR = "Distribution no longer exists."
+export const DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE =
+  "Every Coin has exactly one Distribution, so those Coins must be reassigned to another Distribution before this Distribution can be deleted."
+export const DISTRIBUTION_IN_USE_DELETE_ERROR =
+  `Distribution cannot be deleted while Coins still use it. ${DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 export const DISTRIBUTION_INVALID_CODE_ERROR =
   "Distribution Code must use lowercase letters, numbers, and hyphens only."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
+const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
 const DUPLICATE_DISTRIBUTION_CODE_CONSTRAINT =
   "distribution_code_lower_unique_idx"
 const INVALID_DISTRIBUTION_CODE_CONSTRAINT = "distribution_code_slug_check"
+const DISTRIBUTION_IN_USE_DELETE_CONSTRAINT =
+  "coin_distribution_id_distribution_id_fk"
 const DISTRIBUTION_FIELD_NAMES = ["code", "name"] as const
 
 const distributionCodeSchema = z
@@ -43,6 +50,10 @@ export const createDistributionInputSchema = z.object({
 })
 
 export const updateDistributionInputSchema = createDistributionInputSchema.extend({
+  id: z.uuid(),
+})
+
+export const deleteDistributionInputSchema = z.object({
   id: z.uuid(),
 })
 
@@ -72,22 +83,29 @@ type CreateDistributionInput = z.input<typeof createDistributionInputSchema>
 type CreateDistributionData = z.output<typeof createDistributionInputSchema>
 type UpdateDistributionInput = z.input<typeof updateDistributionInputSchema>
 type UpdateDistributionData = z.output<typeof updateDistributionInputSchema>
+type DeleteDistributionInput = z.input<typeof deleteDistributionInputSchema>
+type DeleteDistributionData = z.output<typeof deleteDistributionInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: DistributionMutationResult }
 
 type DistributionMutationDependencies = {
   createDistribution: (input: CreateDistributionData) => Promise<unknown>
+  deleteDistribution: (
+    input: DeleteDistributionData
+  ) => Promise<unknown | null>
   updateDistribution: (
     input: UpdateDistributionData
   ) => Promise<unknown | null>
 }
 
 async function getDefaultDistributionMutationDependencies(): Promise<DistributionMutationDependencies> {
-  const { createDistribution, updateDistribution } = await import("@workspace/db")
+  const { createDistribution, deleteDistribution, updateDistribution } =
+    await import("@workspace/db")
 
   return {
     createDistribution,
+    deleteDistribution,
     updateDistribution,
   }
 }
@@ -214,6 +232,16 @@ function createPersistenceError(error: unknown): DistributionMutationResult {
   if (
     matchesPostgresConstraint(
       error,
+      FK_VIOLATION_POSTGRES_ERROR_CODE,
+      DISTRIBUTION_IN_USE_DELETE_CONSTRAINT
+    )
+  ) {
+    return createFormErrorResult(DISTRIBUTION_IN_USE_DELETE_ERROR)
+  }
+
+  if (
+    matchesPostgresConstraint(
+      error,
       CHECK_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_DISTRIBUTION_CODE_CONSTRAINT
     )
@@ -255,6 +283,12 @@ function validateUpdateDistributionInput(
   input: UpdateDistributionInput
 ): ValidationResult<UpdateDistributionData> {
   return validateDistributionInput(updateDistributionInputSchema, input)
+}
+
+function validateDeleteDistributionInput(
+  input: DeleteDistributionInput
+): ValidationResult<DeleteDistributionData> {
+  return validateDistributionInput(deleteDistributionInputSchema, input)
 }
 
 export async function submitCreateDistribution(
@@ -317,6 +351,42 @@ export async function submitUpdateDistribution(
     return {
       status: "success",
       message: "Saved.",
+    }
+  } catch (error) {
+    return createPersistenceError(error)
+  }
+}
+
+export async function submitDeleteDistribution(
+  collector: CollectorWithRole | null,
+  input: DeleteDistributionInput,
+  dependencies?: DistributionMutationDependencies
+): Promise<DistributionMutationResult> {
+  if (!hasDistributionMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  const validationResult = validateDeleteDistributionInput(input)
+
+  if (!validationResult.success) {
+    return validationResult.result
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultDistributionMutationDependencies())
+
+  try {
+    const deletedDistribution = await resolvedDependencies.deleteDistribution(
+      validationResult.data
+    )
+
+    if (deletedDistribution === null) {
+      return createFormErrorResult(DISTRIBUTION_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Distribution deleted.",
     }
   } catch (error) {
     return createPersistenceError(error)

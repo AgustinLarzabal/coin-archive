@@ -12,17 +12,9 @@ const icons = {
   "/settings": () => <Icons.Settings size={20} />,
 } as const
 type CollectorSession = typeof authClient.$Infer.Session
-type NavigationPath =
-  | "/"
-  | "/database"
-  | "/database/catalogues"
-  | "/database/compositions"
-  | "/database/currencies"
-  | "/database/distributions"
-  | "/database/edges"
-  | "/database/engravers"
-  | "/database/issuers"
-  | "/settings"
+type DatabaseNavigationPath =
+  (typeof databaseSecondaryMenuItems)[number]["to"]
+type NavigationPath = "/" | DatabaseNavigationPath | "/settings"
 type NavigationParentPath = keyof typeof icons
 
 type NavigationItem = {

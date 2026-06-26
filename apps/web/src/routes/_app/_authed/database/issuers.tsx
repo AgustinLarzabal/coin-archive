@@ -3,7 +3,16 @@ import { createServerFn } from "@tanstack/react-start"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
+import type { CollectorWithRole } from "@/lib/collector-role"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
+
+type LoadIssuerMaintenanceAccessResult =
+  | {
+      status: "error"
+    }
+  | {
+      status: "success"
+    }
 
 type IssuerMaintenanceLoaderData =
   | {
@@ -13,12 +22,27 @@ type IssuerMaintenanceLoaderData =
       isAllowed: true
     }
 
+export async function loadIssuerMaintenanceAccess(
+  collector: CollectorWithRole | null
+): Promise<LoadIssuerMaintenanceAccessResult> {
+  if (!getEditorRouteAuthorization(collector).isAllowed) {
+    return {
+      status: "error",
+    }
+  }
+
+  return {
+    status: "success",
+  }
+}
+
 const getIssuerMaintenanceLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
+  const result = await loadIssuerMaintenanceAccess(session?.user ?? null)
 
-  if (!getEditorRouteAuthorization(session?.user ?? null).isAllowed) {
+  if (result.status === "error") {
     return {
       isAllowed: false,
     } satisfies IssuerMaintenanceLoaderData

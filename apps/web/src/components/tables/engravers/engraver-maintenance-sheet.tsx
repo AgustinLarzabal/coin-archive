@@ -67,14 +67,19 @@ export function EngraverMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
+  const isEditingEngraver = engraver !== null
+
+  function closeSheet() {
+    onOpenChange(false)
+  }
 
   useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(
-      open && engraver !== null ? initialDeleteDialogOpen : false
+      open && isEditingEngraver ? initialDeleteDialogOpen : false
     )
     setIsDeletePending(false)
-  }, [engraver?.id, initialDeleteDialogOpen, open])
+  }, [engraver?.id, initialDeleteDialogOpen, isEditingEngraver, open])
 
   async function handleDeleteEngraver() {
     if (!engraver) {
@@ -93,7 +98,7 @@ export function EngraverMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        onOpenChange(false)
+        closeSheet()
         return
       }
 
@@ -107,9 +112,11 @@ export function EngraverMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{engraver ? "Edit Engraver" : "Create Engraver"}</SheetTitle>
+          <SheetTitle>
+            {isEditingEngraver ? "Edit Engraver" : "Create Engraver"}
+          </SheetTitle>
 
-          {engraver !== null ? (
+          {isEditingEngraver ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -169,10 +176,10 @@ export function EngraverMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {engraver ? (
-          <EngraverEditForm engraver={engraver} onSaved={() => onOpenChange(false)} />
+        {engraver !== null ? (
+          <EngraverEditForm engraver={engraver} onSaved={closeSheet} />
         ) : (
-          <EngraverCreateForm onCreated={() => onOpenChange(false)} />
+          <EngraverCreateForm onCreated={closeSheet} />
         )}
       </SheetContent>
     </Sheet>

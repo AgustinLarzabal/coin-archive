@@ -76,10 +76,11 @@ type UpdateEngraverInput = z.input<typeof updateEngraverInputSchema>
 type UpdateEngraverData = z.output<typeof updateEngraverInputSchema>
 type DeleteEngraverInput = z.input<typeof deleteEngraverInputSchema>
 type DeleteEngraverData = z.output<typeof deleteEngraverInputSchema>
+
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: EngraverMutationResult }
-type EngraverMutationOperationResult = unknown | null
+
 type SubmitEngraverMutationOptions<TInput, TData> = {
   collector: CollectorWithRole | null
   input: TInput
@@ -88,7 +89,7 @@ type SubmitEngraverMutationOptions<TInput, TData> = {
   execute: (
     dependencies: EngraverMutationDependencies,
     data: TData
-  ) => Promise<EngraverMutationOperationResult>
+  ) => Promise<unknown | null>
   createSuccessResult: () => EngraverMutationResult
   createNullResult?: () => EngraverMutationResult
 }
@@ -124,10 +125,7 @@ export function createEngraverAuthorizationError(): EngraverAuthorizationErrorRe
 }
 
 function createAuthorizationError(): EngraverMutationResult {
-  return {
-    ...createEngraverAuthorizationError(),
-    fieldErrors: {},
-  }
+  return createFormErrorResult(ENGRAVER_AUTHORIZATION_ERROR)
 }
 
 function createFieldErrorResult(

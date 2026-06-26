@@ -8,7 +8,9 @@ import { loadDatabaseGeneralSummaryCounts } from "./index"
 
 describe("databaseMaintenanceSections", () => {
   it("shares the same maintenance labels and routes as the database secondary menu", () => {
-    expect(databaseMaintenanceSections).toMatchObject(
+    expect(
+      databaseMaintenanceSections.map(({ to, label }) => ({ to, label }))
+    ).toStrictEqual(
       databaseSecondaryMenuItems
         .slice(1)
         .map(({ to, label }) => ({ to, label }))

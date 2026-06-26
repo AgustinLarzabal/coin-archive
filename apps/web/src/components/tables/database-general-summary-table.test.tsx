@@ -50,11 +50,19 @@ describe("DatabaseGeneralSummaryTable", () => {
 
     expect(markup).toContain("Record type")
     expect(markup).toContain("Count")
+    expect(markup).toContain("<tbody>")
 
-    for (const expectedRow of expectedRows) {
-      expect(markup).toContain(`href="${expectedRow.href}"`)
-      expect(markup).toContain(`>${expectedRow.label}</a>`)
-      expect(markup).toContain(`>${expectedRow.count}<`)
-    }
+    const rowMatches = Array.from(
+      markup.matchAll(
+        /<tr class="border-b last:border-b-0"><td class="py-3 pr-4"><a href="([^"]+)" class="underline underline-offset-4">([^<]+)<\/a><\/td><td class="py-3">(\d+)<\/td><\/tr>/g
+      ),
+      ([, href, label, count]) => ({
+        href,
+        label,
+        count: Number(count),
+      })
+    )
+
+    expect(rowMatches).toStrictEqual(expectedRows)
   })
 })

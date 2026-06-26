@@ -2,13 +2,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { SecondaryMenu } from "@/components/secondary-menu"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 import { AccessDenied } from "@/components/access-denied"
-
-export const databaseSecondaryMenuItems = [
-  { to: "/database", label: "General" },
-  { to: "/database/catalogues", label: "Catalogues" },
-  { to: "/database/compositions", label: "Compositions" },
-  { to: "/database/currencies", label: "Currencies" },
-] as const
+import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 export const Route = createFileRoute("/_app/_authed/database")({
   loader: async ({ context }) => {

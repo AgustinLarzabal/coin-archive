@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { COMPOSITION_AUTHORIZATION_ERROR } from "@/lib/composition-maintenance"
+import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadCompositionMaintenanceCompositions } from "./compositions"
-import { databaseSecondaryMenuItems } from "./route"
 
 describe("databaseSecondaryMenuItems", () => {
   it("includes the read-only Compositions page in the database secondary menu", () => {
@@ -47,7 +47,7 @@ describe("loadCompositionMaintenanceCompositions", () => {
   it("returns composition data for Editors and Admins", async () => {
     const compositions = [
       {
-        id: "0d624d9c-3592-46d1-868e-d395d89f2783",
+        id: "c3e497b8-fda5-48d6-a8c3-f37bc1c8f2a6",
         code: "silver-900",
         name: "Silver (.900)",
         description: "Ninety percent silver alloy.",

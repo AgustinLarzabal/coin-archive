@@ -20,7 +20,7 @@ export function createCurrencyAuthorizationError(): CurrencyAuthorizationErrorRe
 
 export function hasCurrencyMaintenanceAccess(
   collector: CollectorWithRole | null
-) {
+): boolean {
   const role = getCollectorRole(collector)
 
   return role !== null && hasEditorAccess(role)

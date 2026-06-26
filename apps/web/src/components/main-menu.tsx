@@ -4,6 +4,7 @@ import { Icons } from "./icons"
 import { cn } from "@workspace/ui/lib/utils"
 import { getCollectorRole } from "@/lib/collector-role"
 import { authClient, hasEditorAccess } from "@workspace/auth/client"
+import { databaseSecondaryMenuItems } from "@/routes/_app/_authed/database/-navigation-items"
 
 const icons = {
   "/": () => <Icons.Overview size={20} />,
@@ -292,22 +293,22 @@ export function getPrivateNavigationLinks(
 export function getPrivateNavigationItem(
   link: PrivateNavigationLink
 ): NavigationItem {
-  if (link.to === "/database") {
-    return {
-      ...link,
-      children: [
-        { to: "/database", label: "General" },
-        { to: "/database/catalogues", label: "Catalogues" },
-        { to: "/database/compositions", label: "Compositions" },
-        { to: "/database/currencies", label: "Currencies" },
-      ],
-    }
+  switch (link.to) {
+    case "/database":
+      return {
+        ...link,
+        children: [...databaseSecondaryMenuItems],
+      }
+    case "/settings":
+      return {
+        ...link,
+        children: [{ to: "/settings", label: "General" }],
+      }
   }
 
-  return {
-    ...link,
-    children: [{ to: "/settings", label: "General" }],
-  }
+  const exhaustiveLink: never = link.to
+
+  throw new Error(`Unsupported private navigation path: ${exhaustiveLink}`)
 }
 
 function isNavigationItemActive(to: NavigationPath, pathname: string) {

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { CURRENCY_AUTHORIZATION_ERROR } from "@/lib/currency-maintenance"
+import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadCurrencyMaintenanceCurrencies } from "./currencies"
-import { databaseSecondaryMenuItems } from "./route"
 
 describe("databaseSecondaryMenuItems", () => {
   it("includes the read-only Currencies page in the database secondary menu", () => {

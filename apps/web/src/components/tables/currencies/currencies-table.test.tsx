@@ -40,7 +40,7 @@ describe("filterCurrencies", () => {
 })
 
 describe("CurrenciesTable", () => {
-  it("renders compact Code, Name, and Full Name columns with a read-only filter toolbar", () => {
+  it("renders compact Code, Name, and Full Name columns with maintenance actions", () => {
     const markup = renderToStaticMarkup(
       <CurrenciesTable currencies={currencies} />
     )
@@ -51,7 +51,7 @@ describe("CurrenciesTable", () => {
     expect(markup).toContain("Argentine peso")
     expect(markup).toContain("United States dollar")
     expect(markup).toContain("Filter currencies by code, name, or full name...")
-    expect(markup).not.toContain("Create")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

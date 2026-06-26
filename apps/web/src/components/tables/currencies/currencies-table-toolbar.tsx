@@ -1,12 +1,15 @@
 import { Input } from "@workspace/ui/components/input"
+import { Button } from "@workspace/ui/components/button"
 
 type CurrenciesTableToolbarProps = {
   filterValue: string
+  onCreateCurrency: () => void
   onFilterValueChange: (value: string) => void
 }
 
 export function CurrenciesTableToolbar({
   filterValue,
+  onCreateCurrency,
   onFilterValueChange,
 }: CurrenciesTableToolbarProps) {
   return (
@@ -17,6 +20,9 @@ export function CurrenciesTableToolbar({
         onChange={(event) => onFilterValueChange(event.target.value)}
         className="max-w-sm"
       />
+      <Button type="button" onClick={onCreateCurrency}>
+        Create
+      </Button>
     </div>
   )
 }

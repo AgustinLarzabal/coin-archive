@@ -9,6 +9,11 @@ export {
   deleteComposition,
   updateComposition,
 } from "./mutations/composition"
+export {
+  createCurrency,
+  deleteCurrency,
+  updateCurrency,
+} from "./mutations/currency"
 export { getCatalogues } from "./queries/get-catalogues"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"

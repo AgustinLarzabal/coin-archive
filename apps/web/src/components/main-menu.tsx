@@ -16,6 +16,7 @@ type NavigationPath =
   | "/database"
   | "/database/catalogues"
   | "/database/compositions"
+  | "/database/currencies"
   | "/settings"
 type NavigationParentPath = keyof typeof icons
 
@@ -288,7 +289,9 @@ export function getPrivateNavigationLinks(
   return [settingsNavigationLink]
 }
 
-function getPrivateNavigationItem(link: PrivateNavigationLink): NavigationItem {
+export function getPrivateNavigationItem(
+  link: PrivateNavigationLink
+): NavigationItem {
   if (link.to === "/database") {
     return {
       ...link,
@@ -296,6 +299,7 @@ function getPrivateNavigationItem(link: PrivateNavigationLink): NavigationItem {
         { to: "/database", label: "General" },
         { to: "/database/catalogues", label: "Catalogues" },
         { to: "/database/compositions", label: "Compositions" },
+        { to: "/database/currencies", label: "Currencies" },
       ],
     }
   }

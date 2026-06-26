@@ -19,6 +19,7 @@ import { Route as AppAuthedSettingsRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authed/database/route'
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
+import { Route as AppAuthedDatabaseCurrenciesRouteImport } from './routes/_app/_authed/database/currencies'
 import { Route as AppAuthedDatabaseCompositionsRouteImport } from './routes/_app/_authed/database/compositions'
 import { Route as AppAuthedDatabaseCataloguesRouteImport } from './routes/_app/_authed/database/catalogues'
 import { Route as ApppublicCoinsCoinIdRouteImport } from './routes/_app/(public)/coins.$coinId'
@@ -70,6 +71,12 @@ const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
+const AppAuthedDatabaseCurrenciesRoute =
+  AppAuthedDatabaseCurrenciesRouteImport.update({
+    id: '/currencies',
+    path: '/currencies',
+    getParentRoute: () => AppAuthedDatabaseRouteRoute,
+  } as any)
 const AppAuthedDatabaseCompositionsRoute =
   AppAuthedDatabaseCompositionsRouteImport.update({
     id: '/compositions',
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
+  '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
+  '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
 }
@@ -123,6 +132,7 @@ export interface FileRoutesById {
   '/_app/(public)/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/_app/_authed/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
   '/_app/_authed/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
+  '/_app/_authed/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/coins/$coinId'
     | '/database/catalogues'
     | '/database/compositions'
+    | '/database/currencies'
     | '/database/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/coins/$coinId'
     | '/database/catalogues'
     | '/database/compositions'
+    | '/database/currencies'
     | '/database'
     | '/settings'
   id:
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
     | '/_app/(public)/coins/$coinId'
     | '/_app/_authed/database/catalogues'
     | '/_app/_authed/database/compositions'
+    | '/_app/_authed/database/currencies'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
   fileRoutesById: FileRoutesById
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthedDatabaseIndexRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
+    '/_app/_authed/database/currencies': {
+      id: '/_app/_authed/database/currencies'
+      path: '/currencies'
+      fullPath: '/database/currencies'
+      preLoaderRoute: typeof AppAuthedDatabaseCurrenciesRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
     '/_app/_authed/database/compositions': {
       id: '/_app/_authed/database/compositions'
       path: '/compositions'
@@ -286,6 +306,7 @@ const ApppublicRouteRouteWithChildren = ApppublicRouteRoute._addFileChildren(
 interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseCataloguesRoute: typeof AppAuthedDatabaseCataloguesRoute
   AppAuthedDatabaseCompositionsRoute: typeof AppAuthedDatabaseCompositionsRoute
+  AppAuthedDatabaseCurrenciesRoute: typeof AppAuthedDatabaseCurrenciesRoute
   AppAuthedDatabaseIndexRoute: typeof AppAuthedDatabaseIndexRoute
 }
 
@@ -293,6 +314,7 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
   {
     AppAuthedDatabaseCataloguesRoute: AppAuthedDatabaseCataloguesRoute,
     AppAuthedDatabaseCompositionsRoute: AppAuthedDatabaseCompositionsRoute,
+    AppAuthedDatabaseCurrenciesRoute: AppAuthedDatabaseCurrenciesRoute,
     AppAuthedDatabaseIndexRoute: AppAuthedDatabaseIndexRoute,
   }
 

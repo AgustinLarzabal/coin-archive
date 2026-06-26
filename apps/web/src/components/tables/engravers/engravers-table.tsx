@@ -11,9 +11,8 @@ type EngraversTableProps = {
 }
 
 export function EngraversTable({ engravers }: EngraversTableProps) {
-  const [selectedEngraver, setSelectedEngraver] = useState<EngraverOption | null>(
-    null
-  )
+  const [selectedEngraver, setSelectedEngraver] =
+    useState<EngraverOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
 
   function openCreateEngraverSheet() {

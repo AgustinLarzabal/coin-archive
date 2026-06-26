@@ -39,19 +39,7 @@ export const databaseMaintenanceSections = [
   },
 ] as const satisfies readonly DatabaseMaintenanceSection[]
 
-const [
-  cataloguesSection,
-  compositionsSection,
-  currenciesSection,
-  distributionsSection,
-  engraversSection,
-] = databaseMaintenanceSections
-
 export const databaseSecondaryMenuItems = [
   databaseGeneralMenuItem,
-  { to: cataloguesSection.to, label: cataloguesSection.label },
-  { to: compositionsSection.to, label: compositionsSection.label },
-  { to: currenciesSection.to, label: currenciesSection.label },
-  { to: distributionsSection.to, label: distributionsSection.label },
-  { to: engraversSection.to, label: engraversSection.label },
+  ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
 ] as const

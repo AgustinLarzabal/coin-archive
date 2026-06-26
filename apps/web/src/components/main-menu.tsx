@@ -11,7 +11,12 @@ const icons = {
   "/settings": () => <Icons.Settings size={20} />,
 } as const
 type CollectorSession = typeof authClient.$Infer.Session
-type NavigationPath = "/" | "/database" | "/database/catalogues" | "/settings"
+type NavigationPath =
+  | "/"
+  | "/database"
+  | "/database/catalogues"
+  | "/database/compositions"
+  | "/settings"
 type NavigationParentPath = keyof typeof icons
 
 type NavigationItem = {
@@ -289,7 +294,8 @@ function getPrivateNavigationItem(link: PrivateNavigationLink): NavigationItem {
       ...link,
       children: [
         { to: "/database", label: "General" },
-        { to: "/database/catalogues", label: "Catalogs" },
+        { to: "/database/catalogues", label: "Catalogues" },
+        { to: "/database/compositions", label: "Compositions" },
       ],
     }
   }

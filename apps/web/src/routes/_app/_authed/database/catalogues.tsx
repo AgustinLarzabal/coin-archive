@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
 import type { CatalogueOption } from "@workspace/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { CataloguesTable } from "@/components/tables/catalogues/catalogues-table"
+import { getAuthSession } from "@/lib/auth-session"
 import {
   type CatalogueAuthorizationErrorResult,
   createCatalogueAuthorizationError,
@@ -55,21 +57,26 @@ export async function loadCatalogueMaintenanceCatalogues(
   }
 }
 
-export const Route = createFileRoute("/_app/_authed/database/catalogues")({
-  loader: async ({ context }) => {
-    const result = await loadCatalogueMaintenanceCatalogues(context.session.user)
+const getCatalogueMaintenanceLoaderData = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const session = await getAuthSession()
+  const result = await loadCatalogueMaintenanceCatalogues(session?.user ?? null)
 
-    if (result.status === "error") {
-      return {
-        isAllowed: false,
-      } satisfies CatalogueMaintenanceLoaderData
-    }
-
+  if (result.status === "error") {
     return {
-      isAllowed: true,
-      catalogues: result.catalogues,
+      isAllowed: false,
     } satisfies CatalogueMaintenanceLoaderData
-  },
+  }
+
+  return {
+    isAllowed: true,
+    catalogues: result.catalogues,
+  } satisfies CatalogueMaintenanceLoaderData
+})
+
+export const Route = createFileRoute("/_app/_authed/database/catalogues")({
+  loader: () => getCatalogueMaintenanceLoaderData(),
   component: DatabaseCataloguesComponent,
 })
 

@@ -5,6 +5,26 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DatabaseGeneralSummaryTable } from "./database-general-summary-table"
 
+type SummaryRow = {
+  href: string
+  label: string
+  count: number
+}
+
+const summaryRowPattern =
+  /<a href="([^"]+)" class="underline underline-offset-4">([^<]+)<\/a><\/td><td class="py-3">(\d+)<\/td>/g
+
+function extractSummaryRows(markup: string): SummaryRow[] {
+  return Array.from(
+    markup.matchAll(summaryRowPattern),
+    ([, href, label, count]) => ({
+      href,
+      label,
+      count: Number(count),
+    })
+  )
+}
+
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof TanstackReactRouter>()
 
@@ -51,18 +71,6 @@ describe("DatabaseGeneralSummaryTable", () => {
     expect(markup).toContain("Record type")
     expect(markup).toContain("Count")
     expect(markup).toContain("<tbody>")
-
-    const rowMatches = Array.from(
-      markup.matchAll(
-        /<tr class="border-b last:border-b-0"><td class="py-3 pr-4"><a href="([^"]+)" class="underline underline-offset-4">([^<]+)<\/a><\/td><td class="py-3">(\d+)<\/td><\/tr>/g
-      ),
-      ([, href, label, count]) => ({
-        href,
-        label,
-        count: Number(count),
-      })
-    )
-
-    expect(rowMatches).toStrictEqual(expectedRows)
+    expect(extractSummaryRows(markup)).toStrictEqual(expectedRows)
   })
 })

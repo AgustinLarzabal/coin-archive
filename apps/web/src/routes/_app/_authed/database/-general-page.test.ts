@@ -6,14 +6,16 @@ import {
 } from "./-navigation-items"
 import { loadDatabaseGeneralSummaryCounts } from "./index"
 
+function pickNavigationIdentity({ to, label }: { to: string; label: string }) {
+  return { to, label }
+}
+
 describe("databaseMaintenanceSections", () => {
   it("shares the same maintenance labels and routes as the database secondary menu", () => {
     expect(
-      databaseMaintenanceSections.map(({ to, label }) => ({ to, label }))
+      databaseMaintenanceSections.map(pickNavigationIdentity)
     ).toStrictEqual(
-      databaseSecondaryMenuItems
-        .slice(1)
-        .map(({ to, label }) => ({ to, label }))
+      databaseSecondaryMenuItems.slice(1).map(pickNavigationIdentity)
     )
   })
 })

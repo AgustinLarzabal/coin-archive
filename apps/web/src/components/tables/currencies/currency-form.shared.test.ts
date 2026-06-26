@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { isCurrencyCreateReady } from "./currency-create-form"
+import { isCurrencyDraftComplete } from "./currency-form.shared"
 
-describe("isCurrencyCreateReady", () => {
+describe("isCurrencyDraftComplete", () => {
   it("requires non-blank Currency Code, Currency Name, and Currency Full Name", () => {
     expect(
-      isCurrencyCreateReady({
+      isCurrencyDraftComplete({
         code: "united-states-dollar",
         name: "Dollar",
         fullName: " ",
@@ -13,7 +13,7 @@ describe("isCurrencyCreateReady", () => {
     ).toBe(false)
 
     expect(
-      isCurrencyCreateReady({
+      isCurrencyDraftComplete({
         code: " ",
         name: "Dollar",
         fullName: "United States dollar",
@@ -23,7 +23,7 @@ describe("isCurrencyCreateReady", () => {
 
   it("treats identical trimmed Currency Name and Currency Full Name as a complete create draft", () => {
     expect(
-      isCurrencyCreateReady({
+      isCurrencyDraftComplete({
         code: "euro",
         name: " Euro ",
         fullName: " Euro ",

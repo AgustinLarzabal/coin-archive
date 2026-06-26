@@ -57,8 +57,6 @@ function validateCurrencyDraft(
   }
 }
 
-export const isCurrencyCreateReady = isCurrencyDraftComplete
-
 export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
   const router = useRouter()
   const createCurrency = useServerFn(createCurrencyAction)
@@ -188,7 +186,7 @@ export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
         <SubmitButton
           type="submit"
           isSubmitting={isPending}
-          disabled={!isCurrencyCreateReady(draft)}
+          disabled={!isCurrencyDraftComplete(draft)}
           className="w-full"
         >
           Create

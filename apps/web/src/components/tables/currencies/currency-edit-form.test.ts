@@ -44,14 +44,19 @@ describe("CurrencyEditForm", () => {
     const markup = renderToStaticMarkup(
       createElement(CurrencyEditForm, { currency })
     )
+    const expectedFields = [
+      ["Currency Code", 'value="united-states-dollar"'],
+      ["Currency Name", 'value="Dollar"'],
+      ["Currency Full Name", 'value="United States dollar"'],
+    ] as const
 
-    expect(markup).toContain("Currency Code")
-    expect(markup).toContain("Currency Name")
-    expect(markup).toContain("Currency Full Name")
-    expect(markup).toContain('value="united-states-dollar"')
-    expect(markup).toContain('value="Dollar"')
-    expect(markup).toContain('value="United States dollar"')
-    expect(markup).toContain(">Save</span>")
-    expect(markup).toContain("disabled")
+    for (const [label, value] of expectedFields) {
+      expect(markup).toContain(label)
+      expect(markup).toContain(value)
+    }
+
+    expect(markup).toContain(">Save<")
+    expect(markup).toContain('type="submit"')
+    expect(markup).toContain('disabled=""')
   })
 })

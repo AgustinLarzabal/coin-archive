@@ -3,14 +3,14 @@ import { Input } from "@workspace/ui/components/input"
 
 type IssuersTableToolbarProps = {
   filterValue: string
-  onFilterValueChange: (value: string) => void
   onCreateIssuer: () => void
+  onFilterValueChange: (value: string) => void
 }
 
 export function IssuersTableToolbar({
   filterValue,
-  onFilterValueChange,
   onCreateIssuer,
+  onFilterValueChange,
 }: IssuersTableToolbarProps) {
   return (
     <div className="flex grow items-center justify-between gap-2">
@@ -21,7 +21,7 @@ export function IssuersTableToolbar({
         className="max-w-sm"
       />
       <Button type="button" onClick={onCreateIssuer}>
-        Create
+        Create Issuer
       </Button>
     </div>
   )

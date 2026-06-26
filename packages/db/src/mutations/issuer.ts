@@ -1,22 +1,32 @@
+import { eq } from "drizzle-orm"
+
 import { db } from "../client"
 import { issuer } from "../schema/issuer"
 import type { Issuer } from "../schema/issuer"
 
-type CreateIssuerFields = {
+type IssuerFields = {
   code: string
-  name: string
   isoCode: string
-  parentIssuerId?: string
+  name: string
+  parentIssuerId: string | null
 }
 
-function normalizeParentIssuerId(parentIssuerId?: string) {
+type UpdateIssuerInput = IssuerFields & {
+  id: string
+}
+
+type DeleteIssuerInput = {
+  id: string
+}
+
+function normalizeParentIssuerId(parentIssuerId: string | null) {
   const normalizedParentIssuerId = parentIssuerId?.trim()
 
   if (
     normalizedParentIssuerId === undefined ||
     normalizedParentIssuerId.length === 0
   ) {
-    return undefined
+    return null
   }
 
   return normalizedParentIssuerId
@@ -24,25 +34,50 @@ function normalizeParentIssuerId(parentIssuerId?: string) {
 
 function normalizeIssuerFields({
   code,
-  name,
   isoCode,
+  name,
   parentIssuerId,
-}: CreateIssuerFields) {
+}: IssuerFields) {
   return {
     code: code.trim(),
-    name: name.trim(),
     isoCode: isoCode.trim().toUpperCase(),
+    name: name.trim(),
     parentIssuerId: normalizeParentIssuerId(parentIssuerId),
   }
 }
 
-export async function createIssuer(
-  fields: CreateIssuerFields
-): Promise<Issuer> {
+export async function createIssuer(fields: IssuerFields): Promise<Issuer> {
   const [createdIssuer] = await db
     .insert(issuer)
     .values(normalizeIssuerFields(fields))
     .returning()
 
   return createdIssuer
+}
+
+export async function updateIssuer({
+  id,
+  ...fields
+}: UpdateIssuerInput): Promise<Issuer | null> {
+  const [updatedIssuer] = await db
+    .update(issuer)
+    .set({
+      ...normalizeIssuerFields(fields),
+      updatedAt: new Date(),
+    })
+    .where(eq(issuer.id, id))
+    .returning()
+
+  return updatedIssuer ?? null
+}
+
+export async function deleteIssuer({
+  id,
+}: DeleteIssuerInput): Promise<Issuer | null> {
+  const [deletedIssuer] = await db
+    .delete(issuer)
+    .where(eq(issuer.id, id))
+    .returning()
+
+  return deletedIssuer ?? null
 }

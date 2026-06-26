@@ -20,12 +20,12 @@ export {
   deleteEngraver,
   updateEngraver,
 } from "./mutations/engraver"
+export { createIssuer, deleteIssuer, updateIssuer } from "./mutations/issuer"
 export {
   createCurrency,
   deleteCurrency,
   updateCurrency,
 } from "./mutations/currency"
-export { createIssuer } from "./mutations/issuer"
 export { getCatalogues } from "./queries/get-catalogues"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"

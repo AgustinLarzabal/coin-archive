@@ -39,9 +39,7 @@ describe("filterIssuers", () => {
 
   it("filters by issuer name, code, ISO code, and parent issuer name while trimming whitespace", () => {
     expect(filterIssuers(issuers, " rioja ")).toStrictEqual([issuers[1]])
-    expect(filterIssuers(issuers, "UNITED-STATES")).toStrictEqual([
-      issuers[2],
-    ])
+    expect(filterIssuers(issuers, "UNITED-STATES")).toStrictEqual([issuers[2]])
     expect(filterIssuers(issuers, "us")).toStrictEqual([issuers[2]])
     expect(filterIssuers(issuers, "argentine republic")).toStrictEqual([
       issuers[0],
@@ -51,7 +49,7 @@ describe("filterIssuers", () => {
 })
 
 describe("IssuersTable", () => {
-  it("renders issuer columns, parent context, and the maintenance toolbar", () => {
+  it("renders issuer columns, parent context, and the filter toolbar", () => {
     const markup = renderToStaticMarkup(<IssuersTable issuers={issuers} />)
 
     expect(markup).toContain("Issuer Name")
@@ -65,6 +63,7 @@ describe("IssuersTable", () => {
     expect(markup).toContain(
       "Filter issuers by name, code, ISO code, or parent issuer..."
     )
-    expect(markup).toContain(">Create<")
+    expect(markup).toContain("Create Issuer")
+    expect(markup).toContain("Actions")
   })
 })

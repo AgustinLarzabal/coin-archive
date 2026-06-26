@@ -1,8 +1,8 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { issuerColumns } from "./columns"
+import { createIssuerColumns } from "./columns"
 import { IssuerMaintenanceSheet } from "./issuer-maintenance-sheet"
 import { IssuersTableToolbar } from "./issuers-table-toolbar"
 
@@ -32,27 +32,51 @@ function getIssuerFilterValues(issuer: IssuerMaintenanceRecord): string[] {
 }
 
 export function IssuersTable({ issuers }: IssuersTableProps) {
-  const [filterValue, setFilterValue] = useState("")
+  const [selectedIssuer, setSelectedIssuer] =
+    useState<IssuerMaintenanceRecord | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState("")
+  const columns = useMemo(
+    () =>
+      createIssuerColumns((issuer) => {
+        setSelectedIssuer(issuer)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
   const filteredIssuers = filterIssuers(issuers, filterValue)
+
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedIssuer(null)
+    }
+  }
+
+  function handleCreateIssuer() {
+    setSelectedIssuer(null)
+    setIsMaintenanceSheetOpen(true)
+  }
 
   return (
     <>
       <DataTable
-        columns={issuerColumns}
+        columns={columns}
         data={filteredIssuers}
         toolbar={() => (
           <IssuersTableToolbar
             filterValue={filterValue}
+            onCreateIssuer={handleCreateIssuer}
             onFilterValueChange={setFilterValue}
-            onCreateIssuer={() => setIsMaintenanceSheetOpen(true)}
           />
         )}
       />
       <IssuerMaintenanceSheet
+        issuer={selectedIssuer}
         issuers={issuers}
         open={isMaintenanceSheetOpen}
-        onOpenChange={setIsMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>
   )

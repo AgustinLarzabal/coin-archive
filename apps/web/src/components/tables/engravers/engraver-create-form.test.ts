@@ -4,6 +4,21 @@ import { describe, expect, it, vi } from "vitest"
 
 import { EngraverCreateForm } from "./engraver-create-form"
 
+function createServerFnMock() {
+  return {
+    inputValidator() {
+      return this
+    },
+    handler() {
+      return {}
+    },
+  }
+}
+
+function renderEngraverCreateForm() {
+  return renderToStaticMarkup(createElement(EngraverCreateForm))
+}
+
 vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({
     invalidate: vi.fn(),
@@ -11,20 +26,13 @@ vi.mock("@tanstack/react-router", () => ({
 }))
 
 vi.mock("@tanstack/react-start", () => ({
-  createServerFn: () => ({
-    inputValidator() {
-      return this
-    },
-    handler() {
-      return {}
-    },
-  }),
+  createServerFn: createServerFnMock,
   useServerFn: () => vi.fn(),
 }))
 
 describe("EngraverCreateForm", () => {
   it("renders explicit Engraver field labels and disables Create until the draft is complete", () => {
-    const markup = renderToStaticMarkup(createElement(EngraverCreateForm))
+    const markup = renderEngraverCreateForm()
     const expectedFields = [
       ["Engraver Code", 'placeholder="barth"'],
       ["Engraver Name", 'placeholder="Barth"'],

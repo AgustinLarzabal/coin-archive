@@ -1,28 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
-
-const summaryRecordTypes = [
-  {
-    countKey: "catalogues",
-    label: "Catalogues",
-    href: "/database/catalogues",
-  },
-  {
-    countKey: "compositions",
-    label: "Compositions",
-    href: "/database/compositions",
-  },
-  {
-    countKey: "currencies",
-    label: "Currencies",
-    href: "/database/currencies",
-  },
-  {
-    countKey: "distributions",
-    label: "Distributions",
-    href: "/database/distributions",
-  },
-] as const
+import { databaseMaintenanceSections } from "@/routes/_app/_authed/database/-navigation-items"
 
 export function DatabaseGeneralSummaryTable({
   counts,
@@ -38,13 +16,10 @@ export function DatabaseGeneralSummaryTable({
         </tr>
       </thead>
       <tbody>
-        {summaryRecordTypes.map((recordType) => (
-          <tr key={recordType.href} className="border-b last:border-b-0">
+        {databaseMaintenanceSections.map((recordType) => (
+          <tr key={recordType.to} className="border-b last:border-b-0">
             <td className="py-3 pr-4">
-              <Link
-                to={recordType.href}
-                className="underline underline-offset-4"
-              >
+              <Link to={recordType.to} className="underline underline-offset-4">
                 {recordType.label}
               </Link>
             </td>

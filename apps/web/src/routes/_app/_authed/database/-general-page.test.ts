@@ -1,6 +1,20 @@
 import { describe, expect, it, vi } from "vitest"
 
+import {
+  databaseMaintenanceSections,
+  databaseSecondaryMenuItems,
+} from "./-navigation-items"
 import { loadDatabaseGeneralSummaryCounts } from "./index"
+
+describe("databaseMaintenanceSections", () => {
+  it("shares the same maintenance labels and routes as the database secondary menu", () => {
+    expect(databaseMaintenanceSections).toMatchObject(
+      databaseSecondaryMenuItems
+        .slice(1)
+        .map(({ to, label }) => ({ to, label }))
+    )
+  })
+})
 
 describe("loadDatabaseGeneralSummaryCounts", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

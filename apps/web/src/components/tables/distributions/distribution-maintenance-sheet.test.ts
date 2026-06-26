@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "@/lib/distribution-maintenance"
+import { DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE } from "@/lib/distribution-maintenance"
 
 import {
   DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION,
@@ -123,10 +123,7 @@ describe("DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "existing Coins"
     )
     expect(DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE.replace(
-        "those Coins",
-        "existing Coins"
-      )
+      DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE
     )
   })
 })

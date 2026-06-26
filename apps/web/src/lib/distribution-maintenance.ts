@@ -13,6 +13,11 @@ export const DISTRIBUTION_GENERIC_SAVE_ERROR =
 export const DISTRIBUTION_MISSING_ERROR = "Distribution no longer exists."
 export const DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE =
   "Every Coin has exactly one Distribution, so those Coins must be reassigned to another Distribution before this Distribution can be deleted."
+export const DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE =
+  DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE.replace(
+    "those Coins",
+    "existing Coins"
+  )
 export const DISTRIBUTION_IN_USE_DELETE_ERROR =
   `Distribution cannot be deleted while Coins still use it. ${DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 export const DISTRIBUTION_INVALID_CODE_ERROR =
@@ -108,6 +113,12 @@ async function getDefaultDistributionMutationDependencies(): Promise<Distributio
     deleteDistribution,
     updateDistribution,
   }
+}
+
+async function resolveDistributionMutationDependencies(
+  dependencies?: DistributionMutationDependencies
+): Promise<DistributionMutationDependencies> {
+  return dependencies ?? getDefaultDistributionMutationDependencies()
 }
 
 export function createDistributionAuthorizationError(): DistributionAuthorizationErrorResult {
@@ -307,7 +318,7 @@ export async function submitCreateDistribution(
   }
 
   const resolvedDependencies =
-    dependencies ?? (await getDefaultDistributionMutationDependencies())
+    await resolveDistributionMutationDependencies(dependencies)
 
   try {
     await resolvedDependencies.createDistribution(validationResult.data)
@@ -337,7 +348,7 @@ export async function submitUpdateDistribution(
   }
 
   const resolvedDependencies =
-    dependencies ?? (await getDefaultDistributionMutationDependencies())
+    await resolveDistributionMutationDependencies(dependencies)
 
   try {
     const updatedDistribution = await resolvedDependencies.updateDistribution(
@@ -373,7 +384,7 @@ export async function submitDeleteDistribution(
   }
 
   const resolvedDependencies =
-    dependencies ?? (await getDefaultDistributionMutationDependencies())
+    await resolveDistributionMutationDependencies(dependencies)
 
   try {
     const deletedDistribution = await resolvedDependencies.deleteDistribution(

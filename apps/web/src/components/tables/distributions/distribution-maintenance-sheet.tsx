@@ -29,7 +29,8 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE,
+  DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE,
+  DISTRIBUTION_GENERIC_SAVE_ERROR,
   submitDeleteDistribution,
 } from "@/lib/distribution-maintenance"
 
@@ -42,14 +43,8 @@ type DistributionMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
-  DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE.replace(
-    "those Coins",
-    "existing Coins"
-  )
-
 export const DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Distribution. ${DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
+  `This permanently deletes the Distribution. ${DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteDistributionAction = createServerFn({
   method: "POST",
@@ -71,11 +66,16 @@ export function DistributionMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
+  const isEditingDistribution = distribution !== null
 
-  useEffect(() => {
+  function resetDeleteState() {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
+  }
+
+  useEffect(() => {
+    resetDeleteState()
   }, [distribution?.id, open])
 
   async function handleDeleteDistribution() {
@@ -99,9 +99,7 @@ export function DistributionMaintenanceSheet({
         return
       }
 
-      setDeleteError(
-        result.formError ?? "Unable to delete Distribution right now."
-      )
+      setDeleteError(result.formError ?? DISTRIBUTION_GENERIC_SAVE_ERROR)
     } finally {
       setIsDeletePending(false)
     }
@@ -115,7 +113,7 @@ export function DistributionMaintenanceSheet({
             {distribution ? "Edit Distribution" : "Create Distribution"}
           </SheetTitle>
 
-          {distribution !== null ? (
+          {isEditingDistribution ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger

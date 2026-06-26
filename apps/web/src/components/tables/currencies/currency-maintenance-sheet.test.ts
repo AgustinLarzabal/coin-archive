@@ -9,6 +9,29 @@ import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "@/lib/currency-mainte
 import { CURRENCY_DELETE_CONFIRMATION_DESCRIPTION } from "./currency-maintenance-sheet"
 import { CurrencyMaintenanceSheet } from "./currency-maintenance-sheet"
 
+type MockComponentProps = {
+  children?: ReactNode
+}
+
+type MockOpenComponentProps = MockComponentProps & {
+  open: boolean
+}
+
+function createMockElement(tagName: string) {
+  return function MockElement({ children }: MockComponentProps) {
+    return createElement(tagName, null, children)
+  }
+}
+
+function createOpenMockElement(tagName: string) {
+  return function MockOpenElement({
+    children,
+    open,
+  }: MockOpenComponentProps) {
+    return open ? createElement(tagName, null, children) : null
+  }
+}
+
 vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({
     invalidate: vi.fn(),
@@ -28,57 +51,32 @@ vi.mock("@tanstack/react-start", () => ({
 }))
 
 vi.mock("@workspace/ui/components/sheet", () => ({
-  Sheet: ({
-    children,
-    open,
-  }: {
-    children: ReactNode
-    open: boolean
-  }) => (open ? createElement("div", null, children) : null),
-  SheetContent: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  SheetHeader: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  SheetTitle: ({ children }: { children: ReactNode }) =>
-    createElement("h1", null, children),
+  Sheet: createOpenMockElement("div"),
+  SheetContent: createMockElement("div"),
+  SheetHeader: createMockElement("div"),
+  SheetTitle: createMockElement("h1"),
 }))
 
 vi.mock("@workspace/ui/components/dropdown-menu", () => ({
-  DropdownMenu: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  DropdownMenuContent: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  DropdownMenuItem: ({
-    children,
-  }: {
-    children: ReactNode
-  }) => createElement("button", null, children),
-  DropdownMenuTrigger: ({ children }: { children: ReactNode }) =>
-    createElement("button", null, children),
+  DropdownMenu: createMockElement("div"),
+  DropdownMenuContent: createMockElement("div"),
+  DropdownMenuItem: createMockElement("button"),
+  DropdownMenuTrigger: createMockElement("button"),
 }))
 
 vi.mock("@workspace/ui/components/alert-dialog", () => ({
-  AlertDialog: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  AlertDialogAction: ({ children }: { children: ReactNode }) =>
-    createElement("button", null, children),
-  AlertDialogCancel: ({ children }: { children: ReactNode }) =>
-    createElement("button", null, children),
-  AlertDialogContent: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  AlertDialogDescription: ({ children }: { children: ReactNode }) =>
-    createElement("p", null, children),
-  AlertDialogFooter: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  AlertDialogHeader: ({ children }: { children: ReactNode }) =>
-    createElement("div", null, children),
-  AlertDialogTitle: ({ children }: { children: ReactNode }) =>
-    createElement("h2", null, children),
+  AlertDialog: createMockElement("div"),
+  AlertDialogAction: createMockElement("button"),
+  AlertDialogCancel: createMockElement("button"),
+  AlertDialogContent: createMockElement("div"),
+  AlertDialogDescription: createMockElement("p"),
+  AlertDialogFooter: createMockElement("div"),
+  AlertDialogHeader: createMockElement("div"),
+  AlertDialogTitle: createMockElement("h2"),
 }))
 
 vi.mock("@workspace/ui/components/button", () => ({
-  Button: ({ children }: { children?: ReactNode }) =>
-    createElement("button", null, children),
+  Button: createMockElement("button"),
 }))
 
 vi.mock("@/components/icons", () => ({
@@ -104,6 +102,16 @@ const currency: CurrencyOption = {
   updatedAt: new Date("2026-06-26T00:00:00.000Z"),
 }
 
+function renderCurrencyMaintenanceSheet(currencyOption: CurrencyOption | null) {
+  return renderToStaticMarkup(
+    createElement(CurrencyMaintenanceSheet, {
+      currency: currencyOption,
+      open: true,
+      onOpenChange: vi.fn(),
+    })
+  )
+}
+
 describe("CURRENCY_DELETE_CONFIRMATION_DESCRIPTION", () => {
   it("explains the deletion is permanent and reuses the shared reassignment rule", () => {
     expect(CURRENCY_DELETE_CONFIRMATION_DESCRIPTION).toContain(
@@ -121,13 +129,7 @@ describe("CURRENCY_DELETE_CONFIRMATION_DESCRIPTION", () => {
 
 describe("CurrencyMaintenanceSheet", () => {
   it("shows create mode without delete affordances when no Currency is selected", () => {
-    const markup = renderToStaticMarkup(
-      createElement(CurrencyMaintenanceSheet, {
-        currency: null,
-        open: true,
-        onOpenChange: vi.fn(),
-      })
-    )
+    const markup = renderCurrencyMaintenanceSheet(null)
 
     expect(markup).toContain("Create Currency")
     expect(markup).toContain("CurrencyCreateForm")
@@ -135,13 +137,7 @@ describe("CurrencyMaintenanceSheet", () => {
   })
 
   it("renders the edit-sheet delete action and confirmation copy for an existing Currency", () => {
-    const markup = renderToStaticMarkup(
-      createElement(CurrencyMaintenanceSheet, {
-        currency,
-        open: true,
-        onOpenChange: vi.fn(),
-      })
-    )
+    const markup = renderCurrencyMaintenanceSheet(currency)
 
     expect(markup).toContain("Edit Currency")
     expect(markup).toContain("CurrencyEditForm")

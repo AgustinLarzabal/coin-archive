@@ -1,3 +1,16 @@
+import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
+
+type DatabaseMaintenanceSection = {
+  to: string
+  label: string
+  countKey: keyof DatabaseGeneralSummaryCounts
+}
+
+const databaseGeneralMenuItem = {
+  to: "/database",
+  label: "General",
+} as const
+
 export const databaseMaintenanceSections = [
   {
     to: "/database/catalogues",
@@ -19,9 +32,19 @@ export const databaseMaintenanceSections = [
     label: "Distributions",
     countKey: "distributions",
   },
-] as const
+] as const satisfies readonly DatabaseMaintenanceSection[]
+
+const [
+  cataloguesSection,
+  compositionsSection,
+  currenciesSection,
+  distributionsSection,
+] = databaseMaintenanceSections
 
 export const databaseSecondaryMenuItems = [
-  { to: "/database", label: "General" },
-  ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
+  databaseGeneralMenuItem,
+  { to: cataloguesSection.to, label: cataloguesSection.label },
+  { to: compositionsSection.to, label: compositionsSection.label },
+  { to: currenciesSection.to, label: currenciesSection.label },
+  { to: distributionsSection.to, label: distributionsSection.label },
 ] as const

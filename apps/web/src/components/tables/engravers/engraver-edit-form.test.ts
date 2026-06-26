@@ -1,8 +1,7 @@
 import type { EngraverOption } from "@workspace/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
-import { vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import {
   EngraverEditForm,
@@ -18,6 +17,12 @@ function createServerFnMock() {
       return {}
     },
   }
+}
+
+function renderEngraverEditForm(engraverOption: EngraverOption) {
+  return renderToStaticMarkup(
+    createElement(EngraverEditForm, { engraver: engraverOption })
+  )
 }
 
 vi.mock("@tanstack/react-router", () => ({
@@ -59,9 +64,7 @@ describe("hasEngraverEditChanges", () => {
 
 describe("EngraverEditForm", () => {
   it("renders explicit Engraver field labels with the current values and disables Save until something changed", () => {
-    const markup = renderToStaticMarkup(
-      createElement(EngraverEditForm, { engraver })
-    )
+    const markup = renderEngraverEditForm(engraver)
     const expectedFields = [
       ["Engraver Code", 'value="barth"'],
       ["Engraver Name", 'value="Barth"'],

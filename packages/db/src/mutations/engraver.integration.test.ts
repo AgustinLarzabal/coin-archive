@@ -11,6 +11,29 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import { createEngraver, deleteEngraver, updateEngraver } from "./engraver"
 
+const DUPLICATE_ENGRAVER_CODE_CONSTRAINT = {
+  code: "23505",
+  constraint_name: "engraver_code_lower_unique_idx",
+} as const
+
+const INVALID_ENGRAVER_CODE_CONSTRAINT = {
+  code: "23514",
+  constraint_name: "engraver_code_slug_check",
+} as const
+
+type EngraverConstraint =
+  | typeof DUPLICATE_ENGRAVER_CODE_CONSTRAINT
+  | typeof INVALID_ENGRAVER_CODE_CONSTRAINT
+
+async function expectConstraintViolation(
+  mutation: Promise<unknown>,
+  constraint: EngraverConstraint
+) {
+  await expect(mutation).rejects.toMatchObject({
+    cause: expect.objectContaining(constraint),
+  })
+}
+
 describe("engraver mutations integration", () => {
   useTestDatabaseIsolation(db)
 
@@ -32,31 +55,23 @@ describe("engraver mutations integration", () => {
       name: "Barth",
     })
 
-    await expect(
+    await expectConstraintViolation(
       createEngraver({
         code: " barth ",
         name: "Duplicate Barth",
-      })
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23505",
-        constraint_name: "engraver_code_lower_unique_idx",
       }),
-    })
+      DUPLICATE_ENGRAVER_CODE_CONSTRAINT
+    )
   })
 
   it("rejects invalid Engraver Codes instead of silently normalizing them", async () => {
-    await expect(
+    await expectConstraintViolation(
       createEngraver({
         code: "Barth",
         name: "Barth",
-      })
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23514",
-        constraint_name: "engraver_code_slug_check",
       }),
-    })
+      INVALID_ENGRAVER_CODE_CONSTRAINT
+    )
   })
 
   it("allows duplicate Engraver Names when Engraver Codes differ", async () => {
@@ -125,18 +140,14 @@ describe("engraver mutations integration", () => {
       name: "Durand",
     })
 
-    await expect(
+    await expectConstraintViolation(
       updateEngraver({
         id: conflictingEngraver.id,
         code: " BARTH ",
         name: "Updated Durand",
-      })
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23505",
-        constraint_name: "engraver_code_lower_unique_idx",
       }),
-    })
+      DUPLICATE_ENGRAVER_CODE_CONSTRAINT
+    )
 
     await expect(
       db.query.engraver.findFirst({
@@ -156,18 +167,14 @@ describe("engraver mutations integration", () => {
       name: "Barth",
     })
 
-    await expect(
+    await expectConstraintViolation(
       updateEngraver({
         id: existingEngraver.id,
         code: "Barth",
         name: "Updated Barth",
-      })
-    ).rejects.toMatchObject({
-      cause: expect.objectContaining({
-        code: "23514",
-        constraint_name: "engraver_code_slug_check",
       }),
-    })
+      INVALID_ENGRAVER_CODE_CONSTRAINT
+    )
   })
 
   it("returns null when the Engraver update target no longer exists", async () => {

@@ -14,6 +14,7 @@ export {
   deleteDistribution,
   updateDistribution,
 } from "./mutations/distribution"
+export { createEdge, deleteEdge, updateEdge } from "./mutations/edge"
 export {
   createCurrency,
   deleteCurrency,

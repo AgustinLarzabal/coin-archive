@@ -10,6 +10,7 @@ export const DISTRIBUTION_DUPLICATE_CODE_ERROR =
   "A Distribution with this code already exists."
 export const DISTRIBUTION_GENERIC_SAVE_ERROR =
   "Unable to save Distribution right now."
+export const DISTRIBUTION_MISSING_ERROR = "Distribution no longer exists."
 export const DISTRIBUTION_INVALID_CODE_ERROR =
   "Distribution Code must use lowercase letters, numbers, and hyphens only."
 
@@ -41,6 +42,10 @@ export const createDistributionInputSchema = z.object({
   name: distributionNameSchema,
 })
 
+export const updateDistributionInputSchema = createDistributionInputSchema.extend({
+  id: z.uuid(),
+})
+
 type DistributionFieldName = (typeof DISTRIBUTION_FIELD_NAMES)[number]
 
 export type DistributionFieldErrors = Partial<
@@ -65,19 +70,25 @@ export type DistributionAuthorizationErrorResult = {
 
 type CreateDistributionInput = z.input<typeof createDistributionInputSchema>
 type CreateDistributionData = z.output<typeof createDistributionInputSchema>
+type UpdateDistributionInput = z.input<typeof updateDistributionInputSchema>
+type UpdateDistributionData = z.output<typeof updateDistributionInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: DistributionMutationResult }
 
 type DistributionMutationDependencies = {
   createDistribution: (input: CreateDistributionData) => Promise<unknown>
+  updateDistribution: (
+    input: UpdateDistributionData
+  ) => Promise<unknown | null>
 }
 
 async function getDefaultDistributionMutationDependencies(): Promise<DistributionMutationDependencies> {
-  const { createDistribution } = await import("@workspace/db")
+  const { createDistribution, updateDistribution } = await import("@workspace/db")
 
   return {
     createDistribution,
+    updateDistribution,
   }
 }
 
@@ -240,6 +251,12 @@ function validateCreateDistributionInput(
   return validateDistributionInput(createDistributionInputSchema, input)
 }
 
+function validateUpdateDistributionInput(
+  input: UpdateDistributionInput
+): ValidationResult<UpdateDistributionData> {
+  return validateDistributionInput(updateDistributionInputSchema, input)
+}
+
 export async function submitCreateDistribution(
   collector: CollectorWithRole | null,
   input: CreateDistributionInput,
@@ -264,6 +281,42 @@ export async function submitCreateDistribution(
     return {
       status: "success",
       message: "Distribution added.",
+    }
+  } catch (error) {
+    return createPersistenceError(error)
+  }
+}
+
+export async function submitUpdateDistribution(
+  collector: CollectorWithRole | null,
+  input: UpdateDistributionInput,
+  dependencies?: DistributionMutationDependencies
+): Promise<DistributionMutationResult> {
+  if (!hasDistributionMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  const validationResult = validateUpdateDistributionInput(input)
+
+  if (!validationResult.success) {
+    return validationResult.result
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultDistributionMutationDependencies())
+
+  try {
+    const updatedDistribution = await resolvedDependencies.updateDistribution(
+      validationResult.data
+    )
+
+    if (updatedDistribution === null) {
+      return createFormErrorResult(DISTRIBUTION_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Saved.",
     }
   } catch (error) {
     return createPersistenceError(error)

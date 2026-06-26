@@ -1,6 +1,41 @@
 import { describe, expect, it } from "vitest"
 
-import { isDistributionDraftComplete } from "./distribution-form.shared"
+import type { DistributionOption } from "@workspace/db"
+
+import {
+  createDistributionDraft,
+  isDistributionDraftComplete,
+  normalizeDistributionDraft,
+} from "./distribution-form.shared"
+
+const distribution: DistributionOption = {
+  id: "84863d38-795b-443c-bd27-1dedb73c0fad",
+  code: "standard-circulation",
+  name: "Standard circulation",
+}
+
+describe("createDistributionDraft", () => {
+  it("copies the editable Distribution fields from a selected Distribution", () => {
+    expect(createDistributionDraft(distribution)).toStrictEqual({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+  })
+})
+
+describe("normalizeDistributionDraft", () => {
+  it("trims editable Distribution fields", () => {
+    expect(
+      normalizeDistributionDraft({
+        code: " standard-circulation ",
+        name: " Standard circulation ",
+      })
+    ).toStrictEqual({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+  })
+})
 
 describe("isDistributionDraftComplete", () => {
   it("requires non-blank Distribution Code and Distribution Name", () => {

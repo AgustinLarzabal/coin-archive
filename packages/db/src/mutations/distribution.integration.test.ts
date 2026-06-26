@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import { db } from "../index"
-import { createDistribution as createDistributionFixture } from "../testing/fixtures"
+import {
+  createCoin,
+  createDistribution as createDistributionFixture,
+  createIssuer,
+} from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createDistribution } from "./distribution"
+import { createDistribution, updateDistribution } from "./distribution"
 
 describe("distribution mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -65,5 +69,68 @@ describe("distribution mutations integration", () => {
 
     expect(firstDistribution.name).toBe(secondDistribution.name)
     expect(firstDistribution.id).not.toBe(secondDistribution.id)
+  })
+
+  it("trims Distribution Code and Distribution Name before updating a Distribution", async () => {
+    const existingDistribution = await createDistributionFixture({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+
+    await expect(
+      updateDistribution({
+        id: existingDistribution.id,
+        code: "  circulating-commemorative  ",
+        name: "  Circulating commemorative  ",
+      })
+    ).resolves.toMatchObject({
+      id: existingDistribution.id,
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    })
+  })
+
+  it("returns null when the Distribution update target no longer exists", async () => {
+    await expect(
+      updateDistribution({
+        id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+        code: "standard-circulation",
+        name: "Standard circulation",
+      })
+    ).resolves.toBeNull()
+  })
+
+  it("preserves existing Coin relationships when a Distribution Code changes", async () => {
+    const issuer = await createIssuer({
+      code: "issuer-for-distribution-update",
+      name: "Issuer for Distribution Update",
+    })
+    const createdDistribution = await createDistribution({
+      code: "standard-circulation",
+      name: "Standard circulation",
+    })
+    const createdCoin = await createCoin({
+      issuerId: issuer.id,
+      distributionId: createdDistribution.id,
+      title: "Distribution-linked coin",
+      createdAt: new Date("2026-06-26T00:00:00.000Z"),
+    })
+
+    const updatedDistribution = await updateDistribution({
+      id: createdDistribution.id,
+      code: "circulating-commemorative",
+      name: "Circulating commemorative",
+    })
+
+    expect(updatedDistribution).toMatchObject({
+      id: createdDistribution.id,
+      code: "circulating-commemorative",
+    })
+
+    const persistedCoin = await db.query.coin.findFirst({
+      where: (coin, { eq }) => eq(coin.id, createdCoin.id),
+    })
+
+    expect(persistedCoin?.distributionId).toBe(createdDistribution.id)
   })
 })

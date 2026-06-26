@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm"
+
 import { db } from "../client"
 import { distribution } from "../schema/distribution"
 import type { Distribution } from "../schema/distribution"
@@ -5,6 +7,14 @@ import type { Distribution } from "../schema/distribution"
 type DistributionFields = {
   code: string
   name: string
+}
+
+type UpdateDistributionInput = DistributionFields & {
+  id: string
+}
+
+function takeFirstOrNull<T>(records: T[]): T | null {
+  return records.at(0) ?? null
 }
 
 function normalizeDistributionFields({ code, name }: DistributionFields) {
@@ -23,4 +33,20 @@ export async function createDistribution(
     .returning()
 
   return createdDistribution
+}
+
+export async function updateDistribution({
+  id,
+  ...fields
+}: UpdateDistributionInput): Promise<Distribution | null> {
+  return takeFirstOrNull(
+    await db
+      .update(distribution)
+      .set({
+        ...normalizeDistributionFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(distribution.id, id))
+      .returning()
+  )
 }

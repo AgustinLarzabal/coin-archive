@@ -18,7 +18,7 @@ const distributions: DistributionOption[] = [
 ]
 
 describe("DistributionsTable", () => {
-  it("renders compact Code and Name columns with a create action", () => {
+  it("renders compact Code and Name columns with maintenance actions", () => {
     const markup = renderToStaticMarkup(
       <DistributionsTable distributions={distributions} />
     )
@@ -28,5 +28,6 @@ describe("DistributionsTable", () => {
     expect(markup).toContain("Circulating commemorative")
     expect(markup).toContain("Standard circulation")
     expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

@@ -53,6 +53,7 @@ describe("DatabaseGeneralSummaryTable", () => {
       { href: "/database/distributions", label: "Distributions", count: 1 },
       { href: "/database/edges", label: "Edges", count: 5 },
       { href: "/database/engravers", label: "Engravers", count: 9 },
+      { href: "/database/issuers", label: "Issuers", count: 3 },
     ] as const
 
     const markup = renderToStaticMarkup(
@@ -64,6 +65,7 @@ describe("DatabaseGeneralSummaryTable", () => {
           distributions: 1,
           edges: 5,
           engravers: 9,
+          issuers: 3,
         }}
       />
     )

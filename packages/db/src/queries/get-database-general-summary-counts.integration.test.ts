@@ -8,6 +8,7 @@ import {
   createDistribution,
   createEdge,
   createEngraver,
+  createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -62,6 +63,16 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "durand",
       name: "Durand",
     })
+    await createIssuer({
+      code: "argentine-republic",
+      name: "Argentine Republic",
+      isoCode: "AR",
+    })
+    await createIssuer({
+      code: "united-states",
+      name: "United States",
+      isoCode: "US",
+    })
 
     await expect(getDatabaseGeneralSummaryCounts()).resolves.toStrictEqual({
       catalogues: 2,
@@ -70,6 +81,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       distributions: 1,
       edges: 2,
       engravers: 2,
+      issuers: 2,
     })
   })
 
@@ -81,6 +93,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       distributions: 0,
       edges: 0,
       engravers: 0,
+      issuers: 0,
     })
   })
 })

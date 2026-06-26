@@ -21,6 +21,7 @@ type NavigationPath =
   | "/database/distributions"
   | "/database/edges"
   | "/database/engravers"
+  | "/database/issuers"
   | "/settings"
 type NavigationParentPath = keyof typeof icons
 

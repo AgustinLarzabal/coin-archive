@@ -18,6 +18,10 @@ type DeleteCurrencyInput = {
   id: string
 }
 
+function takeFirstOrNull<T>(records: T[]): T | null {
+  return records.at(0) ?? null
+}
+
 function normalizeCurrencyFields({ code, name, fullName }: CurrencyFields) {
   return {
     code: code.trim(),
@@ -26,7 +30,9 @@ function normalizeCurrencyFields({ code, name, fullName }: CurrencyFields) {
   }
 }
 
-export async function createCurrency(fields: CurrencyFields): Promise<Currency> {
+export async function createCurrency(
+  fields: CurrencyFields
+): Promise<Currency> {
   const [createdCurrency] = await db
     .insert(currency)
     .values(normalizeCurrencyFields(fields))
@@ -39,7 +45,7 @@ export async function updateCurrency({
   id,
   ...fields
 }: UpdateCurrencyInput): Promise<Currency | null> {
-  const updatedCurrency = (
+  return takeFirstOrNull(
     await db
       .update(currency)
       .set({
@@ -48,25 +54,13 @@ export async function updateCurrency({
       })
       .where(eq(currency.id, id))
       .returning()
-  ).at(0)
-
-  if (!updatedCurrency) {
-    return null
-  }
-
-  return updatedCurrency
+  )
 }
 
 export async function deleteCurrency({
   id,
 }: DeleteCurrencyInput): Promise<Currency | null> {
-  const deletedCurrency = (
+  return takeFirstOrNull(
     await db.delete(currency).where(eq(currency.id, id)).returning()
-  ).at(0)
-
-  if (!deletedCurrency) {
-    return null
-  }
-
-  return deletedCurrency
+  )
 }

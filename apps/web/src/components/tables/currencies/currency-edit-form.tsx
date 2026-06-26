@@ -23,11 +23,11 @@ import {
   updateCurrencyInputSchema,
 } from "@/lib/currency-maintenance"
 
-type CurrencyDraft = {
-  code: string
-  name: string
-  fullName: string
-}
+import {
+  createCurrencyDraft,
+  normalizeCurrencyDraft,
+} from "./currency-form.shared"
+import type { CurrencyDraft } from "./currency-form.shared"
 
 type CurrencyEditFormProps = {
   currency: CurrencyOption
@@ -63,30 +63,14 @@ function validateCurrencyDraft(
   }
 }
 
-function createCurrencyDraft(currency: CurrencyOption): CurrencyDraft {
-  return {
-    code: currency.code,
-    name: currency.name,
-    fullName: currency.fullName,
-  }
-}
-
-function normalizeDraftForComparison(draft: CurrencyDraft): CurrencyDraft {
-  return {
-    code: draft.code.trim(),
-    name: draft.name.trim(),
-    fullName: draft.fullName.trim(),
-  }
-}
-
 export function hasCurrencyEditChanges(
   currency: CurrencyOption,
   draft: CurrencyDraft
 ) {
-  const normalizedCurrent = normalizeDraftForComparison(
+  const normalizedCurrent = normalizeCurrencyDraft(
     createCurrencyDraft(currency)
   )
-  const normalizedDraft = normalizeDraftForComparison(draft)
+  const normalizedDraft = normalizeCurrencyDraft(draft)
 
   return (
     normalizedDraft.code !== normalizedCurrent.code ||
@@ -98,7 +82,9 @@ export function hasCurrencyEditChanges(
 export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
   const router = useRouter()
   const updateCurrency = useServerFn(updateCurrencyAction)
-  const [draft, setDraft] = useState<CurrencyDraft>(createCurrencyDraft(currency))
+  const [draft, setDraft] = useState<CurrencyDraft>(
+    createCurrencyDraft(currency)
+  )
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -211,7 +197,9 @@ export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
           ) : null}
         </Field>
         <Field data-invalid={fieldErrors.fullName !== undefined}>
-          <FieldLabel htmlFor="currency-full-name">Currency Full Name</FieldLabel>
+          <FieldLabel htmlFor="currency-full-name">
+            Currency Full Name
+          </FieldLabel>
           <Input
             id="currency-full-name"
             name="fullName"

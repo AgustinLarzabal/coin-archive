@@ -22,20 +22,14 @@ import {
   submitCreateCurrency,
 } from "@/lib/currency-maintenance"
 
-type CurrencyDraft = {
-  code: string
-  name: string
-  fullName: string
-}
+import {
+  EMPTY_CURRENCY_DRAFT,
+  isCurrencyDraftComplete,
+} from "./currency-form.shared"
+import type { CurrencyDraft } from "./currency-form.shared"
 
 type CurrencyCreateFormProps = {
   onCreated?: () => void
-}
-
-const EMPTY_DRAFT: CurrencyDraft = {
-  code: "",
-  name: "",
-  fullName: "",
 }
 
 const createCurrencyAction = createServerFn({
@@ -63,18 +57,12 @@ function validateCurrencyDraft(
   }
 }
 
-export function isCurrencyCreateReady(draft: CurrencyDraft) {
-  return (
-    draft.code.trim().length > 0 &&
-    draft.name.trim().length > 0 &&
-    draft.fullName.trim().length > 0
-  )
-}
+export const isCurrencyCreateReady = isCurrencyDraftComplete
 
 export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
   const router = useRouter()
   const createCurrency = useServerFn(createCurrencyAction)
-  const [draft, setDraft] = useState<CurrencyDraft>(EMPTY_DRAFT)
+  const [draft, setDraft] = useState<CurrencyDraft>(EMPTY_CURRENCY_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
@@ -127,7 +115,7 @@ export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_DRAFT)
+        setDraft(EMPTY_CURRENCY_DRAFT)
         await router.invalidate()
         onCreated?.()
       }

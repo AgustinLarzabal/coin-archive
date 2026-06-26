@@ -29,6 +29,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
+  ENGRAVER_GENERIC_SAVE_ERROR,
   ENGRAVER_IN_USE_DELETE_ERROR,
   submitDeleteEngraver,
 } from "@/lib/engraver-maintenance"
@@ -44,7 +45,10 @@ type EngraverMaintenanceSheetProps = {
 }
 
 export const ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION =
-  "This permanently deletes the Engraver. Existing Engraver Attributions must be removed before the Engraver can be deleted."
+  `This permanently deletes the Engraver. ${ENGRAVER_IN_USE_DELETE_ERROR.replace(
+    "Engraver cannot be deleted while Engraver Attributions still use it. ",
+    ""
+  )}`
 
 const deleteEngraverAction = createServerFn({
   method: "POST",
@@ -102,7 +106,7 @@ export function EngraverMaintenanceSheet({
         return
       }
 
-      setDeleteError(result.formError ?? ENGRAVER_IN_USE_DELETE_ERROR)
+      setDeleteError(result.formError ?? ENGRAVER_GENERIC_SAVE_ERROR)
     } finally {
       setIsDeletePending(false)
     }
@@ -136,7 +140,7 @@ export function EngraverMaintenanceSheet({
                     variant="destructive"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
-                    Delete
+                    Delete Engraver
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

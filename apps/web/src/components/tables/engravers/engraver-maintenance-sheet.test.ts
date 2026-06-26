@@ -4,6 +4,8 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
+import { ENGRAVER_IN_USE_DELETE_ERROR } from "@/lib/engraver-maintenance"
+
 import {
   ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION,
   EngraverMaintenanceSheet,
@@ -110,15 +112,15 @@ function renderEngraverMaintenanceSheet(engraverOption: EngraverOption | null) {
 }
 
 describe("ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION", () => {
-  it("explains the deletion is permanent and that Engraver Attributions must be removed first", () => {
+  it("explains the deletion is permanent and reuses the shared in-use guidance", () => {
     expect(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       "permanently deletes the Engraver"
     )
     expect(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      "Existing Engraver Attributions"
-    )
-    expect(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      "removed before the Engraver can be deleted"
+      ENGRAVER_IN_USE_DELETE_ERROR.replace(
+        "Engraver cannot be deleted while Engraver Attributions still use it. ",
+        ""
+      )
     )
   })
 })
@@ -137,7 +139,7 @@ describe("EngraverMaintenanceSheet", () => {
 
     expect(markup).toContain("Edit Engraver")
     expect(markup).toContain("EngraverEditForm")
-    expect(markup).toContain(">Delete<")
+    expect(markup).toContain(">Delete Engraver<")
     expect(markup).toContain("Delete Engraver?")
     expect(markup).toContain(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION)
     expect(markup).toContain(">Cancel<")

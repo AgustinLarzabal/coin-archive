@@ -331,6 +331,33 @@ describe("submitDeleteCurrency", () => {
     id: VALID_CURRENCY_ID,
   }
 
+  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
+    await expect(
+      submitDeleteCurrency(null, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+
+    await expect(
+      submitDeleteCurrency({ role: "collector" }, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("maps validation issues into typed field errors", async () => {
+    const dependencies = createDependencies()
+
+    await expect(
+      submitDeleteCurrency(
+        { role: "editor" },
+        { id: "not-a-uuid" },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+    })
+
+    expect(dependencies.deleteCurrency).not.toHaveBeenCalled()
+  })
+
   it("returns a missing-row form error when the delete target no longer exists", async () => {
     await expect(
       submitDeleteCurrency(
@@ -366,5 +393,22 @@ describe("submitDeleteCurrency", () => {
       fieldErrors: {},
       formError: CURRENCY_IN_USE_DELETE_ERROR,
     })
+  })
+
+  it("returns a success result for valid delete submissions", async () => {
+    const dependencies = createDependencies({
+      deleteCurrency: vi.fn().mockResolvedValue({
+        id: VALID_CURRENCY_ID,
+      }),
+    })
+
+    await expect(
+      submitDeleteCurrency({ role: "editor" }, deleteInput, dependencies)
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Currency deleted.",
+    })
+
+    expect(dependencies.deleteCurrency).toHaveBeenCalledWith(deleteInput)
   })
 })

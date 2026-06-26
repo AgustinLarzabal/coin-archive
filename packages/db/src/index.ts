@@ -9,6 +9,7 @@ export {
   deleteComposition,
   updateComposition,
 } from "./mutations/composition"
+export { createDistribution } from "./mutations/distribution"
 export {
   createCurrency,
   deleteCurrency,

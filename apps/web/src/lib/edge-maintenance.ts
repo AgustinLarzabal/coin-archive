@@ -78,6 +78,19 @@ type DeleteEdgeData = z.output<typeof deleteEdgeInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: EdgeMutationResult }
+type EdgeMutationOperationResult = unknown | null
+type SubmitEdgeMutationOptions<TInput, TData> = {
+  collector: CollectorWithRole | null
+  input: TInput
+  dependencies?: EdgeMutationDependencies
+  validate: (input: TInput) => ValidationResult<TData>
+  execute: (
+    dependencies: EdgeMutationDependencies,
+    data: TData
+  ) => Promise<EdgeMutationOperationResult>
+  createSuccessResult: () => EdgeMutationResult
+  createNullResult?: () => EdgeMutationResult
+}
 
 type EdgeMutationDependencies = {
   createEdge: (input: CreateEdgeData) => Promise<unknown>
@@ -274,16 +287,20 @@ function validateDeleteEdgeInput(
   return validateEdgeInput(deleteEdgeInputSchema, input)
 }
 
-export async function submitCreateEdge(
-  collector: CollectorWithRole | null,
-  input: CreateEdgeInput,
-  dependencies?: EdgeMutationDependencies
-): Promise<EdgeMutationResult> {
+async function submitEdgeMutation<TInput, TData>({
+  collector,
+  input,
+  dependencies,
+  validate,
+  execute,
+  createSuccessResult,
+  createNullResult,
+}: SubmitEdgeMutationOptions<TInput, TData>): Promise<EdgeMutationResult> {
   if (!hasEdgeMaintenanceAccess(collector)) {
     return createAuthorizationError()
   }
 
-  const validationResult = validateCreateEdgeInput(input)
+  const validationResult = validate(input)
 
   if (!validationResult.success) {
     return validationResult.result
@@ -293,15 +310,38 @@ export async function submitCreateEdge(
     await resolveEdgeMutationDependencies(dependencies)
 
   try {
-    await resolvedDependencies.createEdge(validationResult.data)
+    const mutationResult = await execute(
+      resolvedDependencies,
+      validationResult.data
+    )
 
-    return {
-      status: "success",
-      message: "Edge added.",
+    if (mutationResult === null && createNullResult) {
+      return createNullResult()
     }
+
+    return createSuccessResult()
   } catch (error) {
     return createPersistenceError(error)
   }
+}
+
+export async function submitCreateEdge(
+  collector: CollectorWithRole | null,
+  input: CreateEdgeInput,
+  dependencies?: EdgeMutationDependencies
+): Promise<EdgeMutationResult> {
+  return submitEdgeMutation({
+    collector,
+    input,
+    dependencies,
+    validate: validateCreateEdgeInput,
+    execute: (resolvedDependencies, data) =>
+      resolvedDependencies.createEdge(data),
+    createSuccessResult: () => ({
+      status: "success",
+      message: "Edge added.",
+    }),
+  })
 }
 
 export async function submitUpdateEdge(
@@ -309,35 +349,19 @@ export async function submitUpdateEdge(
   input: UpdateEdgeInput,
   dependencies?: EdgeMutationDependencies
 ): Promise<EdgeMutationResult> {
-  if (!hasEdgeMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validateUpdateEdgeInput(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const resolvedDependencies =
-    await resolveEdgeMutationDependencies(dependencies)
-
-  try {
-    const updatedEdge = await resolvedDependencies.updateEdge(
-      validationResult.data
-    )
-
-    if (updatedEdge === null) {
-      return createFormErrorResult(EDGE_MISSING_ERROR)
-    }
-
-    return {
+  return submitEdgeMutation({
+    collector,
+    input,
+    dependencies,
+    validate: validateUpdateEdgeInput,
+    execute: (resolvedDependencies, data) =>
+      resolvedDependencies.updateEdge(data),
+    createSuccessResult: () => ({
       status: "success",
       message: "Saved.",
-    }
-  } catch (error) {
-    return createPersistenceError(error)
-  }
+    }),
+    createNullResult: () => createFormErrorResult(EDGE_MISSING_ERROR),
+  })
 }
 
 export async function submitDeleteEdge(
@@ -345,33 +369,17 @@ export async function submitDeleteEdge(
   input: DeleteEdgeInput,
   dependencies?: EdgeMutationDependencies
 ): Promise<EdgeMutationResult> {
-  if (!hasEdgeMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validateDeleteEdgeInput(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const resolvedDependencies =
-    await resolveEdgeMutationDependencies(dependencies)
-
-  try {
-    const deletedEdge = await resolvedDependencies.deleteEdge(
-      validationResult.data
-    )
-
-    if (deletedEdge === null) {
-      return createFormErrorResult(EDGE_MISSING_ERROR)
-    }
-
-    return {
+  return submitEdgeMutation({
+    collector,
+    input,
+    dependencies,
+    validate: validateDeleteEdgeInput,
+    execute: (resolvedDependencies, data) =>
+      resolvedDependencies.deleteEdge(data),
+    createSuccessResult: () => ({
       status: "success",
       message: "Edge deleted.",
-    }
-  } catch (error) {
-    return createPersistenceError(error)
-  }
+    }),
+    createNullResult: () => createFormErrorResult(EDGE_MISSING_ERROR),
+  })
 }

@@ -1,14 +1,10 @@
-import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
 import { EDGE_AUTHORIZATION_ERROR } from "@/lib/edge-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
 
-import {
-  DatabaseEdgesPageContent,
-  loadEdgeMaintenanceEdges,
-} from "./edges"
+import { loadEdgeMaintenanceEdges, renderDatabaseEdgesPage } from "./edges"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -87,32 +83,26 @@ describe("loadEdgeMaintenanceEdges", () => {
   })
 })
 
-describe("DatabaseEdgesPageContent", () => {
+describe("renderDatabaseEdgesPage", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
-    const markup = renderToStaticMarkup(
-      createElement(DatabaseEdgesPageContent, {
-        loaderData: { isAllowed: false },
-      })
-    )
+    const markup = renderToStaticMarkup(renderDatabaseEdgesPage({ isAllowed: false }))
 
     expect(markup).toContain("Access denied")
   })
 
   it("renders the Edges table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      createElement(DatabaseEdgesPageContent, {
-        loaderData: {
-          isAllowed: true,
-          edges: [
-            {
-              id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
-              code: "reeded",
-              name: "Reeded",
-              createdAt: new Date("2026-06-24T12:00:00.000Z"),
-              updatedAt: new Date("2026-06-24T12:00:00.000Z"),
-            },
-          ],
-        },
+      renderDatabaseEdgesPage({
+        isAllowed: true,
+        edges: [
+          {
+            id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+            code: "reeded",
+            name: "Reeded",
+            createdAt: new Date("2026-06-24T12:00:00.000Z"),
+            updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+          },
+        ],
       })
     )
 

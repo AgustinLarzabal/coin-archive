@@ -188,6 +188,18 @@ _Avoid_: Circulation status, distribution, obsolete currency, collector-only sta
 A catalogue filter that returns coins whose Demonetization Status is demonetized, not demonetized, or unknown. It composes with other catalogue filters using AND semantics.
 _Avoid_: Circulation filter, distribution filter, legal tender checkbox
 
+**Distribution**:
+The controlled release or circulation category assigned to a catalogued coin type or issue, such as standard circulation or commemorative. Every Coin has exactly one Distribution, and it is distinct from Demonetization Status, collector demand, rarity, and current legal monetary status.
+_Avoid_: Demonetization status, rarity, collector demand, legal tender status, market availability
+
+**Distribution Code**:
+The globally unique, stable, human-readable catalogue key for a distribution, used to identify the distribution in imports, filters, URLs, and administrative lookup. It uses lowercase slug-style text and is distinct from the distribution's display name.
+_Avoid_: Display name, temporary label, legal status code, rarity code
+
+**Distribution Filter**:
+A catalogue filter that returns coins linked directly to the selected Distribution.
+_Avoid_: Demonetization status filter, rarity filter, collector availability filter
+
 **Currency**:
 The reusable monetary unit used by a coin's Face Value, such as Euro, Argentine peso, or United States dollar. A Currency has a short display name and a full display name for historical disambiguation, and neither display name is a unique identity. A Currency is distinct from an Issuer and does not imply which authority issued a specific Coin.
 _Avoid_: Issuer, denomination, exchange rate, market value

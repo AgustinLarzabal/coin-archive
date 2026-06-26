@@ -16,6 +16,11 @@ export {
 } from "./mutations/distribution"
 export { createEdge, deleteEdge, updateEdge } from "./mutations/edge"
 export {
+  createEngraver,
+  deleteEngraver,
+  updateEngraver,
+} from "./mutations/engraver"
+export {
   createCurrency,
   deleteCurrency,
   updateCurrency,

@@ -14,24 +14,37 @@ export function EngraversTable({ engravers }: EngraversTableProps) {
   const [selectedEngraver, setSelectedEngraver] =
     useState<EngraverOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
 
   function openCreateEngraverSheet() {
     setSelectedEngraver(null)
+    setShouldOpenDeleteDialog(false)
     setIsMaintenanceSheetOpen(true)
   }
 
   function openEditEngraverSheet(engraver: EngraverOption) {
     setSelectedEngraver(engraver)
+    setShouldOpenDeleteDialog(false)
     setIsMaintenanceSheetOpen(true)
   }
 
-  const columns = createEngraverColumns(openEditEngraverSheet)
+  function openDeleteEngraverSheet(engraver: EngraverOption) {
+    setSelectedEngraver(engraver)
+    setShouldOpenDeleteDialog(true)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  const columns = createEngraverColumns(
+    openEditEngraverSheet,
+    openDeleteEngraverSheet
+  )
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
 
     if (!open) {
       setSelectedEngraver(null)
+      setShouldOpenDeleteDialog(false)
     }
   }
 
@@ -47,6 +60,7 @@ export function EngraversTable({ engravers }: EngraversTableProps) {
       <EngraverMaintenanceSheet
         engraver={selectedEngraver}
         open={isMaintenanceSheetOpen}
+        initialDeleteDialogOpen={shouldOpenDeleteDialog}
         onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>

@@ -12,7 +12,8 @@ import {
 import { Icons } from "../../icons"
 
 export function createEngraverColumns(
-  onEditEngraver: (engraver: EngraverOption) => void
+  onEditEngraver: (engraver: EngraverOption) => void,
+  onDeleteEngraver: (engraver: EngraverOption) => void
 ): ColumnDef<EngraverOption>[] {
   return [
     {
@@ -42,7 +43,10 @@ export function createEngraverColumns(
                 <DropdownMenuItem onClick={() => onEditEngraver(engraver)}>
                   Edit Engraver
                 </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" disabled>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDeleteEngraver(engraver)}
+                >
                   Delete Engraver
                 </DropdownMenuItem>
               </DropdownMenuGroup>

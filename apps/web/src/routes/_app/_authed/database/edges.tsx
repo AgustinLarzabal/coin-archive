@@ -82,6 +82,16 @@ export const Route = createFileRoute("/_app/_authed/database/edges")({
 function DatabaseEdgesComponent() {
   const loaderData = Route.useLoaderData()
 
+  return <DatabaseEdgesPageContent loaderData={loaderData} />
+}
+
+type DatabaseEdgesPageContentProps = {
+  loaderData: EdgeMaintenanceLoaderData
+}
+
+export function DatabaseEdgesPageContent({
+  loaderData,
+}: DatabaseEdgesPageContentProps) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

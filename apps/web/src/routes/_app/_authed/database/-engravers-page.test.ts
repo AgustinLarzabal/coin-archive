@@ -6,17 +6,17 @@ import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadEngraverMaintenanceEngravers } from "./engravers"
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Engravers page in the database secondary menu after Distributions", () => {
+  it("includes the read-only Engravers page in the database secondary menu after Edges", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/engravers",
       label: "Engravers",
     })
 
-    expect(databaseSecondaryMenuItems[4]).toStrictEqual({
-      to: "/database/distributions",
-      label: "Distributions",
-    })
     expect(databaseSecondaryMenuItems[5]).toStrictEqual({
+      to: "/database/edges",
+      label: "Edges",
+    })
+    expect(databaseSecondaryMenuItems[6]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })

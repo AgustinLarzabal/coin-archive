@@ -20,6 +20,7 @@ import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
 import { Route as AppAuthedDatabaseEngraversRouteImport } from './routes/_app/_authed/database/engravers'
+import { Route as AppAuthedDatabaseEdgesRouteImport } from './routes/_app/_authed/database/edges'
 import { Route as AppAuthedDatabaseDistributionsRouteImport } from './routes/_app/_authed/database/distributions'
 import { Route as AppAuthedDatabaseCurrenciesRouteImport } from './routes/_app/_authed/database/currencies'
 import { Route as AppAuthedDatabaseCompositionsRouteImport } from './routes/_app/_authed/database/compositions'
@@ -79,6 +80,11 @@ const AppAuthedDatabaseEngraversRoute =
     path: '/engravers',
     getParentRoute: () => AppAuthedDatabaseRouteRoute,
   } as any)
+const AppAuthedDatabaseEdgesRoute = AppAuthedDatabaseEdgesRouteImport.update({
+  id: '/edges',
+  path: '/edges',
+  getParentRoute: () => AppAuthedDatabaseRouteRoute,
+} as any)
 const AppAuthedDatabaseDistributionsRoute =
   AppAuthedDatabaseDistributionsRouteImport.update({
     id: '/distributions',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
+  '/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
+  '/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/_app/_authed/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/_app/_authed/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
+  '/_app/_authed/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/_app/_authed/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/database/compositions'
     | '/database/currencies'
     | '/database/distributions'
+    | '/database/edges'
     | '/database/engravers'
     | '/database/'
     | '/settings/'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/database/compositions'
     | '/database/currencies'
     | '/database/distributions'
+    | '/database/edges'
     | '/database/engravers'
     | '/database'
     | '/settings'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/compositions'
     | '/_app/_authed/database/currencies'
     | '/_app/_authed/database/distributions'
+    | '/_app/_authed/database/edges'
     | '/_app/_authed/database/engravers'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthedDatabaseEngraversRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
+    '/_app/_authed/database/edges': {
+      id: '/_app/_authed/database/edges'
+      path: '/edges'
+      fullPath: '/database/edges'
+      preLoaderRoute: typeof AppAuthedDatabaseEdgesRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
     '/_app/_authed/database/distributions': {
       id: '/_app/_authed/database/distributions'
       path: '/distributions'
@@ -348,6 +367,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseCompositionsRoute: typeof AppAuthedDatabaseCompositionsRoute
   AppAuthedDatabaseCurrenciesRoute: typeof AppAuthedDatabaseCurrenciesRoute
   AppAuthedDatabaseDistributionsRoute: typeof AppAuthedDatabaseDistributionsRoute
+  AppAuthedDatabaseEdgesRoute: typeof AppAuthedDatabaseEdgesRoute
   AppAuthedDatabaseEngraversRoute: typeof AppAuthedDatabaseEngraversRoute
   AppAuthedDatabaseIndexRoute: typeof AppAuthedDatabaseIndexRoute
 }
@@ -358,6 +378,7 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
     AppAuthedDatabaseCompositionsRoute: AppAuthedDatabaseCompositionsRoute,
     AppAuthedDatabaseCurrenciesRoute: AppAuthedDatabaseCurrenciesRoute,
     AppAuthedDatabaseDistributionsRoute: AppAuthedDatabaseDistributionsRoute,
+    AppAuthedDatabaseEdgesRoute: AppAuthedDatabaseEdgesRoute,
     AppAuthedDatabaseEngraversRoute: AppAuthedDatabaseEngraversRoute,
     AppAuthedDatabaseIndexRoute: AppAuthedDatabaseIndexRoute,
   }

@@ -33,6 +33,11 @@ export const databaseMaintenanceSections = [
     countKey: "distributions",
   },
   {
+    to: "/database/edges",
+    label: "Edges",
+    countKey: "edges",
+  },
+  {
     to: "/database/engravers",
     label: "Engravers",
     countKey: "engravers",

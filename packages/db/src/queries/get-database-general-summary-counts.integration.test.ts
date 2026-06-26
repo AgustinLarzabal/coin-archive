@@ -6,6 +6,7 @@ import {
   createComposition,
   createCurrency,
   createDistribution,
+  createEdge,
   createEngraver,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -45,6 +46,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "standard-circulation",
       name: "Standard circulation",
     })
+    await createEdge({
+      code: "reeded",
+      name: "Reeded",
+    })
+    await createEdge({
+      code: "plain",
+      name: "Plain",
+    })
     await createEngraver({
       code: "barth",
       name: "Barth",
@@ -59,6 +68,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       compositions: 1,
       currencies: 3,
       distributions: 1,
+      edges: 2,
       engravers: 2,
     })
   })
@@ -69,6 +79,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       compositions: 0,
       currencies: 0,
       distributions: 0,
+      edges: 0,
       engravers: 0,
     })
   })

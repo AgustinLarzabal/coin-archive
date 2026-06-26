@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getPrivateNavigationItem } from "./main-menu"
 
 describe("getPrivateNavigationItem", () => {
-  it("includes Engravers in the Database main navigation children after Distributions", () => {
+  it("includes Edges and Engravers in the Database main navigation children after Distributions", () => {
     expect(
       getPrivateNavigationItem({
         to: "/database",
@@ -18,6 +18,7 @@ describe("getPrivateNavigationItem", () => {
         { to: "/database/compositions", label: "Compositions" },
         { to: "/database/currencies", label: "Currencies" },
         { to: "/database/distributions", label: "Distributions" },
+        { to: "/database/edges", label: "Edges" },
         { to: "/database/engravers", label: "Engravers" },
       ],
     })

@@ -13,10 +13,6 @@ type UpdateDistributionInput = DistributionFields & {
   id: string
 }
 
-function takeFirstOrNull<T>(records: T[]): T | null {
-  return records.at(0) ?? null
-}
-
 function normalizeDistributionFields({ code, name }: DistributionFields) {
   return {
     code: code.trim(),
@@ -39,14 +35,14 @@ export async function updateDistribution({
   id,
   ...fields
 }: UpdateDistributionInput): Promise<Distribution | null> {
-  return takeFirstOrNull(
-    await db
-      .update(distribution)
-      .set({
-        ...normalizeDistributionFields(fields),
-        updatedAt: new Date(),
-      })
-      .where(eq(distribution.id, id))
-      .returning()
-  )
+  const [updatedDistribution] = await db
+    .update(distribution)
+    .set({
+      ...normalizeDistributionFields(fields),
+      updatedAt: new Date(),
+    })
+    .where(eq(distribution.id, id))
+    .returning()
+
+  return updatedDistribution ?? null
 }

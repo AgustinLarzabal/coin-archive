@@ -44,7 +44,7 @@ const updateDistributionAction = createServerFn({
     return submitUpdateDistribution(session?.user ?? null, data)
   })
 
-function validateDistributionDraft(
+function validateUpdateDistributionDraft(
   distributionId: string,
   draft: DistributionDraft
 ): DistributionMutationResult | null {
@@ -91,6 +91,7 @@ export function DistributionEditForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const hasChanges = hasDistributionEditChanges(distribution, draft)
 
   useEffect(() => {
     setDraft(createDistributionDraft(distribution))
@@ -134,7 +135,10 @@ export function DistributionEditForm({
 
     clearFeedback()
 
-    const validationResult = validateDistributionDraft(distribution.id, draft)
+    const validationResult = validateUpdateDistributionDraft(
+      distribution.id,
+      draft
+    )
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -211,7 +215,7 @@ export function DistributionEditForm({
         <SubmitButton
           type="submit"
           isSubmitting={isPending}
-          disabled={!hasDistributionEditChanges(distribution, draft)}
+          disabled={!hasChanges}
           className="w-full"
         >
           Save

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { DistributionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
@@ -16,14 +16,18 @@ export function DistributionsTable({
   const [selectedDistribution, setSelectedDistribution] =
     useState<DistributionOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
-  const columns = useMemo(
-    () =>
-      createDistributionColumns((distribution) => {
-        setSelectedDistribution(distribution)
-        setIsMaintenanceSheetOpen(true)
-      }),
-    []
-  )
+
+  function openCreateDistributionSheet() {
+    setSelectedDistribution(null)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  function openEditDistributionSheet(distribution: DistributionOption) {
+    setSelectedDistribution(distribution)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  const columns = createDistributionColumns(openEditDistributionSheet)
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
@@ -33,11 +37,6 @@ export function DistributionsTable({
     }
   }
 
-  function handleCreateDistribution() {
-    setSelectedDistribution(null)
-    setIsMaintenanceSheetOpen(true)
-  }
-
   return (
     <>
       <DataTable
@@ -45,7 +44,7 @@ export function DistributionsTable({
         data={distributions}
         toolbar={() => (
           <DistributionsTableToolbar
-            onCreateDistribution={handleCreateDistribution}
+            onCreateDistribution={openCreateDistributionSheet}
           />
         )}
       />

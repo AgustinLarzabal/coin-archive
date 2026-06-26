@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { CompositionsTable } from "@/components/tables/compositions/compositions-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type CompositionAuthorizationErrorResult,
   createCompositionAuthorizationError,
   hasCompositionMaintenanceAccess,
 } from "@/lib/composition-maintenance"
+import type { CompositionAuthorizationErrorResult } from "@/lib/composition-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadCompositionMaintenanceCompositionsResult =

@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { CataloguesTable } from "@/components/tables/catalogues/catalogues-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type CatalogueAuthorizationErrorResult,
   createCatalogueAuthorizationError,
   hasCatalogueMaintenanceAccess,
 } from "@/lib/catalogue-maintenance"
+import type { CatalogueAuthorizationErrorResult } from "@/lib/catalogue-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadCatalogueMaintenanceCataloguesResult =

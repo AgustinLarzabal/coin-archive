@@ -1,11 +1,32 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
+import { createElement } from "react"
+import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
+import { createIssuerColumns } from "./columns"
 import { IssuersTable, filterIssuers } from "./issuers-table"
+
+type MockComponentProps = {
+  children?: ReactNode
+}
+
+function createMockElement(tagName: string) {
+  return function MockElement({ children }: MockComponentProps) {
+    return createElement(tagName, null, children)
+  }
+}
 
 vi.mock("./issuer-maintenance-sheet", () => ({
   IssuerMaintenanceSheet: () => null,
+}))
+
+vi.mock("@workspace/ui/components/dropdown-menu", () => ({
+  DropdownMenu: createMockElement("div"),
+  DropdownMenuContent: createMockElement("div"),
+  DropdownMenuGroup: createMockElement("div"),
+  DropdownMenuItem: createMockElement("button"),
+  DropdownMenuTrigger: createMockElement("div"),
 }))
 
 const issuers: IssuerMaintenanceRecord[] = [
@@ -53,6 +74,24 @@ describe("filterIssuers", () => {
 })
 
 describe("IssuersTable", () => {
+  it("includes edit and delete actions in the row menu", () => {
+    const columns = createIssuerColumns(vi.fn(), vi.fn())
+    const actionsColumn = columns[4]
+
+    if (!actionsColumn?.cell) {
+      throw new Error("Expected Issuer actions column to define a cell")
+    }
+
+    const markup = renderToStaticMarkup(
+      createElement(actionsColumn.cell, {
+        row: { original: issuers[0] },
+      } as never)
+    )
+
+    expect(markup).toContain("Edit")
+    expect(markup).toContain("Delete Issuer")
+  })
+
   it("renders issuer columns, parent context, and the filter toolbar without router warnings", () => {
     const consoleErrorSpy = vi
       .spyOn(console, "error")
@@ -72,7 +111,6 @@ describe("IssuersTable", () => {
       "Filter issuers by name, code, ISO code, or parent issuer..."
     )
     expect(markup).toContain("Create Issuer")
-    expect(markup).toContain("Actions")
     expect(consoleErrorSpy).not.toHaveBeenCalled()
 
     consoleErrorSpy.mockRestore()

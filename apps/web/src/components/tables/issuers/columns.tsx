@@ -14,7 +14,8 @@ import { Icons } from "@/components/icons"
 const NO_PARENT_ISSUER_LABEL = "No Parent Issuer"
 
 export function createIssuerColumns(
-  onEditIssuer: (issuer: IssuerMaintenanceRecord) => void
+  onEditIssuer: (issuer: IssuerMaintenanceRecord) => void,
+  onDeleteIssuer: (issuer: IssuerMaintenanceRecord) => void
 ): ColumnDef<IssuerMaintenanceRecord>[] {
   return [
     {
@@ -60,6 +61,12 @@ export function createIssuerColumns(
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => onEditIssuer(issuer)}>
                   Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDeleteIssuer(issuer)}
+                >
+                  Delete Issuer
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

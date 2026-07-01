@@ -38,6 +38,7 @@ import { IssuerEditForm } from "./issuer-edit-form"
 
 type IssuerMaintenanceSheetProps = {
   issuer: IssuerMaintenanceRecord | null
+  initialDeleteDialogOpen?: boolean
   issuers: IssuerMaintenanceRecord[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -58,6 +59,7 @@ const deleteIssuerAction = createServerFn({
 
 export function IssuerMaintenanceSheet({
   issuer,
+  initialDeleteDialogOpen = false,
   issuers,
   open,
   onOpenChange,
@@ -72,9 +74,11 @@ export function IssuerMaintenanceSheet({
 
   useEffect(() => {
     setDeleteError(null)
-    setIsDeleteDialogOpen(false)
+    setIsDeleteDialogOpen(
+      open && isEditingIssuer ? initialDeleteDialogOpen : false
+    )
     setIsDeletePending(false)
-  }, [issuer?.id, open])
+  }, [initialDeleteDialogOpen, isEditingIssuer, issuer?.id, open])
 
   async function handleDeleteIssuer() {
     if (!issuer) {

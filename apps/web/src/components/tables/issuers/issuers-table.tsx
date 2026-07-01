@@ -35,13 +35,28 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
   const [selectedIssuer, setSelectedIssuer] =
     useState<IssuerMaintenanceRecord | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
   const [filterValue, setFilterValue] = useState("")
+
+  function openMaintenanceSheet(
+    issuer: IssuerMaintenanceRecord | null,
+    options?: { deleteDialogOpen?: boolean }
+  ) {
+    setSelectedIssuer(issuer)
+    setShouldOpenDeleteDialog(options?.deleteDialogOpen ?? false)
+    setIsMaintenanceSheetOpen(true)
+  }
+
   const columns = useMemo(
     () =>
-      createIssuerColumns((issuer) => {
-        setSelectedIssuer(issuer)
-        setIsMaintenanceSheetOpen(true)
-      }),
+      createIssuerColumns(
+        (issuer) => {
+          openMaintenanceSheet(issuer)
+        },
+        (issuer) => {
+          openMaintenanceSheet(issuer, { deleteDialogOpen: true })
+        }
+      ),
     []
   )
   const filteredIssuers = filterIssuers(issuers, filterValue)
@@ -51,12 +66,12 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
 
     if (!open) {
       setSelectedIssuer(null)
+      setShouldOpenDeleteDialog(false)
     }
   }
 
   function handleCreateIssuer() {
-    setSelectedIssuer(null)
-    setIsMaintenanceSheetOpen(true)
+    openMaintenanceSheet(null)
   }
 
   return (
@@ -74,6 +89,7 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
       />
       <IssuerMaintenanceSheet
         issuer={selectedIssuer}
+        initialDeleteDialogOpen={shouldOpenDeleteDialog}
         issuers={issuers}
         open={isMaintenanceSheetOpen}
         onOpenChange={handleMaintenanceSheetOpenChange}

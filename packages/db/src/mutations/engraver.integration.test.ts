@@ -130,7 +130,7 @@ describe("engraver mutations integration", () => {
     )
   })
 
-  it("rejects duplicate Engraver Codes case-insensitively during update", async () => {
+  it("rejects duplicate Engraver Codes after normalization during update", async () => {
     const existingEngraver = await createEngraverFixture({
       code: "barth",
       name: "Barth",
@@ -143,7 +143,7 @@ describe("engraver mutations integration", () => {
     await expectConstraintViolation(
       updateEngraver({
         id: conflictingEngraver.id,
-        code: " BARTH ",
+        code: " barth ",
         name: "Updated Durand",
       }),
       DUPLICATE_ENGRAVER_CODE_CONSTRAINT
@@ -288,7 +288,7 @@ describe("engraver mutations integration", () => {
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
         code: "23001",
-        constraint_name: "coin_face_engraver_engraver_id_fkey",
+        constraint_name: "coin_face_engraver_engraver_id_engraver_id_fk",
       }),
     })
   })

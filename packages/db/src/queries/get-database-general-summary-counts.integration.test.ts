@@ -9,6 +9,7 @@ import {
   createEdge,
   createEngraver,
   createIssuer,
+  createMint,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -73,6 +74,10 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       name: "United States",
       isoCode: "US",
     })
+    await createMint({
+      code: "buenos-aires-mint",
+      name: "Buenos Aires Mint",
+    })
 
     await expect(getDatabaseGeneralSummaryCounts()).resolves.toStrictEqual({
       catalogues: 2,
@@ -82,6 +87,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 2,
       engravers: 2,
       issuers: 2,
+      mints: 1,
     })
   })
 
@@ -94,6 +100,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 0,
       engravers: 0,
       issuers: 0,
+      mints: 0,
     })
   })
 })

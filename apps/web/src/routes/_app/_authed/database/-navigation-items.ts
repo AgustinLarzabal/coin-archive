@@ -47,6 +47,11 @@ export const databaseMaintenanceSections = [
     label: "Issuers",
     countKey: "issuers",
   },
+  {
+    to: "/database/mints",
+    label: "Mints",
+    countKey: "mints",
+  },
 ] as const satisfies readonly DatabaseMaintenanceSection[]
 
 export const databaseSecondaryMenuItems = [

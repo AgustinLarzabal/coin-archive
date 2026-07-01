@@ -1,0 +1,118 @@
+import { renderToStaticMarkup } from "react-dom/server"
+import { describe, expect, it, vi } from "vitest"
+
+import { databaseSecondaryMenuItems } from "./-navigation-items"
+import {
+  loadMintMaintenanceMints,
+  renderDatabaseMintsPage,
+} from "./mints"
+
+vi.mock("@/components/access-denied", () => ({
+  AccessDenied: () => "Access denied",
+}))
+
+describe("databaseSecondaryMenuItems", () => {
+  it("includes the Mints maintenance entry after Issuers", () => {
+    expect(databaseSecondaryMenuItems).toContainEqual({
+      to: "/database/mints",
+      label: "Mints",
+    })
+
+    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+      to: "/database/issuers",
+      label: "Issuers",
+    })
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/mints",
+      label: "Mints",
+    })
+  })
+})
+
+describe("loadMintMaintenanceMints", () => {
+  it("rejects unauthenticated access at the child-route boundary", async () => {
+    const getMints = vi.fn()
+
+    await expect(loadMintMaintenanceMints(null, { getMints })).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getMints).not.toHaveBeenCalled()
+  })
+
+  it("rejects signed-in Collectors without editor access", async () => {
+    const getMints = vi.fn()
+
+    await expect(
+      loadMintMaintenanceMints({ role: "collector" }, { getMints })
+    ).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getMints).not.toHaveBeenCalled()
+  })
+
+  it("returns Mint maintenance data for Editors and Admins", async () => {
+    const mints = [
+      {
+        id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
+        code: "buenos-aires-mint",
+        name: "Buenos Aires Mint",
+        createdAt: new Date("2026-07-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+      },
+    ]
+    const getMints = vi.fn().mockResolvedValue(mints)
+    const allowedRoles = ["editor", "admin"] as const
+
+    for (const role of allowedRoles) {
+      await expect(
+        loadMintMaintenanceMints({ role }, { getMints })
+      ).resolves.toStrictEqual({
+        status: "success",
+        mints,
+      })
+    }
+  })
+})
+
+describe("renderDatabaseMintsPage", () => {
+  it("renders the existing access-denied UI for disallowed Collectors", () => {
+    const markup = renderToStaticMarkup(
+      renderDatabaseMintsPage({ isAllowed: false })
+    )
+
+    expect(markup).toContain("Access denied")
+  })
+
+  it("renders the read-only Mints table for allowed Editors and Admins", () => {
+    const markup = renderToStaticMarkup(
+      renderDatabaseMintsPage({
+        isAllowed: true,
+        mints: [
+          {
+            id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
+            code: "buenos-aires-mint",
+            name: "Buenos Aires Mint",
+            createdAt: new Date("2026-07-01T00:00:00.000Z"),
+            updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+          },
+          {
+            id: "2f7265fc-0ddf-49bc-b90a-71b3466ee3bd",
+            code: "royal-mint-of-madrid",
+            name: "Royal Mint of Madrid",
+            createdAt: new Date("2026-07-01T00:00:00.000Z"),
+            updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+          },
+        ],
+      })
+    )
+
+    expect(markup).toContain("Mint Code")
+    expect(markup).toContain("Mint Name")
+    expect(markup).toContain("Buenos Aires Mint")
+    expect(markup).toContain("Royal Mint of Madrid")
+    expect(markup).not.toContain("Create")
+    expect(markup).not.toContain('aria-label="Actions"')
+  })
+})

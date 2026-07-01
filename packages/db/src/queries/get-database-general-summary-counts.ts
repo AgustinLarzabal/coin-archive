@@ -8,6 +8,7 @@ import { distribution } from "../schema/distribution"
 import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
+import { mint } from "../schema/mint"
 
 export type DatabaseGeneralSummaryCounts = {
   catalogues: number
@@ -17,6 +18,7 @@ export type DatabaseGeneralSummaryCounts = {
   edges: number
   engravers: number
   issuers: number
+  mints: number
 }
 
 async function getCount(
@@ -34,6 +36,7 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
     edges,
     engravers,
     issuers,
+    mints,
   ] = await Promise.all([
       getCount(db.select({ count: count() }).from(catalogue)),
       getCount(db.select({ count: count() }).from(composition)),
@@ -42,6 +45,7 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
       getCount(db.select({ count: count() }).from(edge)),
       getCount(db.select({ count: count() }).from(engraver)),
       getCount(db.select({ count: count() }).from(issuer)),
+      getCount(db.select({ count: count() }).from(mint)),
     ])
 
   return {
@@ -52,5 +56,6 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
     edges,
     engravers,
     issuers,
+    mints,
   }
 }

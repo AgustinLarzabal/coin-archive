@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { MintOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { MINT_AUTHORIZATION_ERROR } from "@/lib/mint-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadMintMaintenanceMints,
@@ -48,6 +49,7 @@ describe("loadMintMaintenanceMints", () => {
 
     await expect(loadMintMaintenanceMints(null, { getMints })).resolves.toStrictEqual({
       status: "error",
+      formError: MINT_AUTHORIZATION_ERROR,
     })
 
     expect(getMints).not.toHaveBeenCalled()
@@ -60,6 +62,7 @@ describe("loadMintMaintenanceMints", () => {
       loadMintMaintenanceMints({ role: "collector" }, { getMints })
     ).resolves.toStrictEqual({
       status: "error",
+      formError: MINT_AUTHORIZATION_ERROR,
     })
 
     expect(getMints).not.toHaveBeenCalled()
@@ -96,7 +99,7 @@ describe("renderDatabaseMintsPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the read-only Mints table for allowed Editors and Admins", () => {
+  it("renders the Mints maintenance table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseMintsPage({
         isAllowed: true,
@@ -119,7 +122,7 @@ describe("renderDatabaseMintsPage", () => {
     expect(markup).toContain("Mint Name")
     expect(markup).toContain("Buenos Aires Mint")
     expect(markup).toContain("Royal Mint of Madrid")
-    expect(markup).not.toContain("Create")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain("Create")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

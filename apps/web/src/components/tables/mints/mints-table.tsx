@@ -2,7 +2,8 @@ import { useState } from "react"
 import type { MintOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { mintColumns } from "./columns"
+import { createMintColumns } from "./columns"
+import { MintMaintenanceSheet } from "./mint-maintenance-sheet"
 import { MintsTableToolbar } from "./mints-table-toolbar"
 
 type MintsTableProps = {
@@ -29,18 +30,61 @@ function getMintFilterValues(mint: MintOption): string[] {
 
 export function MintsTable({ mints }: MintsTableProps) {
   const [filterValue, setFilterValue] = useState("")
+  const [selectedMint, setSelectedMint] = useState<MintOption | null>(null)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
   const filteredMints = filterMints(mints, filterValue)
+  const columns = createMintColumns(openEditMintSheet, openDeleteMintSheet)
+
+  function openMaintenanceSheet(
+    mint: MintOption | null,
+    options?: { deleteDialogOpen?: boolean }
+  ) {
+    setSelectedMint(mint)
+    setShouldOpenDeleteDialog(options?.deleteDialogOpen ?? false)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  function openCreateMintSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditMintSheet(mint: MintOption) {
+    openMaintenanceSheet(mint)
+  }
+
+  function openDeleteMintSheet(mint: MintOption) {
+    openMaintenanceSheet(mint, { deleteDialogOpen: true })
+  }
+
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedMint(null)
+      setShouldOpenDeleteDialog(false)
+    }
+  }
 
   return (
-    <DataTable
-      columns={mintColumns}
-      data={filteredMints}
-      toolbar={() => (
-        <MintsTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={filteredMints}
+        toolbar={() => (
+          <MintsTableToolbar
+            filterValue={filterValue}
+            onFilterValueChange={setFilterValue}
+            onCreateMint={openCreateMintSheet}
+          />
+        )}
+      />
+      <MintMaintenanceSheet
+        mint={selectedMint}
+        open={isMaintenanceSheetOpen}
+        initialDeleteDialogOpen={shouldOpenDeleteDialog}
+        onOpenChange={handleMaintenanceSheetOpenChange}
+      />
+    </>
   )
 }

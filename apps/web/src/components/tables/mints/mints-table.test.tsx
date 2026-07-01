@@ -33,7 +33,7 @@ describe("filterMints", () => {
 })
 
 describe("MintsTable", () => {
-  it("renders Mint Code and Mint Name columns with a read-only filter toolbar", () => {
+  it("renders Mint Code and Mint Name columns with maintenance actions", () => {
     const markup = renderToStaticMarkup(<MintsTable mints={mints} />)
 
     expect(markup).toContain("Mint Code")
@@ -41,7 +41,7 @@ describe("MintsTable", () => {
     expect(markup).toContain("Buenos Aires Mint")
     expect(markup).toContain("Royal Mint of Madrid")
     expect(markup).toContain("Filter mints by code or name...")
-    expect(markup).not.toContain("Create")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain("Create")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

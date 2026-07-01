@@ -5,13 +5,15 @@ import type { MintOption } from "@workspace/db"
 import { AccessDenied } from "@/components/access-denied"
 import { MintsTable } from "@/components/tables/mints/mints-table"
 import { getAuthSession } from "@/lib/auth-session"
+import {
+  type MintAuthorizationErrorResult,
+  createMintAuthorizationError,
+  hasMintMaintenanceAccess,
+} from "@/lib/mint-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 type LoadMintMaintenanceMintsResult =
-  | {
-      status: "error"
-    }
+  | MintAuthorizationErrorResult
   | {
       status: "success"
       mints: MintOption[]
@@ -38,17 +40,21 @@ async function getDefaultMintReadDependencies(): Promise<MintReadDependencies> {
   }
 }
 
+async function resolveMintReadDependencies(
+  dependencies?: MintReadDependencies
+): Promise<MintReadDependencies> {
+  return dependencies ?? getDefaultMintReadDependencies()
+}
+
 export async function loadMintMaintenanceMints(
   collector: CollectorWithRole | null,
   dependencies?: MintReadDependencies
 ): Promise<LoadMintMaintenanceMintsResult> {
-  if (!getEditorRouteAuthorization(collector).isAllowed) {
-    return {
-      status: "error",
-    }
+  if (!hasMintMaintenanceAccess(collector)) {
+    return createMintAuthorizationError()
   }
 
-  const { getMints } = dependencies ?? (await getDefaultMintReadDependencies())
+  const { getMints } = await resolveMintReadDependencies(dependencies)
 
   return {
     status: "success",

@@ -2,13 +2,6 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -22,6 +15,7 @@ import {
   submitCreateRim,
 } from "@/lib/rim-maintenance"
 
+import { RimFormFields } from "./rim-form-fields"
 import { EMPTY_RIM_DRAFT, isRimDraftComplete } from "./rim-form.shared"
 import type { RimDraft } from "./rim-form.shared"
 
@@ -123,38 +117,15 @@ export function RimCreateForm({ onCreated }: RimCreateFormProps) {
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-rim-code">Rim Code</FieldLabel>
-          <Input
-            id="new-rim-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="raised"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-rim-name">Rim Name</FieldLabel>
-          <Input
-            id="new-rim-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Raised rim"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <RimFormFields
+        codeInputId="new-rim-code"
+        nameInputId="new-rim-name"
+        codePlaceholder="raised"
+        namePlaceholder="Raised rim"
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onDraftChange={updateDraft}
+      />
 
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 

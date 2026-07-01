@@ -21,6 +21,7 @@ describe("getPrivateNavigationItem", () => {
         { to: "/database/edges", label: "Edges" },
         { to: "/database/engravers", label: "Engravers" },
         { to: "/database/issuers", label: "Issuers" },
+        { to: "/database/orientations", label: "Orientations" },
         { to: "/database/mints", label: "Mints" },
       ],
     })

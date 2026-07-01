@@ -25,17 +25,17 @@ function createMint(overrides: Pick<MintOption, "id" | "code" | "name">): MintOp
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Mints maintenance entry after Issuers", () => {
+  it("includes the Mints maintenance entry after Orientations", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/mints",
       label: "Mints",
     })
 
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
-      to: "/database/issuers",
-      label: "Issuers",
-    })
     expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/orientations",
+      label: "Orientations",
+    })
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/mints",
       label: "Mints",
     })

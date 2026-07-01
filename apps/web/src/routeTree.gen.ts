@@ -19,6 +19,7 @@ import { Route as AppAuthedSettingsRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authed/database/route'
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
+import { Route as AppAuthedDatabaseOrientationsRouteImport } from './routes/_app/_authed/database/orientations'
 import { Route as AppAuthedDatabaseMintsRouteImport } from './routes/_app/_authed/database/mints'
 import { Route as AppAuthedDatabaseIssuersRouteImport } from './routes/_app/_authed/database/issuers'
 import { Route as AppAuthedDatabaseEngraversRouteImport } from './routes/_app/_authed/database/engravers'
@@ -76,6 +77,12 @@ const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
+const AppAuthedDatabaseOrientationsRoute =
+  AppAuthedDatabaseOrientationsRouteImport.update({
+    id: '/orientations',
+    path: '/orientations',
+    getParentRoute: () => AppAuthedDatabaseRouteRoute,
+  } as any)
 const AppAuthedDatabaseMintsRoute = AppAuthedDatabaseMintsRouteImport.update({
   id: '/mints',
   path: '/mints',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database/issuers': typeof AppAuthedDatabaseIssuersRoute
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
+  '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesByTo {
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database/issuers': typeof AppAuthedDatabaseIssuersRoute
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
+  '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
 }
@@ -181,6 +190,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/_app/_authed/database/issuers': typeof AppAuthedDatabaseIssuersRoute
   '/_app/_authed/database/mints': typeof AppAuthedDatabaseMintsRoute
+  '/_app/_authed/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/database/engravers'
     | '/database/issuers'
     | '/database/mints'
+    | '/database/orientations'
     | '/database/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/database/engravers'
     | '/database/issuers'
     | '/database/mints'
+    | '/database/orientations'
     | '/database'
     | '/settings'
   id:
@@ -238,6 +250,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/engravers'
     | '/_app/_authed/database/issuers'
     | '/_app/_authed/database/mints'
+    | '/_app/_authed/database/orientations'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
   fileRoutesById: FileRoutesById
@@ -317,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/database/'
       preLoaderRoute: typeof AppAuthedDatabaseIndexRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
+    '/_app/_authed/database/orientations': {
+      id: '/_app/_authed/database/orientations'
+      path: '/orientations'
+      fullPath: '/database/orientations'
+      preLoaderRoute: typeof AppAuthedDatabaseOrientationsRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
     '/_app/_authed/database/mints': {
@@ -410,6 +430,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseEngraversRoute: typeof AppAuthedDatabaseEngraversRoute
   AppAuthedDatabaseIssuersRoute: typeof AppAuthedDatabaseIssuersRoute
   AppAuthedDatabaseMintsRoute: typeof AppAuthedDatabaseMintsRoute
+  AppAuthedDatabaseOrientationsRoute: typeof AppAuthedDatabaseOrientationsRoute
   AppAuthedDatabaseIndexRoute: typeof AppAuthedDatabaseIndexRoute
 }
 
@@ -423,6 +444,7 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
     AppAuthedDatabaseEngraversRoute: AppAuthedDatabaseEngraversRoute,
     AppAuthedDatabaseIssuersRoute: AppAuthedDatabaseIssuersRoute,
     AppAuthedDatabaseMintsRoute: AppAuthedDatabaseMintsRoute,
+    AppAuthedDatabaseOrientationsRoute: AppAuthedDatabaseOrientationsRoute,
     AppAuthedDatabaseIndexRoute: AppAuthedDatabaseIndexRoute,
   }
 

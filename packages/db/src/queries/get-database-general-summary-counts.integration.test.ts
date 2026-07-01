@@ -7,10 +7,11 @@ import {
   createCurrency,
   createDistribution,
   createEdge,
-  createEngraver,
-  createIssuer,
-  createMint,
-} from "../testing/fixtures"
+    createEngraver,
+    createIssuer,
+    createMint,
+    createOrientation,
+  } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getDatabaseGeneralSummaryCounts integration", () => {
@@ -74,6 +75,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       name: "United States",
       isoCode: "US",
     })
+    await createOrientation({
+      code: "coin-alignment",
+      name: "Coin alignment",
+    })
+    await createOrientation({
+      code: "medal-alignment",
+      name: "Medal alignment",
+    })
     await createMint({
       code: "buenos-aires-mint",
       name: "Buenos Aires Mint",
@@ -87,6 +96,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 2,
       engravers: 2,
       issuers: 2,
+      orientations: 2,
       mints: 1,
     })
   })
@@ -100,6 +110,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 0,
       engravers: 0,
       issuers: 0,
+      orientations: 0,
       mints: 0,
     })
   })

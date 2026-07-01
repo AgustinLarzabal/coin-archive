@@ -1,0 +1,132 @@
+import { renderToStaticMarkup } from "react-dom/server"
+import type { OrientationOption } from "@workspace/db"
+import { describe, expect, it, vi } from "vitest"
+
+import { databaseSecondaryMenuItems } from "./-navigation-items"
+import {
+  loadOrientationMaintenanceOrientations,
+  renderDatabaseOrientationsPage,
+} from "./orientations"
+
+vi.mock("@/components/access-denied", () => ({
+  AccessDenied: () => "Access denied",
+}))
+
+const orientationTimestamps = {
+  createdAt: new Date("2026-07-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+} as const
+
+function createOrientation(
+  overrides: Pick<OrientationOption, "id" | "code" | "name">
+): OrientationOption {
+  return {
+    ...orientationTimestamps,
+    ...overrides,
+  }
+}
+
+describe("databaseSecondaryMenuItems", () => {
+  it("includes the Orientations maintenance entry after Issuers", () => {
+    expect(databaseSecondaryMenuItems).toContainEqual({
+      to: "/database/orientations",
+      label: "Orientations",
+    })
+
+    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+      to: "/database/issuers",
+      label: "Issuers",
+    })
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/orientations",
+      label: "Orientations",
+    })
+  })
+})
+
+describe("loadOrientationMaintenanceOrientations", () => {
+  it("rejects unauthenticated access at the child-route boundary", async () => {
+    const getOrientations = vi.fn()
+
+    await expect(
+      loadOrientationMaintenanceOrientations(null, { getOrientations })
+    ).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getOrientations).not.toHaveBeenCalled()
+  })
+
+  it("rejects signed-in Collectors without editor access", async () => {
+    const getOrientations = vi.fn()
+
+    await expect(
+      loadOrientationMaintenanceOrientations(
+        { role: "collector" },
+        { getOrientations }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+    })
+
+    expect(getOrientations).not.toHaveBeenCalled()
+  })
+
+  it("returns Orientation maintenance data for Editors and Admins", async () => {
+    const orientations = [
+      createOrientation({
+        id: "645c07ac-cfbb-4a29-b056-9680634c6c2c",
+        code: "coin-alignment",
+        name: "Coin alignment",
+      }),
+    ]
+    const getOrientations = vi.fn().mockResolvedValue(orientations)
+    const allowedRoles = ["editor", "admin"] as const
+
+    for (const role of allowedRoles) {
+      await expect(
+        loadOrientationMaintenanceOrientations({ role }, { getOrientations })
+      ).resolves.toStrictEqual({
+        status: "success",
+        orientations,
+      })
+    }
+  })
+})
+
+describe("renderDatabaseOrientationsPage", () => {
+  it("renders the existing access-denied UI for disallowed Collectors", () => {
+    const markup = renderToStaticMarkup(
+      renderDatabaseOrientationsPage({ isAllowed: false })
+    )
+
+    expect(markup).toContain("Access denied")
+  })
+
+  it("renders the read-only Orientations table for allowed Editors and Admins", () => {
+    const markup = renderToStaticMarkup(
+      renderDatabaseOrientationsPage({
+        isAllowed: true,
+        orientations: [
+          createOrientation({
+            id: "645c07ac-cfbb-4a29-b056-9680634c6c2c",
+            code: "coin-alignment",
+            name: "Coin alignment",
+          }),
+          createOrientation({
+            id: "9c65c9ed-eb9d-4cf5-986f-1346d6a326ca",
+            code: "medal-alignment",
+            name: "Medal alignment",
+          }),
+        ],
+      })
+    )
+
+    expect(markup).toContain("Orientation Code")
+    expect(markup).toContain("Orientation Name")
+    expect(markup).toContain("Coin alignment")
+    expect(markup).toContain("Medal alignment")
+    expect(markup).not.toContain("Create")
+    expect(markup).not.toContain('aria-label="Actions"')
+  })
+})

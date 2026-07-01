@@ -48,6 +48,11 @@ export const databaseMaintenanceSections = [
     countKey: "issuers",
   },
   {
+    to: "/database/orientations",
+    label: "Orientations",
+    countKey: "orientations",
+  },
+  {
     to: "/database/mints",
     label: "Mints",
     countKey: "mints",

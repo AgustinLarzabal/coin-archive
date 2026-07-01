@@ -59,6 +59,7 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       edges: 7,
       engravers: 6,
       issuers: 8,
+      orientations: 10,
       mints: 9,
     }
     const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)

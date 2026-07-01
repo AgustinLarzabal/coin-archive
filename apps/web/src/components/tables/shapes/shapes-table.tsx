@@ -2,7 +2,8 @@ import { useState } from "react"
 import type { ShapeOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { shapeColumns } from "./columns"
+import { createShapeColumns } from "./columns"
+import { ShapeMaintenanceSheet } from "./shape-maintenance-sheet"
 import { ShapesTableToolbar } from "./shapes-table-toolbar"
 
 type ShapesTableProps = {
@@ -32,18 +33,33 @@ function getShapeFilterValues(shape: ShapeOption): string[] {
 
 export function ShapesTable({ shapes }: ShapesTableProps) {
   const [filterValue, setFilterValue] = useState("")
+  const [selectedShape, setSelectedShape] = useState<ShapeOption | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const filteredShapes = filterShapes(shapes, filterValue)
 
+  function openMaintenanceSheet(shape: ShapeOption | null) {
+    setSelectedShape(shape)
+    setIsSheetOpen(true)
+  }
+
   return (
-    <DataTable
-      columns={shapeColumns}
-      data={filteredShapes}
-      toolbar={() => (
-        <ShapesTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={createShapeColumns(openMaintenanceSheet)}
+        data={filteredShapes}
+        toolbar={() => (
+          <ShapesTableToolbar
+            filterValue={filterValue}
+            onCreateShape={() => openMaintenanceSheet(null)}
+            onFilterValueChange={setFilterValue}
+          />
+        )}
+      />
+      <ShapeMaintenanceSheet
+        shape={selectedShape}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
+    </>
   )
 }

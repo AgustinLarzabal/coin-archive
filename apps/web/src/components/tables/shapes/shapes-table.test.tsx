@@ -33,7 +33,7 @@ describe("filterShapes", () => {
 })
 
 describe("ShapesTable", () => {
-  it("renders Shape Code and Shape Name columns with a read-only filter toolbar", () => {
+  it("renders Shape Code and Shape Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(<ShapesTable shapes={shapes} />)
 
     expect(markup).toContain("Shape Code")
@@ -41,7 +41,7 @@ describe("ShapesTable", () => {
     expect(markup).toContain("Round")
     expect(markup).toContain("Scalloped")
     expect(markup).toContain("Filter shapes by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

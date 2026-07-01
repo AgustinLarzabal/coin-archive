@@ -16,6 +16,7 @@ export {
 } from "./mutations/distribution"
 export { createEdge, deleteEdge, updateEdge } from "./mutations/edge"
 export { createRim, deleteRim, updateRim } from "./mutations/rim"
+export { createShape, deleteShape, updateShape } from "./mutations/shape"
 export {
   createEngraver,
   deleteEngraver,

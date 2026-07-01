@@ -2,9 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { ShapeOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { SHAPE_AUTHORIZATION_ERROR } from "@/lib/shape-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
-  loadShapeRecords,
+  loadShapeMaintenanceShapes,
   renderDatabaseShapesPage,
 } from "./shapes"
 
@@ -48,12 +49,15 @@ describe("databaseSecondaryMenuItems", () => {
   })
 })
 
-describe("loadShapeRecords", () => {
+describe("loadShapeMaintenanceShapes", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
     const getShapes = vi.fn()
 
-    await expect(loadShapeRecords(null, { getShapes })).resolves.toStrictEqual({
+    await expect(
+      loadShapeMaintenanceShapes(null, { getShapes })
+    ).resolves.toStrictEqual({
       status: "error",
+      formError: SHAPE_AUTHORIZATION_ERROR,
     })
 
     expect(getShapes).not.toHaveBeenCalled()
@@ -63,9 +67,10 @@ describe("loadShapeRecords", () => {
     const getShapes = vi.fn()
 
     await expect(
-      loadShapeRecords({ role: "collector" }, { getShapes })
+      loadShapeMaintenanceShapes({ role: "collector" }, { getShapes })
     ).resolves.toStrictEqual({
       status: "error",
+      formError: SHAPE_AUTHORIZATION_ERROR,
     })
 
     expect(getShapes).not.toHaveBeenCalled()
@@ -83,12 +88,12 @@ describe("loadShapeRecords", () => {
     const allowedRoles = ["editor", "admin"] as const
 
     for (const role of allowedRoles) {
-      await expect(loadShapeRecords({ role }, { getShapes })).resolves.toStrictEqual(
-        {
+      await expect(
+        loadShapeMaintenanceShapes({ role }, { getShapes })
+      ).resolves.toStrictEqual({
           status: "success",
           shapes,
-        }
-      )
+        })
     }
   })
 })
@@ -100,7 +105,7 @@ describe("renderDatabaseShapesPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the Shapes table for allowed Editors and Admins without maintenance actions", () => {
+  it("renders the Shapes table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseShapesPage({
         isAllowed: true,
@@ -124,7 +129,7 @@ describe("renderDatabaseShapesPage", () => {
     expect(markup).toContain("Round")
     expect(markup).toContain("Scalloped")
     expect(markup).toContain("Filter shapes by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

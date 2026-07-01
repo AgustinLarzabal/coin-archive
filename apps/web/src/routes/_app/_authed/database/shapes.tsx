@@ -6,18 +6,20 @@ import { AccessDenied } from "@/components/access-denied"
 import { ShapesTable } from "@/components/tables/shapes/shapes-table"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import { getEditorRouteAuthorization } from "@/lib/route-authorization"
+import {
+  type ShapeAuthorizationErrorResult,
+  createShapeAuthorizationError,
+  hasShapeMaintenanceAccess,
+} from "@/lib/shape-maintenance"
 
-type LoadShapeRecordsResult =
-  | {
-      status: "error"
-    }
+type LoadShapeMaintenanceShapesResult =
+  | ShapeAuthorizationErrorResult
   | {
       status: "success"
       shapes: ShapeOption[]
     }
 
-type ShapesLoaderData =
+type ShapeMaintenanceLoaderData =
   | {
       isAllowed: false
     }
@@ -38,14 +40,12 @@ async function getDefaultShapeReadDependencies(): Promise<ShapeReadDependencies>
   }
 }
 
-export async function loadShapeRecords(
+export async function loadShapeMaintenanceShapes(
   collector: CollectorWithRole | null,
   dependencies?: ShapeReadDependencies
-): Promise<LoadShapeRecordsResult> {
-  if (!getEditorRouteAuthorization(collector).isAllowed) {
-    return {
-      status: "error",
-    }
+): Promise<LoadShapeMaintenanceShapesResult> {
+  if (!hasShapeMaintenanceAccess(collector)) {
+    return createShapeAuthorizationError()
   }
 
   const { getShapes } = dependencies ?? (await getDefaultShapeReadDependencies())
@@ -56,26 +56,26 @@ export async function loadShapeRecords(
   }
 }
 
-const getShapesLoaderData = createServerFn({
+const getShapeMaintenanceLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadShapeRecords(session?.user ?? null)
+  const result = await loadShapeMaintenanceShapes(session?.user ?? null)
 
   if (result.status === "error") {
     return {
       isAllowed: false,
-    } satisfies ShapesLoaderData
+    } satisfies ShapeMaintenanceLoaderData
   }
 
   return {
     isAllowed: true,
     shapes: result.shapes,
-  } satisfies ShapesLoaderData
+  } satisfies ShapeMaintenanceLoaderData
 })
 
 export const Route = createFileRoute("/_app/_authed/database/shapes")({
-  loader: () => getShapesLoaderData(),
+  loader: () => getShapeMaintenanceLoaderData(),
   component: DatabaseShapesComponent,
 })
 
@@ -83,7 +83,7 @@ function DatabaseShapesComponent() {
   return renderDatabaseShapesPage(Route.useLoaderData())
 }
 
-export function renderDatabaseShapesPage(loaderData: ShapesLoaderData) {
+export function renderDatabaseShapesPage(loaderData: ShapeMaintenanceLoaderData) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

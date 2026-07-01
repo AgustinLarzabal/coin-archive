@@ -17,10 +17,14 @@ export function filterRims(rims: RimOption[], filterValue: string): RimOption[] 
   }
 
   return rims.filter((rim) =>
-    [rim.code, rim.name].some((value) =>
+    getRimFilterValues(rim).some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
   )
+}
+
+function getRimFilterValues(rim: RimOption): string[] {
+  return [rim.code, rim.name]
 }
 
 export function RimsTable({ rims }: RimsTableProps) {

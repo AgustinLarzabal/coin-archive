@@ -40,12 +40,6 @@ async function getDefaultRimReadDependencies(): Promise<RimReadDependencies> {
   }
 }
 
-async function resolveRimReadDependencies(
-  dependencies?: RimReadDependencies
-): Promise<RimReadDependencies> {
-  return dependencies ?? getDefaultRimReadDependencies()
-}
-
 export async function loadRimMaintenanceRims(
   collector: CollectorWithRole | null,
   dependencies?: RimReadDependencies
@@ -54,7 +48,7 @@ export async function loadRimMaintenanceRims(
     return createRimAuthorizationError()
   }
 
-  const { getRims } = await resolveRimReadDependencies(dependencies)
+  const { getRims } = dependencies ?? (await getDefaultRimReadDependencies())
 
   return {
     status: "success",

@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest"
 
 import {
   createIssuerDraft,
+  getCreateIssuerSubmission,
   getParentIssuerOptions,
+  getUpdateIssuerSubmission,
   INVALID_PARENT_ISSUER_SELECTION,
   isIssuerDraftComplete,
   normalizeIssuerDraft,
@@ -39,6 +41,13 @@ const issuers: IssuerMaintenanceRecord[] = [
       code: "provincia-de-la-rioja",
       name: "Provincia de La Rioja",
     },
+  },
+  {
+    id: "047b2414-a918-460f-8750-5ab1bc8cb581",
+    code: "roman-empire",
+    isoCode: "IT",
+    name: "Roman Empire",
+    parent: null,
   },
 ]
 
@@ -99,6 +108,10 @@ describe("getParentIssuerOptions", () => {
         label:
           "Chilecito (chilecito) > Provincia de La Rioja (provincia-de-la-rioja) > Argentine Republic (argentine-republic)",
       },
+      {
+        id: "047b2414-a918-460f-8750-5ab1bc8cb581",
+        label: "Roman Empire (roman-empire)",
+      },
     ])
   })
 
@@ -109,6 +122,10 @@ describe("getParentIssuerOptions", () => {
       {
         id: "dc2f4da3-cfd0-43fa-8900-7a384fc6977a",
         label: "Argentine Republic (argentine-republic)",
+      },
+      {
+        id: "047b2414-a918-460f-8750-5ab1bc8cb581",
+        label: "Roman Empire (roman-empire)",
       },
     ])
   })
@@ -142,5 +159,79 @@ describe("resolveParentIssuerId", () => {
     expect(resolveParentIssuerId("Unknown Issuer", options)).toBe(
       INVALID_PARENT_ISSUER_SELECTION
     )
+  })
+})
+
+describe("getCreateIssuerSubmission", () => {
+  it("normalizes draft values before create submission", () => {
+    expect(
+      getCreateIssuerSubmission(
+        {
+          code: " provincia-de-la-rioja ",
+          isoCode: " ar ",
+          name: " Provincia de La Rioja ",
+          parentIssuerLabel: " Argentine Republic (argentine-republic) ",
+        },
+        issuers
+      )
+    ).toStrictEqual({
+      status: "valid",
+      data: {
+        code: "provincia-de-la-rioja",
+        isoCode: "AR",
+        name: "Provincia de La Rioja",
+        parentIssuerId: "dc2f4da3-cfd0-43fa-8900-7a384fc6977a",
+      },
+    })
+  })
+})
+
+describe("getUpdateIssuerSubmission", () => {
+  it("preserves the explicit Issuer ISO Code when changing Parent Issuer", () => {
+    expect(
+      getUpdateIssuerSubmission(
+        issuers[1].id,
+        {
+          code: " provincia-de-la-rioja ",
+          isoCode: " ar ",
+          name: " Provincia de La Rioja ",
+          parentIssuerLabel: " Roman Empire (roman-empire) ",
+        },
+        issuers
+      )
+    ).toStrictEqual({
+      status: "valid",
+      data: {
+        id: "4ffdfab6-989a-4378-ba8c-3610de04b3ef",
+        code: "provincia-de-la-rioja",
+        isoCode: "AR",
+        name: "Provincia de La Rioja",
+        parentIssuerId: "047b2414-a918-460f-8750-5ab1bc8cb581",
+      },
+    })
+  })
+
+  it("allows clearing the Parent Issuer during edit", () => {
+    expect(
+      getUpdateIssuerSubmission(
+        issuers[1].id,
+        {
+          code: "provincia-de-la-rioja",
+          isoCode: "AR",
+          name: "Provincia de La Rioja",
+          parentIssuerLabel: " ",
+        },
+        issuers
+      )
+    ).toStrictEqual({
+      status: "valid",
+      data: {
+        id: "4ffdfab6-989a-4378-ba8c-3610de04b3ef",
+        code: "provincia-de-la-rioja",
+        isoCode: "AR",
+        name: "Provincia de La Rioja",
+        parentIssuerId: null,
+      },
+    })
   })
 })

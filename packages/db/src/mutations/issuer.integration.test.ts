@@ -128,6 +128,57 @@ describe("issuer mutations integration", () => {
     })
   })
 
+  it("preserves the explicit Issuer ISO Code when reparenting and allows clearing the parent", async () => {
+    const argentineRepublic = await createIssuerFixture({
+      code: "argentine-republic",
+      isoCode: "AR",
+      name: "Argentine Republic",
+    })
+    const romanEmpire = await createIssuerFixture({
+      code: "roman-empire",
+      isoCode: "IT",
+      name: "Roman Empire",
+    })
+    const laRioja = await createIssuerFixture({
+      code: "la-rioja",
+      isoCode: "AR",
+      name: "La Rioja",
+      parentIssuerId: argentineRepublic.id,
+    })
+
+    await expect(
+      updateIssuer({
+        id: laRioja.id,
+        code: laRioja.code,
+        isoCode: " ar ",
+        name: laRioja.name,
+        parentIssuerId: romanEmpire.id,
+      })
+    ).resolves.toMatchObject({
+      id: laRioja.id,
+      code: "la-rioja",
+      isoCode: "AR",
+      name: "La Rioja",
+      parentIssuerId: romanEmpire.id,
+    })
+
+    await expect(
+      updateIssuer({
+        id: laRioja.id,
+        code: laRioja.code,
+        isoCode: "AR",
+        name: laRioja.name,
+        parentIssuerId: null,
+      })
+    ).resolves.toMatchObject({
+      id: laRioja.id,
+      code: "la-rioja",
+      isoCode: "AR",
+      name: "La Rioja",
+      parentIssuerId: null,
+    })
+  })
+
   it("returns null when the Issuer update target no longer exists", async () => {
     await expect(
       updateIssuer({

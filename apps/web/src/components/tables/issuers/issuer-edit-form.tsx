@@ -17,19 +17,13 @@ import type {
   IssuerFieldErrors,
   IssuerMutationResult,
 } from "@/lib/issuer-maintenance"
-import {
-  getIssuerFieldErrors,
-  submitUpdateIssuer,
-  updateIssuerInputSchema,
-} from "@/lib/issuer-maintenance"
+import { submitUpdateIssuer } from "@/lib/issuer-maintenance"
 
 import {
   createIssuerDraft,
   getParentIssuerOptions,
-  INVALID_PARENT_ISSUER_ERROR,
-  INVALID_PARENT_ISSUER_SELECTION,
+  getUpdateIssuerSubmission,
   normalizeIssuerDraft,
-  resolveParentIssuerId,
 } from "./issuer-form.shared"
 import type { IssuerDraft } from "./issuer-form.shared"
 
@@ -56,44 +50,6 @@ const updateIssuerAction = createServerFn({
 
     return submitUpdateIssuer(session?.user ?? null, data)
   })
-
-function validateUpdateIssuerDraft(
-  issuerId: string,
-  draft: IssuerDraft,
-  issuers: IssuerMaintenanceRecord[]
-): IssuerMutationResult | null {
-  const parentIssuerOptions = getParentIssuerOptions(issuers, issuerId)
-  const parentIssuerId = getResolvedParentIssuerId(
-    draft.parentIssuerLabel,
-    parentIssuerOptions
-  )
-
-  if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
-    return {
-      status: "error",
-      fieldErrors: {
-        parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
-      },
-    }
-  }
-
-  const parsedInput = updateIssuerInputSchema.safeParse({
-    id: issuerId,
-    code: draft.code,
-    isoCode: draft.isoCode,
-    name: draft.name,
-    parentIssuerId,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getIssuerFieldErrors(parsedInput.error.issues),
-  }
-}
 
 export function hasIssuerEditChanges(
   issuer: IssuerMaintenanceRecord,
@@ -175,43 +131,18 @@ export function IssuerEditForm({
 
     clearFeedback()
 
-    const validationResult = validateUpdateIssuerDraft(
-      issuer.id,
-      draft,
-      issuers
-    )
+    const submission = getUpdateIssuerSubmission(issuer.id, draft, issuers)
 
-    if (validationResult !== null) {
-      applyResult(validationResult)
+    if (submission.status === "invalid") {
+      applyResult(submission.result)
       return
     }
 
     setIsPending(true)
 
     try {
-      const parentIssuerId = getResolvedParentIssuerId(
-        draft.parentIssuerLabel,
-        parentIssuerOptions
-      )
-
-      if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
-        applyResult({
-          status: "error",
-          fieldErrors: {
-            parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
-          },
-        })
-        return
-      }
-
       const result = await updateIssuer({
-        data: {
-          id: issuer.id,
-          code: draft.code,
-          isoCode: draft.isoCode,
-          name: draft.name,
-          parentIssuerId,
-        },
+        data: submission.data,
       })
       const shouldRefresh = applyResult(result)
 
@@ -320,11 +251,4 @@ export function IssuerEditForm({
       </div>
     </form>
   )
-}
-
-function getResolvedParentIssuerId(
-  parentIssuerLabel: string,
-  options: ReturnType<typeof getParentIssuerOptions>
-) {
-  return resolveParentIssuerId(parentIssuerLabel, options)
 }

@@ -1,4 +1,12 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
+import type {
+  IssuerMutationResult,
+} from "@/lib/issuer-maintenance"
+import {
+  createIssuerInputSchema,
+  getIssuerFieldErrors,
+  updateIssuerInputSchema,
+} from "@/lib/issuer-maintenance"
 
 export type IssuerDraft = {
   code: string
@@ -21,6 +29,16 @@ export const EMPTY_ISSUER_DRAFT: IssuerDraft = {
 
 export const INVALID_PARENT_ISSUER_ERROR =
   "Select a Parent Issuer from the list."
+
+type ValidIssuerSubmission<TData> = {
+  status: "valid"
+  data: TData
+}
+
+type InvalidIssuerSubmission = {
+  status: "invalid"
+  result: IssuerMutationResult
+}
 
 export function createIssuerDraft(
   issuer: IssuerMaintenanceRecord,
@@ -97,6 +115,100 @@ export function resolveParentIssuerId(
 export const INVALID_PARENT_ISSUER_SELECTION = Symbol(
   "INVALID_PARENT_ISSUER_SELECTION"
 )
+
+export function getCreateIssuerSubmission(
+  draft: IssuerDraft,
+  issuers: IssuerMaintenanceRecord[]
+): ValidIssuerSubmission<{
+  code: string
+  isoCode: string
+  name: string
+  parentIssuerId: string | null
+}> | InvalidIssuerSubmission {
+  return resolveIssuerSubmission(draft, getParentIssuerOptions(issuers), {
+    schema: createIssuerInputSchema,
+  })
+}
+
+export function getUpdateIssuerSubmission(
+  issuerId: string,
+  draft: IssuerDraft,
+  issuers: IssuerMaintenanceRecord[]
+): ValidIssuerSubmission<{
+  id: string
+  code: string
+  isoCode: string
+  name: string
+  parentIssuerId: string | null
+}> | InvalidIssuerSubmission {
+  return resolveIssuerSubmission(
+    draft,
+    getParentIssuerOptions(issuers, issuerId),
+    {
+      schema: updateIssuerInputSchema,
+      buildInput: (parentIssuerId) => ({
+        id: issuerId,
+        code: draft.code,
+        isoCode: draft.isoCode,
+        name: draft.name,
+        parentIssuerId,
+      }),
+    }
+  )
+}
+
+function resolveIssuerSubmission<TData>(
+  draft: IssuerDraft,
+  options: ParentIssuerOption[],
+  input: {
+    schema: {
+      safeParse: (data: unknown) =>
+        | { success: true; data: TData }
+        | { success: false; error: { issues: Parameters<typeof getIssuerFieldErrors>[0] } }
+    }
+    buildInput?: (parentIssuerId: string | null) => unknown
+  }
+): ValidIssuerSubmission<TData> | InvalidIssuerSubmission {
+  const parentIssuerId = resolveParentIssuerId(draft.parentIssuerLabel, options)
+
+  if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
+    return {
+      status: "invalid",
+      result: {
+        status: "error",
+        fieldErrors: {
+          parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
+        },
+      },
+    }
+  }
+
+  const parsedInput = input.schema.safeParse(
+    input.buildInput
+      ? input.buildInput(parentIssuerId)
+      : {
+          code: draft.code,
+          isoCode: draft.isoCode,
+          name: draft.name,
+          parentIssuerId,
+        }
+  )
+
+  if (!parsedInput.success) {
+    return {
+      status: "invalid",
+      result: {
+        status: "error",
+        fieldErrors: getIssuerFieldErrors(parsedInput.error.issues),
+      },
+    }
+  }
+
+  return {
+    status: "valid",
+    data: parsedInput.data,
+  }
+}
 
 function buildIssuerContextLabel(
   issuerId: string,

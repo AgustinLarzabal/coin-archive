@@ -4,10 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { SHAPE_AUTHORIZATION_ERROR } from "@/lib/shape-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
-import {
-  loadShapeMaintenanceShapes,
-  renderDatabaseShapesPage,
-} from "./shapes"
+import { loadShapeMaintenanceShapes, renderDatabaseShapesPage } from "./shapes"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -28,7 +25,7 @@ function createShape(
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Shapes maintenance entry between Edges and Orientations", () => {
+  it("includes the Shapes maintenance entry after Rims", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/shapes",
       label: "Shapes",
@@ -39,10 +36,14 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Edges",
     })
     expect(databaseSecondaryMenuItems[6]).toStrictEqual({
+      to: "/database/rims",
+      label: "Rims",
+    })
+    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
       to: "/database/shapes",
       label: "Shapes",
     })
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })
@@ -91,16 +92,18 @@ describe("loadShapeMaintenanceShapes", () => {
       await expect(
         loadShapeMaintenanceShapes({ role }, { getShapes })
       ).resolves.toStrictEqual({
-          status: "success",
-          shapes,
-        })
+        status: "success",
+        shapes,
+      })
     }
   })
 })
 
 describe("renderDatabaseShapesPage", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
-    const markup = renderToStaticMarkup(renderDatabaseShapesPage({ isAllowed: false }))
+    const markup = renderToStaticMarkup(
+      renderDatabaseShapesPage({ isAllowed: false })
+    )
 
     expect(markup).toContain("Access denied")
   })

@@ -37,14 +37,16 @@ export async function updateEdge({
   id,
   ...fields
 }: UpdateEdgeInput): Promise<Edge | null> {
-  const [updatedEdge] = await db
-    .update(edge)
-    .set({
-      ...normalizeEdgeFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(edge.id, id))
-    .returning()
+  const updatedEdge = (
+    await db
+      .update(edge)
+      .set({
+        ...normalizeEdgeFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(edge.id, id))
+      .returning()
+  ).at(0)
 
   return updatedEdge ?? null
 }
@@ -52,7 +54,9 @@ export async function updateEdge({
 export async function deleteEdge({
   id,
 }: DeleteEdgeInput): Promise<Edge | null> {
-  const [deletedEdge] = await db.delete(edge).where(eq(edge.id, id)).returning()
+  const deletedEdge = (
+    await db.delete(edge).where(eq(edge.id, id)).returning()
+  ).at(0)
 
   return deletedEdge ?? null
 }

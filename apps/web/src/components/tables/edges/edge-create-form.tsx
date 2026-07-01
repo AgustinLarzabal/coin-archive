@@ -77,9 +77,9 @@ export function EdgeCreateForm({ onCreated }: EdgeCreateFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof EdgeDraft>(
-    field: FieldName,
-    value: EdgeDraft[FieldName]
+  function updateDraft<TFieldName extends keyof EdgeDraft>(
+    field: TFieldName,
+    value: EdgeDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

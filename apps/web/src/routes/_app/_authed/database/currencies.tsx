@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { CurrenciesTable } from "@/components/tables/currencies/currencies-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type CurrencyAuthorizationErrorResult,
   createCurrencyAuthorizationError,
   hasCurrencyMaintenanceAccess,
 } from "@/lib/currency-maintenance"
+import type { CurrencyAuthorizationErrorResult } from "@/lib/currency-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadCurrencyMaintenanceCurrenciesResult =

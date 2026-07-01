@@ -59,14 +59,16 @@ export async function updateIssuer({
   id,
   ...fields
 }: UpdateIssuerInput): Promise<Issuer | null> {
-  const [updatedIssuer] = await db
-    .update(issuer)
-    .set({
-      ...normalizeIssuerFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(issuer.id, id))
-    .returning()
+  const updatedIssuer = (
+    await db
+      .update(issuer)
+      .set({
+        ...normalizeIssuerFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(issuer.id, id))
+      .returning()
+  ).at(0)
 
   return updatedIssuer ?? null
 }
@@ -74,10 +76,9 @@ export async function updateIssuer({
 export async function deleteIssuer({
   id,
 }: DeleteIssuerInput): Promise<Issuer | null> {
-  const [deletedIssuer] = await db
-    .delete(issuer)
-    .where(eq(issuer.id, id))
-    .returning()
+  const deletedIssuer = (
+    await db.delete(issuer).where(eq(issuer.id, id)).returning()
+  ).at(0)
 
   return deletedIssuer ?? null
 }

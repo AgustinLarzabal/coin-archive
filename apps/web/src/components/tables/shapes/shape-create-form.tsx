@@ -71,9 +71,9 @@ export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof ShapeDraft>(
-    field: FieldName,
-    value: ShapeDraft[FieldName]
+  function updateDraft<TFieldName extends keyof ShapeDraft>(
+    field: TFieldName,
+    value: ShapeDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

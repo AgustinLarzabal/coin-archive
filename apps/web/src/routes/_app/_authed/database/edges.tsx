@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { EdgesTable } from "@/components/tables/edges/edges-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type EdgeAuthorizationErrorResult,
   createEdgeAuthorizationError,
   hasEdgeMaintenanceAccess,
 } from "@/lib/edge-maintenance"
+import type { EdgeAuthorizationErrorResult } from "@/lib/edge-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadEdgeMaintenanceEdgesResult =

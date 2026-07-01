@@ -7,10 +7,10 @@ import { ShapesTable } from "@/components/tables/shapes/shapes-table"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 import {
-  type ShapeAuthorizationErrorResult,
   createShapeAuthorizationError,
   hasShapeMaintenanceAccess,
 } from "@/lib/shape-maintenance"
+import type { ShapeAuthorizationErrorResult } from "@/lib/shape-maintenance"
 
 type LoadShapeMaintenanceShapesResult =
   | ShapeAuthorizationErrorResult
@@ -48,7 +48,8 @@ export async function loadShapeMaintenanceShapes(
     return createShapeAuthorizationError()
   }
 
-  const { getShapes } = dependencies ?? (await getDefaultShapeReadDependencies())
+  const { getShapes } =
+    dependencies ?? (await getDefaultShapeReadDependencies())
 
   return {
     status: "success",
@@ -83,7 +84,9 @@ function DatabaseShapesComponent() {
   return renderDatabaseShapesPage(Route.useLoaderData())
 }
 
-export function renderDatabaseShapesPage(loaderData: ShapeMaintenanceLoaderData) {
+export function renderDatabaseShapesPage(
+  loaderData: ShapeMaintenanceLoaderData
+) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

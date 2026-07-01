@@ -101,9 +101,9 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof MintDraft>(
-    field: FieldName,
-    value: MintDraft[FieldName]
+  function updateDraft<TFieldName extends keyof MintDraft>(
+    field: TFieldName,
+    value: MintDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

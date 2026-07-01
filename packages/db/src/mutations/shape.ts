@@ -37,14 +37,16 @@ export async function updateShape({
   id,
   ...fields
 }: UpdateShapeInput): Promise<Shape | null> {
-  const [updatedShape] = await db
-    .update(shape)
-    .set({
-      ...normalizeShapeFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(shape.id, id))
-    .returning()
+  const updatedShape = (
+    await db
+      .update(shape)
+      .set({
+        ...normalizeShapeFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(shape.id, id))
+      .returning()
+  ).at(0)
 
   return updatedShape ?? null
 }
@@ -52,10 +54,9 @@ export async function updateShape({
 export async function deleteShape({
   id,
 }: DeleteShapeInput): Promise<Shape | null> {
-  const [deletedShape] = await db
-    .delete(shape)
-    .where(eq(shape.id, id))
-    .returning()
+  const deletedShape = (
+    await db.delete(shape).where(eq(shape.id, id)).returning()
+  ).at(0)
 
   return deletedShape ?? null
 }

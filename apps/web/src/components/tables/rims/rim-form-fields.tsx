@@ -17,9 +17,9 @@ type RimFormFieldsProps = {
   namePlaceholder: string
   draft: RimDraft
   fieldErrors: RimFieldErrors
-  onDraftChange: <FieldName extends keyof RimDraft>(
-    field: FieldName,
-    value: RimDraft[FieldName]
+  onDraftChange: <TFieldName extends keyof RimDraft>(
+    field: TFieldName,
+    value: RimDraft[TFieldName]
   ) => void
 }
 

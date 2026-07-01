@@ -17,9 +17,9 @@ type ShapeFormFieldsProps = {
   namePlaceholder: string
   draft: ShapeDraft
   fieldErrors: ShapeFieldErrors
-  onDraftChange: <FieldName extends keyof ShapeDraft>(
-    field: FieldName,
-    value: ShapeDraft[FieldName]
+  onDraftChange: <TFieldName extends keyof ShapeDraft>(
+    field: TFieldName,
+    value: ShapeDraft[TFieldName]
   ) => void
 }
 

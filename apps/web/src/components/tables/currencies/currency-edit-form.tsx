@@ -117,9 +117,9 @@ export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof CurrencyDraft>(
-    field: FieldName,
-    value: CurrencyDraft[FieldName]
+  function updateDraft<TFieldName extends keyof CurrencyDraft>(
+    field: TFieldName,
+    value: CurrencyDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

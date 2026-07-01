@@ -12,7 +12,7 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Distributions",
     })
 
-    expect(databaseSecondaryMenuItems.indexOf(databaseSecondaryMenuItems[3]!)).toBe(
+    expect(databaseSecondaryMenuItems.indexOf(databaseSecondaryMenuItems[3])).toBe(
       3
     )
     expect(databaseSecondaryMenuItems[3]).toStrictEqual({

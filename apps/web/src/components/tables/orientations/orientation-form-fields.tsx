@@ -22,9 +22,9 @@ type OrientationFieldConfig = {
 type OrientationFormFieldsProps = {
   draft: OrientationDraft
   fieldErrors: OrientationFieldErrors
-  onFieldChange: <FieldName extends OrientationFieldName>(
-    field: FieldName,
-    value: OrientationDraft[FieldName]
+  onFieldChange: <TFieldName extends OrientationFieldName>(
+    field: TFieldName,
+    value: OrientationDraft[TFieldName]
   ) => void
   variant: "create" | "edit"
 }

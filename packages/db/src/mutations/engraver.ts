@@ -24,7 +24,9 @@ function normalizeEngraverFields({ code, name }: EngraverFields) {
   }
 }
 
-export async function createEngraver(fields: EngraverFields): Promise<Engraver> {
+export async function createEngraver(
+  fields: EngraverFields
+): Promise<Engraver> {
   const [createdEngraver] = await db
     .insert(engraver)
     .values(normalizeEngraverFields(fields))
@@ -37,14 +39,16 @@ export async function updateEngraver({
   id,
   ...fields
 }: UpdateEngraverInput): Promise<Engraver | null> {
-  const [updatedEngraver] = await db
-    .update(engraver)
-    .set({
-      ...normalizeEngraverFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(engraver.id, id))
-    .returning()
+  const updatedEngraver = (
+    await db
+      .update(engraver)
+      .set({
+        ...normalizeEngraverFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(engraver.id, id))
+      .returning()
+  ).at(0)
 
   return updatedEngraver ?? null
 }
@@ -52,10 +56,9 @@ export async function updateEngraver({
 export async function deleteEngraver({
   id,
 }: DeleteEngraverInput): Promise<Engraver | null> {
-  const [deletedEngraver] = await db
-    .delete(engraver)
-    .where(eq(engraver.id, id))
-    .returning()
+  const deletedEngraver = (
+    await db.delete(engraver).where(eq(engraver.id, id)).returning()
+  ).at(0)
 
   return deletedEngraver ?? null
 }

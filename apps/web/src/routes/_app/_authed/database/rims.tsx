@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { RimsTable } from "@/components/tables/rims/rims-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type RimAuthorizationErrorResult,
   createRimAuthorizationError,
   hasRimMaintenanceAccess,
 } from "@/lib/rim-maintenance"
+import type { RimAuthorizationErrorResult } from "@/lib/rim-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadRimMaintenanceRimsResult =

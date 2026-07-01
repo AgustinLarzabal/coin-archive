@@ -22,9 +22,9 @@ type MintFieldConfig = {
 type MintFormFieldsProps = {
   draft: MintDraft
   fieldErrors: MintFieldErrors
-  onFieldChange: <FieldName extends MintFieldName>(
-    field: FieldName,
-    value: MintDraft[FieldName]
+  onFieldChange: <TFieldName extends MintFieldName>(
+    field: TFieldName,
+    value: MintDraft[TFieldName]
   ) => void
   variant: "create" | "edit"
 }

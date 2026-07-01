@@ -82,9 +82,9 @@ export function EngraverCreateForm({ onCreated }: EngraverCreateFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof EngraverDraft>(
-    field: FieldName,
-    value: EngraverDraft[FieldName]
+  function updateDraft<TFieldName extends keyof EngraverDraft>(
+    field: TFieldName,
+    value: EngraverDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

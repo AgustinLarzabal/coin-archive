@@ -101,9 +101,9 @@ export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof ShapeDraft>(
-    field: FieldName,
-    value: ShapeDraft[FieldName]
+  function updateDraft<TFieldName extends keyof ShapeDraft>(
+    field: TFieldName,
+    value: ShapeDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { EngraversTable } from "@/components/tables/engravers/engravers-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type EngraverAuthorizationErrorResult,
   createEngraverAuthorizationError,
   hasEngraverMaintenanceAccess,
 } from "@/lib/engraver-maintenance"
+import type { EngraverAuthorizationErrorResult } from "@/lib/engraver-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadEngraverMaintenanceEngraversResult =
@@ -54,9 +54,7 @@ export async function loadEngraverMaintenanceEngravers(
     return createEngraverAuthorizationError()
   }
 
-  const { getEngravers } = await resolveEngraverReadDependencies(
-    dependencies
-  )
+  const { getEngravers } = await resolveEngraverReadDependencies(dependencies)
 
   return {
     status: "success",

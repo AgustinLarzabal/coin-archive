@@ -101,9 +101,9 @@ export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
     return false
   }
 
-  function updateDraft<FieldName extends keyof RimDraft>(
-    field: FieldName,
-    value: RimDraft[FieldName]
+  function updateDraft<TFieldName extends keyof RimDraft>(
+    field: TFieldName,
+    value: RimDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

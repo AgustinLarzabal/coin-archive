@@ -78,9 +78,9 @@ export function OrientationCreateForm({
     return false
   }
 
-  function updateDraft<FieldName extends keyof OrientationDraft>(
-    field: FieldName,
-    value: OrientationDraft[FieldName]
+  function updateDraft<TFieldName extends keyof OrientationDraft>(
+    field: TFieldName,
+    value: OrientationDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

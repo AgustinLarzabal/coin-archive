@@ -95,9 +95,9 @@ export function CompositionCreateForm({
     return false
   }
 
-  function updateDraft<FieldName extends keyof CompositionDraft>(
-    field: FieldName,
-    value: CompositionDraft[FieldName]
+  function updateDraft<TFieldName extends keyof CompositionDraft>(
+    field: TFieldName,
+    value: CompositionDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

@@ -84,9 +84,9 @@ export function DistributionCreateForm({
     return false
   }
 
-  function updateDraft<FieldName extends keyof DistributionDraft>(
-    field: FieldName,
-    value: DistributionDraft[FieldName]
+  function updateDraft<TFieldName extends keyof DistributionDraft>(
+    field: TFieldName,
+    value: DistributionDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

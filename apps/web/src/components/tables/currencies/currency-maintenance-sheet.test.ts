@@ -6,8 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "@/lib/currency-maintenance"
 
-import { CURRENCY_DELETE_CONFIRMATION_DESCRIPTION } from "./currency-maintenance-sheet"
-import { CurrencyMaintenanceSheet } from "./currency-maintenance-sheet"
+import { CURRENCY_DELETE_CONFIRMATION_DESCRIPTION, CurrencyMaintenanceSheet  } from "./currency-maintenance-sheet"
 
 type MockComponentProps = {
   children?: ReactNode

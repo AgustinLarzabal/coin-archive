@@ -19,8 +19,8 @@ import { Route as AppAuthedSettingsRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authed/database/route'
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
-import { Route as AppAuthedDatabaseRimsRouteImport } from './routes/_app/_authed/database/rims'
 import { Route as AppAuthedDatabaseShapesRouteImport } from './routes/_app/_authed/database/shapes'
+import { Route as AppAuthedDatabaseRimsRouteImport } from './routes/_app/_authed/database/rims'
 import { Route as AppAuthedDatabaseOrientationsRouteImport } from './routes/_app/_authed/database/orientations'
 import { Route as AppAuthedDatabaseMintsRouteImport } from './routes/_app/_authed/database/mints'
 import { Route as AppAuthedDatabaseIssuersRouteImport } from './routes/_app/_authed/database/issuers'
@@ -79,14 +79,14 @@ const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
-const AppAuthedDatabaseRimsRoute = AppAuthedDatabaseRimsRouteImport.update({
-  id: '/rims',
-  path: '/rims',
-  getParentRoute: () => AppAuthedDatabaseRouteRoute,
-} as any)
 const AppAuthedDatabaseShapesRoute = AppAuthedDatabaseShapesRouteImport.update({
   id: '/shapes',
   path: '/shapes',
+  getParentRoute: () => AppAuthedDatabaseRouteRoute,
+} as any)
+const AppAuthedDatabaseRimsRoute = AppAuthedDatabaseRimsRouteImport.update({
+  id: '/rims',
+  path: '/rims',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
 const AppAuthedDatabaseOrientationsRoute =
@@ -356,18 +356,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthedDatabaseIndexRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
-    '/_app/_authed/database/rims': {
-      id: '/_app/_authed/database/rims'
-      path: '/rims'
-      fullPath: '/database/rims'
-      preLoaderRoute: typeof AppAuthedDatabaseRimsRouteImport
-      parentRoute: typeof AppAuthedDatabaseRouteRoute
-    }
     '/_app/_authed/database/shapes': {
       id: '/_app/_authed/database/shapes'
       path: '/shapes'
       fullPath: '/database/shapes'
       preLoaderRoute: typeof AppAuthedDatabaseShapesRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
+    '/_app/_authed/database/rims': {
+      id: '/_app/_authed/database/rims'
+      path: '/rims'
+      fullPath: '/database/rims'
+      preLoaderRoute: typeof AppAuthedDatabaseRimsRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
     '/_app/_authed/database/orientations': {

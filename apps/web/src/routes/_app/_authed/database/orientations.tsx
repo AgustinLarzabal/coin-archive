@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { OrientationsTable } from "@/components/tables/orientations/orientations-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type OrientationAuthorizationErrorResult,
   createOrientationAuthorizationError,
   hasOrientationMaintenanceAccess,
 } from "@/lib/orientation-maintenance"
+import type { OrientationAuthorizationErrorResult } from "@/lib/orientation-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadOrientationMaintenanceOrientationsResult =
@@ -54,7 +54,8 @@ export async function loadOrientationMaintenanceOrientations(
     return createOrientationAuthorizationError()
   }
 
-  const { getOrientations } = await resolveOrientationReadDependencies(dependencies)
+  const { getOrientations } =
+    await resolveOrientationReadDependencies(dependencies)
 
   return {
     status: "success",

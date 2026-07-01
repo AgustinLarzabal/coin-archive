@@ -8,8 +8,8 @@ import { DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE } from "@/
 
 import {
   DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION,
+  DistributionMaintenanceSheet,
 } from "./distribution-maintenance-sheet"
-import { DistributionMaintenanceSheet } from "./distribution-maintenance-sheet"
 
 type MockComponentProps = {
   children?: ReactNode
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -93,7 +90,8 @@ vi.mock("./distribution-create-form", () => ({
 }))
 
 vi.mock("./distribution-edit-form", () => ({
-  DistributionEditForm: () => createElement("div", null, "DistributionEditForm"),
+  DistributionEditForm: () =>
+    createElement("div", null, "DistributionEditForm"),
 }))
 
 const distribution: DistributionOption = {

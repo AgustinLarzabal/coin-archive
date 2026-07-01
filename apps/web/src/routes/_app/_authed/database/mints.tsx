@@ -6,10 +6,10 @@ import { AccessDenied } from "@/components/access-denied"
 import { MintsTable } from "@/components/tables/mints/mints-table"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  type MintAuthorizationErrorResult,
   createMintAuthorizationError,
   hasMintMaintenanceAccess,
 } from "@/lib/mint-maintenance"
+import type { MintAuthorizationErrorResult } from "@/lib/mint-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 type LoadMintMaintenanceMintsResult =

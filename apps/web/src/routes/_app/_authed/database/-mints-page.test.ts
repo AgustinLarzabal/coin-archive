@@ -4,10 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { MINT_AUTHORIZATION_ERROR } from "@/lib/mint-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
-import {
-  loadMintMaintenanceMints,
-  renderDatabaseMintsPage,
-} from "./mints"
+import { loadMintMaintenanceMints, renderDatabaseMintsPage } from "./mints"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -23,7 +20,9 @@ const mintTimestamps = {
   updatedAt: new Date("2026-07-01T00:00:00.000Z"),
 } as const
 
-function createMint(overrides: Pick<MintOption, "id" | "code" | "name">): MintOption {
+function createMint(
+  overrides: Pick<MintOption, "id" | "code" | "name">
+): MintOption {
   return {
     ...mintTimestamps,
     ...overrides,
@@ -37,11 +36,11 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Mints",
     })
 
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
       to: "/database/orientations",
       label: "Orientations",
     })
-    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
       to: "/database/mints",
       label: "Mints",
     })
@@ -52,7 +51,9 @@ describe("loadMintMaintenanceMints", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
     const getMints = vi.fn()
 
-    await expect(loadMintMaintenanceMints(null, { getMints })).resolves.toStrictEqual({
+    await expect(
+      loadMintMaintenanceMints(null, { getMints })
+    ).resolves.toStrictEqual({
       status: "error",
       formError: MINT_AUTHORIZATION_ERROR,
     })

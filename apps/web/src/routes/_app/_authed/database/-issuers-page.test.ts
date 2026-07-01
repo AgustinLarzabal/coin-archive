@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
+import type * as TanstackReactRouter from "@tanstack/react-router"
 import { describe, expect, it, vi } from "vitest"
 
 import { databaseSecondaryMenuItems } from "./-navigation-items"
@@ -12,7 +13,7 @@ vi.mock("@/components/access-denied", () => ({
 }))
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
+  const actual = await importOriginal<typeof TanstackReactRouter>()
 
   return {
     ...actual,
@@ -33,11 +34,11 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Issuers",
     })
 
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })
-    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/issuers",
       label: "Issuers",
     })
@@ -98,10 +99,7 @@ describe("loadIssuerMaintenanceIssuers", () => {
 
     for (const role of allowedRoles) {
       await expect(
-        loadIssuerMaintenanceIssuers(
-          { role },
-          { getIssuerMaintenanceRecords }
-        )
+        loadIssuerMaintenanceIssuers({ role }, { getIssuerMaintenanceRecords })
       ).resolves.toStrictEqual({
         status: "success",
         issuers,

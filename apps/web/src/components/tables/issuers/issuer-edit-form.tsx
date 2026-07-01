@@ -116,9 +116,9 @@ export function IssuerEditForm({
     return false
   }
 
-  function updateDraft<FieldName extends keyof IssuerDraft>(
-    field: FieldName,
-    value: IssuerDraft[FieldName]
+  function updateDraft<TFieldName extends keyof IssuerDraft>(
+    field: TFieldName,
+    value: IssuerDraft[TFieldName]
   ) {
     setDraft((current) => ({
       ...current,

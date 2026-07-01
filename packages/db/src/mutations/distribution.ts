@@ -39,14 +39,16 @@ export async function updateDistribution({
   id,
   ...fields
 }: UpdateDistributionInput): Promise<Distribution | null> {
-  const [updatedDistribution] = await db
-    .update(distribution)
-    .set({
-      ...normalizeDistributionFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(distribution.id, id))
-    .returning()
+  const updatedDistribution = (
+    await db
+      .update(distribution)
+      .set({
+        ...normalizeDistributionFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(distribution.id, id))
+      .returning()
+  ).at(0)
 
   return updatedDistribution ?? null
 }
@@ -54,10 +56,9 @@ export async function updateDistribution({
 export async function deleteDistribution({
   id,
 }: DeleteDistributionInput): Promise<Distribution | null> {
-  const [deletedDistribution] = await db
-    .delete(distribution)
-    .where(eq(distribution.id, id))
-    .returning()
+  const deletedDistribution = (
+    await db.delete(distribution).where(eq(distribution.id, id)).returning()
+  ).at(0)
 
   return deletedDistribution ?? null
 }

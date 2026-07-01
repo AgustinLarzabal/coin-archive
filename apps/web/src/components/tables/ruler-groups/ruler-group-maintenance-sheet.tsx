@@ -30,7 +30,7 @@ import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
   RULER_GROUP_GENERIC_SAVE_ERROR,
-  RULER_GROUP_IN_USE_DELETE_ERROR,
+  RULER_GROUP_IN_USE_DELETE_GUIDANCE,
   submitDeleteRulerGroup,
 } from "@/lib/ruler-group-maintenance"
 
@@ -43,14 +43,8 @@ type RulerGroupMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const RULER_GROUP_DELETE_CONFIRMATION_IN_USE_GUIDANCE =
-  RULER_GROUP_IN_USE_DELETE_ERROR.replace(
-    "Ruler Group cannot be deleted while Rulers still belong to it. ",
-    ""
-  )
-
 export const RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Ruler Group. ${RULER_GROUP_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+  `This permanently deletes the Ruler Group. ${RULER_GROUP_IN_USE_DELETE_GUIDANCE}`
 
 const deleteRulerGroupAction = createServerFn({
   method: "POST",
@@ -76,6 +70,10 @@ export function RulerGroupMaintenanceSheet({
   const sheetTitle = isEditingRulerGroup
     ? "Edit Ruler Group"
     : "Create Ruler Group"
+
+  function closeSheet() {
+    onOpenChange(false)
+  }
 
   function resetDeleteState() {
     setDeleteError(null)
@@ -104,7 +102,7 @@ export function RulerGroupMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        onOpenChange(false)
+        closeSheet()
         return
       }
 
@@ -183,10 +181,10 @@ export function RulerGroupMaintenanceSheet({
         {isEditingRulerGroup ? (
           <RulerGroupEditForm
             rulerGroup={rulerGroup}
-            onSaved={() => onOpenChange(false)}
+            onSaved={closeSheet}
           />
         ) : (
-          <RulerGroupCreateForm onCreated={() => onOpenChange(false)} />
+          <RulerGroupCreateForm onCreated={closeSheet} />
         )}
       </SheetContent>
     </Sheet>

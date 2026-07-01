@@ -4,7 +4,9 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { RULER_GROUP_IN_USE_DELETE_ERROR } from "@/lib/ruler-group-maintenance"
+import {
+  RULER_GROUP_IN_USE_DELETE_GUIDANCE,
+} from "@/lib/ruler-group-maintenance"
 
 import {
   RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION,
@@ -121,10 +123,7 @@ describe("RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Ruler Group"
     )
     expect(RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      RULER_GROUP_IN_USE_DELETE_ERROR.replace(
-        "Ruler Group cannot be deleted while Rulers still belong to it. ",
-        ""
-      )
+      RULER_GROUP_IN_USE_DELETE_GUIDANCE
     )
   })
 })

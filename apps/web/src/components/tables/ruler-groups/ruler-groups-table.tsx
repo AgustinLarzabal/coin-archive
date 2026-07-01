@@ -20,15 +20,11 @@ export function filterRulerGroups(
     return rulerGroups
   }
 
-  return rulerGroups.filter((rulerGroup) =>
-    getRulerGroupFilterValues(rulerGroup).some((value) =>
-      value.toLocaleLowerCase().includes(normalizedFilterValue)
-    )
+  return rulerGroups.filter(
+    ({ code, name }) =>
+      code.toLocaleLowerCase().includes(normalizedFilterValue) ||
+      name.toLocaleLowerCase().includes(normalizedFilterValue)
   )
-}
-
-function getRulerGroupFilterValues(rulerGroup: RulerGroupOption): string[] {
-  return [rulerGroup.code, rulerGroup.name]
 }
 
 export function RulerGroupsTable({ rulerGroups }: RulerGroupsTableProps) {
@@ -51,10 +47,6 @@ export function RulerGroupsTable({ rulerGroups }: RulerGroupsTableProps) {
     openMaintenanceSheet(rulerGroup)
   }
 
-  function handleMaintenanceSheetOpenChange(open: boolean) {
-    setIsMaintenanceSheetOpen(open)
-  }
-
   return (
     <>
       <DataTable
@@ -71,7 +63,7 @@ export function RulerGroupsTable({ rulerGroups }: RulerGroupsTableProps) {
       <RulerGroupMaintenanceSheet
         rulerGroup={selectedRulerGroup}
         open={isMaintenanceSheetOpen}
-        onOpenChange={handleMaintenanceSheetOpenChange}
+        onOpenChange={setIsMaintenanceSheetOpen}
       />
     </>
   )

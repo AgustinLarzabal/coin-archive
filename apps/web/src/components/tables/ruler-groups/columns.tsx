@@ -4,7 +4,6 @@ import { Button } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
@@ -38,13 +37,11 @@ export function createRulerGroupColumns(
               }
             />
             <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => openEditRulerGroupSheet(rulerGroup)}
-                >
-                  Edit
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => openEditRulerGroupSheet(rulerGroup)}
+              >
+                Edit
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )

@@ -11,8 +11,10 @@ export const RULER_GROUP_DUPLICATE_CODE_ERROR =
 export const RULER_GROUP_GENERIC_SAVE_ERROR =
   "Unable to save Ruler Group right now."
 export const RULER_GROUP_MISSING_ERROR = "Ruler Group no longer exists."
+export const RULER_GROUP_IN_USE_DELETE_GUIDANCE =
+  "Remove or reassign those Rulers before deleting it."
 export const RULER_GROUP_IN_USE_DELETE_ERROR =
-  "Ruler Group cannot be deleted while Rulers still belong to it. Remove or reassign those Rulers before deleting it."
+  `Ruler Group cannot be deleted while Rulers still belong to it. ${RULER_GROUP_IN_USE_DELETE_GUIDANCE}`
 export const RULER_GROUP_INVALID_CODE_ERROR =
   "Ruler Group Code must use lowercase letters, numbers, and hyphens only."
 
@@ -149,9 +151,7 @@ function createFieldErrorResult(
   }
 }
 
-function createFormErrorResult(
-  formError: string
-): RulerGroupMutationResult {
+function createFormErrorResult(formError: string): RulerGroupMutationResult {
   return {
     status: "error",
     fieldErrors: {},

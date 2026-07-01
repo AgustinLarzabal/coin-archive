@@ -40,6 +40,12 @@ async function getDefaultRulerGroupReadDependencies(): Promise<RulerGroupReadDep
   }
 }
 
+async function resolveRulerGroupReadDependencies(
+  dependencies?: RulerGroupReadDependencies
+): Promise<RulerGroupReadDependencies> {
+  return dependencies ?? getDefaultRulerGroupReadDependencies()
+}
+
 export async function loadRulerGroupMaintenanceRulerGroups(
   collector: CollectorWithRole | null,
   dependencies?: RulerGroupReadDependencies
@@ -49,7 +55,7 @@ export async function loadRulerGroupMaintenanceRulerGroups(
   }
 
   const { getRulerGroups } =
-    dependencies ?? (await getDefaultRulerGroupReadDependencies())
+    await resolveRulerGroupReadDependencies(dependencies)
 
   return {
     status: "success",

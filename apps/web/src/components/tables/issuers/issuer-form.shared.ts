@@ -1,7 +1,6 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
-import type {
-  IssuerMutationResult,
-} from "@/lib/issuer-maintenance"
+import { z } from "zod"
+import type { IssuerMutationResult } from "@/lib/issuer-maintenance"
 import {
   createIssuerInputSchema,
   getIssuerFieldErrors,
@@ -39,6 +38,13 @@ type InvalidIssuerSubmission = {
   status: "invalid"
   result: IssuerMutationResult
 }
+
+type IssuerSubmissionResult<TData> =
+  | ValidIssuerSubmission<TData>
+  | InvalidIssuerSubmission
+
+type CreateIssuerSubmissionData = z.output<typeof createIssuerInputSchema>
+type UpdateIssuerSubmissionData = z.output<typeof updateIssuerInputSchema>
 
 export function createIssuerDraft(
   issuer: IssuerMaintenanceRecord,
@@ -119,94 +125,97 @@ export const INVALID_PARENT_ISSUER_SELECTION = Symbol(
 export function getCreateIssuerSubmission(
   draft: IssuerDraft,
   issuers: IssuerMaintenanceRecord[]
-): ValidIssuerSubmission<{
-  code: string
-  isoCode: string
-  name: string
-  parentIssuerId: string | null
-}> | InvalidIssuerSubmission {
-  return resolveIssuerSubmission(draft, getParentIssuerOptions(issuers), {
-    schema: createIssuerInputSchema,
-  })
+): IssuerSubmissionResult<CreateIssuerSubmissionData> {
+  return resolveIssuerSubmission(
+    draft,
+    getParentIssuerOptions(issuers),
+    createIssuerInputSchema,
+    buildIssuerSubmissionInput
+  )
 }
 
 export function getUpdateIssuerSubmission(
   issuerId: string,
   draft: IssuerDraft,
   issuers: IssuerMaintenanceRecord[]
-): ValidIssuerSubmission<{
-  id: string
-  code: string
-  isoCode: string
-  name: string
-  parentIssuerId: string | null
-}> | InvalidIssuerSubmission {
+): IssuerSubmissionResult<UpdateIssuerSubmissionData> {
   return resolveIssuerSubmission(
     draft,
     getParentIssuerOptions(issuers, issuerId),
-    {
-      schema: updateIssuerInputSchema,
-      buildInput: (parentIssuerId) => ({
-        id: issuerId,
-        code: draft.code,
-        isoCode: draft.isoCode,
-        name: draft.name,
-        parentIssuerId,
-      }),
-    }
+    updateIssuerInputSchema,
+    (normalizedDraft, parentIssuerId) => ({
+      id: issuerId,
+      ...buildIssuerSubmissionInput(normalizedDraft, parentIssuerId),
+    })
   )
 }
 
-function resolveIssuerSubmission<TData>(
+function resolveIssuerSubmission<TSchema extends z.ZodType>(
   draft: IssuerDraft,
   options: ParentIssuerOption[],
-  input: {
-    schema: {
-      safeParse: (data: unknown) =>
-        | { success: true; data: TData }
-        | { success: false; error: { issues: Parameters<typeof getIssuerFieldErrors>[0] } }
-    }
-    buildInput?: (parentIssuerId: string | null) => unknown
-  }
-): ValidIssuerSubmission<TData> | InvalidIssuerSubmission {
-  const parentIssuerId = resolveParentIssuerId(draft.parentIssuerLabel, options)
+  schema: TSchema,
+  buildInput: (
+    draft: IssuerDraft,
+    parentIssuerId: string | null
+  ) => z.input<TSchema>
+): IssuerSubmissionResult<z.output<TSchema>> {
+  const normalizedDraft = normalizeIssuerDraft(draft)
+  const parentIssuerId = resolveParentIssuerId(
+    normalizedDraft.parentIssuerLabel,
+    options
+  )
 
   if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
-    return {
-      status: "invalid",
-      result: {
-        status: "error",
-        fieldErrors: {
-          parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
-        },
-      },
-    }
+    return createInvalidParentIssuerSubmission()
   }
 
-  const parsedInput = input.schema.safeParse(
-    input.buildInput
-      ? input.buildInput(parentIssuerId)
-      : {
-          code: draft.code,
-          isoCode: draft.isoCode,
-          name: draft.name,
-          parentIssuerId,
-        }
+  const parsedInput = schema.safeParse(
+    buildInput(normalizedDraft, parentIssuerId)
   )
 
   if (!parsedInput.success) {
-    return {
-      status: "invalid",
-      result: {
-        status: "error",
-        fieldErrors: getIssuerFieldErrors(parsedInput.error.issues),
-      },
-    }
+    return createInvalidIssuerSubmission(parsedInput.error.issues)
   }
 
   return {
     status: "valid",
     data: parsedInput.data,
+  }
+}
+
+function buildIssuerSubmissionInput(
+  draft: IssuerDraft,
+  parentIssuerId: string | null
+) {
+  return {
+    code: draft.code,
+    isoCode: draft.isoCode,
+    name: draft.name,
+    parentIssuerId,
+  }
+}
+
+function createInvalidParentIssuerSubmission(): InvalidIssuerSubmission {
+  return {
+    status: "invalid",
+    result: {
+      status: "error",
+      fieldErrors: {
+        parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
+      },
+    },
+  }
+}
+
+function createInvalidIssuerSubmission(
+  issues: z.ZodIssue[]
+): InvalidIssuerSubmission {
+  return {
+    status: "invalid",
+    result: {
+      status: "error",
+      fieldErrors: getIssuerFieldErrors(issues),
+    },
   }
 }
 

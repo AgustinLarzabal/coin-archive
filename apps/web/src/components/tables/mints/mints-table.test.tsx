@@ -1,8 +1,14 @@
 import type { MintOption } from "@workspace/db"
+import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { MintsTable, filterMints } from "./mints-table"
+
+vi.mock("./mint-maintenance-sheet", () => ({
+  MintMaintenanceSheet: () =>
+    createElement("div", null, "MintMaintenanceSheet"),
+}))
 
 const mints: MintOption[] = [
   {

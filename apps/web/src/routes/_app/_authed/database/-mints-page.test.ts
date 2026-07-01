@@ -13,6 +13,11 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
+vi.mock("@/components/tables/mints/mints-table", () => ({
+  MintsTable: ({ mints }: { mints: MintOption[] }) =>
+    `Mints table: ${mints.map((mint) => mint.name).join(", ")}`,
+}))
+
 const mintTimestamps = {
   createdAt: new Date("2026-07-01T00:00:00.000Z"),
   updatedAt: new Date("2026-07-01T00:00:00.000Z"),
@@ -118,11 +123,8 @@ describe("renderDatabaseMintsPage", () => {
       })
     )
 
-    expect(markup).toContain("Mint Code")
-    expect(markup).toContain("Mint Name")
+    expect(markup).toContain("Mints table:")
     expect(markup).toContain("Buenos Aires Mint")
     expect(markup).toContain("Royal Mint of Madrid")
-    expect(markup).toContain("Create")
-    expect(markup).toContain('aria-label="Actions"')
   })
 })

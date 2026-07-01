@@ -1,8 +1,12 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { IssuersTable, filterIssuers } from "./issuers-table"
+
+vi.mock("./issuer-maintenance-sheet", () => ({
+  IssuerMaintenanceSheet: () => null,
+}))
 
 const issuers: IssuerMaintenanceRecord[] = [
   {
@@ -49,7 +53,11 @@ describe("filterIssuers", () => {
 })
 
 describe("IssuersTable", () => {
-  it("renders issuer columns, parent context, and the filter toolbar", () => {
+  it("renders issuer columns, parent context, and the filter toolbar without router warnings", () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined)
+
     const markup = renderToStaticMarkup(<IssuersTable issuers={issuers} />)
 
     expect(markup).toContain("Issuer Name")
@@ -65,5 +73,8 @@ describe("IssuersTable", () => {
     )
     expect(markup).toContain("Create Issuer")
     expect(markup).toContain("Actions")
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+
+    consoleErrorSpy.mockRestore()
   })
 })

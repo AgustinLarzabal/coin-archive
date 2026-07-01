@@ -11,6 +11,21 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
+vi.mock("@tanstack/react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-router")>()
+
+  return {
+    ...actual,
+    useRouter: () => ({
+      invalidate: vi.fn(),
+    }),
+  }
+})
+
+vi.mock("@/components/tables/issuers/issuer-maintenance-sheet", () => ({
+  IssuerMaintenanceSheet: () => null,
+}))
+
 describe("databaseSecondaryMenuItems", () => {
   it("includes the Issuers maintenance entry after Engravers", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({

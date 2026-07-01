@@ -38,6 +38,12 @@ async function getDefaultOrientationReadDependencies(): Promise<OrientationReadD
   }
 }
 
+async function resolveOrientationReadDependencies(
+  dependencies?: OrientationReadDependencies
+): Promise<OrientationReadDependencies> {
+  return dependencies ?? getDefaultOrientationReadDependencies()
+}
+
 export async function loadOrientationMaintenanceOrientations(
   collector: CollectorWithRole | null,
   dependencies?: OrientationReadDependencies
@@ -49,7 +55,7 @@ export async function loadOrientationMaintenanceOrientations(
   }
 
   const { getOrientations } =
-    dependencies ?? (await getDefaultOrientationReadDependencies())
+    await resolveOrientationReadDependencies(dependencies)
 
   return {
     status: "success",

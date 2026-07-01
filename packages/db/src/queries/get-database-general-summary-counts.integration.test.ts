@@ -7,11 +7,11 @@ import {
   createCurrency,
   createDistribution,
   createEdge,
-    createEngraver,
-    createIssuer,
-    createMint,
-    createOrientation,
-  } from "../testing/fixtures"
+  createEngraver,
+  createIssuer,
+  createMint,
+  createOrientation,
+} from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
 describe("getDatabaseGeneralSummaryCounts integration", () => {

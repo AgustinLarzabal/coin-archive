@@ -2,13 +2,6 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -22,6 +15,7 @@ import {
   submitCreateShape,
 } from "@/lib/shape-maintenance"
 
+import { ShapeFormFields } from "./shape-form-fields"
 import { EMPTY_SHAPE_DRAFT, isShapeDraftComplete } from "./shape-form.shared"
 import type { ShapeDraft } from "./shape-form.shared"
 
@@ -123,40 +117,19 @@ export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-shape-code">Shape Code</FieldLabel>
-          <Input
-            id="new-shape-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="round"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-shape-name">Shape Name</FieldLabel>
-          <Input
-            id="new-shape-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Round"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <ShapeFormFields
+        codeInputId="new-shape-code"
+        nameInputId="new-shape-name"
+        codePlaceholder="round"
+        namePlaceholder="Round"
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onDraftChange={updateDraft}
+      />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

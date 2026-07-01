@@ -12,7 +12,7 @@ import {
 import { Icons } from "@/components/icons"
 
 export function createShapeColumns(
-  onEditShape: (shape: ShapeOption) => void
+  openEditShapeSheet: (shape: ShapeOption) => void
 ): ColumnDef<ShapeOption>[] {
   return [
     {
@@ -39,7 +39,7 @@ export function createShapeColumns(
             />
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => onEditShape(shape)}>
+                <DropdownMenuItem onClick={() => openEditShapeSheet(shape)}>
                   Edit
                 </DropdownMenuItem>
               </DropdownMenuGroup>

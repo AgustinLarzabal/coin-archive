@@ -78,18 +78,18 @@ type DeleteShapeData = z.output<typeof deleteShapeInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: ShapeMutationResult }
-type ShapeMutationOperationResult = unknown | null
+type ShapeMutationExecutor<TData> = (
+  dependencies: ShapeMutationDependencies,
+  data: TData
+) => Promise<unknown | null>
 type SubmitShapeMutationOptions<TInput, TData> = {
   collector: CollectorWithRole | null
   input: TInput
   dependencies?: ShapeMutationDependencies
   validate: (input: TInput) => ValidationResult<TData>
-  execute: (
-    dependencies: ShapeMutationDependencies,
-    data: TData
-  ) => Promise<ShapeMutationOperationResult>
+  runMutation: ShapeMutationExecutor<TData>
   createSuccessResult: () => ShapeMutationResult
-  createNullResult?: () => ShapeMutationResult
+  createMissingResult?: () => ShapeMutationResult
 }
 
 type ShapeMutationDependencies = {
@@ -99,7 +99,8 @@ type ShapeMutationDependencies = {
 }
 
 async function getDefaultShapeMutationDependencies(): Promise<ShapeMutationDependencies> {
-  const { createShape, deleteShape, updateShape } = await import("@workspace/db")
+  const { createShape, deleteShape, updateShape } =
+    await import("@workspace/db")
 
   return {
     createShape,
@@ -196,6 +197,21 @@ function getPostgresError(error: unknown) {
   return postgresError
 }
 
+type PostgresConstraintError = {
+  code: string
+  constraint_name: string
+}
+
+function isPostgresConstraintError(
+  value: unknown
+): value is PostgresConstraintError {
+  return (
+    isObjectRecord(value) &&
+    typeof value.code === "string" &&
+    typeof value.constraint_name === "string"
+  )
+}
+
 function matchesPostgresConstraint(
   error: unknown,
   code: string,
@@ -204,10 +220,8 @@ function matchesPostgresConstraint(
   const postgresError = getPostgresError(error)
 
   return (
-    postgresError !== null &&
-    "code" in postgresError &&
+    isPostgresConstraintError(postgresError) &&
     postgresError.code === code &&
-    "constraint_name" in postgresError &&
     postgresError.constraint_name === constraintName
   )
 }
@@ -292,9 +306,9 @@ async function submitShapeMutation<TInput, TData>({
   input,
   dependencies,
   validate,
-  execute,
+  runMutation,
   createSuccessResult,
-  createNullResult,
+  createMissingResult,
 }: SubmitShapeMutationOptions<TInput, TData>): Promise<ShapeMutationResult> {
   if (!hasShapeMaintenanceAccess(collector)) {
     return createAuthorizationError()
@@ -310,13 +324,13 @@ async function submitShapeMutation<TInput, TData>({
     await resolveShapeMutationDependencies(dependencies)
 
   try {
-    const mutationResult = await execute(
+    const mutationResult = await runMutation(
       resolvedDependencies,
       validationResult.data
     )
 
-    if (mutationResult === null && createNullResult) {
-      return createNullResult()
+    if (mutationResult === null && createMissingResult) {
+      return createMissingResult()
     }
 
     return createSuccessResult()
@@ -335,7 +349,7 @@ export async function submitCreateShape(
     input,
     dependencies,
     validate: validateCreateShapeInput,
-    execute: (resolvedDependencies, data) =>
+    runMutation: (resolvedDependencies, data) =>
       resolvedDependencies.createShape(data),
     createSuccessResult: () => ({
       status: "success",
@@ -354,13 +368,13 @@ export async function submitUpdateShape(
     input,
     dependencies,
     validate: validateUpdateShapeInput,
-    execute: (resolvedDependencies, data) =>
+    runMutation: (resolvedDependencies, data) =>
       resolvedDependencies.updateShape(data),
     createSuccessResult: () => ({
       status: "success",
       message: "Saved.",
     }),
-    createNullResult: () => createFormErrorResult(SHAPE_MISSING_ERROR),
+    createMissingResult: () => createFormErrorResult(SHAPE_MISSING_ERROR),
   })
 }
 
@@ -374,12 +388,12 @@ export async function submitDeleteShape(
     input,
     dependencies,
     validate: validateDeleteShapeInput,
-    execute: (resolvedDependencies, data) =>
+    runMutation: (resolvedDependencies, data) =>
       resolvedDependencies.deleteShape(data),
     createSuccessResult: () => ({
       status: "success",
       message: "Shape deleted.",
     }),
-    createNullResult: () => createFormErrorResult(SHAPE_MISSING_ERROR),
+    createMissingResult: () => createFormErrorResult(SHAPE_MISSING_ERROR),
   })
 }

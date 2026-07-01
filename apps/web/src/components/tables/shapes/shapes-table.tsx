@@ -34,31 +34,43 @@ function getShapeFilterValues(shape: ShapeOption): string[] {
 export function ShapesTable({ shapes }: ShapesTableProps) {
   const [filterValue, setFilterValue] = useState("")
   const [selectedShape, setSelectedShape] = useState<ShapeOption | null>(null)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const filteredShapes = filterShapes(shapes, filterValue)
 
   function openMaintenanceSheet(shape: ShapeOption | null) {
     setSelectedShape(shape)
-    setIsSheetOpen(true)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  function openCreateShapeSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditShapeSheet(shape: ShapeOption) {
+    openMaintenanceSheet(shape)
+  }
+
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
   }
 
   return (
     <>
       <DataTable
-        columns={createShapeColumns(openMaintenanceSheet)}
+        columns={createShapeColumns(openEditShapeSheet)}
         data={filteredShapes}
         toolbar={() => (
           <ShapesTableToolbar
             filterValue={filterValue}
-            onCreateShape={() => openMaintenanceSheet(null)}
+            onCreateShape={openCreateShapeSheet}
             onFilterValueChange={setFilterValue}
           />
         )}
       />
       <ShapeMaintenanceSheet
         shape={selectedShape}
-        open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>
   )

@@ -43,32 +43,8 @@ type RimMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-type RimDeleteDialogState = {
-  deleteError: string | null
-  isDeleteDialogOpen: boolean
-  isDeletePending: boolean
-}
-
 export const RIM_DELETE_CONFIRMATION_DESCRIPTION =
   `This permanently deletes the Rim. ${RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE}`
-
-export function getNextRimDeleteDialogState(
-  state: RimDeleteDialogState,
-  isDeleteDialogOpen: boolean
-): RimDeleteDialogState {
-  if (!isDeleteDialogOpen) {
-    return {
-      deleteError: null,
-      isDeleteDialogOpen: false,
-      isDeletePending: false,
-    }
-  }
-
-  return {
-    ...state,
-    isDeleteDialogOpen: true,
-  }
-}
 
 const deleteRimAction = createServerFn({
   method: "POST",
@@ -99,18 +75,12 @@ export function RimMaintenanceSheet({
   }
 
   function handleDeleteDialogOpenChange(nextOpen: boolean) {
-    const nextState = getNextRimDeleteDialogState(
-      {
-        deleteError,
-        isDeleteDialogOpen,
-        isDeletePending,
-      },
-      nextOpen
-    )
+    if (!nextOpen) {
+      resetDeleteState()
+      return
+    }
 
-    setDeleteError(nextState.deleteError)
-    setIsDeleteDialogOpen(nextState.isDeleteDialogOpen)
-    setIsDeletePending(nextState.isDeletePending)
+    setIsDeleteDialogOpen(true)
   }
 
   useEffect(() => {

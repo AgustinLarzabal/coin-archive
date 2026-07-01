@@ -8,7 +8,6 @@ import { RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE } from "@/lib/rim-m
 
 import {
   RIM_DELETE_CONFIRMATION_DESCRIPTION,
-  getNextRimDeleteDialogState,
   RimMaintenanceSheet,
 } from "./rim-maintenance-sheet"
 
@@ -122,39 +121,6 @@ describe("RIM_DELETE_CONFIRMATION_DESCRIPTION", () => {
     expect(RIM_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE
     )
-  })
-})
-
-describe("getNextRimDeleteDialogState", () => {
-  it("clears stale delete feedback whenever the confirmation dialog closes", () => {
-    expect(
-      getNextRimDeleteDialogState({
-        deleteError: "Rim cannot be deleted while Coins still use it.",
-        isDeleteDialogOpen: true,
-        isDeletePending: true,
-      }, false)
-    ).toStrictEqual({
-      deleteError: null,
-      isDeleteDialogOpen: false,
-      isDeletePending: false,
-    })
-  })
-
-  it("preserves the reset feedback state when reopening the confirmation dialog", () => {
-    expect(
-      getNextRimDeleteDialogState(
-        {
-          deleteError: null,
-          isDeleteDialogOpen: false,
-          isDeletePending: false,
-        },
-        true
-      )
-    ).toStrictEqual({
-      deleteError: null,
-      isDeleteDialogOpen: true,
-      isDeletePending: false,
-    })
   })
 })
 

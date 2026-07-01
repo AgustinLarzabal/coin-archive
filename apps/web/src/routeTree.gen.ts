@@ -20,6 +20,7 @@ import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
 import { Route as AppAuthedDatabaseRimsRouteImport } from './routes/_app/_authed/database/rims'
+import { Route as AppAuthedDatabaseShapesRouteImport } from './routes/_app/_authed/database/shapes'
 import { Route as AppAuthedDatabaseOrientationsRouteImport } from './routes/_app/_authed/database/orientations'
 import { Route as AppAuthedDatabaseMintsRouteImport } from './routes/_app/_authed/database/mints'
 import { Route as AppAuthedDatabaseIssuersRouteImport } from './routes/_app/_authed/database/issuers'
@@ -81,6 +82,11 @@ const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
 const AppAuthedDatabaseRimsRoute = AppAuthedDatabaseRimsRouteImport.update({
   id: '/rims',
   path: '/rims',
+  getParentRoute: () => AppAuthedDatabaseRouteRoute,
+} as any)
+const AppAuthedDatabaseShapesRoute = AppAuthedDatabaseShapesRouteImport.update({
+  id: '/shapes',
+  path: '/shapes',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
 const AppAuthedDatabaseOrientationsRoute =
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database/rims': typeof AppAuthedDatabaseRimsRoute
+  '/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database/rims': typeof AppAuthedDatabaseRimsRoute
+  '/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
 }
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/_app/_authed/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/_app/_authed/database/rims': typeof AppAuthedDatabaseRimsRoute
+  '/_app/_authed/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/database/mints'
     | '/database/orientations'
     | '/database/rims'
+    | '/database/shapes'
     | '/database/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/database/mints'
     | '/database/orientations'
     | '/database/rims'
+    | '/database/shapes'
     | '/database'
     | '/settings'
   id:
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/mints'
     | '/_app/_authed/database/orientations'
     | '/_app/_authed/database/rims'
+    | '/_app/_authed/database/shapes'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
   fileRoutesById: FileRoutesById
@@ -349,6 +361,13 @@ declare module '@tanstack/react-router' {
       path: '/rims'
       fullPath: '/database/rims'
       preLoaderRoute: typeof AppAuthedDatabaseRimsRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
+    '/_app/_authed/database/shapes': {
+      id: '/_app/_authed/database/shapes'
+      path: '/shapes'
+      fullPath: '/database/shapes'
+      preLoaderRoute: typeof AppAuthedDatabaseShapesRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
     '/_app/_authed/database/orientations': {
@@ -451,6 +470,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseMintsRoute: typeof AppAuthedDatabaseMintsRoute
   AppAuthedDatabaseOrientationsRoute: typeof AppAuthedDatabaseOrientationsRoute
   AppAuthedDatabaseRimsRoute: typeof AppAuthedDatabaseRimsRoute
+  AppAuthedDatabaseShapesRoute: typeof AppAuthedDatabaseShapesRoute
   AppAuthedDatabaseIndexRoute: typeof AppAuthedDatabaseIndexRoute
 }
 
@@ -466,6 +486,7 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
     AppAuthedDatabaseMintsRoute: AppAuthedDatabaseMintsRoute,
     AppAuthedDatabaseOrientationsRoute: AppAuthedDatabaseOrientationsRoute,
     AppAuthedDatabaseRimsRoute: AppAuthedDatabaseRimsRoute,
+    AppAuthedDatabaseShapesRoute: AppAuthedDatabaseShapesRoute,
     AppAuthedDatabaseIndexRoute: AppAuthedDatabaseIndexRoute,
   }
 

@@ -12,6 +12,7 @@ import {
   createMint,
   createOrientation,
   createRim,
+  createShape,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -66,6 +67,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "barred",
       name: "Barred rim",
     })
+    await createShape({
+      code: "round",
+      name: "Round",
+    })
+    await createShape({
+      code: "scalloped",
+      name: "Scalloped",
+    })
     await createEngraver({
       code: "barth",
       name: "Barth",
@@ -104,6 +113,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       distributions: 1,
       edges: 2,
       rims: 2,
+      shapes: 2,
       engravers: 2,
       issuers: 2,
       orientations: 2,
@@ -119,6 +129,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       distributions: 0,
       edges: 0,
       rims: 0,
+      shapes: 0,
       engravers: 0,
       issuers: 0,
       orientations: 0,

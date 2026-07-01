@@ -58,6 +58,7 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       distributions: 4,
       edges: 7,
       rims: 11,
+      shapes: 11,
       engravers: 6,
       issuers: 8,
       orientations: 10,

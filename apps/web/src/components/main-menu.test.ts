@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getPrivateNavigationItem } from "./main-menu"
 
 describe("getPrivateNavigationItem", () => {
-  it("includes Rims in the Database main navigation children after Edges", () => {
+  it("includes Rims and Shapes in the Database main navigation children after Edges", () => {
     expect(
       getPrivateNavigationItem({
         to: "/database",
@@ -20,6 +20,7 @@ describe("getPrivateNavigationItem", () => {
         { to: "/database/distributions", label: "Distributions" },
         { to: "/database/edges", label: "Edges" },
         { to: "/database/rims", label: "Rims" },
+        { to: "/database/shapes", label: "Shapes" },
         { to: "/database/engravers", label: "Engravers" },
         { to: "/database/issuers", label: "Issuers" },
         { to: "/database/orientations", label: "Orientations" },

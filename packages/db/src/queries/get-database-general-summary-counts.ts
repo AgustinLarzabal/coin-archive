@@ -11,6 +11,7 @@ import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
 import { rim } from "../schema/rim"
+import { shape } from "../schema/shape"
 
 export type DatabaseGeneralSummaryCounts = {
   catalogues: number
@@ -19,6 +20,7 @@ export type DatabaseGeneralSummaryCounts = {
   distributions: number
   edges: number
   rims: number
+  shapes: number
   engravers: number
   issuers: number
   orientations: number
@@ -39,6 +41,7 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
     distributions,
     edges,
     rims,
+    shapes,
     engravers,
     issuers,
     orientations,
@@ -50,6 +53,7 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
       getCount(db.select({ count: count() }).from(distribution)),
       getCount(db.select({ count: count() }).from(edge)),
       getCount(db.select({ count: count() }).from(rim)),
+      getCount(db.select({ count: count() }).from(shape)),
       getCount(db.select({ count: count() }).from(engraver)),
       getCount(db.select({ count: count() }).from(issuer)),
       getCount(db.select({ count: count() }).from(orientation)),
@@ -63,6 +67,7 @@ export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneral
     distributions,
     edges,
     rims,
+    shapes,
     engravers,
     issuers,
     orientations,

@@ -6,7 +6,7 @@ import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadEngraverMaintenanceEngravers } from "./engravers"
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Engravers page in the database secondary menu after Rims", () => {
+  it("includes the read-only Engravers page in the database secondary menu after Shapes", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/engravers",
       label: "Engravers",
@@ -17,6 +17,10 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Rims",
     })
     expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+      to: "/database/shapes",
+      label: "Shapes",
+    })
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })

@@ -17,10 +17,14 @@ export function filterMints(mints: MintOption[], filterValue: string): MintOptio
   }
 
   return mints.filter((mint) =>
-    [mint.code, mint.name].some((value) =>
+    getMintFilterValues(mint).some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
   )
+}
+
+function getMintFilterValues(mint: MintOption): string[] {
+  return [mint.code, mint.name]
 }
 
 export function MintsTable({ mints }: MintsTableProps) {

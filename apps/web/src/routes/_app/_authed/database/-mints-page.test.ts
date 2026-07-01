@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
+import type { MintOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { databaseSecondaryMenuItems } from "./-navigation-items"
@@ -10,6 +11,18 @@ import {
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
+
+const mintTimestamps = {
+  createdAt: new Date("2026-07-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+} as const
+
+function createMint(overrides: Pick<MintOption, "id" | "code" | "name">): MintOption {
+  return {
+    ...mintTimestamps,
+    ...overrides,
+  }
+}
 
 describe("databaseSecondaryMenuItems", () => {
   it("includes the Mints maintenance entry after Issuers", () => {
@@ -54,13 +67,11 @@ describe("loadMintMaintenanceMints", () => {
 
   it("returns Mint maintenance data for Editors and Admins", async () => {
     const mints = [
-      {
+      createMint({
         id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
         code: "buenos-aires-mint",
         name: "Buenos Aires Mint",
-        createdAt: new Date("2026-07-01T00:00:00.000Z"),
-        updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-      },
+      }),
     ]
     const getMints = vi.fn().mockResolvedValue(mints)
     const allowedRoles = ["editor", "admin"] as const
@@ -90,20 +101,16 @@ describe("renderDatabaseMintsPage", () => {
       renderDatabaseMintsPage({
         isAllowed: true,
         mints: [
-          {
+          createMint({
             id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
             code: "buenos-aires-mint",
             name: "Buenos Aires Mint",
-            createdAt: new Date("2026-07-01T00:00:00.000Z"),
-            updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-          },
-          {
+          }),
+          createMint({
             id: "2f7265fc-0ddf-49bc-b90a-71b3466ee3bd",
             code: "royal-mint-of-madrid",
             name: "Royal Mint of Madrid",
-            createdAt: new Date("2026-07-01T00:00:00.000Z"),
-            updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-          },
+          }),
         ],
       })
     )

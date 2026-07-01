@@ -72,6 +72,10 @@ export function IssuerMaintenanceSheet({
   const isEditingIssuer = issuer !== null
   const sheetTitle = isEditingIssuer ? "Edit Issuer" : "Create Issuer"
 
+  function closeSheet() {
+    onOpenChange(false)
+  }
+
   useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(
@@ -97,7 +101,7 @@ export function IssuerMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        onOpenChange(false)
+        closeSheet()
         return
       }
 
@@ -105,14 +109,6 @@ export function IssuerMaintenanceSheet({
     } finally {
       setIsDeletePending(false)
     }
-  }
-
-  function handleDeleteDialogOpen() {
-    setIsDeleteDialogOpen(true)
-  }
-
-  function handleCloseSheet() {
-    onOpenChange(false)
   }
 
   return (
@@ -139,7 +135,7 @@ export function IssuerMaintenanceSheet({
                 <DropdownMenuContent sideOffset={10} align="end">
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={handleDeleteDialogOpen}
+                    onClick={() => setIsDeleteDialogOpen(true)}
                   >
                     Delete Issuer
                   </DropdownMenuItem>
@@ -185,10 +181,10 @@ export function IssuerMaintenanceSheet({
           <IssuerEditForm
             issuer={issuer}
             issuers={issuers}
-            onSaved={handleCloseSheet}
+            onSaved={closeSheet}
           />
         ) : (
-          <IssuerCreateForm issuers={issuers} onCreated={handleCloseSheet} />
+          <IssuerCreateForm issuers={issuers} onCreated={closeSheet} />
         )}
       </SheetContent>
     </Sheet>

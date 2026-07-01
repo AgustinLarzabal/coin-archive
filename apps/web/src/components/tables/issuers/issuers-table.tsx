@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
@@ -47,18 +47,19 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
     setIsMaintenanceSheetOpen(true)
   }
 
-  const columns = useMemo(
-    () =>
-      createIssuerColumns(
-        (issuer) => {
-          openMaintenanceSheet(issuer)
-        },
-        (issuer) => {
-          openMaintenanceSheet(issuer, { deleteDialogOpen: true })
-        }
-      ),
-    []
-  )
+  function openCreateIssuerSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditIssuerSheet(issuer: IssuerMaintenanceRecord) {
+    openMaintenanceSheet(issuer)
+  }
+
+  function openDeleteIssuerSheet(issuer: IssuerMaintenanceRecord) {
+    openMaintenanceSheet(issuer, { deleteDialogOpen: true })
+  }
+
+  const columns = createIssuerColumns(openEditIssuerSheet, openDeleteIssuerSheet)
   const filteredIssuers = filterIssuers(issuers, filterValue)
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
@@ -70,10 +71,6 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
     }
   }
 
-  function handleCreateIssuer() {
-    openMaintenanceSheet(null)
-  }
-
   return (
     <>
       <DataTable
@@ -82,7 +79,7 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
         toolbar={() => (
           <IssuersTableToolbar
             filterValue={filterValue}
-            onCreateIssuer={handleCreateIssuer}
+            onCreateIssuer={openCreateIssuerSheet}
             onFilterValueChange={setFilterValue}
           />
         )}

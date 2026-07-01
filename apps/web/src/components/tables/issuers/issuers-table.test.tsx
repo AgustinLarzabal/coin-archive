@@ -1,6 +1,7 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { createElement } from "react"
 import type { ReactNode } from "react"
+import type { Row } from "@tanstack/react-table"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
@@ -76,16 +77,20 @@ describe("filterIssuers", () => {
 describe("IssuersTable", () => {
   it("includes edit and delete actions in the row menu", () => {
     const columns = createIssuerColumns(vi.fn(), vi.fn())
-    const actionsColumn = columns[4]
+    const actionsColumn = columns.find((column) => column.id === "actions")
 
     if (!actionsColumn?.cell) {
       throw new Error("Expected Issuer actions column to define a cell")
     }
 
+    const renderActionsCell = actionsColumn.cell as (props: {
+      row: Pick<Row<IssuerMaintenanceRecord>, "original">
+    }) => ReactNode
+
     const markup = renderToStaticMarkup(
-      createElement(actionsColumn.cell, {
+      createElement(renderActionsCell, {
         row: { original: issuers[0] },
-      } as never)
+      })
     )
 
     expect(markup).toContain("Edit")

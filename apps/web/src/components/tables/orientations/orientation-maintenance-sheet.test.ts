@@ -4,6 +4,8 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
+import { ORIENTATION_IN_USE_DELETE_GUIDANCE } from "@/lib/orientation-maintenance"
+
 import {
   ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION,
   OrientationMaintenanceSheet,
@@ -117,7 +119,7 @@ describe("ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Orientation"
     )
     expect(ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      "Existing Coins must have the Orientation removed or reassigned before deletion"
+      ORIENTATION_IN_USE_DELETE_GUIDANCE
     )
   })
 })

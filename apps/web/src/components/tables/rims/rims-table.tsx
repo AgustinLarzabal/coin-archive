@@ -2,7 +2,8 @@ import { useState } from "react"
 import type { RimOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { rimColumns } from "./columns"
+import { createRimColumns } from "./columns"
+import { RimMaintenanceSheet } from "./rim-maintenance-sheet"
 import { RimsTableToolbar } from "./rims-table-toolbar"
 
 type RimsTableProps = {
@@ -29,18 +30,38 @@ function getRimFilterValues(rim: RimOption): string[] {
 
 export function RimsTable({ rims }: RimsTableProps) {
   const [filterValue, setFilterValue] = useState("")
+  const [selectedRim, setSelectedRim] = useState<RimOption | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const filteredRims = filterRims(rims, filterValue)
 
+  function handleCreateRim() {
+    setSelectedRim(null)
+    setIsSheetOpen(true)
+  }
+
+  function handleEditRim(rim: RimOption) {
+    setSelectedRim(rim)
+    setIsSheetOpen(true)
+  }
+
   return (
-    <DataTable
-      columns={rimColumns}
-      data={filteredRims}
-      toolbar={() => (
-        <RimsTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={createRimColumns(handleEditRim)}
+        data={filteredRims}
+        toolbar={() => (
+          <RimsTableToolbar
+            filterValue={filterValue}
+            onCreateRim={handleCreateRim}
+            onFilterValueChange={setFilterValue}
+          />
+        )}
+      />
+      <RimMaintenanceSheet
+        rim={selectedRim}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
+    </>
   )
 }

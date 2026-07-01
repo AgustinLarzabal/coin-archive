@@ -23,7 +23,7 @@ function createRim(overrides: Pick<RimOption, "id" | "code" | "name">): RimOptio
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Rims maintenance entry after Edges", () => {
+  it("includes the Rims maintenance entry after Edges", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/rims",
       label: "Rims",
@@ -94,7 +94,7 @@ describe("renderDatabaseRimsPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the read-only Rims table for allowed Editors and Admins", () => {
+  it("renders the Rims table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseRimsPage({
         isAllowed: true,

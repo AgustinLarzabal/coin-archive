@@ -1,12 +1,15 @@
 import { Input } from "@workspace/ui/components/input"
+import { Button } from "@workspace/ui/components/button"
 
 type RimsTableToolbarProps = {
   filterValue: string
+  onCreateRim: () => void
   onFilterValueChange: (value: string) => void
 }
 
 export function RimsTableToolbar({
   filterValue,
+  onCreateRim,
   onFilterValueChange,
 }: RimsTableToolbarProps) {
   return (
@@ -17,6 +20,9 @@ export function RimsTableToolbar({
         onChange={(event) => onFilterValueChange(event.target.value)}
         className="max-w-sm"
       />
+      <Button type="button" onClick={onCreateRim}>
+        Create
+      </Button>
     </div>
   )
 }

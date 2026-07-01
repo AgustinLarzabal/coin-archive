@@ -33,7 +33,7 @@ describe("filterRims", () => {
 })
 
 describe("RimsTable", () => {
-  it("renders Rim Code and Rim Name columns with a read-only filter toolbar", () => {
+  it("renders Rim Code and Rim Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(<RimsTable rims={rims} />)
 
     expect(markup).toContain("Rim Code")
@@ -41,7 +41,7 @@ describe("RimsTable", () => {
     expect(markup).toContain("Raised rim")
     expect(markup).toContain("Barred rim")
     expect(markup).toContain("Filter rims by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

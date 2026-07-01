@@ -2,13 +2,6 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -23,6 +16,7 @@ import {
 } from "@/lib/mint-maintenance"
 
 import { EMPTY_MINT_DRAFT, isMintDraftComplete } from "./mint-form.shared"
+import { MintFormFields } from "./mint-form-fields"
 import type { MintDraft } from "./mint-form.shared"
 
 type MintCreateFormProps = {
@@ -123,38 +117,12 @@ export function MintCreateForm({ onCreated }: MintCreateFormProps) {
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-mint-code">Mint Code</FieldLabel>
-          <Input
-            id="new-mint-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="buenos-aires-mint"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-mint-name">Mint Name</FieldLabel>
-          <Input
-            id="new-mint-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Buenos Aires Mint"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <MintFormFields
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onFieldChange={updateDraft}
+        variant="create"
+      />
 
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 

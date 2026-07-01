@@ -17,6 +17,10 @@ type DeleteMintInput = {
   id: string
 }
 
+function takeFirstOrNull<T>(records: T[]): T | null {
+  return records.at(0) ?? null
+}
+
 function normalizeMintFields({ code, name }: MintFields) {
   return {
     code: code.trim(),
@@ -37,20 +41,20 @@ export async function updateMint({
   id,
   ...fields
 }: UpdateMintInput): Promise<Mint | null> {
-  const [updatedMint] = await db
-    .update(mint)
-    .set({
-      ...normalizeMintFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(mint.id, id))
-    .returning()
-
-  return updatedMint ?? null
+  return takeFirstOrNull(
+    await db
+      .update(mint)
+      .set({
+        ...normalizeMintFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(mint.id, id))
+      .returning()
+  )
 }
 
 export async function deleteMint({ id }: DeleteMintInput): Promise<Mint | null> {
-  const [deletedMint] = await db.delete(mint).where(eq(mint.id, id)).returning()
-
-  return deletedMint ?? null
+  return takeFirstOrNull(
+    await db.delete(mint).where(eq(mint.id, id)).returning()
+  )
 }

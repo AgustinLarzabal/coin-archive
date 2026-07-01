@@ -69,6 +69,7 @@ export function MintMaintenanceSheet({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
   const isEditingMint = mint !== null
+  const sheetTitle = isEditingMint ? "Edit Mint" : "Create Mint"
 
   function closeSheet() {
     onOpenChange(false)
@@ -113,7 +114,7 @@ export function MintMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{isEditingMint ? "Edit Mint" : "Create Mint"}</SheetTitle>
+          <SheetTitle>{sheetTitle}</SheetTitle>
 
           {isEditingMint ? (
             <>
@@ -175,7 +176,7 @@ export function MintMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {mint !== null ? (
+        {isEditingMint ? (
           <MintEditForm mint={mint} onSaved={closeSheet} />
         ) : (
           <MintCreateForm onCreated={closeSheet} />

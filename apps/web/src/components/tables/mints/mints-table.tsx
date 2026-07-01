@@ -33,8 +33,6 @@ export function MintsTable({ mints }: MintsTableProps) {
   const [selectedMint, setSelectedMint] = useState<MintOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
-  const filteredMints = filterMints(mints, filterValue)
-  const columns = createMintColumns(openEditMintSheet, openDeleteMintSheet)
 
   function openMaintenanceSheet(
     mint: MintOption | null,
@@ -65,6 +63,9 @@ export function MintsTable({ mints }: MintsTableProps) {
       setShouldOpenDeleteDialog(false)
     }
   }
+
+  const columns = createMintColumns(openEditMintSheet, openDeleteMintSheet)
+  const filteredMints = filterMints(mints, filterValue)
 
   return (
     <>

@@ -26,6 +26,7 @@ import {
 import {
   EMPTY_ISSUER_DRAFT,
   getParentIssuerOptions,
+  INVALID_PARENT_ISSUER_ERROR,
   INVALID_PARENT_ISSUER_SELECTION,
   isIssuerDraftComplete,
   resolveParentIssuerId,
@@ -59,7 +60,7 @@ function validateIssuerDraft(
   issuers: IssuerMaintenanceRecord[]
 ): IssuerMutationResult | null {
   const parentIssuerOptions = getParentIssuerOptions(issuers)
-  const parentIssuerId = resolveParentIssuerId(
+  const parentIssuerId = getResolvedParentIssuerId(
     draft.parentIssuerLabel,
     parentIssuerOptions
   )
@@ -68,7 +69,7 @@ function validateIssuerDraft(
     return {
       status: "error",
       fieldErrors: {
-        parentIssuerId: "Select a Parent Issuer from the list.",
+        parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
       },
     }
   }
@@ -147,19 +148,27 @@ export function IssuerCreateForm({
     setIsPending(true)
 
     try {
-      const resolvedParentIssuerId = resolveParentIssuerId(
+      const parentIssuerId = getResolvedParentIssuerId(
         draft.parentIssuerLabel,
         parentIssuerOptions
       )
+
+      if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
+        applyResult({
+          status: "error",
+          fieldErrors: {
+            parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
+          },
+        })
+        return
+      }
+
       const result = await createIssuer({
         data: {
           code: draft.code,
           isoCode: draft.isoCode,
           name: draft.name,
-          parentIssuerId:
-            resolvedParentIssuerId === INVALID_PARENT_ISSUER_SELECTION
-              ? null
-              : resolvedParentIssuerId,
+          parentIssuerId,
         },
       })
       const shouldRefresh = applyResult(result)
@@ -267,4 +276,11 @@ export function IssuerCreateForm({
       </div>
     </form>
   )
+}
+
+function getResolvedParentIssuerId(
+  parentIssuerLabel: string,
+  options: ReturnType<typeof getParentIssuerOptions>
+) {
+  return resolveParentIssuerId(parentIssuerLabel, options)
 }

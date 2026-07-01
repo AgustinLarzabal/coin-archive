@@ -26,6 +26,7 @@ import {
 import {
   createIssuerDraft,
   getParentIssuerOptions,
+  INVALID_PARENT_ISSUER_ERROR,
   INVALID_PARENT_ISSUER_SELECTION,
   normalizeIssuerDraft,
   resolveParentIssuerId,
@@ -62,7 +63,7 @@ function validateUpdateIssuerDraft(
   issuers: IssuerMaintenanceRecord[]
 ): IssuerMutationResult | null {
   const parentIssuerOptions = getParentIssuerOptions(issuers, issuerId)
-  const parentIssuerId = resolveParentIssuerId(
+  const parentIssuerId = getResolvedParentIssuerId(
     draft.parentIssuerLabel,
     parentIssuerOptions
   )
@@ -71,7 +72,7 @@ function validateUpdateIssuerDraft(
     return {
       status: "error",
       fieldErrors: {
-        parentIssuerId: "Select a Parent Issuer from the list.",
+        parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
       },
     }
   }
@@ -98,7 +99,7 @@ export function hasIssuerEditChanges(
   issuer: IssuerMaintenanceRecord,
   issuers: IssuerMaintenanceRecord[],
   draft: IssuerDraft
-) {
+): boolean {
   const normalizedCurrent = normalizeIssuerDraft(
     createIssuerDraft(issuer, issuers)
   )
@@ -188,20 +189,28 @@ export function IssuerEditForm({
     setIsPending(true)
 
     try {
-      const resolvedParentIssuerId = resolveParentIssuerId(
+      const parentIssuerId = getResolvedParentIssuerId(
         draft.parentIssuerLabel,
         parentIssuerOptions
       )
+
+      if (parentIssuerId === INVALID_PARENT_ISSUER_SELECTION) {
+        applyResult({
+          status: "error",
+          fieldErrors: {
+            parentIssuerId: INVALID_PARENT_ISSUER_ERROR,
+          },
+        })
+        return
+      }
+
       const result = await updateIssuer({
         data: {
           id: issuer.id,
           code: draft.code,
           isoCode: draft.isoCode,
           name: draft.name,
-          parentIssuerId:
-            resolvedParentIssuerId === INVALID_PARENT_ISSUER_SELECTION
-              ? null
-              : resolvedParentIssuerId,
+          parentIssuerId,
         },
       })
       const shouldRefresh = applyResult(result)
@@ -311,4 +320,11 @@ export function IssuerEditForm({
       </div>
     </form>
   )
+}
+
+function getResolvedParentIssuerId(
+  parentIssuerLabel: string,
+  options: ReturnType<typeof getParentIssuerOptions>
+) {
+  return resolveParentIssuerId(parentIssuerLabel, options)
 }

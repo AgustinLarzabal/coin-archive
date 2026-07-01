@@ -32,7 +32,8 @@ const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
 const DUPLICATE_ISSUER_CODE_CONSTRAINT = "issuer_code_unique_idx"
 const INVALID_ISSUER_CODE_CONSTRAINT = "issuer_code_slug_check"
 const INVALID_ISSUER_ISO_CODE_CONSTRAINT = "issuer_iso_code_format_check"
-const MISSING_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_issuer_id_fk"
+const MISSING_PARENT_ISSUER_CONSTRAINT =
+  "issuer_parent_issuer_id_issuer_id_fk"
 const SELF_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_self_check"
 const CYCLIC_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_cycle_check"
 const COIN_ISSUER_DELETE_CONSTRAINT = "coin_issuer_id_issuer_id_fk"
@@ -109,6 +110,15 @@ type DeleteIssuerData = z.output<typeof deleteIssuerInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: IssuerMutationResult }
+type PostgresConstraintResult = {
+  code: string
+  constraintName: string
+  result: IssuerMutationResult
+}
+type PostgresError = {
+  code: unknown
+  constraint_name: unknown
+}
 
 type SubmitIssuerMutationOptions<TInput, TData> = {
   collector: CollectorWithRole | null
@@ -128,6 +138,61 @@ type IssuerMutationDependencies = {
   deleteIssuer: (input: DeleteIssuerData) => Promise<unknown | null>
   updateIssuer: (input: UpdateIssuerData) => Promise<unknown | null>
 }
+
+const POSTGRES_CONSTRAINT_RESULTS: PostgresConstraintResult[] = [
+  {
+    code: DUPLICATE_KEY_POSTGRES_ERROR_CODE,
+    constraintName: DUPLICATE_ISSUER_CODE_CONSTRAINT,
+    result: createFieldErrorResult({
+      code: ISSUER_DUPLICATE_CODE_ERROR,
+    }),
+  },
+  {
+    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: COIN_ISSUER_DELETE_CONSTRAINT,
+    result: createFormErrorResult(ISSUER_COINS_DELETE_ERROR),
+  },
+  {
+    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: CHILD_ISSUER_DELETE_CONSTRAINT,
+    result: createFormErrorResult(ISSUER_CHILDREN_DELETE_ERROR),
+  },
+  {
+    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: INVALID_ISSUER_CODE_CONSTRAINT,
+    result: createFieldErrorResult({
+      code: ISSUER_INVALID_CODE_ERROR,
+    }),
+  },
+  {
+    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: INVALID_ISSUER_ISO_CODE_CONSTRAINT,
+    result: createFieldErrorResult({
+      isoCode: ISSUER_INVALID_ISO_CODE_ERROR,
+    }),
+  },
+  {
+    code: FK_REFERENCE_POSTGRES_ERROR_CODE,
+    constraintName: MISSING_PARENT_ISSUER_CONSTRAINT,
+    result: createFieldErrorResult({
+      parentIssuerId: ISSUER_MISSING_PARENT_ERROR,
+    }),
+  },
+  {
+    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: SELF_PARENT_ISSUER_CONSTRAINT,
+    result: createFieldErrorResult({
+      parentIssuerId: ISSUER_SELF_PARENT_ERROR,
+    }),
+  },
+  {
+    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: CYCLIC_PARENT_ISSUER_CONSTRAINT,
+    result: createFieldErrorResult({
+      parentIssuerId: ISSUER_CYCLIC_PARENT_ERROR,
+    }),
+  },
+]
 
 async function getDefaultIssuerMutationDependencies(): Promise<IssuerMutationDependencies> {
   const { createIssuer, deleteIssuer, updateIssuer } =
@@ -186,6 +251,10 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
+function isPostgresError(value: unknown): value is PostgresError {
+  return isObjectRecord(value) && "code" in value && "constraint_name" in value
+}
+
 export function getIssuerFieldErrors(issues: z.ZodIssue[]): IssuerFieldErrors {
   const fieldErrors: IssuerFieldErrors = {}
 
@@ -204,14 +273,14 @@ function createValidationError(issues: z.ZodIssue[]): IssuerMutationResult {
   return createFieldErrorResult(getIssuerFieldErrors(issues))
 }
 
-function getPostgresError(error: unknown) {
+function getPostgresError(error: unknown): PostgresError | null {
   if (!isObjectRecord(error)) {
     return null
   }
 
   const postgresError = "cause" in error ? error.cause : error
 
-  if (!isObjectRecord(postgresError)) {
+  if (!isPostgresError(postgresError)) {
     return null
   }
 
@@ -219,112 +288,24 @@ function getPostgresError(error: unknown) {
 }
 
 function matchesPostgresConstraint(
-  postgresError: Record<string, unknown> | null,
+  error: unknown,
   code: string,
   constraintName: string
-) {
+): boolean {
+  const postgresError = getPostgresError(error)
+
   return (
     postgresError !== null &&
-    "code" in postgresError &&
     postgresError.code === code &&
-    "constraint_name" in postgresError &&
     postgresError.constraint_name === constraintName
   )
 }
 
 function createPersistenceError(error: unknown): IssuerMutationResult {
-  const postgresError = getPostgresError(error)
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-      DUPLICATE_ISSUER_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: ISSUER_DUPLICATE_CODE_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      FK_VIOLATION_POSTGRES_ERROR_CODE,
-      COIN_ISSUER_DELETE_CONSTRAINT
-    )
-  ) {
-    return createFormErrorResult(ISSUER_COINS_DELETE_ERROR)
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      FK_VIOLATION_POSTGRES_ERROR_CODE,
-      CHILD_ISSUER_DELETE_CONSTRAINT
-    )
-  ) {
-    return createFormErrorResult(ISSUER_CHILDREN_DELETE_ERROR)
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      INVALID_ISSUER_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: ISSUER_INVALID_CODE_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      INVALID_ISSUER_ISO_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      isoCode: ISSUER_INVALID_ISO_CODE_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      FK_REFERENCE_POSTGRES_ERROR_CODE,
-      MISSING_PARENT_ISSUER_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      parentIssuerId: ISSUER_MISSING_PARENT_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      SELF_PARENT_ISSUER_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      parentIssuerId: ISSUER_SELF_PARENT_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      postgresError,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      CYCLIC_PARENT_ISSUER_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      parentIssuerId: ISSUER_CYCLIC_PARENT_ERROR,
-    })
+  for (const entry of POSTGRES_CONSTRAINT_RESULTS) {
+    if (matchesPostgresConstraint(error, entry.code, entry.constraintName)) {
+      return entry.result
+    }
   }
 
   return createFormErrorResult(ISSUER_GENERIC_SAVE_ERROR)

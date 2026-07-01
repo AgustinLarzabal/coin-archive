@@ -19,18 +19,21 @@ export const EMPTY_ISSUER_DRAFT: IssuerDraft = {
   parentIssuerLabel: "",
 }
 
+export const INVALID_PARENT_ISSUER_ERROR =
+  "Select a Parent Issuer from the list."
+
 export function createIssuerDraft(
   issuer: IssuerMaintenanceRecord,
   issuers: IssuerMaintenanceRecord[]
 ): IssuerDraft {
+  const issuersById = createIssuerRecordMap(issuers)
+
   return {
     code: issuer.code,
     isoCode: issuer.isoCode,
     name: issuer.name,
     parentIssuerLabel: issuer.parent
-      ? (getParentIssuerOptions(issuers, issuer.id).find(
-          (option) => option.id === issuer.parent?.id
-        )?.label ?? "")
+      ? buildIssuerContextLabel(issuer.parent.id, issuersById)
       : "",
   }
 }
@@ -58,6 +61,7 @@ export function getParentIssuerOptions(
   issuers: IssuerMaintenanceRecord[],
   currentIssuerId?: string
 ): ParentIssuerOption[] {
+  const issuersById = createIssuerRecordMap(issuers)
   const excludedIssuerIds = currentIssuerId
     ? new Set([
         currentIssuerId,
@@ -69,7 +73,7 @@ export function getParentIssuerOptions(
     .filter((issuer) => !excludedIssuerIds.has(issuer.id))
     .map((issuer) => ({
       id: issuer.id,
-      label: buildIssuerContextLabel(issuer, issuers),
+      label: buildIssuerContextLabel(issuer.id, issuersById),
     }))
 }
 
@@ -95,26 +99,42 @@ export const INVALID_PARENT_ISSUER_SELECTION = Symbol(
 )
 
 function buildIssuerContextLabel(
-  issuer: IssuerMaintenanceRecord,
-  issuers: IssuerMaintenanceRecord[]
+  issuerId: string,
+  issuersById: Map<string, IssuerMaintenanceRecord>
 ): string {
-  const segments = [`${issuer.name} (${issuer.code})`]
+  const issuer = issuersById.get(issuerId)
+
+  if (!issuer) {
+    return ""
+  }
+
+  const segments = [formatIssuerLabel(issuer)]
   let currentParentId = issuer.parent?.id ?? null
 
   while (currentParentId) {
-    const parentIssuer = issuers.find(
-      (candidate) => candidate.id === currentParentId
-    )
+    const parentIssuer = issuersById.get(currentParentId)
 
     if (!parentIssuer) {
       break
     }
 
-    segments.push(`${parentIssuer.name} (${parentIssuer.code})`)
+    segments.push(formatIssuerLabel(parentIssuer))
     currentParentId = parentIssuer.parent?.id ?? null
   }
 
   return segments.join(" > ")
+}
+
+function formatIssuerLabel(
+  issuer: Pick<IssuerMaintenanceRecord, "name" | "code">
+) {
+  return `${issuer.name} (${issuer.code})`
+}
+
+function createIssuerRecordMap(
+  issuers: IssuerMaintenanceRecord[]
+): Map<string, IssuerMaintenanceRecord> {
+  return new Map(issuers.map((issuer) => [issuer.id, issuer]))
 }
 
 function getDescendantIssuerIds(

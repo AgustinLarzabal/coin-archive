@@ -103,6 +103,14 @@ export function IssuerMaintenanceSheet({
     }
   }
 
+  function handleDeleteDialogOpen() {
+    setIsDeleteDialogOpen(true)
+  }
+
+  function handleCloseSheet() {
+    onOpenChange(false)
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
@@ -127,7 +135,7 @@ export function IssuerMaintenanceSheet({
                 <DropdownMenuContent sideOffset={10} align="end">
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={() => setIsDeleteDialogOpen(true)}
+                    onClick={handleDeleteDialogOpen}
                   >
                     Delete Issuer
                   </DropdownMenuItem>
@@ -173,13 +181,10 @@ export function IssuerMaintenanceSheet({
           <IssuerEditForm
             issuer={issuer}
             issuers={issuers}
-            onSaved={() => onOpenChange(false)}
+            onSaved={handleCloseSheet}
           />
         ) : (
-          <IssuerCreateForm
-            issuers={issuers}
-            onCreated={() => onOpenChange(false)}
-          />
+          <IssuerCreateForm issuers={issuers} onCreated={handleCloseSheet} />
         )}
       </SheetContent>
     </Sheet>

@@ -59,7 +59,10 @@ export function IssuersTable({ issuers }: IssuersTableProps) {
     openMaintenanceSheet(issuer, { deleteDialogOpen: true })
   }
 
-  const columns = createIssuerColumns(openEditIssuerSheet, openDeleteIssuerSheet)
+  const columns = createIssuerColumns(
+    openEditIssuerSheet,
+    openDeleteIssuerSheet
+  )
   const filteredIssuers = filterIssuers(issuers, filterValue)
 
   function handleMaintenanceSheetOpenChange(open: boolean) {

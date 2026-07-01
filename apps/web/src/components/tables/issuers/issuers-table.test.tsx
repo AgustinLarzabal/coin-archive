@@ -51,7 +51,7 @@ describe("filterIssuers", () => {
 })
 
 describe("IssuersTable", () => {
-  it("renders issuer columns, parent context, and the filter toolbar", () => {
+  it("renders issuer columns, parent context, and the maintenance toolbar", () => {
     const markup = renderToStaticMarkup(<IssuersTable issuers={issuers} />)
 
     expect(markup).toContain("Issuer Name")
@@ -65,5 +65,6 @@ describe("IssuersTable", () => {
     expect(markup).toContain(
       "Filter issuers by name, code, ISO code, or parent issuer..."
     )
+    expect(markup).toContain(">Create<")
   })
 })

@@ -3,6 +3,7 @@ import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
 import { issuerColumns } from "./columns"
+import { IssuerMaintenanceSheet } from "./issuer-maintenance-sheet"
 import { IssuersTableToolbar } from "./issuers-table-toolbar"
 
 type IssuersTableProps = {
@@ -32,18 +33,27 @@ function getIssuerFilterValues(issuer: IssuerMaintenanceRecord): string[] {
 
 export function IssuersTable({ issuers }: IssuersTableProps) {
   const [filterValue, setFilterValue] = useState("")
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const filteredIssuers = filterIssuers(issuers, filterValue)
 
   return (
-    <DataTable
-      columns={issuerColumns}
-      data={filteredIssuers}
-      toolbar={() => (
-        <IssuersTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={issuerColumns}
+        data={filteredIssuers}
+        toolbar={() => (
+          <IssuersTableToolbar
+            filterValue={filterValue}
+            onFilterValueChange={setFilterValue}
+            onCreateIssuer={() => setIsMaintenanceSheetOpen(true)}
+          />
+        )}
+      />
+      <IssuerMaintenanceSheet
+        issuers={issuers}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={setIsMaintenanceSheetOpen}
+      />
+    </>
   )
 }

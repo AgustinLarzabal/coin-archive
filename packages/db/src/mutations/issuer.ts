@@ -2,11 +2,24 @@ import { db } from "../client"
 import { issuer } from "../schema/issuer"
 import type { Issuer } from "../schema/issuer"
 
-type IssuerFields = {
+type CreateIssuerFields = {
   code: string
   name: string
   isoCode: string
   parentIssuerId?: string
+}
+
+function normalizeParentIssuerId(parentIssuerId?: string) {
+  const normalizedParentIssuerId = parentIssuerId?.trim()
+
+  if (
+    normalizedParentIssuerId === undefined ||
+    normalizedParentIssuerId.length === 0
+  ) {
+    return undefined
+  }
+
+  return normalizedParentIssuerId
 }
 
 function normalizeIssuerFields({
@@ -14,21 +27,18 @@ function normalizeIssuerFields({
   name,
   isoCode,
   parentIssuerId,
-}: IssuerFields) {
-  const normalizedParentIssuerId = parentIssuerId?.trim()
-
+}: CreateIssuerFields) {
   return {
     code: code.trim(),
     name: name.trim(),
     isoCode: isoCode.trim().toUpperCase(),
-    parentIssuerId:
-      normalizedParentIssuerId && normalizedParentIssuerId.length > 0
-        ? normalizedParentIssuerId
-        : undefined,
+    parentIssuerId: normalizeParentIssuerId(parentIssuerId),
   }
 }
 
-export async function createIssuer(fields: IssuerFields): Promise<Issuer> {
+export async function createIssuer(
+  fields: CreateIssuerFields
+): Promise<Issuer> {
   const [createdIssuer] = await db
     .insert(issuer)
     .values(normalizeIssuerFields(fields))

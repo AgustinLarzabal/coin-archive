@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
@@ -29,16 +29,17 @@ import {
   submitCreateIssuer,
 } from "@/lib/issuer-maintenance"
 
-import {
-  EMPTY_ISSUER_DRAFT,
-  isIssuerDraftComplete,
-} from "./issuer-form.shared"
+import { EMPTY_ISSUER_DRAFT, isIssuerDraftComplete } from "./issuer-form.shared"
 import type { IssuerDraft } from "./issuer-form.shared"
 
 type IssuerCreateFormProps = {
   issuers: IssuerMaintenanceRecord[]
   onCreated?: () => void
 }
+
+const NO_PARENT_ISSUER_LABEL = "No Parent Issuer"
+const PARENT_ISSUER_SEARCH_PLACEHOLDER =
+  "Search parent issuers by name, code, or parent context..."
 
 const createIssuerAction = createServerFn({
   method: "POST",
@@ -105,19 +106,21 @@ export function IssuerCreateForm({
   const [parentFilterValue, setParentFilterValue] = useState("")
   const [isPending, setIsPending] = useState(false)
 
-  const parentIssuerOptions = useMemo(
-    () => filterParentIssuerOptions(issuers, parentFilterValue),
-    [issuers, parentFilterValue]
+  const parentIssuerOptions = filterParentIssuerOptions(
+    issuers,
+    parentFilterValue
   )
-
-  const selectedParentIssuer = useMemo(
-    () => issuers.find((issuer) => issuer.id === draft.parentIssuerId) ?? null,
-    [draft.parentIssuerId, issuers]
-  )
+  const selectedParentIssuer =
+    issuers.find((issuer) => issuer.id === draft.parentIssuerId) ?? null
 
   function clearFeedback() {
     setFieldErrors({})
     setFormError(null)
+  }
+
+  function resetParentIssuerSelector() {
+    setParentFilterValue("")
+    setIsParentSelectorOpen(false)
   }
 
   function applyResult(result: IssuerMutationResult) {
@@ -144,8 +147,7 @@ export function IssuerCreateForm({
 
   function selectParentIssuer(parentIssuerId: string) {
     updateDraft("parentIssuerId", parentIssuerId)
-    setParentFilterValue("")
-    setIsParentSelectorOpen(false)
+    resetParentIssuerSelector()
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -170,8 +172,7 @@ export function IssuerCreateForm({
 
       if (shouldRefresh) {
         setDraft(EMPTY_ISSUER_DRAFT)
-        setParentFilterValue("")
-        setIsParentSelectorOpen(false)
+        resetParentIssuerSelector()
         await router.invalidate()
         onCreated?.()
       }
@@ -236,11 +237,16 @@ export function IssuerCreateForm({
         </Field>
 
         <Field data-invalid={fieldErrors.parentIssuerId !== undefined}>
-          <FieldLabel htmlFor="new-issuer-parent-search">Parent Issuer</FieldLabel>
+          <FieldLabel htmlFor="new-issuer-parent-search">
+            Parent Issuer
+          </FieldLabel>
           <p className="text-sm text-muted-foreground">
-            Search parent issuers by name, code, or parent context...
+            {PARENT_ISSUER_SEARCH_PLACEHOLDER}
           </p>
-          <Popover open={isParentSelectorOpen} onOpenChange={setIsParentSelectorOpen}>
+          <Popover
+            open={isParentSelectorOpen}
+            onOpenChange={setIsParentSelectorOpen}
+          >
             <PopoverTrigger
               render={
                 <Button
@@ -253,31 +259,31 @@ export function IssuerCreateForm({
             >
               {selectedParentIssuer
                 ? formatParentIssuerOptionLabel(selectedParentIssuer)
-                : "No Parent Issuer"}
+                : NO_PARENT_ISSUER_LABEL}
             </PopoverTrigger>
             <PopoverContent align="start" className="w-(--anchor-width)">
               <Input
                 id="new-issuer-parent-search"
                 value={parentFilterValue}
                 onChange={(event) => setParentFilterValue(event.target.value)}
-                placeholder="Search parent issuers by name, code, or parent context..."
+                placeholder={PARENT_ISSUER_SEARCH_PLACEHOLDER}
                 autoComplete="off"
               />
               <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
                 <Button
                   type="button"
                   variant="ghost"
-                  className="justify-start whitespace-normal text-left"
+                  className="justify-start text-left whitespace-normal"
                   onClick={() => selectParentIssuer("")}
                 >
-                  No Parent Issuer
+                  {NO_PARENT_ISSUER_LABEL}
                 </Button>
                 {parentIssuerOptions.map((issuer) => (
                   <Button
                     key={issuer.id}
                     type="button"
                     variant="ghost"
-                    className="justify-start whitespace-normal text-left"
+                    className="justify-start text-left whitespace-normal"
                     onClick={() => selectParentIssuer(issuer.id)}
                   >
                     {formatParentIssuerOptionLabel(issuer)}
@@ -292,7 +298,9 @@ export function IssuerCreateForm({
         </Field>
       </FieldGroup>
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

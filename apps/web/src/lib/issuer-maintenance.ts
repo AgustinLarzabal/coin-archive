@@ -23,7 +23,12 @@ const DUPLICATE_ISSUER_CODE_CONSTRAINT = "issuer_code_unique_idx"
 const INVALID_ISSUER_CODE_CONSTRAINT = "issuer_code_slug_check"
 const INVALID_ISSUER_ISO_CODE_CONSTRAINT = "issuer_iso_code_format_check"
 const INVALID_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_issuer_id_fk"
-const ISSUER_FIELD_NAMES = ["code", "name", "isoCode", "parentIssuerId"] as const
+const ISSUER_FIELD_NAMES = [
+  "code",
+  "name",
+  "isoCode",
+  "parentIssuerId",
+] as const
 
 const issuerCodeSchema = z
   .string()
@@ -46,23 +51,20 @@ const issuerIsoCodeSchema = z
   .transform((value) => value.toUpperCase())
   .pipe(z.string().regex(/^[A-Z]{2}$/, ISSUER_INVALID_ISO_CODE_ERROR))
 
-const issuerParentIdSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") {
-      return value
-    }
+const parentIssuerIdSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return value
+  }
 
-    const normalizedValue = value.trim()
-    return normalizedValue === "" ? undefined : normalizedValue
-  },
-  z.string().uuid("Parent Issuer must be a valid record.").optional()
-)
+  const normalizedValue = value.trim()
+  return normalizedValue === "" ? undefined : normalizedValue
+}, z.string().uuid("Parent Issuer must be a valid record.").optional())
 
 export const createIssuerInputSchema = z.object({
   code: issuerCodeSchema,
   name: issuerNameSchema,
   isoCode: issuerIsoCodeSchema,
-  parentIssuerId: issuerParentIdSchema,
+  parentIssuerId: parentIssuerIdSchema,
 })
 
 type IssuerFieldName = (typeof ISSUER_FIELD_NAMES)[number]
@@ -176,12 +178,10 @@ function getPostgresError(error: unknown) {
 }
 
 function matchesPostgresConstraint(
-  error: unknown,
+  postgresError: Record<string, unknown> | null,
   code: string,
   constraintName: string
 ) {
-  const postgresError = getPostgresError(error)
-
   return (
     postgresError !== null &&
     "code" in postgresError &&
@@ -192,9 +192,11 @@ function matchesPostgresConstraint(
 }
 
 function createPersistenceError(error: unknown): IssuerMutationResult {
+  const postgresError = getPostgresError(error)
+
   if (
     matchesPostgresConstraint(
-      error,
+      postgresError,
       DUPLICATE_KEY_POSTGRES_ERROR_CODE,
       DUPLICATE_ISSUER_CODE_CONSTRAINT
     )
@@ -206,7 +208,7 @@ function createPersistenceError(error: unknown): IssuerMutationResult {
 
   if (
     matchesPostgresConstraint(
-      error,
+      postgresError,
       CHECK_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_ISSUER_CODE_CONSTRAINT
     )
@@ -218,7 +220,7 @@ function createPersistenceError(error: unknown): IssuerMutationResult {
 
   if (
     matchesPostgresConstraint(
-      error,
+      postgresError,
       CHECK_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_ISSUER_ISO_CODE_CONSTRAINT
     )
@@ -230,7 +232,7 @@ function createPersistenceError(error: unknown): IssuerMutationResult {
 
   if (
     matchesPostgresConstraint(
-      error,
+      postgresError,
       FOREIGN_KEY_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_PARENT_ISSUER_CONSTRAINT
     )

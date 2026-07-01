@@ -30,7 +30,7 @@ import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
   ORIENTATION_GENERIC_SAVE_ERROR,
-  ORIENTATION_IN_USE_DELETE_ERROR,
+  ORIENTATION_IN_USE_DELETE_GUIDANCE,
   submitDeleteOrientation,
 } from "@/lib/orientation-maintenance"
 
@@ -43,13 +43,7 @@ type OrientationMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const ORIENTATION_DELETE_CONFIRMATION_IN_USE_GUIDANCE = ORIENTATION_IN_USE_DELETE_ERROR.replace(
-  "Orientation cannot be deleted while Coins still use it. ",
-  ""
-)
-
-export const ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Orientation. ${ORIENTATION_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+export const ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Orientation. ${ORIENTATION_IN_USE_DELETE_GUIDANCE}`
 
 const deleteOrientationAction = createServerFn({
   method: "POST",
@@ -72,16 +66,18 @@ export function OrientationMaintenanceSheet({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
   const isEditingOrientation = orientation !== null
-  const sheetTitle = isEditingOrientation ? "Edit Orientation" : "Create Orientation"
+  const sheetTitle = isEditingOrientation
+    ? "Edit Orientation"
+    : "Create Orientation"
 
-  function resetDeleteState() {
-    setDeleteError(null)
-    setIsDeleteDialogOpen(false)
-    setIsDeletePending(false)
+  function closeSheet() {
+    onOpenChange(false)
   }
 
   useEffect(() => {
-    resetDeleteState()
+    setDeleteError(null)
+    setIsDeleteDialogOpen(false)
+    setIsDeletePending(false)
   }, [orientation?.id, open])
 
   async function handleDeleteOrientation() {
@@ -101,7 +97,7 @@ export function OrientationMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        onOpenChange(false)
+        closeSheet()
         return
       }
 
@@ -178,9 +174,9 @@ export function OrientationMaintenanceSheet({
         </SheetHeader>
 
         {isEditingOrientation ? (
-          <OrientationEditForm orientation={orientation} onSaved={() => onOpenChange(false)} />
+          <OrientationEditForm orientation={orientation} onSaved={closeSheet} />
         ) : (
-          <OrientationCreateForm onCreated={() => onOpenChange(false)} />
+          <OrientationCreateForm onCreated={closeSheet} />
         )}
       </SheetContent>
     </Sheet>

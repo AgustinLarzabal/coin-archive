@@ -2,13 +2,6 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -22,7 +15,11 @@ import {
   submitCreateOrientation,
 } from "@/lib/orientation-maintenance"
 
-import { EMPTY_ORIENTATION_DRAFT, isOrientationDraftComplete } from "./orientation-form.shared"
+import {
+  EMPTY_ORIENTATION_DRAFT,
+  isOrientationDraftComplete,
+} from "./orientation-form.shared"
+import { OrientationFormFields } from "./orientation-form-fields"
 import type { OrientationDraft } from "./orientation-form.shared"
 
 type OrientationCreateFormProps = {
@@ -39,7 +36,9 @@ const createOrientationAction = createServerFn({
     return submitCreateOrientation(session?.user ?? null, data)
   })
 
-function validateOrientationDraft(draft: OrientationDraft): OrientationMutationResult | null {
+function validateOrientationDraft(
+  draft: OrientationDraft
+): OrientationMutationResult | null {
   const parsedInput = createOrientationInputSchema.safeParse(draft)
 
   if (parsedInput.success) {
@@ -52,7 +51,9 @@ function validateOrientationDraft(draft: OrientationDraft): OrientationMutationR
   }
 }
 
-export function OrientationCreateForm({ onCreated }: OrientationCreateFormProps) {
+export function OrientationCreateForm({
+  onCreated,
+}: OrientationCreateFormProps) {
   const router = useRouter()
   const createOrientation = useServerFn(createOrientationAction)
   const [draft, setDraft] = useState<OrientationDraft>(EMPTY_ORIENTATION_DRAFT)
@@ -123,40 +124,16 @@ export function OrientationCreateForm({ onCreated }: OrientationCreateFormProps)
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-orientation-code">Orientation Code</FieldLabel>
-          <Input
-            id="new-orientation-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="coin-alignment"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-orientation-name">Orientation Name</FieldLabel>
-          <Input
-            id="new-orientation-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Coin alignment"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <OrientationFormFields
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onFieldChange={updateDraft}
+        variant="create"
+      />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

@@ -17,6 +17,10 @@ type DeleteOrientationInput = {
   id: string
 }
 
+function takeFirstOrNull<T>(records: T[]): T | null {
+  return records.at(0) ?? null
+}
+
 function normalizeOrientationFields({ code, name }: OrientationFields) {
   return {
     code: code.trim(),
@@ -24,7 +28,9 @@ function normalizeOrientationFields({ code, name }: OrientationFields) {
   }
 }
 
-export async function createOrientation(fields: OrientationFields): Promise<Orientation> {
+export async function createOrientation(
+  fields: OrientationFields
+): Promise<Orientation> {
   const [createdOrientation] = await db
     .insert(orientation)
     .values(normalizeOrientationFields(fields))
@@ -37,22 +43,22 @@ export async function updateOrientation({
   id,
   ...fields
 }: UpdateOrientationInput): Promise<Orientation | null> {
-  const [updatedOrientation] = await db
-    .update(orientation)
-    .set({
-      ...normalizeOrientationFields(fields),
-      updatedAt: new Date(),
-    })
-    .where(eq(orientation.id, id))
-    .returning()
-
-  return updatedOrientation ?? null
+  return takeFirstOrNull(
+    await db
+      .update(orientation)
+      .set({
+        ...normalizeOrientationFields(fields),
+        updatedAt: new Date(),
+      })
+      .where(eq(orientation.id, id))
+      .returning()
+  )
 }
 
 export async function deleteOrientation({
   id,
 }: DeleteOrientationInput): Promise<Orientation | null> {
-  const [deletedOrientation] = await db.delete(orientation).where(eq(orientation.id, id)).returning()
-
-  return deletedOrientation ?? null
+  return takeFirstOrNull(
+    await db.delete(orientation).where(eq(orientation.id, id)).returning()
+  )
 }

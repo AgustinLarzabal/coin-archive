@@ -8,19 +8,23 @@ export const ORIENTATION_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Orientations."
 export const ORIENTATION_DUPLICATE_CODE_ERROR =
   "An Orientation with this code already exists."
-export const ORIENTATION_GENERIC_SAVE_ERROR = "Unable to save Orientation right now."
+export const ORIENTATION_GENERIC_SAVE_ERROR =
+  "Unable to save Orientation right now."
 export const ORIENTATION_MISSING_ERROR = "Orientation no longer exists."
-export const ORIENTATION_IN_USE_DELETE_ERROR =
-  "Orientation cannot be deleted while Coins still use it. Remove or reassign the Orientation on those Coins before deleting it."
+export const ORIENTATION_IN_USE_DELETE_GUIDANCE =
+  "Remove or reassign the Orientation on those Coins before deleting it."
+export const ORIENTATION_IN_USE_DELETE_ERROR = `Orientation cannot be deleted while Coins still use it. ${ORIENTATION_IN_USE_DELETE_GUIDANCE}`
 export const ORIENTATION_INVALID_CODE_ERROR =
   "Orientation Code must use lowercase letters, numbers, and hyphens only."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
 const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
-const DUPLICATE_ORIENTATION_CODE_CONSTRAINT = "orientation_code_lower_unique_idx"
+const DUPLICATE_ORIENTATION_CODE_CONSTRAINT =
+  "orientation_code_lower_unique_idx"
 const INVALID_ORIENTATION_CODE_CONSTRAINT = "orientation_code_slug_check"
-const ORIENTATION_IN_USE_DELETE_CONSTRAINT = "coin_orientation_id_orientation_id_fk"
+const ORIENTATION_IN_USE_DELETE_CONSTRAINT =
+  "coin_orientation_id_orientation_id_fk"
 const ORIENTATION_FIELD_NAMES = ["code", "name"] as const
 
 const orientationCodeSchema = z
@@ -41,9 +45,11 @@ export const createOrientationInputSchema = z.object({
   name: orientationNameSchema,
 })
 
-export const updateOrientationInputSchema = createOrientationInputSchema.extend({
-  id: z.uuid(),
-})
+export const updateOrientationInputSchema = createOrientationInputSchema.extend(
+  {
+    id: z.uuid(),
+  }
+)
 
 export const deleteOrientationInputSchema = z.object({
   id: z.uuid(),
@@ -51,7 +57,9 @@ export const deleteOrientationInputSchema = z.object({
 
 type OrientationFieldName = (typeof ORIENTATION_FIELD_NAMES)[number]
 
-export type OrientationFieldErrors = Partial<Record<OrientationFieldName, string>>
+export type OrientationFieldErrors = Partial<
+  Record<OrientationFieldName, string>
+>
 
 export type OrientationMutationResult =
   | {
@@ -75,10 +83,11 @@ type UpdateOrientationInput = z.input<typeof updateOrientationInputSchema>
 type UpdateOrientationData = z.output<typeof updateOrientationInputSchema>
 type DeleteOrientationInput = z.input<typeof deleteOrientationInputSchema>
 type DeleteOrientationData = z.output<typeof deleteOrientationInputSchema>
+
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: OrientationMutationResult }
-type OrientationMutationOperationResult = unknown | null
+
 type SubmitOrientationMutationOptions<TInput, TData> = {
   collector: CollectorWithRole | null
   input: TInput
@@ -87,7 +96,7 @@ type SubmitOrientationMutationOptions<TInput, TData> = {
   execute: (
     dependencies: OrientationMutationDependencies,
     data: TData
-  ) => Promise<OrientationMutationOperationResult>
+  ) => Promise<unknown | null>
   createSuccessResult: () => OrientationMutationResult
   createNullResult?: () => OrientationMutationResult
 }
@@ -99,7 +108,8 @@ type OrientationMutationDependencies = {
 }
 
 async function getDefaultOrientationMutationDependencies(): Promise<OrientationMutationDependencies> {
-  const { createOrientation, deleteOrientation, updateOrientation } = await import("@workspace/db")
+  const { createOrientation, deleteOrientation, updateOrientation } =
+    await import("@workspace/db")
 
   return {
     createOrientation,
@@ -164,7 +174,9 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
-export function getOrientationFieldErrors(issues: z.ZodIssue[]): OrientationFieldErrors {
+export function getOrientationFieldErrors(
+  issues: z.ZodIssue[]
+): OrientationFieldErrors {
   const fieldErrors: OrientationFieldErrors = {}
 
   for (const issue of issues) {
@@ -178,7 +190,9 @@ export function getOrientationFieldErrors(issues: z.ZodIssue[]): OrientationFiel
   return fieldErrors
 }
 
-function createValidationError(issues: z.ZodIssue[]): OrientationMutationResult {
+function createValidationError(
+  issues: z.ZodIssue[]
+): OrientationMutationResult {
   return createFieldErrorResult(getOrientationFieldErrors(issues))
 }
 
@@ -295,7 +309,10 @@ async function submitOrientationMutation<TInput, TData>({
   execute,
   createSuccessResult,
   createNullResult,
-}: SubmitOrientationMutationOptions<TInput, TData>): Promise<OrientationMutationResult> {
+}: SubmitOrientationMutationOptions<
+  TInput,
+  TData
+>): Promise<OrientationMutationResult> {
   if (!hasOrientationMaintenanceAccess(collector)) {
     return createAuthorizationError()
   }
@@ -310,13 +327,12 @@ async function submitOrientationMutation<TInput, TData>({
     await resolveOrientationMutationDependencies(dependencies)
 
   try {
-    const mutationResult = await execute(
-      resolvedDependencies,
-      validationResult.data
-    )
+    const result = await execute(resolvedDependencies, validationResult.data)
 
-    if (mutationResult === null && createNullResult) {
-      return createNullResult()
+    if (result === null) {
+      return createNullResult
+        ? createNullResult()
+        : createFormErrorResult(ORIENTATION_MISSING_ERROR)
     }
 
     return createSuccessResult()
@@ -360,7 +376,6 @@ export async function submitUpdateOrientation(
       status: "success",
       message: "Saved.",
     }),
-    createNullResult: () => createFormErrorResult(ORIENTATION_MISSING_ERROR),
   })
 }
 
@@ -380,6 +395,5 @@ export async function submitDeleteOrientation(
       status: "success",
       message: "Orientation deleted.",
     }),
-    createNullResult: () => createFormErrorResult(ORIENTATION_MISSING_ERROR),
   })
 }

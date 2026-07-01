@@ -12,7 +12,7 @@ export const ORIENTATION_GENERIC_SAVE_ERROR =
   "Unable to save Orientation right now."
 export const ORIENTATION_MISSING_ERROR = "Orientation no longer exists."
 export const ORIENTATION_IN_USE_DELETE_GUIDANCE =
-  "Remove or reassign the Orientation on those Coins before deleting it."
+  "Existing Coins must have the Orientation removed or reassigned before deletion."
 export const ORIENTATION_IN_USE_DELETE_ERROR = `Orientation cannot be deleted while Coins still use it. ${ORIENTATION_IN_USE_DELETE_GUIDANCE}`
 export const ORIENTATION_INVALID_CODE_ERROR =
   "Orientation Code must use lowercase letters, numbers, and hyphens only."

@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { OrientationOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { orientationColumns } from "./columns"
+import { createOrientationColumns } from "./columns"
+import { OrientationMaintenanceSheet } from "./orientation-maintenance-sheet"
 import { OrientationsTableToolbar } from "./orientations-table-toolbar"
 
 type OrientationsTableProps = {
@@ -35,19 +36,51 @@ function getOrientationFilterValues(
 export function OrientationsTable({
   orientations,
 }: OrientationsTableProps) {
+  const [selectedOrientation, setSelectedOrientation] =
+    useState<OrientationOption | null>(null)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [filterValue, setFilterValue] = useState("")
+  const columns = useMemo(
+    () =>
+      createOrientationColumns((orientation) => {
+        setSelectedOrientation(orientation)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
   const filteredOrientations = filterOrientations(orientations, filterValue)
 
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedOrientation(null)
+    }
+  }
+
+  function handleCreateOrientation() {
+    setSelectedOrientation(null)
+    setIsMaintenanceSheetOpen(true)
+  }
+
   return (
-    <DataTable
-      columns={orientationColumns}
-      data={filteredOrientations}
-      toolbar={() => (
-        <OrientationsTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={filteredOrientations}
+        toolbar={() => (
+          <OrientationsTableToolbar
+            filterValue={filterValue}
+            onCreateOrientation={handleCreateOrientation}
+            onFilterValueChange={setFilterValue}
+          />
+        )}
+      />
+      <OrientationMaintenanceSheet
+        orientation={selectedOrientation}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
+      />
+    </>
   )
 }

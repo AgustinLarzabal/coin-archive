@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { OrientationOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { ORIENTATION_AUTHORIZATION_ERROR } from "@/lib/orientation-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadOrientationMaintenanceOrientations,
@@ -52,6 +53,7 @@ describe("loadOrientationMaintenanceOrientations", () => {
       loadOrientationMaintenanceOrientations(null, { getOrientations })
     ).resolves.toStrictEqual({
       status: "error",
+      formError: ORIENTATION_AUTHORIZATION_ERROR,
     })
 
     expect(getOrientations).not.toHaveBeenCalled()
@@ -67,6 +69,7 @@ describe("loadOrientationMaintenanceOrientations", () => {
       )
     ).resolves.toStrictEqual({
       status: "error",
+      formError: ORIENTATION_AUTHORIZATION_ERROR,
     })
 
     expect(getOrientations).not.toHaveBeenCalled()
@@ -103,7 +106,7 @@ describe("renderDatabaseOrientationsPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the read-only Orientations table for allowed Editors and Admins", () => {
+  it("renders the Orientations maintenance table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseOrientationsPage({
         isAllowed: true,
@@ -126,7 +129,7 @@ describe("renderDatabaseOrientationsPage", () => {
     expect(markup).toContain("Orientation Name")
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Medal alignment")
-    expect(markup).not.toContain("Create")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain("Create")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

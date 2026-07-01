@@ -40,7 +40,7 @@ describe("filterOrientations", () => {
 })
 
 describe("OrientationsTable", () => {
-  it("renders Orientation Code and Orientation Name columns with a read-only filter toolbar", () => {
+  it("renders Orientation Code and Orientation Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(
       <OrientationsTable orientations={orientations} />
     )
@@ -50,7 +50,7 @@ describe("OrientationsTable", () => {
     expect(markup).toContain("Coin alignment")
     expect(markup).toContain("Medal alignment")
     expect(markup).toContain("Filter orientations by code or name...")
-    expect(markup).not.toContain("Create")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

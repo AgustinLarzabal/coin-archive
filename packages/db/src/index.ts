@@ -27,6 +27,11 @@ export {
   updateCurrency,
 } from "./mutations/currency"
 export { createMint, deleteMint, updateMint } from "./mutations/mint"
+export {
+  createOrientation,
+  deleteOrientation,
+  updateOrientation,
+} from "./mutations/orientation"
 export { getCatalogues } from "./queries/get-catalogues"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"

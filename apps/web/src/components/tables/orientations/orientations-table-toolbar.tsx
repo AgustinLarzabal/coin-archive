@@ -1,22 +1,28 @@
 import { Input } from "@workspace/ui/components/input"
+import { Button } from "@workspace/ui/components/button"
 
 type OrientationsTableToolbarProps = {
   filterValue: string
+  onCreateOrientation: () => void
   onFilterValueChange: (value: string) => void
 }
 
 export function OrientationsTableToolbar({
   filterValue,
+  onCreateOrientation,
   onFilterValueChange,
 }: OrientationsTableToolbarProps) {
   return (
-    <div className="flex grow items-center justify-start">
+    <div className="flex grow items-center justify-between">
       <Input
         placeholder="Filter orientations by code or name..."
         value={filterValue}
         onChange={(event) => onFilterValueChange(event.target.value)}
         className="max-w-sm"
       />
+      <Button type="button" onClick={onCreateOrientation}>
+        Create
+      </Button>
     </div>
   )
 }

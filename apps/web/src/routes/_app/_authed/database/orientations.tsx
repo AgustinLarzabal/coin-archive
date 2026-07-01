@@ -5,13 +5,15 @@ import type { OrientationOption } from "@workspace/db"
 import { AccessDenied } from "@/components/access-denied"
 import { OrientationsTable } from "@/components/tables/orientations/orientations-table"
 import { getAuthSession } from "@/lib/auth-session"
+import {
+  type OrientationAuthorizationErrorResult,
+  createOrientationAuthorizationError,
+  hasOrientationMaintenanceAccess,
+} from "@/lib/orientation-maintenance"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 type LoadOrientationMaintenanceOrientationsResult =
-  | {
-      status: "error"
-    }
+  | OrientationAuthorizationErrorResult
   | {
       status: "success"
       orientations: OrientationOption[]
@@ -48,14 +50,11 @@ export async function loadOrientationMaintenanceOrientations(
   collector: CollectorWithRole | null,
   dependencies?: OrientationReadDependencies
 ): Promise<LoadOrientationMaintenanceOrientationsResult> {
-  if (!getEditorRouteAuthorization(collector).isAllowed) {
-    return {
-      status: "error",
-    }
+  if (!hasOrientationMaintenanceAccess(collector)) {
+    return createOrientationAuthorizationError()
   }
 
-  const { getOrientations } =
-    await resolveOrientationReadDependencies(dependencies)
+  const { getOrientations } = await resolveOrientationReadDependencies(dependencies)
 
   return {
     status: "success",

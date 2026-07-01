@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { RIM_IN_USE_DELETE_ERROR } from "@/lib/rim-maintenance"
+import { RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE } from "@/lib/rim-maintenance"
 
 import {
   RIM_DELETE_CONFIRMATION_DESCRIPTION,
@@ -114,15 +114,12 @@ function renderRimMaintenanceSheet(rimOption: RimOption | null) {
 }
 
 describe("RIM_DELETE_CONFIRMATION_DESCRIPTION", () => {
-  it("explains the deletion is permanent and reuses the shared in-use guidance", () => {
+  it("explains the deletion is permanent and reuses the shared reassignment guidance", () => {
     expect(RIM_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       "permanently deletes the Rim"
     )
     expect(RIM_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      RIM_IN_USE_DELETE_ERROR.replace(
-        "Rim cannot be deleted while Coins still use it. ",
-        ""
-      )
+      RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE
     )
   })
 })

@@ -34,12 +34,7 @@ export function RimsTable({ rims }: RimsTableProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const filteredRims = filterRims(rims, filterValue)
 
-  function handleCreateRim() {
-    setSelectedRim(null)
-    setIsSheetOpen(true)
-  }
-
-  function handleEditRim(rim: RimOption) {
+  function openMaintenanceSheet(rim: RimOption | null) {
     setSelectedRim(rim)
     setIsSheetOpen(true)
   }
@@ -47,12 +42,12 @@ export function RimsTable({ rims }: RimsTableProps) {
   return (
     <>
       <DataTable
-        columns={createRimColumns(handleEditRim)}
+        columns={createRimColumns(openMaintenanceSheet)}
         data={filteredRims}
         toolbar={() => (
           <RimsTableToolbar
             filterValue={filterValue}
-            onCreateRim={handleCreateRim}
+            onCreateRim={() => openMaintenanceSheet(null)}
             onFilterValueChange={setFilterValue}
           />
         )}

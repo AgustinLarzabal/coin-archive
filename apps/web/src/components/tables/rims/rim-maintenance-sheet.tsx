@@ -29,8 +29,8 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
+  RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE,
   RIM_GENERIC_SAVE_ERROR,
-  RIM_IN_USE_DELETE_ERROR,
   submitDeleteRim,
 } from "@/lib/rim-maintenance"
 
@@ -43,13 +43,8 @@ type RimMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const RIM_DELETE_CONFIRMATION_IN_USE_GUIDANCE = RIM_IN_USE_DELETE_ERROR.replace(
-  "Rim cannot be deleted while Coins still use it. ",
-  ""
-)
-
 export const RIM_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Rim. ${RIM_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+  `This permanently deletes the Rim. ${RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteRimAction = createServerFn({
   method: "POST",
@@ -72,7 +67,6 @@ export function RimMaintenanceSheet({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
   const isEditingRim = rim !== null
-  const sheetTitle = isEditingRim ? "Edit Rim" : "Create Rim"
 
   function resetDeleteState() {
     setDeleteError(null)
@@ -115,7 +109,7 @@ export function RimMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>{rim ? "Edit Rim" : "Create Rim"}</SheetTitle>
 
           {isEditingRim ? (
             <>

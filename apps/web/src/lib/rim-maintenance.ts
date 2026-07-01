@@ -9,8 +9,12 @@ export const RIM_AUTHORIZATION_ERROR =
 export const RIM_DUPLICATE_CODE_ERROR = "A Rim with this code already exists."
 export const RIM_GENERIC_SAVE_ERROR = "Unable to save Rim right now."
 export const RIM_MISSING_ERROR = "Rim no longer exists."
+export const RIM_DELETE_REASSIGN_REQUIRED_MESSAGE =
+  "Remove or reassign the Rim on those Coins before deleting it."
+export const RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE =
+  RIM_DELETE_REASSIGN_REQUIRED_MESSAGE.replace("those Coins", "existing Coins")
 export const RIM_IN_USE_DELETE_ERROR =
-  "Rim cannot be deleted while Coins still use it. Remove or reassign the Rim on those Coins before deleting it."
+  `Rim cannot be deleted while Coins still use it. ${RIM_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 export const RIM_INVALID_CODE_ERROR =
   "Rim Code must use lowercase letters, numbers, and hyphens only."
 

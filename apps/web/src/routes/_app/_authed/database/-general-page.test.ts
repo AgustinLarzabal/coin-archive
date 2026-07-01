@@ -57,6 +57,7 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       currencies: 2,
       distributions: 4,
       edges: 7,
+      rims: 11,
       engravers: 6,
       issuers: 8,
       orientations: 10,

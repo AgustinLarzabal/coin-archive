@@ -34,11 +34,11 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Orientations",
     })
 
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
       to: "/database/issuers",
       label: "Issuers",
     })
-    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/orientations",
       label: "Orientations",
     })

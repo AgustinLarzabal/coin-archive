@@ -27,6 +27,23 @@ export type DatabaseGeneralSummaryCounts = {
   mints: number
 }
 
+const DATABASE_GENERAL_SUMMARY_COUNT_QUERIES = {
+  catalogues: () => db.select({ count: count() }).from(catalogue),
+  compositions: () => db.select({ count: count() }).from(composition),
+  currencies: () => db.select({ count: count() }).from(currency),
+  distributions: () => db.select({ count: count() }).from(distribution),
+  edges: () => db.select({ count: count() }).from(edge),
+  rims: () => db.select({ count: count() }).from(rim),
+  shapes: () => db.select({ count: count() }).from(shape),
+  engravers: () => db.select({ count: count() }).from(engraver),
+  issuers: () => db.select({ count: count() }).from(issuer),
+  orientations: () => db.select({ count: count() }).from(orientation),
+  mints: () => db.select({ count: count() }).from(mint),
+} satisfies Record<
+  keyof DatabaseGeneralSummaryCounts,
+  () => Promise<Array<{ count: number }>>
+>
+
 async function getCount(
   query: Promise<Array<{ count: number }>>
 ): Promise<number> {
@@ -34,43 +51,11 @@ async function getCount(
 }
 
 export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneralSummaryCounts> {
-  const [
-    catalogues,
-    compositions,
-    currencies,
-    distributions,
-    edges,
-    rims,
-    shapes,
-    engravers,
-    issuers,
-    orientations,
-    mints,
-  ] = await Promise.all([
-      getCount(db.select({ count: count() }).from(catalogue)),
-      getCount(db.select({ count: count() }).from(composition)),
-      getCount(db.select({ count: count() }).from(currency)),
-      getCount(db.select({ count: count() }).from(distribution)),
-      getCount(db.select({ count: count() }).from(edge)),
-      getCount(db.select({ count: count() }).from(rim)),
-      getCount(db.select({ count: count() }).from(shape)),
-      getCount(db.select({ count: count() }).from(engraver)),
-      getCount(db.select({ count: count() }).from(issuer)),
-      getCount(db.select({ count: count() }).from(orientation)),
-      getCount(db.select({ count: count() }).from(mint)),
-    ])
-
-  return {
-    catalogues,
-    compositions,
-    currencies,
-    distributions,
-    edges,
-    rims,
-    shapes,
-    engravers,
-    issuers,
-    orientations,
-    mints,
-  }
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(DATABASE_GENERAL_SUMMARY_COUNT_QUERIES).map(
+        async ([key, createQuery]) => [key, await getCount(createQuery())] as const
+      )
+    )
+  ) as DatabaseGeneralSummaryCounts
 }

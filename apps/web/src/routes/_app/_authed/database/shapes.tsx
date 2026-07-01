@@ -38,12 +38,6 @@ async function getDefaultShapeReadDependencies(): Promise<ShapeReadDependencies>
   }
 }
 
-async function resolveShapeReadDependencies(
-  dependencies?: ShapeReadDependencies
-): Promise<ShapeReadDependencies> {
-  return dependencies ?? getDefaultShapeReadDependencies()
-}
-
 export async function loadShapeRecords(
   collector: CollectorWithRole | null,
   dependencies?: ShapeReadDependencies
@@ -54,7 +48,7 @@ export async function loadShapeRecords(
     }
   }
 
-  const { getShapes } = await resolveShapeReadDependencies(dependencies)
+  const { getShapes } = dependencies ?? (await getDefaultShapeReadDependencies())
 
   return {
     status: "success",

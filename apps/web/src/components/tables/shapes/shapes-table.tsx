@@ -20,10 +20,14 @@ export function filterShapes(
   }
 
   return shapes.filter((shape) =>
-    [shape.code, shape.name].some((value) =>
+    getShapeFilterValues(shape).some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
   )
+}
+
+function getShapeFilterValues(shape: ShapeOption): string[] {
+  return [shape.code, shape.name]
 }
 
 export function ShapesTable({ shapes }: ShapesTableProps) {

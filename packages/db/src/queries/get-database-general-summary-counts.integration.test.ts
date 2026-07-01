@@ -12,6 +12,7 @@ import {
   createMint,
   createOrientation,
   createRim,
+  createRulerGroup,
   createShape,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -93,6 +94,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       name: "United States",
       isoCode: "US",
     })
+    await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    await createRulerGroup({
+      code: "julio-claudians",
+      name: "Julio-Claudians",
+    })
     await createOrientation({
       code: "coin-alignment",
       name: "Coin alignment",
@@ -116,6 +125,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 2,
       engravers: 2,
       issuers: 2,
+      rulerGroups: 2,
       orientations: 2,
       mints: 1,
     })
@@ -132,6 +142,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 0,
       engravers: 0,
       issuers: 0,
+      rulerGroups: 0,
       orientations: 0,
       mints: 0,
     })

@@ -56,6 +56,7 @@ describe("DatabaseGeneralSummaryTable", () => {
       { href: "/database/shapes", label: "Shapes", count: 11 },
       { href: "/database/engravers", label: "Engravers", count: 9 },
       { href: "/database/issuers", label: "Issuers", count: 3 },
+      { href: "/database/ruler-groups", label: "Ruler Groups", count: 4 },
       { href: "/database/orientations", label: "Orientations", count: 0 },
       { href: "/database/mints", label: "Mints", count: 14 },
     ] as const
@@ -72,6 +73,7 @@ describe("DatabaseGeneralSummaryTable", () => {
           shapes: 11,
           engravers: 9,
           issuers: 3,
+          rulerGroups: 4,
           orientations: 0,
           mints: 14,
         }}

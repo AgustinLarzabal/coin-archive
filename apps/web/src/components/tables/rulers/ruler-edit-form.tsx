@@ -6,10 +6,6 @@ import type { RulerGroupOption, RulerOption } from "@workspace/db"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  RulerFieldErrors,
-  RulerMutationResult,
-} from "@/lib/ruler-maintenance"
 import { submitUpdateRuler } from "@/lib/ruler-maintenance"
 
 import { RulerFormFields } from "./ruler-form-fields"
@@ -20,6 +16,7 @@ import {
   normalizeRulerDraft,
 } from "./ruler-form.shared"
 import type { RulerDraft } from "./ruler-form.shared"
+import { useRulerFormFeedback } from "./use-ruler-form-feedback"
 
 type RulerEditFormProps = {
   ruler: RulerOption
@@ -61,39 +58,21 @@ export function RulerEditForm({
   const router = useRouter()
   const updateRuler = useServerFn(updateRulerAction)
   const [draft, setDraft] = useState<RulerDraft>(createRulerDraft(ruler))
-  const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const {
+    fieldErrors,
+    formError,
+    successMessage,
+    clearFeedback,
+    applyResult,
+  } = useRulerFormFeedback()
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
   const hasChanges = hasRulerEditChanges(ruler, draft)
 
   useEffect(() => {
     setDraft(createRulerDraft(ruler))
-    setFieldErrors({})
-    setFormError(null)
-    setSuccessMessage(null)
-  }, [ruler])
-
-  function clearFeedback() {
-    setFieldErrors({})
-    setFormError(null)
-    setSuccessMessage(null)
-  }
-
-  function applyResult(result: RulerMutationResult) {
-    if (result.status === "success") {
-      setFieldErrors({})
-      setFormError(null)
-      setSuccessMessage(result.message)
-      return true
-    }
-
-    setFieldErrors(result.fieldErrors)
-    setFormError(result.formError ?? null)
-    setSuccessMessage(null)
-    return false
-  }
+    clearFeedback()
+  }, [ruler, clearFeedback])
 
   function updateDraft<TFieldName extends keyof RulerDraft>(
     field: TFieldName,

@@ -50,7 +50,7 @@ async function resolveRulerReadDependencies(
   return dependencies ?? getDefaultRulerReadDependencies()
 }
 
-export async function loadRulerMaintenanceRulers(
+export async function loadRulerMaintenanceData(
   collector: CollectorWithRole | null,
   dependencies?: RulerReadDependencies
 ): Promise<LoadRulerMaintenanceResult> {
@@ -77,7 +77,7 @@ const getRulerMaintenanceLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadRulerMaintenanceRulers(session?.user ?? null)
+  const result = await loadRulerMaintenanceData(session?.user ?? null)
 
   if (result.status === "error") {
     return {

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { RULER_AUTHORIZATION_ERROR } from "@/lib/ruler-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
-import { loadRulerMaintenanceRulers, renderDatabaseRulersPage } from "./rulers"
+import { loadRulerMaintenanceData, renderDatabaseRulersPage } from "./rulers"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -38,13 +38,13 @@ describe("databaseSecondaryMenuItems", () => {
   })
 })
 
-describe("loadRulerMaintenanceRulers", () => {
+describe("loadRulerMaintenanceData", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
     const getRulers = vi.fn()
     const getRulerGroups = vi.fn()
 
     await expect(
-      loadRulerMaintenanceRulers(null, { getRulerGroups, getRulers })
+      loadRulerMaintenanceData(null, { getRulerGroups, getRulers })
     ).resolves.toStrictEqual({
       status: "error",
       formError: RULER_AUTHORIZATION_ERROR,
@@ -59,7 +59,7 @@ describe("loadRulerMaintenanceRulers", () => {
     const getRulerGroups = vi.fn()
 
     await expect(
-      loadRulerMaintenanceRulers(
+      loadRulerMaintenanceData(
         { role: "collector" },
         { getRulerGroups, getRulers }
       )
@@ -100,7 +100,7 @@ describe("loadRulerMaintenanceRulers", () => {
 
     for (const role of allowedRoles) {
       await expect(
-        loadRulerMaintenanceRulers({ role }, { getRulerGroups, getRulers })
+        loadRulerMaintenanceData({ role }, { getRulerGroups, getRulers })
       ).resolves.toStrictEqual({
         status: "success",
         rulers,

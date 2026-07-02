@@ -6,10 +6,6 @@ import type { RulerGroupOption } from "@workspace/db"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  RulerFieldErrors,
-  RulerMutationResult,
-} from "@/lib/ruler-maintenance"
 import { submitCreateRuler } from "@/lib/ruler-maintenance"
 
 import { RulerFormFields } from "./ruler-form-fields"
@@ -20,6 +16,7 @@ import {
   isRulerDraftComplete,
 } from "./ruler-form.shared"
 import type { RulerDraft } from "./ruler-form.shared"
+import { useRulerFormFeedback } from "./use-ruler-form-feedback"
 
 type RulerCreateFormProps = {
   rulerGroups: RulerGroupOption[]
@@ -47,27 +44,10 @@ export function RulerCreateForm({
   const router = useRouter()
   const createRuler = useServerFn(createRulerAction)
   const [draft, setDraft] = useState<RulerDraft>(EMPTY_RULER_DRAFT)
-  const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const { fieldErrors, formError, clearFeedback, applyResult } =
+    useRulerFormFeedback()
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
-
-  function clearFeedback() {
-    setFieldErrors({})
-    setFormError(null)
-  }
-
-  function applyResult(result: RulerMutationResult) {
-    if (result.status === "success") {
-      setFieldErrors({})
-      setFormError(null)
-      return true
-    }
-
-    setFieldErrors(result.fieldErrors)
-    setFormError(result.formError ?? null)
-    return false
-  }
 
   function updateDraft<TFieldName extends keyof RulerDraft>(
     field: TFieldName,

@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MINTING_TECHNIQUE_IN_USE_DELETE_ERROR } from "@/lib/minting-technique-maintenance"
+import { MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE } from "@/lib/minting-technique-maintenance"
 
 import {
   MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION,
@@ -123,10 +123,7 @@ describe("MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Minting Technique"
     )
     expect(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      MINTING_TECHNIQUE_IN_USE_DELETE_ERROR.replace(
-        "Minting Technique cannot be deleted while Coins still use it. ",
-        ""
-      )
+      MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE
     )
   })
 })

@@ -12,8 +12,10 @@ export const MINTING_TECHNIQUE_GENERIC_SAVE_ERROR =
   "Unable to save Minting Technique right now."
 export const MINTING_TECHNIQUE_MISSING_ERROR =
   "Minting Technique no longer exists."
+export const MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE =
+  "Remove or reassign the Minting Technique on those Coins before deleting it."
 export const MINTING_TECHNIQUE_IN_USE_DELETE_ERROR =
-  "Minting Technique cannot be deleted while Coins still use it. Remove or reassign the Minting Technique on those Coins before deleting it."
+  `Minting Technique cannot be deleted while Coins still use it. ${MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE}`
 export const MINTING_TECHNIQUE_INVALID_CODE_ERROR =
   "Minting Technique Code must use lowercase letters, numbers, and hyphens only."
 

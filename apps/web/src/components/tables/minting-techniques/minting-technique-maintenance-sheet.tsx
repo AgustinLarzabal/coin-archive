@@ -30,7 +30,7 @@ import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
   MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
-  MINTING_TECHNIQUE_IN_USE_DELETE_ERROR,
+  MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE,
   submitDeleteMintingTechnique,
 } from "@/lib/minting-technique-maintenance"
 
@@ -43,14 +43,8 @@ type MintingTechniqueMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const MINTING_TECHNIQUE_DELETE_CONFIRMATION_IN_USE_GUIDANCE =
-  MINTING_TECHNIQUE_IN_USE_DELETE_ERROR.replace(
-    "Minting Technique cannot be deleted while Coins still use it. ",
-    ""
-  )
-
 export const MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+  `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE}`
 
 const deleteMintingTechniqueAction = createServerFn({
   method: "POST",

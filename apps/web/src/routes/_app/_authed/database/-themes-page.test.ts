@@ -106,7 +106,7 @@ describe("renderDatabaseThemesPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the Themes table for allowed Editors and Admins", () => {
+  it("renders the Themes table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseThemesPage({
         isAllowed: true,
@@ -119,7 +119,7 @@ describe("renderDatabaseThemesPage", () => {
     expect(markup).toContain("Map")
     expect(markup).toContain("Portrait")
     expect(markup).toContain("Filter themes by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

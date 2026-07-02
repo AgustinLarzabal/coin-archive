@@ -45,6 +45,7 @@ export {
   deleteTechnique,
   updateTechnique,
 } from "./mutations/technique"
+export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"

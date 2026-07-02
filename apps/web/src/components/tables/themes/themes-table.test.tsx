@@ -29,7 +29,7 @@ describe("filterThemes", () => {
 })
 
 describe("ThemesTable", () => {
-  it("renders Theme Code and Theme Name columns with filter controls", () => {
+  it("renders Theme Code and Theme Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(<ThemesTable themes={themes} />)
 
     expect(markup).toContain("Theme Code")
@@ -37,7 +37,7 @@ describe("ThemesTable", () => {
     expect(markup).toContain("Map")
     expect(markup).toContain("Portrait")
     expect(markup).toContain("Filter themes by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

@@ -1,0 +1,179 @@
+import { useEffect, useMemo, useState } from "react"
+import type { FormEvent } from "react"
+import { useRouter } from "@tanstack/react-router"
+import { createServerFn, useServerFn } from "@tanstack/react-start"
+import type { RulerGroupOption, RulerOption } from "@workspace/db"
+import { SubmitButton } from "@workspace/ui/components/submit-button"
+
+import { getAuthSession } from "@/lib/auth-session"
+import type {
+  RulerFieldErrors,
+  RulerMutationResult,
+} from "@/lib/ruler-maintenance"
+import { submitUpdateRuler } from "@/lib/ruler-maintenance"
+
+import { RulerFormFields } from "./ruler-form-fields"
+import {
+  createRulerDraft,
+  getUpdateRulerSubmission,
+  normalizeRulerDraft,
+} from "./ruler-form.shared"
+import type { RulerDraft } from "./ruler-form.shared"
+
+type RulerEditFormProps = {
+  ruler: RulerOption
+  rulerGroups: RulerGroupOption[]
+  onSaved?: () => void
+}
+
+const updateRulerAction = createServerFn({
+  method: "POST",
+})
+  .inputValidator(
+    (data: {
+      id: string
+      code: string
+      name: string
+      rulerGroupId: string | null
+    }) => data
+  )
+  .handler(async ({ data }) => {
+    const session = await getAuthSession()
+
+    return submitUpdateRuler(session?.user ?? null, data)
+  })
+
+export function hasRulerEditChanges(ruler: RulerOption, draft: RulerDraft) {
+  const normalizedCurrent = normalizeRulerDraft(createRulerDraft(ruler))
+  const normalizedDraft = normalizeRulerDraft(draft)
+
+  return (
+    normalizedDraft.code !== normalizedCurrent.code ||
+    normalizedDraft.name !== normalizedCurrent.name ||
+    normalizedDraft.rulerGroupLabel !== normalizedCurrent.rulerGroupLabel
+  )
+}
+
+export function RulerEditForm({
+  ruler,
+  rulerGroups,
+  onSaved,
+}: RulerEditFormProps) {
+  const router = useRouter()
+  const updateRuler = useServerFn(updateRulerAction)
+  const [draft, setDraft] = useState<RulerDraft>(createRulerDraft(ruler))
+  const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})
+  const [formError, setFormError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
+  const availableRulerGroups = useMemo(() => rulerGroups, [rulerGroups])
+  const hasChanges = hasRulerEditChanges(ruler, draft)
+
+  useEffect(() => {
+    setDraft(createRulerDraft(ruler))
+    setFieldErrors({})
+    setFormError(null)
+    setSuccessMessage(null)
+  }, [ruler])
+
+  function clearFeedback() {
+    setFieldErrors({})
+    setFormError(null)
+    setSuccessMessage(null)
+  }
+
+  function applyResult(result: RulerMutationResult) {
+    if (result.status === "success") {
+      setFieldErrors({})
+      setFormError(null)
+      setSuccessMessage(result.message)
+      return true
+    }
+
+    setFieldErrors(result.fieldErrors)
+    setFormError(result.formError ?? null)
+    setSuccessMessage(null)
+    return false
+  }
+
+  function updateDraft<TFieldName extends keyof RulerDraft>(
+    field: TFieldName,
+    value: RulerDraft[TFieldName]
+  ) {
+    setDraft((current) => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    clearFeedback()
+
+    const submission = getUpdateRulerSubmission(
+      ruler.id,
+      draft,
+      availableRulerGroups
+    )
+
+    if (submission.status === "invalid") {
+      applyResult(submission.result)
+      return
+    }
+
+    setIsPending(true)
+
+    try {
+      const result = await updateRuler({
+        data: submission.data,
+      })
+      const shouldRefresh = applyResult(result)
+
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  return (
+    <form
+      id="database-ruler-edit-form"
+      className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
+      onSubmit={handleSubmit}
+    >
+      <RulerFormFields
+        codeInputId="ruler-code"
+        nameInputId="ruler-name"
+        rulerGroupInputId="ruler-group"
+        rulerGroupOptionsId="ruler-group-options-edit"
+        codePlaceholder="louis-xiv"
+        namePlaceholder="Louis XIV"
+        rulerGroupPlaceholder="Search Ruler Group..."
+        draft={draft}
+        rulerGroups={availableRulerGroups}
+        fieldErrors={fieldErrors}
+        onDraftChange={updateDraft}
+      />
+
+      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {successMessage ? (
+        <p className="text-sm text-emerald-700">{successMessage}</p>
+      ) : null}
+
+      <div className="mt-auto flex gap-2 border-t pt-4">
+        <SubmitButton
+          type="submit"
+          isSubmitting={isPending}
+          disabled={!hasChanges}
+          className="w-full"
+        >
+          Save
+        </SubmitButton>
+      </div>
+    </form>
+  )
+}

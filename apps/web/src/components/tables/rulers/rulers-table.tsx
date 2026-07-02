@@ -1,0 +1,80 @@
+import { useState } from "react"
+import type { RulerGroupOption, RulerOption } from "@workspace/db"
+import { DataTable } from "@workspace/ui/components/data-table"
+
+import { createRulerColumns } from "./columns"
+import { RulerMaintenanceSheet } from "./ruler-maintenance-sheet"
+import { RulersTableToolbar } from "./rulers-table-toolbar"
+
+type RulersTableProps = {
+  rulers: RulerOption[]
+  rulerGroups: RulerGroupOption[]
+}
+
+export function filterRulers(
+  rulers: RulerOption[],
+  filterValue: string
+): RulerOption[] {
+  const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
+
+  if (normalizedFilterValue === "") {
+    return rulers
+  }
+
+  return rulers.filter((ruler) =>
+    getRulerFilterValues(ruler).some((value) =>
+      value.toLocaleLowerCase().includes(normalizedFilterValue)
+    )
+  )
+}
+
+function getRulerFilterValues(ruler: RulerOption): string[] {
+  return [
+    ruler.code,
+    ruler.name,
+    ruler.group?.code ?? "",
+    ruler.group?.name ?? "",
+  ]
+}
+
+export function RulersTable({ rulers, rulerGroups }: RulersTableProps) {
+  const [filterValue, setFilterValue] = useState("")
+  const [selectedRuler, setSelectedRuler] = useState<RulerOption | null>(null)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const filteredRulers = filterRulers(rulers, filterValue)
+
+  function openMaintenanceSheet(ruler: RulerOption | null) {
+    setSelectedRuler(ruler)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  function openCreateRulerSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditRulerSheet(ruler: RulerOption) {
+    openMaintenanceSheet(ruler)
+  }
+
+  return (
+    <>
+      <DataTable
+        columns={createRulerColumns(openEditRulerSheet)}
+        data={filteredRulers}
+        toolbar={() => (
+          <RulersTableToolbar
+            filterValue={filterValue}
+            onCreateRuler={openCreateRulerSheet}
+            onFilterValueChange={setFilterValue}
+          />
+        )}
+      />
+      <RulerMaintenanceSheet
+        ruler={selectedRuler}
+        rulerGroups={rulerGroups}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={setIsMaintenanceSheetOpen}
+      />
+    </>
+  )
+}

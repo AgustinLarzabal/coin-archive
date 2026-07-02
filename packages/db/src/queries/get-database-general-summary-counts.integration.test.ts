@@ -12,6 +12,7 @@ import {
   createMint,
   createOrientation,
   createRim,
+  createRuler,
   createRulerGroup,
   createShape,
 } from "../testing/fixtures"
@@ -102,6 +103,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "julio-claudians",
       name: "Julio-Claudians",
     })
+    await createRuler({
+      code: "felipe-v",
+      name: "Felipe V",
+    })
+    await createRuler({
+      code: "felipe-vi",
+      name: "Felipe VI",
+    })
     await createOrientation({
       code: "coin-alignment",
       name: "Coin alignment",
@@ -126,6 +135,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       engravers: 2,
       issuers: 2,
       rulerGroups: 2,
+      rulers: 2,
       orientations: 2,
       mints: 1,
     })
@@ -143,6 +153,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       engravers: 0,
       issuers: 0,
       rulerGroups: 0,
+      rulers: 0,
       orientations: 0,
       mints: 0,
     })

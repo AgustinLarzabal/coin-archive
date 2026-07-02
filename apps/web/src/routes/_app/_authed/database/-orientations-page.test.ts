@@ -28,7 +28,7 @@ function createOrientation(
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Orientations maintenance entry after Ruler Groups", () => {
+  it("includes the Orientations maintenance entry after Rulers", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/orientations",
       label: "Orientations",
@@ -43,6 +43,10 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Ruler Groups",
     })
     expect(databaseSecondaryMenuItems[11]).toStrictEqual({
+      to: "/database/rulers",
+      label: "Rulers",
+    })
+    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/orientations",
       label: "Orientations",
     })

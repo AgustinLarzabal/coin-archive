@@ -63,6 +63,11 @@ export const databaseMaintenanceSections = [
     countKey: "rulerGroups",
   },
   {
+    to: "/database/rulers",
+    label: "Rulers",
+    countKey: "rulers",
+  },
+  {
     to: "/database/orientations",
     label: "Orientations",
     countKey: "orientations",

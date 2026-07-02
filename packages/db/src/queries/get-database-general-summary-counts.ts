@@ -11,6 +11,7 @@ import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
 import { orientation } from "../schema/orientation"
 import { rim } from "../schema/rim"
+import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
 
@@ -25,6 +26,7 @@ export type DatabaseGeneralSummaryCounts = {
   engravers: number
   issuers: number
   rulerGroups: number
+  rulers: number
   orientations: number
   mints: number
 }
@@ -40,6 +42,7 @@ const DATABASE_GENERAL_SUMMARY_COUNT_QUERIES = {
   engravers: () => db.select({ count: count() }).from(engraver),
   issuers: () => db.select({ count: count() }).from(issuer),
   rulerGroups: () => db.select({ count: count() }).from(rulerGroup),
+  rulers: () => db.select({ count: count() }).from(ruler),
   orientations: () => db.select({ count: count() }).from(orientation),
   mints: () => db.select({ count: count() }).from(mint),
 } satisfies Record<

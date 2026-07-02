@@ -31,6 +31,7 @@ import { getAuthSession } from "@/lib/auth-session"
 import {
   MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
   MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE,
+  type MintingTechniqueMutationResult,
   submitDeleteMintingTechnique,
 } from "@/lib/minting-technique-maintenance"
 
@@ -45,6 +46,22 @@ type MintingTechniqueMaintenanceSheetProps = {
 
 export const MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION =
   `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE}`
+
+export function getMintingTechniqueDeleteOutcome(
+  result: MintingTechniqueMutationResult
+): { closeSheet: boolean; error: string | null } {
+  if (result.status === "success") {
+    return {
+      closeSheet: true,
+      error: null,
+    }
+  }
+
+  return {
+    closeSheet: false,
+    error: result.formError ?? MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
+  }
+}
 
 const deleteMintingTechniqueAction = createServerFn({
   method: "POST",
@@ -100,15 +117,15 @@ export function MintingTechniqueMaintenanceSheet({
         },
       })
 
-      if (result.status === "success") {
+      const outcome = getMintingTechniqueDeleteOutcome(result)
+
+      if (outcome.closeSheet) {
         await router.invalidate()
         onOpenChange(false)
         return
       }
 
-      setDeleteError(
-        result.formError ?? MINTING_TECHNIQUE_GENERIC_SAVE_ERROR
-      )
+      setDeleteError(outcome.error)
     } finally {
       setIsDeletePending(false)
     }

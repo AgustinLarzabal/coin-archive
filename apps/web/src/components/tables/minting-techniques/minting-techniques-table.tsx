@@ -19,12 +19,17 @@ export function filterMintingTechniques(
     return mintingTechniques
   }
 
-  return mintingTechniques.filter(({ code, name }) => {
-    return (
-      code.toLocaleLowerCase().includes(normalizedFilterValue) ||
-      name.toLocaleLowerCase().includes(normalizedFilterValue)
+  return mintingTechniques.filter((mintingTechnique) =>
+    getMintingTechniqueFilterValues(mintingTechnique).some((value) =>
+      value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
-  })
+  )
+}
+
+function getMintingTechniqueFilterValues(
+  mintingTechnique: TechniqueOption
+): string[] {
+  return [mintingTechnique.code, mintingTechnique.name]
 }
 
 export function MintingTechniquesTable({

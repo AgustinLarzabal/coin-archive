@@ -32,18 +32,18 @@ type MintingTechniqueReadDependencies = {
   getTechniques: () => Promise<TechniqueOption[]>
 }
 
-async function getDefaultMintingTechniqueReadDependencies(): Promise<MintingTechniqueReadDependencies> {
+async function getMintingTechniqueReadDependencies(
+  dependencies?: MintingTechniqueReadDependencies
+): Promise<MintingTechniqueReadDependencies> {
+  if (dependencies) {
+    return dependencies
+  }
+
   const { getTechniques } = await import("@workspace/db")
 
   return {
     getTechniques,
   }
-}
-
-async function resolveMintingTechniqueReadDependencies(
-  dependencies?: MintingTechniqueReadDependencies
-): Promise<MintingTechniqueReadDependencies> {
-  return dependencies ?? getDefaultMintingTechniqueReadDependencies()
 }
 
 export async function loadMintingTechniqueMaintenanceMintingTechniques(
@@ -54,9 +54,8 @@ export async function loadMintingTechniqueMaintenanceMintingTechniques(
     return createMintingTechniqueAuthorizationError()
   }
 
-  const { getTechniques } = await resolveMintingTechniqueReadDependencies(
-    dependencies
-  )
+  const { getTechniques } =
+    await getMintingTechniqueReadDependencies(dependencies)
 
   return {
     status: "success",

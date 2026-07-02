@@ -25,13 +25,19 @@ const mintingTechniques: TechniqueOption[] = [
 ]
 
 describe("filterMintingTechniques", () => {
+  it("returns all Minting Techniques when the filter is blank", () => {
+    expect(filterMintingTechniques(mintingTechniques, "")).toStrictEqual(
+      mintingTechniques
+    )
+  })
+
   it("filters by Minting Technique Code and Minting Technique Name case-insensitively while trimming whitespace", () => {
-    expect(filterMintingTechniques(mintingTechniques, " hammered ")).toStrictEqual([
-      mintingTechniques[0],
-    ])
-    expect(filterMintingTechniques(mintingTechniques, "MACHINE")).toStrictEqual([
-      mintingTechniques[1],
-    ])
+    expect(
+      filterMintingTechniques(mintingTechniques, " hammered ")
+    ).toStrictEqual([mintingTechniques[0]])
+    expect(filterMintingTechniques(mintingTechniques, "MACHINE")).toStrictEqual(
+      [mintingTechniques[1]]
+    )
   })
 })
 

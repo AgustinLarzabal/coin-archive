@@ -40,6 +40,7 @@ import { ThemeEditForm } from "./theme-edit-form"
 type ThemeMaintenanceSheetProps = {
   theme: ThemeOption | null
   open: boolean
+  onCompleted?: (message: string) => void
   onOpenChange: (open: boolean) => void
 }
 
@@ -59,6 +60,7 @@ const deleteThemeAction = createServerFn({
 export function ThemeMaintenanceSheet({
   theme,
   open,
+  onCompleted,
   onOpenChange,
 }: ThemeMaintenanceSheetProps) {
   const router = useRouter()
@@ -82,6 +84,11 @@ export function ThemeMaintenanceSheet({
     onOpenChange(false)
   }
 
+  function completeThemeMutation(message: string) {
+    onCompleted?.(message)
+    closeSheet()
+  }
+
   async function handleDeleteTheme() {
     if (!theme) {
       return
@@ -99,7 +106,7 @@ export function ThemeMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        onOpenChange(false)
+        completeThemeMutation(result.message)
         return
       }
 
@@ -178,9 +185,9 @@ export function ThemeMaintenanceSheet({
         </SheetHeader>
 
         {hasSelectedTheme ? (
-          <ThemeEditForm theme={theme} onSaved={closeSheet} />
+          <ThemeEditForm theme={theme} onSaved={completeThemeMutation} />
         ) : (
-          <ThemeCreateForm onCreated={closeSheet} />
+          <ThemeCreateForm onCreated={completeThemeMutation} />
         )}
       </SheetContent>
     </Sheet>

@@ -40,4 +40,16 @@ describe("ThemesTable", () => {
     expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')
   })
+
+  it("renders a table-level success message when one is available", () => {
+    const markup = renderToStaticMarkup(
+      <ThemesTable
+        themes={themes}
+        initialSuccessMessage="Theme deleted."
+      />
+    )
+
+    expect(markup).toContain('role="status"')
+    expect(markup).toContain("Theme deleted.")
+  })
 })

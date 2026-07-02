@@ -88,11 +88,29 @@ vi.mock("@/components/icons", () => ({
 }))
 
 vi.mock("./theme-create-form", () => ({
-  ThemeCreateForm: () => createElement("div", null, "ThemeCreateForm"),
+  ThemeCreateForm: ({
+    onCreated,
+  }: {
+    onCreated?: (message: string) => void
+  }) =>
+    createElement(
+      "div",
+      null,
+      onCreated ? "ThemeCreateForm:onCreated" : "ThemeCreateForm"
+    ),
 }))
 
 vi.mock("./theme-edit-form", () => ({
-  ThemeEditForm: () => createElement("div", null, "ThemeEditForm"),
+  ThemeEditForm: ({
+    onSaved,
+  }: {
+    onSaved?: (message: string) => void
+  }) =>
+    createElement(
+      "div",
+      null,
+      onSaved ? "ThemeEditForm:onSaved" : "ThemeEditForm"
+    ),
 }))
 
 const theme: ThemeOption = {
@@ -127,7 +145,7 @@ describe("ThemeMaintenanceSheet", () => {
     const markup = renderThemeMaintenanceSheet(null)
 
     expect(markup).toContain("Create Theme")
-    expect(markup).toContain("ThemeCreateForm")
+    expect(markup).toContain("ThemeCreateForm:onCreated")
     expect(markup).not.toContain("Delete Theme?")
   })
 
@@ -135,7 +153,7 @@ describe("ThemeMaintenanceSheet", () => {
     const markup = renderThemeMaintenanceSheet(theme)
 
     expect(markup).toContain("Edit Theme")
-    expect(markup).toContain("ThemeEditForm")
+    expect(markup).toContain("ThemeEditForm:onSaved")
     expect(markup).toContain(">Delete<")
     expect(markup).toContain("Delete Theme?")
     expect(markup).toContain(THEME_DELETE_CONFIRMATION_DESCRIPTION)

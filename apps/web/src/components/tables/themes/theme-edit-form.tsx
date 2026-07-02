@@ -22,7 +22,7 @@ import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeEditFormProps = {
   theme: ThemeOption
-  onSaved?: () => void
+  onSaved?: (message: string) => void
 }
 
 const updateThemeAction = createServerFn({
@@ -134,9 +134,9 @@ export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
       })
       const shouldRefresh = applyResult(result)
 
-      if (shouldRefresh) {
+      if (shouldRefresh && result.status === "success") {
         await router.invalidate()
-        onSaved?.()
+        onSaved?.(result.message)
       }
     } finally {
       setIsPending(false)

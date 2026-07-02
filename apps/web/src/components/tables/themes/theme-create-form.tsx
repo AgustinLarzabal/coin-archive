@@ -20,7 +20,7 @@ import { ThemeFormFields } from "./theme-form-fields"
 import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeCreateFormProps = {
-  onCreated?: () => void
+  onCreated?: (message: string) => void
 }
 
 const createThemeAction = createServerFn({
@@ -101,10 +101,10 @@ export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
       })
       const shouldRefresh = applyResult(result)
 
-      if (shouldRefresh) {
+      if (shouldRefresh && result.status === "success") {
         setDraft(EMPTY_THEME_DRAFT)
         await router.invalidate()
-        onCreated?.()
+        onCreated?.(result.message)
       }
     } finally {
       setIsPending(false)

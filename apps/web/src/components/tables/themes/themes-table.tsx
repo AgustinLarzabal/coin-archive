@@ -7,6 +7,7 @@ import { ThemeMaintenanceSheet } from "./theme-maintenance-sheet"
 import { ThemesTableToolbar } from "./themes-table-toolbar"
 
 type ThemesTableProps = {
+  initialSuccessMessage?: string | null
   themes: ThemeOption[]
 }
 
@@ -27,13 +28,20 @@ export function filterThemes(
   )
 }
 
-export function ThemesTable({ themes }: ThemesTableProps) {
+export function ThemesTable({
+  themes,
+  initialSuccessMessage = null,
+}: ThemesTableProps) {
   const [filterValue, setFilterValue] = useState("")
   const [selectedTheme, setSelectedTheme] = useState<ThemeOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    initialSuccessMessage
+  )
   const filteredThemes = filterThemes(themes, filterValue)
 
   function openThemeMaintenanceSheet(theme: ThemeOption | null) {
+    setSuccessMessage(null)
     setSelectedTheme(theme)
     setIsMaintenanceSheetOpen(true)
   }
@@ -44,6 +52,11 @@ export function ThemesTable({ themes }: ThemesTableProps) {
 
   return (
     <>
+      {successMessage ? (
+        <p role="status" className="mb-4 text-sm text-emerald-700">
+          {successMessage}
+        </p>
+      ) : null}
       <DataTable
         columns={createThemeColumns(openThemeMaintenanceSheet)}
         data={filteredThemes}
@@ -58,6 +71,7 @@ export function ThemesTable({ themes }: ThemesTableProps) {
       <ThemeMaintenanceSheet
         theme={selectedTheme}
         open={isMaintenanceSheetOpen}
+        onCompleted={setSuccessMessage}
         onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>

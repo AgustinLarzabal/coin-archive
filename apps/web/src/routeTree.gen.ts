@@ -25,6 +25,7 @@ import { Route as AppAuthedDatabaseRulerGroupsRouteImport } from './routes/_app/
 import { Route as AppAuthedDatabaseRimsRouteImport } from './routes/_app/_authed/database/rims'
 import { Route as AppAuthedDatabaseOrientationsRouteImport } from './routes/_app/_authed/database/orientations'
 import { Route as AppAuthedDatabaseMintsRouteImport } from './routes/_app/_authed/database/mints'
+import { Route as AppAuthedDatabaseMintingTechniquesRouteImport } from './routes/_app/_authed/database/minting-techniques'
 import { Route as AppAuthedDatabaseIssuersRouteImport } from './routes/_app/_authed/database/issuers'
 import { Route as AppAuthedDatabaseEngraversRouteImport } from './routes/_app/_authed/database/engravers'
 import { Route as AppAuthedDatabaseEdgesRouteImport } from './routes/_app/_authed/database/edges'
@@ -113,6 +114,12 @@ const AppAuthedDatabaseMintsRoute = AppAuthedDatabaseMintsRouteImport.update({
   path: '/mints',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
+const AppAuthedDatabaseMintingTechniquesRoute =
+  AppAuthedDatabaseMintingTechniquesRouteImport.update({
+    id: '/minting-techniques',
+    path: '/minting-techniques',
+    getParentRoute: () => AppAuthedDatabaseRouteRoute,
+  } as any)
 const AppAuthedDatabaseIssuersRoute =
   AppAuthedDatabaseIssuersRouteImport.update({
     id: '/issuers',
@@ -174,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database/issuers': typeof AppAuthedDatabaseIssuersRoute
+  '/database/minting-techniques': typeof AppAuthedDatabaseMintingTechniquesRoute
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database/rims': typeof AppAuthedDatabaseRimsRoute
@@ -195,6 +203,7 @@ export interface FileRoutesByTo {
   '/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/database/issuers': typeof AppAuthedDatabaseIssuersRoute
+  '/database/minting-techniques': typeof AppAuthedDatabaseMintingTechniquesRoute
   '/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/database/rims': typeof AppAuthedDatabaseRimsRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/edges': typeof AppAuthedDatabaseEdgesRoute
   '/_app/_authed/database/engravers': typeof AppAuthedDatabaseEngraversRoute
   '/_app/_authed/database/issuers': typeof AppAuthedDatabaseIssuersRoute
+  '/_app/_authed/database/minting-techniques': typeof AppAuthedDatabaseMintingTechniquesRoute
   '/_app/_authed/database/mints': typeof AppAuthedDatabaseMintsRoute
   '/_app/_authed/database/orientations': typeof AppAuthedDatabaseOrientationsRoute
   '/_app/_authed/database/rims': typeof AppAuthedDatabaseRimsRoute
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/database/edges'
     | '/database/engravers'
     | '/database/issuers'
+    | '/database/minting-techniques'
     | '/database/mints'
     | '/database/orientations'
     | '/database/rims'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/database/edges'
     | '/database/engravers'
     | '/database/issuers'
+    | '/database/minting-techniques'
     | '/database/mints'
     | '/database/orientations'
     | '/database/rims'
@@ -294,6 +306,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/edges'
     | '/_app/_authed/database/engravers'
     | '/_app/_authed/database/issuers'
+    | '/_app/_authed/database/minting-techniques'
     | '/_app/_authed/database/mints'
     | '/_app/_authed/database/orientations'
     | '/_app/_authed/database/rims'
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthedDatabaseMintsRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
+    '/_app/_authed/database/minting-techniques': {
+      id: '/_app/_authed/database/minting-techniques'
+      path: '/minting-techniques'
+      fullPath: '/database/minting-techniques'
+      preLoaderRoute: typeof AppAuthedDatabaseMintingTechniquesRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
     '/_app/_authed/database/issuers': {
       id: '/_app/_authed/database/issuers'
       path: '/issuers'
@@ -506,6 +526,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseEdgesRoute: typeof AppAuthedDatabaseEdgesRoute
   AppAuthedDatabaseEngraversRoute: typeof AppAuthedDatabaseEngraversRoute
   AppAuthedDatabaseIssuersRoute: typeof AppAuthedDatabaseIssuersRoute
+  AppAuthedDatabaseMintingTechniquesRoute: typeof AppAuthedDatabaseMintingTechniquesRoute
   AppAuthedDatabaseMintsRoute: typeof AppAuthedDatabaseMintsRoute
   AppAuthedDatabaseOrientationsRoute: typeof AppAuthedDatabaseOrientationsRoute
   AppAuthedDatabaseRimsRoute: typeof AppAuthedDatabaseRimsRoute
@@ -524,6 +545,8 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
     AppAuthedDatabaseEdgesRoute: AppAuthedDatabaseEdgesRoute,
     AppAuthedDatabaseEngraversRoute: AppAuthedDatabaseEngraversRoute,
     AppAuthedDatabaseIssuersRoute: AppAuthedDatabaseIssuersRoute,
+    AppAuthedDatabaseMintingTechniquesRoute:
+      AppAuthedDatabaseMintingTechniquesRoute,
     AppAuthedDatabaseMintsRoute: AppAuthedDatabaseMintsRoute,
     AppAuthedDatabaseOrientationsRoute: AppAuthedDatabaseOrientationsRoute,
     AppAuthedDatabaseRimsRoute: AppAuthedDatabaseRimsRoute,

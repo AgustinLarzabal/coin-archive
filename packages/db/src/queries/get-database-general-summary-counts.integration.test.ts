@@ -15,6 +15,7 @@ import {
   createRuler,
   createRulerGroup,
   createShape,
+  createTechnique,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 
@@ -77,6 +78,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "scalloped",
       name: "Scalloped",
     })
+    await createTechnique({
+      code: "hammered",
+      name: "Hammered",
+    })
+    await createTechnique({
+      code: "machine-struck",
+      name: "Machine struck",
+    })
     await createEngraver({
       code: "barth",
       name: "Barth",
@@ -132,6 +141,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 2,
       rims: 2,
       shapes: 2,
+      mintingTechniques: 2,
       engravers: 2,
       issuers: 2,
       rulers: 2,
@@ -150,6 +160,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       edges: 0,
       rims: 0,
       shapes: 0,
+      mintingTechniques: 0,
       engravers: 0,
       issuers: 0,
       rulers: 0,

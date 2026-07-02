@@ -44,6 +44,10 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Shapes",
     })
     expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/minting-techniques",
+      label: "Minting Techniques",
+    })
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })

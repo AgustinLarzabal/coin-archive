@@ -6,21 +6,21 @@ import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadEngraverMaintenanceEngravers } from "./engravers"
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Engravers page in the database secondary menu after Shapes", () => {
+  it("includes the read-only Engravers page in the database secondary menu after Minting Techniques", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/engravers",
       label: "Engravers",
     })
 
-    expect(databaseSecondaryMenuItems[6]).toStrictEqual({
-      to: "/database/rims",
-      label: "Rims",
-    })
     expect(databaseSecondaryMenuItems[7]).toStrictEqual({
       to: "/database/shapes",
       label: "Shapes",
     })
     expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/minting-techniques",
+      label: "Minting Techniques",
+    })
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })

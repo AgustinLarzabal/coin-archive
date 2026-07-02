@@ -14,6 +14,7 @@ import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { shape } from "../schema/shape"
+import { technique } from "../schema/technique"
 
 export type DatabaseGeneralSummaryCounts = {
   catalogues: number
@@ -23,6 +24,7 @@ export type DatabaseGeneralSummaryCounts = {
   edges: number
   rims: number
   shapes: number
+  mintingTechniques: number
   engravers: number
   issuers: number
   rulers: number
@@ -39,6 +41,7 @@ const DATABASE_GENERAL_SUMMARY_COUNT_QUERIES = {
   edges: () => db.select({ count: count() }).from(edge),
   rims: () => db.select({ count: count() }).from(rim),
   shapes: () => db.select({ count: count() }).from(shape),
+  mintingTechniques: () => db.select({ count: count() }).from(technique),
   engravers: () => db.select({ count: count() }).from(engraver),
   issuers: () => db.select({ count: count() }).from(issuer),
   rulers: () => db.select({ count: count() }).from(ruler),

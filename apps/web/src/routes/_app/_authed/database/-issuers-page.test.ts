@@ -28,17 +28,21 @@ vi.mock("@/components/tables/issuers/issuer-maintenance-sheet", () => ({
 }))
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Issuers maintenance entry after Engravers", () => {
+  it("includes the Issuers maintenance entry after Engravers and Minting Techniques", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/issuers",
       label: "Issuers",
     })
 
     expect(databaseSecondaryMenuItems[8]).toStrictEqual({
+      to: "/database/minting-techniques",
+      label: "Minting Techniques",
+    })
+    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
       to: "/database/engravers",
       label: "Engravers",
     })
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
       to: "/database/issuers",
       label: "Issuers",
     })

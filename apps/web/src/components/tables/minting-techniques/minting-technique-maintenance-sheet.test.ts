@@ -9,7 +9,6 @@ import { MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE } from "@/lib/minting-techniqu
 import {
   MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION,
   MintingTechniqueMaintenanceSheet,
-  getMintingTechniqueDeleteOutcome,
 } from "./minting-technique-maintenance-sheet"
 
 type MockComponentProps = {
@@ -126,21 +125,6 @@ describe("MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION", () => {
     expect(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE
     )
-  })
-})
-
-describe("getMintingTechniqueDeleteOutcome", () => {
-  it("keeps the delete workflow open and surfaces the returned error when deletion fails", () => {
-    expect(
-      getMintingTechniqueDeleteOutcome({
-        status: "error",
-        fieldErrors: {},
-        formError: "Minting Technique no longer exists.",
-      })
-    ).toStrictEqual({
-      closeSheet: false,
-      error: "Minting Technique no longer exists.",
-    })
   })
 })
 

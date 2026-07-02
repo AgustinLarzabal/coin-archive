@@ -40,12 +40,6 @@ async function getDefaultThemeReadDependencies(): Promise<ThemeReadDependencies>
   }
 }
 
-async function resolveThemeReadDependencies(
-  dependencies?: ThemeReadDependencies
-): Promise<ThemeReadDependencies> {
-  return dependencies ?? getDefaultThemeReadDependencies()
-}
-
 export async function loadThemeMaintenanceThemes(
   collector: CollectorWithRole | null,
   dependencies?: ThemeReadDependencies
@@ -54,7 +48,8 @@ export async function loadThemeMaintenanceThemes(
     return createThemeAuthorizationError()
   }
 
-  const { getThemes } = await resolveThemeReadDependencies(dependencies)
+  const { getThemes } =
+    dependencies ?? (await getDefaultThemeReadDependencies())
 
   return {
     status: "success",

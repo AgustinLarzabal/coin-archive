@@ -16,6 +16,18 @@ function createTheme(
   return overrides
 }
 
+const MAP_THEME = createTheme({
+  id: "3fc6f779-e225-45f7-9ef6-40e80e6ef9ef",
+  code: "map",
+  name: "Map",
+})
+
+const PORTRAIT_THEME = createTheme({
+  id: "7bf1fdc0-cceb-4dda-a8dd-b004a6f35775",
+  code: "portrait",
+  name: "Portrait",
+})
+
 describe("databaseSecondaryMenuItems", () => {
   it("includes the Themes maintenance entry after Engravers", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
@@ -42,12 +54,12 @@ describe("loadThemeMaintenanceThemes", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
     const getThemes = vi.fn()
 
-    await expect(loadThemeMaintenanceThemes(null, { getThemes })).resolves.toStrictEqual(
-      {
-        status: "error",
-        formError: THEME_AUTHORIZATION_ERROR,
-      }
-    )
+    await expect(
+      loadThemeMaintenanceThemes(null, { getThemes })
+    ).resolves.toStrictEqual({
+      status: "error",
+      formError: THEME_AUTHORIZATION_ERROR,
+    })
 
     expect(getThemes).not.toHaveBeenCalled()
   })
@@ -66,13 +78,7 @@ describe("loadThemeMaintenanceThemes", () => {
   })
 
   it("returns Theme records for Editors and Admins", async () => {
-    const themes = [
-      createTheme({
-        id: "3fc6f779-e225-45f7-9ef6-40e80e6ef9ef",
-        code: "map",
-        name: "Map",
-      }),
-    ]
+    const themes = [MAP_THEME]
     const getThemes = vi.fn().mockResolvedValue(themes)
 
     await expect(
@@ -104,18 +110,7 @@ describe("renderDatabaseThemesPage", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseThemesPage({
         isAllowed: true,
-        themes: [
-          createTheme({
-            id: "3fc6f779-e225-45f7-9ef6-40e80e6ef9ef",
-            code: "map",
-            name: "Map",
-          }),
-          createTheme({
-            id: "7bf1fdc0-cceb-4dda-a8dd-b004a6f35775",
-            code: "portrait",
-            name: "Portrait",
-          }),
-        ],
+        themes: [MAP_THEME, PORTRAIT_THEME],
       })
     )
 

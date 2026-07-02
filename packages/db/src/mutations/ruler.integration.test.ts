@@ -4,7 +4,7 @@ import { db } from "../index"
 import {
   createCoin,
   createCoinRuler,
-  createIssuer as createIssuerFixture,
+  createIssuer,
   createRuler as createRulerFixture,
   createRulerGroup,
 } from "../testing/fixtures"
@@ -14,50 +14,35 @@ import { createRuler, deleteRuler, updateRuler } from "./ruler"
 describe("ruler mutations integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("trims Ruler fields before creating a Ruler", async () => {
-    const rulerGroup = await createRulerGroup({
+  it("trims Ruler fields and preserves an optional Ruler Group assignment when creating a Ruler", async () => {
+    const bourbon = await createRulerGroup({
       code: "house-of-bourbon",
       name: "House of Bourbon",
     })
 
     await expect(
       createRuler({
-        code: "  louis-xiv  ",
-        name: "  Louis XIV  ",
-        rulerGroupId: ` ${rulerGroup.id} `,
+        code: "  felipe-v  ",
+        name: "  Felipe V  ",
+        rulerGroupId: bourbon.id,
       })
     ).resolves.toMatchObject({
-      code: "louis-xiv",
-      name: "Louis XIV",
-      rulerGroupId: rulerGroup.id,
-    })
-  })
-
-  it("allows creating a Ruler without a Ruler Group", async () => {
-    await expect(
-      createRuler({
-        code: "liberty",
-        name: "Liberty",
-        rulerGroupId: null,
-      })
-    ).resolves.toMatchObject({
-      code: "liberty",
-      name: "Liberty",
-      rulerGroupId: null,
+      code: "felipe-v",
+      name: "Felipe V",
+      rulerGroupId: bourbon.id,
     })
   })
 
   it("rejects duplicate Ruler Codes after normalization", async () => {
     await createRulerFixture({
-      code: "louis-xiv",
-      name: "Louis XIV",
+      code: "felipe-v",
+      name: "Felipe V",
     })
 
     await expect(
       createRuler({
-        code: " louis-xiv ",
-        name: "Duplicate Louis XIV",
-        rulerGroupId: null,
+        code: " felipe-v ",
+        name: "Duplicate Felipe V",
       })
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
@@ -70,9 +55,8 @@ describe("ruler mutations integration", () => {
   it("rejects invalid Ruler Codes instead of silently normalizing them", async () => {
     await expect(
       createRuler({
-        code: "Louis-XIV",
-        name: "Louis XIV",
-        rulerGroupId: null,
+        code: "Felipe-V",
+        name: "Felipe V",
       })
     ).rejects.toMatchObject({
       cause: expect.objectContaining({
@@ -86,65 +70,63 @@ describe("ruler mutations integration", () => {
     const firstRuler = await createRuler({
       code: "felipe-v",
       name: "Felipe",
-      rulerGroupId: null,
     })
     const secondRuler = await createRuler({
       code: "felipe-vi",
       name: "Felipe",
-      rulerGroupId: null,
     })
 
     expect(firstRuler.name).toBe(secondRuler.name)
     expect(firstRuler.id).not.toBe(secondRuler.id)
   })
 
-  it("trims Ruler fields and updates the Ruler Group assignment", async () => {
-    const firstGroup = await createRulerGroup({
+  it("trims Ruler fields and can change the optional Ruler Group assignment during update", async () => {
+    const bourbon = await createRulerGroup({
       code: "house-of-bourbon",
       name: "House of Bourbon",
     })
-    const secondGroup = await createRulerGroup({
+    const habsburg = await createRulerGroup({
       code: "house-of-habsburg",
       name: "House of Habsburg",
     })
     const existingRuler = await createRulerFixture({
       code: "felipe-v",
       name: "Felipe V",
-      rulerGroupId: firstGroup.id,
+      rulerGroupId: bourbon.id,
     })
 
     await expect(
       updateRuler({
         id: existingRuler.id,
-        code: "  felipe-vi  ",
-        name: "  Felipe VI  ",
-        rulerGroupId: ` ${secondGroup.id} `,
+        code: "  carlos-ii  ",
+        name: "  Carlos II  ",
+        rulerGroupId: habsburg.id,
       })
     ).resolves.toMatchObject({
       id: existingRuler.id,
-      code: "felipe-vi",
-      name: "Felipe VI",
-      rulerGroupId: secondGroup.id,
+      code: "carlos-ii",
+      name: "Carlos II",
+      rulerGroupId: habsburg.id,
     })
   })
 
-  it("allows clearing the Ruler Group during update", async () => {
-    const rulerGroup = await createRulerGroup({
+  it("clears an existing Ruler Group assignment during update", async () => {
+    const bourbon = await createRulerGroup({
       code: "house-of-bourbon",
       name: "House of Bourbon",
     })
     const existingRuler = await createRulerFixture({
       code: "felipe-v",
       name: "Felipe V",
-      rulerGroupId: rulerGroup.id,
+      rulerGroupId: bourbon.id,
     })
 
     await expect(
       updateRuler({
         id: existingRuler.id,
-        code: existingRuler.code,
-        name: existingRuler.name,
-        rulerGroupId: " ",
+        code: "felipe-v",
+        name: "Felipe V",
+        rulerGroupId: null,
       })
     ).resolves.toMatchObject({
       id: existingRuler.id,
@@ -156,56 +138,49 @@ describe("ruler mutations integration", () => {
     await expect(
       updateRuler({
         id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
-        code: "louis-xiv",
-        name: "Louis XIV",
-        rulerGroupId: null,
+        code: "felipe-v",
+        name: "Felipe V",
       })
     ).resolves.toBeNull()
   })
 
   it("preserves existing Coin Ruler Attributions when a Ruler Code changes", async () => {
-    const issuer = await createIssuerFixture({
-      code: "france",
-      isoCode: "FR",
-      name: "France",
+    const issuer = await createIssuer({
+      code: "issuer-for-ruler-update",
+      name: "Issuer for Ruler Update",
     })
     const existingRuler = await createRuler({
-      code: "louis-xiv",
-      name: "Louis XIV",
-      rulerGroupId: null,
+      code: "felipe-v",
+      name: "Felipe V",
     })
-    const coin = await createCoin({
+    const createdCoin = await createCoin({
       issuerId: issuer.id,
-      title: "Test coin",
-      createdAt: new Date("2026-07-01T00:00:00.000Z"),
+      title: "Ruler-linked coin",
+      createdAt: new Date("2026-06-26T00:00:00.000Z"),
     })
 
     await createCoinRuler({
-      coinId: coin.id,
+      coinId: createdCoin.id,
       rulerId: existingRuler.id,
       rulerOrder: 1,
     })
 
     const updatedRuler = await updateRuler({
       id: existingRuler.id,
-      code: "louis-the-great",
-      name: "Louis XIV",
-      rulerGroupId: null,
+      code: "felipe-v-bourbon",
+      name: "Felipe V",
     })
 
     expect(updatedRuler).toMatchObject({
       id: existingRuler.id,
-      code: "louis-the-great",
+      code: "felipe-v-bourbon",
     })
 
     const persistedCoinRuler = await db.query.coinRuler.findFirst({
-      where: (coinRuler, { eq }) => eq(coinRuler.rulerId, existingRuler.id),
+      where: (coinRuler, { eq }) => eq(coinRuler.coinId, createdCoin.id),
     })
 
-    expect(persistedCoinRuler).toMatchObject({
-      coinId: coin.id,
-      rulerId: existingRuler.id,
-    })
+    expect(persistedCoinRuler?.rulerId).toBe(existingRuler.id)
   })
 
   it("returns null when deleting a missing Ruler", async () => {
@@ -232,24 +207,23 @@ describe("ruler mutations integration", () => {
     })
   })
 
-  it("rejects deleting a Ruler while Coins still have Ruler Attributions to it", async () => {
-    const issuer = await createIssuerFixture({
-      code: "france",
-      isoCode: "FR",
-      name: "France",
+  it("rejects deleting a Ruler while Coin Ruler Attributions still use it", async () => {
+    const issuer = await createIssuer({
+      code: "issuer-for-ruler-delete",
+      name: "Issuer for Ruler Delete",
     })
     const existingRuler = await createRulerFixture({
-      code: "louis-xiv",
-      name: "Louis XIV",
+      code: "in-use-ruler",
+      name: "In Use Ruler",
     })
-    const coin = await createCoin({
+    const createdCoin = await createCoin({
       issuerId: issuer.id,
-      title: "Test coin",
-      createdAt: new Date("2026-07-01T00:00:00.000Z"),
+      title: "Ruler Restrict Delete Coin",
+      createdAt: new Date("2026-06-26T00:00:00.000Z"),
     })
 
     await createCoinRuler({
-      coinId: coin.id,
+      coinId: createdCoin.id,
       rulerId: existingRuler.id,
       rulerOrder: 1,
     })

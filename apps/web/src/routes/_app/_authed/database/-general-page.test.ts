@@ -61,6 +61,7 @@ describe("loadDatabaseGeneralSummaryCounts", () => {
       shapes: 11,
       engravers: 6,
       issuers: 8,
+      rulers: 5,
       rulerGroups: 4,
       orientations: 10,
       mints: 9,

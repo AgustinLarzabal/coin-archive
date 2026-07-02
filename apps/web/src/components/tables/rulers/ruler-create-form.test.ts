@@ -5,6 +5,16 @@ import { describe, expect, it, vi } from "vitest"
 
 import { RulerCreateForm } from "./ruler-create-form"
 
+const rulerGroups: RulerGroupOption[] = [
+  {
+    id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+    code: "house-of-bourbon",
+    name: "House of Bourbon",
+    createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+  },
+]
+
 function createServerFnMock() {
   return {
     inputValidator() {
@@ -15,16 +25,6 @@ function createServerFnMock() {
     },
   }
 }
-
-const rulerGroups: RulerGroupOption[] = [
-  {
-    id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-    code: "house-of-bourbon",
-    name: "House of Bourbon",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-  },
-]
 
 function renderRulerCreateForm() {
   return renderToStaticMarkup(
@@ -46,12 +46,15 @@ vi.mock("@tanstack/react-start", () => ({
 }))
 
 describe("RulerCreateForm", () => {
-  it("renders explicit Ruler field labels, the optional Ruler Group selector, and disables Create until the draft is complete", () => {
+  it("renders explicit Ruler field labels and disables Create until the draft is complete", () => {
     const markup = renderRulerCreateForm()
     const expectedFields = [
-      ["Ruler Code", 'placeholder="louis-xiv"'],
-      ["Ruler Name", 'placeholder="Louis XIV"'],
-      ["Ruler Group", 'placeholder="Search Ruler Group..."'],
+      ["Ruler Code", 'placeholder="felipe-v"'],
+      ["Ruler Name", 'placeholder="Felipe V"'],
+      [
+        "Ruler Group",
+        'placeholder="House of Bourbon (house-of-bourbon)"',
+      ],
     ] as const
 
     for (const [label, placeholder] of expectedFields) {
@@ -59,9 +62,10 @@ describe("RulerCreateForm", () => {
       expect(markup).toContain(placeholder)
     }
 
+    expect(markup).toContain(
+      'value="House of Bourbon (house-of-bourbon)"'
+    )
     expect(markup).toContain('id="database-ruler-create-form"')
-    expect(markup).toContain('list="ruler-group-options-create"')
-    expect(markup).toContain('value="House of Bourbon (house-of-bourbon)"')
     expect(markup).toContain(">Create<")
     expect(markup).toContain('type="submit"')
     expect(markup).toContain('disabled=""')

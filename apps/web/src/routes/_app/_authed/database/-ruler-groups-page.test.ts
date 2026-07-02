@@ -28,23 +28,19 @@ function createRulerGroup(
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Ruler Groups maintenance entry after Issuers and before Rulers", () => {
+  it("includes the Ruler Groups maintenance entry after Rulers", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/ruler-groups",
       label: "Ruler Groups",
     })
 
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/issuers",
-      label: "Issuers",
-    })
     expect(databaseSecondaryMenuItems[10]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
       to: "/database/rulers",
       label: "Rulers",
+    })
+    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
+      to: "/database/ruler-groups",
+      label: "Ruler Groups",
     })
     expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/orientations",

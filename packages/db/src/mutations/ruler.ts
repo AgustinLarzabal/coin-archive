@@ -7,7 +7,7 @@ import type { Ruler } from "../schema/ruler"
 type RulerFields = {
   code: string
   name: string
-  rulerGroupId: string | null
+  rulerGroupId?: string | null
 }
 
 type UpdateRulerInput = RulerFields & {
@@ -18,13 +18,10 @@ type DeleteRulerInput = {
   id: string
 }
 
-function normalizeRulerGroupId(rulerGroupId: string | null) {
+function normalizeRulerGroupId(rulerGroupId: string | null | undefined) {
   const normalizedRulerGroupId = rulerGroupId?.trim()
 
-  if (
-    normalizedRulerGroupId === undefined ||
-    normalizedRulerGroupId.length === 0
-  ) {
+  if (!normalizedRulerGroupId) {
     return null
   }
 

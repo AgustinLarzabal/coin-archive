@@ -15,6 +15,7 @@ import { submitUpdateRuler } from "@/lib/ruler-maintenance"
 import { RulerFormFields } from "./ruler-form-fields"
 import {
   createRulerDraft,
+  getRulerGroupSelectionOptions,
   getUpdateRulerSubmission,
   normalizeRulerDraft,
 } from "./ruler-form.shared"
@@ -29,14 +30,12 @@ type RulerEditFormProps = {
 const updateRulerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator(
-    (data: {
-      id: string
-      code: string
-      name: string
-      rulerGroupId: string | null
-    }) => data
-  )
+  .inputValidator((data: {
+    id: string
+    code: string
+    name: string
+    rulerGroupId: string | null
+  }) => data)
   .handler(async ({ data }) => {
     const session = await getAuthSession()
 
@@ -44,8 +43,7 @@ const updateRulerAction = createServerFn({
   })
 
 export function hasRulerEditChanges(ruler: RulerOption, draft: RulerDraft) {
-  const currentDraft = createRulerDraft(ruler)
-  const normalizedCurrent = normalizeRulerDraft(currentDraft)
+  const normalizedCurrent = normalizeRulerDraft(createRulerDraft(ruler))
   const normalizedDraft = normalizeRulerDraft(draft)
 
   return (
@@ -67,6 +65,7 @@ export function RulerEditForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
   const hasChanges = hasRulerEditChanges(ruler, draft)
 
   useEffect(() => {
@@ -145,19 +144,17 @@ export function RulerEditForm({
         codeInputId="ruler-code"
         nameInputId="ruler-name"
         rulerGroupInputId="ruler-group"
-        rulerGroupOptionsId="ruler-group-options-edit"
-        codePlaceholder="louis-xiv"
-        namePlaceholder="Louis XIV"
-        rulerGroupPlaceholder="Search Ruler Group..."
+        rulerGroupOptionsListId="ruler-group-options-edit"
+        codePlaceholder="felipe-v"
+        namePlaceholder="Felipe V"
+        rulerGroupPlaceholder="House of Bourbon (house-of-bourbon)"
         draft={draft}
-        rulerGroups={rulerGroups}
         fieldErrors={fieldErrors}
+        rulerGroupOptions={rulerGroupOptions}
         onDraftChange={updateDraft}
       />
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

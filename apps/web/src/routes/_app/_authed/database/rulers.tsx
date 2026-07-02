@@ -16,8 +16,8 @@ type LoadRulerMaintenanceResult =
   | RulerAuthorizationErrorResult
   | {
       status: "success"
-      rulerGroups: RulerGroupOption[]
       rulers: RulerOption[]
+      rulerGroups: RulerGroupOption[]
     }
 
 type RulerMaintenanceLoaderData =
@@ -26,8 +26,8 @@ type RulerMaintenanceLoaderData =
     }
   | {
       isAllowed: true
-      rulerGroups: RulerGroupOption[]
       rulers: RulerOption[]
+      rulerGroups: RulerGroupOption[]
     }
 
 type RulerReadDependencies = {
@@ -50,7 +50,7 @@ async function resolveRulerReadDependencies(
   return dependencies ?? getDefaultRulerReadDependencies()
 }
 
-export async function loadRulerMaintenanceData(
+export async function loadRulerMaintenanceRulers(
   collector: CollectorWithRole | null,
   dependencies?: RulerReadDependencies
 ): Promise<LoadRulerMaintenanceResult> {
@@ -60,15 +60,16 @@ export async function loadRulerMaintenanceData(
 
   const { getRulerGroups, getRulers } =
     await resolveRulerReadDependencies(dependencies)
-  const [rulerGroups, rulers] = await Promise.all([
-    getRulerGroups(),
+
+  const [rulers, rulerGroups] = await Promise.all([
     getRulers(),
+    getRulerGroups(),
   ])
 
   return {
     status: "success",
-    rulerGroups,
     rulers,
+    rulerGroups,
   }
 }
 
@@ -76,7 +77,7 @@ const getRulerMaintenanceLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadRulerMaintenanceData(session?.user ?? null)
+  const result = await loadRulerMaintenanceRulers(session?.user ?? null)
 
   if (result.status === "error") {
     return {
@@ -86,8 +87,8 @@ const getRulerMaintenanceLoaderData = createServerFn({
 
   return {
     isAllowed: true,
-    rulerGroups: result.rulerGroups,
     rulers: result.rulers,
+    rulerGroups: result.rulerGroups,
   } satisfies RulerMaintenanceLoaderData
 })
 
@@ -100,7 +101,9 @@ function DatabaseRulersComponent() {
   return renderDatabaseRulersPage(Route.useLoaderData())
 }
 
-export function renderDatabaseRulersPage(loaderData: RulerMaintenanceLoaderData) {
+export function renderDatabaseRulersPage(
+  loaderData: RulerMaintenanceLoaderData
+) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

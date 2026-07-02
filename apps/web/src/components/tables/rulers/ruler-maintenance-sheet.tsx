@@ -185,10 +185,7 @@ export function RulerMaintenanceSheet({
             onSaved={closeSheet}
           />
         ) : (
-          <RulerCreateForm
-            rulerGroups={rulerGroups}
-            onCreated={closeSheet}
-          />
+          <RulerCreateForm rulerGroups={rulerGroups} onCreated={closeSheet} />
         )}
       </SheetContent>
     </Sheet>

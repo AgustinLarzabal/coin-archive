@@ -134,8 +134,8 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 2,
       engravers: 2,
       issuers: 2,
-      rulerGroups: 2,
       rulers: 2,
+      rulerGroups: 2,
       orientations: 2,
       mints: 1,
     })
@@ -152,8 +152,8 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 0,
       engravers: 0,
       issuers: 0,
-      rulerGroups: 0,
       rulers: 0,
+      rulerGroups: 0,
       orientations: 0,
       mints: 0,
     })

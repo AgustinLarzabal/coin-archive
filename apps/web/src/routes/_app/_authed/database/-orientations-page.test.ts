@@ -28,23 +28,19 @@ function createOrientation(
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Orientations maintenance entry after Rulers", () => {
+  it("includes the Orientations maintenance entry after Ruler Groups and Rulers", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/orientations",
       label: "Orientations",
     })
 
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/issuers",
-      label: "Issuers",
-    })
     expect(databaseSecondaryMenuItems[10]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
       to: "/database/rulers",
       label: "Rulers",
+    })
+    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
+      to: "/database/ruler-groups",
+      label: "Ruler Groups",
     })
     expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/orientations",

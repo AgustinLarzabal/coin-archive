@@ -30,19 +30,15 @@ function createMint(
 }
 
 describe("databaseSecondaryMenuItems", () => {
-  it("includes the Mints maintenance entry after Orientations and Rulers", () => {
+  it("includes the Mints maintenance entry after Orientations", () => {
     expect(databaseSecondaryMenuItems).toContainEqual({
       to: "/database/mints",
       label: "Mints",
     })
 
-    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
       to: "/database/ruler-groups",
       label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
-      to: "/database/rulers",
-      label: "Rulers",
     })
     expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/orientations",

@@ -1,4 +1,3 @@
-import type { RulerGroupOption } from "@workspace/db"
 import {
   Field,
   FieldError,
@@ -9,22 +8,19 @@ import { Input } from "@workspace/ui/components/input"
 
 import type { RulerFieldErrors } from "@/lib/ruler-maintenance"
 
-import {
-  formatRulerGroupOptionLabel,
-  type RulerDraft,
-} from "./ruler-form.shared"
+import type { RulerDraft, RulerGroupSelectionOption } from "./ruler-form.shared"
 
 type RulerFormFieldsProps = {
   codeInputId: string
   nameInputId: string
   rulerGroupInputId: string
-  rulerGroupOptionsId: string
+  rulerGroupOptionsListId: string
   codePlaceholder: string
   namePlaceholder: string
   rulerGroupPlaceholder: string
   draft: RulerDraft
-  rulerGroups: RulerGroupOption[]
   fieldErrors: RulerFieldErrors
+  rulerGroupOptions: RulerGroupSelectionOption[]
   onDraftChange: <TFieldName extends keyof RulerDraft>(
     field: TFieldName,
     value: RulerDraft[TFieldName]
@@ -35,13 +31,13 @@ export function RulerFormFields({
   codeInputId,
   nameInputId,
   rulerGroupInputId,
-  rulerGroupOptionsId,
+  rulerGroupOptionsListId,
   codePlaceholder,
   namePlaceholder,
   rulerGroupPlaceholder,
   draft,
-  rulerGroups,
   fieldErrors,
+  rulerGroupOptions,
   onDraftChange,
 }: RulerFormFieldsProps) {
   const hasCodeError = fieldErrors.code !== undefined
@@ -85,7 +81,7 @@ export function RulerFormFields({
         <Input
           id={rulerGroupInputId}
           name="rulerGroup"
-          list={rulerGroupOptionsId}
+          list={rulerGroupOptionsListId}
           value={draft.rulerGroupLabel}
           onChange={(event) =>
             onDraftChange("rulerGroupLabel", event.target.value)
@@ -94,12 +90,9 @@ export function RulerFormFields({
           placeholder={rulerGroupPlaceholder}
           autoComplete="off"
         />
-        <datalist id={rulerGroupOptionsId}>
-          {rulerGroups.map((rulerGroup) => (
-            <option
-              key={rulerGroup.id}
-              value={formatRulerGroupOptionLabel(rulerGroup)}
-            />
+        <datalist id={rulerGroupOptionsListId}>
+          {rulerGroupOptions.map((option) => (
+            <option key={option.id} value={option.label} />
           ))}
         </datalist>
         {fieldErrors.rulerGroupId ? (

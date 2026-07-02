@@ -58,14 +58,14 @@ export const databaseMaintenanceSections = [
     countKey: "issuers",
   },
   {
-    to: "/database/ruler-groups",
-    label: "Ruler Groups",
-    countKey: "rulerGroups",
-  },
-  {
     to: "/database/rulers",
     label: "Rulers",
     countKey: "rulers",
+  },
+  {
+    to: "/database/ruler-groups",
+    label: "Ruler Groups",
+    countKey: "rulerGroups",
   },
   {
     to: "/database/orientations",

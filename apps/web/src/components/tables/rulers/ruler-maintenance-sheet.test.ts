@@ -97,7 +97,7 @@ vi.mock("./ruler-edit-form", () => ({
 
 const rulerGroups: RulerGroupOption[] = [
   {
-    id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+    id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
     code: "house-of-bourbon",
     name: "House of Bourbon",
     createdAt: new Date("2026-07-01T00:00:00.000Z"),
@@ -106,9 +106,9 @@ const rulerGroups: RulerGroupOption[] = [
 ]
 
 const ruler: RulerOption = {
-  id: "49593601-9276-4761-a03b-f5e43cf674fd",
-  code: "louis-xiv",
-  name: "Louis XIV",
+  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+  code: "felipe-v",
+  name: "Felipe V",
   group: {
     id: rulerGroups[0].id,
     code: rulerGroups[0].code,

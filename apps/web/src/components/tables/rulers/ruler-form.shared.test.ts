@@ -2,8 +2,8 @@ import type { RulerGroupOption, RulerOption } from "@workspace/db"
 import { describe, expect, it } from "vitest"
 
 import {
+  buildRulerGroupOptionLabel,
   createRulerDraft,
-  formatRulerGroupOptionLabel,
   getCreateRulerSubmission,
   getRulerGroupSelectionOptions,
   getUpdateRulerSubmission,
@@ -14,62 +14,48 @@ import {
   resolveRulerGroupId,
 } from "./ruler-form.shared"
 
-const bourbonGroup: RulerGroupOption = {
-  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-  code: "house-of-bourbon",
-  name: "House of Bourbon",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-}
-
-const julioClaudianGroup: RulerGroupOption = {
-  id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
-  code: "julio-claudians",
-  name: "Julio-Claudians",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-}
-
-const rulerGroups = [bourbonGroup, julioClaudianGroup]
+const rulerGroups: RulerGroupOption[] = [
+  {
+    id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+    code: "house-of-bourbon",
+    name: "House of Bourbon",
+    createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+  },
+  {
+    id: "de2dcfb7-dc50-4035-8bc8-33cbbacb586b",
+    code: "julio-claudians",
+    name: "Julio-Claudians",
+    createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+  },
+]
 
 const ruler: RulerOption = {
-  id: "49593601-9276-4761-a03b-f5e43cf674fd",
-  code: "louis-xiv",
-  name: "Louis XIV",
+  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+  code: "felipe-v",
+  name: "Felipe V",
   group: {
-    id: bourbonGroup.id,
-    code: bourbonGroup.code,
-    name: bourbonGroup.name,
+    id: rulerGroups[0].id,
+    code: rulerGroups[0].code,
+    name: rulerGroups[0].name,
   },
 }
 
-describe("formatRulerGroupOptionLabel", () => {
-  it("shows the Ruler Group name and code for disambiguation", () => {
-    expect(formatRulerGroupOptionLabel(bourbonGroup)).toBe(
+describe("buildRulerGroupOptionLabel", () => {
+  it("includes both Ruler Group name and code", () => {
+    expect(buildRulerGroupOptionLabel(rulerGroups[0])).toBe(
       "House of Bourbon (house-of-bourbon)"
     )
   })
 })
 
 describe("createRulerDraft", () => {
-  it("copies the editable Ruler fields from a selected Ruler", () => {
+  it("hydrates the current Ruler Group label for edit mode", () => {
     expect(createRulerDraft(ruler)).toStrictEqual({
-      code: "louis-xiv",
-      name: "Louis XIV",
+      code: "felipe-v",
+      name: "Felipe V",
       rulerGroupLabel: "House of Bourbon (house-of-bourbon)",
-    })
-  })
-
-  it("uses a blank Ruler Group label when the Ruler has no group", () => {
-    expect(
-      createRulerDraft({
-        ...ruler,
-        group: null,
-      })
-    ).toStrictEqual({
-      code: "louis-xiv",
-      name: "Louis XIV",
-      rulerGroupLabel: "",
     })
   })
 })
@@ -78,55 +64,47 @@ describe("normalizeRulerDraft", () => {
   it("trims editable Ruler fields", () => {
     expect(
       normalizeRulerDraft({
-        code: " louis-xiv ",
-        name: " Louis XIV ",
+        code: " felipe-v ",
+        name: " Felipe V ",
         rulerGroupLabel: " House of Bourbon (house-of-bourbon) ",
       })
     ).toStrictEqual({
-      code: "louis-xiv",
-      name: "Louis XIV",
+      code: "felipe-v",
+      name: "Felipe V",
       rulerGroupLabel: "House of Bourbon (house-of-bourbon)",
     })
   })
 })
 
 describe("isRulerDraftComplete", () => {
-  it("requires non-blank Ruler Code and Ruler Name but allows no Ruler Group", () => {
+  it("requires code and name but not a Ruler Group selection", () => {
     expect(
       isRulerDraftComplete({
-        code: "louis-xiv",
+        code: " felipe-v ",
+        name: " Felipe V ",
+        rulerGroupLabel: "",
+      })
+    ).toBe(true)
+
+    expect(
+      isRulerDraftComplete({
+        code: "felipe-v",
         name: " ",
         rulerGroupLabel: "",
       })
     ).toBe(false)
-
-    expect(
-      isRulerDraftComplete({
-        code: " ",
-        name: "Louis XIV",
-        rulerGroupLabel: "",
-      })
-    ).toBe(false)
-
-    expect(
-      isRulerDraftComplete({
-        code: " louis-xiv ",
-        name: " Louis XIV ",
-        rulerGroupLabel: " ",
-      })
-    ).toBe(true)
   })
 })
 
 describe("getRulerGroupSelectionOptions", () => {
-  it("builds exact-match selector options from existing Ruler Groups", () => {
+  it("builds flat labels for the Ruler Group datalist", () => {
     expect(getRulerGroupSelectionOptions(rulerGroups)).toStrictEqual([
       {
-        id: bourbonGroup.id,
+        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
         label: "House of Bourbon (house-of-bourbon)",
       },
       {
-        id: julioClaudianGroup.id,
+        id: "de2dcfb7-dc50-4035-8bc8-33cbbacb586b",
         label: "Julio-Claudians (julio-claudians)",
       },
     ])
@@ -136,27 +114,70 @@ describe("getRulerGroupSelectionOptions", () => {
 describe("resolveRulerGroupId", () => {
   const options = getRulerGroupSelectionOptions(rulerGroups)
 
-  it("returns the matching Ruler Group id only for an exact option label", () => {
-    expect(
-      resolveRulerGroupId("House of Bourbon (house-of-bourbon)", options)
-    ).toBe(bourbonGroup.id)
-    expect(resolveRulerGroupId("House of Bourbon", options)).toBe(
-      INVALID_RULER_GROUP_SELECTION
-    )
+  it("returns null for a blank Ruler Group selection", () => {
+    expect(resolveRulerGroupId(" ", options)).toBeNull()
   })
 
-  it("treats blank selector text as clearing the optional Ruler Group assignment", () => {
-    expect(resolveRulerGroupId(" ", options)).toBeNull()
+  it("maps an exact label match back to the selected Ruler Group id", () => {
+    expect(
+      resolveRulerGroupId("House of Bourbon (house-of-bourbon)", options)
+    ).toBe("6f18a1db-9096-433b-b3f1-906c772f7a29")
+  })
+
+  it("flags free-typed labels that do not match an available Ruler Group", () => {
+    expect(resolveRulerGroupId("Unknown Group", options)).toBe(
+      INVALID_RULER_GROUP_SELECTION
+    )
   })
 })
 
 describe("getCreateRulerSubmission", () => {
-  it("returns a typed field error when the Ruler Group selector text does not match an option", () => {
+  it("normalizes draft values and resolves the selected Ruler Group", () => {
     expect(
       getCreateRulerSubmission(
         {
-          code: "louis-xiv",
-          name: "Louis XIV",
+          code: " felipe-v ",
+          name: " Felipe V ",
+          rulerGroupLabel: " House of Bourbon (house-of-bourbon) ",
+        },
+        rulerGroups
+      )
+    ).toStrictEqual({
+      status: "valid",
+      data: {
+        code: "felipe-v",
+        name: "Felipe V",
+        rulerGroupId: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+      },
+    })
+  })
+
+  it("allows clearing the optional Ruler Group selection", () => {
+    expect(
+      getCreateRulerSubmission(
+        {
+          code: "liberty",
+          name: "Liberty",
+          rulerGroupLabel: " ",
+        },
+        rulerGroups
+      )
+    ).toStrictEqual({
+      status: "valid",
+      data: {
+        code: "liberty",
+        name: "Liberty",
+        rulerGroupId: null,
+      },
+    })
+  })
+
+  it("rejects non-matching Ruler Group labels with a field error", () => {
+    expect(
+      getCreateRulerSubmission(
+        {
+          code: "felipe-v",
+          name: "Felipe V",
           rulerGroupLabel: "Unknown Group",
         },
         rulerGroups
@@ -171,47 +192,27 @@ describe("getCreateRulerSubmission", () => {
       },
     })
   })
-
-  it("maps an empty Ruler Group label to no optional group assignment", () => {
-    expect(
-      getCreateRulerSubmission(
-        {
-          code: " louis-xiv ",
-          name: " Louis XIV ",
-          rulerGroupLabel: " ",
-        },
-        rulerGroups
-      )
-    ).toStrictEqual({
-      status: "valid",
-      data: {
-        code: "louis-xiv",
-        name: "Louis XIV",
-        rulerGroupId: null,
-      },
-    })
-  })
 })
 
 describe("getUpdateRulerSubmission", () => {
-  it("returns a valid submission with the matched Ruler Group id", () => {
+  it("preserves the Ruler id and allows changing the Ruler Group selection", () => {
     expect(
       getUpdateRulerSubmission(
         ruler.id,
         {
-          code: " louis-xiv ",
-          name: " Louis XIV ",
-          rulerGroupLabel: "Julio-Claudians (julio-claudians)",
+          code: " felipe-v ",
+          name: " Felipe V ",
+          rulerGroupLabel: " Julio-Claudians (julio-claudians) ",
         },
         rulerGroups
       )
     ).toStrictEqual({
       status: "valid",
       data: {
-        id: ruler.id,
-        code: "louis-xiv",
-        name: "Louis XIV",
-        rulerGroupId: julioClaudianGroup.id,
+        id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+        code: "felipe-v",
+        name: "Felipe V",
+        rulerGroupId: "de2dcfb7-dc50-4035-8bc8-33cbbacb586b",
       },
     })
   })

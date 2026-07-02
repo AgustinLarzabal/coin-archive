@@ -10,7 +10,7 @@ import {
 
 import { Icons } from "@/components/icons"
 
-import { formatRulerGroupOptionLabel } from "./ruler-form.shared"
+import { buildRulerGroupOptionLabel } from "./ruler-form.shared"
 
 export function createRulerColumns(
   openEditRulerSheet: (ruler: RulerOption) => void
@@ -28,13 +28,13 @@ export function createRulerColumns(
       id: "group",
       header: "Ruler Group",
       cell: ({ row }) => {
-        const ruler = row.original
+        const group = row.original.group
 
-        if (ruler.group === null) {
-          return <span className="text-muted-foreground">None</span>
+        if (!group) {
+          return <span className="text-muted-foreground">No Ruler Group</span>
         }
 
-        return formatRulerGroupOptionLabel(ruler.group)
+        return buildRulerGroupOptionLabel(group)
       },
     },
     {

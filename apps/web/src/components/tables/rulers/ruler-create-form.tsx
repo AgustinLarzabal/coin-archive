@@ -16,6 +16,7 @@ import { RulerFormFields } from "./ruler-form-fields"
 import {
   EMPTY_RULER_DRAFT,
   getCreateRulerSubmission,
+  getRulerGroupSelectionOptions,
   isRulerDraftComplete,
 } from "./ruler-form.shared"
 import type { RulerDraft } from "./ruler-form.shared"
@@ -28,9 +29,11 @@ type RulerCreateFormProps = {
 const createRulerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator(
-    (data: { code: string; name: string; rulerGroupId: string | null }) => data
-  )
+  .inputValidator((data: {
+    code: string
+    name: string
+    rulerGroupId: string | null
+  }) => data)
   .handler(async ({ data }) => {
     const session = await getAuthSession()
 
@@ -47,6 +50,7 @@ export function RulerCreateForm({
   const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -115,19 +119,17 @@ export function RulerCreateForm({
         codeInputId="new-ruler-code"
         nameInputId="new-ruler-name"
         rulerGroupInputId="new-ruler-group"
-        rulerGroupOptionsId="ruler-group-options-create"
-        codePlaceholder="louis-xiv"
-        namePlaceholder="Louis XIV"
-        rulerGroupPlaceholder="Search Ruler Group..."
+        rulerGroupOptionsListId="ruler-group-options-create"
+        codePlaceholder="felipe-v"
+        namePlaceholder="Felipe V"
+        rulerGroupPlaceholder="House of Bourbon (house-of-bourbon)"
         draft={draft}
-        rulerGroups={rulerGroups}
         fieldErrors={fieldErrors}
+        rulerGroupOptions={rulerGroupOptions}
         onDraftChange={updateDraft}
       />
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

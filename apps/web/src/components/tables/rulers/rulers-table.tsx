@@ -21,14 +21,17 @@ export function filterRulers(
     return rulers
   }
 
-  return rulers.filter(
-    ({ code, name, group }) =>
+  return rulers.filter(({ code, name, group }) => {
+    const groupCode = group?.code.toLocaleLowerCase() ?? ""
+    const groupName = group?.name.toLocaleLowerCase() ?? ""
+
+    return (
       code.toLocaleLowerCase().includes(normalizedFilterValue) ||
       name.toLocaleLowerCase().includes(normalizedFilterValue) ||
-      group?.code.toLocaleLowerCase().includes(normalizedFilterValue) ===
-        true ||
-      group?.name.toLocaleLowerCase().includes(normalizedFilterValue) === true
-  )
+      groupCode.includes(normalizedFilterValue) ||
+      groupName.includes(normalizedFilterValue)
+    )
+  })
 }
 
 export function RulersTable({ rulers, rulerGroups }: RulersTableProps) {

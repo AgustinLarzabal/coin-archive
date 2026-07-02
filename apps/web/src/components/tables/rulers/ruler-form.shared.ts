@@ -25,8 +25,10 @@ export const EMPTY_RULER_DRAFT: RulerDraft = {
   rulerGroupLabel: "",
 }
 
-export const INVALID_RULER_GROUP_ERROR =
-  "Select a Ruler Group from the list."
+export const INVALID_RULER_GROUP_ERROR = "Select a Ruler Group from the list."
+export const INVALID_RULER_GROUP_SELECTION = Symbol(
+  "INVALID_RULER_GROUP_SELECTION"
+)
 
 type ValidRulerSubmission<TData> = {
   status: "valid"
@@ -45,7 +47,7 @@ type RulerSubmissionResult<TData> =
 type CreateRulerSubmissionData = z.output<typeof createRulerInputSchema>
 type UpdateRulerSubmissionData = z.output<typeof updateRulerInputSchema>
 
-export function formatRulerGroupOptionLabel(
+export function buildRulerGroupOptionLabel(
   rulerGroup: Pick<RulerGroupOption, "code" | "name">
 ) {
   return `${rulerGroup.name} (${rulerGroup.code})`
@@ -55,7 +57,7 @@ export function createRulerDraft(ruler: RulerOption): RulerDraft {
   return {
     code: ruler.code,
     name: ruler.name,
-    rulerGroupLabel: ruler.group ? formatRulerGroupOptionLabel(ruler.group) : "",
+    rulerGroupLabel: ruler.group ? buildRulerGroupOptionLabel(ruler.group) : "",
   }
 }
 
@@ -78,13 +80,9 @@ export function getRulerGroupSelectionOptions(
 ): RulerGroupSelectionOption[] {
   return rulerGroups.map((rulerGroup) => ({
     id: rulerGroup.id,
-    label: formatRulerGroupOptionLabel(rulerGroup),
+    label: buildRulerGroupOptionLabel(rulerGroup),
   }))
 }
-
-export const INVALID_RULER_GROUP_SELECTION = Symbol(
-  "INVALID_RULER_GROUP_SELECTION"
-)
 
 export function resolveRulerGroupId(
   rulerGroupLabel: string,
@@ -145,7 +143,15 @@ function resolveRulerSubmission<TSchema extends z.ZodType>(
   )
 
   if (rulerGroupId === INVALID_RULER_GROUP_SELECTION) {
-    return createInvalidRulerGroupSubmission()
+    return {
+      status: "invalid",
+      result: {
+        status: "error",
+        fieldErrors: {
+          rulerGroupId: INVALID_RULER_GROUP_ERROR,
+        },
+      },
+    }
   }
 
   const parsedInput = schema.safeParse(
@@ -153,7 +159,13 @@ function resolveRulerSubmission<TSchema extends z.ZodType>(
   )
 
   if (!parsedInput.success) {
-    return createInvalidRulerSubmission(parsedInput.error.issues)
+    return {
+      status: "invalid",
+      result: {
+        status: "error",
+        fieldErrors: getRulerFieldErrors(parsedInput.error.issues),
+      },
+    }
   }
 
   return {
@@ -170,29 +182,5 @@ function buildRulerSubmissionInput(
     code: draft.code,
     name: draft.name,
     rulerGroupId,
-  }
-}
-
-function createInvalidRulerGroupSubmission(): InvalidRulerSubmission {
-  return {
-    status: "invalid",
-    result: {
-      status: "error",
-      fieldErrors: {
-        rulerGroupId: INVALID_RULER_GROUP_ERROR,
-      },
-    },
-  }
-}
-
-function createInvalidRulerSubmission(
-  issues: z.ZodIssue[]
-): InvalidRulerSubmission {
-  return {
-    status: "invalid",
-    result: {
-      status: "error",
-      fieldErrors: getRulerFieldErrors(issues),
-    },
   }
 }

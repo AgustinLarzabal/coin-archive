@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getPrivateNavigationItem } from "./main-menu"
 
 describe("getPrivateNavigationItem", () => {
-  it("includes Ruler Groups and Rulers in the Database main navigation children after Issuers", () => {
+  it("includes Rulers and Ruler Groups in the Database main navigation children after Issuers", () => {
     expect(
       getPrivateNavigationItem({
         to: "/database",
@@ -23,8 +23,8 @@ describe("getPrivateNavigationItem", () => {
         { to: "/database/shapes", label: "Shapes" },
         { to: "/database/engravers", label: "Engravers" },
         { to: "/database/issuers", label: "Issuers" },
-        { to: "/database/ruler-groups", label: "Ruler Groups" },
         { to: "/database/rulers", label: "Rulers" },
+        { to: "/database/ruler-groups", label: "Ruler Groups" },
         { to: "/database/orientations", label: "Orientations" },
         { to: "/database/mints", label: "Mints" },
       ],

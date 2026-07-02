@@ -87,18 +87,18 @@ export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
     setSuccessMessage(null)
   }
 
-  function applyResult(result: ThemeMutationResult) {
+  function applyResult(result: ThemeMutationResult): string | null {
     if (result.status === "success") {
       setFieldErrors({})
       setFormError(null)
       setSuccessMessage(result.message)
-      return true
+      return result.message
     }
 
     setFieldErrors(result.fieldErrors)
     setFormError(result.formError ?? null)
     setSuccessMessage(null)
-    return false
+    return null
   }
 
   function updateDraft<TFieldName extends keyof ThemeDraft>(
@@ -132,11 +132,11 @@ export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
           ...draft,
         },
       })
-      const shouldRefresh = applyResult(result)
+      const successMessage = applyResult(result)
 
-      if (shouldRefresh && result.status === "success") {
+      if (successMessage !== null) {
         await router.invalidate()
-        onSaved?.(result.message)
+        onSaved?.(successMessage)
       }
     } finally {
       setIsPending(false)

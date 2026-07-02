@@ -84,7 +84,7 @@ export function ThemeMaintenanceSheet({
     onOpenChange(false)
   }
 
-  function completeThemeMutation(message: string) {
+  function handleMutationSuccess(message: string) {
     onCompleted?.(message)
     closeSheet()
   }
@@ -106,7 +106,7 @@ export function ThemeMaintenanceSheet({
 
       if (result.status === "success") {
         await router.invalidate()
-        completeThemeMutation(result.message)
+        handleMutationSuccess(result.message)
         return
       }
 
@@ -185,9 +185,9 @@ export function ThemeMaintenanceSheet({
         </SheetHeader>
 
         {hasSelectedTheme ? (
-          <ThemeEditForm theme={theme} onSaved={completeThemeMutation} />
+          <ThemeEditForm theme={theme} onSaved={handleMutationSuccess} />
         ) : (
-          <ThemeCreateForm onCreated={completeThemeMutation} />
+          <ThemeCreateForm onCreated={handleMutationSuccess} />
         )}
       </SheetContent>
     </Sheet>

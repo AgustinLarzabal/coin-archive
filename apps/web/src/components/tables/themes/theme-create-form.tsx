@@ -59,16 +59,16 @@ export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
     setFormError(null)
   }
 
-  function applyResult(result: ThemeMutationResult) {
+  function applyResult(result: ThemeMutationResult): string | null {
     if (result.status === "success") {
       setFieldErrors({})
       setFormError(null)
-      return true
+      return result.message
     }
 
     setFieldErrors(result.fieldErrors)
     setFormError(result.formError ?? null)
-    return false
+    return null
   }
 
   function updateDraft<TFieldName extends keyof ThemeDraft>(
@@ -99,12 +99,12 @@ export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
       const result = await createTheme({
         data: draft,
       })
-      const shouldRefresh = applyResult(result)
+      const successMessage = applyResult(result)
 
-      if (shouldRefresh && result.status === "success") {
+      if (successMessage !== null) {
         setDraft(EMPTY_THEME_DRAFT)
         await router.invalidate()
-        onCreated?.(result.message)
+        onCreated?.(successMessage)
       }
     } finally {
       setIsPending(false)

@@ -129,13 +129,10 @@ export function MintingTechniqueCreateForm({
       onSubmit={handleSubmit}
     >
       <MintingTechniqueFormFields
-        codeInputId="new-minting-technique-code"
-        nameInputId="new-minting-technique-name"
-        codePlaceholder="hammered"
-        namePlaceholder="Hammered"
         draft={draft}
         fieldErrors={fieldErrors}
         onDraftChange={updateDraft}
+        variant="create"
       />
 
       {formError ? (

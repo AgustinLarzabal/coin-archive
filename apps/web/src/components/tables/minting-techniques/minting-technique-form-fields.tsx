@@ -10,63 +10,92 @@ import type { MintingTechniqueFieldErrors } from "@/lib/minting-technique-mainte
 
 import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
 
+type MintingTechniqueFieldName = keyof MintingTechniqueDraft
+
+type MintingTechniqueFieldConfig = {
+  field: MintingTechniqueFieldName
+  id: string
+  label: string
+  placeholder: string
+}
+
 type MintingTechniqueFormFieldsProps = {
-  codeInputId: string
-  nameInputId: string
-  codePlaceholder: string
-  namePlaceholder: string
   draft: MintingTechniqueDraft
   fieldErrors: MintingTechniqueFieldErrors
-  onDraftChange: <TFieldName extends keyof MintingTechniqueDraft>(
+  onDraftChange: <TFieldName extends MintingTechniqueFieldName>(
     field: TFieldName,
     value: MintingTechniqueDraft[TFieldName]
   ) => void
+  variant: "create" | "edit"
+}
+
+const CREATE_MINTING_TECHNIQUE_FIELD_CONFIGS: MintingTechniqueFieldConfig[] = [
+  {
+    field: "code",
+    id: "new-minting-technique-code",
+    label: "Minting Technique Code",
+    placeholder: "hammered",
+  },
+  {
+    field: "name",
+    id: "new-minting-technique-name",
+    label: "Minting Technique Name",
+    placeholder: "Hammered",
+  },
+]
+
+const EDIT_MINTING_TECHNIQUE_FIELD_CONFIGS: MintingTechniqueFieldConfig[] = [
+  {
+    field: "code",
+    id: "minting-technique-code",
+    label: "Minting Technique Code",
+    placeholder: "hammered",
+  },
+  {
+    field: "name",
+    id: "minting-technique-name",
+    label: "Minting Technique Name",
+    placeholder: "Hammered",
+  },
+]
+
+function getMintingTechniqueFieldConfigs(
+  variant: MintingTechniqueFormFieldsProps["variant"]
+) {
+  return variant === "create"
+    ? CREATE_MINTING_TECHNIQUE_FIELD_CONFIGS
+    : EDIT_MINTING_TECHNIQUE_FIELD_CONFIGS
 }
 
 export function MintingTechniqueFormFields({
-  codeInputId,
-  nameInputId,
-  codePlaceholder,
-  namePlaceholder,
   draft,
   fieldErrors,
   onDraftChange,
+  variant,
 }: MintingTechniqueFormFieldsProps) {
-  const hasCodeError = fieldErrors.code !== undefined
-  const hasNameError = fieldErrors.name !== undefined
-
   return (
     <FieldGroup>
-      <Field data-invalid={hasCodeError}>
-        <FieldLabel htmlFor={codeInputId}>Minting Technique Code</FieldLabel>
-        <Input
-          id={codeInputId}
-          name="code"
-          value={draft.code}
-          onChange={(event) => onDraftChange("code", event.target.value)}
-          aria-invalid={hasCodeError}
-          placeholder={codePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.code ? (
-          <FieldError errors={[{ message: fieldErrors.code }]} />
-        ) : null}
-      </Field>
-      <Field data-invalid={hasNameError}>
-        <FieldLabel htmlFor={nameInputId}>Minting Technique Name</FieldLabel>
-        <Input
-          id={nameInputId}
-          name="name"
-          value={draft.name}
-          onChange={(event) => onDraftChange("name", event.target.value)}
-          aria-invalid={hasNameError}
-          placeholder={namePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.name ? (
-          <FieldError errors={[{ message: fieldErrors.name }]} />
-        ) : null}
-      </Field>
+      {getMintingTechniqueFieldConfigs(variant).map(
+        ({ field, id, label, placeholder }) => {
+          const error = fieldErrors[field]
+
+          return (
+            <Field key={field} data-invalid={error !== undefined}>
+              <FieldLabel htmlFor={id}>{label}</FieldLabel>
+              <Input
+                id={id}
+                name={field}
+                value={draft[field]}
+                onChange={(event) => onDraftChange(field, event.target.value)}
+                aria-invalid={error !== undefined}
+                placeholder={placeholder}
+                autoComplete="off"
+              />
+              {error ? <FieldError errors={[{ message: error }]} /> : null}
+            </Field>
+          )
+        }
+      )}
     </FieldGroup>
   )
 }

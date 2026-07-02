@@ -40,6 +40,7 @@ export function MintingTechniquesTable({
   const [selectedMintingTechnique, setSelectedMintingTechnique] =
     useState<TechniqueOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const columns = createMintingTechniqueColumns(openEditMintingTechniqueSheet)
   const filteredMintingTechniques = filterMintingTechniques(
     mintingTechniques,
     filterValue
@@ -58,10 +59,18 @@ export function MintingTechniquesTable({
     openMaintenanceSheet(mintingTechnique)
   }
 
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedMintingTechnique(null)
+    }
+  }
+
   return (
     <>
       <DataTable
-        columns={createMintingTechniqueColumns(openEditMintingTechniqueSheet)}
+        columns={columns}
         data={filteredMintingTechniques}
         toolbar={() => (
           <MintingTechniquesTableToolbar
@@ -74,7 +83,7 @@ export function MintingTechniquesTable({
       <MintingTechniqueMaintenanceSheet
         mintingTechnique={selectedMintingTechnique}
         open={isMaintenanceSheetOpen}
-        onOpenChange={setIsMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>
   )

@@ -4,7 +4,6 @@ import { Button } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
@@ -38,15 +37,11 @@ export function createMintingTechniqueColumns(
               }
             />
             <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() =>
-                    openEditMintingTechniqueSheet(mintingTechnique)
-                  }
-                >
-                  Edit
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => openEditMintingTechniqueSheet(mintingTechnique)}
+              >
+                Edit
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )

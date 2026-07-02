@@ -168,13 +168,10 @@ export function MintingTechniqueEditForm({
       onSubmit={handleSubmit}
     >
       <MintingTechniqueFormFields
-        codeInputId="minting-technique-code"
-        nameInputId="minting-technique-name"
-        codePlaceholder="hammered"
-        namePlaceholder="Hammered"
         draft={draft}
         fieldErrors={fieldErrors}
         onDraftChange={updateDraft}
+        variant="edit"
       />
 
       {formError ? (

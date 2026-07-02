@@ -58,6 +58,11 @@ export const databaseMaintenanceSections = [
     countKey: "engravers",
   },
   {
+    to: "/database/themes",
+    label: "Themes",
+    countKey: "themes",
+  },
+  {
     to: "/database/issuers",
     label: "Issuers",
     countKey: "issuers",

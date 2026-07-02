@@ -34,15 +34,15 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Ruler Groups",
     })
 
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/rulers",
       label: "Rulers",
     })
-    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
       to: "/database/ruler-groups",
       label: "Ruler Groups",
     })
-    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[14]).toStrictEqual({
       to: "/database/orientations",
       label: "Orientations",
     })

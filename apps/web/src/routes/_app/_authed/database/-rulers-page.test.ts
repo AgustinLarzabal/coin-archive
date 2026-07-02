@@ -23,15 +23,15 @@ describe("databaseSecondaryMenuItems", () => {
       label: "Rulers",
     })
 
-    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
       to: "/database/issuers",
       label: "Issuers",
     })
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
       to: "/database/rulers",
       label: "Rulers",
     })
-    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
+    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
       to: "/database/ruler-groups",
       label: "Ruler Groups",
     })

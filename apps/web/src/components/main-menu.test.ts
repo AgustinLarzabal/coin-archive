@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getPrivateNavigationItem } from "./main-menu"
 
 describe("getPrivateNavigationItem", () => {
-  it("includes Minting Techniques in the Database main navigation children after Shapes", () => {
+  it("includes Themes in the Database main navigation children after Engravers", () => {
     expect(
       getPrivateNavigationItem({
         to: "/database",
@@ -26,6 +26,7 @@ describe("getPrivateNavigationItem", () => {
           label: "Minting Techniques",
         },
         { to: "/database/engravers", label: "Engravers" },
+        { to: "/database/themes", label: "Themes" },
         { to: "/database/issuers", label: "Issuers" },
         { to: "/database/rulers", label: "Rulers" },
         { to: "/database/ruler-groups", label: "Ruler Groups" },

@@ -19,6 +19,7 @@ import { Route as AppAuthedSettingsRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authed/database/route'
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
+import { Route as AppAuthedDatabaseThemesRouteImport } from './routes/_app/_authed/database/themes'
 import { Route as AppAuthedDatabaseShapesRouteImport } from './routes/_app/_authed/database/shapes'
 import { Route as AppAuthedDatabaseRulersRouteImport } from './routes/_app/_authed/database/rulers'
 import { Route as AppAuthedDatabaseRulerGroupsRouteImport } from './routes/_app/_authed/database/ruler-groups'
@@ -80,6 +81,11 @@ const AppAuthedSettingsIndexRoute = AppAuthedSettingsIndexRouteImport.update({
 const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppAuthedDatabaseRouteRoute,
+} as any)
+const AppAuthedDatabaseThemesRoute = AppAuthedDatabaseThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
 } as any)
 const AppAuthedDatabaseShapesRoute = AppAuthedDatabaseShapesRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/database/ruler-groups': typeof AppAuthedDatabaseRulerGroupsRoute
   '/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/database/shapes': typeof AppAuthedDatabaseShapesRoute
+  '/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/database/ruler-groups': typeof AppAuthedDatabaseRulerGroupsRoute
   '/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/database/shapes': typeof AppAuthedDatabaseShapesRoute
+  '/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
 }
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/ruler-groups': typeof AppAuthedDatabaseRulerGroupsRoute
   '/_app/_authed/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/_app/_authed/database/shapes': typeof AppAuthedDatabaseShapesRoute
+  '/_app/_authed/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
 }
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/database/ruler-groups'
     | '/database/rulers'
     | '/database/shapes'
+    | '/database/themes'
     | '/database/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/database/ruler-groups'
     | '/database/rulers'
     | '/database/shapes'
+    | '/database/themes'
     | '/database'
     | '/settings'
   id:
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/ruler-groups'
     | '/_app/_authed/database/rulers'
     | '/_app/_authed/database/shapes'
+    | '/_app/_authed/database/themes'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
   fileRoutesById: FileRoutesById
@@ -392,6 +404,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/database/'
       preLoaderRoute: typeof AppAuthedDatabaseIndexRouteImport
+      parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
+    '/_app/_authed/database/themes': {
+      id: '/_app/_authed/database/themes'
+      path: '/themes'
+      fullPath: '/database/themes'
+      preLoaderRoute: typeof AppAuthedDatabaseThemesRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
     }
     '/_app/_authed/database/shapes': {
@@ -533,6 +552,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseRulerGroupsRoute: typeof AppAuthedDatabaseRulerGroupsRoute
   AppAuthedDatabaseRulersRoute: typeof AppAuthedDatabaseRulersRoute
   AppAuthedDatabaseShapesRoute: typeof AppAuthedDatabaseShapesRoute
+  AppAuthedDatabaseThemesRoute: typeof AppAuthedDatabaseThemesRoute
   AppAuthedDatabaseIndexRoute: typeof AppAuthedDatabaseIndexRoute
 }
 
@@ -553,6 +573,7 @@ const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
     AppAuthedDatabaseRulerGroupsRoute: AppAuthedDatabaseRulerGroupsRoute,
     AppAuthedDatabaseRulersRoute: AppAuthedDatabaseRulersRoute,
     AppAuthedDatabaseShapesRoute: AppAuthedDatabaseShapesRoute,
+    AppAuthedDatabaseThemesRoute: AppAuthedDatabaseThemesRoute,
     AppAuthedDatabaseIndexRoute: AppAuthedDatabaseIndexRoute,
   }
 

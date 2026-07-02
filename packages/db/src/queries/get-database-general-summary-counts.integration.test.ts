@@ -15,6 +15,7 @@ import {
   createRuler,
   createRulerGroup,
   createShape,
+  createTheme,
   createTechnique,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
@@ -94,6 +95,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "durand",
       name: "Durand",
     })
+    await createTheme({
+      code: "map",
+      name: "Map",
+    })
+    await createTheme({
+      code: "portrait",
+      name: "Portrait",
+    })
     await createIssuer({
       code: "argentine-republic",
       name: "Argentine Republic",
@@ -143,6 +152,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 2,
       mintingTechniques: 2,
       engravers: 2,
+      themes: 2,
       issuers: 2,
       rulers: 2,
       rulerGroups: 2,
@@ -162,6 +172,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       shapes: 0,
       mintingTechniques: 0,
       engravers: 0,
+      themes: 0,
       issuers: 0,
       rulers: 0,
       rulerGroups: 0,

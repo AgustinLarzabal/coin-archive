@@ -40,6 +40,10 @@ export {
   deleteOrientation,
   updateOrientation,
 } from "./mutations/orientation"
+export {
+  createTechnique,
+  updateTechnique,
+} from "./mutations/technique"
 export { getCatalogues } from "./queries/get-catalogues"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"

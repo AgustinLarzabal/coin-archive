@@ -42,7 +42,7 @@ describe("filterMintingTechniques", () => {
 })
 
 describe("MintingTechniquesTable", () => {
-  it("renders Minting Technique Code and Minting Technique Name columns with a filter toolbar", () => {
+  it("renders Minting Technique Code and Minting Technique Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(
       <MintingTechniquesTable mintingTechniques={mintingTechniques} />
     )
@@ -52,5 +52,7 @@ describe("MintingTechniquesTable", () => {
     expect(markup).toContain("Hammered")
     expect(markup).toContain("Machine struck")
     expect(markup).toContain("Filter minting techniques by code or name...")
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

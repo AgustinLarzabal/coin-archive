@@ -2,7 +2,8 @@ import { useState } from "react"
 import type { TechniqueOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
-import { mintingTechniqueColumns } from "./columns"
+import { createMintingTechniqueColumns } from "./columns"
+import { MintingTechniqueMaintenanceSheet } from "./minting-technique-maintenance-sheet"
 import { MintingTechniquesTableToolbar } from "./minting-techniques-table-toolbar"
 
 type MintingTechniquesTableProps = {
@@ -36,21 +37,45 @@ export function MintingTechniquesTable({
   mintingTechniques,
 }: MintingTechniquesTableProps) {
   const [filterValue, setFilterValue] = useState("")
+  const [selectedMintingTechnique, setSelectedMintingTechnique] =
+    useState<TechniqueOption | null>(null)
+  const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const filteredMintingTechniques = filterMintingTechniques(
     mintingTechniques,
     filterValue
   )
 
+  function openMaintenanceSheet(mintingTechnique: TechniqueOption | null) {
+    setSelectedMintingTechnique(mintingTechnique)
+    setIsMaintenanceSheetOpen(true)
+  }
+
+  function openCreateMintingTechniqueSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditMintingTechniqueSheet(mintingTechnique: TechniqueOption) {
+    openMaintenanceSheet(mintingTechnique)
+  }
+
   return (
-    <DataTable
-      columns={mintingTechniqueColumns}
-      data={filteredMintingTechniques}
-      toolbar={() => (
-        <MintingTechniquesTableToolbar
-          filterValue={filterValue}
-          onFilterValueChange={setFilterValue}
-        />
-      )}
-    />
+    <>
+      <DataTable
+        columns={createMintingTechniqueColumns(openEditMintingTechniqueSheet)}
+        data={filteredMintingTechniques}
+        toolbar={() => (
+          <MintingTechniquesTableToolbar
+            filterValue={filterValue}
+            onCreateMintingTechnique={openCreateMintingTechniqueSheet}
+            onFilterValueChange={setFilterValue}
+          />
+        )}
+      />
+      <MintingTechniqueMaintenanceSheet
+        mintingTechnique={selectedMintingTechnique}
+        open={isMaintenanceSheetOpen}
+        onOpenChange={setIsMaintenanceSheetOpen}
+      />
+    </>
   )
 }

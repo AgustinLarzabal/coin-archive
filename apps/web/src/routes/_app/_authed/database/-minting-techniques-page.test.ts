@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { TechniqueOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "@/lib/minting-technique-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadMintingTechniqueMaintenanceMintingTechniques,
@@ -56,7 +57,7 @@ describe("loadMintingTechniqueMaintenanceMintingTechniques", () => {
       loadMintingTechniqueMaintenanceMintingTechniques(null, { getTechniques })
     ).resolves.toStrictEqual({
       status: "error",
-      formError: "Only Editors and Admins can view Minting Techniques.",
+      formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
     })
 
     expect(getTechniques).not.toHaveBeenCalled()
@@ -72,7 +73,7 @@ describe("loadMintingTechniqueMaintenanceMintingTechniques", () => {
       )
     ).resolves.toStrictEqual({
       status: "error",
-      formError: "Only Editors and Admins can view Minting Techniques.",
+      formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
     })
 
     expect(getTechniques).not.toHaveBeenCalled()
@@ -112,7 +113,7 @@ describe("renderDatabaseMintingTechniquesPage", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the read-only Minting Techniques table for allowed Editors and Admins", () => {
+  it("renders the Minting Techniques table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
       renderDatabaseMintingTechniquesPage({
         isAllowed: true,
@@ -136,7 +137,7 @@ describe("renderDatabaseMintingTechniquesPage", () => {
     expect(markup).toContain("Hammered")
     expect(markup).toContain("Machine struck")
     expect(markup).toContain("Filter minting techniques by code or name...")
-    expect(markup).not.toContain(">Create</button>")
-    expect(markup).not.toContain('aria-label="Actions"')
+    expect(markup).toContain(">Create</button>")
+    expect(markup).toContain('aria-label="Actions"')
   })
 })

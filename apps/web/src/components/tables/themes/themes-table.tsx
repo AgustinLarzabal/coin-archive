@@ -33,17 +33,9 @@ export function ThemesTable({ themes }: ThemesTableProps) {
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const filteredThemes = filterThemes(themes, filterValue)
 
-  function openMaintenanceSheet(theme: ThemeOption | null) {
+  function openThemeMaintenanceSheet(theme: ThemeOption | null) {
     setSelectedTheme(theme)
     setIsMaintenanceSheetOpen(true)
-  }
-
-  function openCreateThemeSheet() {
-    openMaintenanceSheet(null)
-  }
-
-  function openEditThemeSheet(theme: ThemeOption) {
-    openMaintenanceSheet(theme)
   }
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
@@ -53,12 +45,12 @@ export function ThemesTable({ themes }: ThemesTableProps) {
   return (
     <>
       <DataTable
-        columns={createThemeColumns(openEditThemeSheet)}
+        columns={createThemeColumns(openThemeMaintenanceSheet)}
         data={filteredThemes}
         toolbar={() => (
           <ThemesTableToolbar
             filterValue={filterValue}
-            onCreateTheme={openCreateThemeSheet}
+            onCreateTheme={() => openThemeMaintenanceSheet(null)}
             onFilterValueChange={setFilterValue}
           />
         )}

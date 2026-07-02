@@ -80,7 +80,7 @@ type DeleteThemeData = z.output<typeof deleteThemeInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: ThemeMutationResult }
-type ThemeMutationExecutor<TData> = (
+type ThemeMutationRunner<TData> = (
   dependencies: ThemeMutationDependencies,
   data: TData
 ) => Promise<unknown | null>
@@ -89,9 +89,9 @@ type SubmitThemeMutationOptions<TInput, TData> = {
   input: TInput
   dependencies?: ThemeMutationDependencies
   validate: (input: TInput) => ValidationResult<TData>
-  runMutation: ThemeMutationExecutor<TData>
-  createSuccessResult: () => ThemeMutationResult
-  createMissingResult?: () => ThemeMutationResult
+  run: ThemeMutationRunner<TData>
+  successResult: ThemeMutationResult
+  missingResult?: ThemeMutationResult
 }
 
 type ThemeMutationDependencies = {
@@ -116,6 +116,21 @@ async function resolveThemeMutationDependencies(
 ): Promise<ThemeMutationDependencies> {
   return dependencies ?? getDefaultThemeMutationDependencies()
 }
+
+const THEME_CREATE_SUCCESS_RESULT = {
+  status: "success",
+  message: "Theme added.",
+} satisfies ThemeMutationResult
+
+const THEME_UPDATE_SUCCESS_RESULT = {
+  status: "success",
+  message: "Saved.",
+} satisfies ThemeMutationResult
+
+const THEME_DELETE_SUCCESS_RESULT = {
+  status: "success",
+  message: "Theme deleted.",
+} satisfies ThemeMutationResult
 
 export function createThemeAuthorizationError(): ThemeAuthorizationErrorResult {
   return {
@@ -308,9 +323,9 @@ async function submitThemeMutation<TInput, TData>({
   input,
   dependencies,
   validate,
-  runMutation,
-  createSuccessResult,
-  createMissingResult,
+  run,
+  successResult,
+  missingResult,
 }: SubmitThemeMutationOptions<TInput, TData>): Promise<ThemeMutationResult> {
   if (!hasThemeMaintenanceAccess(collector)) {
     return createAuthorizationError()
@@ -327,16 +342,13 @@ async function submitThemeMutation<TInput, TData>({
   )
 
   try {
-    const mutationResult = await runMutation(
-      resolvedDependencies,
-      validationResult.data
-    )
+    const mutationResult = await run(resolvedDependencies, validationResult.data)
 
-    if (mutationResult === null && createMissingResult) {
-      return createMissingResult()
+    if (mutationResult === null && missingResult !== undefined) {
+      return missingResult
     }
 
-    return createSuccessResult()
+    return successResult
   } catch (error) {
     return createPersistenceError(error)
   }
@@ -352,12 +364,9 @@ export async function submitCreateTheme(
     input,
     dependencies,
     validate: validateCreateThemeInput,
-    runMutation: (resolvedDependencies, data) =>
+    run: (resolvedDependencies, data) =>
       resolvedDependencies.createTheme(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Theme added.",
-    }),
+    successResult: THEME_CREATE_SUCCESS_RESULT,
   })
 }
 
@@ -371,13 +380,10 @@ export async function submitUpdateTheme(
     input,
     dependencies,
     validate: validateUpdateThemeInput,
-    runMutation: (resolvedDependencies, data) =>
+    run: (resolvedDependencies, data) =>
       resolvedDependencies.updateTheme(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Saved.",
-    }),
-    createMissingResult: () => createFormErrorResult(THEME_MISSING_ERROR),
+    successResult: THEME_UPDATE_SUCCESS_RESULT,
+    missingResult: createFormErrorResult(THEME_MISSING_ERROR),
   })
 }
 
@@ -391,12 +397,9 @@ export async function submitDeleteTheme(
     input,
     dependencies,
     validate: validateDeleteThemeInput,
-    runMutation: (resolvedDependencies, data) =>
+    run: (resolvedDependencies, data) =>
       resolvedDependencies.deleteTheme(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Theme deleted.",
-    }),
-    createMissingResult: () => createFormErrorResult(THEME_MISSING_ERROR),
+    successResult: THEME_DELETE_SUCCESS_RESULT,
+    missingResult: createFormErrorResult(THEME_MISSING_ERROR),
   })
 }

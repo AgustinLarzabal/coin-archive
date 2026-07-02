@@ -66,8 +66,7 @@ export function ThemeMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingTheme = theme !== null
-  const sheetTitle = isEditingTheme ? "Edit Theme" : "Create Theme"
+  const hasSelectedTheme = theme !== null
 
   function resetDeleteState() {
     setDeleteError(null)
@@ -114,9 +113,11 @@ export function ThemeMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>
+            {hasSelectedTheme ? "Edit Theme" : "Create Theme"}
+          </SheetTitle>
 
-          {isEditingTheme ? (
+          {hasSelectedTheme ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -176,7 +177,7 @@ export function ThemeMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingTheme ? (
+        {hasSelectedTheme ? (
           <ThemeEditForm theme={theme} onSaved={closeSheet} />
         ) : (
           <ThemeCreateForm onCreated={closeSheet} />

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
@@ -47,7 +47,6 @@ export function RulerCreateForm({
   const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const availableRulerGroups = useMemo(() => rulerGroups, [rulerGroups])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -81,7 +80,7 @@ export function RulerCreateForm({
 
     clearFeedback()
 
-    const submission = getCreateRulerSubmission(draft, availableRulerGroups)
+    const submission = getCreateRulerSubmission(draft, rulerGroups)
 
     if (submission.status === "invalid") {
       applyResult(submission.result)
@@ -121,12 +120,14 @@ export function RulerCreateForm({
         namePlaceholder="Louis XIV"
         rulerGroupPlaceholder="Search Ruler Group..."
         draft={draft}
-        rulerGroups={availableRulerGroups}
+        rulerGroups={rulerGroups}
         fieldErrors={fieldErrors}
         onDraftChange={updateDraft}
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

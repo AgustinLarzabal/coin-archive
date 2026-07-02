@@ -21,20 +21,14 @@ export function filterRulers(
     return rulers
   }
 
-  return rulers.filter((ruler) =>
-    getRulerFilterValues(ruler).some((value) =>
-      value.toLocaleLowerCase().includes(normalizedFilterValue)
-    )
+  return rulers.filter(
+    ({ code, name, group }) =>
+      code.toLocaleLowerCase().includes(normalizedFilterValue) ||
+      name.toLocaleLowerCase().includes(normalizedFilterValue) ||
+      group?.code.toLocaleLowerCase().includes(normalizedFilterValue) ===
+        true ||
+      group?.name.toLocaleLowerCase().includes(normalizedFilterValue) === true
   )
-}
-
-function getRulerFilterValues(ruler: RulerOption): string[] {
-  return [
-    ruler.code,
-    ruler.name,
-    ruler.group?.code ?? "",
-    ruler.group?.name ?? "",
-  ]
 }
 
 export function RulersTable({ rulers, rulerGroups }: RulersTableProps) {

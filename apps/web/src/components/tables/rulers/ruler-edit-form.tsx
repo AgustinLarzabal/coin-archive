@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
@@ -44,7 +44,8 @@ const updateRulerAction = createServerFn({
   })
 
 export function hasRulerEditChanges(ruler: RulerOption, draft: RulerDraft) {
-  const normalizedCurrent = normalizeRulerDraft(createRulerDraft(ruler))
+  const currentDraft = createRulerDraft(ruler)
+  const normalizedCurrent = normalizeRulerDraft(currentDraft)
   const normalizedDraft = normalizeRulerDraft(draft)
 
   return (
@@ -66,7 +67,6 @@ export function RulerEditForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const availableRulerGroups = useMemo(() => rulerGroups, [rulerGroups])
   const hasChanges = hasRulerEditChanges(ruler, draft)
 
   useEffect(() => {
@@ -111,11 +111,7 @@ export function RulerEditForm({
 
     clearFeedback()
 
-    const submission = getUpdateRulerSubmission(
-      ruler.id,
-      draft,
-      availableRulerGroups
-    )
+    const submission = getUpdateRulerSubmission(ruler.id, draft, rulerGroups)
 
     if (submission.status === "invalid") {
       applyResult(submission.result)
@@ -154,12 +150,14 @@ export function RulerEditForm({
         namePlaceholder="Louis XIV"
         rulerGroupPlaceholder="Search Ruler Group..."
         draft={draft}
-        rulerGroups={availableRulerGroups}
+        rulerGroups={rulerGroups}
         fieldErrors={fieldErrors}
         onDraftChange={updateDraft}
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

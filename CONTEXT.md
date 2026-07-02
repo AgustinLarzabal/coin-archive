@@ -266,6 +266,10 @@ _Avoid_: Primary theme, incidental description, keyword tag order, inferred hist
 
 **Theme Filter**:
 A catalogue filter that returns coins attributed directly to the selected Theme. It composes with other catalogue filters using AND semantics.
+
+**Theme Maintenance**:
+The controlled catalogue activity of creating, renaming, recoding, or deleting reusable Themes. Theme Maintenance does not remove existing Theme Attributions implicitly; a Theme with existing attributions must first be unattributed or reassigned before it can be deleted.
+_Avoid_: Automatic tag cleanup, implicit coin detachment, theme hierarchy management, alias management
 _Avoid_: Free-text image search, generated tag filter, issuer-style descendant filter
 
 **Issuer Code**:

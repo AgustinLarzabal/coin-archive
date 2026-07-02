@@ -12,15 +12,20 @@ export const MINTING_TECHNIQUE_GENERIC_SAVE_ERROR =
   "Unable to save Minting Technique right now."
 export const MINTING_TECHNIQUE_MISSING_ERROR =
   "Minting Technique no longer exists."
+export const MINTING_TECHNIQUE_IN_USE_DELETE_ERROR =
+  "Minting Technique cannot be deleted while Coins still use it. Remove or reassign the Minting Technique on those Coins before deleting it."
 export const MINTING_TECHNIQUE_INVALID_CODE_ERROR =
   "Minting Technique Code must use lowercase letters, numbers, and hyphens only."
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
+const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
 const DUPLICATE_MINTING_TECHNIQUE_CODE_CONSTRAINT =
   "technique_code_lower_unique_idx"
 const INVALID_MINTING_TECHNIQUE_CODE_CONSTRAINT =
   "technique_code_slug_check"
+const MINTING_TECHNIQUE_IN_USE_DELETE_CONSTRAINT =
+  "coin_technique_id_technique_id_fk"
 const MINTING_TECHNIQUE_FIELD_NAMES = ["code", "name"] as const
 
 const mintingTechniqueCodeSchema = z
@@ -48,6 +53,10 @@ export const updateMintingTechniqueInputSchema =
   createMintingTechniqueInputSchema.extend({
     id: z.uuid(),
   })
+
+export const deleteMintingTechniqueInputSchema = z.object({
+  id: z.uuid(),
+})
 
 type MintingTechniqueFieldName =
   (typeof MINTING_TECHNIQUE_FIELD_NAMES)[number]
@@ -84,6 +93,12 @@ type UpdateMintingTechniqueInput = z.input<
 type UpdateMintingTechniqueData = z.output<
   typeof updateMintingTechniqueInputSchema
 >
+type DeleteMintingTechniqueInput = z.input<
+  typeof deleteMintingTechniqueInputSchema
+>
+type DeleteMintingTechniqueData = z.output<
+  typeof deleteMintingTechniqueInputSchema
+>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: MintingTechniqueMutationResult }
@@ -103,16 +118,21 @@ type SubmitMintingTechniqueMutationOptions<TInput, TData> = {
 
 type MintingTechniqueMutationDependencies = {
   createTechnique: (input: CreateMintingTechniqueData) => Promise<unknown>
+  deleteTechnique: (
+    input: DeleteMintingTechniqueData
+  ) => Promise<unknown | null>
   updateTechnique: (
     input: UpdateMintingTechniqueData
   ) => Promise<unknown | null>
 }
 
 async function getDefaultMintingTechniqueMutationDependencies(): Promise<MintingTechniqueMutationDependencies> {
-  const { createTechnique, updateTechnique } = await import("@workspace/db")
+  const { createTechnique, deleteTechnique, updateTechnique } =
+    await import("@workspace/db")
 
   return {
     createTechnique,
+    deleteTechnique,
     updateTechnique,
   }
 }
@@ -262,6 +282,16 @@ function createPersistenceError(
   if (
     matchesPostgresConstraint(
       error,
+      FK_VIOLATION_POSTGRES_ERROR_CODE,
+      MINTING_TECHNIQUE_IN_USE_DELETE_CONSTRAINT
+    )
+  ) {
+    return createFormErrorResult(MINTING_TECHNIQUE_IN_USE_DELETE_ERROR)
+  }
+
+  if (
+    matchesPostgresConstraint(
+      error,
       CHECK_VIOLATION_POSTGRES_ERROR_CODE,
       INVALID_MINTING_TECHNIQUE_CODE_CONSTRAINT
     )
@@ -303,6 +333,12 @@ function validateUpdateMintingTechniqueInput(
   input: UpdateMintingTechniqueInput
 ): ValidationResult<UpdateMintingTechniqueData> {
   return validateMintingTechniqueInput(updateMintingTechniqueInputSchema, input)
+}
+
+function validateDeleteMintingTechniqueInput(
+  input: DeleteMintingTechniqueInput
+): ValidationResult<DeleteMintingTechniqueData> {
+  return validateMintingTechniqueInput(deleteMintingTechniqueInputSchema, input)
 }
 
 async function submitMintingTechniqueMutation<TInput, TData>({
@@ -380,6 +416,27 @@ export async function submitUpdateMintingTechnique(
     createSuccessResult: () => ({
       status: "success",
       message: "Saved.",
+    }),
+    createMissingResult: () =>
+      createFormErrorResult(MINTING_TECHNIQUE_MISSING_ERROR),
+  })
+}
+
+export async function submitDeleteMintingTechnique(
+  collector: CollectorWithRole | null,
+  input: DeleteMintingTechniqueInput,
+  dependencies?: MintingTechniqueMutationDependencies
+): Promise<MintingTechniqueMutationResult> {
+  return submitMintingTechniqueMutation({
+    collector,
+    input,
+    dependencies,
+    validate: validateDeleteMintingTechniqueInput,
+    runMutation: (resolvedDependencies, data) =>
+      resolvedDependencies.deleteTechnique(data),
+    createSuccessResult: () => ({
+      status: "success",
+      message: "Minting Technique deleted.",
     }),
     createMissingResult: () =>
       createFormErrorResult(MINTING_TECHNIQUE_MISSING_ERROR),

@@ -13,6 +13,10 @@ type UpdateTechniqueInput = TechniqueFields & {
   id: string
 }
 
+type DeleteTechniqueInput = {
+  id: string
+}
+
 function normalizeTechniqueFields({ code, name }: TechniqueFields) {
   return {
     code: code.trim(),
@@ -47,4 +51,14 @@ export async function updateTechnique({
   ).at(0)
 
   return updatedTechnique ?? null
+}
+
+export async function deleteTechnique({
+  id,
+}: DeleteTechniqueInput): Promise<Technique | null> {
+  const deletedTechnique = (
+    await db.delete(technique).where(eq(technique.id, id)).returning()
+  ).at(0)
+
+  return deletedTechnique ?? null
 }

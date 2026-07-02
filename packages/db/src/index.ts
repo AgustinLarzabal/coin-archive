@@ -42,6 +42,7 @@ export {
 } from "./mutations/orientation"
 export {
   createTechnique,
+  deleteTechnique,
   updateTechnique,
 } from "./mutations/technique"
 export { getCatalogues } from "./queries/get-catalogues"

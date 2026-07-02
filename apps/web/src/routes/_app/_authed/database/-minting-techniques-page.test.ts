@@ -13,6 +13,13 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
+vi.mock(
+  "@/components/tables/minting-techniques/minting-technique-maintenance-sheet",
+  () => ({
+    MintingTechniqueMaintenanceSheet: () => null,
+  })
+)
+
 const mintingTechniqueTimestamps = {
   createdAt: new Date("2026-07-02T00:00:00.000Z"),
   updatedAt: new Date("2026-07-02T00:00:00.000Z"),

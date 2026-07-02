@@ -4,7 +4,12 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MintingTechniqueMaintenanceSheet } from "./minting-technique-maintenance-sheet"
+import { MINTING_TECHNIQUE_IN_USE_DELETE_ERROR } from "@/lib/minting-technique-maintenance"
+
+import {
+  MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION,
+  MintingTechniqueMaintenanceSheet,
+} from "./minting-technique-maintenance-sheet"
 
 type MockComponentProps = {
   children?: ReactNode
@@ -34,6 +39,52 @@ vi.mock("@workspace/ui/components/sheet", () => ({
   SheetContent: createMockElement("div"),
   SheetHeader: createMockElement("div"),
   SheetTitle: createMockElement("h1"),
+}))
+
+vi.mock("@tanstack/react-router", () => ({
+  useRouter: () => ({
+    invalidate: vi.fn(),
+  }),
+}))
+
+vi.mock("@tanstack/react-start", () => ({
+  createServerFn: () => ({
+    inputValidator() {
+      return this
+    },
+    handler() {
+      return {}
+    },
+  }),
+  useServerFn: () => vi.fn(),
+}))
+
+vi.mock("@workspace/ui/components/dropdown-menu", () => ({
+  DropdownMenu: createMockElement("div"),
+  DropdownMenuContent: createMockElement("div"),
+  DropdownMenuItem: createMockElement("button"),
+  DropdownMenuTrigger: createMockElement("button"),
+}))
+
+vi.mock("@workspace/ui/components/alert-dialog", () => ({
+  AlertDialog: createMockElement("div"),
+  AlertDialogAction: createMockElement("button"),
+  AlertDialogCancel: createMockElement("button"),
+  AlertDialogContent: createMockElement("div"),
+  AlertDialogDescription: createMockElement("p"),
+  AlertDialogFooter: createMockElement("div"),
+  AlertDialogHeader: createMockElement("div"),
+  AlertDialogTitle: createMockElement("h2"),
+}))
+
+vi.mock("@workspace/ui/components/button", () => ({
+  Button: createMockElement("button"),
+}))
+
+vi.mock("@/components/icons", () => ({
+  Icons: {
+    MoreVertical: () => createElement("span", null, "MoreVertical"),
+  },
 }))
 
 vi.mock("./minting-technique-create-form", () => ({
@@ -66,18 +117,37 @@ function renderMintingTechniqueMaintenanceSheet(
   )
 }
 
+describe("MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION", () => {
+  it("explains the deletion is permanent and reuses the shared in-use guidance", () => {
+    expect(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION).toContain(
+      "permanently deletes the Minting Technique"
+    )
+    expect(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION).toContain(
+      MINTING_TECHNIQUE_IN_USE_DELETE_ERROR.replace(
+        "Minting Technique cannot be deleted while Coins still use it. ",
+        ""
+      )
+    )
+  })
+})
+
 describe("MintingTechniqueMaintenanceSheet", () => {
-  it("shows create mode when no Minting Technique is selected", () => {
+  it("shows create mode without delete affordances when no Minting Technique is selected", () => {
     const markup = renderMintingTechniqueMaintenanceSheet(null)
 
     expect(markup).toContain("Create Minting Technique")
     expect(markup).toContain("MintingTechniqueCreateForm")
+    expect(markup).not.toContain("Delete Minting Technique?")
   })
 
-  it("shows edit mode for an existing Minting Technique", () => {
+  it("renders the edit-sheet delete action and confirmation copy for an existing Minting Technique", () => {
     const markup = renderMintingTechniqueMaintenanceSheet(mintingTechnique)
 
     expect(markup).toContain("Edit Minting Technique")
     expect(markup).toContain("MintingTechniqueEditForm")
+    expect(markup).toContain(">Delete<")
+    expect(markup).toContain("Delete Minting Technique?")
+    expect(markup).toContain(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION)
+    expect(markup).toContain(">Cancel<")
   })
 })

@@ -1,11 +1,15 @@
 import type { TechniqueOption } from "@workspace/db"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import {
   filterMintingTechniques,
   MintingTechniquesTable,
 } from "./minting-techniques-table"
+
+vi.mock("./minting-technique-maintenance-sheet", () => ({
+  MintingTechniqueMaintenanceSheet: () => null,
+}))
 
 const mintingTechniques: TechniqueOption[] = [
   {

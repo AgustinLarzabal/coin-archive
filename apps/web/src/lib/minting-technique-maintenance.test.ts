@@ -5,11 +5,13 @@ import {
   MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
   MINTING_TECHNIQUE_DUPLICATE_CODE_ERROR,
   MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
+  MINTING_TECHNIQUE_IN_USE_DELETE_ERROR,
   MINTING_TECHNIQUE_INVALID_CODE_ERROR,
   MINTING_TECHNIQUE_MISSING_ERROR,
   createMintingTechniqueAuthorizationError,
   hasMintingTechniqueMaintenanceAccess,
   submitCreateMintingTechnique,
+  submitDeleteMintingTechnique,
   submitUpdateMintingTechnique,
 } from "./minting-technique-maintenance"
 
@@ -21,10 +23,12 @@ const HAMMERED_MINTING_TECHNIQUE = {
 
 function createDependencies(overrides?: {
   createTechnique?: ReturnType<typeof vi.fn>
+  deleteTechnique?: ReturnType<typeof vi.fn>
   updateTechnique?: ReturnType<typeof vi.fn>
 }) {
   return {
     createTechnique: vi.fn(),
+    deleteTechnique: vi.fn(),
     updateTechnique: vi.fn(),
     ...overrides,
   }
@@ -345,6 +349,113 @@ describe("submitUpdateMintingTechnique", () => {
         updateInput,
         createDependencies({
           updateTechnique: vi.fn().mockRejectedValue(new Error("boom")),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
+    })
+  })
+})
+
+describe("submitDeleteMintingTechnique", () => {
+  const deleteInput = {
+    id: VALID_MINTING_TECHNIQUE_ID,
+  }
+
+  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
+    await expect(
+      submitDeleteMintingTechnique(null, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+
+    await expect(
+      submitDeleteMintingTechnique({ role: "collector" }, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("maps validation issues into typed field errors", async () => {
+    const dependencies = createDependencies()
+
+    await expect(
+      submitDeleteMintingTechnique(
+        { role: "editor" },
+        { id: "not-a-uuid" },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+    })
+
+    expect(dependencies.deleteTechnique).not.toHaveBeenCalled()
+  })
+
+  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    await expect(
+      submitDeleteMintingTechnique(
+        { role: "editor" },
+        deleteInput,
+        createDependencies({
+          deleteTechnique: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: MINTING_TECHNIQUE_MISSING_ERROR,
+    })
+  })
+
+  it("maps in-use delete failures to a Minting Technique form error", async () => {
+    await expect(
+      submitDeleteMintingTechnique(
+        { role: "admin" },
+        deleteInput,
+        createDependencies({
+          deleteTechnique: vi.fn().mockRejectedValue({
+            cause: {
+              code: "23001",
+              constraint_name: "coin_technique_id_technique_id_fk",
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: MINTING_TECHNIQUE_IN_USE_DELETE_ERROR,
+    })
+  })
+
+  it("returns a success result for valid delete submissions", async () => {
+    const dependencies = createDependencies({
+      deleteTechnique: vi.fn().mockResolvedValue({
+        id: VALID_MINTING_TECHNIQUE_ID,
+      }),
+    })
+
+    await expect(
+      submitDeleteMintingTechnique(
+        { role: "editor" },
+        deleteInput,
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Minting Technique deleted.",
+    })
+
+    expect(dependencies.deleteTechnique).toHaveBeenCalledWith(deleteInput)
+  })
+
+  it("returns a generic form error for unexpected delete persistence failures", async () => {
+    await expect(
+      submitDeleteMintingTechnique(
+        { role: "admin" },
+        deleteInput,
+        createDependencies({
+          deleteTechnique: vi.fn().mockRejectedValue(new Error("boom")),
         })
       )
     ).resolves.toStrictEqual({

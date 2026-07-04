@@ -82,11 +82,11 @@ vi.mock("@/components/icons", () => ({
   },
 }))
 
-vi.mock("./issuer-create-form", () => ({
+vi.mock("../form-workflow/issuer-create-form", () => ({
   IssuerCreateForm: () => createElement("div", null, "IssuerCreateForm"),
 }))
 
-vi.mock("./issuer-edit-form", () => ({
+vi.mock("../form-workflow/issuer-edit-form", () => ({
   IssuerEditForm: () => createElement("div", null, "IssuerEditForm"),
 }))
 

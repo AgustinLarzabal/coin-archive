@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-vi.mock("@/components/tables/issuers/issuer-maintenance-sheet", () => ({
+vi.mock("./sheet-workflow/issuer-maintenance-sheet", () => ({
   IssuerMaintenanceSheet: () => null,
 }))
 

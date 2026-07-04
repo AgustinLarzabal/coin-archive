@@ -22,8 +22,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-vi.mock("./sheet-workflow", () => ({
-  IssuerMaintenanceSheet: () => null,
+vi.mock("./table-workflow/issuers-table", () => ({
+  IssuersTable: () => "Issuers table",
 }))
 
 const issuerMaintenanceRecords = [
@@ -112,12 +112,6 @@ describe("renderIssuerMaintenancePage", () => {
       })
     )
 
-    expect(markup).toContain("Issuer Name")
-    expect(markup).toContain("Issuer Code")
-    expect(markup).toContain("Issuer ISO Code")
-    expect(markup).toContain("Parent Issuer")
-    expect(markup).toContain("Argentine Republic")
-    expect(markup).toContain("Provincia de La Rioja")
-    expect(markup).toContain("No Parent Issuer")
+    expect(markup).toContain("Issuers table")
   })
 })

@@ -36,7 +36,8 @@ import {
   ISSUER_GENERIC_SAVE_ERROR,
 } from "../messages"
 
-import { IssuerCreateForm, IssuerEditForm } from "../form-workflow"
+import { IssuerCreateForm } from "../form-workflow/issuer-create-form"
+import { IssuerEditForm } from "../form-workflow/issuer-edit-form"
 
 export { ISSUER_DELETE_CONFIRMATION_DESCRIPTION } from "../messages"
 

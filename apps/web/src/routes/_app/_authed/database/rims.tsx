@@ -80,10 +80,8 @@ export const Route = createFileRoute("/_app/_authed/database/rims")({
 })
 
 function DatabaseRimsComponent() {
-  return renderDatabaseRimsPage(Route.useLoaderData())
-}
+  const loaderData = Route.useLoaderData()
 
-export function renderDatabaseRimsPage(loaderData: RimMaintenanceLoaderData) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

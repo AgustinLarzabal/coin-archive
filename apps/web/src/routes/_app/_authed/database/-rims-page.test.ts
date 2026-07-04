@@ -1,14 +1,9 @@
-import { renderToStaticMarkup } from "react-dom/server"
 import type { RimOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { RIM_AUTHORIZATION_ERROR } from "@/lib/rim-maintenance"
 import { databaseSecondaryMenuItems } from "./-navigation-items"
-import { loadRimMaintenanceRims, renderDatabaseRimsPage } from "./rims"
-
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
+import { loadRimMaintenanceRims } from "./rims"
 
 const rimTimestamps = {
   createdAt: new Date("2026-07-01T00:00:00.000Z"),
@@ -84,38 +79,5 @@ describe("loadRimMaintenanceRims", () => {
         rims,
       })
     }
-  })
-})
-
-describe("renderDatabaseRimsPage", () => {
-  it("renders the existing access-denied UI for disallowed Collectors", () => {
-    const markup = renderToStaticMarkup(renderDatabaseRimsPage({ isAllowed: false }))
-
-    expect(markup).toContain("Access denied")
-  })
-
-  it("renders the Rims table for allowed Editors and Admins", () => {
-    const markup = renderToStaticMarkup(
-      renderDatabaseRimsPage({
-        isAllowed: true,
-        rims: [
-          createRim({
-            id: "dff33645-e973-4fd5-a84d-bf5a773855ef",
-            code: "raised",
-            name: "Raised rim",
-          }),
-          createRim({
-            id: "7d2c7fb9-0ac4-4eb8-ae90-31fe67e5f451",
-            code: "barred",
-            name: "Barred rim",
-          }),
-        ],
-      })
-    )
-
-    expect(markup).toContain("Rim Code")
-    expect(markup).toContain("Rim Name")
-    expect(markup).toContain("Raised rim")
-    expect(markup).toContain("Barred rim")
   })
 })

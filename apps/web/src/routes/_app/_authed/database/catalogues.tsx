@@ -81,12 +81,8 @@ export const Route = createFileRoute("/_app/_authed/database/catalogues")({
 })
 
 function DatabaseCataloguesComponent() {
-  return renderDatabaseCataloguesPage(Route.useLoaderData())
-}
+  const loaderData = Route.useLoaderData()
 
-export function renderDatabaseCataloguesPage(
-  loaderData: CatalogueMaintenanceLoaderData
-) {
   if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">

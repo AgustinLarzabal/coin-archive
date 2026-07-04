@@ -29,11 +29,16 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  ISSUER_GENERIC_SAVE_ERROR,
   submitDeleteIssuer,
-} from "@/lib/issuer-maintenance"
+} from "../actions"
+import {
+  ISSUER_DELETE_CONFIRMATION_DESCRIPTION,
+  ISSUER_GENERIC_SAVE_ERROR,
+} from "../messages"
 
 import { IssuerCreateForm, IssuerEditForm } from "../form-workflow"
+
+export { ISSUER_DELETE_CONFIRMATION_DESCRIPTION } from "../messages"
 
 type IssuerMaintenanceSheetProps = {
   issuer: IssuerMaintenanceRecord | null
@@ -42,9 +47,6 @@ type IssuerMaintenanceSheetProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
-
-export const ISSUER_DELETE_CONFIRMATION_DESCRIPTION =
-  "This permanently deletes the Issuer. Deletion is blocked while Coins still use it or child Issuers still reference it."
 
 const deleteIssuerAction = createServerFn({
   method: "POST",

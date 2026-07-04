@@ -13,12 +13,9 @@ import { Input } from "@workspace/ui/components/input"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  IssuerFieldErrors,
-  IssuerMutationResult,
-} from "@/lib/issuer-maintenance"
-import { submitCreateIssuer } from "@/lib/issuer-maintenance"
 
+import { submitCreateIssuer, type IssuerMutationResult } from "../actions"
+import type { IssuerFieldErrors } from "../validation"
 import {
   EMPTY_ISSUER_DRAFT,
   getCreateIssuerSubmission,

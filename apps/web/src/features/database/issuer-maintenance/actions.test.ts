@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   hasIssuerMaintenanceAccess,
+  submitCreateIssuer,
+  submitDeleteIssuer,
+  submitUpdateIssuer,
+} from "./actions"
+import {
   ISSUER_AUTHORIZATION_ERROR,
   ISSUER_CHILDREN_DELETE_ERROR,
   ISSUER_COINS_DELETE_ERROR,
@@ -13,10 +18,7 @@ import {
   ISSUER_MISSING_ERROR,
   ISSUER_MISSING_PARENT_ERROR,
   ISSUER_SELF_PARENT_ERROR,
-  submitCreateIssuer,
-  submitDeleteIssuer,
-  submitUpdateIssuer,
-} from "./issuer-maintenance"
+} from "./messages"
 
 const VALID_ISSUER_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const VALID_PARENT_ISSUER_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"

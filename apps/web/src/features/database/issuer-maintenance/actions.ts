@@ -1,29 +1,32 @@
 import { hasEditorAccess } from "@workspace/auth/client"
 import { z } from "zod"
 
-import { getCollectorRole } from "./collector-role"
-import type { CollectorWithRole } from "./collector-role"
+import { getCollectorRole } from "@/lib/collector-role"
+import type { CollectorWithRole } from "@/lib/collector-role"
 
-export const ISSUER_AUTHORIZATION_ERROR =
-  "Only Editors and Admins can maintain Issuers."
-export const ISSUER_DUPLICATE_CODE_ERROR =
-  "An Issuer with this code already exists."
-export const ISSUER_GENERIC_SAVE_ERROR = "Unable to save Issuer right now."
-export const ISSUER_MISSING_ERROR = "Issuer no longer exists."
-export const ISSUER_INVALID_CODE_ERROR =
-  "Issuer Code must use lowercase letters, numbers, and hyphens only."
-export const ISSUER_INVALID_ISO_CODE_ERROR =
-  "Issuer ISO Code must be a two-letter ISO 3166-1 alpha-2 code."
-export const ISSUER_MISSING_PARENT_ERROR =
-  "Selected Parent Issuer no longer exists."
-export const ISSUER_SELF_PARENT_ERROR =
-  "Issuer cannot be its own Parent Issuer."
-export const ISSUER_CYCLIC_PARENT_ERROR =
-  "Parent Issuer cannot be a descendant of this Issuer."
-export const ISSUER_COINS_DELETE_ERROR =
-  "Issuer cannot be deleted while Coins still use it. Remove or reassign the Issuer on those Coins before deleting it."
-export const ISSUER_CHILDREN_DELETE_ERROR =
-  "Issuer cannot be deleted while child Issuers still reference it. Reassign or remove those child Issuers before deleting this Issuer."
+import {
+  ISSUER_AUTHORIZATION_ERROR,
+  ISSUER_CHILDREN_DELETE_ERROR,
+  ISSUER_COINS_DELETE_ERROR,
+  ISSUER_CREATED_MESSAGE,
+  ISSUER_CYCLIC_PARENT_ERROR,
+  ISSUER_DELETED_MESSAGE,
+  ISSUER_DUPLICATE_CODE_ERROR,
+  ISSUER_GENERIC_SAVE_ERROR,
+  ISSUER_INVALID_CODE_ERROR,
+  ISSUER_INVALID_ISO_CODE_ERROR,
+  ISSUER_MISSING_ERROR,
+  ISSUER_MISSING_PARENT_ERROR,
+  ISSUER_SELF_PARENT_ERROR,
+  ISSUER_UPDATED_MESSAGE,
+} from "./messages"
+import {
+  createIssuerInputSchema,
+  deleteIssuerInputSchema,
+  getIssuerFieldErrors,
+  type IssuerFieldErrors,
+  updateIssuerInputSchema,
+} from "./validation"
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
@@ -37,57 +40,6 @@ const SELF_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_self_check"
 const CYCLIC_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_cycle_check"
 const COIN_ISSUER_DELETE_CONSTRAINT = "coin_issuer_id_issuer_id_fk"
 const CHILD_ISSUER_DELETE_CONSTRAINT = "issuer_parent_issuer_id_issuer_id_fk"
-const ISSUER_FIELD_NAMES = [
-  "code",
-  "isoCode",
-  "name",
-  "parentIssuerId",
-] as const
-
-const issuerCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Issuer Code cannot be blank.")
-  .max(255, "Issuer Code must be 255 characters or fewer.")
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, ISSUER_INVALID_CODE_ERROR)
-
-const issuerIsoCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Issuer ISO Code cannot be blank.")
-  .max(2, ISSUER_INVALID_ISO_CODE_ERROR)
-  .transform((value) => value.toUpperCase())
-  .refine((value) => /^[A-Z]{2}$/.test(value), ISSUER_INVALID_ISO_CODE_ERROR)
-
-const issuerNameSchema = z
-  .string()
-  .trim()
-  .min(1, "Issuer Name cannot be blank.")
-  .max(255, "Issuer Name must be 255 characters or fewer.")
-
-const issuerParentIssuerIdSchema = z
-  .string()
-  .uuid("Parent Issuer must be a valid record.")
-  .nullable()
-
-export const createIssuerInputSchema = z.object({
-  code: issuerCodeSchema,
-  isoCode: issuerIsoCodeSchema,
-  name: issuerNameSchema,
-  parentIssuerId: issuerParentIssuerIdSchema,
-})
-
-export const updateIssuerInputSchema = createIssuerInputSchema.extend({
-  id: z.uuid(),
-})
-
-export const deleteIssuerInputSchema = z.object({
-  id: z.uuid(),
-})
-
-type IssuerFieldName = (typeof ISSUER_FIELD_NAMES)[number]
-
-export type IssuerFieldErrors = Partial<Record<IssuerFieldName, string>>
 
 export type IssuerMutationResult =
   | {
@@ -239,33 +191,12 @@ export function hasIssuerMaintenanceAccess(
   return role !== null && hasEditorAccess(role)
 }
 
-function isIssuerFieldName(field: unknown): field is IssuerFieldName {
-  return (
-    typeof field === "string" &&
-    ISSUER_FIELD_NAMES.includes(field as IssuerFieldName)
-  )
-}
-
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
 function isPostgresError(value: unknown): value is PostgresError {
   return isObjectRecord(value) && "code" in value && "constraint_name" in value
-}
-
-export function getIssuerFieldErrors(issues: z.ZodIssue[]): IssuerFieldErrors {
-  const fieldErrors: IssuerFieldErrors = {}
-
-  for (const issue of issues) {
-    const field = issue.path.at(0)
-
-    if (isIssuerFieldName(field)) {
-      fieldErrors[field] = issue.message
-    }
-  }
-
-  return fieldErrors
 }
 
 function createValidationError(issues: z.ZodIssue[]): IssuerMutationResult {
@@ -396,7 +327,7 @@ export function submitCreateIssuer(
       resolvedDependencies.createIssuer(data),
     createSuccessResult: () => ({
       status: "success",
-      message: "Issuer added.",
+      message: ISSUER_CREATED_MESSAGE,
     }),
   })
 }
@@ -415,7 +346,7 @@ export function submitUpdateIssuer(
       resolvedDependencies.updateIssuer(data),
     createSuccessResult: () => ({
       status: "success",
-      message: "Saved.",
+      message: ISSUER_UPDATED_MESSAGE,
     }),
     createNullResult: () => createFormErrorResult(ISSUER_MISSING_ERROR),
   })
@@ -435,7 +366,7 @@ export function submitDeleteIssuer(
       resolvedDependencies.deleteIssuer(data),
     createSuccessResult: () => ({
       status: "success",
-      message: "Issuer deleted.",
+      message: ISSUER_DELETED_MESSAGE,
     }),
     createNullResult: () => createFormErrorResult(ISSUER_MISSING_ERROR),
   })

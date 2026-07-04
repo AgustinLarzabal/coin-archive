@@ -1,12 +1,13 @@
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import type { z } from "zod"
 
-import type { IssuerMutationResult } from "@/lib/issuer-maintenance"
 import {
   createIssuerInputSchema,
   getIssuerFieldErrors,
   updateIssuerInputSchema,
-} from "@/lib/issuer-maintenance"
+  type IssuerFieldErrors,
+} from "../validation"
+import type { IssuerMutationResult } from "../actions"
 
 export type IssuerDraft = {
   code: string
@@ -215,11 +216,13 @@ function createInvalidParentIssuerSubmission(): InvalidIssuerSubmission {
 function createInvalidIssuerSubmission(
   issues: z.ZodIssue[]
 ): InvalidIssuerSubmission {
+  const fieldErrors: IssuerFieldErrors = getIssuerFieldErrors(issues)
+
   return {
     status: "invalid",
     result: {
       status: "error",
-      fieldErrors: getIssuerFieldErrors(issues),
+      fieldErrors,
     },
   }
 }

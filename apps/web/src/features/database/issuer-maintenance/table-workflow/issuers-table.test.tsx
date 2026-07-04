@@ -18,7 +18,7 @@ function createMockElement(tagName: string) {
   }
 }
 
-vi.mock("./issuer-maintenance-sheet", () => ({
+vi.mock("@/components/tables/issuers/issuer-maintenance-sheet", () => ({
   IssuerMaintenanceSheet: () => null,
 }))
 

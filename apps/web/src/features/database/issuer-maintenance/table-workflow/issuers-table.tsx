@@ -2,8 +2,9 @@ import { useState } from "react"
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
+import { IssuerMaintenanceSheet } from "@/components/tables/issuers/issuer-maintenance-sheet"
+
 import { createIssuerColumns } from "./columns"
-import { IssuerMaintenanceSheet } from "./issuer-maintenance-sheet"
 import { IssuersTableToolbar } from "./issuers-table-toolbar"
 
 type IssuersTableProps = {

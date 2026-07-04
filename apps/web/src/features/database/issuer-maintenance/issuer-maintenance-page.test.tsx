@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   loadIssuerMaintenancePageData,
   renderIssuerMaintenancePage,
-} from "./index"
+} from "./issuer-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",

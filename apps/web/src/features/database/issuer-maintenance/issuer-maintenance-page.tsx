@@ -26,11 +26,11 @@ type IssuerMaintenancePageLoaderData =
       issuers: IssuerMaintenanceRecord[]
     }
 
-type IssuerReadDependencies = {
+type IssuerMaintenanceReadDependencies = {
   getIssuerMaintenanceRecords: () => Promise<IssuerMaintenanceRecord[]>
 }
 
-async function getDefaultIssuerReadDependencies(): Promise<IssuerReadDependencies> {
+async function getDefaultIssuerReadDependencies(): Promise<IssuerMaintenanceReadDependencies> {
   const { getIssuerMaintenanceRecords } = await import("@workspace/db")
 
   return {
@@ -38,9 +38,24 @@ async function getDefaultIssuerReadDependencies(): Promise<IssuerReadDependencie
   }
 }
 
+function toIssuerMaintenancePageLoaderData(
+  result: LoadIssuerMaintenancePageDataResult
+): IssuerMaintenancePageLoaderData {
+  if (result.status === "error") {
+    return {
+      isAllowed: false,
+    }
+  }
+
+  return {
+    isAllowed: true,
+    issuers: result.issuers,
+  }
+}
+
 export async function loadIssuerMaintenancePageData(
   collector: CollectorWithRole | null,
-  dependencies?: IssuerReadDependencies
+  dependencies?: IssuerMaintenanceReadDependencies
 ): Promise<LoadIssuerMaintenancePageDataResult> {
   if (!getEditorRouteAuthorization(collector).isAllowed) {
     return {
@@ -63,16 +78,7 @@ const getIssuerMaintenanceLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadIssuerMaintenancePageData(session?.user ?? null)
 
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    } satisfies IssuerMaintenancePageLoaderData
-  }
-
-  return {
-    isAllowed: true,
-    issuers: result.issuers,
-  } satisfies IssuerMaintenancePageLoaderData
+  return toIssuerMaintenancePageLoaderData(result)
 })
 
 export function loadIssuerMaintenanceRouteData() {

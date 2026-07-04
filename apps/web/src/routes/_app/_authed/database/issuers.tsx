@@ -5,10 +5,12 @@ import {
 } from "@/features/database/issuer-maintenance"
 
 export const Route = createFileRoute("/_app/_authed/database/issuers")({
-  loader: () => loadIssuerMaintenanceRouteData(),
+  loader: loadIssuerMaintenanceRouteData,
   component: DatabaseIssuersRouteComponent,
 })
 
 function DatabaseIssuersRouteComponent() {
-  return <IssuerMaintenanceRouteComponent loaderData={Route.useLoaderData()} />
+  const loaderData = Route.useLoaderData()
+
+  return <IssuerMaintenanceRouteComponent loaderData={loaderData} />
 }

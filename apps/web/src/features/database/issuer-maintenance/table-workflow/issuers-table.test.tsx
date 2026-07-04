@@ -18,7 +18,7 @@ function createMockElement(tagName: string) {
   }
 }
 
-vi.mock("../sheet-workflow/issuer-maintenance-sheet", () => ({
+vi.mock("../sheet-workflow", () => ({
   IssuerMaintenanceSheet: () => null,
 }))
 

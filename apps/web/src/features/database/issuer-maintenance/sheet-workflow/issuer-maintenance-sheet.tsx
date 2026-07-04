@@ -33,8 +33,7 @@ import {
   submitDeleteIssuer,
 } from "@/lib/issuer-maintenance"
 
-import { IssuerCreateForm } from "../form-workflow/issuer-create-form"
-import { IssuerEditForm } from "../form-workflow/issuer-edit-form"
+import { IssuerCreateForm, IssuerEditForm } from "../form-workflow"
 
 type IssuerMaintenanceSheetProps = {
   issuer: IssuerMaintenanceRecord | null

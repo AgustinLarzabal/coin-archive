@@ -6,7 +6,7 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
-import { IssuersTable } from "./table-workflow/issuers-table"
+import { IssuersTable } from "./table-workflow"
 
 type LoadIssuerMaintenancePageDataResult =
   | {

@@ -30,6 +30,15 @@ export const EMPTY_ISSUER_DRAFT: IssuerDraft = {
 export const INVALID_PARENT_ISSUER_ERROR =
   "Select a Parent Issuer from the list."
 
+export const INVALID_PARENT_ISSUER_SELECTION = Symbol(
+  "INVALID_PARENT_ISSUER_SELECTION"
+)
+
+type ResolvedParentIssuerId =
+  | string
+  | null
+  | typeof INVALID_PARENT_ISSUER_SELECTION
+
 type ValidIssuerSubmission<TData> = {
   status: "valid"
   data: TData
@@ -105,7 +114,7 @@ export function getParentIssuerOptions(
 export function resolveParentIssuerId(
   parentIssuerLabel: string,
   options: ParentIssuerOption[]
-): string | null | typeof INVALID_PARENT_ISSUER_SELECTION {
+): ResolvedParentIssuerId {
   const normalizedLabel = parentIssuerLabel.trim()
 
   if (normalizedLabel === "") {
@@ -118,11 +127,6 @@ export function resolveParentIssuerId(
 
   return matchedOption?.id ?? INVALID_PARENT_ISSUER_SELECTION
 }
-
-export const INVALID_PARENT_ISSUER_SELECTION = Symbol(
-  "INVALID_PARENT_ISSUER_SELECTION"
-)
-
 export function getCreateIssuerSubmission(
   draft: IssuerDraft,
   issuers: IssuerMaintenanceRecord[]
@@ -280,13 +284,8 @@ function getDescendantIssuerIds(
 
   const queue = [...(parentToChildren.get(issuerId) ?? [])]
 
-  while (queue.length > 0) {
-    const childIssuerId = queue.shift()
-
-    if (!childIssuerId) {
-      continue
-    }
-
+  for (let index = 0; index < queue.length; index += 1) {
+    const childIssuerId = queue[index]
     descendantIssuerIds.push(childIssuerId)
     queue.push(...(parentToChildren.get(childIssuerId) ?? []))
   }

@@ -175,9 +175,8 @@ function resolveIssuerSubmission<TSchema extends z.ZodType>(
     return createInvalidParentIssuerSubmission()
   }
 
-  const parsedInput = schema.safeParse(
-    buildInput(normalizedDraft, parentIssuerId)
-  )
+  const submissionInput = buildInput(normalizedDraft, parentIssuerId)
+  const parsedInput = schema.safeParse(submissionInput)
 
   if (!parsedInput.success) {
     return createInvalidIssuerSubmission(parsedInput.error.issues)

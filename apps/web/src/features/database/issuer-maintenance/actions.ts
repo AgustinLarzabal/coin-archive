@@ -218,22 +218,27 @@ function getPostgresError(error: unknown): PostgresError | null {
 }
 
 function matchesPostgresConstraint(
-  error: unknown,
+  postgresError: PostgresError,
   code: string,
   constraintName: string
 ): boolean {
-  const postgresError = getPostgresError(error)
-
   return (
-    postgresError !== null &&
     postgresError.code === code &&
     postgresError.constraint_name === constraintName
   )
 }
 
 function createPersistenceError(error: unknown): IssuerMutationResult {
+  const postgresError = getPostgresError(error)
+
+  if (postgresError === null) {
+    return createFormErrorResult(ISSUER_GENERIC_SAVE_ERROR)
+  }
+
   for (const entry of POSTGRES_CONSTRAINT_RESULTS) {
-    if (matchesPostgresConstraint(error, entry.code, entry.constraintName)) {
+    if (
+      matchesPostgresConstraint(postgresError, entry.code, entry.constraintName)
+    ) {
       return entry.result
     }
   }

@@ -58,10 +58,15 @@ type IssuerFieldName = (typeof ISSUER_FIELD_NAMES)[number]
 export type IssuerFieldErrors = Partial<Record<IssuerFieldName, string>>
 
 function isIssuerFieldName(field: unknown): field is IssuerFieldName {
-  return (
-    typeof field === "string" &&
-    ISSUER_FIELD_NAMES.includes(field as IssuerFieldName)
-  )
+  switch (field) {
+    case "code":
+    case "isoCode":
+    case "name":
+    case "parentIssuerId":
+      return true
+    default:
+      return false
+  }
 }
 
 export function getIssuerFieldErrors(issues: z.ZodIssue[]): IssuerFieldErrors {

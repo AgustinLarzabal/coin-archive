@@ -17,13 +17,27 @@ type CoinMaintenanceSurfaceRow = {
   engraverId: string | null
 }
 
+const EMPTY_COIN_MAINTENANCE_SURFACE_SET: CoinMaintenanceSurfaceSet = {
+  obverse: null,
+  reverse: null,
+  edge: null,
+}
+
+function createCoinMaintenanceFaceSurface(row: CoinMaintenanceSurfaceRow) {
+  return {
+    description: row.description,
+    lettering: row.lettering,
+    thumbnailUrl: row.thumbnailUrl,
+    imageUrl: row.imageUrl,
+    engraverIds: [],
+  }
+}
+
 function mapCoinMaintenanceSurfaces(
   rows: CoinMaintenanceSurfaceRow[]
 ): CoinMaintenanceSurfaceSet {
   const surfaces: CoinMaintenanceSurfaceSet = {
-    obverse: null,
-    reverse: null,
-    edge: null,
+    ...EMPTY_COIN_MAINTENANCE_SURFACE_SET,
   }
 
   for (const row of rows) {
@@ -38,13 +52,8 @@ function mapCoinMaintenanceSurfaces(
     }
 
     const key = row.kind
-    const currentSurface = surfaces[key] ?? {
-      description: row.description,
-      lettering: row.lettering,
-      thumbnailUrl: row.thumbnailUrl,
-      imageUrl: row.imageUrl,
-      engraverIds: [],
-    }
+    const currentSurface =
+      surfaces[key] ?? createCoinMaintenanceFaceSurface(row)
 
     if (
       row.engraverId !== null &&
@@ -64,84 +73,81 @@ export async function getCoinMaintenanceRecord(
 ): Promise<CoinMaintenanceRecord | null> {
   const [coinRow, mintRows, rulerRows, themeRows, referenceRows, surfaceRows] =
     await Promise.all([
-    db.query.coin.findFirst({
-      columns: {
-        id: true,
-        title: true,
-        comments: true,
-        compositionId: true,
-        currencyId: true,
-        diameter: true,
-        distributionId: true,
-        edgeId: true,
-        faceValueNumericValue: true,
-        faceValueText: true,
-        isDemonetized: true,
-        issuerId: true,
-        maxYear: true,
-        minYear: true,
-        mintage: true,
-        orientationId: true,
-        rimId: true,
-        shapeId: true,
-        techniqueId: true,
-        thickness: true,
-        weight: true,
-      },
-      where: (record, { eq }) => eq(record.id, coinId),
-    }),
-    db.query.coinMint.findMany({
-      columns: {
-        mintId: true,
-      },
-      where: (record, { eq }) => eq(record.coinId, coinId),
-      orderBy: (record, { asc }) => asc(record.mintId),
-    }),
-    db.query.coinRuler.findMany({
-      columns: {
-        rulerId: true,
-      },
-      where: (record, { eq }) => eq(record.coinId, coinId),
-      orderBy: (record, { asc }) => asc(record.rulerOrder),
-    }),
-    db.query.coinTheme.findMany({
-      columns: {
-        themeId: true,
-      },
-      where: (record, { eq }) => eq(record.coinId, coinId),
-      orderBy: (record, { asc }) => asc(record.themeId),
-    }),
-    db.query.coinReference.findMany({
-      columns: {
-        catalogueId: true,
-        number: true,
-      },
-      where: (record, { eq }) => eq(record.coinId, coinId),
-      orderBy: (record, { asc }) => asc(record.catalogueId),
-    }),
-    db
-      .select({
-        kind: coinSurface.kind,
-        description: coinSurface.description,
-        lettering: coinSurface.lettering,
-        thumbnailUrl: coinSurface.thumbnailUrl,
-        imageUrl: coinSurface.imageUrl,
-        engraverId: coinSurfaceEngraver.engraverId,
-      })
-      .from(coinSurface)
-      .leftJoin(
-        coinSurfaceEngraver,
-        and(
-          eq(coinSurfaceEngraver.coinSurfaceId, coinSurface.id),
-          eq(coinSurfaceEngraver.coinSurfaceKind, coinSurface.kind)
+      db.query.coin.findFirst({
+        columns: {
+          id: true,
+          title: true,
+          comments: true,
+          compositionId: true,
+          currencyId: true,
+          diameter: true,
+          distributionId: true,
+          edgeId: true,
+          faceValueNumericValue: true,
+          faceValueText: true,
+          isDemonetized: true,
+          issuerId: true,
+          maxYear: true,
+          minYear: true,
+          mintage: true,
+          orientationId: true,
+          rimId: true,
+          shapeId: true,
+          techniqueId: true,
+          thickness: true,
+          weight: true,
+        },
+        where: (record, { eq }) => eq(record.id, coinId),
+      }),
+      db.query.coinMint.findMany({
+        columns: {
+          mintId: true,
+        },
+        where: (record, { eq }) => eq(record.coinId, coinId),
+        orderBy: (record, { asc }) => asc(record.mintId),
+      }),
+      db.query.coinRuler.findMany({
+        columns: {
+          rulerId: true,
+        },
+        where: (record, { eq }) => eq(record.coinId, coinId),
+        orderBy: (record, { asc }) => asc(record.rulerOrder),
+      }),
+      db.query.coinTheme.findMany({
+        columns: {
+          themeId: true,
+        },
+        where: (record, { eq }) => eq(record.coinId, coinId),
+        orderBy: (record, { asc }) => asc(record.themeId),
+      }),
+      db.query.coinReference.findMany({
+        columns: {
+          catalogueId: true,
+          number: true,
+        },
+        where: (record, { eq }) => eq(record.coinId, coinId),
+        orderBy: (record, { asc }) => asc(record.catalogueId),
+      }),
+      db
+        .select({
+          kind: coinSurface.kind,
+          description: coinSurface.description,
+          lettering: coinSurface.lettering,
+          thumbnailUrl: coinSurface.thumbnailUrl,
+          imageUrl: coinSurface.imageUrl,
+          engraverId: coinSurfaceEngraver.engraverId,
+        })
+        .from(coinSurface)
+        .leftJoin(
+          coinSurfaceEngraver,
+          and(
+            eq(coinSurfaceEngraver.coinSurfaceId, coinSurface.id),
+            eq(coinSurfaceEngraver.coinSurfaceKind, coinSurface.kind)
+          )
         )
-      )
-      .where(eq(coinSurface.coinId, coinId))
-      .orderBy(
-        asc(coinSurface.kind),
-        asc(coinSurfaceEngraver.engraverId)
-      ),
-  ])
+        .where(eq(coinSurface.coinId, coinId))
+        .orderBy(asc(coinSurface.kind), asc(coinSurfaceEngraver.engraverId)),
+    ])
 
   if (!coinRow) {
     return null

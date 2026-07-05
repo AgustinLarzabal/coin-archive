@@ -408,6 +408,8 @@ export type CoinReferenceDraft = z.input<typeof referenceSchema>
 export type CoinFaceSurfaceDraft = z.input<typeof faceSurfaceSchema>
 export type CoinEdgeSurfaceDraft = z.input<typeof edgeSurfaceSchema>
 type CoinDraftData = z.output<typeof coinDraftSchema>
+type CoinFaceSurfaceData = z.output<typeof faceSurfaceSchema>
+type CoinEdgeSurfaceData = z.output<typeof edgeSurfaceSchema>
 type UpdateCoinInput = z.input<typeof updateCoinInputSchema>
 type UpdateCoinData = z.output<typeof updateCoinInputSchema>
 type DeleteCoinInput = z.input<typeof deleteCoinInputSchema>
@@ -607,29 +609,37 @@ function mapDemonetizationStatus(
   return status === "demonetized"
 }
 
+function hasFaceSurfaceContent(surface: CoinFaceSurfaceData) {
+  return (
+    surface.description !== null ||
+    surface.lettering !== null ||
+    surface.thumbnailUrl !== null ||
+    surface.imageUrl !== null ||
+    surface.engraverIds.length > 0
+  )
+}
+
+function hasEdgeSurfaceContent(surface: CoinEdgeSurfaceData) {
+  return (
+    surface.description !== null ||
+    surface.lettering !== null ||
+    surface.thumbnailUrl !== null ||
+    surface.imageUrl !== null
+  )
+}
+
+function mapOptionalFaceSurface(surface: CoinFaceSurfaceData) {
+  return hasFaceSurfaceContent(surface) ? surface : null
+}
+
+function mapOptionalEdgeSurface(surface: CoinEdgeSurfaceData) {
+  return hasEdgeSurfaceContent(surface) ? surface : null
+}
+
 function mapDraftToPersistenceInput(
   input: CoinDraftData
 ): CoinPersistenceInput {
   const { demonetizationStatus, mints, rulers, themes, ...rest } = input
-
-  function mapFaceSurface(surface: z.output<typeof faceSurfaceSchema>) {
-    return surface.description !== null ||
-      surface.lettering !== null ||
-      surface.thumbnailUrl !== null ||
-      surface.imageUrl !== null ||
-      surface.engraverIds.length > 0
-      ? surface
-      : null
-  }
-
-  function mapEdgeSurface(surface: z.output<typeof edgeSurfaceSchema>) {
-    return surface.description !== null ||
-      surface.lettering !== null ||
-      surface.thumbnailUrl !== null ||
-      surface.imageUrl !== null
-      ? surface
-      : null
-  }
 
   return {
     ...rest,
@@ -638,9 +648,9 @@ function mapDraftToPersistenceInput(
     rulerIds: mapAttributionIds(rulers, "rulerId"),
     themeIds: mapAttributionIds(themes, "themeId"),
     surfaces: {
-      obverse: mapFaceSurface(rest.surfaces.obverse),
-      reverse: mapFaceSurface(rest.surfaces.reverse),
-      edge: mapEdgeSurface(rest.surfaces.edge),
+      obverse: mapOptionalFaceSurface(rest.surfaces.obverse),
+      reverse: mapOptionalFaceSurface(rest.surfaces.reverse),
+      edge: mapOptionalEdgeSurface(rest.surfaces.edge),
     },
   }
 }

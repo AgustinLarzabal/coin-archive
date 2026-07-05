@@ -86,39 +86,51 @@ function normalizeCoinFaceSurface(surface: CoinMaintenanceFaceSurface) {
   }
 }
 
-function isPersistedFaceSurface(
-  surface: CoinMaintenanceFaceSurface | null
-): surface is CoinMaintenanceFaceSurface {
+function hasPersistedFaceSurfaceContent(
+  surface: ReturnType<typeof normalizeCoinFaceSurface>
+) {
+  return (
+    surface.description !== null ||
+    surface.lettering !== null ||
+    surface.thumbnailUrl !== null ||
+    surface.imageUrl !== null ||
+    surface.engraverIds.length > 0
+  )
+}
+
+function getPersistedFaceSurface(surface: CoinMaintenanceFaceSurface | null) {
   if (surface === null) {
-    return false
+    return null
   }
 
   const normalizedSurface = normalizeCoinFaceSurface(surface)
 
+  return hasPersistedFaceSurfaceContent(normalizedSurface)
+    ? normalizedSurface
+    : null
+}
+
+function hasPersistedSurfaceContent(
+  surface: ReturnType<typeof normalizeCoinSurface>
+) {
   return (
-    normalizedSurface.description !== null ||
-    normalizedSurface.lettering !== null ||
-    normalizedSurface.thumbnailUrl !== null ||
-    normalizedSurface.imageUrl !== null ||
-    normalizedSurface.engraverIds.length > 0
+    surface.description !== null ||
+    surface.lettering !== null ||
+    surface.thumbnailUrl !== null ||
+    surface.imageUrl !== null
   )
 }
 
-function isPersistedSurface(
-  surface: CoinMaintenanceSurface | null
-): surface is CoinMaintenanceSurface {
+function getPersistedSurface(surface: CoinMaintenanceSurface | null) {
   if (surface === null) {
-    return false
+    return null
   }
 
   const normalizedSurface = normalizeCoinSurface(surface)
 
-  return (
-    normalizedSurface.description !== null ||
-    normalizedSurface.lettering !== null ||
-    normalizedSurface.thumbnailUrl !== null ||
-    normalizedSurface.imageUrl !== null
-  )
+  return hasPersistedSurfaceContent(normalizedSurface)
+    ? normalizedSurface
+    : null
 }
 
 function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
@@ -244,15 +256,9 @@ async function replaceCoinSurfaces(
 ) {
   await tx.delete(coinSurface).where(eq(coinSurface.coinId, coinId))
 
-  const persistedObverse = isPersistedFaceSurface(surfaces.obverse)
-    ? normalizeCoinFaceSurface(surfaces.obverse)
-    : null
-  const persistedReverse = isPersistedFaceSurface(surfaces.reverse)
-    ? normalizeCoinFaceSurface(surfaces.reverse)
-    : null
-  const persistedEdge = isPersistedSurface(surfaces.edge)
-    ? normalizeCoinSurface(surfaces.edge)
-    : null
+  const persistedObverse = getPersistedFaceSurface(surfaces.obverse)
+  const persistedReverse = getPersistedFaceSurface(surfaces.reverse)
+  const persistedEdge = getPersistedSurface(surfaces.edge)
 
   for (const [kind, surface] of [
     ["obverse", persistedObverse],

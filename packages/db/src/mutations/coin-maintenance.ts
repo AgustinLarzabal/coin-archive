@@ -335,3 +335,11 @@ export async function updateCoinMaintenance({
     return updatedCoin
   })
 }
+
+export async function deleteCoinMaintenance({ id }: { id: string }) {
+  return db.transaction(async (tx) => {
+    const [deletedCoin] = await tx.delete(coin).where(eq(coin.id, id)).returning()
+
+    return deletedCoin ?? null
+  })
+}

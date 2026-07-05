@@ -1,5 +1,8 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { CoinMaintenanceRecord } from "@workspace/db"
+import type {
+  CoinMaintenanceDeleteSummary,
+  CoinMaintenanceRecord,
+} from "@workspace/db"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -19,6 +22,7 @@ import {
 } from "../maintenance-page"
 import { hasCoinMaintenanceAccess } from "./actions"
 import { CoinForm } from "./coin-form"
+import { DeleteCoin } from "./delete-coin"
 
 const coinEditLoaderDepsSchema = z.object({
   coinId: z.uuid(),
@@ -26,6 +30,7 @@ const coinEditLoaderDepsSchema = z.object({
 
 type EditCoinPageData = {
   coin: CoinMaintenanceRecord | null
+  deleteSummary: CoinMaintenanceDeleteSummary | null
   options: CoinFormOptions
 }
 
@@ -34,19 +39,26 @@ type EditCoinLoaderData = MaintenancePageLoaderData<EditCoinPageData>
 type CoinEditLoaderDeps = z.infer<typeof coinEditLoaderDepsSchema>
 
 type EditCoinReadDependencies = CoinFormOptionsDependencies & {
+  getCoinMaintenanceDeleteSummary: (
+    coinId: string
+  ) => Promise<CoinMaintenanceDeleteSummary | null>
   getCoinMaintenanceRecord: (
     coinId: string
   ) => Promise<CoinMaintenanceRecord | null>
 }
 
 async function getDefaultDependencies(): Promise<EditCoinReadDependencies> {
-  const [{ getCoinMaintenanceRecord }, formOptionsDependencies] =
+  const [
+    { getCoinMaintenanceDeleteSummary, getCoinMaintenanceRecord },
+    formOptionsDependencies,
+  ] =
     await Promise.all([
       import("@workspace/db"),
       getCoinFormOptionsDependencies(),
     ])
 
   return {
+    getCoinMaintenanceDeleteSummary,
     getCoinMaintenanceRecord,
     ...formOptionsDependencies,
   }
@@ -65,14 +77,16 @@ export async function loadCoinEditPageData(
 
   const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
 
-  const [coin, options] = await Promise.all([
+  const [coin, deleteSummary, options] = await Promise.all([
     resolvedDependencies.getCoinMaintenanceRecord(loaderDeps.coinId),
+    resolvedDependencies.getCoinMaintenanceDeleteSummary(loaderDeps.coinId),
     loadCoinFormOptions(resolvedDependencies),
   ])
 
   return {
     status: "success",
     coin,
+    deleteSummary,
     options,
   }
 }
@@ -107,7 +121,7 @@ type CoinEditRouteComponentProps = {
 export function CoinEditRouteComponent({
   loaderData,
 }: CoinEditRouteComponentProps) {
-  return renderMaintenancePage(loaderData, ({ coin, options }) => (
+  return renderMaintenancePage(loaderData, ({ coin, deleteSummary, options }) => (
     <main className="mt-8 space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Edit Coin</h1>
@@ -122,7 +136,12 @@ export function CoinEditRouteComponent({
       </header>
 
       {coin ? (
-        <CoinForm mode="edit" coin={coin} options={options} />
+        <>
+          <CoinForm mode="edit" coin={coin} options={options} />
+          {deleteSummary ? (
+            <DeleteCoin coinId={coin.id} deleteSummary={deleteSummary} />
+          ) : null}
+        </>
       ) : (
         <p className="text-sm text-destructive">Coin no longer exists.</p>
       )}

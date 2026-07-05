@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   COIN_AUTHORIZATION_ERROR,
+  COIN_DELETE_CONFIRMATION_ERROR,
   COIN_MISSING_ERROR,
   hasCoinMaintenanceAccess,
   submitCreateCoin,
+  submitDeleteCoin,
   submitUpdateCoin,
 } from "./actions"
 import type { CoinDraft } from "./actions"
@@ -64,10 +66,14 @@ const VALID_COIN_DRAFT: CoinDraft = {
 
 function createDependencies(overrides?: {
   createCoinMaintenance?: ReturnType<typeof vi.fn>
+  deleteCoinMaintenance?: ReturnType<typeof vi.fn>
+  getCoinMaintenanceDeleteSummary?: ReturnType<typeof vi.fn>
   updateCoinMaintenance?: ReturnType<typeof vi.fn>
 }) {
   return {
     createCoinMaintenance: vi.fn(),
+    deleteCoinMaintenance: vi.fn(),
+    getCoinMaintenanceDeleteSummary: vi.fn(),
     updateCoinMaintenance: vi.fn(),
     ...overrides,
   }
@@ -429,6 +435,100 @@ describe("submitUpdateCoin", () => {
           imageUrl: "https://example.com/edge.jpg",
         },
       },
+    })
+  })
+})
+
+describe("submitDeleteCoin", () => {
+  const deleteInput = {
+    id: VALID_COIN_ID,
+    confirmationTitle: VALID_COIN_DRAFT.title,
+  }
+
+  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
+    await expect(submitDeleteCoin(null, deleteInput)).resolves.toStrictEqual(
+      authorizationErrorResult
+    )
+
+    await expect(
+      submitDeleteCoin({ role: "collector" }, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("maps the exact-title confirmation requirement into a field error", async () => {
+    const dependencies = createDependencies({
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue({
+        title: VALID_COIN_DRAFT.title,
+        rulerAttributions: 1,
+        mintAttributions: 0,
+        themeAttributions: 0,
+        catalogueReferences: 0,
+        coinSurfaces: 0,
+        engraverAttributions: 0,
+      }),
+    })
+
+    await expect(
+      submitDeleteCoin(
+        { role: "editor" },
+        {
+          ...deleteInput,
+          confirmationTitle: "Spanish test coin",
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {
+        confirmationTitle: COIN_DELETE_CONFIRMATION_ERROR,
+      },
+    })
+
+    expect(dependencies.deleteCoinMaintenance).not.toHaveBeenCalled()
+  })
+
+  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    await expect(
+      submitDeleteCoin(
+        { role: "editor" },
+        deleteInput,
+        createDependencies({
+          getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue(null),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: COIN_MISSING_ERROR,
+    })
+  })
+
+  it("returns success and the maintenance redirect when deleting a Coin", async () => {
+    const dependencies = createDependencies({
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue({
+        title: VALID_COIN_DRAFT.title,
+        rulerAttributions: 1,
+        mintAttributions: 0,
+        themeAttributions: 0,
+        catalogueReferences: 0,
+        coinSurfaces: 0,
+        engraverAttributions: 0,
+      }),
+      deleteCoinMaintenance: vi.fn().mockResolvedValue({
+        id: VALID_COIN_ID,
+      }),
+    })
+
+    await expect(
+      submitDeleteCoin({ role: "admin" }, deleteInput, dependencies)
+    ).resolves.toStrictEqual({
+      status: "success",
+      message: "Coin deleted.",
+      redirectTo: "/database/coins",
+    })
+
+    expect(dependencies.deleteCoinMaintenance).toHaveBeenCalledWith({
+      id: VALID_COIN_ID,
     })
   })
 })

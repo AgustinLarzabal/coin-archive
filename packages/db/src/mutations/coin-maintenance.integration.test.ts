@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { count, eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 
 import { db } from "../index"
@@ -24,7 +24,11 @@ import {
   createTheme,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createCoinMaintenance, updateCoinMaintenance } from "./coin-maintenance"
+import {
+  createCoinMaintenance,
+  deleteCoinMaintenance,
+  updateCoinMaintenance,
+} from "./coin-maintenance"
 import { getCoinMaintenanceRecord } from "../queries/get-coin-maintenance-record"
 
 describe("coin maintenance mutations integration", () => {
@@ -724,5 +728,123 @@ describe("coin maintenance mutations integration", () => {
     })
 
     expect(matchingCoin).toBeUndefined()
+  })
+
+  it("hard-deletes the Coin, removes owned child rows, and leaves lookup rows untouched", async () => {
+    const issuer = await createIssuer({
+      code: "coin-maintenance-delete-issuer",
+      name: "Coin Maintenance Delete Issuer",
+    })
+    const distribution = await createDistribution({
+      code: "coin-maintenance-delete-distribution",
+      name: "Coin Maintenance Delete Distribution",
+    })
+    const composition = await createComposition({
+      code: "coin-maintenance-delete-composition",
+      name: "Coin Maintenance Delete Composition",
+    })
+    const currency = await createCurrency({
+      code: "coin-maintenance-delete-currency",
+      name: "CMD",
+      fullName: "Coin Maintenance Delete Currency",
+    })
+    const ruler = await createRuler({
+      code: "coin-maintenance-delete-ruler",
+      name: "Coin Maintenance Delete Ruler",
+    })
+    const mint = await createMint({
+      code: "coin-maintenance-delete-mint",
+      name: "Coin Maintenance Delete Mint",
+    })
+    const theme = await createTheme({
+      code: "coin-maintenance-delete-theme",
+      name: "Coin Maintenance Delete Theme",
+    })
+    const catalogue = await createCatalogue({
+      code: "coin-maintenance-delete-catalogue",
+      title: "Coin Maintenance Delete Catalogue",
+    })
+    const engraver = await createEngraver({
+      code: "coin-maintenance-delete-engraver",
+      name: "Coin Maintenance Delete Engraver",
+    })
+
+    const createdCoin = await createCoinMaintenance({
+      comments: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      minYear: null,
+      mintIds: [mint.id],
+      mintage: null,
+      orientationId: null,
+      references: [
+        {
+          catalogueId: catalogue.id,
+          number: "KM 1",
+        },
+      ],
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      surfaces: {
+        obverse: {
+          description: "Obverse",
+          lettering: null,
+          thumbnailUrl: null,
+          imageUrl: null,
+          engraverIds: [engraver.id],
+        },
+        reverse: null,
+        edge: null,
+      },
+      techniqueId: null,
+      themeIds: [theme.id],
+      thickness: null,
+      title: "Coin Maintenance Delete Coin",
+      weight: null,
+    })
+
+    await expect(
+      deleteCoinMaintenance({ id: createdCoin.id })
+    ).resolves.toMatchObject({
+      id: createdCoin.id,
+      title: "Coin Maintenance Delete Coin",
+    })
+
+    await expect(
+      db.query.coin.findFirst({
+        where: (record, { eq }) => eq(record.id, createdCoin.id),
+      })
+    ).resolves.toBeUndefined()
+
+    await expect(
+      db.select({ count: count() }).from(coinRuler).where(eq(coinRuler.coinId, createdCoin.id))
+    ).resolves.toStrictEqual([{ count: 0 }])
+
+    await expect(
+      db.select({ count: count() }).from(coinReference).where(eq(coinReference.coinId, createdCoin.id))
+    ).resolves.toStrictEqual([{ count: 0 }])
+
+    await expect(
+      db.select({ count: count() }).from(coinSurface).where(eq(coinSurface.coinId, createdCoin.id))
+    ).resolves.toStrictEqual([{ count: 0 }])
+
+    await expect(
+      db.select({ count: count() }).from(coinSurfaceEngraver)
+    ).resolves.toStrictEqual([{ count: 0 }])
+
+    await expect(
+      db.query.catalogue.findFirst({
+        where: (record, { eq }) => eq(record.id, catalogue.id),
+      })
+    ).resolves.toBeDefined()
   })
 })

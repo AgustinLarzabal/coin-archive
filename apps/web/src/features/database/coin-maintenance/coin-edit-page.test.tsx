@@ -103,6 +103,16 @@ const options = {
   themes: [],
 }
 
+const deleteSummary = {
+  title: coin.title,
+  rulerAttributions: 1,
+  mintAttributions: 1,
+  themeAttributions: 1,
+  catalogueReferences: 0,
+  coinSurfaces: 0,
+  engraverAttributions: 0,
+}
+
 describe("loadCoinEditPageData", () => {
   it("rejects signed-in Collectors without editor access", async () => {
     await expect(
@@ -112,6 +122,7 @@ describe("loadCoinEditPageData", () => {
           coinId: coin.id,
         },
         {
+          getCoinMaintenanceDeleteSummary: vi.fn(),
           getCoinMaintenanceRecord: vi.fn(),
           getCatalogues: vi.fn(),
           getIssuers: vi.fn(),
@@ -136,6 +147,7 @@ describe("loadCoinEditPageData", () => {
 
   it("returns the current Coin and lookup options for Editors and Admins", async () => {
     const dependencies = {
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue(deleteSummary),
       getCoinMaintenanceRecord: vi.fn().mockResolvedValue(coin),
       getCatalogues: vi.fn().mockResolvedValue(options.catalogues),
       getIssuers: vi.fn().mockResolvedValue(options.issuers),
@@ -158,6 +170,7 @@ describe("loadCoinEditPageData", () => {
     ).resolves.toStrictEqual({
       status: "success",
       coin,
+      deleteSummary,
       options,
     })
   })
@@ -170,6 +183,7 @@ describe("CoinEditRouteComponent", () => {
         loaderData={{
           isAllowed: true,
           coin,
+          deleteSummary,
           options,
         }}
       />
@@ -178,6 +192,12 @@ describe("CoinEditRouteComponent", () => {
     expect(markup).toContain("Edit Coin")
     expect(markup).toContain("Coin form")
     expect(markup).toContain('href="/coins/coin-1"')
+    expect(markup).toContain("Delete Coin")
+    expect(markup).toContain("Ruler Attributions:")
+    expect(markup).toContain("Mint Attributions:")
+    expect(markup).toContain("Theme Attributions:")
+    expect(markup).toContain("Shared lookup records remain untouched.")
+    expect(markup).toContain("Spanish Test Coin")
   })
 
   it("renders a clear missing-Coin message when the edit loader cannot find the Coin", () => {
@@ -186,6 +206,7 @@ describe("CoinEditRouteComponent", () => {
         loaderData={{
           isAllowed: true,
           coin: null,
+          deleteSummary: null,
           options,
         }}
       />

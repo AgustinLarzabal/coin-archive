@@ -3,11 +3,14 @@ import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
+import type { CoinMaintenanceDeleteSummary } from "@workspace/db"
 
 export const COIN_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Coins."
 export const COIN_GENERIC_SAVE_ERROR = "Unable to save Coin right now."
 export const COIN_MISSING_ERROR = "Coin no longer exists."
+export const COIN_DELETE_CONFIRMATION_ERROR =
+  "Enter the current Coin Title exactly to confirm deletion."
 const DUPLICATE_REFERENCE_ERROR =
   "Duplicate Catalogue References are not allowed on the same Coin."
 const DUPLICATE_ENGRAVER_ERROR =
@@ -393,6 +396,10 @@ export const coinDraftSchema = z
 export const updateCoinInputSchema = coinDraftSchema.extend({
   id: z.uuid(),
 })
+export const deleteCoinInputSchema = z.object({
+  id: z.uuid(),
+  confirmationTitle: z.string(),
+})
 
 type CoinFieldName = (typeof COIN_FIELD_NAMES)[number]
 
@@ -403,6 +410,7 @@ export type CoinEdgeSurfaceDraft = z.input<typeof edgeSurfaceSchema>
 type CoinDraftData = z.output<typeof coinDraftSchema>
 type UpdateCoinInput = z.input<typeof updateCoinInputSchema>
 type UpdateCoinData = z.output<typeof updateCoinInputSchema>
+type DeleteCoinInput = z.input<typeof deleteCoinInputSchema>
 type CoinPersistenceInput = Omit<
   CoinDraftData,
   "demonetizationStatus" | "rulers" | "mints" | "themes" | "surfaces"
@@ -446,6 +454,18 @@ export type CoinMutationResult =
       message: string
     }
 
+export type CoinDeleteMutationResult =
+  | {
+      status: "error"
+      fieldErrors: CoinFieldErrors
+      formError?: string
+    }
+  | {
+      status: "success"
+      message: string
+      redirectTo: "/database/coins"
+    }
+
 type CoinMutationDependencies = {
   createCoinMaintenance: (
     input: CoinPersistenceInput
@@ -453,6 +473,13 @@ type CoinMutationDependencies = {
   updateCoinMaintenance: (
     input: UpdateCoinPersistenceInput
   ) => Promise<{ id: string } | null>
+}
+
+type CoinDeleteDependencies = {
+  deleteCoinMaintenance: (input: { id: string }) => Promise<{ id: string } | null>
+  getCoinMaintenanceDeleteSummary: (
+    coinId: string
+  ) => Promise<CoinMaintenanceDeleteSummary | null>
 }
 
 async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
@@ -465,7 +492,25 @@ async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
   }
 }
 
+async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
+  const { deleteCoinMaintenance, getCoinMaintenanceDeleteSummary } =
+    await import("@workspace/db")
+
+  return {
+    deleteCoinMaintenance,
+    getCoinMaintenanceDeleteSummary,
+  }
+}
+
 function createAuthorizationError(): CoinMutationResult {
+  return {
+    status: "error",
+    fieldErrors: {},
+    formError: COIN_AUTHORIZATION_ERROR,
+  }
+}
+
+function createDeleteAuthorizationError(): CoinDeleteMutationResult {
   return {
     status: "error",
     fieldErrors: {},
@@ -481,9 +526,28 @@ function createFormErrorResult(formError: string): CoinMutationResult {
   }
 }
 
+function createDeleteFormErrorResult(
+  formError: string
+): CoinDeleteMutationResult {
+  return {
+    status: "error",
+    fieldErrors: {},
+    formError,
+  }
+}
+
 function createFieldErrorResult(
   fieldErrors: CoinFieldErrors
 ): CoinMutationResult {
+  return {
+    status: "error",
+    fieldErrors,
+  }
+}
+
+function createDeleteFieldErrorResult(
+  fieldErrors: CoinFieldErrors
+): CoinDeleteMutationResult {
   return {
     status: "error",
     fieldErrors,
@@ -618,6 +682,10 @@ function createPersistenceError(): CoinMutationResult {
   return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
 }
 
+function createDeletePersistenceError(): CoinDeleteMutationResult {
+  return createDeleteFormErrorResult(COIN_GENERIC_SAVE_ERROR)
+}
+
 export async function submitCreateCoin(
   collector: CollectorWithRole | null,
   input: CoinDraft,
@@ -684,5 +752,59 @@ export async function submitUpdateCoin(
     }
   } catch {
     return createPersistenceError()
+  }
+}
+
+export async function submitDeleteCoin(
+  collector: CollectorWithRole | null,
+  input: DeleteCoinInput,
+  dependencies?: CoinDeleteDependencies
+): Promise<CoinDeleteMutationResult> {
+  if (!hasCoinMaintenanceAccess(collector)) {
+    return createDeleteAuthorizationError()
+  }
+
+  const parsedInput = deleteCoinInputSchema.safeParse(input)
+
+  if (!parsedInput.success) {
+    return createDeleteFieldErrorResult(
+      getCoinFieldErrors(parsedInput.error.issues)
+    )
+  }
+
+  const resolvedDependencies =
+    dependencies ?? (await getDefaultDeleteDependencies())
+
+  try {
+    const deleteSummary =
+      await resolvedDependencies.getCoinMaintenanceDeleteSummary(
+        parsedInput.data.id
+      )
+
+    if (deleteSummary === null) {
+      return createDeleteFormErrorResult(COIN_MISSING_ERROR)
+    }
+
+    if (parsedInput.data.confirmationTitle !== deleteSummary.title) {
+      return createDeleteFieldErrorResult({
+        confirmationTitle: COIN_DELETE_CONFIRMATION_ERROR,
+      })
+    }
+
+    const deletedCoin = await resolvedDependencies.deleteCoinMaintenance({
+      id: parsedInput.data.id,
+    })
+
+    if (deletedCoin === null) {
+      return createDeleteFormErrorResult(COIN_MISSING_ERROR)
+    }
+
+    return {
+      status: "success",
+      message: "Coin deleted.",
+      redirectTo: "/database/coins",
+    }
+  } catch {
+    return createDeletePersistenceError()
   }
 }

@@ -1,6 +1,7 @@
 export { db } from "./client"
 export {
   createCoinMaintenance,
+  deleteCoinMaintenance,
   updateCoinMaintenance,
 } from "./mutations/coin-maintenance"
 export {
@@ -52,6 +53,7 @@ export {
 export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
 export { getCoinMaintenanceList } from "./queries/get-coin-maintenance-list"
+export { getCoinMaintenanceDeleteSummary } from "./queries/get-coin-maintenance-delete-summary"
 export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
@@ -131,6 +133,9 @@ export type {
   CoinMaintenanceListRecord,
   CoinMaintenanceListResult,
 } from "./queries/get-coin-maintenance-list"
+export type {
+  CoinMaintenanceDeleteSummary,
+} from "./coin-maintenance-delete-summary"
 export type {
   CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,

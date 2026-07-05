@@ -1,0 +1,3 @@
+# Feature-Owned Web App Structure
+
+Coin Archive's web app will keep TanStack Router file routes in `apps/web/src/routes`, but route files should act as thin adapters around feature-owned behavior. User-facing product areas, starting with database maintenance, will live under `apps/web/src/features` with colocated page components, server functions, validation, UI, helpers, constants, and tests; shared app shell components and cross-feature infrastructure remain in `components` and `lib`. This was chosen over technical top-level folders or an all-at-once mass move because feature folders make related workflow changes easier to reason about while preserving routing conventions and allowing incremental migration, beginning with the Issuer maintenance slice.

@@ -9,6 +9,10 @@ import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinTheme } from "../schema/coin-theme"
 
+function getCount(result: Array<{ count: number }>) {
+  return result[0]?.count ?? 0
+}
+
 export async function getCoinMaintenanceDeleteSummary(
   coinId: string
 ): Promise<CoinMaintenanceDeleteSummary | null> {
@@ -52,11 +56,11 @@ export async function getCoinMaintenanceDeleteSummary(
 
   return {
     title: coinRow.title,
-    rulerAttributions: rulerResult.at(0)?.count ?? 0,
-    mintAttributions: mintResult.at(0)?.count ?? 0,
-    themeAttributions: themeResult.at(0)?.count ?? 0,
-    catalogueReferences: referenceResult.at(0)?.count ?? 0,
-    coinSurfaces: surfaceResult.at(0)?.count ?? 0,
-    engraverAttributions: engraverResult.at(0)?.count ?? 0,
+    rulerAttributions: getCount(rulerResult),
+    mintAttributions: getCount(mintResult),
+    themeAttributions: getCount(themeResult),
+    catalogueReferences: getCount(referenceResult),
+    coinSurfaces: getCount(surfaceResult),
+    engraverAttributions: getCount(engraverResult),
   }
 }

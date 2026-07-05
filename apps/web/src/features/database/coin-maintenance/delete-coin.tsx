@@ -64,6 +64,25 @@ function createDeleteRows(deleteSummary: CoinMaintenanceDeleteSummary) {
   ] as const
 }
 
+function DeleteSummaryRows({
+  deleteSummary,
+}: {
+  deleteSummary: CoinMaintenanceDeleteSummary
+}) {
+  const rows = createDeleteRows(deleteSummary)
+
+  return (
+    <dl className="grid gap-2 text-sm">
+      {rows.map(([label, count]) => (
+        <div key={label} className="flex items-center justify-between gap-4">
+          <dt>{label}:</dt>
+          <dd>{count}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 function applyDeleteResult(
   result: CoinDeleteMutationResult,
   setConfirmationError: (value: string | null) => void,
@@ -142,14 +161,7 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
           Type <span className="font-medium">{deleteSummary.title}</span> exactly in
           the confirmation dialog before deletion is enabled.
         </p>
-        <dl className="grid gap-2 text-sm">
-          {createDeleteRows(deleteSummary).map(([label, count]) => (
-            <div key={label} className="flex items-center justify-between gap-4">
-              <dt>{label}:</dt>
-              <dd>{count}</dd>
-            </div>
-          ))}
-        </dl>
+        <DeleteSummaryRows deleteSummary={deleteSummary} />
       </CardContent>
       <CardFooter className="flex justify-end">
         <AlertDialog
@@ -174,14 +186,7 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
             </AlertDialogHeader>
 
             <div className="space-y-4">
-              <dl className="grid gap-2 text-sm">
-                {createDeleteRows(deleteSummary).map(([label, count]) => (
-                  <div key={label} className="flex items-center justify-between gap-4">
-                    <dt>{label}:</dt>
-                    <dd>{count}</dd>
-                  </div>
-                ))}
-              </dl>
+              <DeleteSummaryRows deleteSummary={deleteSummary} />
 
               <div className="grid gap-2">
                 <Label htmlFor="confirm-coin-deletion">

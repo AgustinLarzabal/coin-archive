@@ -442,12 +442,14 @@ type UpdateCoinPersistenceInput = Omit<
 
 export type CoinFieldErrors = Partial<Record<string, string>>
 
+type CoinMutationErrorResult = {
+  status: "error"
+  fieldErrors: CoinFieldErrors
+  formError?: string
+}
+
 export type CoinMutationResult =
-  | {
-      status: "error"
-      fieldErrors: CoinFieldErrors
-      formError?: string
-    }
+  | CoinMutationErrorResult
   | {
       status: "success"
       coinId: string
@@ -455,11 +457,7 @@ export type CoinMutationResult =
     }
 
 export type CoinDeleteMutationResult =
-  | {
-      status: "error"
-      fieldErrors: CoinFieldErrors
-      formError?: string
-    }
+  | CoinMutationErrorResult
   | {
       status: "success"
       message: string
@@ -503,32 +501,10 @@ async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
 }
 
 function createAuthorizationError(): CoinMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError: COIN_AUTHORIZATION_ERROR,
-  }
+  return createFormErrorResult(COIN_AUTHORIZATION_ERROR)
 }
 
-function createDeleteAuthorizationError(): CoinDeleteMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError: COIN_AUTHORIZATION_ERROR,
-  }
-}
-
-function createFormErrorResult(formError: string): CoinMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError,
-  }
-}
-
-function createDeleteFormErrorResult(
-  formError: string
-): CoinDeleteMutationResult {
+function createFormErrorResult(formError: string): CoinMutationErrorResult {
   return {
     status: "error",
     fieldErrors: {},
@@ -538,16 +514,7 @@ function createDeleteFormErrorResult(
 
 function createFieldErrorResult(
   fieldErrors: CoinFieldErrors
-): CoinMutationResult {
-  return {
-    status: "error",
-    fieldErrors,
-  }
-}
-
-function createDeleteFieldErrorResult(
-  fieldErrors: CoinFieldErrors
-): CoinDeleteMutationResult {
+): CoinMutationErrorResult {
   return {
     status: "error",
     fieldErrors,
@@ -609,7 +576,7 @@ export function getCoinFieldErrors(issues: z.ZodIssue[]): CoinFieldErrors {
   return fieldErrors
 }
 
-function validateCoinInput<TSchema extends z.ZodType>(
+function validateInput<TSchema extends z.ZodType>(
   schema: TSchema,
   input: z.input<TSchema>
 ) {
@@ -683,7 +650,7 @@ function createPersistenceError(): CoinMutationResult {
 }
 
 function createDeletePersistenceError(): CoinDeleteMutationResult {
-  return createDeleteFormErrorResult(COIN_GENERIC_SAVE_ERROR)
+  return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
 }
 
 export async function submitCreateCoin(
@@ -695,7 +662,7 @@ export async function submitCreateCoin(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCoinInput(coinDraftSchema, input)
+  const validationResult = validateInput(coinDraftSchema, input)
 
   if (!validationResult.success) {
     return validationResult.result
@@ -725,7 +692,7 @@ export async function submitUpdateCoin(
     return createAuthorizationError()
   }
 
-  const validationResult = validateCoinInput(updateCoinInputSchema, input)
+  const validationResult = validateInput(updateCoinInputSchema, input)
 
   if (!validationResult.success) {
     return validationResult.result
@@ -761,15 +728,13 @@ export async function submitDeleteCoin(
   dependencies?: CoinDeleteDependencies
 ): Promise<CoinDeleteMutationResult> {
   if (!hasCoinMaintenanceAccess(collector)) {
-    return createDeleteAuthorizationError()
+    return createAuthorizationError()
   }
 
-  const parsedInput = deleteCoinInputSchema.safeParse(input)
+  const validationResult = validateInput(deleteCoinInputSchema, input)
 
-  if (!parsedInput.success) {
-    return createDeleteFieldErrorResult(
-      getCoinFieldErrors(parsedInput.error.issues)
-    )
+  if (!validationResult.success) {
+    return validationResult.result
   }
 
   const resolvedDependencies =
@@ -778,25 +743,25 @@ export async function submitDeleteCoin(
   try {
     const deleteSummary =
       await resolvedDependencies.getCoinMaintenanceDeleteSummary(
-        parsedInput.data.id
+        validationResult.data.id
       )
 
     if (deleteSummary === null) {
-      return createDeleteFormErrorResult(COIN_MISSING_ERROR)
+      return createFormErrorResult(COIN_MISSING_ERROR)
     }
 
-    if (parsedInput.data.confirmationTitle !== deleteSummary.title) {
-      return createDeleteFieldErrorResult({
+    if (validationResult.data.confirmationTitle !== deleteSummary.title) {
+      return createFieldErrorResult({
         confirmationTitle: COIN_DELETE_CONFIRMATION_ERROR,
       })
     }
 
     const deletedCoin = await resolvedDependencies.deleteCoinMaintenance({
-      id: parsedInput.data.id,
+      id: validationResult.data.id,
     })
 
     if (deletedCoin === null) {
-      return createDeleteFormErrorResult(COIN_MISSING_ERROR)
+      return createFormErrorResult(COIN_MISSING_ERROR)
     }
 
     return {

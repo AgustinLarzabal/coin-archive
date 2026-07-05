@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { databaseSecondaryMenuItems } from "./-navigation-items"
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 
 describe("databaseSecondaryMenuItems", () => {
   it("includes the Issuers maintenance entry after Themes", () => {

@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerGroupOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RULER_GROUP_AUTHORIZATION_ERROR } from "@/lib/ruler-group-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadRulerGroupMaintenanceRulerGroups,
   renderDatabaseRulerGroupsPage,

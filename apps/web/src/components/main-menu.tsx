@@ -4,7 +4,7 @@ import { Icons } from "./icons"
 import { cn } from "@workspace/ui/lib/utils"
 import { getCollectorRole } from "@/lib/collector-role"
 import { authClient, hasEditorAccess } from "@workspace/auth/client"
-import { databaseSecondaryMenuItems } from "@/routes/_app/_authed/database/-navigation-items"
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 
 const icons = {
   "/": () => <Icons.Overview size={20} />,

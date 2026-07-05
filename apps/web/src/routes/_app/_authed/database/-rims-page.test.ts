@@ -1,8 +1,8 @@
 import type { RimOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RIM_AUTHORIZATION_ERROR } from "@/lib/rim-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadRimMaintenanceRims } from "./rims"
 
 const rimTimestamps = {

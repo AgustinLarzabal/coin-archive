@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { CURRENCY_AUTHORIZATION_ERROR } from "@/lib/currency-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadCurrencyMaintenanceCurrencies } from "./currencies"
 

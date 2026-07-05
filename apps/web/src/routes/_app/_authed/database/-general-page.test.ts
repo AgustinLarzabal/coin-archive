@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   databaseMaintenanceSections,
   databaseSecondaryMenuItems,
-} from "./-navigation-items"
+} from "@/features/database/navigation"
 import { loadDatabaseGeneralSummaryCounts } from "./index"
 
 function pickNavigationIdentity({ to, label }: { to: string; label: string }) {

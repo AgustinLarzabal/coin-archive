@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { DISTRIBUTION_AUTHORIZATION_ERROR } from "@/lib/distribution-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadDistributionMaintenanceDistributions } from "./distributions"
 

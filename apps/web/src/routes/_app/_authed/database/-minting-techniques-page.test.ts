@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { TechniqueOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "@/lib/minting-technique-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadMintingTechniqueMaintenanceMintingTechniques,
   renderDatabaseMintingTechniquesPage,

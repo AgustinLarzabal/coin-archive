@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { EDGE_AUTHORIZATION_ERROR } from "@/lib/edge-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadEdgeMaintenanceEdges, renderDatabaseEdgesPage } from "./edges"
 

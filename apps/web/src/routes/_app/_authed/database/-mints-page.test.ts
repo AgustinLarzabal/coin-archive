@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { MintOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { MINT_AUTHORIZATION_ERROR } from "@/lib/mint-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadMintMaintenanceMints, renderDatabaseMintsPage } from "./mints"
 
 vi.mock("@/components/access-denied", () => ({

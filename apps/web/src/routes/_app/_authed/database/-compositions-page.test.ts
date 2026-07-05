@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { COMPOSITION_AUTHORIZATION_ERROR } from "@/lib/composition-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadCompositionMaintenanceCompositions } from "./compositions"
 

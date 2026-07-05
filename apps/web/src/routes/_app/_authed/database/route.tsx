@@ -1,8 +1,8 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { SecondaryMenu } from "@/components/secondary-menu"
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 import { AccessDenied } from "@/components/access-denied"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 export const Route = createFileRoute("/_app/_authed/database")({
   loader: async ({ context }) => {

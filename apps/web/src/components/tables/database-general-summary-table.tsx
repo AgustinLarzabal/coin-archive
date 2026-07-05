@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
-import { databaseMaintenanceSections } from "@/routes/_app/_authed/database/-navigation-items"
+import { databaseMaintenanceSections } from "@/features/database/navigation"
 
 export function DatabaseGeneralSummaryTable({
   counts,

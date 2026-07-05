@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { ThemeOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { THEME_AUTHORIZATION_ERROR } from "@/lib/theme-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadThemeMaintenanceThemes, renderDatabaseThemesPage } from "./themes"
 
 vi.mock("@/components/access-denied", () => ({

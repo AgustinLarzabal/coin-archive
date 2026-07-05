@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { ShapeOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { SHAPE_AUTHORIZATION_ERROR } from "@/lib/shape-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadShapeMaintenanceShapes, renderDatabaseShapesPage } from "./shapes"
 
 vi.mock("@/components/access-denied", () => ({

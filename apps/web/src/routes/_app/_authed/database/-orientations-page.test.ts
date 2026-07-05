@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { OrientationOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { ORIENTATION_AUTHORIZATION_ERROR } from "@/lib/orientation-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import {
   loadOrientationMaintenanceOrientations,
   renderDatabaseOrientationsPage,

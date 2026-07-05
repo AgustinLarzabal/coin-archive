@@ -2,8 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RULER_AUTHORIZATION_ERROR } from "@/lib/ruler-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 import { loadRulerMaintenanceData, renderDatabaseRulersPage } from "./rulers"
 
 vi.mock("@/components/access-denied", () => ({

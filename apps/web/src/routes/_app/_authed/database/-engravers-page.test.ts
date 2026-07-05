@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { ENGRAVER_AUTHORIZATION_ERROR } from "@/lib/engraver-maintenance"
-import { databaseSecondaryMenuItems } from "./-navigation-items"
 
 import { loadEngraverMaintenanceEngravers } from "./engravers"
 

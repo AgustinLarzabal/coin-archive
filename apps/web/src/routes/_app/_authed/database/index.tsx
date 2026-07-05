@@ -10,7 +10,5 @@ export const Route = createFileRoute("/_app/_authed/database/")({
 })
 
 function DatabaseIndexRouteComponent() {
-  const loaderData = Route.useLoaderData()
-
-  return <DatabaseOverviewRouteComponent loaderData={loaderData} />
+  return <DatabaseOverviewRouteComponent loaderData={Route.useLoaderData()} />
 }

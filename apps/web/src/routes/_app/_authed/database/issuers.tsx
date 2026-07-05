@@ -10,7 +10,5 @@ export const Route = createFileRoute("/_app/_authed/database/issuers")({
 })
 
 function DatabaseIssuersRouteComponent() {
-  const loaderData = Route.useLoaderData()
-
-  return <IssuerMaintenanceRouteComponent loaderData={loaderData} />
+  return <IssuerMaintenanceRouteComponent loaderData={Route.useLoaderData()} />
 }

@@ -1,41 +1,32 @@
-import { existsSync } from "node:fs"
-import { describe, expect, it } from "vitest"
+import { describe } from "vitest"
 
-import {
-  getFeatureSourceFiles,
-  readFeatureSource,
-} from "../public-api-test-helpers"
+import { assertFeaturePublicApi } from "../public-api-contract"
 import * as rulerGroupMaintenance from "./index"
 
 const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
 const FEATURE_ALIAS = "@/features/database/ruler-group-maintenance"
+const FEATURE_SOURCE_FILES = [
+  "actions.ts",
+  "columns.tsx",
+  "ruler-group-create-form.tsx",
+  "ruler-group-edit-form.tsx",
+  "ruler-group-form-fields.tsx",
+  "ruler-group-form.shared.ts",
+  "ruler-group-maintenance-page.tsx",
+  "ruler-group-maintenance-sheet.tsx",
+  "ruler-groups-table-toolbar.tsx",
+  "ruler-groups-table.tsx",
+]
 
 describe("ruler-group-maintenance public API", () => {
-  it("only exposes the route-facing feature entrypoint", () => {
-    expect(Object.keys(rulerGroupMaintenance).sort()).toStrictEqual([
+  assertFeaturePublicApi({
+    exportedNames: [
       "RulerGroupMaintenanceRouteComponent",
       "loadRulerGroupMaintenanceRouteData",
-    ])
-  })
-
-  it("avoids internal self-imports through the feature alias", () => {
-    for (const filePath of getFeatureSourceFiles(FEATURE_DIRECTORY_URL)) {
-      if (filePath === "index.test.ts" || filePath.endsWith(".test.tsx")) {
-        continue
-      }
-
-      expect(readFeatureSource(FEATURE_DIRECTORY_URL, filePath)).not.toMatch(
-        FEATURE_ALIAS
-      )
-    }
-  })
-
-  it("keeps the feature entrypoint at the root only", () => {
-    expect(
-      getFeatureSourceFiles(FEATURE_DIRECTORY_URL, true).filter(
-        (filePath) => filePath !== "index.ts" && filePath.endsWith("/index.ts")
-      )
-    ).toStrictEqual([])
-    expect(existsSync(new URL("index.ts", FEATURE_DIRECTORY_URL))).toBe(true)
+    ],
+    feature: rulerGroupMaintenance,
+    featureAlias: FEATURE_ALIAS,
+    featureDirectoryUrl: FEATURE_DIRECTORY_URL,
+    featureSourceFiles: FEATURE_SOURCE_FILES,
   })
 })

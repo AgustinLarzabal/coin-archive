@@ -5,10 +5,7 @@ import * as databaseOverview from "./index"
 
 const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
 const FEATURE_ALIAS = "@/features/database/database-overview"
-const DELETED_NESTED_ENTRYPOINTS = [
-  "page/index.ts",
-  "table/index.ts",
-] as const
+const DELETED_NESTED_ENTRYPOINTS = ["page/index.ts", "table/index.ts"] as const
 const FEATURE_SOURCE_FILES = [
   "database-overview-page.tsx",
   "database-overview-table.tsx",

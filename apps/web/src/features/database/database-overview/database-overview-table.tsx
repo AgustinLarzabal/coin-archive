@@ -7,9 +7,7 @@ type DatabaseOverviewTableProps = {
   counts: DatabaseGeneralSummaryCounts
 }
 
-export function DatabaseOverviewTable({
-  counts,
-}: DatabaseOverviewTableProps) {
+export function DatabaseOverviewTable({ counts }: DatabaseOverviewTableProps) {
   return (
     <table className="w-full border-collapse text-left">
       <thead>

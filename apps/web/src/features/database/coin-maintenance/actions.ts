@@ -500,7 +500,7 @@ async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
   }
 }
 
-function createAuthorizationError(): CoinMutationResult {
+function createAuthorizationError(): CoinMutationErrorResult {
   return createFormErrorResult(COIN_AUTHORIZATION_ERROR)
 }
 

@@ -81,16 +81,14 @@ export function getNextEditSuccessMessage({
   currentSuccessMessage,
   nextCoinId,
   previousCoinId,
-}: {
+}: NextEditSuccessMessageInput): string | null {
+  return previousCoinId === nextCoinId ? currentSuccessMessage : null
+}
+
+type NextEditSuccessMessageInput = {
   currentSuccessMessage: string | null
   nextCoinId: string
   previousCoinId: string | null
-}) {
-  if (previousCoinId === nextCoinId) {
-    return currentSuccessMessage
-  }
-
-  return null
 }
 
 export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {

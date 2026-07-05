@@ -113,17 +113,20 @@ export function CoinForm(props: CoinFormProps) {
 
   useEffect(() => {
     if (props.mode === "edit") {
+      const nextCoinId = props.coin.id
+      const previousCoinId = previousEditCoinIdRef.current
+
       setDraft(createCoinDraft(props.coin))
       setFieldErrors({})
       setFormError(null)
       setSuccessMessage((currentSuccessMessage) =>
         getNextEditSuccessMessage({
           currentSuccessMessage,
-          nextCoinId: props.coin.id,
-          previousCoinId: previousEditCoinIdRef.current,
+          nextCoinId,
+          previousCoinId,
         })
       )
-      previousEditCoinIdRef.current = props.coin.id
+      previousEditCoinIdRef.current = nextCoinId
     }
   }, [props])
 

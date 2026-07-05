@@ -73,6 +73,24 @@ type NormalizedCoinMaintenanceListOptions = {
   titleQuery?: string
 }
 
+type CoinMaintenanceQueryRow = {
+  id: string
+  title: string
+  issuerCode: string
+  issuerName: string
+  minYear: number | null
+  maxYear: number | null
+  faceValueText: string
+  currencyCode: string
+  currencyName: string
+  distributionCode: string
+  distributionName: string
+  compositionCode: string
+  compositionName: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 function normalizePage(page: number | undefined): number {
   if (typeof page !== "number" || !Number.isFinite(page)) {
     return DEFAULT_PAGE
@@ -95,26 +113,16 @@ function normalizeCodeFilter(value: string | undefined): string | undefined {
   return normalized ? normalized : undefined
 }
 
-function normalizeTitleQuery(titleQuery: string | undefined): string | undefined {
-  const normalized = titleQuery?.trim().toLowerCase()
-
-  return normalized ? normalized : undefined
-}
-
 function buildTitleFilter(titleQuery: string | undefined): SQL | undefined {
-  const normalizedTitleQuery = normalizeTitleQuery(titleQuery)
-
-  if (!normalizedTitleQuery) {
+  if (!titleQuery) {
     return undefined
   }
 
-  return sql`lower(${coin.title}) like ${`%${normalizedTitleQuery}%`}`
+  return sql`lower(${coin.title}) like ${`%${titleQuery}%`}`
 }
 
 function buildRulerFilter(rulerCode: string | undefined): SQL | undefined {
-  const normalizedRulerCode = normalizeCodeFilter(rulerCode)
-
-  if (!normalizedRulerCode) {
+  if (!rulerCode) {
     return undefined
   }
 
@@ -125,12 +133,74 @@ function buildRulerFilter(rulerCode: string | undefined): SQL | undefined {
       inner join ${ruler}
         on ${ruler.id} = ${coinRuler.rulerId}
       where ${coinRuler.coinId} = ${coin.id}
-        and lower(${ruler.code}) = ${normalizedRulerCode}
+        and lower(${ruler.code}) = ${rulerCode}
     )
   `
 }
 
-function buildCoinMaintenanceFilters(options: CoinMaintenanceListOptions): SQL[] {
+function buildIssuerFilter(issuerCode: string | undefined): SQL | undefined {
+  if (!issuerCode) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.issuerId} in (
+      select ${issuer.id}
+      from ${issuer}
+      where lower(${issuer.code}) = ${issuerCode}
+    )
+  `
+}
+
+function buildDistributionFilter(
+  distributionCode: string | undefined
+): SQL | undefined {
+  if (!distributionCode) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.distributionId} in (
+      select ${distribution.id}
+      from ${distribution}
+      where lower(${distribution.code}) = ${distributionCode}
+    )
+  `
+}
+
+function buildCurrencyFilter(currencyCode: string | undefined): SQL | undefined {
+  if (!currencyCode) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.currencyId} in (
+      select ${currency.id}
+      from ${currency}
+      where lower(${currency.code}) = ${currencyCode}
+    )
+  `
+}
+
+function buildCompositionFilter(
+  compositionCode: string | undefined
+): SQL | undefined {
+  if (!compositionCode) {
+    return undefined
+  }
+
+  return sql`
+    ${coin.compositionId} in (
+      select ${composition.id}
+      from ${composition}
+      where lower(${composition.code}) = ${compositionCode}
+    )
+  `
+}
+
+function buildCoinMaintenanceFilters(
+  options: NormalizedCoinMaintenanceListOptions
+): SQL[] {
   return [
     buildTitleFilter(options.titleQuery),
     buildIssuerFilter(options.issuerCode),
@@ -141,86 +211,56 @@ function buildCoinMaintenanceFilters(options: CoinMaintenanceListOptions): SQL[]
   ].filter((filter): filter is SQL => filter !== undefined)
 }
 
-function buildIssuerFilter(issuerCode: string | undefined): SQL | undefined {
-  const normalizedIssuerCode = normalizeCodeFilter(issuerCode)
-
-  if (!normalizedIssuerCode) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.issuerId} in (
-      select ${issuer.id}
-      from ${issuer}
-      where lower(${issuer.code}) = ${normalizedIssuerCode}
-    )
-  `
-}
-
-function buildDistributionFilter(
-  distributionCode: string | undefined
-): SQL | undefined {
-  const normalizedDistributionCode = normalizeCodeFilter(distributionCode)
-
-  if (!normalizedDistributionCode) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.distributionId} in (
-      select ${distribution.id}
-      from ${distribution}
-      where lower(${distribution.code}) = ${normalizedDistributionCode}
-    )
-  `
-}
-
-function buildCurrencyFilter(currencyCode: string | undefined): SQL | undefined {
-  const normalizedCurrencyCode = normalizeCodeFilter(currencyCode)
-
-  if (!normalizedCurrencyCode) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.currencyId} in (
-      select ${currency.id}
-      from ${currency}
-      where lower(${currency.code}) = ${normalizedCurrencyCode}
-    )
-  `
-}
-
-function buildCompositionFilter(
-  compositionCode: string | undefined
-): SQL | undefined {
-  const normalizedCompositionCode = normalizeCodeFilter(compositionCode)
-
-  if (!normalizedCompositionCode) {
-    return undefined
-  }
-
-  return sql`
-    ${coin.compositionId} in (
-      select ${composition.id}
-      from ${composition}
-      where lower(${composition.code}) = ${normalizedCompositionCode}
-    )
-  `
-}
-
 function normalizeOptions(
   options: CoinMaintenanceListOptions
 ): NormalizedCoinMaintenanceListOptions {
   return {
-    compositionCode: options.compositionCode,
-    currencyCode: options.currencyCode,
-    distributionCode: options.distributionCode,
-    issuerCode: options.issuerCode,
+    compositionCode: normalizeCodeFilter(options.compositionCode),
+    currencyCode: normalizeCodeFilter(options.currencyCode),
+    distributionCode: normalizeCodeFilter(options.distributionCode),
+    issuerCode: normalizeCodeFilter(options.issuerCode),
     page: normalizePage(options.page),
     pageSize: normalizePageSize(options.pageSize),
-    rulerCode: options.rulerCode,
-    titleQuery: options.titleQuery,
+    rulerCode: normalizeCodeFilter(options.rulerCode),
+    titleQuery: normalizeCodeFilter(options.titleQuery),
+  }
+}
+
+function buildWhereClause(options: NormalizedCoinMaintenanceListOptions) {
+  const filters = buildCoinMaintenanceFilters(options)
+
+  return filters.length > 0 ? and(...filters) : undefined
+}
+
+function mapCoinMaintenanceQueryRow(
+  item: CoinMaintenanceQueryRow
+): CoinMaintenanceListRecord {
+  return {
+    id: item.id,
+    title: item.title,
+    issuer: {
+      code: item.issuerCode,
+      name: item.issuerName,
+    },
+    minYear: item.minYear,
+    maxYear: item.maxYear,
+    faceValue: {
+      text: item.faceValueText,
+      currency: {
+        code: item.currencyCode,
+        name: item.currencyName,
+      },
+    },
+    distribution: {
+      code: item.distributionCode,
+      name: item.distributionName,
+    },
+    composition: {
+      code: item.compositionCode,
+      name: item.compositionName,
+    },
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
   }
 }
 
@@ -230,8 +270,7 @@ export function buildGetCoinMaintenanceListItemsQuery(
 ) {
   const normalizedOptions = normalizeOptions(options)
   const offset = (normalizedOptions.page - 1) * normalizedOptions.pageSize
-  const filters = buildCoinMaintenanceFilters(normalizedOptions)
-  const whereClause = filters.length > 0 ? and(...filters) : undefined
+  const whereClause = buildWhereClause(normalizedOptions)
 
   return database
     .select({
@@ -266,8 +305,7 @@ export async function getCoinMaintenanceList(
   options: CoinMaintenanceListOptions = {}
 ): Promise<CoinMaintenanceListResult> {
   const normalizedOptions = normalizeOptions(options)
-  const filters = buildCoinMaintenanceFilters(normalizedOptions)
-  const whereClause = filters.length > 0 ? and(...filters) : undefined
+  const whereClause = buildWhereClause(normalizedOptions)
 
   const [countRow] = await db
     .select({ count: count() })
@@ -281,33 +319,7 @@ export async function getCoinMaintenanceList(
   const items = await buildGetCoinMaintenanceListItemsQuery(db, normalizedOptions)
 
   return {
-    items: items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      issuer: {
-        code: item.issuerCode,
-        name: item.issuerName,
-      },
-      minYear: item.minYear,
-      maxYear: item.maxYear,
-      faceValue: {
-        text: item.faceValueText,
-        currency: {
-          code: item.currencyCode,
-          name: item.currencyName,
-        },
-      },
-      distribution: {
-        code: item.distributionCode,
-        name: item.distributionName,
-      },
-      composition: {
-        code: item.compositionCode,
-        name: item.compositionName,
-      },
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-    })),
+    items: items.map(mapCoinMaintenanceQueryRow),
     page: normalizedOptions.page,
     pageSize: normalizedOptions.pageSize,
     totalItems,

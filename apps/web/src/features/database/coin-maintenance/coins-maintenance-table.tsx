@@ -9,16 +9,18 @@ import type {
 
 import type { CoinMaintenanceSearch } from "./coin-maintenance-page"
 
+type CoinMaintenanceFilterOptions = {
+  issuers: IssuerOption[]
+  rulers: RulerOption[]
+  distributions: DistributionOption[]
+  currencies: CurrencyOption[]
+  compositions: CompositionOption[]
+}
+
 type CoinsMaintenanceTableProps = {
   search: CoinMaintenanceSearch
   list: CoinMaintenanceListResult
-  filterOptions: {
-    issuers: IssuerOption[]
-    rulers: RulerOption[]
-    distributions: DistributionOption[]
-    currencies: CurrencyOption[]
-    compositions: CompositionOption[]
-  }
+  filterOptions: CoinMaintenanceFilterOptions
 }
 
 type SearchParamValue = string | number | undefined
@@ -70,6 +72,7 @@ function formatDate(value: Date) {
 
 function renderFilterOptions(
   options: Array<{ code: string; name: string }>,
+  name: string,
   selectedCode: string | undefined,
   label: string
 ) {
@@ -77,7 +80,7 @@ function renderFilterOptions(
     <label className="grid gap-1 text-sm">
       <span>{label}</span>
       <select
-        name={label.toLowerCase()}
+        name={name}
         defaultValue={selectedCode ?? ""}
         className="rounded border px-3 py-2"
       >
@@ -128,20 +131,28 @@ export function CoinsMaintenanceTable({
             className="rounded border px-3 py-2"
           />
         </label>
-        {renderFilterOptions(filterOptions.issuers, search.issuer, "Issuer")}
-        {renderFilterOptions(filterOptions.rulers, search.ruler, "Ruler")}
+        {renderFilterOptions(
+          filterOptions.issuers,
+          "issuer",
+          search.issuer,
+          "Issuer"
+        )}
+        {renderFilterOptions(filterOptions.rulers, "ruler", search.ruler, "Ruler")}
         {renderFilterOptions(
           filterOptions.distributions,
+          "distribution",
           search.distribution,
           "Distribution"
         )}
         {renderFilterOptions(
           filterOptions.currencies,
+          "currency",
           search.currency,
           "Currency"
         )}
         {renderFilterOptions(
           filterOptions.compositions,
+          "composition",
           search.composition,
           "Composition"
         )}

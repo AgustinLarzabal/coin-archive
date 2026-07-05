@@ -17,6 +17,7 @@ import {
   type MaintenancePageLoadResult,
   type MaintenancePageLoaderData,
   renderMaintenancePage,
+  toMaintenancePageLoaderData,
 } from "../maintenance-page"
 import { CoinsMaintenanceTable } from "./coins-maintenance-table"
 
@@ -105,6 +106,15 @@ type LoadCoinMaintenancePageDataResult = MaintenancePageLoadResult<CoinMaintenan
 type CoinMaintenancePageLoaderData =
   MaintenancePageLoaderData<CoinMaintenancePageData>
 
+const COIN_MAINTENANCE_FILTER_KEYS = [
+  ["title", "titleQuery"],
+  ["issuer", "issuerCode"],
+  ["ruler", "rulerCode"],
+  ["distribution", "distributionCode"],
+  ["currency", "currencyCode"],
+  ["composition", "compositionCode"],
+] as const
+
 async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintenanceReadDependencies> {
   const {
     getCoinMaintenanceList,
@@ -134,41 +144,33 @@ function hasCoinMaintenanceAccess(
 export function getCoinMaintenanceLoaderDeps(
   search: CoinMaintenanceSearch
 ): CoinMaintenanceLoaderDeps {
-  return {
-    titleQuery: search.title,
-    issuerCode: search.issuer,
-    rulerCode: search.ruler,
-    distributionCode: search.distribution,
-    currencyCode: search.currency,
-    compositionCode: search.composition,
+  const loaderDeps = {
     page: search.page ?? 1,
+  } as CoinMaintenanceLoaderDeps
+
+  for (const [searchKey, loaderKey] of COIN_MAINTENANCE_FILTER_KEYS) {
+    loaderDeps[loaderKey] = search[searchKey]
   }
+
+  return loaderDeps
 }
 
 function mapLoaderDepsToSearch(
   loaderDeps: CoinMaintenanceLoaderDeps
 ): CoinMaintenanceSearch {
-  return {
-    ...(loaderDeps.titleQuery === undefined
-      ? {}
-      : { title: loaderDeps.titleQuery }),
-    ...(loaderDeps.issuerCode === undefined
-      ? {}
-      : { issuer: loaderDeps.issuerCode }),
-    ...(loaderDeps.rulerCode === undefined
-      ? {}
-      : { ruler: loaderDeps.rulerCode }),
-    ...(loaderDeps.distributionCode === undefined
-      ? {}
-      : { distribution: loaderDeps.distributionCode }),
-    ...(loaderDeps.currencyCode === undefined
-      ? {}
-      : { currency: loaderDeps.currencyCode }),
-    ...(loaderDeps.compositionCode === undefined
-      ? {}
-      : { composition: loaderDeps.compositionCode }),
+  const search = {
     page: loaderDeps.page ?? 1,
+  } as CoinMaintenanceSearch
+
+  for (const [searchKey, loaderKey] of COIN_MAINTENANCE_FILTER_KEYS) {
+    const value = loaderDeps[loaderKey]
+
+    if (value !== undefined) {
+      search[searchKey] = value
+    }
   }
+
+  return search
 }
 
 export async function loadCoinMaintenancePageData(
@@ -221,18 +223,7 @@ const getCoinMaintenanceLoaderData = createServerFn({
     const session = await getAuthSession()
     const result = await loadCoinMaintenancePageData(session?.user ?? null, data)
 
-    if (result.status === "error") {
-      return {
-        isAllowed: false,
-      } satisfies CoinMaintenancePageLoaderData
-    }
-
-    const { status: _status, ...pageData } = result
-
-    return {
-      isAllowed: true,
-      ...pageData,
-    } satisfies CoinMaintenancePageLoaderData
+    return toMaintenancePageLoaderData(result)
   })
 
 export function loadCoinMaintenanceRouteData({

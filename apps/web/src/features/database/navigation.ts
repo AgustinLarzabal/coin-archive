@@ -11,18 +11,6 @@ type DatabaseSecondaryMenuItem = Pick<
   "to" | "label"
 >
 
-const databaseGeneralMenuItem: DatabaseSecondaryMenuItem = {
-  to: "/database",
-  label: "General",
-}
-
-function toDatabaseSecondaryMenuItem({
-  to,
-  label,
-}: DatabaseMaintenanceSection): DatabaseSecondaryMenuItem {
-  return { to, label }
-}
-
 export const databaseMaintenanceSections = [
   {
     to: "/database/catalogues",
@@ -102,6 +90,9 @@ export const databaseMaintenanceSections = [
 ] as const satisfies readonly DatabaseMaintenanceSection[]
 
 export const databaseSecondaryMenuItems = [
-  databaseGeneralMenuItem,
-  ...databaseMaintenanceSections.map(toDatabaseSecondaryMenuItem),
+  {
+    to: "/database",
+    label: "General",
+  },
+  ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
 ] as const satisfies readonly DatabaseSecondaryMenuItem[]

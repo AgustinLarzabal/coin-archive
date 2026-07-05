@@ -8,7 +8,7 @@ import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 import { DatabaseOverviewTable } from "./database-overview-table"
 
-type DatabaseOverviewPageData =
+type DatabaseOverviewPageLoaderData =
   | {
       isAllowed: false
     }
@@ -17,11 +17,11 @@ type DatabaseOverviewPageData =
       counts: DatabaseGeneralSummaryCounts
     }
 
-type DatabaseOverviewReadDependencies = {
+type DatabaseOverviewDependencies = {
   getDatabaseGeneralSummaryCounts: () => Promise<DatabaseGeneralSummaryCounts>
 }
 
-async function getDefaultDatabaseOverviewReadDependencies(): Promise<DatabaseOverviewReadDependencies> {
+async function getDefaultDatabaseOverviewDependencies(): Promise<DatabaseOverviewDependencies> {
   const { getDatabaseGeneralSummaryCounts } = await import("@workspace/db")
 
   return {
@@ -31,8 +31,8 @@ async function getDefaultDatabaseOverviewReadDependencies(): Promise<DatabaseOve
 
 export async function loadDatabaseOverviewPageData(
   collector: CollectorWithRole | null,
-  dependencies?: DatabaseOverviewReadDependencies
-): Promise<DatabaseOverviewPageData> {
+  dependencies?: DatabaseOverviewDependencies
+): Promise<DatabaseOverviewPageLoaderData> {
   if (!getEditorRouteAuthorization(collector).isAllowed) {
     return {
       isAllowed: false,
@@ -40,7 +40,7 @@ export async function loadDatabaseOverviewPageData(
   }
 
   const { getDatabaseGeneralSummaryCounts } =
-    dependencies ?? (await getDefaultDatabaseOverviewReadDependencies())
+    dependencies ?? (await getDefaultDatabaseOverviewDependencies())
 
   return {
     isAllowed: true,
@@ -60,7 +60,7 @@ export function loadDatabaseOverviewRouteData() {
 }
 
 type DatabaseOverviewRouteComponentProps = {
-  loaderData: DatabaseOverviewPageData
+  loaderData: DatabaseOverviewPageLoaderData
 }
 
 export function DatabaseOverviewRouteComponent({
@@ -70,9 +70,9 @@ export function DatabaseOverviewRouteComponent({
 }
 
 export function renderDatabaseOverviewPage(
-  loaderData: DatabaseOverviewPageData
+  pageData: DatabaseOverviewPageLoaderData
 ) {
-  if (!loaderData.isAllowed) {
+  if (!pageData.isAllowed) {
     return (
       <div className="grid items-center">
         <AccessDenied />
@@ -82,7 +82,7 @@ export function renderDatabaseOverviewPage(
 
   return (
     <main className="mt-8">
-      <DatabaseOverviewTable counts={loaderData.counts} />
+      <DatabaseOverviewTable counts={pageData.counts} />
     </main>
   )
 }

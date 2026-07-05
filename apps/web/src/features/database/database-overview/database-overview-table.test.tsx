@@ -3,7 +3,7 @@ import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { DatabaseGeneralSummaryTable } from "./database-general-summary-table"
+import { DatabaseOverviewTable } from "./database-overview-table"
 
 type SummaryRow = {
   href: string
@@ -44,7 +44,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-describe("DatabaseGeneralSummaryTable", () => {
+describe("DatabaseOverviewTable", () => {
   it("renders a plain summary table with stable linked rows and zero counts", () => {
     const expectedRows = [
       { href: "/database/catalogues", label: "Catalogues", count: 0 },
@@ -69,7 +69,7 @@ describe("DatabaseGeneralSummaryTable", () => {
     ] as const
 
     const markup = renderToStaticMarkup(
-      <DatabaseGeneralSummaryTable
+      <DatabaseOverviewTable
         counts={{
           catalogues: 0,
           compositions: 12,

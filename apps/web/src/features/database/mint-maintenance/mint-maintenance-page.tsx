@@ -5,17 +5,21 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import { createMintAuthorizationError, hasMintMaintenanceAccess } from "./actions"
+import {
+  createMintAuthorizationError,
+  hasMintMaintenanceAccess,
+  type MintAuthorizationErrorResult,
+} from "./actions"
 import { MintsTable } from "./mints-table"
 
 type LoadMintMaintenancePageDataResult =
-  | ReturnType<typeof createMintAuthorizationError>
+  | MintAuthorizationErrorResult
   | {
       status: "success"
       mints: MintOption[]
     }
 
-type MintMaintenanceLoaderData =
+type MintMaintenancePageLoaderData =
   | {
       isAllowed: false
     }
@@ -38,7 +42,7 @@ async function getDefaultMintReadDependencies(): Promise<MintReadDependencies> {
 
 function toMintMaintenanceLoaderData(
   result: LoadMintMaintenancePageDataResult
-): MintMaintenanceLoaderData {
+): MintMaintenancePageLoaderData {
   if (result.status === "error") {
     return { isAllowed: false }
   }
@@ -79,7 +83,7 @@ export function loadMintMaintenanceRouteData() {
 }
 
 type MintMaintenanceRouteComponentProps = {
-  loaderData: MintMaintenanceLoaderData
+  loaderData: MintMaintenancePageLoaderData
 }
 
 export function MintMaintenanceRouteComponent({
@@ -89,7 +93,7 @@ export function MintMaintenanceRouteComponent({
 }
 
 export function renderMintMaintenancePage(
-  loaderData: MintMaintenanceLoaderData
+  loaderData: MintMaintenancePageLoaderData
 ) {
   if (!loaderData.isAllowed) {
     return (

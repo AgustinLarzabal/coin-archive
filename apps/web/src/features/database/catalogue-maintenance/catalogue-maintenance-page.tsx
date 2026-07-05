@@ -5,17 +5,21 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import { createCatalogueAuthorizationError, hasCatalogueMaintenanceAccess } from "./actions"
+import {
+  createCatalogueAuthorizationError,
+  hasCatalogueMaintenanceAccess,
+  type CatalogueAuthorizationErrorResult,
+} from "./actions"
 import { CataloguesTable } from "./table-workflow/catalogues-table"
 
 type LoadCatalogueMaintenancePageDataResult =
-  | ReturnType<typeof createCatalogueAuthorizationError>
+  | CatalogueAuthorizationErrorResult
   | {
       status: "success"
       catalogues: CatalogueOption[]
     }
 
-type CatalogueMaintenanceLoaderData =
+type CatalogueMaintenancePageLoaderData =
   | {
       isAllowed: false
     }
@@ -38,7 +42,7 @@ async function getDefaultCatalogueReadDependencies(): Promise<CatalogueReadDepen
 
 function toCatalogueMaintenanceLoaderData(
   result: LoadCatalogueMaintenancePageDataResult
-): CatalogueMaintenanceLoaderData {
+): CatalogueMaintenancePageLoaderData {
   if (result.status === "error") {
     return { isAllowed: false }
   }
@@ -80,7 +84,7 @@ export function loadCatalogueMaintenanceRouteData() {
 }
 
 type CatalogueMaintenanceRouteComponentProps = {
-  loaderData: CatalogueMaintenanceLoaderData
+  loaderData: CatalogueMaintenancePageLoaderData
 }
 
 export function CatalogueMaintenanceRouteComponent({
@@ -90,7 +94,7 @@ export function CatalogueMaintenanceRouteComponent({
 }
 
 export function renderCatalogueMaintenancePage(
-  loaderData: CatalogueMaintenanceLoaderData
+  loaderData: CatalogueMaintenancePageLoaderData
 ) {
   if (!loaderData.isAllowed) {
     return (

@@ -1,21 +1,14 @@
-import { readdirSync, readFileSync } from "node:fs"
+import { existsSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
+import {
+  getFeatureSourceFiles,
+  readFeatureSource,
+} from "../public-api-test-helpers"
 import * as rulerGroupMaintenance from "./index"
 
 const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
 const FEATURE_ALIAS = "@/features/database/ruler-group-maintenance"
-
-function getFeatureSourceFiles(): string[] {
-  return readdirSync(FEATURE_DIRECTORY_URL, { withFileTypes: true })
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .filter((filePath) => filePath.endsWith(".ts") || filePath.endsWith(".tsx"))
-}
-
-function readFeatureSource(filePath: string) {
-  return readFileSync(new URL(filePath, FEATURE_DIRECTORY_URL), "utf8")
-}
 
 describe("ruler-group-maintenance public API", () => {
   it("only exposes the route-facing feature entrypoint", () => {
@@ -26,12 +19,23 @@ describe("ruler-group-maintenance public API", () => {
   })
 
   it("avoids internal self-imports through the feature alias", () => {
-    for (const filePath of getFeatureSourceFiles()) {
+    for (const filePath of getFeatureSourceFiles(FEATURE_DIRECTORY_URL)) {
       if (filePath === "index.test.ts" || filePath.endsWith(".test.tsx")) {
         continue
       }
 
-      expect(readFeatureSource(filePath)).not.toMatch(FEATURE_ALIAS)
+      expect(readFeatureSource(FEATURE_DIRECTORY_URL, filePath)).not.toMatch(
+        FEATURE_ALIAS
+      )
     }
+  })
+
+  it("keeps the feature entrypoint at the root only", () => {
+    expect(
+      getFeatureSourceFiles(FEATURE_DIRECTORY_URL, true).filter(
+        (filePath) => filePath !== "index.ts" && filePath.endsWith("/index.ts")
+      )
+    ).toStrictEqual([])
+    expect(existsSync(new URL("index.ts", FEATURE_DIRECTORY_URL))).toBe(true)
   })
 })

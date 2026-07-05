@@ -8,17 +8,18 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import {
   createRulerGroupAuthorizationError,
   hasRulerGroupMaintenanceAccess,
+  type RulerGroupAuthorizationErrorResult,
 } from "./actions"
 import { RulerGroupsTable } from "./ruler-groups-table"
 
 type LoadRulerGroupMaintenancePageDataResult =
-  | ReturnType<typeof createRulerGroupAuthorizationError>
+  | RulerGroupAuthorizationErrorResult
   | {
       status: "success"
       rulerGroups: RulerGroupOption[]
     }
 
-type RulerGroupMaintenanceLoaderData =
+type RulerGroupMaintenancePageLoaderData =
   | {
       isAllowed: false
     }
@@ -41,7 +42,7 @@ async function getDefaultRulerGroupReadDependencies(): Promise<RulerGroupReadDep
 
 function toRulerGroupMaintenanceLoaderData(
   result: LoadRulerGroupMaintenancePageDataResult
-): RulerGroupMaintenanceLoaderData {
+): RulerGroupMaintenancePageLoaderData {
   if (result.status === "error") {
     return { isAllowed: false }
   }
@@ -83,7 +84,7 @@ export function loadRulerGroupMaintenanceRouteData() {
 }
 
 type RulerGroupMaintenanceRouteComponentProps = {
-  loaderData: RulerGroupMaintenanceLoaderData
+  loaderData: RulerGroupMaintenancePageLoaderData
 }
 
 export function RulerGroupMaintenanceRouteComponent({
@@ -93,7 +94,7 @@ export function RulerGroupMaintenanceRouteComponent({
 }
 
 export function renderRulerGroupMaintenancePage(
-  loaderData: RulerGroupMaintenanceLoaderData
+  loaderData: RulerGroupMaintenancePageLoaderData
 ) {
   if (!loaderData.isAllowed) {
     return (

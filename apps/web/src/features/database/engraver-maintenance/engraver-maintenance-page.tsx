@@ -5,17 +5,21 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import { createEngraverAuthorizationError, hasEngraverMaintenanceAccess } from "./actions"
+import {
+  createEngraverAuthorizationError,
+  hasEngraverMaintenanceAccess,
+  type EngraverAuthorizationErrorResult,
+} from "./actions"
 import { EngraversTable } from "./engravers-table"
 
 type LoadEngraverMaintenancePageDataResult =
-  | ReturnType<typeof createEngraverAuthorizationError>
+  | EngraverAuthorizationErrorResult
   | {
       status: "success"
       engravers: EngraverOption[]
     }
 
-type EngraverMaintenanceLoaderData =
+type EngraverMaintenancePageLoaderData =
   | {
       isAllowed: false
     }
@@ -38,7 +42,7 @@ async function getDefaultEngraverReadDependencies(): Promise<EngraverReadDepende
 
 function toEngraverMaintenanceLoaderData(
   result: LoadEngraverMaintenancePageDataResult
-): EngraverMaintenanceLoaderData {
+): EngraverMaintenancePageLoaderData {
   if (result.status === "error") {
     return { isAllowed: false }
   }
@@ -80,7 +84,7 @@ export function loadEngraverMaintenanceRouteData() {
 }
 
 type EngraverMaintenanceRouteComponentProps = {
-  loaderData: EngraverMaintenanceLoaderData
+  loaderData: EngraverMaintenancePageLoaderData
 }
 
 export function EngraverMaintenanceRouteComponent({
@@ -90,7 +94,7 @@ export function EngraverMaintenanceRouteComponent({
 }
 
 export function renderEngraverMaintenancePage(
-  loaderData: EngraverMaintenanceLoaderData
+  loaderData: EngraverMaintenancePageLoaderData
 ) {
   if (!loaderData.isAllowed) {
     return (

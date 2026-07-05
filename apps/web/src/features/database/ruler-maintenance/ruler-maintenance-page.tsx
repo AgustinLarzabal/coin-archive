@@ -5,18 +5,22 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import { createRulerAuthorizationError, hasRulerMaintenanceAccess } from "./actions"
+import {
+  createRulerAuthorizationError,
+  hasRulerMaintenanceAccess,
+  type RulerAuthorizationErrorResult,
+} from "./actions"
 import { RulersTable } from "./rulers-table"
 
 type LoadRulerMaintenancePageDataResult =
-  | ReturnType<typeof createRulerAuthorizationError>
+  | RulerAuthorizationErrorResult
   | {
       status: "success"
       rulers: RulerOption[]
       rulerGroups: RulerGroupOption[]
     }
 
-type RulerMaintenanceLoaderData =
+type RulerMaintenancePageLoaderData =
   | {
       isAllowed: false
     }
@@ -42,7 +46,7 @@ async function getDefaultRulerReadDependencies(): Promise<RulerReadDependencies>
 
 function toRulerMaintenanceLoaderData(
   result: LoadRulerMaintenancePageDataResult
-): RulerMaintenanceLoaderData {
+): RulerMaintenancePageLoaderData {
   if (result.status === "error") {
     return { isAllowed: false }
   }
@@ -91,7 +95,7 @@ export function loadRulerMaintenanceRouteData() {
 }
 
 type RulerMaintenanceRouteComponentProps = {
-  loaderData: RulerMaintenanceLoaderData
+  loaderData: RulerMaintenancePageLoaderData
 }
 
 export function RulerMaintenanceRouteComponent({
@@ -101,7 +105,7 @@ export function RulerMaintenanceRouteComponent({
 }
 
 export function renderRulerMaintenancePage(
-  loaderData: RulerMaintenanceLoaderData
+  loaderData: RulerMaintenancePageLoaderData
 ) {
   if (!loaderData.isAllowed) {
     return (

@@ -29,12 +29,14 @@ import { Button } from "@workspace/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import {
-  COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE,
   submitDeleteComposition,
-} from "@/lib/composition-maintenance"
+} from "../actions"
+import {
+  COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE,
+} from "../messages"
 
-import { CompositionCreateForm } from "./composition-create-form"
-import { CompositionEditForm } from "./composition-edit-form"
+import { CompositionCreateForm } from "../form-workflow/composition-create-form"
+import { CompositionEditForm } from "../form-workflow/composition-edit-form"
 
 type CompositionMaintenanceSheetProps = {
   composition: CompositionOption | null

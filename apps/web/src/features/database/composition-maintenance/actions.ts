@@ -1,22 +1,27 @@
 import { hasEditorAccess } from "@workspace/auth/client"
 import { z } from "zod"
 
-import { getCollectorRole } from "./collector-role"
-import type { CollectorWithRole } from "./collector-role"
+import { getCollectorRole } from "@/lib/collector-role"
+import type { CollectorWithRole } from "@/lib/collector-role"
 
-export const COMPOSITION_AUTHORIZATION_ERROR =
-  "Only Editors and Admins can maintain Compositions."
-export const COMPOSITION_DUPLICATE_CODE_ERROR =
-  "A Composition with this code already exists."
-export const COMPOSITION_GENERIC_SAVE_ERROR =
-  "Unable to save Composition right now."
-export const COMPOSITION_MISSING_ERROR = "Composition no longer exists."
-export const COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE =
-  "Every Coin has exactly one Composition, so those Coins must be reassigned to another Composition before this Composition can be deleted."
-export const COMPOSITION_IN_USE_DELETE_ERROR =
-  `Composition cannot be deleted while Coins still use it. ${COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE}`
-export const COMPOSITION_INVALID_CODE_ERROR =
-  "Composition Code must use lowercase letters, numbers, and hyphens only."
+import {
+  COMPOSITION_AUTHORIZATION_ERROR,
+  COMPOSITION_CREATED_MESSAGE,
+  COMPOSITION_DELETED_MESSAGE,
+  COMPOSITION_DUPLICATE_CODE_ERROR,
+  COMPOSITION_GENERIC_SAVE_ERROR,
+  COMPOSITION_IN_USE_DELETE_ERROR,
+  COMPOSITION_INVALID_CODE_ERROR,
+  COMPOSITION_MISSING_ERROR,
+  COMPOSITION_UPDATED_MESSAGE,
+} from "./messages"
+import {
+  createCompositionInputSchema,
+  deleteCompositionInputSchema,
+  getCompositionFieldErrors,
+  type CompositionFieldErrors,
+  updateCompositionInputSchema,
+} from "./validation"
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
@@ -26,55 +31,6 @@ const DUPLICATE_COMPOSITION_CODE_CONSTRAINT =
 const INVALID_COMPOSITION_CODE_CONSTRAINT = "composition_code_slug_check"
 const COMPOSITION_IN_USE_DELETE_CONSTRAINT =
   "coin_composition_id_composition_id_fk"
-const COMPOSITION_FIELD_NAMES = ["code", "name", "description"] as const
-
-const compositionCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Composition Code cannot be blank.")
-  .max(255, "Composition Code must be 255 characters or fewer.")
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, COMPOSITION_INVALID_CODE_ERROR)
-
-const compositionNameSchema = z
-  .string()
-  .trim()
-  .min(1, "Composition Name cannot be blank.")
-  .max(255, "Composition Name must be 255 characters or fewer.")
-
-const compositionDescriptionSchema = z
-  .string()
-  .optional()
-  .transform((description) => {
-    const trimmedDescription = description?.trim()
-
-    if (!trimmedDescription) {
-      return null
-    }
-
-    return trimmedDescription
-  })
-
-export const createCompositionInputSchema = z.object({
-  code: compositionCodeSchema,
-  name: compositionNameSchema,
-  description: compositionDescriptionSchema,
-})
-
-export const updateCompositionInputSchema = createCompositionInputSchema.extend(
-  {
-    id: z.uuid(),
-  }
-)
-
-export const deleteCompositionInputSchema = z.object({
-  id: z.uuid(),
-})
-
-type CompositionFieldName = (typeof COMPOSITION_FIELD_NAMES)[number]
-
-export type CompositionFieldErrors = Partial<
-  Record<CompositionFieldName, string>
->
 
 export type CompositionMutationResult =
   | {
@@ -158,31 +114,8 @@ export function hasCompositionMaintenanceAccess(
   return role !== null && hasEditorAccess(role)
 }
 
-function isCompositionFieldName(field: unknown): field is CompositionFieldName {
-  return (
-    typeof field === "string" &&
-    COMPOSITION_FIELD_NAMES.includes(field as CompositionFieldName)
-  )
-}
-
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
-}
-
-export function getCompositionFieldErrors(
-  issues: z.ZodIssue[]
-): CompositionFieldErrors {
-  const fieldErrors: CompositionFieldErrors = {}
-
-  for (const issue of issues) {
-    const field = issue.path.at(0)
-
-    if (isCompositionFieldName(field)) {
-      fieldErrors[field] = issue.message
-    }
-  }
-
-  return fieldErrors
 }
 
 function createValidationError(
@@ -319,7 +252,7 @@ export async function submitCreateComposition(
 
     return {
       status: "success",
-      message: "Composition added.",
+      message: COMPOSITION_CREATED_MESSAGE,
     }
   } catch (error) {
     return createPersistenceError(error)
@@ -355,7 +288,7 @@ export async function submitUpdateComposition(
 
     return {
       status: "success",
-      message: "Saved.",
+      message: COMPOSITION_UPDATED_MESSAGE,
     }
   } catch (error) {
     return createPersistenceError(error)
@@ -391,7 +324,7 @@ export async function submitDeleteComposition(
 
     return {
       status: "success",
-      message: "Composition deleted.",
+      message: COMPOSITION_DELETED_MESSAGE,
     }
   } catch (error) {
     return createPersistenceError(error)

@@ -14,15 +14,15 @@ import { SubmitButton } from "@workspace/ui/components/submit-button"
 import { Textarea } from "@workspace/ui/components/textarea"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  CompositionFieldErrors,
-  CompositionMutationResult,
-} from "@/lib/composition-maintenance"
+import {
+  submitUpdateComposition,
+  type CompositionMutationResult,
+} from "../actions"
 import {
   getCompositionFieldErrors,
-  submitUpdateComposition,
+  type CompositionFieldErrors,
   updateCompositionInputSchema,
-} from "@/lib/composition-maintenance"
+} from "../validation"
 
 type CompositionDraft = {
   code: string

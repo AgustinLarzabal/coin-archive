@@ -7,11 +7,13 @@ import {
   COMPOSITION_IN_USE_DELETE_ERROR,
   COMPOSITION_INVALID_CODE_ERROR,
   COMPOSITION_MISSING_ERROR,
+} from "./messages"
+import {
   hasCompositionMaintenanceAccess,
   submitCreateComposition,
   submitDeleteComposition,
   submitUpdateComposition,
-} from "./composition-maintenance"
+} from "./actions"
 
 const VALID_COMPOSITION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const SILVER_COMPOSITION = {

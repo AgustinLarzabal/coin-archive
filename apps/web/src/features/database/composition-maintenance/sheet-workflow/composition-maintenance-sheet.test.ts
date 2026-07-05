@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "@/lib/composition-maintenance"
+import { COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import {
   COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION,

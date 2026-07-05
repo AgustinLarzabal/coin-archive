@@ -3,8 +3,8 @@ import type { CompositionOption } from "@workspace/db"
 import { DataTable } from "@workspace/ui/components/data-table"
 
 import { createCompositionColumns } from "./columns"
-import { CompositionMaintenanceSheet } from "./composition-maintenance-sheet"
 import { CompositionsTableToolbar } from "./compositions-table-toolbar"
+import { CompositionMaintenanceSheet } from "../sheet-workflow/composition-maintenance-sheet"
 
 type CompositionsTableProps = {
   compositions: CompositionOption[]

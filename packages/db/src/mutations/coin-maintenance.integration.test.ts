@@ -139,7 +139,84 @@ describe("coin maintenance mutations integration", () => {
     ])
   })
 
-  it("updates the Coin core fields and replaces attribution collections atomically", async () => {
+  it("rolls back failed aggregate creates and leaves no partial Coin or owned child rows", async () => {
+    const issuer = await createIssuer({
+      code: "coin-maintenance-create-rollback-issuer",
+      name: "Coin Maintenance Create Rollback Issuer",
+    })
+    const distribution = await createDistribution({
+      code: "coin-maintenance-create-rollback-distribution",
+      name: "Coin Maintenance Create Rollback Distribution",
+    })
+    const composition = await createComposition({
+      code: "coin-maintenance-create-rollback-composition",
+      name: "Coin Maintenance Create Rollback Composition",
+    })
+    const currency = await createCurrency({
+      code: "coin-maintenance-create-rollback-currency",
+      name: "CMCR",
+      fullName: "Coin Maintenance Create Rollback Currency",
+    })
+    const ruler = await createRuler({
+      code: "coin-maintenance-create-rollback-ruler",
+      name: "Coin Maintenance Create Rollback Ruler",
+    })
+
+    await expect(
+      createCoinMaintenance({
+        comments: null,
+        compositionId: composition.id,
+        currencyId: currency.id,
+        diameter: null,
+        distributionId: distribution.id,
+        edgeId: null,
+        faceValueNumericValue: 1,
+        faceValueText: "1 Unit",
+        isDemonetized: null,
+        issuerId: issuer.id,
+        maxYear: null,
+        mintIds: [],
+        minYear: null,
+        mintage: null,
+        orientationId: null,
+        references: [],
+        rimId: null,
+        rulerIds: [ruler.id],
+        shapeId: null,
+        surfaces: {
+          obverse: {
+            description: "Broken obverse",
+            lettering: null,
+            thumbnailUrl: null,
+            imageUrl: null,
+            engraverIds: ["00000000-0000-0000-0000-000000000000"],
+          },
+          reverse: null,
+          edge: null,
+        },
+        techniqueId: null,
+        themeIds: [],
+        thickness: null,
+        title: "Coin Maintenance Failed Create Coin",
+        weight: null,
+      })
+    ).rejects.toThrow()
+
+    await expect(
+      db.select({ count: count() }).from(coin)
+    ).resolves.toStrictEqual([{ count: 0 }])
+    await expect(
+      db.select({ count: count() }).from(coinRuler)
+    ).resolves.toStrictEqual([{ count: 0 }])
+    await expect(
+      db.select({ count: count() }).from(coinSurface)
+    ).resolves.toStrictEqual([{ count: 0 }])
+    await expect(
+      db.select({ count: count() }).from(coinSurfaceEngraver)
+    ).resolves.toStrictEqual([{ count: 0 }])
+  })
+
+  it("updates the Coin core fields and replaces attribution collections atomically under last-write-wins semantics", async () => {
     const issuer = await createIssuer({
       code: "coin-maintenance-update-issuer",
       name: "Coin Maintenance Update Issuer",
@@ -311,6 +388,159 @@ describe("coin maintenance mutations integration", () => {
     expect(persistedCoin?.updatedAt.getTime()).toBeGreaterThanOrEqual(
       beforeUpdate?.updatedAt.getTime() ?? 0
     )
+  })
+
+  it("replaces owned child collections from submitted edit state, including removals back to empty", async () => {
+    const issuer = await createIssuer({
+      code: "coin-maintenance-replace-empty-issuer",
+      name: "Coin Maintenance Replace Empty Issuer",
+    })
+    const distribution = await createDistribution({
+      code: "coin-maintenance-replace-empty-distribution",
+      name: "Coin Maintenance Replace Empty Distribution",
+    })
+    const composition = await createComposition({
+      code: "coin-maintenance-replace-empty-composition",
+      name: "Coin Maintenance Replace Empty Composition",
+    })
+    const currency = await createCurrency({
+      code: "coin-maintenance-replace-empty-currency",
+      name: "CME",
+      fullName: "Coin Maintenance Replace Empty Currency",
+    })
+    const ruler = await createRuler({
+      code: "coin-maintenance-replace-empty-ruler",
+      name: "Coin Maintenance Replace Empty Ruler",
+    })
+    const mint = await createMint({
+      code: "coin-maintenance-replace-empty-mint",
+      name: "Coin Maintenance Replace Empty Mint",
+    })
+    const theme = await createTheme({
+      code: "coin-maintenance-replace-empty-theme",
+      name: "Coin Maintenance Replace Empty Theme",
+    })
+    const catalogue = await createCatalogue({
+      code: "replace-empty-catalogue",
+      title: "Replace Empty Catalogue",
+    })
+    const engraver = await createEngraver({
+      code: "replace-empty-engraver",
+      name: "Replace Empty Engraver",
+    })
+
+    const createdCoin = await createCoinMaintenance({
+      comments: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      mintIds: [mint.id],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [
+        {
+          catalogueId: catalogue.id,
+          number: "RE 1",
+        },
+      ],
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      surfaces: {
+        obverse: {
+          description: "Original obverse",
+          lettering: null,
+          thumbnailUrl: null,
+          imageUrl: null,
+          engraverIds: [engraver.id],
+        },
+        reverse: null,
+        edge: null,
+      },
+      techniqueId: null,
+      themeIds: [theme.id],
+      thickness: null,
+      title: "Coin Maintenance Replace Empty Coin",
+      weight: null,
+    })
+
+    await updateCoinMaintenance({
+      id: createdCoin.id,
+      comments: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      mintIds: [],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      surfaces: {
+        obverse: null,
+        reverse: null,
+        edge: null,
+      },
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      title: "Coin Maintenance Replace Empty Coin",
+      weight: null,
+    })
+
+    await expect(
+      getCoinMaintenanceRecord(createdCoin.id)
+    ).resolves.toMatchObject({
+      mintIds: [],
+      references: [],
+      surfaces: {
+        obverse: null,
+        reverse: null,
+        edge: null,
+      },
+      themeIds: [],
+    })
+
+    await expect(
+      db.query.coinMint.findMany({
+        where: (record, { eq }) => eq(record.coinId, createdCoin.id),
+      })
+    ).resolves.toHaveLength(0)
+    await expect(
+      db.query.coinTheme.findMany({
+        where: (record, { eq }) => eq(record.coinId, createdCoin.id),
+      })
+    ).resolves.toHaveLength(0)
+    await expect(
+      db.query.coinReference.findMany({
+        where: (record, { eq }) => eq(record.coinId, createdCoin.id),
+      })
+    ).resolves.toHaveLength(0)
+    await expect(
+      db.query.coinSurface.findMany({
+        where: (record, { eq }) => eq(record.coinId, createdCoin.id),
+      })
+    ).resolves.toHaveLength(0)
+    await expect(
+      db.query.coinSurfaceEngraver.findMany()
+    ).resolves.toHaveLength(0)
   })
 
   it("creates and replaces Catalogue References and Surface Set details atomically", async () => {

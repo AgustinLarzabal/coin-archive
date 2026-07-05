@@ -353,3 +353,10 @@ export function hasRequiredCoinDraftFields(draft: CoinDraft) {
 export function hasRequiredCoinLookupOptions(options: CoinFormOptions) {
   return REQUIRED_LOOKUP_OPTION_KEYS.every((key) => options[key].length > 0)
 }
+
+export function areCoinDraftsEqual(
+  left: CoinDraft,
+  right: CoinDraft
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { CoinMaintenanceRecord } from "@workspace/db"
 
 import {
+  areCoinDraftsEqual,
   createCoinDraft,
   getNextEditSuccessMessage,
   hasRequiredCoinDraftFields,
@@ -119,5 +120,29 @@ describe("getNextEditSuccessMessage", () => {
         previousCoinId: "coin-1",
       })
     ).toBeNull()
+  })
+})
+
+describe("areCoinDraftsEqual", () => {
+  it("returns true for identical aggregate drafts", () => {
+    const draft = createCoinDraft(coin)
+
+    expect(areCoinDraftsEqual(draft, createCoinDraft(coin))).toBe(true)
+  })
+
+  it("returns false when a nested child collection row changes", () => {
+    const draft = createCoinDraft(coin)
+
+    expect(
+      areCoinDraftsEqual(draft, {
+        ...draft,
+        references: [
+          {
+            ...draft.references[0],
+            number: "KM 99",
+          },
+        ],
+      })
+    ).toBe(false)
   })
 })

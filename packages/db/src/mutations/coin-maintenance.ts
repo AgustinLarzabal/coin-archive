@@ -313,6 +313,7 @@ export async function updateCoinMaintenance({
   ...fields
 }: UpdateCoinMaintenanceInput) {
   return db.transaction(async (tx) => {
+    // v1 intentionally uses last-write-wins for full aggregate replacement.
     const [updatedCoin] = await tx
       .update(coin)
       .set({

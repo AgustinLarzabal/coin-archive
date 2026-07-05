@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
-import { useRouter } from "@tanstack/react-router"
+import { useBlocker, useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CoinMaintenanceRecord } from "@workspace/db"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
@@ -22,6 +22,7 @@ import {
   updateCoinInputSchema,
 } from "./actions"
 import {
+  areCoinDraftsEqual,
   createCoinDraft,
   createEmptyRulerAttribution,
   EMPTY_COIN_DRAFT,
@@ -29,6 +30,9 @@ import {
   hasRequiredCoinDraftFields,
   type CoinFormOptions,
 } from "./coin-form.shared"
+
+const UNSAVED_CHANGES_WARNING =
+  "You have unsaved changes. Are you sure you want to leave this page?"
 
 type CoinFormProps =
   | {
@@ -146,8 +150,10 @@ export function CoinForm(props: CoinFormProps) {
   const router = useRouter()
   const createCoin = useServerFn(createCoinAction)
   const updateCoin = useServerFn(updateCoinAction)
-  const [draft, setDraft] = useState<CoinDraft>(
+  const initialDraft =
     props.mode === "edit" ? createCoinDraft(props.coin) : EMPTY_COIN_DRAFT
+  const [draft, setDraft] = useState<CoinDraft>(
+    initialDraft
   )
   const [fieldErrors, setFieldErrors] = useState<CoinFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -156,6 +162,19 @@ export function CoinForm(props: CoinFormProps) {
   const previousEditCoinIdRef = useRef(
     props.mode === "edit" ? props.coin.id : null
   )
+  const isDirty = !areCoinDraftsEqual(draft, initialDraft)
+
+  useBlocker({
+    disabled: !isDirty || isPending,
+    enableBeforeUnload: isDirty && !isPending,
+    shouldBlockFn: () => {
+      if (!isDirty || isPending) {
+        return false
+      }
+
+      return !window.confirm(UNSAVED_CHANGES_WARNING)
+    },
+  })
 
   useEffect(() => {
     if (props.mode === "edit") {
@@ -437,6 +456,12 @@ export function CoinForm(props: CoinFormProps) {
     } finally {
       setIsPending(false)
     }
+  }
+
+  function handleCancel() {
+    void router.navigate({
+      to: "/database/coins",
+    })
   }
 
   const idPrefix = props.mode === "edit" ? "coin-edit" : "coin-create"
@@ -1074,7 +1099,15 @@ export function CoinForm(props: CoinFormProps) {
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={isPending}
+          className="rounded border px-3 py-2 text-sm"
+        >
+          Cancel
+        </button>
         <SubmitButton
           type="submit"
           disabled={isPending || !hasRequiredCoinDraftFields(draft)}

@@ -1,31 +1,37 @@
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync } from "node:fs"
 
 import { expect, it } from "vitest"
 
+import {
+  getFeatureSourceFiles,
+  readFeatureSource,
+} from "./public-api-test-helpers"
+
 type PublicApiContractOptions = {
-  exportedNames: string[]
+  deletedNestedEntrypoints?: readonly string[]
+  exportedNames: readonly string[]
   feature: Record<string, unknown>
   featureAlias: string
   featureDirectoryUrl: URL
-  featureSourceFiles: string[]
+  featureSourceFiles?: readonly string[]
 }
 
-const DELETED_NESTED_ENTRYPOINTS = [
+const DEFAULT_DELETED_NESTED_ENTRYPOINTS = [
   "form-workflow/index.ts",
   "sheet-workflow/index.ts",
   "table-workflow/index.ts",
-]
-
-function readFeatureSource(featureDirectoryUrl: URL, filePath: string) {
-  return readFileSync(new URL(filePath, featureDirectoryUrl), "utf8")
-}
+] as const
+const TEST_FILE_PATTERN = /\.test\.(ts|tsx)$/
 
 export function assertFeaturePublicApi({
+  deletedNestedEntrypoints = DEFAULT_DELETED_NESTED_ENTRYPOINTS,
   exportedNames,
   feature,
   featureAlias,
   featureDirectoryUrl,
-  featureSourceFiles,
+  featureSourceFiles = getFeatureSourceFiles(featureDirectoryUrl, true).filter(
+    (filePath) => filePath !== "index.ts" && !TEST_FILE_PATTERN.test(filePath)
+  ),
 }: PublicApiContractOptions) {
   it("only exposes the route-facing feature entrypoint", () => {
     expect(Object.keys(feature).sort()).toStrictEqual(exportedNames)
@@ -41,7 +47,7 @@ export function assertFeaturePublicApi({
 
   it("keeps the feature entrypoint at the root only", () => {
     expect(
-      DELETED_NESTED_ENTRYPOINTS.filter((filePath) =>
+      deletedNestedEntrypoints.filter((filePath) =>
         existsSync(new URL(filePath, featureDirectoryUrl))
       )
     ).toStrictEqual([])

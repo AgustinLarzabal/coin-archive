@@ -189,7 +189,14 @@ export function CoinsMaintenanceTable({
           ) : (
             list.items.map((coin) => (
               <tr key={coin.id} className="border-b last:border-b-0">
-                <td className="py-3 pr-4">{coin.title}</td>
+                <td className="py-3 pr-4">
+                  <a
+                    href={`/database/coins/${coin.id}/edit`}
+                    className="underline underline-offset-4"
+                  >
+                    {coin.title}
+                  </a>
+                </td>
                 <td className="py-3 pr-4">{coin.issuer.name}</td>
                 <td className="py-3 pr-4">
                   {formatIssueYearRange(coin.minYear, coin.maxYear)}

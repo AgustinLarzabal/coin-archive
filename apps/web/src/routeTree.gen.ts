@@ -36,6 +36,8 @@ import { Route as AppAuthedDatabaseCompositionsRouteImport } from './routes/_app
 import { Route as AppAuthedDatabaseCoinsRouteImport } from './routes/_app/_authed/database/coins'
 import { Route as AppAuthedDatabaseCataloguesRouteImport } from './routes/_app/_authed/database/catalogues'
 import { Route as ApppublicCoinsCoinIdRouteImport } from './routes/_app/(public)/coins.$coinId'
+import { Route as AppAuthedDatabaseCoinsNewRouteImport } from './routes/_app/_authed/database/coins.new'
+import { Route as AppAuthedDatabaseCoinsCoinIdEditRouteImport } from './routes/_app/_authed/database/coins.$coinId.edit'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
@@ -178,6 +180,18 @@ const ApppublicCoinsCoinIdRoute = ApppublicCoinsCoinIdRouteImport.update({
   path: '/coins/$coinId',
   getParentRoute: () => ApppublicRouteRoute,
 } as any)
+const AppAuthedDatabaseCoinsNewRoute =
+  AppAuthedDatabaseCoinsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AppAuthedDatabaseCoinsRoute,
+  } as any)
+const AppAuthedDatabaseCoinsCoinIdEditRoute =
+  AppAuthedDatabaseCoinsCoinIdEditRouteImport.update({
+    id: '/$coinId/edit',
+    path: '/$coinId/edit',
+    getParentRoute: () => AppAuthedDatabaseCoinsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ApppublicIndexRoute
@@ -187,7 +201,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
-  '/database/coins': typeof AppAuthedDatabaseCoinsRoute
+  '/database/coins': typeof AppAuthedDatabaseCoinsRouteWithChildren
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
@@ -204,6 +218,8 @@ export interface FileRoutesByFullPath {
   '/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
+  '/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
+  '/database/coins/$coinId/edit': typeof AppAuthedDatabaseCoinsCoinIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof ApppublicIndexRoute
@@ -211,7 +227,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
-  '/database/coins': typeof AppAuthedDatabaseCoinsRoute
+  '/database/coins': typeof AppAuthedDatabaseCoinsRouteWithChildren
   '/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
@@ -228,6 +244,8 @@ export interface FileRoutesByTo {
   '/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
+  '/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
+  '/database/coins/$coinId/edit': typeof AppAuthedDatabaseCoinsCoinIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,7 +259,7 @@ export interface FileRoutesById {
   '/_app/(public)/': typeof ApppublicIndexRoute
   '/_app/(public)/coins/$coinId': typeof ApppublicCoinsCoinIdRoute
   '/_app/_authed/database/catalogues': typeof AppAuthedDatabaseCataloguesRoute
-  '/_app/_authed/database/coins': typeof AppAuthedDatabaseCoinsRoute
+  '/_app/_authed/database/coins': typeof AppAuthedDatabaseCoinsRouteWithChildren
   '/_app/_authed/database/compositions': typeof AppAuthedDatabaseCompositionsRoute
   '/_app/_authed/database/currencies': typeof AppAuthedDatabaseCurrenciesRoute
   '/_app/_authed/database/distributions': typeof AppAuthedDatabaseDistributionsRoute
@@ -258,6 +276,8 @@ export interface FileRoutesById {
   '/_app/_authed/database/themes': typeof AppAuthedDatabaseThemesRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
+  '/_app/_authed/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
+  '/_app/_authed/database/coins/$coinId/edit': typeof AppAuthedDatabaseCoinsCoinIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -286,6 +306,8 @@ export interface FileRouteTypes {
     | '/database/themes'
     | '/database/'
     | '/settings/'
+    | '/database/coins/new'
+    | '/database/coins/$coinId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -310,6 +332,8 @@ export interface FileRouteTypes {
     | '/database/themes'
     | '/database'
     | '/settings'
+    | '/database/coins/new'
+    | '/database/coins/$coinId/edit'
   id:
     | '__root__'
     | '/_app'
@@ -339,6 +363,8 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/themes'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
+    | '/_app/_authed/database/coins/new'
+    | '/_app/_authed/database/coins/$coinId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -537,6 +563,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApppublicCoinsCoinIdRouteImport
       parentRoute: typeof ApppublicRouteRoute
     }
+    '/_app/_authed/database/coins/new': {
+      id: '/_app/_authed/database/coins/new'
+      path: '/new'
+      fullPath: '/database/coins/new'
+      preLoaderRoute: typeof AppAuthedDatabaseCoinsNewRouteImport
+      parentRoute: typeof AppAuthedDatabaseCoinsRoute
+    }
+    '/_app/_authed/database/coins/$coinId/edit': {
+      id: '/_app/_authed/database/coins/$coinId/edit'
+      path: '/$coinId/edit'
+      fullPath: '/database/coins/$coinId/edit'
+      preLoaderRoute: typeof AppAuthedDatabaseCoinsCoinIdEditRouteImport
+      parentRoute: typeof AppAuthedDatabaseCoinsRoute
+    }
   }
 }
 
@@ -556,9 +596,26 @@ const ApppublicRouteRouteWithChildren = ApppublicRouteRoute._addFileChildren(
   ApppublicRouteRouteChildren,
 )
 
+interface AppAuthedDatabaseCoinsRouteChildren {
+  AppAuthedDatabaseCoinsNewRoute: typeof AppAuthedDatabaseCoinsNewRoute
+  AppAuthedDatabaseCoinsCoinIdEditRoute: typeof AppAuthedDatabaseCoinsCoinIdEditRoute
+}
+
+const AppAuthedDatabaseCoinsRouteChildren: AppAuthedDatabaseCoinsRouteChildren =
+  {
+    AppAuthedDatabaseCoinsNewRoute: AppAuthedDatabaseCoinsNewRoute,
+    AppAuthedDatabaseCoinsCoinIdEditRoute:
+      AppAuthedDatabaseCoinsCoinIdEditRoute,
+  }
+
+const AppAuthedDatabaseCoinsRouteWithChildren =
+  AppAuthedDatabaseCoinsRoute._addFileChildren(
+    AppAuthedDatabaseCoinsRouteChildren,
+  )
+
 interface AppAuthedDatabaseRouteRouteChildren {
   AppAuthedDatabaseCataloguesRoute: typeof AppAuthedDatabaseCataloguesRoute
-  AppAuthedDatabaseCoinsRoute: typeof AppAuthedDatabaseCoinsRoute
+  AppAuthedDatabaseCoinsRoute: typeof AppAuthedDatabaseCoinsRouteWithChildren
   AppAuthedDatabaseCompositionsRoute: typeof AppAuthedDatabaseCompositionsRoute
   AppAuthedDatabaseCurrenciesRoute: typeof AppAuthedDatabaseCurrenciesRoute
   AppAuthedDatabaseDistributionsRoute: typeof AppAuthedDatabaseDistributionsRoute
@@ -579,7 +636,7 @@ interface AppAuthedDatabaseRouteRouteChildren {
 const AppAuthedDatabaseRouteRouteChildren: AppAuthedDatabaseRouteRouteChildren =
   {
     AppAuthedDatabaseCataloguesRoute: AppAuthedDatabaseCataloguesRoute,
-    AppAuthedDatabaseCoinsRoute: AppAuthedDatabaseCoinsRoute,
+    AppAuthedDatabaseCoinsRoute: AppAuthedDatabaseCoinsRouteWithChildren,
     AppAuthedDatabaseCompositionsRoute: AppAuthedDatabaseCompositionsRoute,
     AppAuthedDatabaseCurrenciesRoute: AppAuthedDatabaseCurrenciesRoute,
     AppAuthedDatabaseDistributionsRoute: AppAuthedDatabaseDistributionsRoute,

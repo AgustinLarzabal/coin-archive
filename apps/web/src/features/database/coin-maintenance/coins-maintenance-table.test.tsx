@@ -108,6 +108,7 @@ describe("CoinsMaintenanceTable", () => {
     expect(markup).toContain("Updated")
     expect(markup).toContain("Created")
     expect(markup).toContain("Spanish Euro Test Coin")
+    expect(markup).toContain('href="/database/coins/coin-1/edit"')
     expect(markup).toContain("1999-2001")
     expect(markup).toContain("1 Euro (Euro)")
     expect(markup).toContain('value="spanish"')

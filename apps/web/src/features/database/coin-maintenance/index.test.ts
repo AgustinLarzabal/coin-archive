@@ -9,9 +9,16 @@ const FEATURE_ALIAS = "@/features/database/coin-maintenance"
 describe("coin-maintenance public API", () => {
   assertFeaturePublicApi({
     exportedNames: [
+      "CoinCreateRouteComponent",
+      "CoinEditRouteComponent",
       "CoinMaintenanceRouteComponent",
       "coinMaintenanceSearchSchema",
+      "getCoinEditLoaderDeps",
       "getCoinMaintenanceLoaderDeps",
+      "loadCoinCreatePageData",
+      "loadCoinCreateRouteData",
+      "loadCoinEditPageData",
+      "loadCoinEditRouteData",
       "loadCoinMaintenanceRouteData",
     ],
     feature,

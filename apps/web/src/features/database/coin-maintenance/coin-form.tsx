@@ -23,9 +23,8 @@ import {
 } from "./actions"
 import {
   areCoinDraftsEqual,
-  createCoinDraft,
   createEmptyRulerAttribution,
-  EMPTY_COIN_DRAFT,
+  getInitialCoinDraft,
   getNextEditSuccessMessage,
   hasRequiredCoinDraftFields,
   type CoinFormOptions,
@@ -147,21 +146,17 @@ function createEmptyReference(): CoinReferenceDraft {
 }
 
 export function CoinForm(props: CoinFormProps) {
+  const isEditMode = props.mode === "edit"
   const router = useRouter()
   const createCoin = useServerFn(createCoinAction)
   const updateCoin = useServerFn(updateCoinAction)
-  const initialDraft =
-    props.mode === "edit" ? createCoinDraft(props.coin) : EMPTY_COIN_DRAFT
-  const [draft, setDraft] = useState<CoinDraft>(
-    initialDraft
-  )
+  const initialDraft = getInitialCoinDraft(props)
+  const [draft, setDraft] = useState<CoinDraft>(() => initialDraft)
   const [fieldErrors, setFieldErrors] = useState<CoinFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const previousEditCoinIdRef = useRef(
-    props.mode === "edit" ? props.coin.id : null
-  )
+  const previousEditCoinIdRef = useRef(isEditMode ? props.coin.id : null)
   const isDirty = !areCoinDraftsEqual(draft, initialDraft)
 
   useBlocker({
@@ -177,23 +172,25 @@ export function CoinForm(props: CoinFormProps) {
   })
 
   useEffect(() => {
-    if (props.mode === "edit") {
-      const nextCoinId = props.coin.id
-      const previousCoinId = previousEditCoinIdRef.current
-
-      setDraft(createCoinDraft(props.coin))
-      setFieldErrors({})
-      setFormError(null)
-      setSuccessMessage((currentSuccessMessage) =>
-        getNextEditSuccessMessage({
-          currentSuccessMessage,
-          nextCoinId,
-          previousCoinId,
-        })
-      )
-      previousEditCoinIdRef.current = nextCoinId
+    if (!isEditMode) {
+      return
     }
-  }, [props])
+
+    const nextCoinId = props.coin.id
+    const previousCoinId = previousEditCoinIdRef.current
+
+    setDraft(initialDraft)
+    setFieldErrors({})
+    setFormError(null)
+    setSuccessMessage((currentSuccessMessage) =>
+      getNextEditSuccessMessage({
+        currentSuccessMessage,
+        nextCoinId,
+        previousCoinId,
+      })
+    )
+    previousEditCoinIdRef.current = nextCoinId
+  }, [initialDraft, isEditMode, isEditMode ? props.coin.id : null])
 
   function updateDraft<TFieldName extends keyof CoinDraft>(
     field: TFieldName,
@@ -430,7 +427,7 @@ export function CoinForm(props: CoinFormProps) {
 
     try {
       const result =
-        props.mode === "edit"
+        isEditMode
           ? await updateCoin({
               data: {
                 id: props.coin.id,
@@ -447,7 +444,7 @@ export function CoinForm(props: CoinFormProps) {
         return
       }
 
-      if (props.mode === "create") {
+      if (!isEditMode) {
         window.location.assign(`/database/coins/${successResult.coinId}/edit`)
         return
       }
@@ -464,7 +461,7 @@ export function CoinForm(props: CoinFormProps) {
     })
   }
 
-  const idPrefix = props.mode === "edit" ? "coin-edit" : "coin-create"
+  const idPrefix = isEditMode ? "coin-edit" : "coin-create"
 
   return (
     <form

@@ -145,4 +145,15 @@ describe("areCoinDraftsEqual", () => {
       })
     ).toBe(false)
   })
+
+  it("returns false when child collection order changes", () => {
+    const draft = createCoinDraft(coin)
+
+    expect(
+      areCoinDraftsEqual(draft, {
+        ...draft,
+        rulers: [...draft.rulers].reverse(),
+      })
+    ).toBe(false)
+  })
 })

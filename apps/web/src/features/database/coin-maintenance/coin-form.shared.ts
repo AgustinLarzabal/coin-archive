@@ -323,6 +323,19 @@ export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
   }
 }
 
+export function getInitialCoinDraft(
+  props:
+    | {
+        mode: "create"
+      }
+    | {
+        coin: CoinMaintenanceRecord
+        mode: "edit"
+      }
+): CoinDraft {
+  return props.mode === "edit" ? createCoinDraft(props.coin) : EMPTY_COIN_DRAFT
+}
+
 function normalizeDraftValue(value: string) {
   return value.trim()
 }
@@ -358,5 +371,96 @@ export function areCoinDraftsEqual(
   left: CoinDraft,
   right: CoinDraft
 ): boolean {
-  return JSON.stringify(left) === JSON.stringify(right)
+  return (
+    left.title === right.title &&
+    left.issuerId === right.issuerId &&
+    areDraftRowsEqual(left.rulers, right.rulers, "rulerId") &&
+    left.distributionId === right.distributionId &&
+    left.compositionId === right.compositionId &&
+    left.faceValueText === right.faceValueText &&
+    left.faceValueNumericValue === right.faceValueNumericValue &&
+    left.currencyId === right.currencyId &&
+    areDraftRowsEqual(left.mints, right.mints, "mintId") &&
+    left.orientationId === right.orientationId &&
+    left.shapeId === right.shapeId &&
+    left.techniqueId === right.techniqueId &&
+    left.edgeId === right.edgeId &&
+    left.rimId === right.rimId &&
+    areDraftRowsEqual(left.themes, right.themes, "themeId") &&
+    left.weight === right.weight &&
+    left.diameter === right.diameter &&
+    left.thickness === right.thickness &&
+    left.mintage === right.mintage &&
+    left.comments === right.comments &&
+    left.minYear === right.minYear &&
+    left.maxYear === right.maxYear &&
+    left.demonetizationStatus === right.demonetizationStatus &&
+    areReferenceDraftsEqual(left.references, right.references) &&
+    areSurfaceDraftsEqual(left.surfaces, right.surfaces)
+  )
+}
+
+function areDraftRowsEqual<
+  TFieldName extends string,
+  TRow extends Record<TFieldName, string>,
+>(left: TRow[], right: TRow[], fieldName: TFieldName) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (row, index) => row[fieldName] === right[index]?.[fieldName]
+    )
+  )
+}
+
+function areReferenceDraftsEqual(
+  left: CoinDraft["references"],
+  right: CoinDraft["references"]
+) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (reference, index) =>
+        reference.catalogueId === right[index]?.catalogueId &&
+        reference.number === right[index]?.number
+    )
+  )
+}
+
+function areFaceSurfaceDraftsEqual(
+  left: CoinDraft["surfaces"]["obverse"],
+  right: CoinDraft["surfaces"]["obverse"]
+) {
+  return (
+    left.description === right.description &&
+    left.lettering === right.lettering &&
+    left.thumbnailUrl === right.thumbnailUrl &&
+    left.imageUrl === right.imageUrl &&
+    left.engraverIds.length === right.engraverIds.length &&
+    left.engraverIds.every(
+      (engraverId, index) => engraverId === right.engraverIds[index]
+    )
+  )
+}
+
+function areEdgeSurfaceDraftsEqual(
+  left: CoinDraft["surfaces"]["edge"],
+  right: CoinDraft["surfaces"]["edge"]
+) {
+  return (
+    left.description === right.description &&
+    left.lettering === right.lettering &&
+    left.thumbnailUrl === right.thumbnailUrl &&
+    left.imageUrl === right.imageUrl
+  )
+}
+
+function areSurfaceDraftsEqual(
+  left: CoinDraft["surfaces"],
+  right: CoinDraft["surfaces"]
+) {
+  return (
+    areFaceSurfaceDraftsEqual(left.obverse, right.obverse) &&
+    areFaceSurfaceDraftsEqual(left.reverse, right.reverse) &&
+    areEdgeSurfaceDraftsEqual(left.edge, right.edge)
+  )
 }

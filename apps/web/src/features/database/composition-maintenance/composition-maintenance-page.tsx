@@ -5,15 +5,15 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import {
-  createCompositionAuthorizationError,
-  hasCompositionMaintenanceAccess,
-  type CompositionAuthorizationErrorResult,
-} from "./actions"
+import { hasCompositionMaintenanceAccess } from "./actions"
+import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
 import { CompositionsTable } from "./table-workflow/compositions-table"
 
 type LoadCompositionMaintenancePageDataResult =
-  | CompositionAuthorizationErrorResult
+  | {
+      status: "error"
+      formError: typeof COMPOSITION_AUTHORIZATION_ERROR
+    }
   | {
       status: "success"
       compositions: CompositionOption[]
@@ -40,12 +40,6 @@ async function getDefaultCompositionReadDependencies(): Promise<CompositionMaint
   }
 }
 
-async function resolveCompositionReadDependencies(
-  dependencies?: CompositionMaintenanceReadDependencies
-) {
-  return dependencies ?? getDefaultCompositionReadDependencies()
-}
-
 function toCompositionMaintenancePageLoaderData(
   result: LoadCompositionMaintenancePageDataResult
 ): CompositionMaintenancePageLoaderData {
@@ -66,11 +60,14 @@ export async function loadCompositionMaintenancePageData(
   dependencies?: CompositionMaintenanceReadDependencies
 ): Promise<LoadCompositionMaintenancePageDataResult> {
   if (!hasCompositionMaintenanceAccess(collector)) {
-    return createCompositionAuthorizationError()
+    return {
+      status: "error",
+      formError: COMPOSITION_AUTHORIZATION_ERROR,
+    }
   }
 
   const { getCompositions } =
-    await resolveCompositionReadDependencies(dependencies)
+    dependencies ?? (await getDefaultCompositionReadDependencies())
 
   return {
     status: "success",

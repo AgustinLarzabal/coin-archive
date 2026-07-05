@@ -53,10 +53,14 @@ export type CompositionFieldErrors = Partial<
 >
 
 function isCompositionFieldName(field: unknown): field is CompositionFieldName {
-  return (
-    typeof field === "string" &&
-    COMPOSITION_FIELD_NAMES.includes(field as CompositionFieldName)
-  )
+  switch (field) {
+    case "code":
+    case "name":
+    case "description":
+      return true
+    default:
+      return false
+  }
 }
 
 export function getCompositionFieldErrors(

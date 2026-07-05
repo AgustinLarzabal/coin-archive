@@ -57,12 +57,43 @@ type DeleteCompositionData = z.output<typeof deleteCompositionInputSchema>
 type ValidationResult<TData> =
   | { success: true; data: TData }
   | { success: false; result: CompositionMutationResult }
+type PostgresConstraintResult = {
+  code: string
+  constraintName: string
+  result: CompositionMutationResult
+}
+type PostgresError = {
+  code: unknown
+  constraint_name: unknown
+}
 
 type CompositionMutationDependencies = {
   createComposition: (input: CreateCompositionData) => Promise<unknown>
   deleteComposition: (input: DeleteCompositionData) => Promise<unknown | null>
   updateComposition: (input: UpdateCompositionData) => Promise<unknown | null>
 }
+
+const POSTGRES_CONSTRAINT_RESULTS: PostgresConstraintResult[] = [
+  {
+    code: DUPLICATE_KEY_POSTGRES_ERROR_CODE,
+    constraintName: DUPLICATE_COMPOSITION_CODE_CONSTRAINT,
+    result: createFieldErrorResult({
+      code: COMPOSITION_DUPLICATE_CODE_ERROR,
+    }),
+  },
+  {
+    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: COMPOSITION_IN_USE_DELETE_CONSTRAINT,
+    result: createFormErrorResult(COMPOSITION_IN_USE_DELETE_ERROR),
+  },
+  {
+    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
+    constraintName: INVALID_COMPOSITION_CODE_CONSTRAINT,
+    result: createFieldErrorResult({
+      code: COMPOSITION_INVALID_CODE_ERROR,
+    }),
+  },
+]
 
 async function getDefaultCompositionMutationDependencies(): Promise<CompositionMutationDependencies> {
   const { createComposition, deleteComposition, updateComposition } =
@@ -77,7 +108,7 @@ async function getDefaultCompositionMutationDependencies(): Promise<CompositionM
 
 async function resolveCompositionMutationDependencies(
   dependencies?: CompositionMutationDependencies
-) {
+): Promise<CompositionMutationDependencies> {
   return dependencies ?? getDefaultCompositionMutationDependencies()
 }
 
@@ -131,20 +162,24 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
+function isPostgresError(value: unknown): value is PostgresError {
+  return isObjectRecord(value) && "code" in value && "constraint_name" in value
+}
+
 function createValidationError(
   issues: z.ZodIssue[]
 ): CompositionMutationResult {
   return createFieldErrorResult(getCompositionFieldErrors(issues))
 }
 
-function getPostgresError(error: unknown) {
+function getPostgresError(error: unknown): PostgresError | null {
   if (!isObjectRecord(error)) {
     return null
   }
 
   const postgresError = "cause" in error ? error.cause : error
 
-  if (!isObjectRecord(postgresError)) {
+  if (!isPostgresError(postgresError)) {
     return null
   }
 
@@ -152,54 +187,29 @@ function getPostgresError(error: unknown) {
 }
 
 function matchesPostgresConstraint(
-  error: unknown,
+  postgresError: PostgresError,
   code: string,
   constraintName: string
-) {
-  const postgresError = getPostgresError(error)
-
+): boolean {
   return (
-    postgresError !== null &&
-    "code" in postgresError &&
     postgresError.code === code &&
-    "constraint_name" in postgresError &&
     postgresError.constraint_name === constraintName
   )
 }
 
 function createPersistenceError(error: unknown): CompositionMutationResult {
-  if (
-    matchesPostgresConstraint(
-      error,
-      DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-      DUPLICATE_COMPOSITION_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: COMPOSITION_DUPLICATE_CODE_ERROR,
-    })
+  const postgresError = getPostgresError(error)
+
+  if (postgresError === null) {
+    return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
   }
 
-  if (
-    matchesPostgresConstraint(
-      error,
-      FK_VIOLATION_POSTGRES_ERROR_CODE,
-      COMPOSITION_IN_USE_DELETE_CONSTRAINT
-    )
-  ) {
-    return createFormErrorResult(COMPOSITION_IN_USE_DELETE_ERROR)
-  }
-
-  if (
-    matchesPostgresConstraint(
-      error,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      INVALID_COMPOSITION_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: COMPOSITION_INVALID_CODE_ERROR,
-    })
+  for (const entry of POSTGRES_CONSTRAINT_RESULTS) {
+    if (
+      matchesPostgresConstraint(postgresError, entry.code, entry.constraintName)
+    ) {
+      return entry.result
+    }
   }
 
   return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)

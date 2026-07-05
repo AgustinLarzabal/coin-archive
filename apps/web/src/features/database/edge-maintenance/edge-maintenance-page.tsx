@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { EdgeOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createEdgeAuthorizationError, hasEdgeMaintenanceAccess } from "./actions"
 import { EdgesTable } from "./table-workflow/edges-table"
 
-type LoadResult =
-  | ReturnType<typeof createEdgeAuthorizationError>
-  | {
-      status: "success"
-      edges: EdgeOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  edges: EdgeOption[]
+}, ReturnType<typeof createEdgeAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      edges: EdgeOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  edges: EdgeOption[]
+}>
 
 type ReadDependencies = {
   getEdges: () => Promise<EdgeOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getEdges,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    edges: result.edges,
   }
 }
 
@@ -71,7 +55,7 @@ const getLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadEdgeMaintenanceEdges(session?.user ?? null)
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadEdgeMaintenanceRouteData() {
@@ -89,17 +73,9 @@ export function EdgeMaintenanceRouteComponent({
 }
 
 export function renderEdgeMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ edges }) => (
     <main className="mt-8">
-      <EdgesTable edges={loaderData.edges} />
+      <EdgesTable edges={edges} />
     </main>
-  )
+  ))
 }

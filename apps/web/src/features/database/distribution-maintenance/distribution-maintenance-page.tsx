@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { DistributionOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createDistributionAuthorizationError, hasDistributionMaintenanceAccess } from "./actions"
 import { DistributionsTable } from "./table-workflow/distributions-table"
 
-type LoadResult =
-  | ReturnType<typeof createDistributionAuthorizationError>
-  | {
-      status: "success"
-      distributions: DistributionOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  distributions: DistributionOption[]
+}, ReturnType<typeof createDistributionAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      distributions: DistributionOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  distributions: DistributionOption[]
+}>
 
 type ReadDependencies = {
   getDistributions: () => Promise<DistributionOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getDistributions,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    distributions: result.distributions,
   }
 }
 
@@ -69,9 +53,11 @@ const getLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadDistributionMaintenanceDistributions(session?.user ?? null)
+  const result = await loadDistributionMaintenanceDistributions(
+    session?.user ?? null
+  )
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadDistributionMaintenanceRouteData() {
@@ -89,17 +75,9 @@ export function DistributionMaintenanceRouteComponent({
 }
 
 export function renderDistributionMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ distributions }) => (
     <main className="mt-8">
-      <DistributionsTable distributions={loaderData.distributions} />
+      <DistributionsTable distributions={distributions} />
     </main>
-  )
+  ))
 }

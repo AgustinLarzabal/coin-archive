@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { CurrencyOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createCurrencyAuthorizationError, hasCurrencyMaintenanceAccess } from "./actions"
 import { CurrenciesTable } from "./table-workflow/currencies-table"
 
-type LoadResult =
-  | ReturnType<typeof createCurrencyAuthorizationError>
-  | {
-      status: "success"
-      currencies: CurrencyOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  currencies: CurrencyOption[]
+}, ReturnType<typeof createCurrencyAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      currencies: CurrencyOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  currencies: CurrencyOption[]
+}>
 
 type ReadDependencies = {
   getCurrencies: () => Promise<CurrencyOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getCurrencies,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    currencies: result.currencies,
   }
 }
 
@@ -71,7 +55,7 @@ const getLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadCurrencyMaintenanceCurrencies(session?.user ?? null)
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadCurrencyMaintenanceRouteData() {
@@ -89,17 +73,9 @@ export function CurrencyMaintenanceRouteComponent({
 }
 
 export function renderCurrencyMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ currencies }) => (
     <main className="mt-8">
-      <CurrenciesTable currencies={loaderData.currencies} />
+      <CurrenciesTable currencies={currencies} />
     </main>
-  )
+  ))
 }

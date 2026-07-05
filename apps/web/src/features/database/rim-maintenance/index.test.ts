@@ -1,15 +1,10 @@
-import { existsSync, readFileSync } from "node:fs"
-import { describe, expect, it } from "vitest"
+import { describe } from "vitest"
 
 import * as feature from "./index"
+import { assertFeaturePublicApi } from "../public-api-contract"
 
 const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
 const FEATURE_ALIAS = "@/features/database/rim-maintenance"
-const DELETED_NESTED_ENTRYPOINTS = [
-  "form-workflow/index.ts",
-  "sheet-workflow/index.ts",
-  "table-workflow/index.ts",
-]
 const FEATURE_SOURCE_FILES = [
   "actions.ts",
   "rim-maintenance-page.tsx",
@@ -22,29 +17,15 @@ const FEATURE_SOURCE_FILES = [
   "table-workflow/rims-table-toolbar.tsx",
 ]
 
-function readFeatureSource(filePath: string) {
-  return readFileSync(new URL(filePath, FEATURE_DIRECTORY_URL), "utf8")
-}
-
 describe("rim-maintenance public API", () => {
-  it("only exposes the route-facing feature entrypoint", () => {
-    expect(Object.keys(feature).sort()).toStrictEqual([
+  assertFeaturePublicApi({
+    exportedNames: [
       "RimMaintenanceRouteComponent",
       "loadRimMaintenanceRouteData",
-    ])
-  })
-
-  it("avoids internal self-imports through the feature alias", () => {
-    for (const filePath of FEATURE_SOURCE_FILES) {
-      expect(readFeatureSource(filePath)).not.toMatch(FEATURE_ALIAS)
-    }
-  })
-
-  it("keeps the feature entrypoint at the root only", () => {
-    expect(
-      DELETED_NESTED_ENTRYPOINTS.filter((filePath) =>
-        existsSync(new URL(filePath, FEATURE_DIRECTORY_URL))
-      )
-    ).toStrictEqual([])
+    ],
+    feature,
+    featureAlias: FEATURE_ALIAS,
+    featureDirectoryUrl: FEATURE_DIRECTORY_URL,
+    featureSourceFiles: FEATURE_SOURCE_FILES,
   })
 })

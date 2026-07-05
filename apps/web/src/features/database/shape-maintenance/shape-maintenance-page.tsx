@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { ShapeOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createShapeAuthorizationError, hasShapeMaintenanceAccess } from "./actions"
 import { ShapesTable } from "./table-workflow/shapes-table"
 
-type LoadResult =
-  | ReturnType<typeof createShapeAuthorizationError>
-  | {
-      status: "success"
-      shapes: ShapeOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  shapes: ShapeOption[]
+}, ReturnType<typeof createShapeAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      shapes: ShapeOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  shapes: ShapeOption[]
+}>
 
 type ReadDependencies = {
   getShapes: () => Promise<ShapeOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getShapes,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    shapes: result.shapes,
   }
 }
 
@@ -71,7 +55,7 @@ const getLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadShapeMaintenanceShapes(session?.user ?? null)
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadShapeMaintenanceRouteData() {
@@ -89,17 +73,9 @@ export function ShapeMaintenanceRouteComponent({
 }
 
 export function renderShapeMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ shapes }) => (
     <main className="mt-8">
-      <ShapesTable shapes={loaderData.shapes} />
+      <ShapesTable shapes={shapes} />
     </main>
-  )
+  ))
 }

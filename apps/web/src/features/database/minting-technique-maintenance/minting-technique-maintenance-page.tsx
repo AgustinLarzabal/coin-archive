@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { TechniqueOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createMintingTechniqueAuthorizationError, hasMintingTechniqueMaintenanceAccess } from "./actions"
 import { MintingTechniquesTable } from "./table-workflow/minting-techniques-table"
 
-type LoadResult =
-  | ReturnType<typeof createMintingTechniqueAuthorizationError>
-  | {
-      status: "success"
-      mintingTechniques: TechniqueOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  mintingTechniques: TechniqueOption[]
+}, ReturnType<typeof createMintingTechniqueAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      mintingTechniques: TechniqueOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  mintingTechniques: TechniqueOption[]
+}>
 
 type ReadDependencies = {
   getTechniques: () => Promise<TechniqueOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getTechniques,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    mintingTechniques: result.mintingTechniques,
   }
 }
 
@@ -69,9 +53,11 @@ const getLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadMintingTechniqueMaintenanceMintingTechniques(session?.user ?? null)
+  const result = await loadMintingTechniqueMaintenanceMintingTechniques(
+    session?.user ?? null
+  )
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadMintingTechniqueMaintenanceRouteData() {
@@ -89,17 +75,9 @@ export function MintingTechniqueMaintenanceRouteComponent({
 }
 
 export function renderMintingTechniqueMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ mintingTechniques }) => (
     <main className="mt-8">
-      <MintingTechniquesTable mintingTechniques={loaderData.mintingTechniques} />
+      <MintingTechniquesTable mintingTechniques={mintingTechniques} />
     </main>
-  )
+  ))
 }

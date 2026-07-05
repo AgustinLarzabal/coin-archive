@@ -1,30 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { IssuerMaintenanceRecord } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { IssuersTable } from "./table-workflow/issuers-table"
 
-type LoadIssuerMaintenancePageDataResult =
-  | {
-      status: "error"
-    }
-  | {
-      status: "success"
-      issuers: IssuerMaintenanceRecord[]
-    }
+type LoadIssuerMaintenancePageDataResult = MaintenancePageLoadResult<{
+  issuers: IssuerMaintenanceRecord[]
+}>
 
-type IssuerMaintenancePageLoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      issuers: IssuerMaintenanceRecord[]
-    }
+type IssuerMaintenancePageLoaderData = MaintenancePageLoaderData<{
+  issuers: IssuerMaintenanceRecord[]
+}>
 
 type IssuerMaintenanceReadDependencies = {
   getIssuerMaintenanceRecords: () => Promise<IssuerMaintenanceRecord[]>
@@ -35,21 +30,6 @@ async function getDefaultIssuerReadDependencies(): Promise<IssuerMaintenanceRead
 
   return {
     getIssuerMaintenanceRecords,
-  }
-}
-
-function toIssuerMaintenancePageLoaderData(
-  result: LoadIssuerMaintenancePageDataResult
-): IssuerMaintenancePageLoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    issuers: result.issuers,
   }
 }
 
@@ -78,7 +58,7 @@ const getIssuerMaintenanceLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadIssuerMaintenancePageData(session?.user ?? null)
 
-  return toIssuerMaintenancePageLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadIssuerMaintenanceRouteData() {
@@ -98,17 +78,9 @@ export function IssuerMaintenanceRouteComponent({
 export function renderIssuerMaintenancePage(
   loaderData: IssuerMaintenancePageLoaderData
 ) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ issuers }) => (
     <main className="mt-8">
-      <IssuersTable issuers={loaderData.issuers} />
+      <IssuersTable issuers={issuers} />
     </main>
-  )
+  ))
 }

@@ -1,32 +1,28 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { CompositionOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { hasCompositionMaintenanceAccess } from "./actions"
 import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
 import { CompositionsTable } from "./table-workflow/compositions-table"
 
-type LoadCompositionMaintenancePageDataResult =
-  | {
-      status: "error"
-      formError: typeof COMPOSITION_AUTHORIZATION_ERROR
-    }
-  | {
-      status: "success"
-      compositions: CompositionOption[]
-    }
+type LoadCompositionMaintenancePageDataResult = MaintenancePageLoadResult<{
+  compositions: CompositionOption[]
+}, {
+  formError: typeof COMPOSITION_AUTHORIZATION_ERROR
+}>
 
-type CompositionMaintenancePageLoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      compositions: CompositionOption[]
-    }
+type CompositionMaintenancePageLoaderData = MaintenancePageLoaderData<{
+  compositions: CompositionOption[]
+}>
 
 type CompositionMaintenanceReadDependencies = {
   getCompositions: () => Promise<CompositionOption[]>
@@ -37,21 +33,6 @@ async function getDefaultCompositionReadDependencies(): Promise<CompositionMaint
 
   return {
     getCompositions,
-  }
-}
-
-function toCompositionMaintenancePageLoaderData(
-  result: LoadCompositionMaintenancePageDataResult
-): CompositionMaintenancePageLoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    compositions: result.compositions,
   }
 }
 
@@ -81,7 +62,7 @@ const getCompositionMaintenanceLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadCompositionMaintenancePageData(session?.user ?? null)
 
-  return toCompositionMaintenancePageLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadCompositionMaintenanceRouteData() {
@@ -101,17 +82,9 @@ export function CompositionMaintenanceRouteComponent({
 export function renderCompositionMaintenancePage(
   loaderData: CompositionMaintenancePageLoaderData
 ) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ compositions }) => (
     <main className="mt-8">
-      <CompositionsTable compositions={loaderData.compositions} />
+      <CompositionsTable compositions={compositions} />
     </main>
-  )
+  ))
 }

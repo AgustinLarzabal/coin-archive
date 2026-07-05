@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { OrientationOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createOrientationAuthorizationError, hasOrientationMaintenanceAccess } from "./actions"
 import { OrientationsTable } from "./table-workflow/orientations-table"
 
-type LoadResult =
-  | ReturnType<typeof createOrientationAuthorizationError>
-  | {
-      status: "success"
-      orientations: OrientationOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  orientations: OrientationOption[]
+}, ReturnType<typeof createOrientationAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      orientations: OrientationOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  orientations: OrientationOption[]
+}>
 
 type ReadDependencies = {
   getOrientations: () => Promise<OrientationOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getOrientations,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    orientations: result.orientations,
   }
 }
 
@@ -69,9 +53,11 @@ const getLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadOrientationMaintenanceOrientations(session?.user ?? null)
+  const result = await loadOrientationMaintenanceOrientations(
+    session?.user ?? null
+  )
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadOrientationMaintenanceRouteData() {
@@ -89,17 +75,9 @@ export function OrientationMaintenanceRouteComponent({
 }
 
 export function renderOrientationMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ orientations }) => (
     <main className="mt-8">
-      <OrientationsTable orientations={loaderData.orientations} />
+      <OrientationsTable orientations={orientations} />
     </main>
-  )
+  ))
 }

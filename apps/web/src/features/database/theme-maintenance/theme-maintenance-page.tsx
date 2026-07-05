@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { ThemeOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createThemeAuthorizationError, hasThemeMaintenanceAccess } from "./actions"
 import { ThemesTable } from "./table-workflow/themes-table"
 
-type LoadResult =
-  | ReturnType<typeof createThemeAuthorizationError>
-  | {
-      status: "success"
-      themes: ThemeOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  themes: ThemeOption[]
+}, ReturnType<typeof createThemeAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      themes: ThemeOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  themes: ThemeOption[]
+}>
 
 type ReadDependencies = {
   getThemes: () => Promise<ThemeOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getThemes,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    themes: result.themes,
   }
 }
 
@@ -71,7 +55,7 @@ const getLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadThemeMaintenanceThemes(session?.user ?? null)
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadThemeMaintenanceRouteData() {
@@ -89,17 +73,9 @@ export function ThemeMaintenanceRouteComponent({
 }
 
 export function renderThemeMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ themes }) => (
     <main className="mt-8">
-      <ThemesTable themes={loaderData.themes} />
+      <ThemesTable themes={themes} />
     </main>
-  )
+  ))
 }

@@ -1,28 +1,25 @@
 import { createServerFn } from "@tanstack/react-start"
 import type { RimOption } from "@workspace/db"
 
-import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  type MaintenancePageLoaderData,
+  type MaintenancePageLoadResult,
+  renderMaintenancePage,
+  toMaintenancePageLoaderData,
+} from "../maintenance-page"
 import { createRimAuthorizationError, hasRimMaintenanceAccess } from "./actions"
 import { RimsTable } from "./table-workflow/rims-table"
 
-type LoadResult =
-  | ReturnType<typeof createRimAuthorizationError>
-  | {
-      status: "success"
-      rims: RimOption[]
-    }
+type LoadResult = MaintenancePageLoadResult<{
+  rims: RimOption[]
+}, ReturnType<typeof createRimAuthorizationError>>
 
-type LoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      rims: RimOption[]
-    }
+type LoaderData = MaintenancePageLoaderData<{
+  rims: RimOption[]
+}>
 
 type ReadDependencies = {
   getRims: () => Promise<RimOption[]>
@@ -33,19 +30,6 @@ async function getDefaultReadDependencies(): Promise<ReadDependencies> {
 
   return {
     getRims,
-  }
-}
-
-function toLoaderData(result: Awaited<LoadResult>): LoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    rims: result.rims,
   }
 }
 
@@ -71,7 +55,7 @@ const getLoaderData = createServerFn({
   const session = await getAuthSession()
   const result = await loadRimMaintenanceRims(session?.user ?? null)
 
-  return toLoaderData(result)
+  return toMaintenancePageLoaderData(result)
 })
 
 export function loadRimMaintenanceRouteData() {
@@ -89,17 +73,9 @@ export function RimMaintenanceRouteComponent({
 }
 
 export function renderRimMaintenancePage(loaderData: LoaderData) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ rims }) => (
     <main className="mt-8">
-      <RimsTable rims={loaderData.rims} />
+      <RimsTable rims={rims} />
     </main>
-  )
+  ))
 }

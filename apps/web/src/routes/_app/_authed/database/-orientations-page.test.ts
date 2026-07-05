@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { OrientationOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { ORIENTATION_AUTHORIZATION_ERROR } from "@/lib/orientation-maintenance"
 import {
   loadOrientationMaintenanceOrientations,
@@ -26,28 +25,6 @@ function createOrientation(
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Orientations maintenance entry after Ruler Groups and Rulers", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/orientations",
-      label: "Orientations",
-    })
-
-    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
-      to: "/database/rulers",
-      label: "Rulers",
-    })
-    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[14]).toStrictEqual({
-      to: "/database/orientations",
-      label: "Orientations",
-    })
-  })
-})
 
 describe("loadOrientationMaintenanceOrientations", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

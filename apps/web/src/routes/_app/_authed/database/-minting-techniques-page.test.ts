@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { TechniqueOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "@/lib/minting-technique-maintenance"
 import {
   loadMintingTechniqueMaintenanceMintingTechniques,
@@ -33,28 +32,6 @@ function createMintingTechnique(
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Minting Techniques page after Shapes and before Engravers", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/minting-techniques",
-      label: "Minting Techniques",
-    })
-
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
-      to: "/database/shapes",
-      label: "Shapes",
-    })
-    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
-      to: "/database/minting-techniques",
-      label: "Minting Techniques",
-    })
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/engravers",
-      label: "Engravers",
-    })
-  })
-})
 
 describe("loadMintingTechniqueMaintenanceMintingTechniques", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

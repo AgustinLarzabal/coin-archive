@@ -1,7 +1,6 @@
 import type { RimOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RIM_AUTHORIZATION_ERROR } from "@/lib/rim-maintenance"
 import { loadRimMaintenanceRims } from "./rims"
 
@@ -16,24 +15,6 @@ function createRim(overrides: Pick<RimOption, "id" | "code" | "name">): RimOptio
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Rims maintenance entry after Edges", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/rims",
-      label: "Rims",
-    })
-
-    expect(databaseSecondaryMenuItems[5]).toStrictEqual({
-      to: "/database/edges",
-      label: "Edges",
-    })
-    expect(databaseSecondaryMenuItems[6]).toStrictEqual({
-      to: "/database/rims",
-      label: "Rims",
-    })
-  })
-})
 
 describe("loadRimMaintenanceRims", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

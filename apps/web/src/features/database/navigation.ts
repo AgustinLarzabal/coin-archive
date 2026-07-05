@@ -6,10 +6,22 @@ type DatabaseMaintenanceSection = {
   countKey: keyof DatabaseGeneralSummaryCounts
 }
 
-const databaseGeneralMenuItem = {
+type DatabaseSecondaryMenuItem = Pick<
+  DatabaseMaintenanceSection,
+  "to" | "label"
+>
+
+const databaseGeneralMenuItem: DatabaseSecondaryMenuItem = {
   to: "/database",
   label: "General",
-} as const
+}
+
+function toDatabaseSecondaryMenuItem({
+  to,
+  label,
+}: DatabaseMaintenanceSection): DatabaseSecondaryMenuItem {
+  return { to, label }
+}
 
 export const databaseMaintenanceSections = [
   {
@@ -91,5 +103,5 @@ export const databaseMaintenanceSections = [
 
 export const databaseSecondaryMenuItems = [
   databaseGeneralMenuItem,
-  ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
-] as const
+  ...databaseMaintenanceSections.map(toDatabaseSecondaryMenuItem),
+] as const satisfies readonly DatabaseSecondaryMenuItem[]

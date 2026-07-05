@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { ThemeOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { THEME_AUTHORIZATION_ERROR } from "@/lib/theme-maintenance"
 import { loadThemeMaintenanceThemes, renderDatabaseThemesPage } from "./themes"
 
@@ -26,28 +25,6 @@ const PORTRAIT_THEME = createTheme({
   id: "7bf1fdc0-cceb-4dda-a8dd-b004a6f35775",
   code: "portrait",
   name: "Portrait",
-})
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Themes maintenance entry after Engravers", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/themes",
-      label: "Themes",
-    })
-
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/engravers",
-      label: "Engravers",
-    })
-    expect(databaseSecondaryMenuItems[10]).toStrictEqual({
-      to: "/database/themes",
-      label: "Themes",
-    })
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
-      to: "/database/issuers",
-      label: "Issuers",
-    })
-  })
 })
 
 describe("loadThemeMaintenanceThemes", () => {

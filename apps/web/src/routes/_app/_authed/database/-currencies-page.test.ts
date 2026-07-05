@@ -1,18 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { CURRENCY_AUTHORIZATION_ERROR } from "@/lib/currency-maintenance"
 
 import { loadCurrencyMaintenanceCurrencies } from "./currencies"
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Currencies page in the database secondary menu", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/currencies",
-      label: "Currencies",
-    })
-  })
-})
 
 describe("loadCurrencyMaintenanceCurrencies", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

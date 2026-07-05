@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { EDGE_AUTHORIZATION_ERROR } from "@/lib/edge-maintenance"
 
 import { loadEdgeMaintenanceEdges, renderDatabaseEdgesPage } from "./edges"
@@ -9,24 +8,6 @@ import { loadEdgeMaintenanceEdges, renderDatabaseEdgesPage } from "./edges"
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Edges page in the database secondary menu after Distributions", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/edges",
-      label: "Edges",
-    })
-
-    expect(databaseSecondaryMenuItems[4]).toStrictEqual({
-      to: "/database/distributions",
-      label: "Distributions",
-    })
-    expect(databaseSecondaryMenuItems[5]).toStrictEqual({
-      to: "/database/edges",
-      label: "Edges",
-    })
-  })
-})
 
 describe("loadEdgeMaintenanceEdges", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

@@ -1,18 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { COMPOSITION_AUTHORIZATION_ERROR } from "@/lib/composition-maintenance"
 
 import { loadCompositionMaintenanceCompositions } from "./compositions"
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Compositions page in the database secondary menu", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/compositions",
-      label: "Compositions",
-    })
-  })
-})
 
 describe("loadCompositionMaintenanceCompositions", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

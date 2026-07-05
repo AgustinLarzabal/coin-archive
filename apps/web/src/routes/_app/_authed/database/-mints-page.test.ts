@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { MintOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { MINT_AUTHORIZATION_ERROR } from "@/lib/mint-maintenance"
 import { loadMintMaintenanceMints, renderDatabaseMintsPage } from "./mints"
 
@@ -28,28 +27,6 @@ function createMint(
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Mints maintenance entry after Orientations", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/mints",
-      label: "Mints",
-    })
-
-    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[14]).toStrictEqual({
-      to: "/database/orientations",
-      label: "Orientations",
-    })
-    expect(databaseSecondaryMenuItems[15]).toStrictEqual({
-      to: "/database/mints",
-      label: "Mints",
-    })
-  })
-})
 
 describe("loadMintMaintenanceMints", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

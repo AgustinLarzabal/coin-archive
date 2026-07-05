@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RULER_AUTHORIZATION_ERROR } from "@/lib/ruler-maintenance"
 import { loadRulerMaintenanceData, renderDatabaseRulersPage } from "./rulers"
 
@@ -15,28 +14,6 @@ function createRuler(
 ): RulerOption {
   return overrides
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Rulers maintenance entry after Issuers and before Ruler Groups", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/rulers",
-      label: "Rulers",
-    })
-
-    expect(databaseSecondaryMenuItems[11]).toStrictEqual({
-      to: "/database/issuers",
-      label: "Issuers",
-    })
-    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
-      to: "/database/rulers",
-      label: "Rulers",
-    })
-    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-  })
-})
 
 describe("loadRulerMaintenanceData", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

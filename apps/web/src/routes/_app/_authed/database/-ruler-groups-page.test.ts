@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerGroupOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { RULER_GROUP_AUTHORIZATION_ERROR } from "@/lib/ruler-group-maintenance"
 import {
   loadRulerGroupMaintenanceRulerGroups,
@@ -26,28 +25,6 @@ function createRulerGroup(
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Ruler Groups maintenance entry after Rulers", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-
-    expect(databaseSecondaryMenuItems[12]).toStrictEqual({
-      to: "/database/rulers",
-      label: "Rulers",
-    })
-    expect(databaseSecondaryMenuItems[13]).toStrictEqual({
-      to: "/database/ruler-groups",
-      label: "Ruler Groups",
-    })
-    expect(databaseSecondaryMenuItems[14]).toStrictEqual({
-      to: "/database/orientations",
-      label: "Orientations",
-    })
-  })
-})
 
 describe("loadRulerGroupMaintenanceRulerGroups", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

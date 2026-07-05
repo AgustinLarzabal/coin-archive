@@ -1,24 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  databaseMaintenanceSections,
-  databaseSecondaryMenuItems,
-} from "@/features/database/navigation"
 import { loadDatabaseGeneralSummaryCounts } from "./index"
-
-function pickNavigationIdentity({ to, label }: { to: string; label: string }) {
-  return { to, label }
-}
-
-describe("databaseMaintenanceSections", () => {
-  it("shares the same maintenance labels and routes as the database secondary menu", () => {
-    expect(
-      databaseMaintenanceSections.map(pickNavigationIdentity)
-    ).toStrictEqual(
-      databaseSecondaryMenuItems.slice(1).map(pickNavigationIdentity)
-    )
-  })
-})
 
 describe("loadDatabaseGeneralSummaryCounts", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

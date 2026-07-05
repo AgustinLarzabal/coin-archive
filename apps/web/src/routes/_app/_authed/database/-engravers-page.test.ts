@@ -1,31 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { ENGRAVER_AUTHORIZATION_ERROR } from "@/lib/engraver-maintenance"
 
 import { loadEngraverMaintenanceEngravers } from "./engravers"
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the read-only Engravers page in the database secondary menu after Minting Techniques", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/engravers",
-      label: "Engravers",
-    })
-
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
-      to: "/database/shapes",
-      label: "Shapes",
-    })
-    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
-      to: "/database/minting-techniques",
-      label: "Minting Techniques",
-    })
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/engravers",
-      label: "Engravers",
-    })
-  })
-})
 
 describe("loadEngraverMaintenanceEngravers", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

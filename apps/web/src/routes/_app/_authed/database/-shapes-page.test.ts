@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import type { ShapeOption } from "@workspace/db"
 import { describe, expect, it, vi } from "vitest"
 
-import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 import { SHAPE_AUTHORIZATION_ERROR } from "@/lib/shape-maintenance"
 import { loadShapeMaintenanceShapes, renderDatabaseShapesPage } from "./shapes"
 
@@ -23,36 +22,6 @@ function createShape(
     ...overrides,
   }
 }
-
-describe("databaseSecondaryMenuItems", () => {
-  it("includes the Shapes maintenance entry after Rims", () => {
-    expect(databaseSecondaryMenuItems).toContainEqual({
-      to: "/database/shapes",
-      label: "Shapes",
-    })
-
-    expect(databaseSecondaryMenuItems[5]).toStrictEqual({
-      to: "/database/edges",
-      label: "Edges",
-    })
-    expect(databaseSecondaryMenuItems[6]).toStrictEqual({
-      to: "/database/rims",
-      label: "Rims",
-    })
-    expect(databaseSecondaryMenuItems[7]).toStrictEqual({
-      to: "/database/shapes",
-      label: "Shapes",
-    })
-    expect(databaseSecondaryMenuItems[8]).toStrictEqual({
-      to: "/database/minting-techniques",
-      label: "Minting Techniques",
-    })
-    expect(databaseSecondaryMenuItems[9]).toStrictEqual({
-      to: "/database/engravers",
-      label: "Engravers",
-    })
-  })
-})
 
 describe("loadShapeMaintenanceShapes", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

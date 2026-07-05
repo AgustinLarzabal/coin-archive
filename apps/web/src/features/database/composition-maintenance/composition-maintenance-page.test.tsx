@@ -1,5 +1,4 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type * as TanstackReactRouter from "@tanstack/react-router"
 import { describe, expect, it, vi } from "vitest"
 
 import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
@@ -11,17 +10,6 @@ import {
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
-
-vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof TanstackReactRouter>()
-
-  return {
-    ...actual,
-    useRouter: () => ({
-      invalidate: vi.fn(),
-    }),
-  }
-})
 
 vi.mock("./table-workflow/compositions-table", () => ({
   CompositionsTable: () => "Compositions table",
@@ -81,10 +69,7 @@ describe("loadCompositionMaintenancePageData", () => {
     })
 
     await expect(
-      loadCompositionMaintenancePageData(
-        { role: "admin" },
-        { getCompositions }
-      )
+      loadCompositionMaintenancePageData({ role: "admin" }, { getCompositions })
     ).resolves.toStrictEqual({
       status: "success",
       compositions,

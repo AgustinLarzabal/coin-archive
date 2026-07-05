@@ -75,6 +75,12 @@ async function getDefaultCompositionMutationDependencies(): Promise<CompositionM
   }
 }
 
+async function resolveCompositionMutationDependencies(
+  dependencies?: CompositionMutationDependencies
+) {
+  return dependencies ?? getDefaultCompositionMutationDependencies()
+}
+
 export function createCompositionAuthorizationError(): CompositionAuthorizationErrorResult {
   return {
     status: "error",
@@ -103,6 +109,13 @@ function createFormErrorResult(formError: string): CompositionMutationResult {
     status: "error",
     fieldErrors: {},
     formError,
+  }
+}
+
+function createSuccessResult(message: string): CompositionMutationResult {
+  return {
+    status: "success",
+    message,
   }
 }
 
@@ -244,16 +257,13 @@ export async function submitCreateComposition(
     return validationResult.result
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCompositionMutationDependencies())
+  const mutationDependencies =
+    await resolveCompositionMutationDependencies(dependencies)
 
   try {
-    await resolvedDependencies.createComposition(validationResult.data)
+    await mutationDependencies.createComposition(validationResult.data)
 
-    return {
-      status: "success",
-      message: COMPOSITION_CREATED_MESSAGE,
-    }
+    return createSuccessResult(COMPOSITION_CREATED_MESSAGE)
   } catch (error) {
     return createPersistenceError(error)
   }
@@ -274,11 +284,11 @@ export async function submitUpdateComposition(
     return validationResult.result
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCompositionMutationDependencies())
+  const mutationDependencies =
+    await resolveCompositionMutationDependencies(dependencies)
 
   try {
-    const updatedComposition = await resolvedDependencies.updateComposition(
+    const updatedComposition = await mutationDependencies.updateComposition(
       validationResult.data
     )
 
@@ -286,10 +296,7 @@ export async function submitUpdateComposition(
       return createFormErrorResult(COMPOSITION_MISSING_ERROR)
     }
 
-    return {
-      status: "success",
-      message: COMPOSITION_UPDATED_MESSAGE,
-    }
+    return createSuccessResult(COMPOSITION_UPDATED_MESSAGE)
   } catch (error) {
     return createPersistenceError(error)
   }
@@ -310,11 +317,11 @@ export async function submitDeleteComposition(
     return validationResult.result
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCompositionMutationDependencies())
+  const mutationDependencies =
+    await resolveCompositionMutationDependencies(dependencies)
 
   try {
-    const deletedComposition = await resolvedDependencies.deleteComposition(
+    const deletedComposition = await mutationDependencies.deleteComposition(
       validationResult.data
     )
 
@@ -322,10 +329,7 @@ export async function submitDeleteComposition(
       return createFormErrorResult(COMPOSITION_MISSING_ERROR)
     }
 
-    return {
-      status: "success",
-      message: COMPOSITION_DELETED_MESSAGE,
-    }
+    return createSuccessResult(COMPOSITION_DELETED_MESSAGE)
   } catch (error) {
     return createPersistenceError(error)
   }

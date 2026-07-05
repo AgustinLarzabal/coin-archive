@@ -5,11 +5,15 @@ import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import { createCompositionAuthorizationError, hasCompositionMaintenanceAccess } from "./actions"
+import {
+  createCompositionAuthorizationError,
+  hasCompositionMaintenanceAccess,
+  type CompositionAuthorizationErrorResult,
+} from "./actions"
 import { CompositionsTable } from "./table-workflow/compositions-table"
 
 type LoadCompositionMaintenancePageDataResult =
-  | ReturnType<typeof createCompositionAuthorizationError>
+  | CompositionAuthorizationErrorResult
   | {
       status: "success"
       compositions: CompositionOption[]
@@ -36,6 +40,12 @@ async function getDefaultCompositionReadDependencies(): Promise<CompositionMaint
   }
 }
 
+async function resolveCompositionReadDependencies(
+  dependencies?: CompositionMaintenanceReadDependencies
+) {
+  return dependencies ?? getDefaultCompositionReadDependencies()
+}
+
 function toCompositionMaintenancePageLoaderData(
   result: LoadCompositionMaintenancePageDataResult
 ): CompositionMaintenancePageLoaderData {
@@ -60,7 +70,7 @@ export async function loadCompositionMaintenancePageData(
   }
 
   const { getCompositions } =
-    dependencies ?? (await getDefaultCompositionReadDependencies())
+    await resolveCompositionReadDependencies(dependencies)
 
   return {
     status: "success",

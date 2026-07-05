@@ -5,7 +5,7 @@ import {
 } from "@/features/database/composition-maintenance"
 
 export const Route = createFileRoute("/_app/_authed/database/compositions")({
-  loader: () => loadCompositionMaintenanceRouteData(),
+  loader: loadCompositionMaintenanceRouteData,
   component: DatabaseCompositionsComponent,
 })
 

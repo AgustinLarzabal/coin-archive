@@ -1,22 +1,13 @@
 import { createServerFn } from "@tanstack/react-start"
-import type {
-  CompositionOption,
-  CurrencyOption,
-  DistributionOption,
-  EdgeOption,
-  IssuerOption,
-  OrientationOption,
-  RimOption,
-  RulerOption,
-  ShapeOption,
-  TechniqueOption,
-} from "@workspace/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
+  getCoinFormOptionsDependencies,
   hasRequiredCoinLookupOptions,
+  loadCoinFormOptions,
+  type CoinFormOptionsDependencies,
   type CoinFormOptions,
 } from "./coin-form.shared"
 import {
@@ -34,19 +25,6 @@ type CreateCoinPageData = {
 
 type CreateCoinLoaderData = MaintenancePageLoaderData<CreateCoinPageData>
 
-type CreateCoinReadDependencies = {
-  getCompositions: () => Promise<CompositionOption[]>
-  getCurrencies: () => Promise<CurrencyOption[]>
-  getDistributions: () => Promise<DistributionOption[]>
-  getEdges: () => Promise<EdgeOption[]>
-  getIssuers: () => Promise<IssuerOption[]>
-  getOrientations: () => Promise<OrientationOption[]>
-  getRims: () => Promise<RimOption[]>
-  getRulers: () => Promise<RulerOption[]>
-  getShapes: () => Promise<ShapeOption[]>
-  getTechniques: () => Promise<TechniqueOption[]>
-}
-
 const REQUIRED_LOOKUP_LINKS = [
   ["/database/issuers", "Issuers"],
   ["/database/rulers", "Rulers"],
@@ -55,37 +33,9 @@ const REQUIRED_LOOKUP_LINKS = [
   ["/database/currencies", "Currencies"],
 ] as const
 
-async function getDefaultDependencies(): Promise<CreateCoinReadDependencies> {
-  const {
-    getCompositions,
-    getCurrencies,
-    getDistributions,
-    getEdges,
-    getIssuers,
-    getOrientations,
-    getRims,
-    getRulers,
-    getShapes,
-    getTechniques,
-  } = await import("@workspace/db")
-
-  return {
-    getCompositions,
-    getCurrencies,
-    getDistributions,
-    getEdges,
-    getIssuers,
-    getOrientations,
-    getRims,
-    getRulers,
-    getShapes,
-    getTechniques,
-  }
-}
-
 export async function loadCoinCreatePageData(
   collector: CollectorWithRole | null,
-  dependencies?: CreateCoinReadDependencies
+  dependencies?: CoinFormOptionsDependencies
 ): Promise<MaintenancePageLoadResult<CreateCoinPageData>> {
   if (!hasCoinMaintenanceAccess(collector)) {
     return {
@@ -93,46 +43,12 @@ export async function loadCoinCreatePageData(
     }
   }
 
-  const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
-
-  const [
-    issuers,
-    rulers,
-    distributions,
-    compositions,
-    currencies,
-    orientations,
-    shapes,
-    techniques,
-    edges,
-    rims,
-  ] = await Promise.all([
-    resolvedDependencies.getIssuers(),
-    resolvedDependencies.getRulers(),
-    resolvedDependencies.getDistributions(),
-    resolvedDependencies.getCompositions(),
-    resolvedDependencies.getCurrencies(),
-    resolvedDependencies.getOrientations(),
-    resolvedDependencies.getShapes(),
-    resolvedDependencies.getTechniques(),
-    resolvedDependencies.getEdges(),
-    resolvedDependencies.getRims(),
-  ])
+  const resolvedDependencies =
+    dependencies ?? (await getCoinFormOptionsDependencies())
 
   return {
     status: "success",
-    options: {
-      issuers,
-      rulers,
-      distributions,
-      compositions,
-      currencies,
-      orientations,
-      shapes,
-      techniques,
-      edges,
-      rims,
-    },
+    options: await loadCoinFormOptions(resolvedDependencies),
   }
 }
 

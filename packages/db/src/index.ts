@@ -131,7 +131,13 @@ export type {
   CoinMaintenanceListRecord,
   CoinMaintenanceListResult,
 } from "./queries/get-coin-maintenance-list"
-export type { CoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
+export type {
+  CoinMaintenanceFaceSurface,
+  CoinMaintenanceRecord,
+  CoinMaintenanceReference,
+  CoinMaintenanceSurface,
+  CoinMaintenanceSurfaceSet,
+} from "./coin-maintenance-record"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"

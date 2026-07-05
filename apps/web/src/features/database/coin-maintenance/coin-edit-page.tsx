@@ -1,23 +1,16 @@
 import { createServerFn } from "@tanstack/react-start"
-import type {
-  CoinMaintenanceRecord,
-  CompositionOption,
-  CurrencyOption,
-  DistributionOption,
-  EdgeOption,
-  IssuerOption,
-  OrientationOption,
-  RimOption,
-  RulerOption,
-  ShapeOption,
-  TechniqueOption,
-} from "@workspace/db"
+import type { CoinMaintenanceRecord } from "@workspace/db"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import type { CoinFormOptions } from "./coin-form.shared"
+import {
+  getCoinFormOptionsDependencies,
+  loadCoinFormOptions,
+  type CoinFormOptions,
+  type CoinFormOptionsDependencies,
+} from "./coin-form.shared"
 import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
@@ -40,49 +33,22 @@ type EditCoinLoaderData = MaintenancePageLoaderData<EditCoinPageData>
 
 type CoinEditLoaderDeps = z.infer<typeof coinEditLoaderDepsSchema>
 
-type EditCoinReadDependencies = {
+type EditCoinReadDependencies = CoinFormOptionsDependencies & {
   getCoinMaintenanceRecord: (
     coinId: string
   ) => Promise<CoinMaintenanceRecord | null>
-  getCompositions: () => Promise<CompositionOption[]>
-  getCurrencies: () => Promise<CurrencyOption[]>
-  getDistributions: () => Promise<DistributionOption[]>
-  getEdges: () => Promise<EdgeOption[]>
-  getIssuers: () => Promise<IssuerOption[]>
-  getOrientations: () => Promise<OrientationOption[]>
-  getRims: () => Promise<RimOption[]>
-  getRulers: () => Promise<RulerOption[]>
-  getShapes: () => Promise<ShapeOption[]>
-  getTechniques: () => Promise<TechniqueOption[]>
 }
 
 async function getDefaultDependencies(): Promise<EditCoinReadDependencies> {
-  const {
-    getCoinMaintenanceRecord,
-    getCompositions,
-    getCurrencies,
-    getDistributions,
-    getEdges,
-    getIssuers,
-    getOrientations,
-    getRims,
-    getRulers,
-    getShapes,
-    getTechniques,
-  } = await import("@workspace/db")
+  const [{ getCoinMaintenanceRecord }, formOptionsDependencies] =
+    await Promise.all([
+      import("@workspace/db"),
+      getCoinFormOptionsDependencies(),
+    ])
 
   return {
     getCoinMaintenanceRecord,
-    getCompositions,
-    getCurrencies,
-    getDistributions,
-    getEdges,
-    getIssuers,
-    getOrientations,
-    getRims,
-    getRulers,
-    getShapes,
-    getTechniques,
+    ...formOptionsDependencies,
   }
 }
 
@@ -99,47 +65,15 @@ export async function loadCoinEditPageData(
 
   const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
 
-  const [
-    coin,
-    issuers,
-    rulers,
-    distributions,
-    compositions,
-    currencies,
-    orientations,
-    shapes,
-    techniques,
-    edges,
-    rims,
-  ] = await Promise.all([
+  const [coin, options] = await Promise.all([
     resolvedDependencies.getCoinMaintenanceRecord(loaderDeps.coinId),
-    resolvedDependencies.getIssuers(),
-    resolvedDependencies.getRulers(),
-    resolvedDependencies.getDistributions(),
-    resolvedDependencies.getCompositions(),
-    resolvedDependencies.getCurrencies(),
-    resolvedDependencies.getOrientations(),
-    resolvedDependencies.getShapes(),
-    resolvedDependencies.getTechniques(),
-    resolvedDependencies.getEdges(),
-    resolvedDependencies.getRims(),
+    loadCoinFormOptions(resolvedDependencies),
   ])
 
   return {
     status: "success",
     coin,
-    options: {
-      issuers,
-      rulers,
-      distributions,
-      compositions,
-      currencies,
-      orientations,
-      shapes,
-      techniques,
-      edges,
-      rims,
-    },
+    options,
   }
 }
 

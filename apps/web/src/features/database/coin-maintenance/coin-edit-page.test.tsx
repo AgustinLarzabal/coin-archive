@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
+import type { CoinMaintenanceRecord } from "@workspace/db"
 
 import {
   CoinEditRouteComponent,
@@ -14,7 +15,7 @@ vi.mock("./coin-form", () => ({
   CoinForm: () => "Coin form",
 }))
 
-const coin = {
+const coin: CoinMaintenanceRecord = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",
@@ -28,18 +29,27 @@ const coin = {
   isDemonetized: null,
   issuerId: "issuer-1",
   maxYear: 2001,
+  mintIds: ["mint-1"],
   minYear: 1999,
   mintage: 1000,
   orientationId: null,
   rimId: null,
-  rulerId: "ruler-1",
+  rulerIds: ["ruler-1"],
   shapeId: null,
   techniqueId: null,
+  themeIds: ["theme-1"],
   thickness: 1.9,
   weight: 7.5,
-} as const
+  references: [],
+  surfaces: {
+    obverse: null,
+    reverse: null,
+    edge: null,
+  },
+}
 
 const options = {
+  catalogues: [],
   issuers: [
     {
       id: "issuer-1",
@@ -83,11 +93,14 @@ const options = {
       updatedAt: new Date("2026-07-05T00:00:00.000Z"),
     },
   ],
+  engravers: [],
+  mints: [],
   orientations: [],
   shapes: [],
   techniques: [],
   edges: [],
   rims: [],
+  themes: [],
 }
 
 describe("loadCoinEditPageData", () => {
@@ -100,16 +113,20 @@ describe("loadCoinEditPageData", () => {
         },
         {
           getCoinMaintenanceRecord: vi.fn(),
+          getCatalogues: vi.fn(),
           getIssuers: vi.fn(),
           getRulers: vi.fn(),
           getDistributions: vi.fn(),
           getCompositions: vi.fn(),
           getCurrencies: vi.fn(),
+          getEngravers: vi.fn(),
+          getMints: vi.fn(),
           getOrientations: vi.fn(),
           getShapes: vi.fn(),
           getTechniques: vi.fn(),
           getEdges: vi.fn(),
           getRims: vi.fn(),
+          getThemes: vi.fn(),
         }
       )
     ).resolves.toStrictEqual({
@@ -120,16 +137,20 @@ describe("loadCoinEditPageData", () => {
   it("returns the current Coin and lookup options for Editors and Admins", async () => {
     const dependencies = {
       getCoinMaintenanceRecord: vi.fn().mockResolvedValue(coin),
+      getCatalogues: vi.fn().mockResolvedValue(options.catalogues),
       getIssuers: vi.fn().mockResolvedValue(options.issuers),
       getRulers: vi.fn().mockResolvedValue(options.rulers),
       getDistributions: vi.fn().mockResolvedValue(options.distributions),
       getCompositions: vi.fn().mockResolvedValue(options.compositions),
       getCurrencies: vi.fn().mockResolvedValue(options.currencies),
+      getEngravers: vi.fn().mockResolvedValue(options.engravers),
+      getMints: vi.fn().mockResolvedValue(options.mints),
       getOrientations: vi.fn().mockResolvedValue(options.orientations),
       getShapes: vi.fn().mockResolvedValue(options.shapes),
       getTechniques: vi.fn().mockResolvedValue(options.techniques),
       getEdges: vi.fn().mockResolvedValue(options.edges),
       getRims: vi.fn().mockResolvedValue(options.rims),
+      getThemes: vi.fn().mockResolvedValue(options.themes),
     }
 
     await expect(

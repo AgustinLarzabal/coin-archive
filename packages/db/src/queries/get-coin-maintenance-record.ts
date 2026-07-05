@@ -1,34 +1,69 @@
-import { db } from "../client"
+import { and, asc, eq } from "drizzle-orm"
 
-export type CoinMaintenanceRecord = {
-  id: string
-  title: string
-  comments: string | null
-  compositionId: string
-  currencyId: string
-  diameter: number | null
-  distributionId: string
-  edgeId: string | null
-  faceValueNumericValue: number
-  faceValueText: string
-  isDemonetized: boolean | null
-  issuerId: string
-  maxYear: number | null
-  minYear: number | null
-  mintage: number | null
-  orientationId: string | null
-  rimId: string | null
-  rulerId: string | null
-  shapeId: string | null
-  techniqueId: string | null
-  thickness: number | null
-  weight: number | null
+import { db } from "../client"
+import type {
+  CoinMaintenanceRecord,
+  CoinMaintenanceSurfaceSet,
+} from "../coin-maintenance-record"
+import { coinSurface } from "../schema/coin-surface"
+import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
+
+type CoinMaintenanceSurfaceRow = {
+  kind: "obverse" | "reverse" | "edge-surface"
+  description: string | null
+  lettering: string | null
+  thumbnailUrl: string | null
+  imageUrl: string | null
+  engraverId: string | null
+}
+
+function mapCoinMaintenanceSurfaces(
+  rows: CoinMaintenanceSurfaceRow[]
+): CoinMaintenanceSurfaceSet {
+  const surfaces: CoinMaintenanceSurfaceSet = {
+    obverse: null,
+    reverse: null,
+    edge: null,
+  }
+
+  for (const row of rows) {
+    if (row.kind === "edge-surface") {
+      surfaces.edge = {
+        description: row.description,
+        lettering: row.lettering,
+        thumbnailUrl: row.thumbnailUrl,
+        imageUrl: row.imageUrl,
+      }
+      continue
+    }
+
+    const key = row.kind
+    const currentSurface = surfaces[key] ?? {
+      description: row.description,
+      lettering: row.lettering,
+      thumbnailUrl: row.thumbnailUrl,
+      imageUrl: row.imageUrl,
+      engraverIds: [],
+    }
+
+    if (
+      row.engraverId !== null &&
+      !currentSurface.engraverIds.includes(row.engraverId)
+    ) {
+      currentSurface.engraverIds.push(row.engraverId)
+    }
+
+    surfaces[key] = currentSurface
+  }
+
+  return surfaces
 }
 
 export async function getCoinMaintenanceRecord(
   coinId: string
 ): Promise<CoinMaintenanceRecord | null> {
-  const [coinRow, rulerRows] = await Promise.all([
+  const [coinRow, mintRows, rulerRows, themeRows, referenceRows, surfaceRows] =
+    await Promise.all([
     db.query.coin.findFirst({
       columns: {
         id: true,
@@ -55,6 +90,13 @@ export async function getCoinMaintenanceRecord(
       },
       where: (record, { eq }) => eq(record.id, coinId),
     }),
+    db.query.coinMint.findMany({
+      columns: {
+        mintId: true,
+      },
+      where: (record, { eq }) => eq(record.coinId, coinId),
+      orderBy: (record, { asc }) => asc(record.mintId),
+    }),
     db.query.coinRuler.findMany({
       columns: {
         rulerId: true,
@@ -62,6 +104,43 @@ export async function getCoinMaintenanceRecord(
       where: (record, { eq }) => eq(record.coinId, coinId),
       orderBy: (record, { asc }) => asc(record.rulerOrder),
     }),
+    db.query.coinTheme.findMany({
+      columns: {
+        themeId: true,
+      },
+      where: (record, { eq }) => eq(record.coinId, coinId),
+      orderBy: (record, { asc }) => asc(record.themeId),
+    }),
+    db.query.coinReference.findMany({
+      columns: {
+        catalogueId: true,
+        number: true,
+      },
+      where: (record, { eq }) => eq(record.coinId, coinId),
+      orderBy: (record, { asc }) => asc(record.catalogueId),
+    }),
+    db
+      .select({
+        kind: coinSurface.kind,
+        description: coinSurface.description,
+        lettering: coinSurface.lettering,
+        thumbnailUrl: coinSurface.thumbnailUrl,
+        imageUrl: coinSurface.imageUrl,
+        engraverId: coinSurfaceEngraver.engraverId,
+      })
+      .from(coinSurface)
+      .leftJoin(
+        coinSurfaceEngraver,
+        and(
+          eq(coinSurfaceEngraver.coinSurfaceId, coinSurface.id),
+          eq(coinSurfaceEngraver.coinSurfaceKind, coinSurface.kind)
+        )
+      )
+      .where(eq(coinSurface.coinId, coinId))
+      .orderBy(
+        asc(coinSurface.kind),
+        asc(coinSurfaceEngraver.engraverId)
+      ),
   ])
 
   if (!coinRow) {
@@ -70,6 +149,13 @@ export async function getCoinMaintenanceRecord(
 
   return {
     ...coinRow,
-    rulerId: rulerRows.at(0)?.rulerId ?? null,
+    mintIds: mintRows.map(({ mintId }) => mintId),
+    rulerIds: rulerRows.map(({ rulerId }) => rulerId),
+    themeIds: themeRows.map(({ themeId }) => themeId),
+    references: referenceRows.map((reference) => ({
+      catalogueId: reference.catalogueId,
+      number: reference.number,
+    })),
+    surfaces: mapCoinMaintenanceSurfaces(surfaceRows),
   }
 }

@@ -7,25 +7,28 @@ import {
   submitCreateCoin,
   submitUpdateCoin,
 } from "./actions"
+import type { CoinDraft } from "./actions"
 
 const VALID_COIN_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const VALID_LOOKUP_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"
 const OTHER_LOOKUP_ID = "de2dcfb7-dc50-4035-8bc8-33cbbacb586b"
 
-const VALID_COIN_DRAFT = {
+const VALID_COIN_DRAFT: CoinDraft = {
   title: "Spanish Test Coin",
   issuerId: VALID_LOOKUP_ID,
-  rulerId: VALID_LOOKUP_ID,
+  rulers: [{ rulerId: VALID_LOOKUP_ID }],
   distributionId: VALID_LOOKUP_ID,
   compositionId: VALID_LOOKUP_ID,
   faceValueText: "1 Test Unit",
   faceValueNumericValue: "1.5",
   currencyId: VALID_LOOKUP_ID,
+  mints: [],
   orientationId: "",
   shapeId: "",
   techniqueId: "",
   edgeId: "",
   rimId: "",
+  themes: [],
   weight: "",
   diameter: "",
   thickness: "",
@@ -34,7 +37,30 @@ const VALID_COIN_DRAFT = {
   minYear: "",
   maxYear: "",
   demonetizationStatus: "unknown",
-} as const
+  references: [],
+  surfaces: {
+    obverse: {
+      description: "",
+      lettering: "",
+      thumbnailUrl: "",
+      imageUrl: "",
+      engraverIds: [],
+    },
+    reverse: {
+      description: "",
+      lettering: "",
+      thumbnailUrl: "",
+      imageUrl: "",
+      engraverIds: [],
+    },
+    edge: {
+      description: "",
+      lettering: "",
+      thumbnailUrl: "",
+      imageUrl: "",
+    },
+  },
+}
 
 function createDependencies(overrides?: {
   createCoinMaintenance?: ReturnType<typeof vi.fn>
@@ -87,6 +113,7 @@ describe("submitCreateCoin", () => {
         {
           ...VALID_COIN_DRAFT,
           title: " ",
+          rulers: [],
           faceValueNumericValue: "0",
           minYear: "2025",
           maxYear: "",
@@ -97,6 +124,7 @@ describe("submitCreateCoin", () => {
       status: "error",
       fieldErrors: {
         title: "Coin Title cannot be blank.",
+        rulers: "At least one Ruler Attribution is required.",
         faceValueNumericValue: "Face Value numeric value must be greater than 0.",
         minYear: "Issue Year Range requires both years or neither year.",
         maxYear: "Issue Year Range requires both years or neither year.",
@@ -106,7 +134,57 @@ describe("submitCreateCoin", () => {
     expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
   })
 
-  it("normalizes blank optional scalars to null and maps demonetization status before creating a Coin", async () => {
+  it("blocks duplicate attributions, Catalogue References, invalid surface image URLs, and duplicate face engravers with path-specific errors", async () => {
+    const dependencies = createDependencies()
+
+    await expect(
+      submitCreateCoin(
+        { role: "editor" },
+        {
+          ...VALID_COIN_DRAFT,
+          rulers: [{ rulerId: VALID_LOOKUP_ID }, { rulerId: VALID_LOOKUP_ID }],
+          mints: [{ mintId: VALID_LOOKUP_ID }, { mintId: VALID_LOOKUP_ID }],
+          themes: [{ themeId: VALID_LOOKUP_ID }, { themeId: VALID_LOOKUP_ID }],
+          references: [
+            {
+              catalogueId: VALID_LOOKUP_ID,
+              number: " KM 12 ",
+            },
+            {
+              catalogueId: VALID_LOOKUP_ID,
+              number: "km   12",
+            },
+          ],
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            obverse: {
+              ...VALID_COIN_DRAFT.surfaces.obverse,
+              imageUrl: "ftp://example.com/image.jpg",
+              engraverIds: [VALID_LOOKUP_ID, VALID_LOOKUP_ID],
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {
+        "rulers.1.rulerId": "Ruler Attribution duplicates another row.",
+        "mints.1.mintId": "Mint Attribution duplicates another row.",
+        "themes.1.themeId": "Theme Attribution duplicates another row.",
+        "references.1.number":
+          "Duplicate Catalogue References are not allowed on the same Coin.",
+        "surfaces.obverse.imageUrl":
+          "Surface Image URL must be an absolute http:// or https:// URL.",
+        "surfaces.obverse.engraverIds.1":
+          "Duplicate Engraver Attributions are not allowed on the same face.",
+      },
+    })
+
+    expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
+  })
+
+  it("normalizes blank optional scalars and maps aggregate child collections before creating a Coin", async () => {
     const dependencies = createDependencies({
       createCoinMaintenance: vi.fn().mockResolvedValue({
         id: VALID_COIN_ID,
@@ -121,6 +199,8 @@ describe("submitCreateCoin", () => {
           title: "  Spanish Test Coin  ",
           faceValueText: "  1 Test Unit  ",
           comments: "  Public note.  ",
+          mints: [{ mintId: VALID_LOOKUP_ID }],
+          themes: [{ themeId: OTHER_LOOKUP_ID }],
           demonetizationStatus: "demonetized",
         },
         dependencies
@@ -134,17 +214,19 @@ describe("submitCreateCoin", () => {
     expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith({
       title: "Spanish Test Coin",
       issuerId: VALID_LOOKUP_ID,
-      rulerId: VALID_LOOKUP_ID,
+      rulerIds: [VALID_LOOKUP_ID],
       distributionId: VALID_LOOKUP_ID,
       compositionId: VALID_LOOKUP_ID,
       faceValueText: "1 Test Unit",
       faceValueNumericValue: 1.5,
       currencyId: VALID_LOOKUP_ID,
+      mintIds: [VALID_LOOKUP_ID],
       orientationId: null,
       shapeId: null,
       techniqueId: null,
       edgeId: null,
       rimId: null,
+      themeIds: [OTHER_LOOKUP_ID],
       weight: null,
       diameter: null,
       thickness: null,
@@ -153,6 +235,12 @@ describe("submitCreateCoin", () => {
       minYear: null,
       maxYear: null,
       isDemonetized: true,
+      references: [],
+      surfaces: {
+        obverse: null,
+        reverse: null,
+        edge: null,
+      },
     })
   })
 })
@@ -190,8 +278,10 @@ describe("submitUpdateCoin", () => {
         {
           id: VALID_COIN_ID,
           ...VALID_COIN_DRAFT,
-          rulerId: OTHER_LOOKUP_ID,
+          rulers: [{ rulerId: OTHER_LOOKUP_ID }],
+          mints: [{ mintId: VALID_LOOKUP_ID }, { mintId: OTHER_LOOKUP_ID }],
           faceValueNumericValue: "2.25",
+          themes: [{ themeId: OTHER_LOOKUP_ID }],
           weight: "7.5",
           diameter: "24",
           thickness: "1.9",
@@ -212,17 +302,19 @@ describe("submitUpdateCoin", () => {
       id: VALID_COIN_ID,
       title: "Spanish Test Coin",
       issuerId: VALID_LOOKUP_ID,
-      rulerId: OTHER_LOOKUP_ID,
+      rulerIds: [OTHER_LOOKUP_ID],
       distributionId: VALID_LOOKUP_ID,
       compositionId: VALID_LOOKUP_ID,
       faceValueText: "1 Test Unit",
       faceValueNumericValue: 2.25,
       currencyId: VALID_LOOKUP_ID,
+      mintIds: [VALID_LOOKUP_ID, OTHER_LOOKUP_ID],
       orientationId: null,
       shapeId: null,
       techniqueId: null,
       edgeId: null,
       rimId: null,
+      themeIds: [OTHER_LOOKUP_ID],
       weight: 7.5,
       diameter: 24,
       thickness: 1.9,
@@ -231,6 +323,112 @@ describe("submitUpdateCoin", () => {
       minYear: 1999,
       maxYear: 2001,
       isDemonetized: false,
+      references: [],
+      surfaces: {
+        obverse: null,
+        reverse: null,
+        edge: null,
+      },
+    })
+  })
+
+  it("passes structured Catalogue References and Surface Set details through to persistence", async () => {
+    const dependencies = createDependencies({
+      updateCoinMaintenance: vi.fn().mockResolvedValue({
+        id: VALID_COIN_ID,
+      }),
+    })
+
+    await expect(
+      submitUpdateCoin(
+        { role: "editor" },
+        {
+          id: VALID_COIN_ID,
+          ...VALID_COIN_DRAFT,
+          references: [
+            {
+              catalogueId: VALID_LOOKUP_ID,
+              number: " KM 25 ",
+            },
+          ],
+          surfaces: {
+            obverse: {
+              description: " Laureate bust ",
+              lettering: " HISPAN ",
+              thumbnailUrl: "https://example.com/obverse-thumb.jpg",
+              imageUrl: "https://example.com/obverse.jpg",
+              engraverIds: [VALID_LOOKUP_ID],
+            },
+            reverse: {
+              description: "",
+              lettering: "",
+              thumbnailUrl: "",
+              imageUrl: "",
+              engraverIds: [],
+            },
+            edge: {
+              description: " Reeded ",
+              lettering: "",
+              thumbnailUrl: "",
+              imageUrl: "https://example.com/edge.jpg",
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      coinId: VALID_COIN_ID,
+      message: "Saved.",
+    })
+
+    expect(dependencies.updateCoinMaintenance).toHaveBeenCalledWith({
+      id: VALID_COIN_ID,
+      title: "Spanish Test Coin",
+      issuerId: VALID_LOOKUP_ID,
+      rulerIds: [VALID_LOOKUP_ID],
+      distributionId: VALID_LOOKUP_ID,
+      compositionId: VALID_LOOKUP_ID,
+      faceValueText: "1 Test Unit",
+      faceValueNumericValue: 1.5,
+      currencyId: VALID_LOOKUP_ID,
+      mintIds: [],
+      orientationId: null,
+      shapeId: null,
+      techniqueId: null,
+      edgeId: null,
+      rimId: null,
+      themeIds: [],
+      weight: null,
+      diameter: null,
+      thickness: null,
+      mintage: null,
+      comments: null,
+      minYear: null,
+      maxYear: null,
+      isDemonetized: null,
+      references: [
+        {
+          catalogueId: VALID_LOOKUP_ID,
+          number: "KM 25",
+        },
+      ],
+      surfaces: {
+        obverse: {
+          description: "Laureate bust",
+          lettering: "HISPAN",
+          thumbnailUrl: "https://example.com/obverse-thumb.jpg",
+          imageUrl: "https://example.com/obverse.jpg",
+          engraverIds: [VALID_LOOKUP_ID],
+        },
+        reverse: null,
+        edge: {
+          description: "Reeded",
+          lettering: null,
+          thumbnailUrl: null,
+          imageUrl: "https://example.com/edge.jpg",
+        },
+      },
     })
   })
 })

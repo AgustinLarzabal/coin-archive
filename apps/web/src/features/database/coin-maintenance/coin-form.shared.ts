@@ -1,30 +1,59 @@
 import type {
+  CatalogueOption,
+  CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,
+  CoinMaintenanceSurface,
   CompositionOption,
   CurrencyOption,
   DistributionOption,
   EdgeOption,
+  EngraverOption,
   IssuerOption,
+  MintOption,
   OrientationOption,
   RimOption,
   RulerOption,
   ShapeOption,
   TechniqueOption,
+  ThemeOption,
 } from "@workspace/db"
 
 import type { CoinDraft } from "./actions"
 
+type AttributionDraftCollectionName = "rulers" | "mints" | "themes"
+
 export type CoinFormOptions = {
+  catalogues: CatalogueOption[]
   compositions: CompositionOption[]
   currencies: CurrencyOption[]
   distributions: DistributionOption[]
   edges: EdgeOption[]
+  engravers: EngraverOption[]
   issuers: IssuerOption[]
+  mints: MintOption[]
   orientations: OrientationOption[]
   rims: RimOption[]
   rulers: RulerOption[]
   shapes: ShapeOption[]
   techniques: TechniqueOption[]
+  themes: ThemeOption[]
+}
+
+export type CoinFormOptionsDependencies = {
+  getCatalogues: () => Promise<CatalogueOption[]>
+  getCompositions: () => Promise<CompositionOption[]>
+  getCurrencies: () => Promise<CurrencyOption[]>
+  getDistributions: () => Promise<DistributionOption[]>
+  getEdges: () => Promise<EdgeOption[]>
+  getEngravers: () => Promise<EngraverOption[]>
+  getIssuers: () => Promise<IssuerOption[]>
+  getMints: () => Promise<MintOption[]>
+  getOrientations: () => Promise<OrientationOption[]>
+  getRims: () => Promise<RimOption[]>
+  getRulers: () => Promise<RulerOption[]>
+  getShapes: () => Promise<ShapeOption[]>
+  getTechniques: () => Promise<TechniqueOption[]>
+  getThemes: () => Promise<ThemeOption[]>
 }
 
 const REQUIRED_LOOKUP_OPTION_KEYS = [
@@ -35,20 +64,43 @@ const REQUIRED_LOOKUP_OPTION_KEYS = [
   "currencies",
 ] as const
 
+const EMPTY_FACE_SURFACE_DRAFT = {
+  description: "",
+  lettering: "",
+  thumbnailUrl: "",
+  imageUrl: "",
+  engraverIds: [],
+}
+
+const EMPTY_EDGE_SURFACE_DRAFT = {
+  description: "",
+  lettering: "",
+  thumbnailUrl: "",
+  imageUrl: "",
+}
+
+export function createEmptyRulerAttribution(): CoinDraft["rulers"][number] {
+  return {
+    rulerId: "",
+  }
+}
+
 export const EMPTY_COIN_DRAFT: CoinDraft = {
   title: "",
   issuerId: "",
-  rulerId: "",
+  rulers: [createEmptyRulerAttribution()],
   distributionId: "",
   compositionId: "",
   faceValueText: "",
   faceValueNumericValue: "",
   currencyId: "",
+  mints: [],
   orientationId: "",
   shapeId: "",
   techniqueId: "",
   edgeId: "",
   rimId: "",
+  themes: [],
   weight: "",
   diameter: "",
   thickness: "",
@@ -57,6 +109,101 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
   minYear: "",
   maxYear: "",
   demonetizationStatus: "unknown",
+  references: [],
+  surfaces: {
+    obverse: { ...EMPTY_FACE_SURFACE_DRAFT },
+    reverse: { ...EMPTY_FACE_SURFACE_DRAFT },
+    edge: { ...EMPTY_EDGE_SURFACE_DRAFT },
+  },
+}
+
+export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
+  const {
+    getCatalogues,
+    getCompositions,
+    getCurrencies,
+    getDistributions,
+    getEdges,
+    getEngravers,
+    getIssuers,
+    getMints,
+    getOrientations,
+    getRims,
+    getRulers,
+    getShapes,
+    getTechniques,
+    getThemes,
+  } = await import("@workspace/db")
+
+  return {
+    getCatalogues,
+    getCompositions,
+    getCurrencies,
+    getDistributions,
+    getEdges,
+    getEngravers,
+    getIssuers,
+    getMints,
+    getOrientations,
+    getRims,
+    getRulers,
+    getShapes,
+    getTechniques,
+    getThemes,
+  }
+}
+
+export async function loadCoinFormOptions(
+  dependencies: CoinFormOptionsDependencies
+): Promise<CoinFormOptions> {
+  const [
+    issuers,
+    rulers,
+    distributions,
+    compositions,
+    currencies,
+    catalogues,
+    engravers,
+    mints,
+    orientations,
+    shapes,
+    techniques,
+    edges,
+    rims,
+    themes,
+  ] = await Promise.all([
+    dependencies.getIssuers(),
+    dependencies.getRulers(),
+    dependencies.getDistributions(),
+    dependencies.getCompositions(),
+    dependencies.getCurrencies(),
+    dependencies.getCatalogues(),
+    dependencies.getEngravers(),
+    dependencies.getMints(),
+    dependencies.getOrientations(),
+    dependencies.getShapes(),
+    dependencies.getTechniques(),
+    dependencies.getEdges(),
+    dependencies.getRims(),
+    dependencies.getThemes(),
+  ])
+
+  return {
+    issuers,
+    rulers,
+    distributions,
+    compositions,
+    currencies,
+    catalogues,
+    engravers,
+    mints,
+    orientations,
+    shapes,
+    techniques,
+    edges,
+    rims,
+    themes,
+  }
 }
 
 function stringifyOptionalNumber(value: number | null) {
@@ -91,21 +238,71 @@ type NextEditSuccessMessageInput = {
   previousCoinId: string | null
 }
 
+function mapIdsToDraftRows<
+  TCollectionName extends AttributionDraftCollectionName,
+  TFieldName extends keyof CoinDraft[TCollectionName][number],
+>(ids: string[], fieldName: TFieldName): CoinDraft[TCollectionName] {
+  return ids.map((id) => ({
+    [fieldName]: id,
+  })) as CoinDraft[TCollectionName]
+}
+
+function mapFaceSurfaceDraft(
+  surface: CoinMaintenanceFaceSurface | null
+): CoinDraft["surfaces"]["obverse"] {
+  if (!surface) {
+    return {
+      ...EMPTY_FACE_SURFACE_DRAFT,
+      engraverIds: [],
+    }
+  }
+
+  return {
+    description: surface.description ?? "",
+    lettering: surface.lettering ?? "",
+    thumbnailUrl: surface.thumbnailUrl ?? "",
+    imageUrl: surface.imageUrl ?? "",
+    engraverIds: [...surface.engraverIds],
+  }
+}
+
+function mapEdgeSurfaceDraft(
+  surface: CoinMaintenanceSurface | null
+): CoinDraft["surfaces"]["edge"] {
+  if (!surface) {
+    return { ...EMPTY_EDGE_SURFACE_DRAFT }
+  }
+
+  return {
+    description: surface.description ?? "",
+    lettering: surface.lettering ?? "",
+    thumbnailUrl: surface.thumbnailUrl ?? "",
+    imageUrl: surface.imageUrl ?? "",
+  }
+}
+
 export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
+  const rulers = mapIdsToDraftRows<"rulers", "rulerId">(
+    coin.rulerIds,
+    "rulerId"
+  )
+
   return {
     title: coin.title,
     issuerId: coin.issuerId,
-    rulerId: coin.rulerId ?? "",
+    rulers: rulers.length > 0 ? rulers : [createEmptyRulerAttribution()],
     distributionId: coin.distributionId,
     compositionId: coin.compositionId,
     faceValueText: coin.faceValueText,
     faceValueNumericValue: String(coin.faceValueNumericValue),
     currencyId: coin.currencyId,
+    mints: mapIdsToDraftRows<"mints", "mintId">(coin.mintIds, "mintId"),
     orientationId: coin.orientationId ?? "",
     shapeId: coin.shapeId ?? "",
     techniqueId: coin.techniqueId ?? "",
     edgeId: coin.edgeId ?? "",
     rimId: coin.rimId ?? "",
+    themes: mapIdsToDraftRows<"themes", "themeId">(coin.themeIds, "themeId"),
     weight: stringifyOptionalNumber(coin.weight),
     diameter: stringifyOptionalNumber(coin.diameter),
     thickness: stringifyOptionalNumber(coin.thickness),
@@ -114,6 +311,15 @@ export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
     minYear: stringifyOptionalNumber(coin.minYear),
     maxYear: stringifyOptionalNumber(coin.maxYear),
     demonetizationStatus: getDemonetizationStatus(coin.isDemonetized),
+    references: coin.references.map((reference) => ({
+      catalogueId: reference.catalogueId,
+      number: reference.number,
+    })),
+    surfaces: {
+      obverse: mapFaceSurfaceDraft(coin.surfaces.obverse),
+      reverse: mapFaceSurfaceDraft(coin.surfaces.reverse),
+      edge: mapEdgeSurfaceDraft(coin.surfaces.edge),
+    },
   }
 }
 
@@ -121,11 +327,21 @@ function normalizeDraftValue(value: string) {
   return value.trim()
 }
 
+function hasPopulatedAttributionRows<TFieldName extends string>(
+  rows: Array<Record<TFieldName, string>>,
+  fieldName: TFieldName
+) {
+  return (
+    rows.length > 0 &&
+    rows.every((row) => normalizeDraftValue(row[fieldName]) !== "")
+  )
+}
+
 export function hasRequiredCoinDraftFields(draft: CoinDraft) {
   return (
     normalizeDraftValue(draft.title) !== "" &&
     normalizeDraftValue(draft.issuerId) !== "" &&
-    normalizeDraftValue(draft.rulerId) !== "" &&
+    hasPopulatedAttributionRows(draft.rulers, "rulerId") &&
     normalizeDraftValue(draft.distributionId) !== "" &&
     normalizeDraftValue(draft.compositionId) !== "" &&
     normalizeDraftValue(draft.faceValueText) !== "" &&

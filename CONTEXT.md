@@ -36,6 +36,10 @@ _Avoid_: Name, generated catalogue data
 Optional public free-text catalogue remarks attached to a Coin. A Coin has at most one Coin Comment, and it is not structured, parsed, or filterable catalogue data.
 _Avoid_: Note, private curator note, description, searchable field, structured annotation
 
+**Coin Maintenance**:
+The protected catalogue workflow for creating, editing, or deleting a Coin and its owned aggregate data in the database maintenance area. Coin Maintenance saves the whole Coin aggregate intentionally rather than as drafts, including ruler attributions, mint attributions, theme attributions, catalogue references, and Surface Set records, while shared lookup records remain maintained separately.
+_Avoid_: Draft workflow, specimen maintenance, inline lookup creation, public coin editing
+
 **Issue Year Range**:
 The closed earliest and latest known years in which a coin type or issue is understood to have been minted or issued, represented as astronomical integer years when structured. The range describes the coin type or issue itself, not the issuer's lifetime, a ruler's reign, catalogue publication date, or archive record creation date.
 _Avoid_: Creation date, open-ended date qualification, ruler reign, issuer period, catalogue year, era text

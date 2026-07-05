@@ -2,6 +2,7 @@ import { count } from "drizzle-orm"
 
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
+import { coin } from "../schema/coin"
 import { composition } from "../schema/composition"
 import { currency } from "../schema/currency"
 import { distribution } from "../schema/distribution"
@@ -18,6 +19,7 @@ import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 
 export type DatabaseGeneralSummaryCounts = {
+  coins: number
   catalogues: number
   compositions: number
   currencies: number
@@ -36,6 +38,7 @@ export type DatabaseGeneralSummaryCounts = {
 }
 
 const DATABASE_GENERAL_SUMMARY_COUNT_QUERIES = {
+  coins: () => db.select({ count: count() }).from(coin),
   catalogues: () => db.select({ count: count() }).from(catalogue),
   compositions: () => db.select({ count: count() }).from(composition),
   currencies: () => db.select({ count: count() }).from(currency),

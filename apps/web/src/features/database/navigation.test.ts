@@ -9,6 +9,11 @@ describe("database navigation", () => {
   it("keeps the existing database menu labels, ordering, routes, and count keys", () => {
     expect(databaseMaintenanceSections).toStrictEqual([
       {
+        to: "/database/coins",
+        label: "Coins",
+        countKey: "coins",
+      },
+      {
         to: "/database/catalogues",
         label: "Catalogues",
         countKey: "catalogues",

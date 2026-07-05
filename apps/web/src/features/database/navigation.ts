@@ -13,6 +13,11 @@ type DatabaseSecondaryMenuItem = Pick<
 
 export const databaseMaintenanceSections = [
   {
+    to: "/database/coins",
+    label: "Coins",
+    countKey: "coins",
+  },
+  {
     to: "/database/catalogues",
     label: "Catalogues",
     countKey: "catalogues",

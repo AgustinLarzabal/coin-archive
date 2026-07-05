@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { db, getDatabaseGeneralSummaryCounts } from "../index"
 import {
   createCatalogue,
+  createCoin,
   createComposition,
   createCurrency,
   createDistribution,
@@ -31,6 +32,11 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
     await createCatalogue({
       code: "RIC",
       title: "Roman Imperial Coinage",
+    })
+    const argentineRepublic = await createIssuer({
+      code: "argentine-republic",
+      name: "Argentine Republic",
+      isoCode: "AR",
     })
     await createComposition({
       code: "silver-900",
@@ -104,11 +110,6 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       name: "Portrait",
     })
     await createIssuer({
-      code: "argentine-republic",
-      name: "Argentine Republic",
-      isoCode: "AR",
-    })
-    await createIssuer({
       code: "united-states",
       name: "United States",
       isoCode: "US",
@@ -141,8 +142,14 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       code: "buenos-aires-mint",
       name: "Buenos Aires Mint",
     })
+    await createCoin({
+      title: "Argentine Test Coin",
+      issuerId: argentineRepublic.id,
+      createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    })
 
     await expect(getDatabaseGeneralSummaryCounts()).resolves.toStrictEqual({
+      coins: 1,
       catalogues: 2,
       compositions: 1,
       currencies: 3,
@@ -163,6 +170,7 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
 
   it("keeps stable zero-valued rows when a maintained record type is empty", async () => {
     await expect(getDatabaseGeneralSummaryCounts()).resolves.toStrictEqual({
+      coins: 0,
       catalogues: 0,
       compositions: 0,
       currencies: 0,

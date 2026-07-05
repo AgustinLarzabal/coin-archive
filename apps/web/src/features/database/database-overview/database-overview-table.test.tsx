@@ -47,6 +47,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 describe("DatabaseOverviewTable", () => {
   it("renders a plain summary table with stable linked rows and zero counts", () => {
     const expectedRows = [
+      { href: "/database/coins", label: "Coins", count: 21 },
       { href: "/database/catalogues", label: "Catalogues", count: 0 },
       { href: "/database/compositions", label: "Compositions", count: 12 },
       { href: "/database/currencies", label: "Currencies", count: 7 },
@@ -71,6 +72,7 @@ describe("DatabaseOverviewTable", () => {
     const markup = renderToStaticMarkup(
       <DatabaseOverviewTable
         counts={{
+          coins: 21,
           catalogues: 0,
           compositions: 12,
           currencies: 7,

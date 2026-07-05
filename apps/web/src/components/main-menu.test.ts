@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { getPrivateNavigationItem } from "./main-menu"
 
 describe("getPrivateNavigationItem", () => {
-  it("includes Themes in the Database main navigation children after Engravers", () => {
+  it("keeps Coins first in the Database main navigation children and retains Themes after Engravers", () => {
     expect(
       getPrivateNavigationItem({
         to: "/database",
@@ -14,6 +14,7 @@ describe("getPrivateNavigationItem", () => {
       label: "Database",
       children: [
         { to: "/database", label: "General" },
+        { to: "/database/coins", label: "Coins" },
         { to: "/database/catalogues", label: "Catalogues" },
         { to: "/database/compositions", label: "Compositions" },
         { to: "/database/currencies", label: "Currencies" },

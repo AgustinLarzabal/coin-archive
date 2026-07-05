@@ -15,6 +15,7 @@ vi.mock("./database-overview-table", () => ({
 }))
 
 const counts = {
+  coins: 14,
   catalogues: 3,
   compositions: 5,
   currencies: 2,

@@ -47,6 +47,7 @@ export {
 } from "./mutations/technique"
 export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
+export { getCoinMaintenanceList } from "./queries/get-coin-maintenance-list"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"
@@ -120,6 +121,11 @@ export type {
   CoinSurfaceSetRecord,
 } from "./queries/coin-surface-record"
 export type { CoinListRecord } from "./queries/map-get-coins-row"
+export type {
+  CoinMaintenanceListOptions,
+  CoinMaintenanceListRecord,
+  CoinMaintenanceListResult,
+} from "./queries/get-coin-maintenance-list"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"

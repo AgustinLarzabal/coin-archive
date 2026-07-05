@@ -4,6 +4,12 @@ import { describe, expect, it } from "vitest"
 const ROUTE_DIRECTORY_URL = new URL(".", import.meta.url)
 const FEATURE_OWNED_ROUTE_ADAPTERS = [
   {
+    featureImportPath: "@/features/database/coin-maintenance",
+    filePath: "coins.tsx",
+    loaderExport: "loadCoinMaintenanceRouteData",
+    routeComponentExport: "CoinMaintenanceRouteComponent",
+  },
+  {
     featureImportPath: "@/features/database/catalogue-maintenance",
     filePath: "catalogues.tsx",
     loaderExport: "loadCatalogueMaintenanceRouteData",

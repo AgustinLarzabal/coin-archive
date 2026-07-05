@@ -8,6 +8,10 @@ Coin Archive is a catalog of physical coins from across history. The context exi
 A catalogued physical coin type or issue in the archive, not an individual owned example. A coin has exactly one direct issuer, one or more ruler attributions, and may have zero or more mint attributions. A coin may later be described by historical, geographic, minting, material, inscription, image, and reference information.
 _Avoid_: Coina, specimen, item
 
+**Coin Maintenance**:
+The controlled catalogue activity of creating, editing, or deleting Coins, including their owned Surface Set, Catalogue References, and catalogue attributions. Coin Maintenance operates on publishable catalogue entries rather than draft records.
+_Avoid_: Draft editing, specimen management, lookup-only editing
+
 **Collector**:
 A person who signs in to Coin Archive. A Collector may later receive permissions to maintain catalogue data.
 _Avoid_: User, account, visitor, Personal Account

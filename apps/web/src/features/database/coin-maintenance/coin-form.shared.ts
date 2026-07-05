@@ -77,6 +77,22 @@ function getDemonetizationStatus(
   return "not-demonetized"
 }
 
+export function getNextEditSuccessMessage({
+  currentSuccessMessage,
+  nextCoinId,
+  previousCoinId,
+}: {
+  currentSuccessMessage: string | null
+  nextCoinId: string
+  previousCoinId: string | null
+}) {
+  if (previousCoinId === nextCoinId) {
+    return currentSuccessMessage
+  }
+
+  return null
+}
+
 export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
   return {
     title: coin.title,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
@@ -18,6 +18,7 @@ import {
   createCoinDraft,
   EMPTY_COIN_DRAFT,
   hasRequiredCoinDraftFields,
+  getNextEditSuccessMessage,
   type CoinFormOptions,
 } from "./coin-form.shared"
 import type { CoinDraft } from "./actions"
@@ -106,13 +107,23 @@ export function CoinForm(props: CoinFormProps) {
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const previousEditCoinIdRef = useRef(
+    props.mode === "edit" ? props.coin.id : null
+  )
 
   useEffect(() => {
     if (props.mode === "edit") {
       setDraft(createCoinDraft(props.coin))
       setFieldErrors({})
       setFormError(null)
-      setSuccessMessage(null)
+      setSuccessMessage((currentSuccessMessage) =>
+        getNextEditSuccessMessage({
+          currentSuccessMessage,
+          nextCoinId: props.coin.id,
+          previousCoinId: previousEditCoinIdRef.current,
+        })
+      )
+      previousEditCoinIdRef.current = props.coin.id
     }
   }, [props])
 

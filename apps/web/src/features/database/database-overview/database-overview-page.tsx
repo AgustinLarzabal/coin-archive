@@ -8,16 +8,7 @@ import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 import { DatabaseOverviewTable } from "./database-overview-table"
 
-type LoadDatabaseOverviewPageDataResult =
-  | {
-      status: "error"
-    }
-  | {
-      status: "success"
-      counts: DatabaseGeneralSummaryCounts
-    }
-
-type DatabaseOverviewPageLoaderData =
+type DatabaseOverviewPageData =
   | {
       isAllowed: false
     }
@@ -38,28 +29,13 @@ async function getDefaultDatabaseOverviewReadDependencies(): Promise<DatabaseOve
   }
 }
 
-function toDatabaseOverviewPageLoaderData(
-  result: LoadDatabaseOverviewPageDataResult
-): DatabaseOverviewPageLoaderData {
-  if (result.status === "error") {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  return {
-    isAllowed: true,
-    counts: result.counts,
-  }
-}
-
 export async function loadDatabaseOverviewPageData(
   collector: CollectorWithRole | null,
   dependencies?: DatabaseOverviewReadDependencies
-): Promise<LoadDatabaseOverviewPageDataResult> {
+): Promise<DatabaseOverviewPageData> {
   if (!getEditorRouteAuthorization(collector).isAllowed) {
     return {
-      status: "error",
+      isAllowed: false,
     }
   }
 
@@ -67,7 +43,7 @@ export async function loadDatabaseOverviewPageData(
     dependencies ?? (await getDefaultDatabaseOverviewReadDependencies())
 
   return {
-    status: "success",
+    isAllowed: true,
     counts: await getDatabaseGeneralSummaryCounts(),
   }
 }
@@ -76,9 +52,7 @@ const getDatabaseOverviewLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadDatabaseOverviewPageData(session?.user ?? null)
-
-  return toDatabaseOverviewPageLoaderData(result)
+  return loadDatabaseOverviewPageData(session?.user ?? null)
 })
 
 export function loadDatabaseOverviewRouteData() {
@@ -86,7 +60,7 @@ export function loadDatabaseOverviewRouteData() {
 }
 
 type DatabaseOverviewRouteComponentProps = {
-  loaderData: DatabaseOverviewPageLoaderData
+  loaderData: DatabaseOverviewPageData
 }
 
 export function DatabaseOverviewRouteComponent({
@@ -96,7 +70,7 @@ export function DatabaseOverviewRouteComponent({
 }
 
 export function renderDatabaseOverviewPage(
-  loaderData: DatabaseOverviewPageLoaderData
+  loaderData: DatabaseOverviewPageData
 ) {
   if (!loaderData.isAllowed) {
     return (

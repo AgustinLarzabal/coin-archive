@@ -41,7 +41,7 @@ describe("loadDatabaseOverviewPageData", () => {
         getDatabaseGeneralSummaryCounts,
       })
     ).resolves.toStrictEqual({
-      status: "error",
+      isAllowed: false,
     })
 
     expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
@@ -56,7 +56,7 @@ describe("loadDatabaseOverviewPageData", () => {
         { getDatabaseGeneralSummaryCounts }
       )
     ).resolves.toStrictEqual({
-      status: "error",
+      isAllowed: false,
     })
 
     expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
@@ -73,7 +73,7 @@ describe("loadDatabaseOverviewPageData", () => {
           { getDatabaseGeneralSummaryCounts }
         )
       ).resolves.toStrictEqual({
-        status: "success",
+        isAllowed: true,
         counts,
       })
     }

@@ -3,11 +3,13 @@ import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
 
 import { databaseMaintenanceSections } from "../navigation"
 
+type DatabaseOverviewTableProps = {
+  counts: DatabaseGeneralSummaryCounts
+}
+
 export function DatabaseOverviewTable({
   counts,
-}: {
-  counts: DatabaseGeneralSummaryCounts
-}) {
+}: DatabaseOverviewTableProps) {
   return (
     <table className="w-full border-collapse text-left">
       <thead>
@@ -17,14 +19,14 @@ export function DatabaseOverviewTable({
         </tr>
       </thead>
       <tbody>
-        {databaseMaintenanceSections.map((recordType) => (
-          <tr key={recordType.to} className="border-b last:border-b-0">
+        {databaseMaintenanceSections.map((section) => (
+          <tr key={section.to} className="border-b last:border-b-0">
             <td className="py-3 pr-4">
-              <Link to={recordType.to} className="underline underline-offset-4">
-                {recordType.label}
+              <Link to={section.to} className="underline underline-offset-4">
+                {section.label}
               </Link>
             </td>
-            <td className="py-3">{counts[recordType.countKey]}</td>
+            <td className="py-3">{counts[section.countKey]}</td>
           </tr>
         ))}
       </tbody>

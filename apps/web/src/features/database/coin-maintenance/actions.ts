@@ -117,10 +117,7 @@ const demonetizationStatusSchema = z.enum([
   "demonetized",
 ])
 
-const coinTitleSchema = z
-  .string()
-  .trim()
-  .min(1, "Coin Title cannot be blank.")
+const coinTitleSchema = z.string().trim().min(1, "Coin Title cannot be blank.")
 
 const faceValueTextSchema = z
   .string()
@@ -175,7 +172,8 @@ export const coinDraftSchema = z
     ) {
       ctx.addIssue({
         code: "custom",
-        message: "Earliest Issue Year must be less than or equal to Latest Issue Year.",
+        message:
+          "Earliest Issue Year must be less than or equal to Latest Issue Year.",
         path: ["minYear"],
       })
     }
@@ -216,7 +214,9 @@ export type CoinMutationResult =
     }
 
 type CoinMutationDependencies = {
-  createCoinMaintenance: (input: CoinPersistenceInput) => Promise<{ id: string }>
+  createCoinMaintenance: (
+    input: CoinPersistenceInput
+  ) => Promise<{ id: string }>
   updateCoinMaintenance: (
     input: UpdateCoinPersistenceInput
   ) => Promise<{ id: string } | null>
@@ -248,7 +248,9 @@ function createFormErrorResult(formError: string): CoinMutationResult {
   }
 }
 
-function createFieldErrorResult(fieldErrors: CoinFieldErrors): CoinMutationResult {
+function createFieldErrorResult(
+  fieldErrors: CoinFieldErrors
+): CoinMutationResult {
   return {
     status: "error",
     fieldErrors,
@@ -293,7 +295,9 @@ function validateCoinInput<TSchema extends z.ZodType>(
   if (!parsedInput.success) {
     return {
       success: false as const,
-      result: createFieldErrorResult(getCoinFieldErrors(parsedInput.error.issues)),
+      result: createFieldErrorResult(
+        getCoinFieldErrors(parsedInput.error.issues)
+      ),
     }
   }
 
@@ -303,7 +307,9 @@ function validateCoinInput<TSchema extends z.ZodType>(
   }
 }
 
-function mapDemonetizationStatus(status: CoinDraftData["demonetizationStatus"]) {
+function mapDemonetizationStatus(
+  status: CoinDraftData["demonetizationStatus"]
+) {
   if (status === "unknown") {
     return null
   }
@@ -311,40 +317,18 @@ function mapDemonetizationStatus(status: CoinDraftData["demonetizationStatus"]) 
   return status === "demonetized"
 }
 
-function mapDraftToPersistenceInput(input: CoinDraftData): CoinPersistenceInput {
+function mapDraftToPersistenceInput(
+  input: CoinDraftData
+): CoinPersistenceInput {
   const { demonetizationStatus, ...rest } = input
 
   return {
     ...rest,
-    comments: rest.comments,
     isDemonetized: mapDemonetizationStatus(demonetizationStatus),
   }
 }
 
-function getPostgresError(error: unknown) {
-  if (typeof error !== "object" || error === null) {
-    return null
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (typeof postgresError !== "object" || postgresError === null) {
-    return null
-  }
-
-  return postgresError
-}
-
-function matchesPostgresCode(error: unknown, code: string) {
-  const postgresError = getPostgresError(error)
-  return postgresError !== null && "code" in postgresError && postgresError.code === code
-}
-
-function createPersistenceError(error: unknown): CoinMutationResult {
-  if (matchesPostgresCode(error, "23503")) {
-    return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
-  }
-
+function createPersistenceError(): CoinMutationResult {
   return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
 }
 
@@ -373,8 +357,8 @@ export async function submitCreateCoin(
       coinId: createdCoin.id,
       message: "Coin created.",
     }
-  } catch (error) {
-    return createPersistenceError(error)
+  } catch {
+    return createPersistenceError()
   }
 }
 
@@ -412,7 +396,7 @@ export async function submitUpdateCoin(
       coinId: updatedCoin.id,
       message: "Saved.",
     }
-  } catch (error) {
-    return createPersistenceError(error)
+  } catch {
+    return createPersistenceError()
   }
 }

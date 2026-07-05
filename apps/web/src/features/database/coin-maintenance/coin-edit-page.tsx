@@ -17,6 +17,7 @@ import { z } from "zod"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import type { CoinFormOptions } from "./coin-form.shared"
 import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
@@ -30,19 +31,6 @@ const coinEditLoaderDepsSchema = z.object({
   coinId: z.uuid(),
 })
 
-type CoinFormOptions = {
-  compositions: CompositionOption[]
-  currencies: CurrencyOption[]
-  distributions: DistributionOption[]
-  edges: EdgeOption[]
-  issuers: IssuerOption[]
-  orientations: OrientationOption[]
-  rims: RimOption[]
-  rulers: RulerOption[]
-  shapes: ShapeOption[]
-  techniques: TechniqueOption[]
-}
-
 type EditCoinPageData = {
   coin: CoinMaintenanceRecord | null
   options: CoinFormOptions
@@ -53,7 +41,9 @@ type EditCoinLoaderData = MaintenancePageLoaderData<EditCoinPageData>
 type CoinEditLoaderDeps = z.infer<typeof coinEditLoaderDepsSchema>
 
 type EditCoinReadDependencies = {
-  getCoinMaintenanceRecord: (coinId: string) => Promise<CoinMaintenanceRecord | null>
+  getCoinMaintenanceRecord: (
+    coinId: string
+  ) => Promise<CoinMaintenanceRecord | null>
   getCompositions: () => Promise<CompositionOption[]>
   getCurrencies: () => Promise<CurrencyOption[]>
   getDistributions: () => Promise<DistributionOption[]>
@@ -107,8 +97,7 @@ export async function loadCoinEditPageData(
     }
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultDependencies())
+  const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
 
   const [
     coin,
@@ -165,17 +154,15 @@ const getCoinEditLoaderData = createServerFn({
     return toMaintenancePageLoaderData(result)
   })
 
-export function getCoinEditLoaderDeps(params: { coinId: string }): CoinEditLoaderDeps {
+export function getCoinEditLoaderDeps(params: {
+  coinId: string
+}): CoinEditLoaderDeps {
   return {
     coinId: params.coinId,
   }
 }
 
-export function loadCoinEditRouteData({
-  deps,
-}: {
-  deps: CoinEditLoaderDeps
-}) {
+export function loadCoinEditRouteData({ deps }: { deps: CoinEditLoaderDeps }) {
   return getCoinEditLoaderData({ data: deps })
 }
 

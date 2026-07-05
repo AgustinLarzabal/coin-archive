@@ -35,6 +35,10 @@ type UpdateCoinMaintenanceInput = CoinMaintenanceFields & {
   id: string
 }
 
+type CoinMaintenanceTransaction = Parameters<
+  Parameters<typeof db.transaction>[0]
+>[0]
+
 function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
   return {
     comments: normalizeCoinComments(fields.comments),
@@ -60,6 +64,19 @@ function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
   }
 }
 
+async function replaceCoinRulers(
+  coinId: string,
+  rulerId: string,
+  tx: CoinMaintenanceTransaction
+) {
+  await tx.delete(coinRuler).where(eq(coinRuler.coinId, coinId))
+  await tx.insert(coinRuler).values({
+    coinId,
+    rulerId,
+    rulerOrder: 1,
+  })
+}
+
 export async function createCoinMaintenance(
   fields: CreateCoinMaintenanceInput
 ) {
@@ -69,11 +86,7 @@ export async function createCoinMaintenance(
       .values(normalizeCoinMaintenanceFields(fields))
       .returning()
 
-    await tx.insert(coinRuler).values({
-      coinId: createdCoin.id,
-      rulerId: fields.rulerId,
-      rulerOrder: 1,
-    })
+    await replaceCoinRulers(createdCoin.id, fields.rulerId, tx)
 
     return createdCoin
   })
@@ -97,12 +110,7 @@ export async function updateCoinMaintenance({
       return null
     }
 
-    await tx.delete(coinRuler).where(eq(coinRuler.coinId, id))
-    await tx.insert(coinRuler).values({
-      coinId: id,
-      rulerId: fields.rulerId,
-      rulerOrder: 1,
-    })
+    await replaceCoinRulers(id, fields.rulerId, tx)
 
     return updatedCoin
   })

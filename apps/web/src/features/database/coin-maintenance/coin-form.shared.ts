@@ -1,6 +1,39 @@
-import type { CoinMaintenanceRecord } from "@workspace/db"
+import type {
+  CoinMaintenanceRecord,
+  CompositionOption,
+  CurrencyOption,
+  DistributionOption,
+  EdgeOption,
+  IssuerOption,
+  OrientationOption,
+  RimOption,
+  RulerOption,
+  ShapeOption,
+  TechniqueOption,
+} from "@workspace/db"
 
 import type { CoinDraft } from "./actions"
+
+export type CoinFormOptions = {
+  compositions: CompositionOption[]
+  currencies: CurrencyOption[]
+  distributions: DistributionOption[]
+  edges: EdgeOption[]
+  issuers: IssuerOption[]
+  orientations: OrientationOption[]
+  rims: RimOption[]
+  rulers: RulerOption[]
+  shapes: ShapeOption[]
+  techniques: TechniqueOption[]
+}
+
+const REQUIRED_LOOKUP_OPTION_KEYS = [
+  "issuers",
+  "rulers",
+  "distributions",
+  "compositions",
+  "currencies",
+] as const
 
 export const EMPTY_COIN_DRAFT: CoinDraft = {
   title: "",
@@ -30,6 +63,20 @@ function stringifyOptionalNumber(value: number | null) {
   return value === null ? "" : String(value)
 }
 
+function getDemonetizationStatus(
+  isDemonetized: boolean | null
+): CoinDraft["demonetizationStatus"] {
+  if (isDemonetized === null) {
+    return "unknown"
+  }
+
+  if (isDemonetized) {
+    return "demonetized"
+  }
+
+  return "not-demonetized"
+}
+
 export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
   return {
     title: coin.title,
@@ -52,12 +99,7 @@ export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
     comments: coin.comments ?? "",
     minYear: stringifyOptionalNumber(coin.minYear),
     maxYear: stringifyOptionalNumber(coin.maxYear),
-    demonetizationStatus:
-      coin.isDemonetized === null
-        ? "unknown"
-        : coin.isDemonetized
-          ? "demonetized"
-          : "not-demonetized",
+    demonetizationStatus: getDemonetizationStatus(coin.isDemonetized),
   }
 }
 
@@ -76,4 +118,8 @@ export function hasRequiredCoinDraftFields(draft: CoinDraft) {
     normalizeDraftValue(String(draft.faceValueNumericValue)) !== "" &&
     normalizeDraftValue(draft.currencyId) !== ""
   )
+}
+
+export function hasRequiredCoinLookupOptions(options: CoinFormOptions) {
+  return REQUIRED_LOOKUP_OPTION_KEYS.every((key) => options[key].length > 0)
 }

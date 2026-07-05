@@ -2,19 +2,7 @@ import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type {
-  CoinMaintenanceRecord,
-  CompositionOption,
-  CurrencyOption,
-  DistributionOption,
-  EdgeOption,
-  IssuerOption,
-  OrientationOption,
-  RimOption,
-  RulerOption,
-  ShapeOption,
-  TechniqueOption,
-} from "@workspace/db"
+import type { CoinMaintenanceRecord } from "@workspace/db"
 import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -30,21 +18,9 @@ import {
   createCoinDraft,
   EMPTY_COIN_DRAFT,
   hasRequiredCoinDraftFields,
+  type CoinFormOptions,
 } from "./coin-form.shared"
 import type { CoinDraft } from "./actions"
-
-type CoinFormOptions = {
-  compositions: CompositionOption[]
-  currencies: CurrencyOption[]
-  distributions: DistributionOption[]
-  edges: EdgeOption[]
-  issuers: IssuerOption[]
-  orientations: OrientationOption[]
-  rims: RimOption[]
-  rulers: RulerOption[]
-  shapes: ShapeOption[]
-  techniques: TechniqueOption[]
-}
 
 type CoinFormProps =
   | {
@@ -79,7 +55,9 @@ function createOptionLabel(option: { code: string; name: string }) {
   return `${option.name} (${option.code})`
 }
 
-function renderSelectOptions(options: Array<{ id: string; code: string; name: string }>) {
+function renderSelectOptions(
+  options: Array<{ id: string; code: string; name: string }>
+) {
   return options.map((option) => (
     <option key={option.id} value={option.id}>
       {createOptionLabel(option)}
@@ -87,36 +65,34 @@ function renderSelectOptions(options: Array<{ id: string; code: string; name: st
   ))
 }
 
-function validateCreateDraft(draft: CoinDraft): CoinMutationResult | null {
-  const parsedInput = coinDraftSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
+function createFieldErrorResult(
+  fieldErrors: CoinFieldErrors
+): CoinMutationResult {
   return {
     status: "error",
-    fieldErrors: getCoinFieldErrors(parsedInput.error.issues),
+    fieldErrors,
   }
 }
 
-function validateEditDraft(
-  coinId: string,
-  draft: CoinDraft
-): CoinMutationResult | null {
-  const parsedInput = updateCoinInputSchema.safeParse({
-    id: coinId,
-    ...draft,
-  })
+function validateDraft(input: CoinDraft | (CoinDraft & { id: string })) {
+  const parsedInput =
+    "id" in input
+      ? updateCoinInputSchema.safeParse(input)
+      : coinDraftSchema.safeParse(input)
 
   if (parsedInput.success) {
     return null
   }
 
-  return {
-    status: "error",
-    fieldErrors: getCoinFieldErrors(parsedInput.error.issues),
+  return createFieldErrorResult(getCoinFieldErrors(parsedInput.error.issues))
+}
+
+function renderFieldError(message: string | undefined) {
+  if (!message) {
+    return null
   }
+
+  return <span className="text-sm text-destructive">{message}</span>
 }
 
 export function CoinForm(props: CoinFormProps) {
@@ -170,10 +146,9 @@ export function CoinForm(props: CoinFormProps) {
     setFormError(null)
     setSuccessMessage(null)
 
-    const validationResult =
-      props.mode === "edit"
-        ? validateEditDraft(props.coin.id, draft)
-        : validateCreateDraft(draft)
+    const validationResult = validateDraft(
+      props.mode === "edit" ? { id: props.coin.id, ...draft } : draft
+    )
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -229,7 +204,7 @@ export function CoinForm(props: CoinFormProps) {
             onChange={(event) => updateDraft("title", event.target.value)}
             className="rounded border px-3 py-2"
           />
-          {fieldErrors.title ? <span className="text-sm text-destructive">{fieldErrors.title}</span> : null}
+          {renderFieldError(fieldErrors.title)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Issuer</span>
@@ -242,6 +217,7 @@ export function CoinForm(props: CoinFormProps) {
             <option value="">Select Issuer</option>
             {renderSelectOptions(props.options.issuers)}
           </select>
+          {renderFieldError(fieldErrors.issuerId)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Ruler Attribution</span>
@@ -254,39 +230,49 @@ export function CoinForm(props: CoinFormProps) {
             <option value="">Select Ruler</option>
             {renderSelectOptions(props.options.rulers)}
           </select>
+          {renderFieldError(fieldErrors.rulerId)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Distribution</span>
           <select
             name="distributionId"
             value={draft.distributionId}
-            onChange={(event) => updateDraft("distributionId", event.target.value)}
+            onChange={(event) =>
+              updateDraft("distributionId", event.target.value)
+            }
             className="rounded border px-3 py-2"
           >
             <option value="">Select Distribution</option>
             {renderSelectOptions(props.options.distributions)}
           </select>
+          {renderFieldError(fieldErrors.distributionId)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Composition</span>
           <select
             name="compositionId"
             value={draft.compositionId}
-            onChange={(event) => updateDraft("compositionId", event.target.value)}
+            onChange={(event) =>
+              updateDraft("compositionId", event.target.value)
+            }
             className="rounded border px-3 py-2"
           >
             <option value="">Select Composition</option>
             {renderSelectOptions(props.options.compositions)}
           </select>
+          {renderFieldError(fieldErrors.compositionId)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Face Value text</span>
           <input
             name="faceValueText"
             value={draft.faceValueText}
-            onChange={(event) => updateDraft("faceValueText", event.target.value)}
+            onChange={(event) =>
+              updateDraft("faceValueText", event.target.value)
+            }
             className="rounded border px-3 py-2"
           />
+          {renderFieldError(fieldErrors.faceValueText)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Face Value numeric value</span>
@@ -298,11 +284,7 @@ export function CoinForm(props: CoinFormProps) {
             }
             className="rounded border px-3 py-2"
           />
-          {fieldErrors.faceValueNumericValue ? (
-            <span className="text-sm text-destructive">
-              {fieldErrors.faceValueNumericValue}
-            </span>
-          ) : null}
+          {renderFieldError(fieldErrors.faceValueNumericValue)}
         </label>
         <label className="grid gap-1 text-sm">
           <span>Currency</span>
@@ -315,6 +297,7 @@ export function CoinForm(props: CoinFormProps) {
             <option value="">Select Currency</option>
             {renderSelectOptions(props.options.currencies)}
           </select>
+          {renderFieldError(fieldErrors.currencyId)}
         </label>
         {(
           [
@@ -331,13 +314,17 @@ export function CoinForm(props: CoinFormProps) {
               name={fieldName}
               value={draft[fieldName] as string}
               onChange={(event) =>
-                updateDraft(fieldName, event.target.value as CoinDraft[typeof fieldName])
+                updateDraft(
+                  fieldName,
+                  event.target.value as CoinDraft[typeof fieldName]
+                )
               }
               className="rounded border px-3 py-2"
             >
               <option value="">Unknown</option>
               {renderSelectOptions(options)}
             </select>
+            {renderFieldError(fieldErrors[fieldName])}
           </label>
         ))}
         {(
@@ -357,15 +344,14 @@ export function CoinForm(props: CoinFormProps) {
               name={fieldName}
               value={draft[fieldName] as string}
               onChange={(event) =>
-                updateDraft(fieldName, event.target.value as CoinDraft[typeof fieldName])
+                updateDraft(
+                  fieldName,
+                  event.target.value as CoinDraft[typeof fieldName]
+                )
               }
               className="rounded border px-3 py-2"
             />
-            {fieldErrors[fieldName] ? (
-              <span className="text-sm text-destructive">
-                {fieldErrors[fieldName]}
-              </span>
-            ) : null}
+            {renderFieldError(fieldErrors[fieldName])}
           </label>
         ))}
         <label className="grid gap-1 text-sm md:col-span-2">
@@ -376,6 +362,7 @@ export function CoinForm(props: CoinFormProps) {
             onChange={(event) => updateDraft("comments", event.target.value)}
             className="min-h-24 rounded border px-3 py-2"
           />
+          {renderFieldError(fieldErrors.comments)}
         </label>
         <fieldset className="grid gap-2 text-sm md:col-span-2">
           <legend>Demonetization Status</legend>
@@ -404,14 +391,19 @@ export function CoinForm(props: CoinFormProps) {
               type="radio"
               name="demonetizationStatus"
               checked={draft.demonetizationStatus === "demonetized"}
-              onChange={() => updateDraft("demonetizationStatus", "demonetized")}
+              onChange={() =>
+                updateDraft("demonetizationStatus", "demonetized")
+              }
             />{" "}
             Demonetized
           </label>
+          {renderFieldError(fieldErrors.demonetizationStatus)}
         </fieldset>
       </div>
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

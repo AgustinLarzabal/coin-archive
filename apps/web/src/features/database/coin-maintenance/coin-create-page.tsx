@@ -16,6 +16,10 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
+  hasRequiredCoinLookupOptions,
+  type CoinFormOptions,
+} from "./coin-form.shared"
+import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
   type MaintenancePageLoadResult,
@@ -23,19 +27,6 @@ import {
 } from "../maintenance-page"
 import { hasCoinMaintenanceAccess } from "./actions"
 import { CoinForm } from "./coin-form"
-
-type CoinFormOptions = {
-  compositions: CompositionOption[]
-  currencies: CurrencyOption[]
-  distributions: DistributionOption[]
-  edges: EdgeOption[]
-  issuers: IssuerOption[]
-  orientations: OrientationOption[]
-  rims: RimOption[]
-  rulers: RulerOption[]
-  shapes: ShapeOption[]
-  techniques: TechniqueOption[]
-}
 
 type CreateCoinPageData = {
   options: CoinFormOptions
@@ -102,8 +93,7 @@ export async function loadCoinCreatePageData(
     }
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultDependencies())
+  const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
 
   const [
     issuers,
@@ -163,16 +153,6 @@ type CoinCreateRouteComponentProps = {
   loaderData: CreateCoinLoaderData
 }
 
-function hasRequiredLookupChoices(options: CoinFormOptions) {
-  return (
-    options.issuers.length > 0 &&
-    options.rulers.length > 0 &&
-    options.distributions.length > 0 &&
-    options.compositions.length > 0 &&
-    options.currencies.length > 0
-  )
-}
-
 export function CoinCreateRouteComponent({
   loaderData,
 }: CoinCreateRouteComponentProps) {
@@ -185,7 +165,7 @@ export function CoinCreateRouteComponent({
         </p>
       </header>
 
-      {hasRequiredLookupChoices(options) ? (
+      {hasRequiredCoinLookupOptions(options) ? (
         <CoinForm mode="create" options={options} />
       ) : (
         <div className="space-y-3 rounded border p-4">

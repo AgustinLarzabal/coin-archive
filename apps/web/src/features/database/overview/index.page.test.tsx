@@ -4,13 +4,13 @@ import { describe, expect, it, vi } from "vitest"
 import {
   loadDatabaseOverviewPageData,
   renderDatabaseOverviewPage,
-} from "./database-overview-page"
+} from "./index"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
-vi.mock("./database-overview-table", () => ({
+vi.mock("./overview-table", () => ({
   DatabaseOverviewTable: () => "Database overview table",
 }))
 

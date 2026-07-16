@@ -3,7 +3,7 @@ import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { DatabaseOverviewTable } from "./database-overview-table"
+import { DatabaseOverviewTable } from "./overview-table"
 
 type SummaryRow = {
   href: string
@@ -12,7 +12,7 @@ type SummaryRow = {
 }
 
 const summaryRowPattern =
-  /<a href="([^"]+)" class="underline underline-offset-4">([^<]+)<\/a><\/td><td class="py-3">(\d+)<\/td>/g
+  /<a href="([^"]+)"[^>]*>([^<]+)<\/a><\/td><td[^>]*>(\d+)<\/td>/g
 
 function extractSummaryRows(markup: string): SummaryRow[] {
   return Array.from(
@@ -94,7 +94,7 @@ describe("DatabaseOverviewTable", () => {
 
     expect(markup).toContain("Record type")
     expect(markup).toContain("Count")
-    expect(markup).toContain("<tbody>")
+    expect(markup).toContain('data-slot="table-body"')
     expect(extractSummaryRows(markup)).toStrictEqual(expectedRows)
   })
 })

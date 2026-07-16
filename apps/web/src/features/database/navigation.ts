@@ -97,7 +97,7 @@ export const databaseMaintenanceSections = [
 export const databaseSecondaryMenuItems = [
   {
     to: "/database",
-    label: "General",
+    label: "Overview",
   },
   ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
 ] as const satisfies readonly DatabaseSecondaryMenuItem[]

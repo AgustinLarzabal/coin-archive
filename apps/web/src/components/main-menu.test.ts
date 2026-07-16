@@ -13,7 +13,7 @@ describe("getPrivateNavigationItem", () => {
       to: "/database",
       label: "Database",
       children: [
-        { to: "/database", label: "General" },
+        { to: "/database", label: "Overview" },
         { to: "/database/coins", label: "Coins" },
         { to: "/database/catalogues", label: "Catalogues" },
         { to: "/database/compositions", label: "Compositions" },

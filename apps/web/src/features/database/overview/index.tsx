@@ -6,7 +6,7 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
-import { DatabaseOverviewTable } from "./database-overview-table"
+import { DatabaseOverviewTable } from "./overview-table"
 
 type DatabaseOverviewPageLoaderData =
   | {

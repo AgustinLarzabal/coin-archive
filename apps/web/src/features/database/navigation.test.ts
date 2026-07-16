@@ -93,7 +93,7 @@ describe("database navigation", () => {
     expect(databaseSecondaryMenuItems).toStrictEqual([
       {
         to: "/database",
-        label: "General",
+        label: "Overview",
       },
       ...databaseMaintenanceSections.map(({ to, label }) => ({ to, label })),
     ])

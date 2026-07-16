@@ -58,7 +58,7 @@ const FEATURE_OWNED_ROUTE_ADAPTERS = [
     routeComponentExport: "EngraverMaintenanceRouteComponent",
   },
   {
-    featureImportPath: "@/features/database/database-overview",
+    featureImportPath: "@/features/database/overview",
     filePath: "index.tsx",
     loaderExport: "loadDatabaseOverviewRouteData",
     routeComponentExport: "DatabaseOverviewRouteComponent",

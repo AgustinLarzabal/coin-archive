@@ -2,6 +2,14 @@ import { readdirSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const ROUTE_DIRECTORY_URL = new URL(".", import.meta.url)
+type FeatureOwnedRouteAdapter = {
+  featureImportPath: string
+  filePath: string
+  loaderExport: string
+  routeComponentExport: string
+  loaderDataExpression?: string
+}
+
 const FEATURE_OWNED_ROUTE_ADAPTERS = [
   {
     featureImportPath: "@/features/database/coin-maintenance",
@@ -14,6 +22,7 @@ const FEATURE_OWNED_ROUTE_ADAPTERS = [
     filePath: "coins.tsx",
     loaderExport: "loadCoinMaintenanceRouteData",
     routeComponentExport: "CoinMaintenanceRouteComponent",
+    loaderDataExpression: "loaderData",
   },
   {
     featureImportPath: "@/features/database/coin-maintenance",
@@ -117,7 +126,7 @@ const FEATURE_OWNED_ROUTE_ADAPTERS = [
     loaderExport: "loadThemeMaintenanceRouteData",
     routeComponentExport: "ThemeMaintenanceRouteComponent",
   },
-] as const
+] satisfies readonly FeatureOwnedRouteAdapter[]
 
 function readRouteSource(filePath: string) {
   return readFileSync(new URL(filePath, ROUTE_DIRECTORY_URL), "utf8")
@@ -146,14 +155,22 @@ describe("database route adapters", () => {
       filePath,
       loaderExport,
       routeComponentExport,
+      loaderDataExpression = "Route.useLoaderData()",
     } of FEATURE_OWNED_ROUTE_ADAPTERS) {
       const routeSource = readRouteSource(filePath)
 
       expect(routeSource).toContain(`from "${featureImportPath}"`)
       expect(routeSource).toContain(`loader: ${loaderExport}`)
       expect(routeSource).toContain(
-        `<${routeComponentExport} loaderData={Route.useLoaderData()} />`
+        `<${routeComponentExport} loaderData={${loaderDataExpression}} />`
       )
     }
+  })
+
+  it("renders nested Coin routes through the Coins route outlet", () => {
+    const routeSource = readRouteSource("coins.tsx")
+
+    expect(routeSource).toContain('pathname === "/database/coins"')
+    expect(routeSource).toContain("<Outlet />")
   })
 })

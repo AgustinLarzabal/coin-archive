@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { Outlet, createFileRoute, useRouterState } from "@tanstack/react-router"
 import {
   CoinMaintenanceRouteComponent,
   coinMaintenanceSearchSchema,
@@ -14,5 +14,14 @@ export const Route = createFileRoute("/_app/_authed/database/coins")({
 })
 
 function DatabaseCoinsComponent() {
-  return <CoinMaintenanceRouteComponent loaderData={Route.useLoaderData()} />
+  const loaderData = Route.useLoaderData()
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+
+  if (pathname === "/database/coins") {
+    return <CoinMaintenanceRouteComponent loaderData={loaderData} />
+  }
+
+  return <Outlet />
 }

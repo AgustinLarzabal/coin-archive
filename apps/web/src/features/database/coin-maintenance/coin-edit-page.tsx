@@ -110,8 +110,12 @@ export function getCoinEditLoaderDeps(params: {
   }
 }
 
-export function loadCoinEditRouteData({ deps }: { deps: CoinEditLoaderDeps }) {
-  return getCoinEditLoaderData({ data: deps })
+export function loadCoinEditRouteData({
+  params,
+}: {
+  params: { coinId: string }
+}) {
+  return getCoinEditLoaderData({ data: getCoinEditLoaderDeps(params) })
 }
 
 type CoinEditRouteComponentProps = {

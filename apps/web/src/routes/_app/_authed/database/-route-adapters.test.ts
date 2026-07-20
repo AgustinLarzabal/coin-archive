@@ -173,4 +173,11 @@ describe("database route adapters", () => {
     expect(routeSource).toContain('pathname === "/database/coins"')
     expect(routeSource).toContain("<Outlet />")
   })
+
+  it("passes Coin edit parameters through the route loader, not loader deps", () => {
+    const routeSource = readRouteSource("coins.$coinId.edit.tsx")
+
+    expect(routeSource).toContain("loader: loadCoinEditRouteData")
+    expect(routeSource).not.toContain("loaderDeps:")
+  })
 })

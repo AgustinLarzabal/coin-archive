@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import {
   CoinEditRouteComponent,
   loadCoinEditRouteData,
-} from "@/features/database/coin-maintenance"
+} from "@/features/database/coin"
 
 export const Route = createFileRoute(
   "/_app/_authed/database/coins/$coinId/edit"

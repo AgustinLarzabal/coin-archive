@@ -9,6 +9,7 @@ import {
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"
 import { CoinSelectField } from "./coin-select-field"
+import { SurfaceImageUpload } from "../surface-image-upload"
 
 type Face = "obverse" | "reverse"
 type SurfaceField = "description" | "lettering"
@@ -23,6 +24,10 @@ export function DesignImagerySection({
   updateEdgeSurface,
   updateFaceEngraver,
   updateFaceSurface,
+  isCreateMode,
+  onSurfaceImagePendingChange,
+  updateSurfaceImageUploadReference,
+  authorizeSurfaceImageUpload,
 }: Pick<
   CoinFormSectionProps,
   "draft" | "fieldErrors" | "idPrefix" | "options"
@@ -32,6 +37,14 @@ export function DesignImagerySection({
   updateFaceEngraver: (face: Face, index: number, value: string) => void
   updateFaceSurface: (face: Face, field: SurfaceField, value: string) => void
   updateEdgeSurface: (field: SurfaceField, value: string) => void
+  isCreateMode: boolean
+  onSurfaceImagePendingChange: (face: Face | "edge", isPending: boolean) => void
+  updateSurfaceImageUploadReference: (face: Face | "edge", reference: string) => void
+  authorizeSurfaceImageUpload: (input: {
+    surface: Face | "edge"
+    contentType: string
+    contentLength: number
+  }) => Promise<{ reference: string; uploadUrl: string } | { formError?: string }>
 }) {
   return (
     <Card>
@@ -82,6 +95,18 @@ export function DesignImagerySection({
                   }
                 />
               </div>
+              {isCreateMode ? (
+                <SurfaceImageUpload
+                  surface={face}
+                  authorizeUpload={authorizeSurfaceImageUpload}
+                  onPendingChange={(isPending) =>
+                    onSurfaceImagePendingChange(face, isPending)
+                  }
+                  onReferenceChange={(reference) =>
+                    updateSurfaceImageUploadReference(face, reference)
+                  }
+                />
+              ) : null}
               <div className="grid gap-3">
                 {surface.engraverIds.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
@@ -144,6 +169,18 @@ export function DesignImagerySection({
                 onValueChange={(value) => updateEdgeSurface("lettering", value)}
               />
             </div>
+            {isCreateMode ? (
+              <SurfaceImageUpload
+                surface="edge"
+                authorizeUpload={authorizeSurfaceImageUpload}
+                onPendingChange={(isPending) =>
+                  onSurfaceImagePendingChange("edge", isPending)
+                }
+                onReferenceChange={(reference) =>
+                  updateSurfaceImageUploadReference("edge", reference)
+                }
+              />
+            ) : null}
           </section>
         </FieldGroup>
       </FieldSet>

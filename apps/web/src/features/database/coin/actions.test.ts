@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  authorizeSurfaceImageUpload,
   COIN_AUTHORIZATION_ERROR,
   COIN_DELETE_CONFIRMATION_ERROR,
   COIN_MISSING_ERROR,
@@ -66,12 +67,14 @@ function createDependencies(overrides?: {
   deleteCoinMaintenance?: ReturnType<typeof vi.fn>
   getCoinMaintenanceDeleteSummary?: ReturnType<typeof vi.fn>
   updateCoinMaintenance?: ReturnType<typeof vi.fn>
+  resolveSurfaceImageUpload?: ReturnType<typeof vi.fn>
 }) {
   return {
     createCoinMaintenance: vi.fn(),
     deleteCoinMaintenance: vi.fn(),
     getCoinMaintenanceDeleteSummary: vi.fn(),
     updateCoinMaintenance: vi.fn(),
+    resolveSurfaceImageUpload: vi.fn(),
     ...overrides,
   }
 }
@@ -244,6 +247,101 @@ describe("submitCreateCoin", () => {
         reverse: null,
         edge: null,
       },
+    })
+  })
+
+  it("resolves only the authorized Surface Image reference before persisting the Coin aggregate", async () => {
+    const dependencies = createDependencies({
+      createCoinMaintenance: vi.fn().mockResolvedValue({ id: VALID_COIN_ID }),
+      resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
+        imageUrl: "https://images.example.test/surface-images/opaque-id",
+      }),
+    })
+
+    await expect(
+      submitCreateCoin(
+        { role: "editor" },
+        {
+          ...VALID_COIN_DRAFT,
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            obverse: {
+              ...VALID_COIN_DRAFT.surfaces.obverse,
+              imageUploadReference: "opaque-upload-reference",
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toMatchObject({ status: "success", coinId: VALID_COIN_ID })
+
+    expect(dependencies.resolveSurfaceImageUpload).toHaveBeenCalledWith(
+      "opaque-upload-reference",
+      "obverse"
+    )
+    expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surfaces: {
+          obverse: expect.objectContaining({
+            imageUrl: "https://images.example.test/surface-images/opaque-id",
+          }),
+          reverse: null,
+          edge: null,
+        },
+      })
+    )
+  })
+
+  it("does not persist a Coin when its authorized Surface Image cannot pass server inspection", async () => {
+    const dependencies = createDependencies({
+      resolveSurfaceImageUpload: vi
+        .fn()
+        .mockRejectedValue(new Error("invalid object")),
+    })
+
+    await expect(
+      submitCreateCoin(
+        { role: "editor" },
+        {
+          ...VALID_COIN_DRAFT,
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            edge: {
+              ...VALID_COIN_DRAFT.surfaces.edge,
+              imageUploadReference: "opaque-upload-reference",
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: "Unable to save Coin right now.",
+    })
+    expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
+  })
+})
+
+describe("authorizeSurfaceImageUpload", () => {
+  it("uses established Coin Maintenance authorization before issuing an upload URL", async () => {
+    const authorizeUpload = vi.fn()
+    const input = { surface: "obverse" as const, contentType: "image/jpeg", contentLength: 100 }
+
+    await expect(
+      authorizeSurfaceImageUpload(null, input, { authorizeUpload })
+    ).resolves.toStrictEqual(authorizationErrorResult)
+    expect(authorizeUpload).not.toHaveBeenCalled()
+
+    authorizeUpload.mockResolvedValue({
+      reference: "opaque-upload-reference",
+      uploadUrl: "https://r2.example.test/presigned",
+    })
+    await expect(
+      authorizeSurfaceImageUpload({ role: "admin" }, input, { authorizeUpload })
+    ).resolves.toStrictEqual({
+      reference: "opaque-upload-reference",
+      uploadUrl: "https://r2.example.test/presigned",
     })
   })
 })

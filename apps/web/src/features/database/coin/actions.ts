@@ -4,6 +4,11 @@ import { z } from "zod"
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
 import type { CoinMaintenanceDeleteSummary } from "@workspace/db"
+import type {
+  SurfaceImageStorage,
+  SurfaceImageUploadAuthorization,
+  SurfaceImageUploadRequest,
+} from "./surface-image-storage"
 
 export const COIN_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Coins."
@@ -15,6 +20,7 @@ const DUPLICATE_REFERENCE_ERROR =
   "Duplicate Catalogue References are not allowed on the same Coin."
 const DUPLICATE_ENGRAVER_ERROR =
   "Duplicate Engraver Attributions are not allowed on the same face."
+export const SURFACE_IMAGE_UPLOAD_ERROR = "Unable to upload Surface Image right now."
 const SURFACE_IMAGE_URL_ERROR =
   "Surface Image URL must be an absolute http:// or https:// URL."
 
@@ -169,6 +175,7 @@ const faceSurfaceSchema = z.object({
   description: optionalTrimmedStringSchema,
   lettering: optionalTrimmedStringSchema,
   imageUrl: optionalAbsoluteWebUrlSchema,
+  imageUploadReference: z.string().default(""),
   engraverIds: z.array(z.uuid()),
 })
 
@@ -176,6 +183,7 @@ const edgeSurfaceSchema = z.object({
   description: optionalTrimmedStringSchema,
   lettering: optionalTrimmedStringSchema,
   imageUrl: optionalAbsoluteWebUrlSchema,
+  imageUploadReference: z.string().default(""),
 })
 
 type DuplicateCollectionIssueInput<TFieldName extends string> = {
@@ -406,6 +414,14 @@ export type CoinEdgeSurfaceDraft = z.input<typeof edgeSurfaceSchema>
 type CoinDraftData = z.output<typeof coinDraftSchema>
 type CoinFaceSurfaceData = z.output<typeof faceSurfaceSchema>
 type CoinEdgeSurfaceData = z.output<typeof edgeSurfaceSchema>
+type CoinFaceSurfacePersistenceData = Omit<
+  CoinFaceSurfaceData,
+  "imageUploadReference"
+>
+type CoinEdgeSurfacePersistenceData = Omit<
+  CoinEdgeSurfaceData,
+  "imageUploadReference"
+>
 type UpdateCoinInput = z.input<typeof updateCoinInputSchema>
 type UpdateCoinData = z.output<typeof updateCoinInputSchema>
 type DeleteCoinInput = z.input<typeof deleteCoinInputSchema>
@@ -418,9 +434,9 @@ type CoinPersistenceInput = Omit<
   rulerIds: string[]
   themeIds: string[]
   surfaces: {
-    obverse: z.output<typeof faceSurfaceSchema> | null
-    reverse: z.output<typeof faceSurfaceSchema> | null
-    edge: z.output<typeof edgeSurfaceSchema> | null
+    obverse: CoinFaceSurfacePersistenceData | null
+    reverse: CoinFaceSurfacePersistenceData | null
+    edge: CoinEdgeSurfacePersistenceData | null
   }
 }
 type UpdateCoinPersistenceInput = Omit<
@@ -432,9 +448,9 @@ type UpdateCoinPersistenceInput = Omit<
   rulerIds: string[]
   themeIds: string[]
   surfaces: {
-    obverse: z.output<typeof faceSurfaceSchema> | null
-    reverse: z.output<typeof faceSurfaceSchema> | null
-    edge: z.output<typeof edgeSurfaceSchema> | null
+    obverse: CoinFaceSurfacePersistenceData | null
+    reverse: CoinFaceSurfacePersistenceData | null
+    edge: CoinEdgeSurfacePersistenceData | null
   }
 }
 
@@ -469,7 +485,13 @@ type CoinMutationDependencies = {
   updateCoinMaintenance: (
     input: UpdateCoinPersistenceInput
   ) => Promise<{ id: string } | null>
+  resolveSurfaceImageUpload: (
+    reference: string,
+    surface: "obverse" | "reverse" | "edge"
+  ) => Promise<{ imageUrl: string }>
 }
+
+type SurfaceImageUploadDependencies = Pick<SurfaceImageStorage, "authorizeUpload">
 
 type CoinDeleteDependencies = {
   deleteCoinMaintenance: (input: { id: string }) => Promise<{ id: string } | null>
@@ -481,11 +503,20 @@ type CoinDeleteDependencies = {
 async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
   const { createCoinMaintenance, updateCoinMaintenance } =
     await import("@workspace/db")
+  const { createR2SurfaceImageStorage } = await import("./surface-image-storage")
 
   return {
     createCoinMaintenance,
     updateCoinMaintenance,
+    resolveSurfaceImageUpload: async (reference, surface) =>
+      createR2SurfaceImageStorage().resolveUpload(reference, surface),
   }
+}
+
+async function getDefaultSurfaceImageUploadDependencies(): Promise<SurfaceImageUploadDependencies> {
+  const { createR2SurfaceImageStorage } = await import("./surface-image-storage")
+
+  return createR2SurfaceImageStorage()
 }
 
 async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
@@ -534,17 +565,6 @@ function isCoinFieldName(field: unknown): field is CoinFieldName {
   )
 }
 
-function getIssueMessage(issue: z.ZodIssue) {
-  if (
-    issue.path.at(-1) === "imageUrl" &&
-    issue.path.join(".").startsWith("surfaces.")
-  ) {
-    return SURFACE_IMAGE_URL_ERROR
-  }
-
-  return issue.message
-}
-
 export function getCoinFieldErrors(issues: z.ZodIssue[]): CoinFieldErrors {
   const fieldErrors: CoinFieldErrors = {}
 
@@ -563,6 +583,17 @@ export function getCoinFieldErrors(issues: z.ZodIssue[]): CoinFieldErrors {
   }
 
   return fieldErrors
+}
+
+function getIssueMessage(issue: z.ZodIssue) {
+  if (
+    issue.path.at(-1) === "imageUrl" &&
+    issue.path.join(".").startsWith("surfaces.")
+  ) {
+    return SURFACE_IMAGE_URL_ERROR
+  }
+
+  return issue.message
 }
 
 function validateInput<TSchema extends z.ZodType>(
@@ -596,7 +627,7 @@ function mapDemonetizationStatus(
   return status === "demonetized"
 }
 
-function hasFaceSurfaceContent(surface: CoinFaceSurfaceData) {
+function hasFaceSurfaceContent(surface: CoinFaceSurfacePersistenceData) {
   return (
     surface.description !== null ||
     surface.lettering !== null ||
@@ -605,7 +636,7 @@ function hasFaceSurfaceContent(surface: CoinFaceSurfaceData) {
   )
 }
 
-function hasEdgeSurfaceContent(surface: CoinEdgeSurfaceData) {
+function hasEdgeSurfaceContent(surface: CoinEdgeSurfacePersistenceData) {
   return (
     surface.description !== null ||
     surface.lettering !== null ||
@@ -613,11 +644,11 @@ function hasEdgeSurfaceContent(surface: CoinEdgeSurfaceData) {
   )
 }
 
-function mapOptionalFaceSurface(surface: CoinFaceSurfaceData) {
+function mapOptionalFaceSurface(surface: CoinFaceSurfacePersistenceData) {
   return hasFaceSurfaceContent(surface) ? surface : null
 }
 
-function mapOptionalEdgeSurface(surface: CoinEdgeSurfaceData) {
+function mapOptionalEdgeSurface(surface: CoinEdgeSurfacePersistenceData) {
   return hasEdgeSurfaceContent(surface) ? surface : null
 }
 
@@ -625,6 +656,13 @@ function mapDraftToPersistenceInput(
   input: CoinDraftData
 ): CoinPersistenceInput {
   const { demonetizationStatus, mints, rulers, themes, ...rest } = input
+  const toPersistenceSurface = <TSurface extends { imageUploadReference: string }>(
+    surface: TSurface
+  ) => {
+    const { imageUploadReference: _imageUploadReference, ...persistenceSurface } =
+      surface
+    return persistenceSurface
+  }
 
   return {
     ...rest,
@@ -633,10 +671,48 @@ function mapDraftToPersistenceInput(
     rulerIds: mapAttributionIds(rulers, "rulerId"),
     themeIds: mapAttributionIds(themes, "themeId"),
     surfaces: {
-      obverse: mapOptionalFaceSurface(rest.surfaces.obverse),
-      reverse: mapOptionalFaceSurface(rest.surfaces.reverse),
-      edge: mapOptionalEdgeSurface(rest.surfaces.edge),
+      obverse: mapOptionalFaceSurface(toPersistenceSurface(rest.surfaces.obverse)),
+      reverse: mapOptionalFaceSurface(toPersistenceSurface(rest.surfaces.reverse)),
+      edge: mapOptionalEdgeSurface(toPersistenceSurface(rest.surfaces.edge)),
     },
+  }
+}
+
+async function resolveSurfaceImageReferences(
+  input: CoinDraftData,
+  resolveSurfaceImageUpload: CoinMutationDependencies["resolveSurfaceImageUpload"]
+) {
+  const surfaces = await Promise.all(
+    (["obverse", "reverse", "edge"] as const).map(async (surface) => {
+      const reference = input.surfaces[surface].imageUploadReference
+      if (reference === "") return [surface, input.surfaces[surface]] as const
+
+      const { imageUrl } = await resolveSurfaceImageUpload(reference, surface)
+      return [surface, { ...input.surfaces[surface], imageUrl }] as const
+    })
+  )
+
+  return {
+    ...input,
+    surfaces: Object.fromEntries(surfaces) as CoinDraftData["surfaces"],
+  }
+}
+
+export async function authorizeSurfaceImageUpload(
+  collector: CollectorWithRole | null,
+  input: SurfaceImageUploadRequest,
+  dependencies?: SurfaceImageUploadDependencies
+): Promise<SurfaceImageUploadAuthorization | CoinMutationErrorResult> {
+  if (!hasCoinMaintenanceAccess(collector)) {
+    return createAuthorizationError()
+  }
+
+  try {
+    return await (
+      dependencies ?? (await getDefaultSurfaceImageUploadDependencies())
+    ).authorizeUpload(input)
+  } catch {
+    return createFormErrorResult(SURFACE_IMAGE_UPLOAD_ERROR)
   }
 }
 
@@ -664,9 +740,14 @@ export async function submitCreateCoin(
   }
 
   try {
-    const createdCoin = await (
-      dependencies ?? (await getDefaultDependencies())
-    ).createCoinMaintenance(mapDraftToPersistenceInput(validationResult.data))
+    const resolvedDependencies = dependencies ?? (await getDefaultDependencies())
+    const inputWithResolvedImages = await resolveSurfaceImageReferences(
+      validationResult.data,
+      resolvedDependencies.resolveSurfaceImageUpload
+    )
+    const createdCoin = await resolvedDependencies.createCoinMaintenance(
+      mapDraftToPersistenceInput(inputWithResolvedImages)
+    )
 
     return {
       status: "success",

@@ -20,6 +20,7 @@ import {
   getCoinFieldErrors,
   submitCreateCoin,
   submitUpdateCoin,
+  authorizeSurfaceImageUpload,
 } from "./actions"
 import {
   createEmptyRulerAttribution,
@@ -56,6 +57,19 @@ const updateCoinAction = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const session = await getAuthSession()
     return submitUpdateCoin(session?.user ?? null, data)
+  })
+
+const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: {
+      surface: "obverse" | "reverse" | "edge"
+      contentType: string
+      contentLength: number
+    }) => data
+  )
+  .handler(async ({ data }) => {
+    const session = await getAuthSession()
+    return authorizeSurfaceImageUpload(session?.user ?? null, data)
   })
 
 function getCoinDraftValidationErrors(draft: CoinDraft): CoinFieldErrors {
@@ -99,10 +113,14 @@ export function CoinForm(props: CoinFormProps) {
   const router = useRouter()
   const createCoin = useServerFn(createCoinAction)
   const updateCoin = useServerFn(updateCoinAction)
+  const authorizeImageUpload = useServerFn(authorizeSurfaceImageUploadAction)
   const initialDraft = getInitialCoinDraft(props)
   const [fieldErrors, setFieldErrors] = useState<CoinFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [pendingSurfaceUploads, setPendingSurfaceUploads] = useState<
+    Partial<Record<"obverse" | "reverse" | "edge", boolean>>
+  >({})
   const previousEditCoinIdRef = useRef(isEditMode ? props.coin.id : null)
 
   function applyResult(result: CoinMutationResult) {
@@ -245,6 +263,23 @@ export function CoinForm(props: CoinFormProps) {
     }))
   }
 
+  function updateSurfaceImageUploadReference(
+    surface: "obverse" | "reverse" | "edge",
+    reference: string
+  ) {
+    form.setFieldValue("surfaces", (current) => ({
+      ...current,
+      [surface]: { ...current[surface], imageUploadReference: reference },
+    }))
+  }
+
+  function setSurfaceImagePending(
+    surface: "obverse" | "reverse" | "edge",
+    isPending: boolean
+  ) {
+    setPendingSurfaceUploads((current) => ({ ...current, [surface]: isPending }))
+  }
+
   function addFaceEngraver(face: "obverse" | "reverse") {
     form.setFieldValue("surfaces", (current) => ({
       ...current,
@@ -368,6 +403,12 @@ export function CoinForm(props: CoinFormProps) {
                 updateEdgeSurface={updateEdgeSurface}
                 updateFaceEngraver={updateFaceEngraver}
                 updateFaceSurface={updateFaceSurface}
+                isCreateMode={!isEditMode}
+                onSurfaceImagePendingChange={setSurfaceImagePending}
+                updateSurfaceImageUploadReference={updateSurfaceImageUploadReference}
+                authorizeSurfaceImageUpload={({ surface, contentType, contentLength }) =>
+                  authorizeImageUpload({ data: { surface, contentType, contentLength } })
+                }
               />
               {formError ? <FieldError>{formError}</FieldError> : null}
               {successMessage ? (
@@ -387,7 +428,9 @@ export function CoinForm(props: CoinFormProps) {
                 <SubmitButton
                   type="submit"
                   disabled={
-                    state.isSubmitting || !hasRequiredCoinDraftFields(draft)
+                    state.isSubmitting ||
+                    !hasRequiredCoinDraftFields(draft) ||
+                    Object.values(pendingSurfaceUploads).some(Boolean)
                   }
                   isSubmitting={state.isSubmitting}
                 >

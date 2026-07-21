@@ -68,6 +68,7 @@ const EMPTY_FACE_SURFACE_DRAFT = {
   description: "",
   lettering: "",
   imageUrl: "",
+  imageUploadReference: "",
   engraverIds: [],
 }
 
@@ -75,6 +76,7 @@ const EMPTY_EDGE_SURFACE_DRAFT = {
   description: "",
   lettering: "",
   imageUrl: "",
+  imageUploadReference: "",
 }
 
 export function createEmptyRulerAttribution(): CoinDraft["rulers"][number] {
@@ -259,6 +261,7 @@ function mapFaceSurfaceDraft(
     description: surface.description ?? "",
     lettering: surface.lettering ?? "",
     imageUrl: surface.imageUrl ?? "",
+    imageUploadReference: "",
     engraverIds: [...surface.engraverIds],
   }
 }
@@ -274,6 +277,7 @@ function mapEdgeSurfaceDraft(
     description: surface.description ?? "",
     lettering: surface.lettering ?? "",
     imageUrl: surface.imageUrl ?? "",
+    imageUploadReference: "",
   }
 }
 

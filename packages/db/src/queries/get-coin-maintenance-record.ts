@@ -12,7 +12,6 @@ type CoinMaintenanceSurfaceRow = {
   kind: "obverse" | "reverse" | "edge-surface"
   description: string | null
   lettering: string | null
-  thumbnailUrl: string | null
   imageUrl: string | null
   engraverId: string | null
 }
@@ -27,7 +26,6 @@ function createCoinMaintenanceFaceSurface(row: CoinMaintenanceSurfaceRow) {
   return {
     description: row.description,
     lettering: row.lettering,
-    thumbnailUrl: row.thumbnailUrl,
     imageUrl: row.imageUrl,
     engraverIds: [],
   }
@@ -45,7 +43,6 @@ function mapCoinMaintenanceSurfaces(
       surfaces.edge = {
         description: row.description,
         lettering: row.lettering,
-        thumbnailUrl: row.thumbnailUrl,
         imageUrl: row.imageUrl,
       }
       continue
@@ -133,7 +130,6 @@ export async function getCoinMaintenanceRecord(
           kind: coinSurface.kind,
           description: coinSurface.description,
           lettering: coinSurface.lettering,
-          thumbnailUrl: coinSurface.thumbnailUrl,
           imageUrl: coinSurface.imageUrl,
           engraverId: coinSurfaceEngraver.engraverId,
         })

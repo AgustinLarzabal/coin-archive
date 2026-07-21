@@ -9,8 +9,7 @@ import type { coinSurfaceKinds } from "../index"
 type CreateCoinInput = Parameters<typeof createCoin>[0]
 type CreateCoinSurfaceInput = Parameters<typeof createCoinSurface>[0]
 
-const fixtureSurfaceUrls = {
-  thumbnailUrl: "https://example.com/coins/fixture/obverse-thumbnail",
+const fixtureSurfaceImage = {
   imageUrl: "https://example.com/coins/fixture/obverse-image",
 } as const
 
@@ -19,9 +18,6 @@ describe("testing fixtures", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
       surfaces?: Array<Omit<CreateCoinSurfaceInput, "coinId">>
     }>()
-    expectTypeOf<CreateCoinSurfaceInput["thumbnailUrl"]>().toEqualTypeOf<
-      string | null | undefined
-    >()
     expectTypeOf<CreateCoinSurfaceInput["imageUrl"]>().toEqualTypeOf<
       string | null | undefined
     >()
@@ -42,7 +38,6 @@ describe("testing fixtures", () => {
   it("accepts camelCase surface image URL fields in nested coin surface fixture input", () => {
     expectTypeOf<CreateCoinInput>().toMatchTypeOf<{
       surfaces?: Array<{
-        thumbnailUrl?: string | null
         imageUrl?: string | null
       }>
     }>()
@@ -54,12 +49,12 @@ describe("testing fixtures", () => {
       surfaces: [
         {
           kind: "obverse" as const,
-          ...fixtureSurfaceUrls,
+          ...fixtureSurfaceImage,
         },
       ],
     } satisfies CreateCoinInput
 
-    expect(createCoinInput.surfaces[0]).toMatchObject(fixtureSurfaceUrls)
+    expect(createCoinInput.surfaces[0]).toMatchObject(fixtureSurfaceImage)
   })
 })
 

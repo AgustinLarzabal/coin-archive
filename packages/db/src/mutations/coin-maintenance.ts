@@ -92,7 +92,6 @@ function hasPersistedFaceSurfaceContent(
   return (
     surface.description !== null ||
     surface.lettering !== null ||
-    surface.thumbnailUrl !== null ||
     surface.imageUrl !== null ||
     surface.engraverIds.length > 0
   )
@@ -116,7 +115,6 @@ function hasPersistedSurfaceContent(
   return (
     surface.description !== null ||
     surface.lettering !== null ||
-    surface.thumbnailUrl !== null ||
     surface.imageUrl !== null
   )
 }
@@ -276,7 +274,6 @@ async function replaceCoinSurfaces(
         kind,
         description: surface.description,
         lettering: surface.lettering,
-        thumbnailUrl: surface.thumbnailUrl,
         imageUrl: surface.imageUrl,
       })
       .returning({

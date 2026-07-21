@@ -150,18 +150,15 @@ const expectedSeededTechniques = [
 const expectedSpain2EuroSurfaceRows = [
   {
     kind: "edge-surface",
-    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-    imageUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: null,
   },
   {
     kind: "obverse",
-    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-    imageUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: null,
   },
   {
     kind: "reverse",
-    thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-    imageUrl: "http://localhost:3000/placeholder-coin.svg",
+    imageUrl: null,
   },
 ] as const
 
@@ -402,7 +399,6 @@ describe("seed integration", () => {
     const seededSpain2EuroSurfaceRows = await db
       .select({
         kind: coinSurface.kind,
-        thumbnailUrl: coinSurface.thumbnailUrl,
         imageUrl: coinSurface.imageUrl,
       })
       .from(coinSurface)

@@ -6,7 +6,6 @@ export type CoinFaceEngraverRecord = {
 export type CoinSurfaceRecord = {
   description: string | null
   lettering: string | null
-  thumbnailUrl: string | null
   imageUrl: string | null
 }
 

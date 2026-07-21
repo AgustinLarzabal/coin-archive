@@ -258,7 +258,6 @@ Legend:
 | `kind` | required |
 | `description` | optional |
 | `lettering` | optional |
-| `thumbnailUrl` | optional |
 | `imageUrl` | optional |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |

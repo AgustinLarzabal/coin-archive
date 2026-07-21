@@ -29,9 +29,6 @@ describe("SeededCoin", () => {
   })
 
   it("defines coin surface seed rows directly", () => {
-    expectTypeOf<SeededCoinSurfaceDetails["thumbnailUrl"]>().toEqualTypeOf<
-      string | null | undefined
-    >()
     expectTypeOf<SeededCoinSurfaceDetails["imageUrl"]>().toEqualTypeOf<
       string | null | undefined
     >()
@@ -44,24 +41,18 @@ describe("SeededCoin", () => {
         kind: "obverse",
         description: "Portrait of Felipe VI facing left.",
         lettering: "FELIPE VI REY DE ESPANA",
-        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
       {
         coinTitle: "Spain 2 Euro",
         kind: "reverse",
         description: "Map of Europe with denomination.",
         lettering: "2 EURO",
-        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
       {
         coinTitle: "Spain 2 Euro",
         kind: "edge-surface",
         description: "Finely reeded with incuse lettering.",
         lettering: "2 **",
-        thumbnailUrl: "http://localhost:3000/placeholder-coin.svg",
-        imageUrl: "http://localhost:3000/placeholder-coin.svg",
       },
     ])
   })

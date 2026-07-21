@@ -128,7 +128,6 @@ type GetCoinSurfaceRow = {
   surfaceKind: CoinSurfaceKind
   surfaceDescription: string | null
   surfaceLettering: string | null
-  surfaceThumbnailUrl: string | null
   surfaceImageUrl: string | null
   engraverCode: string | null
   engraverName: string | null
@@ -333,7 +332,6 @@ function mapSurfaces(rows: GetCoinSurfaceRow[]): CoinSurfaceSetRecord {
     const surface = {
       description: row.surfaceDescription,
       lettering: row.surfaceLettering,
-      thumbnailUrl: row.surfaceThumbnailUrl,
       imageUrl: row.surfaceImageUrl,
     }
 
@@ -552,7 +550,6 @@ function buildGetCoinSurfacesQuery(database: typeof db, coinId: string) {
       surfaceKind: coinSurface.kind,
       surfaceDescription: coinSurface.description,
       surfaceLettering: coinSurface.lettering,
-      surfaceThumbnailUrl: coinSurface.thumbnailUrl,
       surfaceImageUrl: coinSurface.imageUrl,
       engraverCode: engraver.code,
       engraverName: engraver.name,

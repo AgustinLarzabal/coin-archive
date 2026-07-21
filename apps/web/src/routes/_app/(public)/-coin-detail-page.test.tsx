@@ -84,14 +84,12 @@ const baseCoin: CoinDetailRecord = {
     obverse: {
       description: "Portrait facing left.",
       lettering: "DETAIL TEST",
-      thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
       imageUrl: "https://example.com/coins/detail-test/obverse-image",
       engravers: [],
     },
     reverse: {
       description: "Denomination and wreath.",
       lettering: "1 TEST UNIT",
-      thumbnailUrl: "https://example.com/coins/detail-test/reverse-thumb",
       imageUrl: "https://example.com/coins/detail-test/reverse-image",
       engravers: [],
     },
@@ -142,12 +140,10 @@ describe("CoinDetailPage", () => {
         obverse: {
           ...baseCoin.surfaces.obverse!,
           imageUrl: null,
-          thumbnailUrl: null,
         },
         reverse: {
           ...baseCoin.surfaces.reverse!,
           imageUrl: null,
-          thumbnailUrl: null,
         },
         edge: null,
       },

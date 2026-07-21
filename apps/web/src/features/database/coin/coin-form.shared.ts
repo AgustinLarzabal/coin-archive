@@ -67,7 +67,6 @@ const REQUIRED_LOOKUP_OPTION_KEYS = [
 const EMPTY_FACE_SURFACE_DRAFT = {
   description: "",
   lettering: "",
-  thumbnailUrl: "",
   imageUrl: "",
   engraverIds: [],
 }
@@ -75,7 +74,6 @@ const EMPTY_FACE_SURFACE_DRAFT = {
 const EMPTY_EDGE_SURFACE_DRAFT = {
   description: "",
   lettering: "",
-  thumbnailUrl: "",
   imageUrl: "",
 }
 
@@ -260,7 +258,6 @@ function mapFaceSurfaceDraft(
   return {
     description: surface.description ?? "",
     lettering: surface.lettering ?? "",
-    thumbnailUrl: surface.thumbnailUrl ?? "",
     imageUrl: surface.imageUrl ?? "",
     engraverIds: [...surface.engraverIds],
   }
@@ -276,7 +273,6 @@ function mapEdgeSurfaceDraft(
   return {
     description: surface.description ?? "",
     lettering: surface.lettering ?? "",
-    thumbnailUrl: surface.thumbnailUrl ?? "",
     imageUrl: surface.imageUrl ?? "",
   }
 }
@@ -433,7 +429,6 @@ function areFaceSurfaceDraftsEqual(
   return (
     left.description === right.description &&
     left.lettering === right.lettering &&
-    left.thumbnailUrl === right.thumbnailUrl &&
     left.imageUrl === right.imageUrl &&
     left.engraverIds.length === right.engraverIds.length &&
     left.engraverIds.every(
@@ -449,7 +444,6 @@ function areEdgeSurfaceDraftsEqual(
   return (
     left.description === right.description &&
     left.lettering === right.lettering &&
-    left.thumbnailUrl === right.thumbnailUrl &&
     left.imageUrl === right.imageUrl
   )
 }

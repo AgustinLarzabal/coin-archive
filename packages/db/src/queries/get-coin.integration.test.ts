@@ -108,7 +108,6 @@ describe("getCoin integration", () => {
       kind: "obverse",
       description: "Portrait facing left.",
       lettering: "DETAIL TEST",
-      thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
       imageUrl: "https://example.com/coins/detail-test/obverse-image",
     })
     await createCoinSurface({
@@ -116,7 +115,6 @@ describe("getCoin integration", () => {
       kind: "reverse",
       description: "Denomination and wreath.",
       lettering: "1 TEST UNIT",
-      thumbnailUrl: "https://example.com/coins/detail-test/reverse-thumb",
       imageUrl: "https://example.com/coins/detail-test/reverse-image",
     })
     await createCoinSurface({
@@ -124,7 +122,6 @@ describe("getCoin integration", () => {
       kind: "edge-surface",
       description: "Reeded edge with stars.",
       lettering: null,
-      thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
       imageUrl: "https://example.com/coins/detail-test/edge-image",
     })
     const firstEngraver = await createEngraver({
@@ -299,20 +296,17 @@ describe("getCoin integration", () => {
         obverse: {
           description: "Portrait facing left.",
           lettering: "DETAIL TEST",
-          thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
           imageUrl: "https://example.com/coins/detail-test/obverse-image",
         },
         reverse: {
           description: "Denomination and wreath.",
           lettering: "1 TEST UNIT",
-          thumbnailUrl: "https://example.com/coins/detail-test/reverse-thumb",
           imageUrl: "https://example.com/coins/detail-test/reverse-image",
           engravers: [],
         },
         edge: {
           description: "Reeded edge with stars.",
           lettering: null,
-          thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
           imageUrl: "https://example.com/coins/detail-test/edge-image",
         },
       },

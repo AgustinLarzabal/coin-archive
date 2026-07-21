@@ -6,7 +6,6 @@ export type CoinMaintenanceReference = {
 export type CoinMaintenanceSurface = {
   description: string | null
   lettering: string | null
-  thumbnailUrl: string | null
   imageUrl: string | null
 }
 

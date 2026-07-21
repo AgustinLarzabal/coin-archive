@@ -15,7 +15,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           surfaceKind: "obverse",
           surfaceDescription: "Portrait",
           surfaceLettering: "TEST",
-          surfaceThumbnailUrl: "https://example.com/obverse-thumb",
           surfaceImageUrl: "https://example.com/obverse-image",
           engraverId: "engraver-1",
           engraverCode: "ana-ruiz",
@@ -31,7 +30,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           surfaceKind: "obverse",
           surfaceDescription: "Portrait",
           surfaceLettering: "TEST",
-          surfaceThumbnailUrl: "https://example.com/obverse-thumb",
           surfaceImageUrl: "https://example.com/obverse-image",
           engraverId: "engraver-2",
           engraverCode: "beatriz-lopez",
@@ -47,7 +45,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           surfaceKind: "edge-surface",
           surfaceDescription: "Reeded edge",
           surfaceLettering: null,
-          surfaceThumbnailUrl: "https://example.com/edge-thumb",
           surfaceImageUrl: "https://example.com/edge-image",
           engraverId: null,
           engraverCode: null,
@@ -67,7 +64,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           obverse: {
             description: "Portrait",
             lettering: "TEST",
-            thumbnailUrl: "https://example.com/obverse-thumb",
             imageUrl: "https://example.com/obverse-image",
             engravers: [
               {
@@ -84,7 +80,6 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
           edge: {
             description: "Reeded edge",
             lettering: null,
-            thumbnailUrl: "https://example.com/edge-thumb",
             imageUrl: "https://example.com/edge-image",
           },
         },

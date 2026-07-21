@@ -36,7 +36,6 @@ const baseCoin: CoinListRecord = {
     obverse: {
       description: "Portrait facing left.",
       lettering: "DETAIL TEST",
-      thumbnailUrl: "https://example.com/coins/preview-test/obverse-thumb",
       imageUrl: "https://example.com/coins/preview-test/obverse-image",
       engravers: [],
     },
@@ -62,7 +61,6 @@ describe("CoinCard", () => {
             obverse: {
               ...baseCoin.surfaces.obverse!,
               imageUrl: null,
-              thumbnailUrl: null,
             },
             reverse: null,
             edge: null,

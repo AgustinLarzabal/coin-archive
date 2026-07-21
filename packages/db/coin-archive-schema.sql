@@ -45,12 +45,10 @@ CREATE TABLE "coin_surface" (
 	"kind" varchar(16) NOT NULL,
 	"description" varchar(2000),
 	"lettering" varchar(4000),
-	"thumbnail_url" varchar(2048),
 	"image_url" varchar(2048),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "coin_surface_kind_check" CHECK ("coin_surface"."kind" in ('obverse', 'reverse', 'edge-surface')),
-	CONSTRAINT "coin_surface_thumbnail_url_web_url_check" CHECK ("coin_surface"."thumbnail_url" is null or "coin_surface"."thumbnail_url" ~* '^https?://\S+$'),
 	CONSTRAINT "coin_surface_image_url_web_url_check" CHECK ("coin_surface"."image_url" is null or "coin_surface"."image_url" ~* '^https?://\S+$')
 );
 

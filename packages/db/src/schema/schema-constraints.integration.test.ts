@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import { readFileSync } from "node:fs"
 import { asc, count, eq, sql } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import {
@@ -1493,6 +1494,65 @@ describe("distribution schema constraints", () => {
 describe("coin surface schema constraints", () => {
   useTestDatabaseIsolation(db)
 
+  it("removes legacy thumbnail storage and clears legacy Surface Images", async () => {
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`
+      create temporary table "coin_surface" (
+        "id" integer primary key,
+        "thumbnail_url" varchar(2048),
+        "image_url" varchar(2048),
+        constraint "coin_surface_thumbnail_url_web_url_check"
+          check ("thumbnail_url" is null or "thumbnail_url" ~* '^https?://\\S+$')
+      ) on commit drop
+    `)
+      await tx.execute(sql`
+      insert into "coin_surface" ("id", "thumbnail_url", "image_url")
+      values (1, 'https://example.com/thumbnail.jpg', 'https://example.com/image.jpg')
+    `)
+
+    const migration = readFileSync(
+      new URL("../../migrations/0012_short_pete_wisdom.sql", import.meta.url),
+      "utf8"
+    )
+
+    const statements = migration
+      .split("--> statement-breakpoint")
+      .filter((statement) => statement.trim() !== "")
+
+    for (const [index, statement] of statements.entries()) {
+      await tx.execute(sql.raw(statement))
+
+      if (index !== 1) {
+        continue
+      }
+
+      const [thumbnailConstraint] = await tx.execute(sql`
+        select exists (
+          select from pg_constraint
+          where conrelid = 'coin_surface'::regclass
+            and conname = 'coin_surface_thumbnail_url_web_url_check'
+        ) as "exists"
+      `)
+
+      expect(thumbnailConstraint.exists).toBe(false)
+    }
+
+      const [migratedSurface] = await tx.execute(sql`
+      select "image_url" from "coin_surface" where "id" = 1
+    `)
+      const [thumbnailColumn] = await tx.execute(sql`
+        select exists (
+          select from pg_attribute
+        where attrelid = 'coin_surface'::regclass
+          and attname = 'thumbnail_url'
+          and not attisdropped
+        ) as "exists"
+      `)
+      expect(migratedSurface.image_url).toBeNull()
+      expect(thumbnailColumn.exists).toBe(false)
+    })
+  })
+
   const invalidSurfaceWebUrls = [
     "",
     "   ",
@@ -1531,7 +1591,6 @@ describe("coin surface schema constraints", () => {
     ) => {
       coinId: string
       kind: CoinSurfaceKind
-      thumbnailUrl?: string
       imageUrl?: string
     }
     constraintName: string
@@ -1666,7 +1725,6 @@ describe("coin surface schema constraints", () => {
       createCoinSurface({
         coinId: webUrlCoin.id,
         kind: reverseKind,
-        thumbnailUrl: "HTTP://example.com/coin-surfaces/reverse-thumb",
         imageUrl:
           "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
       }),
@@ -1675,7 +1733,6 @@ describe("coin surface schema constraints", () => {
     const [matchedNullableSurface, matchedWebUrlSurface] = await db
       .select({
         coinId: coinSurface.coinId,
-        thumbnailUrl: coinSurface.thumbnailUrl,
         imageUrl: coinSurface.imageUrl,
       })
       .from(coinSurface)
@@ -1684,35 +1741,15 @@ describe("coin surface schema constraints", () => {
       )
       .orderBy(asc(coinSurface.coinId))
 
-    expect(nullableSurface.thumbnailUrl).toBeNull()
     expect(nullableSurface.imageUrl).toBeNull()
     expect(matchedNullableSurface).toEqual({
       coinId: nullUrlCoin.id,
-      thumbnailUrl: null,
       imageUrl: null,
     })
     expect(matchedWebUrlSurface).toEqual({
       coinId: webUrlCoin.id,
-      thumbnailUrl: "HTTP://example.com/coin-surfaces/reverse-thumb",
       imageUrl:
         "HTTPS://example.com/coin-surfaces/reverse-image?download=1#hero",
-    })
-  })
-
-  it("rejects invalid surface thumbnail URLs", async () => {
-    await expectInvalidSurfaceUrlConstraintErrors({
-      invalidUrls: [
-        ...invalidSurfaceWebUrls,
-        "ftp://example.com/file",
-        "data:image/png;base64,AAAA",
-      ],
-      createValues: (coinId, thumbnailUrl) => ({
-        coinId,
-        kind: obverseKind,
-        thumbnailUrl,
-      }),
-      constraintName: coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
-      titlePrefix: "Invalid Thumbnail URL Coin",
     })
   })
 

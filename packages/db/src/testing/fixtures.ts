@@ -139,7 +139,6 @@ export async function createCoin({
       kind: surface.kind,
       description: surface.description,
       lettering: surface.lettering,
-      thumbnailUrl: surface.thumbnailUrl,
       imageUrl: surface.imageUrl,
     })
   }
@@ -169,7 +168,6 @@ type CreateCoinSurfaceInput = {
   kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
-  thumbnailUrl?: string | null
   imageUrl?: string | null
 }
 
@@ -515,7 +513,6 @@ export async function createCoinSurface({
   kind,
   description,
   lettering,
-  thumbnailUrl,
   imageUrl,
 }: CreateCoinSurfaceInput) {
   const [createdCoinSurface] = await db
@@ -525,10 +522,7 @@ export async function createCoinSurface({
       kind,
       description,
       lettering,
-      ...normalizeCoinSurfaceUrls({
-        thumbnailUrl,
-        imageUrl,
-      }),
+      ...normalizeCoinSurfaceUrls({ imageUrl }),
     })
     .returning()
 

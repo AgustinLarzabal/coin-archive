@@ -187,7 +187,6 @@ export function buildGetCoinsQuery(
       surfaceKind: coinSurface.kind,
       surfaceDescription: coinSurface.description,
       surfaceLettering: coinSurface.lettering,
-      surfaceThumbnailUrl: coinSurface.thumbnailUrl,
       surfaceImageUrl: coinSurface.imageUrl,
     })
     .from(limitedCoins)

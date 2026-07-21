@@ -187,7 +187,6 @@ describe("coin maintenance mutations integration", () => {
           obverse: {
             description: "Broken obverse",
             lettering: null,
-            thumbnailUrl: null,
             imageUrl: null,
             engraverIds: ["00000000-0000-0000-0000-000000000000"],
           },
@@ -458,7 +457,6 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Original obverse",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: null,
           engraverIds: [engraver.id],
         },
@@ -616,7 +614,6 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "  Laureate bust right  ",
           lettering: "  CAROLUS III  ",
-          thumbnailUrl: "  https://example.com/obverse-thumb.jpg  ",
           imageUrl: "  https://example.com/obverse-image.jpg  ",
           engraverIds: [firstEngraver.id],
         },
@@ -624,7 +621,6 @@ describe("coin maintenance mutations integration", () => {
         edge: {
           description: "",
           lettering: "",
-          thumbnailUrl: "",
           imageUrl: "",
         },
       },
@@ -667,7 +663,6 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Laureate bust right",
           lettering: "CAROLUS III",
-          thumbnailUrl: "https://example.com/obverse-thumb.jpg",
           imageUrl: "https://example.com/obverse-image.jpg",
           engraverIds: [firstEngraver.id],
         },
@@ -715,21 +710,18 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Updated obverse",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: null,
           engraverIds: [secondEngraver.id],
         },
         reverse: {
           description: null,
           lettering: "Updated reverse lettering",
-          thumbnailUrl: null,
           imageUrl: "https://example.com/reverse-image.jpg",
           engraverIds: [firstEngraver.id, secondEngraver.id],
         },
         edge: {
           description: "Reeded",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: null,
         },
       },
@@ -826,7 +818,6 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Original obverse",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: null,
           engraverIds: [engraver.id],
         },
@@ -871,7 +862,6 @@ describe("coin maintenance mutations integration", () => {
           obverse: {
             description: "Broken obverse",
             lettering: null,
-            thumbnailUrl: null,
             imageUrl: null,
             engraverIds: ["00000000-0000-0000-0000-000000000000"],
           },
@@ -1028,7 +1018,6 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Obverse",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: null,
           engraverIds: [engraver.id],
         },

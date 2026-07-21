@@ -8,11 +8,10 @@ import {
 
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"
-import { CoinInputField } from "./coin-input-field"
 import { CoinSelectField } from "./coin-select-field"
 
 type Face = "obverse" | "reverse"
-type SurfaceField = "description" | "lettering" | "thumbnailUrl" | "imageUrl"
+type SurfaceField = "description" | "lettering"
 
 export function DesignImagerySection({
   draft,
@@ -54,8 +53,7 @@ export function DesignImagerySection({
                 <div>
                   <h2 className="text-lg font-semibold">{label} Surface</h2>
                   <p className="text-sm text-muted-foreground">
-                    Description, lettering, image URLs, and face-specific
-                    engravers.
+                    Description, lettering, and face-specific engravers.
                   </p>
                 </div>
                 <button
@@ -82,26 +80,6 @@ export function DesignImagerySection({
                   onValueChange={(value) =>
                     updateFaceSurface(face, "lettering", value)
                   }
-                />
-                <CoinInputField
-                  error={fieldErrors[`surfaces.${face}.thumbnailUrl`]}
-                  id={`${idPrefix}-${face}-thumbnail-url`}
-                  label="Surface Thumbnail URL"
-                  onValueChange={(value) =>
-                    updateFaceSurface(face, "thumbnailUrl", value)
-                  }
-                  type="url"
-                  value={surface.thumbnailUrl as string}
-                />
-                <CoinInputField
-                  error={fieldErrors[`surfaces.${face}.imageUrl`]}
-                  id={`${idPrefix}-${face}-image-url`}
-                  label="Surface Image URL"
-                  onValueChange={(value) =>
-                    updateFaceSurface(face, "imageUrl", value)
-                  }
-                  type="url"
-                  value={surface.imageUrl as string}
                 />
               </div>
               <div className="grid gap-3">
@@ -146,8 +124,8 @@ export function DesignImagerySection({
             <div>
               <h2 className="text-lg font-semibold">Edge Surface</h2>
               <p className="text-sm text-muted-foreground">
-                Description, lettering, and image URLs. Edge Surface does not
-                accept Engraver Attributions.
+                Description and lettering. Edge Surface does not accept
+                Engraver Attributions.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -164,24 +142,6 @@ export function DesignImagerySection({
                 value={draft.surfaces.edge.lettering as string}
                 error={fieldErrors["surfaces.edge.lettering"]}
                 onValueChange={(value) => updateEdgeSurface("lettering", value)}
-              />
-              <CoinInputField
-                error={fieldErrors["surfaces.edge.thumbnailUrl"]}
-                id={`${idPrefix}-edge-thumbnail-url`}
-                label="Surface Thumbnail URL"
-                onValueChange={(value) =>
-                  updateEdgeSurface("thumbnailUrl", value)
-                }
-                type="url"
-                value={draft.surfaces.edge.thumbnailUrl as string}
-              />
-              <CoinInputField
-                error={fieldErrors["surfaces.edge.imageUrl"]}
-                id={`${idPrefix}-edge-image-url`}
-                label="Surface Image URL"
-                onValueChange={(value) => updateEdgeSurface("imageUrl", value)}
-                type="url"
-                value={draft.surfaces.edge.imageUrl as string}
               />
             </div>
           </section>

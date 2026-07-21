@@ -142,7 +142,6 @@ export type SeededCoinSurfaceDetails = {
   kind: CoinSurfaceKind
   description?: string | null
   lettering?: string | null
-  thumbnailUrl?: string | null
   imageUrl?: string | null
 }
 

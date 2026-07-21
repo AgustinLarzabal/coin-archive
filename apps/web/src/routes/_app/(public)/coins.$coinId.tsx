@@ -63,7 +63,6 @@ type CoinDetailSurfaceView = {
   description: string | null
   lettering: string | null
   imageUrl: string | null
-  thumbnailUrl: string | null
   engravers: { code: string; name: string }[]
 }
 
@@ -114,7 +113,6 @@ function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
       description: surface.description,
       lettering: surface.lettering,
       imageUrl: surface.imageUrl,
-      thumbnailUrl: surface.thumbnailUrl,
       engravers: "engravers" in surface ? surface.engravers : [],
     }
 

@@ -44,21 +44,18 @@ const VALID_COIN_DRAFT: CoinDraft = {
     obverse: {
       description: "",
       lettering: "",
-      thumbnailUrl: "",
       imageUrl: "",
       engraverIds: [],
     },
     reverse: {
       description: "",
       lettering: "",
-      thumbnailUrl: "",
       imageUrl: "",
       engraverIds: [],
     },
     edge: {
       description: "",
       lettering: "",
-      thumbnailUrl: "",
       imageUrl: "",
     },
   },
@@ -361,21 +358,18 @@ describe("submitUpdateCoin", () => {
             obverse: {
               description: " Laureate bust ",
               lettering: " HISPAN ",
-              thumbnailUrl: "https://example.com/obverse-thumb.jpg",
               imageUrl: "https://example.com/obverse.jpg",
               engraverIds: [VALID_LOOKUP_ID],
             },
             reverse: {
               description: "",
               lettering: "",
-              thumbnailUrl: "",
               imageUrl: "",
               engraverIds: [],
             },
             edge: {
               description: " Reeded ",
               lettering: "",
-              thumbnailUrl: "",
               imageUrl: "https://example.com/edge.jpg",
             },
           },
@@ -423,7 +417,6 @@ describe("submitUpdateCoin", () => {
         obverse: {
           description: "Laureate bust",
           lettering: "HISPAN",
-          thumbnailUrl: "https://example.com/obverse-thumb.jpg",
           imageUrl: "https://example.com/obverse.jpg",
           engraverIds: [VALID_LOOKUP_ID],
         },
@@ -431,7 +424,6 @@ describe("submitUpdateCoin", () => {
         edge: {
           description: "Reeded",
           lettering: null,
-          thumbnailUrl: null,
           imageUrl: "https://example.com/edge.jpg",
         },
       },

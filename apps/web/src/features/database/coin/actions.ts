@@ -17,8 +17,6 @@ const DUPLICATE_ENGRAVER_ERROR =
   "Duplicate Engraver Attributions are not allowed on the same face."
 const SURFACE_IMAGE_URL_ERROR =
   "Surface Image URL must be an absolute http:// or https:// URL."
-const SURFACE_THUMBNAIL_URL_ERROR =
-  "Surface Thumbnail URL must be an absolute http:// or https:// URL."
 
 const COIN_FIELD_NAMES = [
   "title",
@@ -141,6 +139,15 @@ const faceValueTextSchema = z
 
 const attributionRowUuidSchema = z.uuid("Select a valid lookup record.")
 
+const optionalAbsoluteWebUrlSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return null
+  }
+
+  const normalizedValue = value.trim()
+  return normalizedValue === "" ? null : normalizedValue
+}, z.string().url().refine((value) => /^https?:\/\//i.test(value)).nullable())
+
 const rulerAttributionSchema = z.object({
   rulerId: attributionRowUuidSchema,
 })
@@ -153,15 +160,6 @@ const themeAttributionSchema = z.object({
   themeId: attributionRowUuidSchema,
 })
 
-const optionalAbsoluteWebUrlSchema = z.preprocess((value) => {
-  if (typeof value !== "string") {
-    return null
-  }
-
-  const normalizedValue = value.trim()
-  return normalizedValue === "" ? null : normalizedValue
-}, z.string().url().refine((value) => /^https?:\/\//i.test(value)).nullable())
-
 const referenceSchema = z.object({
   catalogueId: z.uuid(),
   number: z.string().trim().min(1, "Reference Number cannot be blank."),
@@ -170,7 +168,6 @@ const referenceSchema = z.object({
 const faceSurfaceSchema = z.object({
   description: optionalTrimmedStringSchema,
   lettering: optionalTrimmedStringSchema,
-  thumbnailUrl: optionalAbsoluteWebUrlSchema,
   imageUrl: optionalAbsoluteWebUrlSchema,
   engraverIds: z.array(z.uuid()),
 })
@@ -178,7 +175,6 @@ const faceSurfaceSchema = z.object({
 const edgeSurfaceSchema = z.object({
   description: optionalTrimmedStringSchema,
   lettering: optionalTrimmedStringSchema,
-  thumbnailUrl: optionalAbsoluteWebUrlSchema,
   imageUrl: optionalAbsoluteWebUrlSchema,
 })
 
@@ -539,20 +535,11 @@ function isCoinFieldName(field: unknown): field is CoinFieldName {
 }
 
 function getIssueMessage(issue: z.ZodIssue) {
-  const pathString = issue.path.join(".")
-
   if (
     issue.path.at(-1) === "imageUrl" &&
-    pathString.startsWith("surfaces.")
+    issue.path.join(".").startsWith("surfaces.")
   ) {
     return SURFACE_IMAGE_URL_ERROR
-  }
-
-  if (
-    issue.path.at(-1) === "thumbnailUrl" &&
-    pathString.startsWith("surfaces.")
-  ) {
-    return SURFACE_THUMBNAIL_URL_ERROR
   }
 
   return issue.message
@@ -613,7 +600,6 @@ function hasFaceSurfaceContent(surface: CoinFaceSurfaceData) {
   return (
     surface.description !== null ||
     surface.lettering !== null ||
-    surface.thumbnailUrl !== null ||
     surface.imageUrl !== null ||
     surface.engraverIds.length > 0
   )
@@ -623,7 +609,6 @@ function hasEdgeSurfaceContent(surface: CoinEdgeSurfaceData) {
   return (
     surface.description !== null ||
     surface.lettering !== null ||
-    surface.thumbnailUrl !== null ||
     surface.imageUrl !== null
   )
 }

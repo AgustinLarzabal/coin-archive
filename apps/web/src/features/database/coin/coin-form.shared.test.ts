@@ -43,7 +43,6 @@ const coin: CoinMaintenanceRecord = {
     obverse: {
       description: "Bust",
       lettering: "OBV",
-      thumbnailUrl: "https://example.com/obverse-thumb.jpg",
       imageUrl: "https://example.com/obverse.jpg",
       engraverIds: ["engraver-1"],
     },
@@ -51,7 +50,6 @@ const coin: CoinMaintenanceRecord = {
     edge: {
       description: "Reeded",
       lettering: null,
-      thumbnailUrl: null,
       imageUrl: "https://example.com/edge.jpg",
     },
   },
@@ -68,21 +66,18 @@ describe("createCoinDraft", () => {
         obverse: {
           description: "Bust",
           lettering: "OBV",
-          thumbnailUrl: "https://example.com/obverse-thumb.jpg",
           imageUrl: "https://example.com/obverse.jpg",
           engraverIds: ["engraver-1"],
         },
         reverse: {
           description: "",
           lettering: "",
-          thumbnailUrl: "",
           imageUrl: "",
           engraverIds: [],
         },
         edge: {
           description: "Reeded",
           lettering: "",
-          thumbnailUrl: "",
           imageUrl: "https://example.com/edge.jpg",
         },
       },

@@ -26,7 +26,6 @@ export const coinSurfaceSchemaNames = {
   idKindUniqueIndex: "coin_surface_id_kind_unique_idx",
   kindCheck: "coin_surface_kind_check",
   kindUniqueIndex: "coin_surface_coin_id_kind_unique_idx",
-  thumbnailUrlWebUrlCheck: "coin_surface_thumbnail_url_web_url_check",
 } as const
 
 const timestamptzDateColumn = {
@@ -52,7 +51,6 @@ export const coinSurface = pgTable(
     kind: varchar("kind", { length: 16 }).$type<CoinSurfaceKind>().notNull(),
     description: varchar("description", { length: 2000 }),
     lettering: varchar("lettering", { length: 4000 }),
-    thumbnailUrl: varchar("thumbnail_url", { length: 2048 }),
     imageUrl: varchar("image_url", { length: 2048 }),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
@@ -74,10 +72,6 @@ export const coinSurface = pgTable(
     check(
       coinSurfaceSchemaNames.kindCheck,
       sql`${coinSurface.kind} in ${coinSurfaceKindsSql}`
-    ),
-    check(
-      coinSurfaceSchemaNames.thumbnailUrlWebUrlCheck,
-      absoluteWebUrlCheck(coinSurface.thumbnailUrl)
     ),
     check(
       coinSurfaceSchemaNames.imageUrlWebUrlCheck,

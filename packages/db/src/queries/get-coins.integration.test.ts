@@ -138,7 +138,6 @@ describe("getCoins integration", () => {
       kind: "obverse",
       description: "Portrait facing left.",
       lettering: "DETAIL TEST",
-      thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
       imageUrl: "https://example.com/coins/detail-test/obverse-image",
     })
     await createCoinSurface({
@@ -146,7 +145,6 @@ describe("getCoins integration", () => {
       kind: "edge-surface",
       description: "Reeded edge with stars.",
       lettering: null,
-      thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
       imageUrl: "https://example.com/coins/detail-test/edge-image",
     })
     const firstEngraver = await createEngraver({
@@ -173,7 +171,6 @@ describe("getCoins integration", () => {
           obverse: {
             description: "Portrait facing left.",
             lettering: "DETAIL TEST",
-            thumbnailUrl: "https://example.com/coins/detail-test/obverse-thumb",
             imageUrl: "https://example.com/coins/detail-test/obverse-image",
             engravers: [
               {
@@ -190,7 +187,6 @@ describe("getCoins integration", () => {
           edge: {
             description: "Reeded edge with stars.",
             lettering: null,
-            thumbnailUrl: "https://example.com/coins/detail-test/edge-thumb",
             imageUrl: "https://example.com/coins/detail-test/edge-image",
           },
         },

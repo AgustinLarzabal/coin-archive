@@ -15,7 +15,6 @@ export type GetCoinsRow = {
   surfaceKind: "obverse" | "reverse" | "edge-surface" | null
   surfaceDescription: string | null
   surfaceLettering: string | null
-  surfaceThumbnailUrl: string | null
   surfaceImageUrl: string | null
   engraverId: string | null
   engraverCode: string | null
@@ -68,7 +67,6 @@ function mapSurfaceRow(surfaces: CoinSurfaceSetRecord, row: GetCoinsRow) {
   const surface = {
     description: row.surfaceDescription,
     lettering: row.surfaceLettering,
-    thumbnailUrl: row.surfaceThumbnailUrl,
     imageUrl: row.surfaceImageUrl,
   }
 

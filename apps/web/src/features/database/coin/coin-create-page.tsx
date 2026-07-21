@@ -7,14 +7,18 @@ import {
   getCoinFormOptionsDependencies,
   hasRequiredCoinLookupOptions,
   loadCoinFormOptions,
-  type CoinFormOptionsDependencies,
-  type CoinFormOptions,
+} from "./coin-form.shared"
+import type {
+  CoinFormOptionsDependencies,
+  CoinFormOptions,
 } from "./coin-form.shared"
 import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
-  type MaintenancePageLoaderData,
+} from "../maintenance-page"
+import type {
+  MaintenancePageLoadResult,
+  MaintenancePageLoaderData,
 } from "../maintenance-page"
 import { hasCoinMaintenanceAccess } from "./actions"
 import { CoinForm } from "./coin-form"

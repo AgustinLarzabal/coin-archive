@@ -124,10 +124,6 @@ _Avoid_: Face lettering, edge lettering, parsed inscription, generated text, nor
 A catalogue web image URL associated with a specific Coin Surface: Obverse, Reverse, or Edge Surface. A Surface Image belongs to the coin type or issue's surface record and is distinct from Surface Description, Surface Lettering, orientation data, or whole-coin imagery.
 _Avoid_: Coin image, face image, edge classification image, image binary, local file path, image metadata, specimen gallery image
 
-**Surface Thumbnail**:
-The small preview web image URL associated with a specific Coin Surface for compact catalogue presentation. A Surface Thumbnail is separate from the Surface Image used for larger display, may be omitted when the larger Surface Image is acceptable as a preview, and either image may be missing when the archive has not recorded it.
-_Avoid_: Generated preview, icon, cropped face label, image binary, local file path, whole-coin thumbnail
-
 **Engraver**:
 A person credited with creating or engraving a coin face design. An Engraver may be attributed to an Obverse or Reverse, but is not a whole-coin attribution unless both faces are explicitly attributed.
 _Avoid_: Artist, designer, issuer, mint worker, whole-coin engraver

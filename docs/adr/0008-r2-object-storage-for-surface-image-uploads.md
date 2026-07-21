@@ -1,0 +1,8 @@
+---
+status: accepted
+supersedes: ADR-0004
+---
+
+# R2 Object Storage for Surface Image Uploads
+
+Coin Archive will upload one Surface Image file per Coin Surface to Cloudflare R2 and persist the resulting object URL in the existing nullable Surface Image URL field. The stored image serves both full and compact presentation; the former Surface Thumbnail URL field is removed. Surface Images are publicly readable through stable R2 custom-domain URLs, while upload operations remain Editor-protected. R2 credentials and the public base URL are deployment configuration, while object paths use opaque generated IDs. The application authorizes an upload reference before issuing a short-lived, five-minute presigned URL; the browser uploads the file directly to its permanent R2 location. The form submits that reference, not a public URL, so the server resolves the expected object before validating its MIME type and size; only JPEG, PNG, or WebP files up to 10 MB are accepted. Coin Maintenance blocks saving until uploads finish, then records their URLs through the normal atomic aggregate submission. A replacement object is uploaded before submission, and the old object is deleted only after the updated Coin saves successfully; removing a newly uploaded but unsaved file deletes it immediately. Deleting a Coin removes its associated R2 objects after its database record is deleted, with failed object removal retained for retry. Automated cleanup of abandoned or unsuccessful uploads is explicitly deferred. The migration clears the existing placeholder URLs. This preserves the one-image-per-surface model and the current public read API while replacing manual URL entry with managed file uploads, without storing image binaries in PostgreSQL.

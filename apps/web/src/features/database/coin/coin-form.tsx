@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import type { ComponentProps, FormEvent } from "react"
+import type { FormEvent } from "react"
 import { useBlocker, useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CoinMaintenanceRecord } from "@workspace/db"
@@ -31,31 +31,11 @@ import {
 import type { CoinFormOptions } from "./coin-form.shared"
 import { Card } from "@workspace/ui/components/card"
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
-import {
-  Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxValue,
-} from "@workspace/ui/components/combobox"
-import {
   FieldSet,
   FieldGroup,
   FieldLegend,
   FieldDescription,
   FieldContent,
-  FieldError,
   Field,
   FieldLabel,
   FieldTitle,
@@ -65,6 +45,9 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@workspace/ui/components/radio-group"
+import { CoinInputField } from "./components/coin-input-field"
+import { CoinMultiComboboxField } from "./components/coin-multi-combobox-field"
+import { CoinSelectField } from "./components/coin-select-field"
 
 const UNSAVED_CHANGES_WARNING =
   "You have unsaved changes. Are you sure you want to leave this page?"
@@ -97,179 +80,6 @@ const updateCoinAction = createServerFn({
     const session = await getAuthSession()
     return submitUpdateCoin(session?.user ?? null, data)
   })
-
-function createOptionLabel(option: {
-  code: string
-  name?: string
-  title?: string
-}) {
-  return `${option.name ?? option.title} (${option.code})`
-}
-
-function renderSelectOptions(
-  options: Array<{ id: string; code: string; name?: string; title?: string }>
-) {
-  return options.map((option) => (
-    <SelectItem key={option.id} value={option.id}>
-      {createOptionLabel(option)}
-    </SelectItem>
-  ))
-}
-
-type SelectOption = {
-  id: string
-  code: string
-  name?: string
-  title?: string
-}
-
-type CoinSelectFieldProps = {
-  className?: string
-  error?: string
-  id: string
-  label: string
-  name?: string
-  onValueChange: (value: string) => void
-  options: SelectOption[]
-  placeholder: string
-  value: string
-}
-
-function CoinSelectField({
-  className,
-  error,
-  id,
-  label,
-  name,
-  onValueChange,
-  options,
-  placeholder,
-  value,
-}: CoinSelectFieldProps) {
-  return (
-    <Field className={className} data-invalid={error !== undefined}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Select
-        name={name}
-        value={value}
-        onValueChange={(nextValue) => onValueChange(nextValue ?? "")}
-      >
-        <SelectTrigger
-          id={id}
-          aria-invalid={error !== undefined}
-          className="w-full"
-        >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>{renderSelectOptions(options)}</SelectGroup>
-        </SelectContent>
-      </Select>
-      <FieldError errors={error ? [{ message: error }] : undefined} />
-    </Field>
-  )
-}
-
-type CoinInputFieldProps = {
-  className?: string
-  error?: string
-  id: string
-  label: string
-  name?: string
-  onValueChange: (value: string) => void
-  type?: ComponentProps<typeof Input>["type"]
-  value: string
-}
-
-function CoinInputField({
-  className,
-  error,
-  id,
-  label,
-  name,
-  onValueChange,
-  type,
-  value,
-}: CoinInputFieldProps) {
-  return (
-    <Field className={className} data-invalid={error !== undefined}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={(event) => onValueChange(event.target.value)}
-        aria-invalid={error !== undefined}
-      />
-      <FieldError errors={error ? [{ message: error }] : undefined} />
-    </Field>
-  )
-}
-
-type CoinMultiComboboxFieldProps = {
-  description?: string
-  errors: string[]
-  id: string
-  label: string
-  onValueChange: (values: string[]) => void
-  options: SelectOption[]
-  placeholder: string
-  values: string[]
-}
-
-function CoinMultiComboboxField({
-  description,
-  errors,
-  id,
-  label,
-  onValueChange,
-  options,
-  placeholder,
-  values,
-}: CoinMultiComboboxFieldProps) {
-  const selectedOptions = values.flatMap((value) =>
-    options.filter((option) => option.id === value)
-  )
-
-  return (
-    <Field data-invalid={errors.length > 0}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Combobox
-        items={options}
-        itemToStringValue={createOptionLabel}
-        multiple
-        value={selectedOptions}
-        onValueChange={(selected) =>
-          onValueChange(selected.map((option) => option.id))
-        }
-      >
-        <ComboboxChips>
-          <ComboboxValue>
-            {selectedOptions.map((option) => (
-              <ComboboxChip key={option.id}>
-                {createOptionLabel(option)}
-              </ComboboxChip>
-            ))}
-          </ComboboxValue>
-          <ComboboxChipsInput id={id} placeholder={placeholder} />
-        </ComboboxChips>
-        <ComboboxContent>
-          <ComboboxEmpty>No options found.</ComboboxEmpty>
-          <ComboboxList>
-            {(option) => (
-              <ComboboxItem key={option.id} value={option}>
-                {createOptionLabel(option)}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
-      {description ? <FieldDescription>{description}</FieldDescription> : null}
-      <FieldError errors={errors.map((message) => ({ message }))} />
-    </Field>
-  )
-}
 
 function createFieldErrorResult(
   fieldErrors: CoinFieldErrors

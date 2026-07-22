@@ -44,12 +44,18 @@ export function CoinSelectField({
   required = false,
   value,
 }: CoinSelectFieldProps) {
+  const selectItems = options.map((option) => ({
+    label: createOptionLabel(option),
+    value: option.id,
+  }))
+
   return (
     <Field className={className} data-invalid={error !== undefined}>
       <FieldLabel htmlFor={id}>
         {label} <FieldRequirement required={required} />
       </FieldLabel>
       <Select
+        items={selectItems}
         name={name}
         value={value}
         onValueChange={(nextValue) => onValueChange(nextValue ?? "")}

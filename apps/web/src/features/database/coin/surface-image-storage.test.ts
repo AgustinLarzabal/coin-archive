@@ -37,12 +37,15 @@ describe("R2 Surface Image storage", () => {
 
   it("resolves an inspected JPEG to its stable public URL", async () => {
     const objectStorage: SurfaceImageObjectStorage = {
-      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.example.test/put"),
+      createPresignedPutUrl: vi
+        .fn()
+        .mockResolvedValue("https://r2.example.test/put"),
       inspectObject: vi.fn().mockResolvedValue({
         contentLength: 3,
         contentType: "image/jpeg",
         firstBytes: new Uint8Array([0xff, 0xd8, 0xff]),
       }),
+      deleteObject: vi.fn(),
     }
     const storage = createR2SurfaceImageStorage(configuration, objectStorage)
     const authorization = await storage.authorizeUpload({
@@ -54,7 +57,9 @@ describe("R2 Surface Image storage", () => {
     await expect(
       storage.resolveUpload(authorization.reference, "obverse")
     ).resolves.toEqual({
-      imageUrl: expect.stringContaining("https://images.example.test/surface-images/"),
+      imageUrl: expect.stringContaining(
+        "https://images.example.test/surface-images/"
+      ),
     })
     expect(objectStorage.createPresignedPutUrl).toHaveBeenCalledWith(
       expect.objectContaining({ contentType: "image/jpeg", contentLength: 3 })
@@ -63,12 +68,15 @@ describe("R2 Surface Image storage", () => {
 
   it("rejects objects whose bytes do not match their authorized image type", async () => {
     const storage = createR2SurfaceImageStorage(configuration, {
-      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.example.test/put"),
+      createPresignedPutUrl: vi
+        .fn()
+        .mockResolvedValue("https://r2.example.test/put"),
       inspectObject: vi.fn().mockResolvedValue({
         contentLength: 3,
         contentType: "image/jpeg",
         firstBytes: new Uint8Array([0x47, 0x49, 0x46]),
       }),
+      deleteObject: vi.fn(),
     })
     const authorization = await storage.authorizeUpload({
       surface: "reverse",
@@ -83,8 +91,11 @@ describe("R2 Surface Image storage", () => {
 
   it("does not resolve an authorization for a different Coin Surface", async () => {
     const storage = createR2SurfaceImageStorage(configuration, {
-      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.example.test/put"),
+      createPresignedPutUrl: vi
+        .fn()
+        .mockResolvedValue("https://r2.example.test/put"),
       inspectObject: vi.fn(),
+      deleteObject: vi.fn(),
     })
     const authorization = await storage.authorizeUpload({
       surface: "edge",
@@ -95,5 +106,34 @@ describe("R2 Surface Image storage", () => {
     await expect(
       storage.resolveUpload(authorization.reference, "obverse")
     ).rejects.toThrow("not authorized for this Surface")
+  })
+
+  it("deletes only objects addressed by its own upload reference or public URL", async () => {
+    const objectStorage: SurfaceImageObjectStorage = {
+      createPresignedPutUrl: vi
+        .fn()
+        .mockResolvedValue("https://r2.example.test/put"),
+      inspectObject: vi.fn(),
+      deleteObject: vi.fn(),
+    }
+    const storage = createR2SurfaceImageStorage(configuration, objectStorage)
+    const authorization = await storage.authorizeUpload({
+      surface: "edge",
+      contentType: "image/webp",
+      contentLength: 12,
+    })
+
+    await storage.deleteUpload(authorization.reference, "edge")
+    await storage.deletePublishedImage(
+      "https://images.example.test/surface-images/persisted-image"
+    )
+
+    expect(objectStorage.deleteObject).toHaveBeenCalledTimes(2)
+    expect(objectStorage.deleteObject).toHaveBeenLastCalledWith(
+      "surface-images/persisted-image"
+    )
+    await expect(
+      storage.deletePublishedImage("https://elsewhere.example.test/image.jpg")
+    ).rejects.toThrow("not managed")
   })
 })

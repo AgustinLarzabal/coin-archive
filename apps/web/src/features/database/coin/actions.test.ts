@@ -6,6 +6,7 @@ import {
   COIN_DELETE_CONFIRMATION_ERROR,
   COIN_MISSING_ERROR,
   hasCoinMaintenanceAccess,
+  removeSurfaceImageUpload,
   submitCreateCoin,
   submitDeleteCoin,
   submitUpdateCoin,
@@ -65,14 +66,22 @@ const VALID_COIN_DRAFT: CoinDraft = {
 function createDependencies(overrides?: {
   createCoinMaintenance?: ReturnType<typeof vi.fn>
   deleteCoinMaintenance?: ReturnType<typeof vi.fn>
+  deleteSurfaceImage?: ReturnType<typeof vi.fn>
   getCoinMaintenanceDeleteSummary?: ReturnType<typeof vi.fn>
+  getPersistedSurfaceImageUrls?: ReturnType<typeof vi.fn>
   updateCoinMaintenance?: ReturnType<typeof vi.fn>
   resolveSurfaceImageUpload?: ReturnType<typeof vi.fn>
 }) {
   return {
     createCoinMaintenance: vi.fn(),
     deleteCoinMaintenance: vi.fn(),
+    deleteSurfaceImage: vi.fn(),
     getCoinMaintenanceDeleteSummary: vi.fn(),
+    getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
+      obverse: null,
+      reverse: null,
+      edge: null,
+    }),
     updateCoinMaintenance: vi.fn(),
     resolveSurfaceImageUpload: vi.fn(),
     ...overrides,
@@ -101,9 +110,9 @@ describe("hasCoinMaintenanceAccess", () => {
 
 describe("submitCreateCoin", () => {
   it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(submitCreateCoin(null, VALID_COIN_DRAFT)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
+    await expect(
+      submitCreateCoin(null, VALID_COIN_DRAFT)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
       submitCreateCoin({ role: "collector" }, VALID_COIN_DRAFT)
@@ -131,7 +140,8 @@ describe("submitCreateCoin", () => {
       fieldErrors: {
         title: "Coin Title cannot be blank.",
         rulers: "At least one Ruler Attribution is required.",
-        faceValueNumericValue: "Face Value numeric value must be greater than 0.",
+        faceValueNumericValue:
+          "Face Value numeric value must be greater than 0.",
         minYear: "Issue Year Range requires both years or neither year.",
         maxYear: "Issue Year Range requires both years or neither year.",
       },
@@ -326,7 +336,11 @@ describe("submitCreateCoin", () => {
 describe("authorizeSurfaceImageUpload", () => {
   it("uses established Coin Maintenance authorization before issuing an upload URL", async () => {
     const authorizeUpload = vi.fn()
-    const input = { surface: "obverse" as const, contentType: "image/jpeg", contentLength: 100 }
+    const input = {
+      surface: "obverse" as const,
+      contentType: "image/jpeg",
+      contentLength: 100,
+    }
 
     await expect(
       authorizeSurfaceImageUpload(null, input, { authorizeUpload })
@@ -346,7 +360,154 @@ describe("authorizeSurfaceImageUpload", () => {
   })
 })
 
+describe("removeSurfaceImageUpload", () => {
+  it("deletes an unsaved upload immediately through Coin Maintenance authorization", async () => {
+    const deleteUpload = vi.fn()
+
+    await expect(
+      removeSurfaceImageUpload(
+        null,
+        { surface: "reverse", reference: "opaque-upload-reference" },
+        { deleteUpload }
+      )
+    ).resolves.toStrictEqual(authorizationErrorResult)
+    expect(deleteUpload).not.toHaveBeenCalled()
+
+    await expect(
+      removeSurfaceImageUpload(
+        { role: "editor" },
+        { surface: "reverse", reference: "opaque-upload-reference" },
+        { deleteUpload }
+      )
+    ).resolves.toBeUndefined()
+    expect(deleteUpload).toHaveBeenCalledWith(
+      "opaque-upload-reference",
+      "reverse"
+    )
+  })
+})
+
 describe("submitUpdateCoin", () => {
+  it("publishes a replacement before deleting the previous Surface Image", async () => {
+    const events: string[] = []
+    const dependencies = createDependencies({
+      getPersistedSurfaceImageUrls: vi.fn().mockImplementation(async () => {
+        events.push("read")
+        return {
+          obverse: "https://images.example.test/surface-images/old-obverse",
+          reverse: null,
+          edge: null,
+        }
+      }),
+      resolveSurfaceImageUpload: vi.fn().mockImplementation(async () => {
+        events.push("resolve")
+        return {
+          imageUrl: "https://images.example.test/surface-images/new-obverse",
+        }
+      }),
+      updateCoinMaintenance: vi.fn().mockImplementation(async () => {
+        events.push("update")
+        return { id: VALID_COIN_ID }
+      }),
+      deleteSurfaceImage: vi.fn().mockImplementation(async () => {
+        events.push("delete")
+      }),
+    })
+
+    await expect(
+      submitUpdateCoin(
+        { role: "editor" },
+        {
+          id: VALID_COIN_ID,
+          ...VALID_COIN_DRAFT,
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            obverse: {
+              ...VALID_COIN_DRAFT.surfaces.obverse,
+              imageUrl:
+                "https://images.example.test/surface-images/old-obverse",
+              imageUploadReference: "new-upload-reference",
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toMatchObject({ status: "success", coinId: VALID_COIN_ID })
+
+    expect(events).toStrictEqual(["read", "resolve", "update", "delete"])
+    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
+      "https://images.example.test/surface-images/old-obverse"
+    )
+  })
+
+  it("keeps the persisted Surface Image when the Coin update fails", async () => {
+    const dependencies = createDependencies({
+      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
+        obverse: "https://images.example.test/surface-images/old-obverse",
+        reverse: null,
+        edge: null,
+      }),
+      resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
+        imageUrl: "https://images.example.test/surface-images/new-obverse",
+      }),
+      updateCoinMaintenance: vi
+        .fn()
+        .mockRejectedValue(new Error("database error")),
+    })
+
+    await expect(
+      submitUpdateCoin(
+        { role: "editor" },
+        {
+          id: VALID_COIN_ID,
+          ...VALID_COIN_DRAFT,
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            obverse: {
+              ...VALID_COIN_DRAFT.surfaces.obverse,
+              imageUploadReference: "new-upload-reference",
+            },
+          },
+        },
+        dependencies
+      )
+    ).resolves.toMatchObject({ status: "error" })
+
+    expect(dependencies.deleteSurfaceImage).not.toHaveBeenCalled()
+  })
+
+  it("deletes a removed persisted Surface Image only after the Coin update", async () => {
+    const events: string[] = []
+    const dependencies = createDependencies({
+      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
+        obverse: null,
+        reverse: null,
+        edge: "https://images.example.test/surface-images/old-edge",
+      }),
+      updateCoinMaintenance: vi.fn().mockImplementation(async () => {
+        events.push("update")
+        return { id: VALID_COIN_ID }
+      }),
+      deleteSurfaceImage: vi.fn().mockImplementation(async () => {
+        events.push("delete")
+      }),
+    })
+
+    await submitUpdateCoin(
+      { role: "admin" },
+      {
+        id: VALID_COIN_ID,
+        ...VALID_COIN_DRAFT,
+      },
+      dependencies
+    )
+
+    expect(events).toStrictEqual(["update", "delete"])
+    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
+      "https://images.example.test/surface-images/old-edge"
+    )
+  })
+
   it("returns a missing-row form error when the update target no longer exists", async () => {
     await expect(
       submitUpdateCoin(

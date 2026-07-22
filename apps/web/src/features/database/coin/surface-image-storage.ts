@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
@@ -35,7 +36,12 @@ export type SurfaceImageStorage = {
   authorizeUpload: (
     input: SurfaceImageUploadRequest
   ) => Promise<SurfaceImageUploadAuthorization>
-  resolveUpload: (reference: string, surface: Surface) => Promise<ResolvedSurfaceImage>
+  resolveUpload: (
+    reference: string,
+    surface: Surface
+  ) => Promise<ResolvedSurfaceImage>
+  deletePublishedImage: (imageUrl: string) => Promise<void>
+  deleteUpload: (reference: string, surface: Surface) => Promise<void>
 }
 
 export type SurfaceImageObjectStorage = {
@@ -49,6 +55,7 @@ export type SurfaceImageObjectStorage = {
     contentType: string
     objectKey: string
   }) => Promise<string>
+  deleteObject: (objectKey: string) => Promise<void>
 }
 
 type R2Configuration = {
@@ -109,7 +116,10 @@ function decodeBase64Url(value: string) {
   return Buffer.from(value, "base64url").toString("utf8")
 }
 
-function createUploadReference(payload: UploadReferencePayload, secret: string) {
+function createUploadReference(
+  payload: UploadReferencePayload,
+  secret: string
+) {
   const encodedPayload = encodeBase64Url(JSON.stringify(payload))
   const signature = createHmac("sha256", secret)
     .update(encodedPayload)
@@ -139,7 +149,9 @@ function parseUploadReference(reference: string, secret: string) {
   }
 
   try {
-    const payload = JSON.parse(decodeBase64Url(encodedPayload)) as UploadReferencePayload
+    const payload = JSON.parse(
+      decodeBase64Url(encodedPayload)
+    ) as UploadReferencePayload
 
     if (
       typeof payload.objectKey !== "string" ||
@@ -173,7 +185,12 @@ function parseUploadReference(reference: string, secret: string) {
 
 function hasExpectedImageSignature(contentType: string, bytes: Uint8Array) {
   if (contentType === "image/jpeg") {
-    return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+    return (
+      bytes.length >= 3 &&
+      bytes[0] === 0xff &&
+      bytes[1] === 0xd8 &&
+      bytes[2] === 0xff
+    )
   }
 
   if (contentType === "image/png") {
@@ -237,10 +254,48 @@ function createS3ObjectStorage(
       return {
         contentLength: metadata.ContentLength,
         contentType: metadata.ContentType,
-        firstBytes: body.Body ? await body.Body.transformToByteArray() : new Uint8Array(),
+        firstBytes: body.Body
+          ? await body.Body.transformToByteArray()
+          : new Uint8Array(),
       }
     },
+    async deleteObject(objectKey) {
+      await client.send(
+        new DeleteObjectCommand({
+          Bucket: configuration.bucket,
+          Key: objectKey,
+        })
+      )
+    },
   }
+}
+
+function getObjectKeyFromPublishedImageUrl(
+  imageUrl: string,
+  publicBaseUrl: string
+) {
+  const parsedImageUrl = new URL(imageUrl)
+  const parsedPublicBaseUrl = new URL(`${publicBaseUrl}/`)
+
+  if (parsedImageUrl.origin !== parsedPublicBaseUrl.origin) {
+    throw new Error("Surface Image URL is not managed by this R2 storage.")
+  }
+
+  const publicPathPrefix = parsedPublicBaseUrl.pathname.replace(/^\//, "")
+  const imagePath = decodeURIComponent(parsedImageUrl.pathname).replace(
+    /^\//,
+    ""
+  )
+  const objectKey = publicPathPrefix
+    ? imagePath.startsWith(publicPathPrefix)
+      ? imagePath.slice(publicPathPrefix.length)
+      : ""
+    : imagePath
+  if (!objectKey.startsWith("surface-images/")) {
+    throw new Error("Surface Image URL is not managed by this R2 storage.")
+  }
+
+  return objectKey
 }
 
 export function createR2SurfaceImageStorage(
@@ -252,7 +307,8 @@ export function createR2SurfaceImageStorage(
       assertAcceptedUploadRequest(input)
 
       const objectKey = `surface-images/${randomUUID()}`
-      const expiresAt = Date.now() + SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS * 1000
+      const expiresAt =
+        Date.now() + SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS * 1000
       const reference = createUploadReference(
         {
           contentLength: input.contentLength,
@@ -273,9 +329,14 @@ export function createR2SurfaceImageStorage(
     },
 
     async resolveUpload(reference, surface) {
-      const payload = parseUploadReference(reference, configuration.secretAccessKey)
+      const payload = parseUploadReference(
+        reference,
+        configuration.secretAccessKey
+      )
       if (payload.surface !== surface) {
-        throw new Error("Surface Image upload reference is not authorized for this Surface.")
+        throw new Error(
+          "Surface Image upload reference is not authorized for this Surface."
+        )
       }
       const object = await objectStorage.inspectObject(payload.objectKey)
 
@@ -283,7 +344,9 @@ export function createR2SurfaceImageStorage(
         object.contentLength !== payload.contentLength ||
         object.contentType !== payload.contentType
       ) {
-        throw new Error("Uploaded Surface Image does not match its authorization.")
+        throw new Error(
+          "Uploaded Surface Image does not match its authorization."
+        )
       }
 
       assertAcceptedUploadRequest({
@@ -297,8 +360,31 @@ export function createR2SurfaceImageStorage(
       }
 
       return {
-        imageUrl: new URL(payload.objectKey, `${configuration.publicBaseUrl}/`).toString(),
+        imageUrl: new URL(
+          payload.objectKey,
+          `${configuration.publicBaseUrl}/`
+        ).toString(),
       }
+    },
+
+    async deleteUpload(reference, surface) {
+      const payload = parseUploadReference(
+        reference,
+        configuration.secretAccessKey
+      )
+      if (payload.surface !== surface) {
+        throw new Error(
+          "Surface Image upload reference is not authorized for this Surface."
+        )
+      }
+
+      await objectStorage.deleteObject(payload.objectKey)
+    },
+
+    async deletePublishedImage(imageUrl) {
+      await objectStorage.deleteObject(
+        getObjectKeyFromPublishedImageUrl(imageUrl, configuration.publicBaseUrl)
+      )
     },
   }
 }

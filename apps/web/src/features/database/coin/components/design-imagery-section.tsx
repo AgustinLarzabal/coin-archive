@@ -1,4 +1,5 @@
 import { Card } from "@workspace/ui/components/card"
+import type { ComponentProps } from "react"
 import {
   FieldDescription,
   FieldGroup,
@@ -24,8 +25,9 @@ export function DesignImagerySection({
   updateEdgeSurface,
   updateFaceEngraver,
   updateFaceSurface,
-  isCreateMode,
   onSurfaceImagePendingChange,
+  removePersistedSurfaceImage,
+  removeSurfaceImageUpload,
   updateSurfaceImageUploadReference,
   authorizeSurfaceImageUpload,
 }: Pick<
@@ -37,14 +39,23 @@ export function DesignImagerySection({
   updateFaceEngraver: (face: Face, index: number, value: string) => void
   updateFaceSurface: (face: Face, field: SurfaceField, value: string) => void
   updateEdgeSurface: (field: SurfaceField, value: string) => void
-  isCreateMode: boolean
   onSurfaceImagePendingChange: (face: Face | "edge", isPending: boolean) => void
-  updateSurfaceImageUploadReference: (face: Face | "edge", reference: string) => void
+  removePersistedSurfaceImage: (face: Face | "edge") => void
+  removeSurfaceImageUpload: (input: {
+    surface: Face | "edge"
+    reference: string
+  }) => Promise<void | { formError?: string }>
+  updateSurfaceImageUploadReference: (
+    face: Face | "edge",
+    reference: string
+  ) => void
   authorizeSurfaceImageUpload: (input: {
     surface: Face | "edge"
     contentType: string
     contentLength: number
-  }) => Promise<{ reference: string; uploadUrl: string } | { formError?: string }>
+  }) => Promise<
+    { reference: string; uploadUrl: string } | { formError?: string }
+  >
 }) {
   return (
     <Card>
@@ -95,18 +106,19 @@ export function DesignImagerySection({
                   }
                 />
               </div>
-              {isCreateMode ? (
-                <SurfaceImageUpload
-                  surface={face}
-                  authorizeUpload={authorizeSurfaceImageUpload}
-                  onPendingChange={(isPending) =>
-                    onSurfaceImagePendingChange(face, isPending)
-                  }
-                  onReferenceChange={(reference) =>
-                    updateSurfaceImageUploadReference(face, reference)
-                  }
-                />
-              ) : null}
+              <SurfaceImageControl
+                surface={face}
+                imageUrl={surface.imageUrl as string}
+                authorizeUpload={authorizeSurfaceImageUpload}
+                onPendingChange={(isPending) =>
+                  onSurfaceImagePendingChange(face, isPending)
+                }
+                onReferenceChange={(reference) =>
+                  updateSurfaceImageUploadReference(face, reference)
+                }
+                onPersistedImageRemove={() => removePersistedSurfaceImage(face)}
+                removeUpload={removeSurfaceImageUpload}
+              />
               <div className="grid gap-3">
                 {surface.engraverIds.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
@@ -149,8 +161,8 @@ export function DesignImagerySection({
             <div>
               <h2 className="text-lg font-semibold">Edge Surface</h2>
               <p className="text-sm text-muted-foreground">
-                Description and lettering. Edge Surface does not accept
-                Engraver Attributions.
+                Description and lettering. Edge Surface does not accept Engraver
+                Attributions.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -169,22 +181,56 @@ export function DesignImagerySection({
                 onValueChange={(value) => updateEdgeSurface("lettering", value)}
               />
             </div>
-            {isCreateMode ? (
-              <SurfaceImageUpload
-                surface="edge"
-                authorizeUpload={authorizeSurfaceImageUpload}
-                onPendingChange={(isPending) =>
-                  onSurfaceImagePendingChange("edge", isPending)
-                }
-                onReferenceChange={(reference) =>
-                  updateSurfaceImageUploadReference("edge", reference)
-                }
-              />
-            ) : null}
+            <SurfaceImageControl
+              surface="edge"
+              imageUrl={draft.surfaces.edge.imageUrl as string}
+              authorizeUpload={authorizeSurfaceImageUpload}
+              onPendingChange={(isPending) =>
+                onSurfaceImagePendingChange("edge", isPending)
+              }
+              onReferenceChange={(reference) =>
+                updateSurfaceImageUploadReference("edge", reference)
+              }
+              onPersistedImageRemove={() => removePersistedSurfaceImage("edge")}
+              removeUpload={removeSurfaceImageUpload}
+            />
           </section>
         </FieldGroup>
       </FieldSet>
     </Card>
+  )
+}
+
+function SurfaceImageControl({
+  imageUrl,
+  onPersistedImageRemove,
+  ...uploadProps
+}: {
+  imageUrl: string
+  onPersistedImageRemove: () => void
+} & ComponentProps<typeof SurfaceImageUpload>) {
+  return (
+    <div className="grid gap-3">
+      {imageUrl ? (
+        <div className="grid gap-2">
+          <img
+            src={imageUrl}
+            alt={`Current ${uploadProps.surface} Surface Image`}
+            className="max-h-64 rounded border object-contain"
+          />
+          <div>
+            <button
+              type="button"
+              onClick={onPersistedImageRemove}
+              className="rounded border px-3 py-2 text-sm"
+            >
+              Remove current Surface Image
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <SurfaceImageUpload {...uploadProps} />
+    </div>
   )
 }
 

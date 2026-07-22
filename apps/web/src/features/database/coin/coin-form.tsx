@@ -21,6 +21,7 @@ import {
   submitCreateCoin,
   submitUpdateCoin,
   authorizeSurfaceImageUpload,
+  removeSurfaceImageUpload,
 } from "./actions"
 import {
   createEmptyRulerAttribution,
@@ -72,6 +73,16 @@ const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
     return authorizeSurfaceImageUpload(session?.user ?? null, data)
   })
 
+const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: { surface: "obverse" | "reverse" | "edge"; reference: string }) =>
+      data
+  )
+  .handler(async ({ data }) => {
+    const session = await getAuthSession()
+    return removeSurfaceImageUpload(session?.user ?? null, data)
+  })
+
 function getCoinDraftValidationErrors(draft: CoinDraft): CoinFieldErrors {
   const parsedDraft = coinDraftSchema.safeParse(draft)
 
@@ -114,6 +125,7 @@ export function CoinForm(props: CoinFormProps) {
   const createCoin = useServerFn(createCoinAction)
   const updateCoin = useServerFn(updateCoinAction)
   const authorizeImageUpload = useServerFn(authorizeSurfaceImageUploadAction)
+  const removeImageUpload = useServerFn(removeSurfaceImageUploadAction)
   const initialDraft = getInitialCoinDraft(props)
   const [fieldErrors, setFieldErrors] = useState<CoinFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -273,11 +285,23 @@ export function CoinForm(props: CoinFormProps) {
     }))
   }
 
+  function removePersistedSurfaceImage(
+    surface: "obverse" | "reverse" | "edge"
+  ) {
+    form.setFieldValue("surfaces", (current) => ({
+      ...current,
+      [surface]: { ...current[surface], imageUrl: "" },
+    }))
+  }
+
   function setSurfaceImagePending(
     surface: "obverse" | "reverse" | "edge",
     isPending: boolean
   ) {
-    setPendingSurfaceUploads((current) => ({ ...current, [surface]: isPending }))
+    setPendingSurfaceUploads((current) => ({
+      ...current,
+      [surface]: isPending,
+    }))
   }
 
   function addFaceEngraver(face: "obverse" | "reverse") {
@@ -403,11 +427,22 @@ export function CoinForm(props: CoinFormProps) {
                 updateEdgeSurface={updateEdgeSurface}
                 updateFaceEngraver={updateFaceEngraver}
                 updateFaceSurface={updateFaceSurface}
-                isCreateMode={!isEditMode}
                 onSurfaceImagePendingChange={setSurfaceImagePending}
-                updateSurfaceImageUploadReference={updateSurfaceImageUploadReference}
-                authorizeSurfaceImageUpload={({ surface, contentType, contentLength }) =>
-                  authorizeImageUpload({ data: { surface, contentType, contentLength } })
+                removePersistedSurfaceImage={removePersistedSurfaceImage}
+                updateSurfaceImageUploadReference={
+                  updateSurfaceImageUploadReference
+                }
+                authorizeSurfaceImageUpload={({
+                  surface,
+                  contentType,
+                  contentLength,
+                }) =>
+                  authorizeImageUpload({
+                    data: { surface, contentType, contentLength },
+                  })
+                }
+                removeSurfaceImageUpload={({ surface, reference }) =>
+                  removeImageUpload({ data: { surface, reference } })
                 }
               />
               {formError ? <FieldError>{formError}</FieldError> : null}

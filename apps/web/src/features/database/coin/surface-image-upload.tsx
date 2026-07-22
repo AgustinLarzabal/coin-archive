@@ -14,10 +14,15 @@ export function SurfaceImageUpload({
   onPendingChange,
   onReferenceChange,
   authorizeUpload,
+  removeUpload,
 }: {
   surface: Surface
   onPendingChange: (isPending: boolean) => void
   onReferenceChange: (reference: string) => void
+  removeUpload: (input: {
+    reference: string
+    surface: Surface
+  }) => Promise<void | { formError?: string }>
   authorizeUpload: (input: {
     surface: Surface
     contentType: string
@@ -26,6 +31,9 @@ export function SurfaceImageUpload({
 }) {
   const [items, setItems] = useState<FileUploadItem[]>([])
   const activeUploadIdRef = useRef<string | null>(null)
+  const uploadReferencesRef = useRef(new Map<string, string>())
+  const [pendingRemoval, setPendingRemoval] = useState<string | null>(null)
+  const [removalError, setRemovalError] = useState<string | null>(null)
 
   function replaceItem(id: string, update: Partial<FileUploadItem>) {
     setItems((current) =>
@@ -47,21 +55,27 @@ export function SurfaceImageUpload({
       })
 
       if (!("reference" in authorization)) {
-        throw new Error(authorization.formError ?? "Unable to authorize upload.")
+        throw new Error(
+          authorization.formError ?? "Unable to authorize upload."
+        )
       }
 
+      uploadReferencesRef.current.set(item.id, authorization.reference)
       await putFile(authorization.uploadUrl, file, (progress) =>
         replaceItem(item.id, { progress })
       )
       if (activeUploadIdRef.current === item.id) {
         replaceItem(item.id, { status: "success", progress: 100 })
         onReferenceChange(authorization.reference)
+      } else {
+        void deleteUploadReference(authorization.reference)
       }
     } catch (error) {
       if (activeUploadIdRef.current === item.id) {
         replaceItem(item.id, {
           status: "error",
-          error: error instanceof Error ? error.message : "Unable to upload file.",
+          error:
+            error instanceof Error ? error.message : "Unable to upload file.",
         })
       }
     } finally {
@@ -69,31 +83,68 @@ export function SurfaceImageUpload({
     }
   }
 
+  async function deleteUploadReference(reference: string) {
+    setPendingRemoval(reference)
+    setRemovalError(null)
+    const result = await removeUpload({ reference, surface })
+
+    if (result) {
+      setRemovalError(result.formError ?? "Unable to remove upload.")
+      return
+    }
+
+    setPendingRemoval((current) => (current === reference ? null : current))
+    uploadReferencesRef.current.forEach((itemReference, itemId) => {
+      if (itemReference === reference)
+        uploadReferencesRef.current.delete(itemId)
+    })
+  }
+
   return (
-    <FileUpload
-      accept="image/jpeg,image/png,image/webp"
-      description="JPEG, PNG, or WebP up to 10 MB."
-      maxFiles={1}
-      multiple={false}
-      onFilesAdded={(addedItems, files) => {
-        const item = addedItems[0]
-        const file = files[0]
-        void upload(item, file)
-      }}
-      onRemove={(item) => {
-        if (activeUploadIdRef.current === item.id) {
-          activeUploadIdRef.current = null
-          onPendingChange(false)
-        }
-        onReferenceChange("")
-      }}
-      onRetry={(item) => {
-        if (item.file) void upload(item, item.file)
-      }}
-      title="Drop a Surface Image here"
-      value={items}
-      onValueChange={setItems}
-    />
+    <>
+      <FileUpload
+        accept="image/jpeg,image/png,image/webp"
+        description="JPEG, PNG, or WebP up to 10 MB."
+        maxFiles={1}
+        multiple={false}
+        onFilesAdded={(addedItems, files) => {
+          const item = addedItems[0]
+          const file = files[0]
+          void upload(item, file)
+        }}
+        onRemove={(item) => {
+          if (activeUploadIdRef.current === item.id) {
+            activeUploadIdRef.current = null
+            onPendingChange(false)
+          }
+          const reference = uploadReferencesRef.current.get(item.id)
+          onReferenceChange("")
+          if (reference) {
+            void deleteUploadReference(reference)
+          }
+        }}
+        onRetry={(item) => {
+          if (item.file) void upload(item, item.file)
+        }}
+        title="Drop a Surface Image here"
+        value={items}
+        onValueChange={setItems}
+      />
+      {removalError ? (
+        <div className="flex items-center gap-3 text-sm text-destructive">
+          <p>{removalError}</p>
+          {pendingRemoval ? (
+            <button
+              type="button"
+              onClick={() => void deleteUploadReference(pendingRemoval)}
+              className="rounded border px-3 py-2"
+            >
+              Retry removal
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </>
   )
 }
 

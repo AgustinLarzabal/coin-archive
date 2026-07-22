@@ -37,12 +37,16 @@ export function IdentityClassificationSection({
           </FieldDescription>
           <FieldGroup>
             <Field data-invalid={fieldErrors.title !== undefined}>
-              <FieldLabel htmlFor={`${idPrefix}-title`}>Coin Title</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-title`}>
+                Coin Title <FieldRequirement required />
+              </FieldLabel>
               <Input
                 id={`${idPrefix}-title`}
                 name="title"
                 value={draft.title}
                 onChange={(event) => updateDraft("title", event.target.value)}
+                aria-required
+                required
               />
               <CoinFormFieldError message={fieldErrors.title} />
             </Field>
@@ -55,6 +59,7 @@ export function IdentityClassificationSection({
                 onValueChange={(value) => updateDraft("issuerId", value)}
                 options={options.issuers}
                 placeholder="Select Issuer"
+                required
                 value={draft.issuerId}
               />
               <CoinSelectField
@@ -65,6 +70,7 @@ export function IdentityClassificationSection({
                 onValueChange={(value) => updateDraft("distributionId", value)}
                 options={options.distributions}
                 placeholder="Select Distribution"
+                required
                 value={draft.distributionId}
               />
               <CoinSelectField
@@ -75,6 +81,7 @@ export function IdentityClassificationSection({
                 onValueChange={(value) => updateDraft("compositionId", value)}
                 options={options.compositions}
                 placeholder="Select Composition"
+                required
                 value={draft.compositionId}
               />
             </div>
@@ -86,6 +93,7 @@ export function IdentityClassificationSection({
               onValueChange={replaceRulers}
               options={options.rulers}
               placeholder="Search and add rulers"
+              required
               values={draft.rulers.map((ruler) => ruler.rulerId)}
             />
           </FieldGroup>
@@ -93,4 +101,10 @@ export function IdentityClassificationSection({
       </Card>
     </FieldGroup>
   )
+}
+
+function FieldRequirement({ required }: { required: boolean }) {
+  if (!required) return null
+
+  return <span className="font-normal text-muted-foreground">(Required)</span>
 }

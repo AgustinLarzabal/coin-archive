@@ -84,6 +84,7 @@ export function CatalogueNotesReferencesSection({
                   }
                   options={options.catalogues}
                   placeholder="Select Catalogue"
+                  required
                   value={reference.catalogueId}
                 />
                 <CoinInputField
@@ -93,6 +94,7 @@ export function CatalogueNotesReferencesSection({
                   onValueChange={(value) =>
                     updateReference(index, "number", value)
                   }
+                  required
                   value={reference.number}
                 />
                 <div className="flex items-end">

@@ -24,6 +24,7 @@ type CoinSelectFieldProps = {
   onValueChange: (value: string) => void
   options: CoinOption[]
   placeholder: string
+  required?: boolean
   value: string
 }
 
@@ -40,11 +41,14 @@ export function CoinSelectField({
   onValueChange,
   options,
   placeholder,
+  required = false,
   value,
 }: CoinSelectFieldProps) {
   return (
     <Field className={className} data-invalid={error !== undefined}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id}>
+        {label} <FieldRequirement required={required} />
+      </FieldLabel>
       <Select
         name={name}
         value={value}
@@ -53,6 +57,7 @@ export function CoinSelectField({
         <SelectTrigger
           id={id}
           aria-invalid={error !== undefined}
+          aria-required={required}
           className="w-full"
         >
           <SelectValue placeholder={placeholder} />
@@ -70,4 +75,10 @@ export function CoinSelectField({
       <FieldError errors={error ? [{ message: error }] : undefined} />
     </Field>
   )
+}
+
+function FieldRequirement({ required }: { required: boolean }) {
+  if (!required) return null
+
+  return <span className="font-normal text-muted-foreground">(Required)</span>
 }

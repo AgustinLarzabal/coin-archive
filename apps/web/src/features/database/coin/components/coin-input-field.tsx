@@ -9,6 +9,7 @@ type CoinInputFieldProps = {
   label: string
   name?: string
   onValueChange: (value: string) => void
+  required?: boolean
   type?: ComponentProps<typeof Input>["type"]
   value: string
 }
@@ -20,12 +21,15 @@ export function CoinInputField({
   label,
   name,
   onValueChange,
+  required = false,
   type,
   value,
 }: CoinInputFieldProps) {
   return (
     <Field className={className} data-invalid={error !== undefined}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id}>
+        {label} <FieldRequirement required={required} />
+      </FieldLabel>
       <Input
         id={id}
         name={name}
@@ -33,8 +37,16 @@ export function CoinInputField({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         aria-invalid={error !== undefined}
+        aria-required={required}
+        required={required}
       />
       <FieldError errors={error ? [{ message: error }] : undefined} />
     </Field>
   )
+}
+
+function FieldRequirement({ required }: { required: boolean }) {
+  if (!required) return null
+
+  return <span className="font-normal text-muted-foreground">(Required)</span>
 }

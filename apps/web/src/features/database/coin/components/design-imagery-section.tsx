@@ -141,6 +141,7 @@ export function DesignImagerySection({
                       }
                       options={options.engravers}
                       placeholder="Select Engraver"
+                      required
                       value={engraverId}
                     />
                     <div className="flex items-end">

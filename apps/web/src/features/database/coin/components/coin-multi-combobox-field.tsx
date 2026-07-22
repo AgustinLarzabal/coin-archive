@@ -25,6 +25,7 @@ type CoinMultiComboboxFieldProps = {
   onValueChange: (values: string[]) => void
   options: CoinOption[]
   placeholder: string
+  required?: boolean
   values: string[]
 }
 
@@ -40,6 +41,7 @@ export function CoinMultiComboboxField({
   onValueChange,
   options,
   placeholder,
+  required = false,
   values,
 }: CoinMultiComboboxFieldProps) {
   const selectedOptions = values.flatMap((value) =>
@@ -48,7 +50,9 @@ export function CoinMultiComboboxField({
 
   return (
     <Field data-invalid={errors.length > 0}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id}>
+        {label} <FieldRequirement required={required} />
+      </FieldLabel>
       <Combobox
         items={options}
         itemToStringValue={createOptionLabel}
@@ -66,7 +70,11 @@ export function CoinMultiComboboxField({
               </ComboboxChip>
             ))}
           </ComboboxValue>
-          <ComboboxChipsInput id={id} placeholder={placeholder} />
+          <ComboboxChipsInput
+            id={id}
+            placeholder={placeholder}
+            aria-required={required}
+          />
         </ComboboxChips>
         <ComboboxContent>
           <ComboboxEmpty>No options found.</ComboboxEmpty>
@@ -83,4 +91,10 @@ export function CoinMultiComboboxField({
       <FieldError errors={errors.map((message) => ({ message }))} />
     </Field>
   )
+}
+
+function FieldRequirement({ required }: { required: boolean }) {
+  if (!required) return null
+
+  return <span className="font-normal text-muted-foreground">(Required)</span>
 }

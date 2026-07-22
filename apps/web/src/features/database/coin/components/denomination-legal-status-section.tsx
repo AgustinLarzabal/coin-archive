@@ -46,6 +46,7 @@ export function DenominationLegalStatusSection({
               onValueChange={(value) => updateDraft("currencyId", value)}
               options={options.currencies}
               placeholder="Select Currency"
+              required
               value={draft.currencyId}
             />
             <CoinInputField
@@ -55,6 +56,7 @@ export function DenominationLegalStatusSection({
               label="Face Value text"
               name="faceValueText"
               onValueChange={(value) => updateDraft("faceValueText", value)}
+              required
               value={draft.faceValueText}
             />
             <CoinInputField
@@ -66,11 +68,14 @@ export function DenominationLegalStatusSection({
               onValueChange={(value) =>
                 updateDraft("faceValueNumericValue", value)
               }
+              required
               value={draft.faceValueNumericValue as string}
             />
           </div>
           <FieldSet>
-            <FieldLegend variant="label">Demonetization Status</FieldLegend>
+            <FieldLegend variant="label">
+              Demonetization Status <FieldRequirement required />
+            </FieldLegend>
             <RadioGroup
               name="demonetizationStatus"
               value={draft.demonetizationStatus}
@@ -81,6 +86,7 @@ export function DenominationLegalStatusSection({
                 )
               }
               aria-invalid={fieldErrors.demonetizationStatus !== undefined}
+              aria-required
               className="grid gap-3 md:grid-cols-3"
             >
               <StatusOption value="unknown" title="Unknown">
@@ -101,6 +107,12 @@ export function DenominationLegalStatusSection({
       </FieldSet>
     </Card>
   )
+}
+
+function FieldRequirement({ required }: { required: boolean }) {
+  if (!required) return null
+
+  return <span className="font-normal text-muted-foreground">(Required)</span>
 }
 
 function StatusOption({

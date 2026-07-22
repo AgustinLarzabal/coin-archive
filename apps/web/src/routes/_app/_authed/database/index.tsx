@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import {
   DatabaseOverviewRouteComponent,
   loadDatabaseOverviewRouteData,
-} from "@/features/database/overview"
+} from "@/features/database/database-overview"
 
 export const Route = createFileRoute("/_app/_authed/database/")({
   loader: loadDatabaseOverviewRouteData,

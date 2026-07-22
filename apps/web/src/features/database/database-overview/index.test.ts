@@ -4,7 +4,7 @@ import { assertFeaturePublicApi } from "../public-api-contract"
 import * as feature from "./index"
 
 const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
-const FEATURE_ALIAS = "@/features/database/overview"
+const FEATURE_ALIAS = "@/features/database/database-overview"
 
 describe("database-overview public API", () => {
   assertFeaturePublicApi({

@@ -4,7 +4,7 @@ import {
   coinMaintenanceSearchSchema,
   getCoinMaintenanceLoaderDeps,
   loadCoinMaintenanceRouteData,
-} from "@/features/database/coin"
+} from "@/features/database/coin-maintenance"
 
 export const Route = createFileRoute("/_app/_authed/database/coins")({
   validateSearch: coinMaintenanceSearchSchema,

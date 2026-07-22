@@ -38,11 +38,11 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
       name: "Argentine Republic",
       isoCode: "AR",
     })
-    await createComposition({
+    const silverComposition = await createComposition({
       code: "silver-900",
       name: "Silver .900",
     })
-    await createCurrency({
+    const argentinePeso = await createCurrency({
       code: "argentine-peso",
       name: "Peso",
       fullName: "Argentine peso",
@@ -145,6 +145,8 @@ describe("getDatabaseGeneralSummaryCounts integration", () => {
     await createCoin({
       title: "Argentine Test Coin",
       issuerId: argentineRepublic.id,
+      compositionId: silverComposition.id,
+      currencyId: argentinePeso.id,
       createdAt: new Date("2026-07-01T00:00:00.000Z"),
     })
 

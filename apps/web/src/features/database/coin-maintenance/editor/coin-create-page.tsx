@@ -15,12 +15,12 @@ import type {
 import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
-} from "../maintenance-page"
+} from "../../maintenance-page"
 import type {
   MaintenancePageLoadResult,
   MaintenancePageLoaderData,
-} from "../maintenance-page"
-import { hasCoinMaintenanceAccess } from "./actions"
+} from "../../maintenance-page"
+import { hasCoinMaintenanceAccess } from "../actions"
 import { CoinForm } from "./coin-form"
 
 type CreateCoinPageData = {

@@ -14,7 +14,7 @@ import type {
   CoinFieldErrors,
   CoinMutationResult,
   CoinReferenceDraft,
-} from "./actions"
+} from "../actions"
 import {
   coinDraftSchema,
   getCoinFieldErrors,
@@ -22,7 +22,7 @@ import {
   submitUpdateCoin,
   authorizeSurfaceImageUpload,
   removeSurfaceImageUpload,
-} from "./actions"
+} from "../actions"
 import {
   createEmptyRulerAttribution,
   getInitialCoinDraft,
@@ -30,13 +30,13 @@ import {
   hasRequiredCoinDraftFields,
 } from "./coin-form.shared"
 import type { CoinFormOptions } from "./coin-form.shared"
-import { CatalogueNotesReferencesSection } from "./components/catalogue-notes-references-section"
-import { DenominationLegalStatusSection } from "./components/denomination-legal-status-section"
-import { DesignImagerySection } from "./components/design-imagery-section"
-import { IdentityClassificationSection } from "./components/identity-classification-section"
-import { PhysicalCharacteristicsSection } from "./components/physical-characteristics-section"
-import { ProductionChronologySection } from "./components/production-chronology-section"
-import { ThemesSection } from "./components/themes-section"
+import { CatalogueNotesReferencesSection } from "./sections/catalogue-notes-references-section"
+import { DenominationLegalStatusSection } from "./sections/denomination-legal-status-section"
+import { DesignImagerySection } from "./sections/design-imagery-section"
+import { IdentityClassificationSection } from "./sections/identity-classification-section"
+import { PhysicalCharacteristicsSection } from "./sections/physical-characteristics-section"
+import { ProductionChronologySection } from "./sections/production-chronology-section"
+import { ThemesSection } from "./sections/themes-section"
 import { FieldError } from "@workspace/ui/components/field"
 
 const UNSAVED_CHANGES_WARNING =

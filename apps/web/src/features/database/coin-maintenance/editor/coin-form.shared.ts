@@ -18,7 +18,7 @@ import type {
   ThemeOption,
 } from "@workspace/db"
 
-import type { CoinDraft } from "./actions"
+import type { CoinDraft } from "../actions"
 
 type AttributionDraftCollectionName = "rulers" | "mints" | "themes"
 

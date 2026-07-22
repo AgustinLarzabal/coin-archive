@@ -1,4 +1,4 @@
-import type { CoinDraft } from "../actions"
+import type { CoinDraft } from "../../actions"
 import { Card } from "@workspace/ui/components/card"
 import {
   Field,

@@ -18,7 +18,7 @@ import {
   type MaintenancePageLoaderData,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
-} from "../maintenance-page"
+} from "../../maintenance-page"
 import { CoinsMaintenanceTable } from "./coins-maintenance-table"
 
 export const COIN_MAINTENANCE_PAGE_SIZE = 50

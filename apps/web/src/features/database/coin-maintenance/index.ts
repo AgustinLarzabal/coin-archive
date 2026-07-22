@@ -3,15 +3,15 @@ export {
   coinMaintenanceSearchSchema,
   getCoinMaintenanceLoaderDeps,
   loadCoinMaintenanceRouteData,
-} from "./coin-maintenance-page"
+} from "./listing/coin-maintenance-page"
 export {
   CoinCreateRouteComponent,
   loadCoinCreatePageData,
   loadCoinCreateRouteData,
-} from "./coin-create-page"
+} from "./editor/coin-create-page"
 export {
   CoinEditRouteComponent,
   getCoinEditLoaderDeps,
   loadCoinEditPageData,
   loadCoinEditRouteData,
-} from "./coin-edit-page"
+} from "./editor/coin-edit-page"

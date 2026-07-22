@@ -10,7 +10,7 @@ import {
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"
 import { CoinMultiComboboxField } from "./coin-multi-combobox-field"
-import { SurfaceImageUpload } from "../surface-image-upload"
+import { SurfaceImageUpload } from "../../surface-images/surface-image-upload"
 
 type Face = "obverse" | "reverse"
 type SurfaceField = "description" | "lettering"

@@ -1,4 +1,4 @@
-import type { CoinDraft, CoinFieldErrors } from "../actions"
+import type { CoinDraft, CoinFieldErrors } from "../../actions"
 import type { CoinFormOptions } from "../coin-form.shared"
 
 export type UpdateCoinDraft = <TFieldName extends keyof CoinDraft>(

@@ -8,7 +8,7 @@ import type {
   SurfaceImageStorage,
   SurfaceImageUploadAuthorization,
   SurfaceImageUploadRequest,
-} from "./surface-image-storage"
+} from "./surface-images/surface-image-storage"
 
 export const COIN_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Coins."
@@ -536,7 +536,7 @@ async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
     updateCoinMaintenance,
   } = await import("@workspace/db")
   const { createR2SurfaceImageStorage } =
-    await import("./surface-image-storage")
+    await import("./surface-images/surface-image-storage")
 
   return {
     createCoinMaintenance,
@@ -560,7 +560,7 @@ async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
 
 async function getDefaultSurfaceImageUploadDependencies(): Promise<SurfaceImageStorage> {
   const { createR2SurfaceImageStorage } =
-    await import("./surface-image-storage")
+    await import("./surface-images/surface-image-storage")
 
   return createR2SurfaceImageStorage()
 }
@@ -573,7 +573,7 @@ async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
     recordSurfaceImageCleanupFailures,
   } = await import("@workspace/db")
   const { createR2SurfaceImageStorage } =
-    await import("./surface-image-storage")
+    await import("./surface-images/surface-image-storage")
 
   return {
     deleteCoinMaintenance,

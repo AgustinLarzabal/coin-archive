@@ -28,7 +28,7 @@ import { getAuthSession } from "@/lib/auth-session"
 import {
   submitDeleteCoin,
   type CoinDeleteMutationResult,
-} from "./actions"
+} from "../actions"
 
 const deleteCoinAction = createServerFn({
   method: "POST",

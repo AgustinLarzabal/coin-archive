@@ -19,14 +19,14 @@ import type {
 import {
   renderMaintenancePage,
   toMaintenancePageLoaderData,
-} from "../maintenance-page"
+} from "../../maintenance-page"
 import type {
   MaintenancePageLoadResult,
   MaintenancePageLoaderData,
-} from "../maintenance-page"
-import { hasCoinMaintenanceAccess } from "./actions"
+} from "../../maintenance-page"
+import { hasCoinMaintenanceAccess } from "../actions"
 import { CoinForm } from "./coin-form"
-import { DeleteCoin } from "./delete-coin"
+import { DeleteCoin } from "../deletion/delete-coin"
 
 const coinEditLoaderDepsSchema = z.object({
   coinId: z.uuid(),

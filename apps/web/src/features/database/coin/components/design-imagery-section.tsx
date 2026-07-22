@@ -9,7 +9,7 @@ import {
 
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"
-import { CoinSelectField } from "./coin-select-field"
+import { CoinMultiComboboxField } from "./coin-multi-combobox-field"
 import { SurfaceImageUpload } from "../surface-image-upload"
 
 type Face = "obverse" | "reverse"
@@ -20,10 +20,8 @@ export function DesignImagerySection({
   fieldErrors,
   idPrefix,
   options,
-  addFaceEngraver,
-  removeFaceEngraver,
   updateEdgeSurface,
-  updateFaceEngraver,
+  updateFaceEngravers,
   updateFaceSurface,
   onSurfaceImagePendingChange,
   removePersistedSurfaceImage,
@@ -34,9 +32,7 @@ export function DesignImagerySection({
   CoinFormSectionProps,
   "draft" | "fieldErrors" | "idPrefix" | "options"
 > & {
-  addFaceEngraver: (face: Face) => void
-  removeFaceEngraver: (face: Face, index: number) => void
-  updateFaceEngraver: (face: Face, index: number, value: string) => void
+  updateFaceEngravers: (face: Face, engraverIds: string[]) => void
   updateFaceSurface: (face: Face, field: SurfaceField, value: string) => void
   updateEdgeSurface: (field: SurfaceField, value: string) => void
   onSurfaceImagePendingChange: (face: Face | "edge", isPending: boolean) => void
@@ -73,20 +69,13 @@ export function DesignImagerySection({
             ] as const
           ).map(([face, label, surface]) => (
             <section key={face} className="grid gap-4 rounded border p-4">
-              <div className="flex items-center justify-between gap-3">
+              <div>
                 <div>
                   <h2 className="text-lg font-semibold">{label} Surface</h2>
                   <p className="text-sm text-muted-foreground">
                     Description, lettering, and face-specific engravers.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => addFaceEngraver(face)}
-                  className="rounded border px-3 py-2 text-sm"
-                >
-                  Add Engraver Attribution
-                </button>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <SurfaceTextarea
@@ -119,43 +108,17 @@ export function DesignImagerySection({
                 onPersistedImageRemove={() => removePersistedSurfaceImage(face)}
                 removeUpload={removeSurfaceImageUpload}
               />
-              <div className="grid gap-3">
-                {surface.engraverIds.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No Engraver Attributions added.
-                  </p>
-                ) : null}
-                {surface.engraverIds.map((engraverId, index) => (
-                  <div
-                    key={`${face}-${index}`}
-                    className="grid gap-3 rounded border p-3 md:grid-cols-[1fr_auto]"
-                  >
-                    <CoinSelectField
-                      error={
-                        fieldErrors[`surfaces.${face}.engraverIds.${index}`]
-                      }
-                      id={`${idPrefix}-${face}-engraver-${index}`}
-                      label="Engraver"
-                      onValueChange={(value) =>
-                        updateFaceEngraver(face, index, value)
-                      }
-                      options={options.engravers}
-                      placeholder="Select Engraver"
-                      required
-                      value={engraverId}
-                    />
-                    <div className="flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => removeFaceEngraver(face, index)}
-                        className="rounded border px-3 py-2 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <CoinMultiComboboxField
+                errors={[]}
+                id={`${idPrefix}-${face}-engravers-combobox`}
+                label="Engraver Attributions"
+                onValueChange={(engraverIds) =>
+                  updateFaceEngravers(face, engraverIds)
+                }
+                options={options.engravers}
+                placeholder="Search and add engravers"
+                values={surface.engraverIds}
+              />
             </section>
           ))}
           <section className="grid gap-4 rounded border p-4">

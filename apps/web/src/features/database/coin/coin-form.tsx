@@ -304,41 +304,15 @@ export function CoinForm(props: CoinFormProps) {
     }))
   }
 
-  function addFaceEngraver(face: "obverse" | "reverse") {
-    form.setFieldValue("surfaces", (current) => ({
-      ...current,
-      [face]: {
-        ...current[face],
-        engraverIds: [...current[face].engraverIds, ""],
-      },
-    }))
-  }
-
-  function updateFaceEngraver(
+  function updateFaceEngravers(
     face: "obverse" | "reverse",
-    index: number,
-    value: string
+    engraverIds: string[]
   ) {
     form.setFieldValue("surfaces", (current) => ({
       ...current,
       [face]: {
         ...current[face],
-        engraverIds: current[face].engraverIds.map(
-          (engraverId, engraverIndex) =>
-            engraverIndex === index ? value : engraverId
-        ),
-      },
-    }))
-  }
-
-  function removeFaceEngraver(face: "obverse" | "reverse", index: number) {
-    form.setFieldValue("surfaces", (current) => ({
-      ...current,
-      [face]: {
-        ...current[face],
-        engraverIds: current[face].engraverIds.filter(
-          (_engraverId, engraverIndex) => engraverIndex !== index
-        ),
+        engraverIds,
       },
     }))
   }
@@ -422,10 +396,8 @@ export function CoinForm(props: CoinFormProps) {
                 fieldErrors={fieldErrors}
                 idPrefix={idPrefix}
                 options={props.options}
-                addFaceEngraver={addFaceEngraver}
-                removeFaceEngraver={removeFaceEngraver}
                 updateEdgeSurface={updateEdgeSurface}
-                updateFaceEngraver={updateFaceEngraver}
+                updateFaceEngravers={updateFaceEngravers}
                 updateFaceSurface={updateFaceSurface}
                 onSurfaceImagePendingChange={setSurfaceImagePending}
                 removePersistedSurfaceImage={removePersistedSurfaceImage}

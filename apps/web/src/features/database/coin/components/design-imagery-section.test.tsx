@@ -35,10 +35,8 @@ describe("DesignImagerySection", () => {
         fieldErrors={{}}
         idPrefix="coin-edit"
         options={options}
-        addFaceEngraver={vi.fn()}
-        removeFaceEngraver={vi.fn()}
         updateEdgeSurface={vi.fn()}
-        updateFaceEngraver={vi.fn()}
+        updateFaceEngravers={vi.fn()}
         updateFaceSurface={vi.fn()}
         onSurfaceImagePendingChange={vi.fn()}
         removePersistedSurfaceImage={vi.fn()}
@@ -53,5 +51,7 @@ describe("DesignImagerySection", () => {
     expect(markup).toContain('src="https://images.example.test/edge.jpg"')
     expect(markup.match(/Remove current Surface Image/g)).toHaveLength(3)
     expect(markup.match(/Drop a Surface Image here/g)).toHaveLength(3)
+    expect(markup).toContain('id="coin-edit-obverse-engravers-combobox"')
+    expect(markup).toContain('id="coin-edit-reverse-engravers-combobox"')
   })
 })

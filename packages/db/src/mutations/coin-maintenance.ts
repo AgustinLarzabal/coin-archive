@@ -316,7 +316,7 @@ export async function updateCoinMaintenance({
   ...fields
 }: UpdateCoinMaintenanceInput) {
   return db.transaction(async (tx) => {
-    const [updatedCoin] = await tx
+    const updatedCoins = await tx
       .update(coin)
       .set({
         ...normalizeCoinMaintenanceFields(fields),
@@ -324,6 +324,7 @@ export async function updateCoinMaintenance({
       })
       .where(eq(coin.id, id))
       .returning()
+    const updatedCoin = updatedCoins.at(0)
 
     if (!updatedCoin) {
       return null
@@ -341,8 +342,11 @@ export async function updateCoinMaintenance({
 
 export async function deleteCoinMaintenance({ id }: { id: string }) {
   return db.transaction(async (tx) => {
-    const [deletedCoin] = await tx.delete(coin).where(eq(coin.id, id)).returning()
+    const deletedCoins = await tx
+      .delete(coin)
+      .where(eq(coin.id, id))
+      .returning()
 
-    return deletedCoin ?? null
+    return deletedCoins.at(0) ?? null
   })
 }

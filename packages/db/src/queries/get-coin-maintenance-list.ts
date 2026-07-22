@@ -307,12 +307,12 @@ export async function getCoinMaintenanceList(
   const normalizedOptions = normalizeOptions(options)
   const whereClause = buildWhereClause(normalizedOptions)
 
-  const [countRow] = await db
+  const countRows = await db
     .select({ count: count() })
     .from(coin)
     .where(whereClause)
 
-  const totalItems = countRow?.count ?? 0
+  const totalItems = countRows.at(0)?.count ?? 0
   const totalPages =
     totalItems === 0 ? 0 : Math.ceil(totalItems / normalizedOptions.pageSize)
 

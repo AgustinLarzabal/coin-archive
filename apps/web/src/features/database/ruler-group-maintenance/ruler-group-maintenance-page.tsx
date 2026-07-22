@@ -10,7 +10,7 @@ import {
   hasRulerGroupMaintenanceAccess,
   type RulerGroupAuthorizationErrorResult,
 } from "./actions"
-import { RulerGroupsTable } from "./ruler-groups-table"
+import { RulerGroupsTable } from "./table-workflow/ruler-groups-table"
 
 type LoadRulerGroupMaintenancePageDataResult =
   | RulerGroupAuthorizationErrorResult

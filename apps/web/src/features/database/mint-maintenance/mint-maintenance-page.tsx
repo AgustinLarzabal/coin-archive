@@ -10,7 +10,7 @@ import {
   hasMintMaintenanceAccess,
   type MintAuthorizationErrorResult,
 } from "./actions"
-import { MintsTable } from "./mints-table"
+import { MintsTable } from "./table-workflow/mints-table"
 
 type LoadMintMaintenancePageDataResult =
   | MintAuthorizationErrorResult

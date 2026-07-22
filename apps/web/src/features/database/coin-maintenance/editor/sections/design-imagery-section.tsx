@@ -1,0 +1,223 @@
+import { Card } from "@workspace/ui/components/card"
+import type { ComponentProps } from "react"
+import {
+  FieldDescription,
+  FieldGroup,
+  FieldLegend,
+  FieldSet,
+} from "@workspace/ui/components/field"
+
+import { CoinFormFieldError } from "./coin-form-section.shared"
+import type { CoinFormSectionProps } from "./coin-form-section.shared"
+import { CoinMultiComboboxField } from "./coin-multi-combobox-field"
+import { SurfaceImageUpload } from "../../surface-images/surface-image-upload"
+
+type Face = "obverse" | "reverse"
+type SurfaceField = "description" | "lettering"
+
+export function DesignImagerySection({
+  draft,
+  fieldErrors,
+  idPrefix,
+  options,
+  updateEdgeSurface,
+  updateFaceEngravers,
+  updateFaceSurface,
+  onSurfaceImagePendingChange,
+  removePersistedSurfaceImage,
+  removeSurfaceImageUpload,
+  updateSurfaceImageUploadReference,
+  authorizeSurfaceImageUpload,
+}: Pick<
+  CoinFormSectionProps,
+  "draft" | "fieldErrors" | "idPrefix" | "options"
+> & {
+  updateFaceEngravers: (face: Face, engraverIds: string[]) => void
+  updateFaceSurface: (face: Face, field: SurfaceField, value: string) => void
+  updateEdgeSurface: (field: SurfaceField, value: string) => void
+  onSurfaceImagePendingChange: (face: Face | "edge", isPending: boolean) => void
+  removePersistedSurfaceImage: (face: Face | "edge") => void
+  removeSurfaceImageUpload: (input: {
+    surface: Face | "edge"
+    reference: string
+  }) => Promise<void | { formError?: string }>
+  updateSurfaceImageUploadReference: (
+    face: Face | "edge",
+    reference: string
+  ) => void
+  authorizeSurfaceImageUpload: (input: {
+    surface: Face | "edge"
+    contentType: string
+    contentLength: number
+  }) => Promise<
+    { reference: string; uploadUrl: string } | { formError?: string }
+  >
+}) {
+  return (
+    <Card>
+      <FieldSet className="px-8">
+        <FieldLegend>Design &amp; Imagery</FieldLegend>
+        <FieldDescription>
+          Document the Obverse, Reverse, and Edge Surface through descriptions,
+          lettering, images, and face-specific engraver attributions.
+        </FieldDescription>
+        <FieldGroup>
+          {(
+            [
+              ["obverse", "Obverse", draft.surfaces.obverse],
+              ["reverse", "Reverse", draft.surfaces.reverse],
+            ] as const
+          ).map(([face, label, surface]) => (
+            <section key={face} className="grid gap-4 rounded border p-4">
+              <div>
+                <div>
+                  <h2 className="text-lg font-semibold">{label} Surface</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Description, lettering, and face-specific engravers.
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <SurfaceTextarea
+                  label="Description"
+                  value={surface.description as string}
+                  error={fieldErrors[`surfaces.${face}.description`]}
+                  onValueChange={(value) =>
+                    updateFaceSurface(face, "description", value)
+                  }
+                />
+                <SurfaceTextarea
+                  label="Lettering"
+                  value={surface.lettering as string}
+                  error={fieldErrors[`surfaces.${face}.lettering`]}
+                  onValueChange={(value) =>
+                    updateFaceSurface(face, "lettering", value)
+                  }
+                />
+              </div>
+              <SurfaceImageControl
+                surface={face}
+                imageUrl={surface.imageUrl as string}
+                authorizeUpload={authorizeSurfaceImageUpload}
+                onPendingChange={(isPending) =>
+                  onSurfaceImagePendingChange(face, isPending)
+                }
+                onReferenceChange={(reference) =>
+                  updateSurfaceImageUploadReference(face, reference)
+                }
+                onPersistedImageRemove={() => removePersistedSurfaceImage(face)}
+                removeUpload={removeSurfaceImageUpload}
+              />
+              <CoinMultiComboboxField
+                errors={[]}
+                id={`${idPrefix}-${face}-engravers-combobox`}
+                label="Engraver Attributions"
+                onValueChange={(engraverIds) =>
+                  updateFaceEngravers(face, engraverIds)
+                }
+                options={options.engravers}
+                placeholder="Search and add engravers"
+                values={surface.engraverIds}
+              />
+            </section>
+          ))}
+          <section className="grid gap-4 rounded border p-4">
+            <div>
+              <h2 className="text-lg font-semibold">Edge Surface</h2>
+              <p className="text-sm text-muted-foreground">
+                Description and lettering. Edge Surface does not accept Engraver
+                Attributions.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <SurfaceTextarea
+                label="Description"
+                value={draft.surfaces.edge.description as string}
+                error={fieldErrors["surfaces.edge.description"]}
+                onValueChange={(value) =>
+                  updateEdgeSurface("description", value)
+                }
+              />
+              <SurfaceTextarea
+                label="Lettering"
+                value={draft.surfaces.edge.lettering as string}
+                error={fieldErrors["surfaces.edge.lettering"]}
+                onValueChange={(value) => updateEdgeSurface("lettering", value)}
+              />
+            </div>
+            <SurfaceImageControl
+              surface="edge"
+              imageUrl={draft.surfaces.edge.imageUrl as string}
+              authorizeUpload={authorizeSurfaceImageUpload}
+              onPendingChange={(isPending) =>
+                onSurfaceImagePendingChange("edge", isPending)
+              }
+              onReferenceChange={(reference) =>
+                updateSurfaceImageUploadReference("edge", reference)
+              }
+              onPersistedImageRemove={() => removePersistedSurfaceImage("edge")}
+              removeUpload={removeSurfaceImageUpload}
+            />
+          </section>
+        </FieldGroup>
+      </FieldSet>
+    </Card>
+  )
+}
+
+function SurfaceImageControl({
+  imageUrl,
+  onPersistedImageRemove,
+  ...uploadProps
+}: {
+  imageUrl: string
+  onPersistedImageRemove: () => void
+} & ComponentProps<typeof SurfaceImageUpload>) {
+  return (
+    <div className="grid gap-3">
+      {imageUrl ? (
+        <div className="grid gap-2">
+          <img
+            src={imageUrl}
+            alt={`Current ${uploadProps.surface} Surface Image`}
+            className="max-h-64 rounded border object-contain"
+          />
+          <div>
+            <button
+              type="button"
+              onClick={onPersistedImageRemove}
+              className="rounded border px-3 py-2 text-sm"
+            >
+              Remove current Surface Image
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <SurfaceImageUpload {...uploadProps} />
+    </div>
+  )
+}
+
+function SurfaceTextarea({
+  error,
+  label,
+  onValueChange,
+  value,
+}: {
+  error?: string
+  label: string
+  onValueChange: (value: string) => void
+  value: string
+}) {
+  return (
+    <label className="grid gap-1 text-sm">
+      <span>{label}</span>
+      <textarea
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        className="min-h-24 rounded border px-3 py-2"
+      />
+      <CoinFormFieldError message={error} />
+    </label>
+  )
+}

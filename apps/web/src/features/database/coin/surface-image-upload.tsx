@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FileUpload } from "@workspace/ui/components/motion/file-upload"
 import type { FileUploadItem } from "@workspace/ui/components/motion/file-upload"
 
@@ -7,6 +7,29 @@ type Surface = "obverse" | "reverse" | "edge"
 type UploadAuthorization = {
   reference: string
   uploadUrl: string
+}
+
+const SURFACE_IMAGE_MAX_BYTES = 10 * 1024 * 1024
+const ACCEPTED_SURFACE_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+])
+
+export function getSurfaceImageFileError(file: Pick<File, "size" | "type">) {
+  if (!ACCEPTED_SURFACE_IMAGE_TYPES.has(file.type)) {
+    return "Surface Images must be JPEG, PNG, or WebP files."
+  }
+
+  if (file.size <= 0) {
+    return "Surface Image files must not be empty."
+  }
+
+  if (file.size > SURFACE_IMAGE_MAX_BYTES) {
+    return "Surface Images must be 10 MB or smaller."
+  }
+
+  return null
 }
 
 export function SurfaceImageUpload({
@@ -30,10 +53,26 @@ export function SurfaceImageUpload({
   }) => Promise<UploadAuthorization | { formError?: string }>
 }) {
   const [items, setItems] = useState<FileUploadItem[]>([])
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<
+    string | null
+  >(null)
   const activeUploadIdRef = useRef<string | null>(null)
   const uploadReferencesRef = useRef(new Map<string, string>())
   const [pendingRemoval, setPendingRemoval] = useState<string | null>(null)
   const [removalError, setRemovalError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (selectedFile === null) {
+      setSelectedImagePreviewUrl(null)
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(selectedFile)
+    setSelectedImagePreviewUrl(previewUrl)
+
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [selectedFile])
 
   function replaceItem(id: string, update: Partial<FileUploadItem>) {
     setItems((current) =>
@@ -42,7 +81,15 @@ export function SurfaceImageUpload({
   }
 
   async function upload(item: FileUploadItem, file: File) {
+    const fileError = getSurfaceImageFileError(file)
+
+    if (fileError !== null) {
+      replaceItem(item.id, { status: "error", error: fileError })
+      return
+    }
+
     activeUploadIdRef.current = item.id
+    setSelectedFile(file)
     onPendingChange(true)
     replaceItem(item.id, { status: "uploading", progress: 0, error: undefined })
     onReferenceChange("")
@@ -115,6 +162,7 @@ export function SurfaceImageUpload({
         onRemove={(item) => {
           if (activeUploadIdRef.current === item.id) {
             activeUploadIdRef.current = null
+            setSelectedFile(null)
             onPendingChange(false)
           }
           const reference = uploadReferencesRef.current.get(item.id)
@@ -130,6 +178,13 @@ export function SurfaceImageUpload({
         value={items}
         onValueChange={setItems}
       />
+      {selectedImagePreviewUrl ? (
+        <img
+          src={selectedImagePreviewUrl}
+          alt={`Selected ${surface} Surface Image`}
+          className="max-h-64 rounded border object-contain"
+        />
+      ) : null}
       {removalError ? (
         <div className="flex items-center gap-3 text-sm text-destructive">
           <p>{removalError}</p>

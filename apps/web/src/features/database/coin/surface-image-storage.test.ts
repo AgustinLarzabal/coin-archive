@@ -54,6 +54,12 @@ describe("R2 Surface Image storage", () => {
       contentLength: 3,
     })
 
+    expect(
+      Buffer.from(authorization.reference.split(".")[1]!, "base64url").toString(
+        "utf8"
+      )
+    ).not.toContain("surface-images/")
+
     await expect(
       storage.resolveUpload(authorization.reference, "obverse")
     ).resolves.toEqual({

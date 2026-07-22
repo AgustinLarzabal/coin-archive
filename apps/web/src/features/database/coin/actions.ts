@@ -755,12 +755,26 @@ function mapDraftToPersistenceInput(
 
 async function resolveSurfaceImageReferences(
   input: CoinDraftData,
-  resolveSurfaceImageUpload: CoinMutationDependencies["resolveSurfaceImageUpload"]
+  resolveSurfaceImageUpload: CoinMutationDependencies["resolveSurfaceImageUpload"],
+  persistedSurfaceImageUrls?: SurfaceImageUrls
 ) {
   const surfaces = await Promise.all(
     (["obverse", "reverse", "edge"] as const).map(async (surface) => {
       const reference = input.surfaces[surface].imageUploadReference
-      if (reference === "") return [surface, input.surfaces[surface]] as const
+      if (reference === "") {
+        const imageUrl = input.surfaces[surface].imageUrl
+
+        return [
+          surface,
+          {
+            ...input.surfaces[surface],
+            imageUrl:
+              persistedSurfaceImageUrls?.[surface] === imageUrl
+                ? imageUrl
+                : null,
+          },
+        ] as const
+      }
 
       const { imageUrl } = await resolveSurfaceImageUpload(reference, surface)
       return [surface, { ...input.surfaces[surface], imageUrl }] as const
@@ -786,8 +800,8 @@ export async function authorizeSurfaceImageUpload(
     return await (
       dependencies ?? (await getDefaultSurfaceImageUploadDependencies())
     ).authorizeUpload(input)
-  } catch {
-    return createFormErrorResult(SURFACE_IMAGE_UPLOAD_ERROR)
+  } catch (error) {
+    return createFormErrorResult(getSurfaceImageUploadError(error))
   }
 }
 
@@ -811,6 +825,24 @@ export async function removeSurfaceImageUpload(
 
 function createPersistenceError(): CoinMutationResult {
   return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
+}
+
+function getSurfaceImageUploadError(error: unknown) {
+  if (!(error instanceof Error)) return SURFACE_IMAGE_UPLOAD_ERROR
+
+  if (
+    error.message === "Surface Images must be JPEG, PNG, or WebP files." ||
+    error.message === "Surface Images must be 10 MB or smaller." ||
+    error.message === "Surface Image files must not be empty."
+  ) {
+    return error.message
+  }
+
+  if (error.message.startsWith("Missing required R2 configuration:")) {
+    return "Surface Image uploads require R2 configuration."
+  }
+
+  return SURFACE_IMAGE_UPLOAD_ERROR
 }
 
 function createDeletePersistenceError(): CoinDeleteMutationResult {
@@ -889,7 +921,8 @@ export async function submitUpdateCoin(
 
     const draftWithResolvedImages = await resolveSurfaceImageReferences(
       draft,
-      resolvedDependencies.resolveSurfaceImageUpload
+      resolvedDependencies.resolveSurfaceImageUpload,
+      persistedSurfaceImageUrls
     )
     const persistenceInput = mapDraftToPersistenceInput(draftWithResolvedImages)
     const updatedCoin = await resolvedDependencies.updateCoinMaintenance({

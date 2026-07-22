@@ -1,4 +1,11 @@
-import { randomUUID, createHmac, timingSafeEqual } from "node:crypto"
+import "@tanstack/react-start/server-only"
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  randomUUID,
+} from "node:crypto"
 import {
   GetObjectCommand,
   HeadObjectCommand,
@@ -112,45 +119,57 @@ function encodeBase64Url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url")
 }
 
-function decodeBase64Url(value: string) {
-  return Buffer.from(value, "base64url").toString("utf8")
-}
-
 function createUploadReference(
   payload: UploadReferencePayload,
   secret: string
 ) {
-  const encodedPayload = encodeBase64Url(JSON.stringify(payload))
-  const signature = createHmac("sha256", secret)
-    .update(encodedPayload)
-    .digest("base64url")
+  const initializationVector = randomBytes(12)
+  const cipher = createCipheriv(
+    "aes-256-gcm",
+    createHash("sha256").update(secret).digest(),
+    initializationVector
+  )
+  const encryptedPayload = Buffer.concat([
+    cipher.update(JSON.stringify(payload), "utf8"),
+    cipher.final(),
+  ])
 
-  return `${encodedPayload}.${signature}`
+  return [
+    encodeBase64Url(initializationVector),
+    encodeBase64Url(encryptedPayload),
+    encodeBase64Url(cipher.getAuthTag()),
+  ].join(".")
 }
 
 function parseUploadReference(reference: string, secret: string) {
-  const [encodedPayload, suppliedSignature, extraPart] = reference.split(".")
-
-  if (!encodedPayload || !suppliedSignature || extraPart) {
-    throw new Error("Surface Image upload reference is invalid.")
-  }
-
-  const expectedSignature = createHmac("sha256", secret)
-    .update(encodedPayload)
-    .digest("base64url")
-  const supplied = Buffer.from(suppliedSignature)
-  const expected = Buffer.from(expectedSignature)
+  const [
+    encodedInitializationVector,
+    encryptedPayload,
+    encodedAuthTag,
+    extraPart,
+  ] = reference.split(".")
 
   if (
-    supplied.length !== expected.length ||
-    !timingSafeEqual(supplied, expected)
+    !encodedInitializationVector ||
+    !encryptedPayload ||
+    !encodedAuthTag ||
+    extraPart
   ) {
     throw new Error("Surface Image upload reference is invalid.")
   }
 
   try {
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      createHash("sha256").update(secret).digest(),
+      Buffer.from(encodedInitializationVector, "base64url")
+    )
+    decipher.setAuthTag(Buffer.from(encodedAuthTag, "base64url"))
     const payload = JSON.parse(
-      decodeBase64Url(encodedPayload)
+      Buffer.concat([
+        decipher.update(Buffer.from(encryptedPayload, "base64url")),
+        decipher.final(),
+      ]).toString("utf8")
     ) as UploadReferencePayload
 
     if (

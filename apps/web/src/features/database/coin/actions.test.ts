@@ -306,6 +306,33 @@ describe("submitCreateCoin", () => {
     )
   })
 
+  it("does not persist a browser-supplied Surface Image URL without an authorized upload reference", async () => {
+    const dependencies = createDependencies({
+      createCoinMaintenance: vi.fn().mockResolvedValue({ id: VALID_COIN_ID }),
+    })
+
+    await submitCreateCoin(
+      { role: "editor" },
+      {
+        ...VALID_COIN_DRAFT,
+        surfaces: {
+          ...VALID_COIN_DRAFT.surfaces,
+          obverse: {
+            ...VALID_COIN_DRAFT.surfaces.obverse,
+            imageUrl: "https://untrusted.example.test/obverse.jpg",
+          },
+        },
+      },
+      dependencies
+    )
+
+    expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        surfaces: { obverse: null, reverse: null, edge: null },
+      })
+    )
+  })
+
   it("does not persist a Coin when its authorized Surface Image cannot pass server inspection", async () => {
     const dependencies = createDependencies({
       resolveSurfaceImageUpload: vi
@@ -360,6 +387,24 @@ describe("authorizeSurfaceImageUpload", () => {
     ).resolves.toStrictEqual({
       reference: "opaque-upload-reference",
       uploadUrl: "https://r2.example.test/presigned",
+    })
+  })
+
+  it("returns validation and configuration errors to the upload control", async () => {
+    const authorizeUpload = vi
+      .fn()
+      .mockRejectedValue(new Error("Surface Images must be 10 MB or smaller."))
+
+    await expect(
+      authorizeSurfaceImageUpload(
+        { role: "editor" },
+        { surface: "edge", contentType: "image/png", contentLength: 1 },
+        { authorizeUpload }
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: {},
+      formError: "Surface Images must be 10 MB or smaller.",
     })
   })
 })
@@ -600,6 +645,11 @@ describe("submitUpdateCoin", () => {
 
   it("passes structured Catalogue References and Surface Set details through to persistence", async () => {
     const dependencies = createDependencies({
+      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
+        obverse: "https://example.com/obverse.jpg",
+        reverse: null,
+        edge: "https://example.com/edge.jpg",
+      }),
       updateCoinMaintenance: vi.fn().mockResolvedValue({
         id: VALID_COIN_ID,
       }),

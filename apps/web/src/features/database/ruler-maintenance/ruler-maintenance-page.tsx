@@ -10,7 +10,7 @@ import {
   hasRulerMaintenanceAccess,
   type RulerAuthorizationErrorResult,
 } from "./actions"
-import { RulersTable } from "./rulers-table"
+import { RulersTable } from "./table-workflow/rulers-table"
 
 type LoadRulerMaintenancePageDataResult =
   | RulerAuthorizationErrorResult

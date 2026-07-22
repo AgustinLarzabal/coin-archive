@@ -13,7 +13,7 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
-vi.mock("./engravers-table", () => ({
+vi.mock("./table-workflow/engravers-table", () => ({
   EngraversTable: ({ engravers }: { engravers: EngraverOption[] }) =>
     `Engravers table: ${engravers.map((engraver) => engraver.name).join(", ")}`,
 }))

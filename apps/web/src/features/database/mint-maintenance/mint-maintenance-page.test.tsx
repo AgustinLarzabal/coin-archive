@@ -12,7 +12,7 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
-vi.mock("./mints-table", () => ({
+vi.mock("./table-workflow/mints-table", () => ({
   MintsTable: ({ mints }: { mints: MintOption[] }) =>
     `Mints table: ${mints.map((mint) => mint.name).join(", ")}`,
 }))

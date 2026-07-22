@@ -10,7 +10,7 @@ import {
   hasEngraverMaintenanceAccess,
   type EngraverAuthorizationErrorResult,
 } from "./actions"
-import { EngraversTable } from "./engravers-table"
+import { EngraversTable } from "./table-workflow/engravers-table"
 
 type LoadEngraverMaintenancePageDataResult =
   | EngraverAuthorizationErrorResult

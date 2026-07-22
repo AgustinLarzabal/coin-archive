@@ -12,7 +12,7 @@ vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
 
-vi.mock("./ruler-groups-table", () => ({
+vi.mock("./table-workflow/ruler-groups-table", () => ({
   RulerGroupsTable: ({ rulerGroups }: { rulerGroups: RulerGroupOption[] }) =>
     `Ruler groups table: ${rulerGroups.map((group) => group.name).join(", ")}`,
 }))

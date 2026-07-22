@@ -25,6 +25,7 @@ import { ruler } from "../schema/ruler"
 import { rulerGroup } from "../schema/ruler-group"
 import { session } from "../schema/session"
 import { shape } from "../schema/shape"
+import { surfaceImageCleanupFailure } from "../schema/surface-image-cleanup-failure"
 import { technique } from "../schema/technique"
 import { theme } from "../schema/theme"
 import { user } from "../schema/user"
@@ -50,6 +51,7 @@ export async function clearTestData(database: TestDatabase) {
   await database.delete(session)
   await database.delete(verification)
   await database.delete(coinSurfaceEngraver)
+  await database.delete(surfaceImageCleanupFailure)
   await database.delete(coinReference)
   await database.delete(coinTheme)
   await database.delete(coinMint)

@@ -518,9 +518,15 @@ type CoinDeleteDependencies = {
   deleteCoinMaintenance: (input: {
     id: string
   }) => Promise<{ id: string } | null>
+  deleteSurfaceImage: (imageUrl: string) => Promise<void>
   getCoinMaintenanceDeleteSummary: (
     coinId: string
   ) => Promise<CoinMaintenanceDeleteSummary | null>
+  getCoinSurfaceImageUrls: (coinId: string) => Promise<string[] | null>
+  recordSurfaceImageCleanupFailures: (input: {
+    deletedCoinId: string
+    failures: Array<{ errorMessage: string; imageUrl: string }>
+  }) => Promise<void>
 }
 
 async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
@@ -560,12 +566,33 @@ async function getDefaultSurfaceImageUploadDependencies(): Promise<SurfaceImageS
 }
 
 async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
-  const { deleteCoinMaintenance, getCoinMaintenanceDeleteSummary } =
-    await import("@workspace/db")
+  const {
+    deleteCoinMaintenance,
+    getCoinMaintenanceDeleteSummary,
+    getCoinMaintenanceRecord,
+    recordSurfaceImageCleanupFailures,
+  } = await import("@workspace/db")
+  const { createR2SurfaceImageStorage } =
+    await import("./surface-image-storage")
 
   return {
     deleteCoinMaintenance,
     getCoinMaintenanceDeleteSummary,
+    async getCoinSurfaceImageUrls(coinId) {
+      const coin = await getCoinMaintenanceRecord(coinId)
+
+      if (coin === null) {
+        return null
+      }
+
+      return (["obverse", "reverse", "edge"] as const).flatMap((surface) => {
+        const imageUrl = coin.surfaces[surface]?.imageUrl
+        return imageUrl === null || imageUrl === undefined ? [] : [imageUrl]
+      })
+    },
+    deleteSurfaceImage: async (imageUrl) =>
+      createR2SurfaceImageStorage().deletePublishedImage(imageUrl),
+    recordSurfaceImageCleanupFailures,
   }
 }
 
@@ -790,6 +817,13 @@ function createDeletePersistenceError(): CoinDeleteMutationResult {
   return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
 }
 
+function getSurfaceImageCleanupFailureMessage(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Unknown storage cleanup error."
+
+  return message.slice(0, 2000)
+}
+
 export async function submitCreateCoin(
   collector: CollectorWithRole | null,
   input: CoinDraft,
@@ -923,12 +957,52 @@ export async function submitDeleteCoin(
       })
     }
 
+    const surfaceImageUrls = await resolvedDependencies.getCoinSurfaceImageUrls(
+      validationResult.data.id
+    )
+
+    if (surfaceImageUrls === null) {
+      return createFormErrorResult(COIN_MISSING_ERROR)
+    }
+
     const deletedCoin = await resolvedDependencies.deleteCoinMaintenance({
       id: validationResult.data.id,
     })
 
     if (deletedCoin === null) {
       return createFormErrorResult(COIN_MISSING_ERROR)
+    }
+
+    const cleanupResults = await Promise.all(
+      surfaceImageUrls.map(async (imageUrl) => {
+        try {
+          await resolvedDependencies.deleteSurfaceImage(imageUrl)
+          return { imageUrl, error: null }
+        } catch (error) {
+          return { imageUrl, error }
+        }
+      })
+    )
+    const failedCleanupResults = cleanupResults.filter(
+      (result): result is { imageUrl: string; error: unknown } =>
+        result.error !== null
+    )
+
+    if (failedCleanupResults.length > 0) {
+      try {
+        await resolvedDependencies.recordSurfaceImageCleanupFailures({
+          deletedCoinId: deletedCoin.id,
+          failures: failedCleanupResults.map((result) => ({
+            imageUrl: result.imageUrl,
+            errorMessage: getSurfaceImageCleanupFailureMessage(result.error),
+          })),
+        })
+      } catch (error) {
+        console.error(
+          "Failed to retain Surface Image cleanup failures after Coin deletion.",
+          { error, failedCleanupResults }
+        )
+      }
     }
 
     return {

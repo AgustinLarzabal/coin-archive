@@ -4,6 +4,7 @@ export {
   deleteCoinMaintenance,
   updateCoinMaintenance,
 } from "./mutations/coin-maintenance"
+export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
 export {
   createCatalogue,
   deleteCatalogue,
@@ -96,6 +97,7 @@ export { ruler } from "./schema/ruler"
 export { rulerGroup } from "./schema/ruler-group"
 export { session } from "./schema/session"
 export { shape } from "./schema/shape"
+export { surfaceImageCleanupFailure } from "./schema/surface-image-cleanup-failure"
 export { technique } from "./schema/technique"
 export { theme } from "./schema/theme"
 export { user } from "./schema/user"
@@ -133,9 +135,7 @@ export type {
   CoinMaintenanceListRecord,
   CoinMaintenanceListResult,
 } from "./queries/get-coin-maintenance-list"
-export type {
-  CoinMaintenanceDeleteSummary,
-} from "./coin-maintenance-delete-summary"
+export type { CoinMaintenanceDeleteSummary } from "./coin-maintenance-delete-summary"
 export type {
   CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,
@@ -171,6 +171,7 @@ export type { Orientation } from "./schema/orientation"
 export type { Rim } from "./schema/rim"
 export type { RulerOption } from "./queries/get-rulers"
 export type { Shape } from "./schema/shape"
+export type { SurfaceImageCleanupFailure } from "./schema/surface-image-cleanup-failure"
 export type { Technique } from "./schema/technique"
 export type { Coin } from "./schema/coin"
 export type {

@@ -67,8 +67,10 @@ function createDependencies(overrides?: {
   createCoinMaintenance?: ReturnType<typeof vi.fn>
   deleteCoinMaintenance?: ReturnType<typeof vi.fn>
   deleteSurfaceImage?: ReturnType<typeof vi.fn>
+  getCoinSurfaceImageUrls?: ReturnType<typeof vi.fn>
   getCoinMaintenanceDeleteSummary?: ReturnType<typeof vi.fn>
   getPersistedSurfaceImageUrls?: ReturnType<typeof vi.fn>
+  recordSurfaceImageCleanupFailures?: ReturnType<typeof vi.fn>
   updateCoinMaintenance?: ReturnType<typeof vi.fn>
   resolveSurfaceImageUpload?: ReturnType<typeof vi.fn>
 }) {
@@ -76,6 +78,7 @@ function createDependencies(overrides?: {
     createCoinMaintenance: vi.fn(),
     deleteCoinMaintenance: vi.fn(),
     deleteSurfaceImage: vi.fn(),
+    getCoinSurfaceImageUrls: vi.fn().mockResolvedValue([]),
     getCoinMaintenanceDeleteSummary: vi.fn(),
     getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
       obverse: null,
@@ -84,6 +87,7 @@ function createDependencies(overrides?: {
     }),
     updateCoinMaintenance: vi.fn(),
     resolveSurfaceImageUpload: vi.fn(),
+    recordSurfaceImageCleanupFailures: vi.fn(),
     ...overrides,
   }
 }
@@ -781,5 +785,111 @@ describe("submitDeleteCoin", () => {
     expect(dependencies.deleteCoinMaintenance).toHaveBeenCalledWith({
       id: VALID_COIN_ID,
     })
+  })
+
+  it("deletes only the Coin's persisted Surface Images after deleting its database aggregate", async () => {
+    const events: string[] = []
+    const dependencies = createDependencies({
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue({
+        title: VALID_COIN_DRAFT.title,
+        rulerAttributions: 0,
+        mintAttributions: 0,
+        themeAttributions: 0,
+        catalogueReferences: 0,
+        coinSurfaces: 2,
+        engraverAttributions: 0,
+      }),
+      getCoinSurfaceImageUrls: vi.fn().mockImplementation(async () => {
+        events.push("read-images")
+        return [
+          "https://images.example.test/surface-images/opaque-obverse",
+          "https://images.example.test/surface-images/opaque-edge",
+        ]
+      }),
+      deleteCoinMaintenance: vi.fn().mockImplementation(async () => {
+        events.push("delete-aggregate")
+        return { id: VALID_COIN_ID }
+      }),
+      deleteSurfaceImage: vi.fn().mockImplementation(async (imageUrl) => {
+        events.push(`delete-image:${imageUrl}`)
+      }),
+    })
+
+    await expect(
+      submitDeleteCoin({ role: "editor" }, deleteInput, dependencies)
+    ).resolves.toMatchObject({ status: "success" })
+
+    expect(events).toEqual([
+      "read-images",
+      "delete-aggregate",
+      "delete-image:https://images.example.test/surface-images/opaque-obverse",
+      "delete-image:https://images.example.test/surface-images/opaque-edge",
+    ])
+  })
+
+  it("does not invoke storage cleanup when the deleted Coin has no Surface Images", async () => {
+    const dependencies = createDependencies({
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue({
+        title: VALID_COIN_DRAFT.title,
+        rulerAttributions: 0,
+        mintAttributions: 0,
+        themeAttributions: 0,
+        catalogueReferences: 0,
+        coinSurfaces: 0,
+        engraverAttributions: 0,
+      }),
+      deleteCoinMaintenance: vi.fn().mockResolvedValue({ id: VALID_COIN_ID }),
+    })
+
+    await expect(
+      submitDeleteCoin({ role: "editor" }, deleteInput, dependencies)
+    ).resolves.toMatchObject({ status: "success" })
+
+    expect(dependencies.deleteSurfaceImage).not.toHaveBeenCalled()
+  })
+
+  it("retains a completed Coin deletion and records Surface Image cleanup failures", async () => {
+    const events: string[] = []
+    const cleanupError = new Error("R2 unavailable")
+    const imageUrl = "https://images.example.test/surface-images/opaque-obverse"
+    const dependencies = createDependencies({
+      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue({
+        title: VALID_COIN_DRAFT.title,
+        rulerAttributions: 0,
+        mintAttributions: 0,
+        themeAttributions: 0,
+        catalogueReferences: 0,
+        coinSurfaces: 1,
+        engraverAttributions: 0,
+      }),
+      getCoinSurfaceImageUrls: vi.fn().mockResolvedValue([imageUrl]),
+      deleteCoinMaintenance: vi.fn().mockImplementation(async () => {
+        events.push("delete-aggregate")
+        return { id: VALID_COIN_ID }
+      }),
+      deleteSurfaceImage: vi.fn().mockImplementation(async () => {
+        events.push("delete-image")
+        throw cleanupError
+      }),
+      recordSurfaceImageCleanupFailures: vi.fn().mockImplementation(() => {
+        events.push("record-cleanup-failure")
+      }),
+    })
+
+    await expect(
+      submitDeleteCoin({ role: "admin" }, deleteInput, dependencies)
+    ).resolves.toMatchObject({ status: "success" })
+
+    expect(events).toEqual([
+      "delete-aggregate",
+      "delete-image",
+      "record-cleanup-failure",
+    ])
+    expect(dependencies.recordSurfaceImageCleanupFailures).toHaveBeenCalledWith(
+      {
+        deletedCoinId: VALID_COIN_ID,
+        failures: [{ imageUrl, errorMessage: "R2 unavailable" }],
+      }
+    )
   })
 })

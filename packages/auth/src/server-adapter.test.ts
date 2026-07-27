@@ -27,7 +27,9 @@ describe("Better Auth drizzle adapter configuration", () => {
   it("passes the auth tables directly to the drizzle adapter schema", async () => {
     const dbModule = await import("@workspace/db")
 
-    await import("./server")
+    const { auth } = await import("./server")
+
+    void auth.options
 
     expect(drizzleAdapterMock).toHaveBeenCalledTimes(1)
     expect(drizzleAdapterMock).toHaveBeenCalledWith(

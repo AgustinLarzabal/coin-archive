@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from "node:url"
+import { cloudflare } from "@cloudflare/vite-plugin"
 import { defineConfig } from "vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
@@ -19,7 +20,15 @@ const config = defineConfig({
     },
     tsconfigPaths: true,
   },
-  plugins: [devtools(), tanstackStart(), viteReact(), tailwindcss()],
+  plugins: [
+    ...(process.env.VITEST
+      ? []
+      : [cloudflare({ viteEnvironment: { name: "ssr" } })]),
+    devtools(),
+    tanstackStart(),
+    viteReact(),
+    tailwindcss(),
+  ],
 })
 
 export default config

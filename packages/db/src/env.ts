@@ -1,16 +1,4 @@
-import { existsSync } from "node:fs"
-import { dirname, resolve } from "node:path"
-import { loadEnvFile } from "node:process"
-import { fileURLToPath } from "node:url"
-
-const rootEnvPath = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../../.env"
-)
-
-if (existsSync(rootEnvPath)) {
-  loadEnvFile(rootEnvPath)
-}
+loadLocalEnvironmentFile()
 
 export function getDatabaseUrl() {
   return getRequiredEnvironmentVariable(
@@ -24,6 +12,26 @@ export function getDatabaseTestUrl() {
     "DATABASE_TEST_URL",
     "DATABASE_TEST_URL is required for PostgreSQL integration tests"
   )
+}
+
+export function loadLocalEnvironmentFile(
+  loadEnvironmentFile:
+    | typeof process.loadEnvFile
+    | undefined = process.loadEnvFile
+) {
+  if (loadEnvironmentFile === undefined) {
+    return
+  }
+
+  try {
+    loadEnvironmentFile(new URL("../../../.env", import.meta.url))
+  } catch (error) {
+    if (
+      !(error instanceof Error && "code" in error && error.code === "ENOENT")
+    ) {
+      throw error
+    }
+  }
 }
 
 function getRequiredEnvironmentVariable(

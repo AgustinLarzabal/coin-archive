@@ -1,16 +1,4 @@
-import { existsSync } from "node:fs"
-import { dirname, resolve } from "node:path"
-import { loadEnvFile } from "node:process"
-import { fileURLToPath } from "node:url"
-
-const rootEnvPath = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../../.env"
-)
-
-if (existsSync(rootEnvPath)) {
-  loadEnvFile(rootEnvPath)
-}
+loadLocalEnvironmentFile()
 
 type AuthEnvironmentVariableName =
   | "BETTER_AUTH_SECRET"
@@ -43,6 +31,26 @@ export function getAuthEnvironment(): AuthEnvironment {
       "GOOGLE_CLIENT_SECRET",
       "GOOGLE_CLIENT_SECRET is required"
     ),
+  }
+}
+
+export function loadLocalEnvironmentFile(
+  loadEnvironmentFile:
+    | typeof process.loadEnvFile
+    | undefined = process.loadEnvFile
+) {
+  if (loadEnvironmentFile === undefined) {
+    return
+  }
+
+  try {
+    loadEnvironmentFile(new URL("../../../.env", import.meta.url))
+  } catch (error) {
+    if (
+      !(error instanceof Error && "code" in error && error.code === "ENOENT")
+    ) {
+      throw error
+    }
   }
 }
 

@@ -1,11 +1,30 @@
 import { createDatabase } from "./database"
 import { getDatabaseUrl } from "./env"
 
-const databaseUrl = getDatabaseUrl()
-const { client, db } = createDatabase(databaseUrl)
+type Database = ReturnType<typeof createDatabase>["db"]
 
-export { db }
+let database: ReturnType<typeof createDatabase> | undefined
+let configuredDatabaseUrl: string | undefined
+
+function getDatabase() {
+  const databaseUrl = getDatabaseUrl()
+
+  if (database === undefined || configuredDatabaseUrl !== databaseUrl) {
+    database = createDatabase(databaseUrl)
+    configuredDatabaseUrl = databaseUrl
+  }
+
+  return database
+}
+
+export const db = new Proxy({} as Database, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(getDatabase().db, property, receiver)
+
+    return typeof value === "function" ? value.bind(getDatabase().db) : value
+  },
+})
 
 export function closeDb() {
-  return client.end()
+  return database?.client.end()
 }

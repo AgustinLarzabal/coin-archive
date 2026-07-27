@@ -7,6 +7,11 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
+    "deploy:staging": "CLOUDFLARE_ENV=staging pnpm run build && wrangler deploy --env staging",
+    "deploy:production": "CLOUDFLARE_ENV=production pnpm run build && wrangler deploy --env production",
+    "validate:deployment:staging": "CLOUDFLARE_ENV=staging pnpm run build && wrangler deploy --dry-run --env staging",
+    "validate:deployment:production": "CLOUDFLARE_ENV=production pnpm run build && wrangler deploy --dry-run --env production",
+    "cf-typegen": "wrangler types",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
@@ -33,6 +38,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.47.0",
     "@tanstack/devtools-vite": "^0.7.0",
     "@tanstack/eslint-config": "catalog:",
     "@types/node": "catalog:",
@@ -42,6 +48,7 @@
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vite": "^8.0.16",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wrangler": "^4.114.0"
   }
 }

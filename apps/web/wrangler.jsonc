@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "coin-archive",
+  "main": "./src/server.ts",
+  "compatibility_date": "2026-07-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "env": {
+    "staging": {
+      "name": "coin-archive-staging",
+      "vars": {
+        "BETTER_AUTH_URL": "https://staging.coinarchive.app",
+        "R2_BUCKET": "coin-archive-staging-surface-images",
+        "R2_ENDPOINT": "https://<staging-account-id>.r2.cloudflarestorage.com",
+        "R2_PUBLIC_BASE_URL": "https://images.staging.coinarchive.app",
+      },
+    },
+    "production": {
+      "name": "coin-archive",
+      "vars": {
+        "BETTER_AUTH_URL": "https://coinarchive.app",
+        "R2_BUCKET": "coin-archive-production-surface-images",
+        "R2_ENDPOINT": "https://<production-account-id>.r2.cloudflarestorage.com",
+        "R2_PUBLIC_BASE_URL": "https://images.coinarchive.app",
+      },
+    },
+  },
+}

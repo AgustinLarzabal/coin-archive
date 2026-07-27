@@ -48,13 +48,7 @@ After supplying an environment's `DATABASE_URL`, run `pnpm --filter @workspace/d
 
 ## Manual staging reset and initial Admin bootstrap
 
-Normal deployments only build and release the Worker; they do not load demo data. To explicitly replace all staging data with generated demo data, manually dispatch the **Reset staging data** GitHub Actions workflow. It runs in the protected `staging` environment using that environment's database secret.
-
-```sh
-COIN_ARCHIVE_ENVIRONMENT=staging DATABASE_URL=... STAGING_DATABASE_URL=... pnpm --filter @workspace/db reset:staging
-```
-
-The command refuses every target other than `staging` and refuses a database URL that does not match the protected staging URL. It resets the database schema, reapplies migrations, and loads the generated demo catalogue. It also removes staging Collector identities, so complete the intended Google sign-in again before bootstrap.
+Normal deployments only build and release the Worker; they do not load demo data. To explicitly replace all staging data with generated demo data, manually dispatch the **Reset staging data** GitHub Actions workflow. It is the only supported reset entry point: it runs in the protected `staging` environment using that environment's database secret, and the reset command refuses to run outside that workflow. It resets the database schema, reapplies migrations, and loads the generated demo catalogue. It also removes staging Collector identities, so complete the intended Google sign-in again before bootstrap.
 
 To establish an environment's first Admin, first sign in with the intended Google address, then run the following command with that environment's database URL:
 

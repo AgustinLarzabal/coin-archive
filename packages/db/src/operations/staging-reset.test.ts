@@ -1,43 +1,41 @@
 import { describe, expect, it } from "vitest"
 
-import { requireStagingDatabase } from "./staging-reset"
+import { requireStagingResetWorkflow } from "./staging-reset"
 
 describe("staging reset guard", () => {
-  it("allows the reset operation only when explicitly targeted at staging", () => {
+  it("allows the reset operation only from the protected staging workflow", () => {
     expect(() =>
-      requireStagingDatabase({
+      requireStagingResetWorkflow({
         environment: "staging",
-        databaseUrl: "postgresql://staging.example/coin_archive",
-        stagingDatabaseUrl: "postgresql://staging.example/coin_archive",
+        githubActions: "true",
+        workflowName: "Reset staging data",
       })
     ).not.toThrow()
   })
 
-  it("refuses production, missing targets, and a database URL that is not staging", () => {
+  it("refuses production and all invocations outside the protected workflow", () => {
     expect(() =>
-      requireStagingDatabase({
+      requireStagingResetWorkflow({
         environment: "production",
-        databaseUrl: "postgresql://production.example/coin_archive",
-        stagingDatabaseUrl: "postgresql://staging.example/coin_archive",
+        githubActions: "true",
+        workflowName: "Reset staging data",
       })
     ).toThrow(
       "COIN_ARCHIVE_ENVIRONMENT must be staging"
     )
     expect(() =>
-      requireStagingDatabase({
-        environment: undefined,
-        databaseUrl: "postgresql://staging.example/coin_archive",
-        stagingDatabaseUrl: "postgresql://staging.example/coin_archive",
-      })
-    ).toThrow(
-      "COIN_ARCHIVE_ENVIRONMENT must be staging"
-    )
-    expect(() =>
-      requireStagingDatabase({
+      requireStagingResetWorkflow({
         environment: "staging",
-        databaseUrl: "postgresql://production.example/coin_archive",
-        stagingDatabaseUrl: "postgresql://staging.example/coin_archive",
+        githubActions: undefined,
+        workflowName: "Reset staging data",
       })
-    ).toThrow("DATABASE_URL must match STAGING_DATABASE_URL")
+    ).toThrow("Reset and reseed is available only from the Reset staging data workflow")
+    expect(() =>
+      requireStagingResetWorkflow({
+        environment: "staging",
+        githubActions: "true",
+        workflowName: "Deploy production",
+      })
+    ).toThrow("Reset and reseed is available only from the Reset staging data workflow")
   })
 })

@@ -1,37 +1,36 @@
 import { pathToFileURL } from "node:url"
 
 import { closeDb } from "../client"
-import { getDatabaseUrl } from "../env"
 import { resetAndSeedDatabase } from "./reset-and-seed-database"
 
-type StagingDatabaseTarget = {
+type StagingResetWorkflow = {
   environment: string | undefined
-  databaseUrl: string
-  stagingDatabaseUrl: string | undefined
+  githubActions: string | undefined
+  workflowName: string | undefined
 }
 
-export function requireStagingDatabase({
+export function requireStagingResetWorkflow({
   environment,
-  databaseUrl,
-  stagingDatabaseUrl,
-}: StagingDatabaseTarget) {
+  githubActions,
+  workflowName,
+}: StagingResetWorkflow) {
   if (environment !== "staging") {
     throw new Error(
       "COIN_ARCHIVE_ENVIRONMENT must be staging to reset and reseed a database"
     )
   }
 
-  if (!stagingDatabaseUrl || databaseUrl !== stagingDatabaseUrl) {
+  if (githubActions !== "true" || workflowName !== "Reset staging data") {
     throw new Error(
-      "DATABASE_URL must match STAGING_DATABASE_URL to reset and reseed a database"
+      "Reset and reseed is available only from the Reset staging data workflow"
     )
   }
 }
 
 export async function resetAndSeedStagingDatabase(
-  target: StagingDatabaseTarget
+  workflow: StagingResetWorkflow
 ) {
-  requireStagingDatabase(target)
+  requireStagingResetWorkflow(workflow)
   await resetAndSeedDatabase()
 }
 
@@ -48,8 +47,8 @@ if (isExecutedDirectly()) {
   try {
     await resetAndSeedStagingDatabase({
       environment: process.env.COIN_ARCHIVE_ENVIRONMENT,
-      databaseUrl: getDatabaseUrl(),
-      stagingDatabaseUrl: process.env.STAGING_DATABASE_URL,
+      githubActions: process.env.GITHUB_ACTIONS,
+      workflowName: process.env.GITHUB_WORKFLOW,
     })
     console.log("Staging database reset and reseeded with generated demo data.")
   } finally {

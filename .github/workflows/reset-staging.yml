@@ -14,7 +14,6 @@ jobs:
     env:
       COIN_ARCHIVE_ENVIRONMENT: staging
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      STAGING_DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,4 +26,4 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @workspace/db reset:staging
+      - run: pnpm --filter @workspace/db exec node --import tsx ./src/operations/staging-reset.ts

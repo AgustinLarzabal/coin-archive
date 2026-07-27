@@ -1,4 +1,6 @@
-loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url ?? null)
+import { loadLocalEnvironmentFile } from "./local-environment"
+
+loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url)
 
 export function getDatabaseUrl() {
   return getRequiredEnvironmentVariable(
@@ -12,31 +14,6 @@ export function getDatabaseTestUrl() {
     "DATABASE_TEST_URL",
     "DATABASE_TEST_URL is required for PostgreSQL integration tests"
   )
-}
-
-export function loadLocalEnvironmentFile(
-  loadEnvironmentFile:
-    | typeof process.loadEnvFile
-    | undefined = process.loadEnvFile,
-  moduleUrl: string | null = import.meta.url
-) {
-  if (
-    loadEnvironmentFile === undefined ||
-    typeof moduleUrl !== "string" ||
-    !moduleUrl.startsWith("file:")
-  ) {
-    return
-  }
-
-  try {
-    loadEnvironmentFile(new URL("../../../.env", moduleUrl))
-  } catch (error) {
-    if (
-      !(error instanceof Error && "code" in error && error.code === "ENOENT")
-    ) {
-      throw error
-    }
-  }
 }
 
 function getRequiredEnvironmentVariable(

@@ -8,6 +8,7 @@
     "lint": "eslint",
     "migrate": "drizzle-kit migrate",
     "seed": "node --import tsx ./src/seed/index.ts",
+    "verify:connection": "node --import tsx ./src/verify-database-connection.ts",
     "studio": "drizzle-kit studio",
     "test": "vitest run --exclude '**/*.integration.test.ts'",
     "test:db": "node --import tsx ./src/testing/run-database-integration-tests.ts",
@@ -27,6 +28,7 @@
     "vitest": "catalog:"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./local-environment": "./src/local-environment.ts"
   }
 }

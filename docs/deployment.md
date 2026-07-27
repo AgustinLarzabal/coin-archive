@@ -41,3 +41,7 @@ The Worker also requires these non-secret runtime settings, which are supplied b
 `VITE_AUTH_GOOGLE_ENABLED=true` is a build-time setting for the browser bundle; set it in the environment that runs the Worker build. It is not a Worker secret.
 
 Before deployment, the application validates this complete runtime contract and returns a clear missing-setting error rather than attempting a partial connection. In a CI deployment, set secrets through the matching GitHub environment, then use `wrangler secret put <name> --env staging` or `--env production` if provisioning Workers directly.
+
+## Direct database connection check
+
+After supplying an environment's `DATABASE_URL`, run `pnpm --filter @workspace/db verify:connection`. The command issues a read-only `select 1` through the same direct `postgres` client used by the application, then closes the connection. Run it with the staging or production environment's URL before releasing that environment; it does not use Cloudflare Hyperdrive.

@@ -1,4 +1,6 @@
-loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url ?? null)
+import { loadLocalEnvironmentFile } from "@workspace/db/local-environment"
+
+loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url)
 
 type AuthEnvironmentVariableName =
   | "BETTER_AUTH_SECRET"
@@ -31,31 +33,6 @@ export function getAuthEnvironment(): AuthEnvironment {
       "GOOGLE_CLIENT_SECRET",
       "GOOGLE_CLIENT_SECRET is required"
     ),
-  }
-}
-
-export function loadLocalEnvironmentFile(
-  loadEnvironmentFile:
-    | typeof process.loadEnvFile
-    | undefined = process.loadEnvFile,
-  moduleUrl: string | null = import.meta.url
-) {
-  if (
-    loadEnvironmentFile === undefined ||
-    typeof moduleUrl !== "string" ||
-    !moduleUrl.startsWith("file:")
-  ) {
-    return
-  }
-
-  try {
-    loadEnvironmentFile(new URL("../../../.env", moduleUrl))
-  } catch (error) {
-    if (
-      !(error instanceof Error && "code" in error && error.code === "ENOENT")
-    ) {
-      throw error
-    }
   }
 }
 

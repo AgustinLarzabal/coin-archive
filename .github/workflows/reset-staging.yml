@@ -1,0 +1,30 @@
+name: Reset staging data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reset-and-reseed:
+    name: Reset and reseed staging
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      COIN_ARCHIVE_ENVIRONMENT: staging
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      STAGING_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @workspace/db reset:staging

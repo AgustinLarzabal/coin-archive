@@ -58,6 +58,7 @@ export { getCoinMaintenanceDeleteSummary } from "./queries/get-coin-maintenance-
 export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
+export { bootstrapInitialAdmin } from "./mutations/bootstrap-initial-admin"
 export { buildGetCoinQuery, getCoin } from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
 export { getCurrencies } from "./queries/get-currencies"
@@ -107,6 +108,7 @@ export type { CoinDistributionRecord } from "./queries/coin-distribution-record"
 export type { CoinCompositionRecord } from "./queries/coin-composition-record"
 export type { CoinEdgeRecord } from "./queries/coin-edge-record"
 export type { DeleteCollectorIdentityResult } from "./mutations/delete-collector-identity"
+export type { BootstrapInitialAdminResult } from "./mutations/bootstrap-initial-admin"
 export type {
   CoinCurrencyRecord,
   CoinFaceValueRecord,

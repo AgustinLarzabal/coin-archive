@@ -45,3 +45,21 @@ Before deployment, the application validates this complete runtime contract and 
 ## Direct database connection check
 
 After supplying an environment's `DATABASE_URL`, run `pnpm --filter @workspace/db verify:connection`. The command issues a read-only `select 1` through the same direct `postgres` client used by the application, then closes the connection. Run it with the staging or production environment's URL before releasing that environment; it does not use Cloudflare Hyperdrive.
+
+## Manual staging reset and initial Admin bootstrap
+
+Normal deployments only build and release the Worker; they do not load demo data. To explicitly replace all staging data with generated demo data, manually dispatch the **Reset staging data** GitHub Actions workflow. It runs in the protected `staging` environment using that environment's database secret.
+
+```sh
+COIN_ARCHIVE_ENVIRONMENT=staging DATABASE_URL=... STAGING_DATABASE_URL=... pnpm --filter @workspace/db reset:staging
+```
+
+The command refuses every target other than `staging` and refuses a database URL that does not match the protected staging URL. It resets the database schema, reapplies migrations, and loads the generated demo catalogue. It also removes staging Collector identities, so complete the intended Google sign-in again before bootstrap.
+
+To establish an environment's first Admin, first sign in with the intended Google address, then run the following command with that environment's database URL:
+
+```sh
+INITIAL_ADMIN_EMAIL=maintainer@example.com DATABASE_URL=... pnpm --filter @workspace/db bootstrap:initial-admin
+```
+
+Bootstrap promotes only the configured, email-verified Collector that has a linked Google account. It refuses a missing or mismatched Collector, an ineligible Collector, and any environment that already has an Admin. It never selects an Admin by sign-in order.

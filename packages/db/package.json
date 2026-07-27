@@ -7,6 +7,8 @@
     "generate": "drizzle-kit generate",
     "lint": "eslint",
     "migrate": "drizzle-kit migrate",
+    "bootstrap:initial-admin": "node --import tsx ./src/operations/initial-admin-bootstrap.ts",
+    "reset:staging": "node --import tsx ./src/operations/staging-reset.ts",
     "seed": "node --import tsx ./src/seed/index.ts",
     "verify:connection": "node --import tsx ./src/verify-database-connection.ts",
     "studio": "drizzle-kit studio",

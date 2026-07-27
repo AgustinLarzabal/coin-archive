@@ -7,19 +7,25 @@
   "env": {
     "staging": {
       "name": "coin-archive-staging",
+      "routes": [
+        { "pattern": "staging.coinarchive.app", "custom_domain": true },
+      ],
       "vars": {
         "BETTER_AUTH_URL": "https://staging.coinarchive.app",
         "R2_BUCKET": "coin-archive-staging-surface-images",
-        "R2_ENDPOINT": "https://<staging-account-id>.r2.cloudflarestorage.com",
+        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
         "R2_PUBLIC_BASE_URL": "https://images.staging.coinarchive.app",
       },
     },
     "production": {
       "name": "coin-archive",
+      "routes": [
+        { "pattern": "coinarchive.app", "custom_domain": true },
+      ],
       "vars": {
         "BETTER_AUTH_URL": "https://coinarchive.app",
         "R2_BUCKET": "coin-archive-production-surface-images",
-        "R2_ENDPOINT": "https://<production-account-id>.r2.cloudflarestorage.com",
+        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
         "R2_PUBLIC_BASE_URL": "https://images.coinarchive.app",
       },
     },

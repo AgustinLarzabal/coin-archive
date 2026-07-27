@@ -1,4 +1,4 @@
-loadLocalEnvironmentFile()
+loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url ?? null)
 
 type AuthEnvironmentVariableName =
   | "BETTER_AUTH_SECRET"
@@ -37,14 +37,19 @@ export function getAuthEnvironment(): AuthEnvironment {
 export function loadLocalEnvironmentFile(
   loadEnvironmentFile:
     | typeof process.loadEnvFile
-    | undefined = process.loadEnvFile
+    | undefined = process.loadEnvFile,
+  moduleUrl: string | null = import.meta.url
 ) {
-  if (loadEnvironmentFile === undefined) {
+  if (
+    loadEnvironmentFile === undefined ||
+    typeof moduleUrl !== "string" ||
+    !moduleUrl.startsWith("file:")
+  ) {
     return
   }
 
   try {
-    loadEnvironmentFile(new URL("../../../.env", import.meta.url))
+    loadEnvironmentFile(new URL("../../../.env", moduleUrl))
   } catch (error) {
     if (
       !(error instanceof Error && "code" in error && error.code === "ENOENT")

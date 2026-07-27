@@ -2,29 +2,52 @@ import { createDatabase } from "./database"
 import { getDatabaseUrl } from "./env"
 
 type Database = ReturnType<typeof createDatabase>["db"]
+type DatabaseInstance = ReturnType<typeof createDatabase>
 
-let database: ReturnType<typeof createDatabase> | undefined
-let configuredDatabaseUrl: string | undefined
-
-function getDatabase() {
-  const databaseUrl = getDatabaseUrl()
-
-  if (database === undefined || configuredDatabaseUrl !== databaseUrl) {
-    database = createDatabase(databaseUrl)
-    configuredDatabaseUrl = databaseUrl
-  }
-
-  return database
+function isCloudflareWorkerRuntime() {
+  return "WebSocketPair" in globalThis
 }
+
+export function createDatabaseAccessor(
+  create = createDatabase,
+  getUrl = getDatabaseUrl,
+  isWorkerRuntime = isCloudflareWorkerRuntime
+) {
+  let database: DatabaseInstance | undefined
+  let configuredDatabaseUrl: string | undefined
+
+  return {
+    close() {
+      return database?.client.end()
+    },
+    get() {
+      const databaseUrl = getUrl()
+
+      if (isWorkerRuntime()) {
+        return create(databaseUrl)
+      }
+
+      if (database === undefined || configuredDatabaseUrl !== databaseUrl) {
+        database = create(databaseUrl)
+        configuredDatabaseUrl = databaseUrl
+      }
+
+      return database
+    },
+  }
+}
+
+const databaseAccessor = createDatabaseAccessor()
 
 export const db = new Proxy({} as Database, {
   get(_target, property, receiver) {
-    const value = Reflect.get(getDatabase().db, property, receiver)
+    const database = databaseAccessor.get().db
+    const value = Reflect.get(database, property, receiver)
 
-    return typeof value === "function" ? value.bind(getDatabase().db) : value
+    return typeof value === "function" ? value.bind(database) : value
   },
 })
 
 export function closeDb() {
-  return database?.client.end()
+  return databaseAccessor.close()
 }

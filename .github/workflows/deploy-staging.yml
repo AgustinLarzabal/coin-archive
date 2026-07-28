@@ -11,6 +11,8 @@ jobs:
   verify:
     name: Verify main commit
     runs-on: ubuntu-latest
+    env:
+      DATABASE_TEST_URL: postgresql://coin_archive:coin_archive@localhost:5432/coin_archive_test
     steps:
       - uses: actions/checkout@v4
         with:

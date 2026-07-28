@@ -16,6 +16,9 @@ describe("staging deployment workflow", () => {
     )
     expect(stagingDeploymentWorkflow).toMatch(/environment: staging/)
     expect(stagingDeploymentWorkflow).toMatch(/needs: verify/)
+    expect(stagingDeploymentWorkflow).toContain(
+      "DATABASE_TEST_URL: postgresql://coin_archive:coin_archive@localhost:5432/coin_archive_test"
+    )
     expect(stagingDeploymentWorkflow).toContain("pnpm lint")
     expect(stagingDeploymentWorkflow).toContain("pnpm typecheck")
     expect(stagingDeploymentWorkflow).toContain("pnpm test")

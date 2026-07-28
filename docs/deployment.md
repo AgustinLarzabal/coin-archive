@@ -56,11 +56,7 @@ The production workflow checks out the exact commit from that successful staging
 
 Normal deployments only build and release the Worker; they do not load demo data. To explicitly replace all staging data with generated demo data, manually dispatch the **Reset staging data** GitHub Actions workflow. It is the only supported reset entry point: it runs in the protected `staging` environment using that environment's database secret, and the reset command refuses to run outside that workflow. It resets the database schema, reapplies migrations, and loads the generated demo catalogue. It also removes staging Collector identities, so complete the intended Google sign-in again before bootstrap.
 
-To establish an environment's first Admin, first sign in with the intended Google address, then run the following command with that environment's database URL:
-
-```sh
-INITIAL_ADMIN_EMAIL=agustinlarzabal@gmail.com DATABASE_URL=... pnpm --filter @workspace/db bootstrap:initial-admin
-```
+To establish an environment's first Admin, first sign in with the intended Google address, then manually dispatch the **Bootstrap initial Admin** GitHub Actions workflow and select `staging` or `production`. The selected protected environment supplies its `DATABASE_URL` and `INITIAL_ADMIN_EMAIL` secrets; set the latter to `agustinlarzabal@gmail.com` in each environment.
 
 Bootstrap promotes only the configured, email-verified Collector that has a linked Google account. It refuses a missing or mismatched Collector, an ineligible Collector, and any environment that already has an Admin. It never selects an Admin by sign-in order.
 
@@ -84,9 +80,9 @@ After a staging deployment, or after manually resetting staging, perform this sm
 
    Each response must be a Cloudflare Access redirect and include `www-authenticate: Cloudflare-Access`.
 
-2. Sign in through Cloudflare Access as `agustinlarzabal@gmail.com`, then visit `https://staging.coinarchive.app` and confirm the generated demo catalogue loads. Sign in to Coin Archive there with Google as the same address; this separate Better Auth sign-in creates the Google-authenticated Collector required by bootstrap. After a reset, complete both sign-ins before running the initial-Admin bootstrap command above.
+2. Sign in through Cloudflare Access as `agustinlarzabal@gmail.com`, then visit `https://staging.coinarchive.app` and confirm the generated demo catalogue loads. Sign in to Coin Archive there with Google as the same address; this separate Better Auth sign-in creates the Google-authenticated Collector required by bootstrap. After a reset, complete both sign-ins before dispatching the initial-Admin bootstrap workflow above.
 
-3. Run the initial-Admin bootstrap command above. As the resulting Admin, upload a test Surface Image through Coin Maintenance and open its `images.staging.coinarchive.app` URL in the same browser session. It must load only after the Access sign-in; a private session must redirect to Access instead.
+3. Run the **Bootstrap initial Admin** workflow above for staging. As the resulting Admin, upload a test Surface Image through Coin Maintenance and open its `images.staging.coinarchive.app` URL in the same browser session. It must load only after the Access sign-in; a private session must redirect to Access instead.
 
 4. In a separate private session, visit `https://coinarchive.app` and `https://images.coinarchive.app`. They must not redirect to the staging Access application. This confirms that production remains a distinct public environment.
 

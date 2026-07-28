@@ -25,6 +25,14 @@ describe("loadLocalEnvironmentFile", () => {
     expect(loadEnvironmentFile).not.toHaveBeenCalled()
   })
 
+  it("does not resolve a local file path when the Worker module URL is unavailable", () => {
+    const loadEnvironmentFile = vi.fn()
+
+    loadLocalEnvironmentFile(loadEnvironmentFile, undefined)
+
+    expect(loadEnvironmentFile).not.toHaveBeenCalled()
+  })
+
   it("loads the repository local environment file when Node provides the loader", () => {
     const loadEnvironmentFile = vi.fn()
 

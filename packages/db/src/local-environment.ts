@@ -1,10 +1,11 @@
 export function loadLocalEnvironmentFile(
   loadEnvironmentFile: typeof process.loadEnvFile | undefined,
-  moduleUrl: string | null
+  moduleUrl: string | null | undefined
 ) {
   if (
     loadEnvironmentFile === undefined ||
     moduleUrl === null ||
+    moduleUrl === undefined ||
     !moduleUrl.startsWith("file:")
   ) {
     return

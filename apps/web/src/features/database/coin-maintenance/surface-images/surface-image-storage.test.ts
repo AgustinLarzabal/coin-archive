@@ -73,7 +73,7 @@ describe("R2 Surface Image storage", () => {
     })
 
     expect(
-      Buffer.from(authorization.reference.split(".")[1]!, "base64url").toString(
+      Buffer.from(authorization.reference.split(".")[1], "base64url").toString(
         "utf8"
       )
     ).not.toContain("surface-images/")

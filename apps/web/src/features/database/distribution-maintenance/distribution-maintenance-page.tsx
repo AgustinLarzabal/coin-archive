@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createDistributionAuthorizationError, hasDistributionMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createDistributionAuthorizationError,
+  hasDistributionMaintenanceAccess,
+} from "./actions"
 import { DistributionsTable } from "./table-workflow/distributions-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  distributions: DistributionOption[]
-}, ReturnType<typeof createDistributionAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    distributions: DistributionOption[]
+  },
+  ReturnType<typeof createDistributionAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   distributions: DistributionOption[]
@@ -41,7 +49,8 @@ export async function loadDistributionMaintenanceDistributions(
     return createDistributionAuthorizationError()
   }
 
-  const { getDistributions } = dependencies ?? (await getDefaultReadDependencies())
+  const { getDistributions } =
+    dependencies ?? (await getDefaultReadDependencies())
 
   return {
     status: "success",

@@ -13,15 +13,13 @@ import { SubmitButton } from "@workspace/ui/components/submit-button"
 import { Textarea } from "@workspace/ui/components/textarea"
 
 import { getAuthSession } from "@/lib/auth-session"
-import {
-  submitCreateComposition,
-  type CompositionMutationResult,
-} from "../actions"
+import { submitCreateComposition } from "../actions"
+import type { CompositionMutationResult } from "../actions"
 import {
   createCompositionInputSchema,
   getCompositionFieldErrors,
-  type CompositionFieldErrors,
 } from "../validation"
+import type { CompositionFieldErrors } from "../validation"
 
 type CompositionDraft = {
   code: string
@@ -143,7 +141,9 @@ export function CompositionCreateForm({
     >
       <FieldGroup>
         <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-composition-code">Composition Code</FieldLabel>
+          <FieldLabel htmlFor="new-composition-code">
+            Composition Code
+          </FieldLabel>
           <Input
             id="new-composition-code"
             name="code"
@@ -158,7 +158,9 @@ export function CompositionCreateForm({
           ) : null}
         </Field>
         <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-composition-name">Composition Name</FieldLabel>
+          <FieldLabel htmlFor="new-composition-name">
+            Composition Name
+          </FieldLabel>
           <Input
             id="new-composition-name"
             name="name"
@@ -180,9 +182,7 @@ export function CompositionCreateForm({
             id="new-composition-description"
             name="description"
             value={draft.description}
-            onChange={(event) =>
-              updateDraft("description", event.target.value)
-            }
+            onChange={(event) => updateDraft("description", event.target.value)}
             aria-invalid={fieldErrors.description !== undefined}
             placeholder="Optional alloy, layer, or part details."
           />

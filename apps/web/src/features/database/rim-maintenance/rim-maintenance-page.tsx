@@ -5,17 +5,22 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
+} from "../maintenance-page"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
 } from "../maintenance-page"
 import { createRimAuthorizationError, hasRimMaintenanceAccess } from "./actions"
 import { RimsTable } from "./table-workflow/rims-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  rims: RimOption[]
-}, ReturnType<typeof createRimAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    rims: RimOption[]
+  },
+  ReturnType<typeof createRimAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   rims: RimOption[]

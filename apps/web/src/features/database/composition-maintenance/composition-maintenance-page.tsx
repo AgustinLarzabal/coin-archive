@@ -5,20 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
+} from "../maintenance-page"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
 } from "../maintenance-page"
 import { hasCompositionMaintenanceAccess } from "./actions"
 import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
 import { CompositionsTable } from "./table-workflow/compositions-table"
 
-type LoadCompositionMaintenancePageDataResult = MaintenancePageLoadResult<{
-  compositions: CompositionOption[]
-}, {
-  formError: typeof COMPOSITION_AUTHORIZATION_ERROR
-}>
+type LoadCompositionMaintenancePageDataResult = MaintenancePageLoadResult<
+  {
+    compositions: CompositionOption[]
+  },
+  {
+    formError: typeof COMPOSITION_AUTHORIZATION_ERROR
+  }
+>
 
 type CompositionMaintenancePageLoaderData = MaintenancePageLoaderData<{
   compositions: CompositionOption[]

@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createMintingTechniqueAuthorizationError, hasMintingTechniqueMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createMintingTechniqueAuthorizationError,
+  hasMintingTechniqueMaintenanceAccess,
+} from "./actions"
 import { MintingTechniquesTable } from "./table-workflow/minting-techniques-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  mintingTechniques: TechniqueOption[]
-}, ReturnType<typeof createMintingTechniqueAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    mintingTechniques: TechniqueOption[]
+  },
+  ReturnType<typeof createMintingTechniqueAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   mintingTechniques: TechniqueOption[]

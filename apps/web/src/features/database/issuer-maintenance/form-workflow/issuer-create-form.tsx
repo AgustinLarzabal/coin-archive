@@ -14,7 +14,8 @@ import { SubmitButton } from "@workspace/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 
-import { submitCreateIssuer, type IssuerMutationResult } from "../actions"
+import { submitCreateIssuer } from "../actions"
+import type { IssuerMutationResult } from "../actions"
 import type { IssuerFieldErrors } from "../validation"
 import {
   EMPTY_ISSUER_DRAFT,

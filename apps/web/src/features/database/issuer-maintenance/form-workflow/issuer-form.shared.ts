@@ -5,8 +5,8 @@ import {
   createIssuerInputSchema,
   getIssuerFieldErrors,
   updateIssuerInputSchema,
-  type IssuerFieldErrors,
 } from "../validation"
+import type { IssuerFieldErrors } from "../validation"
 import type { IssuerMutationResult } from "../actions"
 
 export type IssuerDraft = {

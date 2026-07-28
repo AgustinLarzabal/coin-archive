@@ -6,10 +6,12 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
+} from "../maintenance-page"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
 } from "../maintenance-page"
 import { IssuersTable } from "./table-workflow/issuers-table"
 

@@ -1,5 +1,5 @@
 import { hasEditorAccess } from "@workspace/auth/client"
-import { z } from "zod"
+import type { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -24,9 +24,9 @@ import {
   createIssuerInputSchema,
   deleteIssuerInputSchema,
   getIssuerFieldErrors,
-  type IssuerFieldErrors,
   updateIssuerInputSchema,
 } from "./validation"
+import type { IssuerFieldErrors } from "./validation"
 
 const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
 const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"

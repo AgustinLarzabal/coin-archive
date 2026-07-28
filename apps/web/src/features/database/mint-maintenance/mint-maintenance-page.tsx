@@ -8,8 +8,8 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import {
   createMintAuthorizationError,
   hasMintMaintenanceAccess,
-  type MintAuthorizationErrorResult,
 } from "./actions"
+import type { MintAuthorizationErrorResult } from "./actions"
 import { MintsTable } from "./table-workflow/mints-table"
 
 type LoadMintMaintenancePageDataResult =

@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createThemeAuthorizationError, hasThemeMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createThemeAuthorizationError,
+  hasThemeMaintenanceAccess,
+} from "./actions"
 import { ThemesTable } from "./table-workflow/themes-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  themes: ThemeOption[]
-}, ReturnType<typeof createThemeAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    themes: ThemeOption[]
+  },
+  ReturnType<typeof createThemeAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   themes: ThemeOption[]

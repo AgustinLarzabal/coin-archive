@@ -19,6 +19,7 @@ describe("staging deployment workflow", () => {
     expect(stagingDeploymentWorkflow).toContain("pnpm lint")
     expect(stagingDeploymentWorkflow).toContain("pnpm typecheck")
     expect(stagingDeploymentWorkflow).toContain("pnpm test")
+    expect(stagingDeploymentWorkflow).toContain("pnpm db:start")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:test")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:migrate")
     expect(stagingDeploymentWorkflow).toContain(
@@ -28,6 +29,9 @@ describe("staging deployment workflow", () => {
 
     expect(stagingDeploymentWorkflow.indexOf("pnpm db:migrate")).toBeLessThan(
       stagingDeploymentWorkflow.indexOf("pnpm --filter web run deploy:staging")
+    )
+    expect(stagingDeploymentWorkflow.indexOf("pnpm db:start")).toBeLessThan(
+      stagingDeploymentWorkflow.indexOf("pnpm db:test")
     )
   })
 })

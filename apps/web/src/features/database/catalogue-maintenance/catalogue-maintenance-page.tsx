@@ -8,8 +8,8 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import {
   createCatalogueAuthorizationError,
   hasCatalogueMaintenanceAccess,
-  type CatalogueAuthorizationErrorResult,
 } from "./actions"
+import type { CatalogueAuthorizationErrorResult } from "./actions"
 import { CataloguesTable } from "./table-workflow/catalogues-table"
 
 type LoadCatalogueMaintenancePageDataResult =

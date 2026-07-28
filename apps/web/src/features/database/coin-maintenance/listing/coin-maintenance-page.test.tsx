@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { COIN_MAINTENANCE_PAGE_SIZE } from "./coin-maintenance-page"
 import {
+  COIN_MAINTENANCE_PAGE_SIZE,
   loadCoinMaintenancePageData,
   renderCoinMaintenancePage,
 } from "./coin-maintenance-page"

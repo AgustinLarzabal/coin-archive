@@ -8,8 +8,8 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import {
   createRulerGroupAuthorizationError,
   hasRulerGroupMaintenanceAccess,
-  type RulerGroupAuthorizationErrorResult,
 } from "./actions"
+import type { RulerGroupAuthorizationErrorResult } from "./actions"
 import { RulerGroupsTable } from "./table-workflow/ruler-groups-table"
 
 type LoadRulerGroupMaintenancePageDataResult =

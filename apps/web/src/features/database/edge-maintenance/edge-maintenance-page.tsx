@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createEdgeAuthorizationError, hasEdgeMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createEdgeAuthorizationError,
+  hasEdgeMaintenanceAccess,
+} from "./actions"
 import { EdgesTable } from "./table-workflow/edges-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  edges: EdgeOption[]
-}, ReturnType<typeof createEdgeAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    edges: EdgeOption[]
+  },
+  ReturnType<typeof createEdgeAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   edges: EdgeOption[]

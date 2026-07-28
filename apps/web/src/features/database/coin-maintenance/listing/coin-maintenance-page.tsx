@@ -14,10 +14,12 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoadResult,
-  type MaintenancePageLoaderData,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
+} from "../../maintenance-page"
+import type {
+  MaintenancePageLoadResult,
+  MaintenancePageLoaderData,
 } from "../../maintenance-page"
 import { CoinsMaintenanceTable } from "./coins-maintenance-table"
 
@@ -101,7 +103,8 @@ type CoinMaintenanceReadDependencies = {
   getCompositions: () => Promise<CompositionOption[]>
 }
 
-type LoadCoinMaintenancePageDataResult = MaintenancePageLoadResult<CoinMaintenancePageData>
+type LoadCoinMaintenancePageDataResult =
+  MaintenancePageLoadResult<CoinMaintenancePageData>
 
 type CoinMaintenancePageLoaderData =
   MaintenancePageLoaderData<CoinMaintenancePageData>
@@ -221,7 +224,10 @@ const getCoinMaintenanceLoaderData = createServerFn({
   .inputValidator(coinMaintenanceLoaderDepsSchema)
   .handler(async ({ data }) => {
     const session = await getAuthSession()
-    const result = await loadCoinMaintenancePageData(session?.user ?? null, data)
+    const result = await loadCoinMaintenancePageData(
+      session?.user ?? null,
+      data
+    )
 
     return toMaintenancePageLoaderData(result)
   })
@@ -247,13 +253,16 @@ export function CoinMaintenanceRouteComponent({
 export function renderCoinMaintenancePage(
   loaderData: CoinMaintenancePageLoaderData
 ) {
-  return renderMaintenancePage(loaderData, ({ search, list, filterOptions }) => (
-    <main className="mt-8">
-      <CoinsMaintenanceTable
-        search={search}
-        list={list}
-        filterOptions={filterOptions}
-      />
-    </main>
-  ))
+  return renderMaintenancePage(
+    loaderData,
+    ({ search, list, filterOptions }) => (
+      <main className="mt-8">
+        <CoinsMaintenanceTable
+          search={search}
+          list={list}
+          filterOptions={filterOptions}
+        />
+      </main>
+    )
+  )
 }

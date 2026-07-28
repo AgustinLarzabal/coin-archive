@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createShapeAuthorizationError, hasShapeMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createShapeAuthorizationError,
+  hasShapeMaintenanceAccess,
+} from "./actions"
 import { ShapesTable } from "./table-workflow/shapes-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  shapes: ShapeOption[]
-}, ReturnType<typeof createShapeAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    shapes: ShapeOption[]
+  },
+  ReturnType<typeof createShapeAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   shapes: ShapeOption[]

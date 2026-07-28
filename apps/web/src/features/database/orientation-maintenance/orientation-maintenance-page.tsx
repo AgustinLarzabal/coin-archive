@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createOrientationAuthorizationError, hasOrientationMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createOrientationAuthorizationError,
+  hasOrientationMaintenanceAccess,
+} from "./actions"
 import { OrientationsTable } from "./table-workflow/orientations-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  orientations: OrientationOption[]
-}, ReturnType<typeof createOrientationAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    orientations: OrientationOption[]
+  },
+  ReturnType<typeof createOrientationAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   orientations: OrientationOption[]
@@ -41,7 +49,8 @@ export async function loadOrientationMaintenanceOrientations(
     return createOrientationAuthorizationError()
   }
 
-  const { getOrientations } = dependencies ?? (await getDefaultReadDependencies())
+  const { getOrientations } =
+    dependencies ?? (await getDefaultReadDependencies())
 
   return {
     status: "success",

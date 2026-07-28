@@ -5,17 +5,25 @@ import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
 import {
-  type MaintenancePageLoaderData,
-  type MaintenancePageLoadResult,
   renderMaintenancePage,
   toMaintenancePageLoaderData,
 } from "../maintenance-page"
-import { createCurrencyAuthorizationError, hasCurrencyMaintenanceAccess } from "./actions"
+import type {
+  MaintenancePageLoaderData,
+  MaintenancePageLoadResult,
+} from "../maintenance-page"
+import {
+  createCurrencyAuthorizationError,
+  hasCurrencyMaintenanceAccess,
+} from "./actions"
 import { CurrenciesTable } from "./table-workflow/currencies-table"
 
-type LoadResult = MaintenancePageLoadResult<{
-  currencies: CurrencyOption[]
-}, ReturnType<typeof createCurrencyAuthorizationError>>
+type LoadResult = MaintenancePageLoadResult<
+  {
+    currencies: CurrencyOption[]
+  },
+  ReturnType<typeof createCurrencyAuthorizationError>
+>
 
 type LoaderData = MaintenancePageLoaderData<{
   currencies: CurrencyOption[]

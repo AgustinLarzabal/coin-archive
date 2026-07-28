@@ -25,10 +25,8 @@ import { Label } from "@workspace/ui/components/label"
 
 import { getAuthSession } from "@/lib/auth-session"
 
-import {
-  submitDeleteCoin,
-  type CoinDeleteMutationResult,
-} from "../actions"
+import { submitDeleteCoin } from "../actions"
+import type { CoinDeleteMutationResult } from "../actions"
 
 const deleteCoinAction = createServerFn({
   method: "POST",
@@ -158,8 +156,8 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
       </CardHeader>
       <CardContent>
         <p className="mb-4 text-sm">
-          Type <span className="font-medium">{deleteSummary.title}</span> exactly in
-          the confirmation dialog before deletion is enabled.
+          Type <span className="font-medium">{deleteSummary.title}</span>{" "}
+          exactly in the confirmation dialog before deletion is enabled.
         </p>
         <DeleteSummaryRows deleteSummary={deleteSummary} />
       </CardContent>
@@ -190,7 +188,8 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
 
               <div className="grid gap-2">
                 <Label htmlFor="confirm-coin-deletion">
-                  Type <span className="font-medium">{deleteSummary.title}</span> to
+                  Type{" "}
+                  <span className="font-medium">{deleteSummary.title}</span> to
                   confirm Coin deletion.
                 </Label>
                 <Input
@@ -200,7 +199,9 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
                   onChange={(event) => setConfirmationTitle(event.target.value)}
                 />
                 {confirmationError ? (
-                  <p className="text-sm text-destructive">{confirmationError}</p>
+                  <p className="text-sm text-destructive">
+                    {confirmationError}
+                  </p>
                 ) : null}
                 {formError ? (
                   <p className="text-sm text-destructive">{formError}</p>

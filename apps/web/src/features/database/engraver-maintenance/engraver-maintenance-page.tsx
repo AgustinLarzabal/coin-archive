@@ -8,8 +8,8 @@ import type { CollectorWithRole } from "@/lib/collector-role"
 import {
   createEngraverAuthorizationError,
   hasEngraverMaintenanceAccess,
-  type EngraverAuthorizationErrorResult,
 } from "./actions"
+import type { EngraverAuthorizationErrorResult } from "./actions"
 import { EngraversTable } from "./table-workflow/engravers-table"
 
 type LoadEngraverMaintenancePageDataResult =

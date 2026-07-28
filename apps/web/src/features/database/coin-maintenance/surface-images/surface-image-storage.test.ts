@@ -35,6 +35,21 @@ describe("R2 Surface Image storage", () => {
     ).rejects.toThrow("Surface Images must be 10 MB or smaller.")
   })
 
+  it("creates a presigned upload URL with the R2 S3 client", async () => {
+    const storage = createR2SurfaceImageStorage(configuration)
+
+    await expect(
+      storage.authorizeUpload({
+        surface: "obverse",
+        contentType: "image/png",
+        contentLength: 12,
+      })
+    ).resolves.toEqual({
+      reference: expect.any(String),
+      uploadUrl: expect.stringContaining("X-Amz-Signature"),
+    })
+  })
+
   it("resolves an inspected JPEG to its stable public URL", async () => {
     const objectStorage: SurfaceImageObjectStorage = {
       createPresignedPutUrl: vi

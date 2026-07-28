@@ -38,16 +38,19 @@ describe("R2 Surface Image storage", () => {
   it("creates a presigned upload URL with the R2 S3 client", async () => {
     const storage = createR2SurfaceImageStorage(configuration)
 
-    await expect(
-      storage.authorizeUpload({
-        surface: "obverse",
-        contentType: "image/png",
-        contentLength: 12,
-      })
-    ).resolves.toEqual({
-      reference: expect.any(String),
-      uploadUrl: expect.stringContaining("X-Amz-Signature"),
+    const authorization = await storage.authorizeUpload({
+      surface: "obverse",
+      contentType: "image/png",
+      contentLength: 12,
     })
+    const uploadUrl = new URL(authorization.uploadUrl)
+
+    expect(authorization.reference).toEqual(expect.any(String))
+    expect(uploadUrl.searchParams.get("X-Amz-Expires")).toBe("300")
+    expect(uploadUrl.searchParams.get("X-Amz-Signature")).not.toBeNull()
+    expect(uploadUrl.searchParams.get("X-Amz-SignedHeaders")).toBe(
+      "content-type;host"
+    )
   })
 
   it("resolves an inspected JPEG to its stable public URL", async () => {

@@ -18,8 +18,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1091.0",
-    "@aws-sdk/s3-request-presigner": "^3.1091.0",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-devtools": "^0.10.5",
     "@tanstack/react-form": "^1.33.0",
@@ -31,6 +29,7 @@
     "@workspace/auth": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "aws4fetch": "^1.0.20",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

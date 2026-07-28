@@ -6,14 +6,7 @@ import {
   randomBytes,
   randomUUID,
 } from "node:crypto"
-import {
-  GetObjectCommand,
-  HeadObjectCommand,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { AwsClient } from "aws4fetch"
 
 export const SURFACE_IMAGE_MAX_BYTES = 10 * 1024 * 1024
 export const SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS = 5 * 60
@@ -236,55 +229,65 @@ function hasExpectedImageSignature(contentType: string, bytes: Uint8Array) {
 function createS3ObjectStorage(
   configuration: R2Configuration
 ): SurfaceImageObjectStorage {
-  const client = new S3Client({
+  const client = new AwsClient({
+    service: "s3",
     region: "auto",
-    endpoint: configuration.endpoint,
-    credentials: {
-      accessKeyId: configuration.accessKeyId,
-      secretAccessKey: configuration.secretAccessKey,
-    },
+    accessKeyId: configuration.accessKeyId,
+    secretAccessKey: configuration.secretAccessKey,
   })
+  const getObjectUrl = (objectKey: string) =>
+    new URL(
+      `${configuration.bucket}/${objectKey}`,
+      `${configuration.endpoint}/`
+    )
+
+  async function assertSuccessfulResponse(response: Response) {
+    if (response.ok) return
+
+    throw new Error(
+      `R2 object storage request failed with status ${response.status}.`
+    )
+  }
 
   return {
     async createPresignedPutUrl(input) {
-      return getSignedUrl(
-        client,
-        new PutObjectCommand({
-          Bucket: configuration.bucket,
-          Key: input.objectKey,
-          ContentLength: input.contentLength,
-          ContentType: input.contentType,
-        }),
-        { expiresIn: SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS }
-      )
-    },
-    async inspectObject(objectKey) {
-      const metadata = await client.send(
-        new HeadObjectCommand({ Bucket: configuration.bucket, Key: objectKey })
-      )
-      const body = await client.send(
-        new GetObjectCommand({
-          Bucket: configuration.bucket,
-          Key: objectKey,
-          Range: "bytes=0-11",
-        })
+      const url = getObjectUrl(input.objectKey)
+      url.searchParams.set(
+        "X-Amz-Expires",
+        String(SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS)
       )
 
+      const signedRequest = await client.sign(
+        new Request(url, {
+          method: "PUT",
+          headers: { "Content-Type": input.contentType },
+        }),
+        { aws: { signQuery: true, allHeaders: true } }
+      )
+
+      return signedRequest.url.toString()
+    },
+    async inspectObject(objectKey) {
+      const url = getObjectUrl(objectKey)
+      const metadata = await client.fetch(new Request(url, { method: "HEAD" }))
+      await assertSuccessfulResponse(metadata)
+      const body = await client.fetch(
+        new Request(url, { headers: { Range: "bytes=0-11" } })
+      )
+      await assertSuccessfulResponse(body)
+
       return {
-        contentLength: metadata.ContentLength,
-        contentType: metadata.ContentType,
-        firstBytes: body.Body
-          ? await body.Body.transformToByteArray()
-          : new Uint8Array(),
+        contentLength:
+          Number(metadata.headers.get("Content-Length")) || undefined,
+        contentType: metadata.headers.get("Content-Type") ?? undefined,
+        firstBytes: new Uint8Array(await body.arrayBuffer()),
       }
     },
     async deleteObject(objectKey) {
-      await client.send(
-        new DeleteObjectCommand({
-          Bucket: configuration.bucket,
-          Key: objectKey,
-        })
+      const response = await client.fetch(
+        new Request(getObjectUrl(objectKey), { method: "DELETE" })
       )
+      await assertSuccessfulResponse(response)
     },
   }
 }

@@ -801,12 +801,6 @@ export async function authorizeSurfaceImageUpload(
       dependencies ?? (await getDefaultSurfaceImageUploadDependencies())
     ).authorizeUpload(input)
   } catch (error) {
-    console.error("[DEBUG-surface-image-upload] authorization failed", error)
-    if (error instanceof Error) {
-      return createFormErrorResult(
-        `[DEBUG-surface-image-upload] ${error.message}`
-      )
-    }
     return createFormErrorResult(getSurfaceImageUploadError(error))
   }
 }

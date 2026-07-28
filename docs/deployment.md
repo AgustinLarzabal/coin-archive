@@ -53,7 +53,35 @@ Normal deployments only build and release the Worker; they do not load demo data
 To establish an environment's first Admin, first sign in with the intended Google address, then run the following command with that environment's database URL:
 
 ```sh
-INITIAL_ADMIN_EMAIL=maintainer@example.com DATABASE_URL=... pnpm --filter @workspace/db bootstrap:initial-admin
+INITIAL_ADMIN_EMAIL=agustinlarzabal@gmail.com DATABASE_URL=... pnpm --filter @workspace/db bootstrap:initial-admin
 ```
 
 Bootstrap promotes only the configured, email-verified Collector that has a linked Google account. It refuses a missing or mismatched Collector, an ineligible Collector, and any environment that already has an Admin. It never selects an Admin by sign-in order.
+
+## Private staging verification
+
+Cloudflare Access protects two staging applications before traffic can reach the Worker or the staging R2 custom domain:
+
+- `staging.coinarchive.app`
+- `images.staging.coinarchive.app`
+
+Each application uses the same allow policy: Google identity email equals `agustinlarzabal@gmail.com`. Do not add a bypass policy, service token, or production hostname to either application. Production hosts remain outside these policies: `coinarchive.app` stays public and `images.coinarchive.app` serves the separate production bucket.
+
+After a staging deployment, or after manually resetting staging, perform this smoke check:
+
+1. In a private browser session, visit each staging hostname. Both must redirect to Cloudflare Access before returning application or image-host content. A header-only check is also useful:
+
+   ```sh
+   curl -I https://staging.coinarchive.app/
+   curl -I https://images.staging.coinarchive.app/
+   ```
+
+   Each response must be a Cloudflare Access redirect and include `www-authenticate: Cloudflare-Access`.
+
+2. Sign in through Cloudflare Access as `agustinlarzabal@gmail.com`, then visit `https://staging.coinarchive.app` and confirm the generated demo catalogue loads. Sign in to Coin Archive there with Google as the same address; this separate Better Auth sign-in creates the Google-authenticated Collector required by bootstrap. After a reset, complete both sign-ins before running the initial-Admin bootstrap command above.
+
+3. Run the initial-Admin bootstrap command above. As the resulting Admin, upload a test Surface Image through Coin Maintenance and open its `images.staging.coinarchive.app` URL in the same browser session. It must load only after the Access sign-in; a private session must redirect to Access instead.
+
+4. In a separate private session, visit `https://coinarchive.app` and `https://images.coinarchive.app`. They must not redirect to the staging Access application. This confirms that production remains a distinct public environment.
+
+Keep Neon URLs, R2 credentials, Google OAuth credentials, Better Auth secrets, and Cloudflare deployment tokens only in their matching GitHub `staging` or `production` environment. Never copy a production secret into staging; the staging workflow receives only the `staging` environment's `DATABASE_URL` and Cloudflare deployment token.

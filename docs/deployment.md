@@ -46,6 +46,12 @@ Before deployment, the application validates this complete runtime contract and 
 
 After supplying an environment's `DATABASE_URL`, run `pnpm --filter @workspace/db verify:connection`. The command issues a read-only `select 1` through the same direct `postgres` client used by the application, then closes the connection. Run it with the staging or production environment's URL before releasing that environment; it does not use Cloudflare Hyperdrive.
 
+## Production promotion
+
+Production promotion begins only when the **Deploy staging** GitHub Actions workflow succeeds. Configure the repository's `production` GitHub environment with the maintainer as its required reviewer and store only production `DATABASE_URL` and `CLOUDFLARE_API_TOKEN` secrets there. GitHub records the staging deployment and the required environment approval.
+
+The production workflow checks out the exact commit from that successful staging run, then waits for the protected `production` environment approval. The maintainer approves only after manual staging verification. It applies pending production migrations before deploying the production Worker, never resets or seeds data, and stops the release before Worker deployment if a migration fails.
+
 ## Manual staging reset and initial Admin bootstrap
 
 Normal deployments only build and release the Worker; they do not load demo data. To explicitly replace all staging data with generated demo data, manually dispatch the **Reset staging data** GitHub Actions workflow. It is the only supported reset entry point: it runs in the protected `staging` environment using that environment's database secret, and the reset command refuses to run outside that workflow. It resets the database schema, reapplies migrations, and loads the generated demo catalogue. It also removes staging Collector identities, so complete the intended Google sign-in again before bootstrap.

@@ -41,12 +41,17 @@ From the repository root:
 
 1. `pnpm install`
 2. `cp .env.example .env`
-3. `pnpm db:start`
-4. `pnpm db:migrate`
-5. `pnpm db:seed`
-6. `pnpm dev`
+3. `ln -s ../../.env apps/web/.env`
+4. `pnpm db:start`
+5. `pnpm db:migrate`
+6. `pnpm db:seed`
+7. `pnpm dev`
 
 That gets PostgreSQL running, applies the current schema, loads demo catalogue data, and starts the TanStack Start app.
+
+The root `.env` configures database commands. The `apps/web/.env` symlink makes the
+same settings available to the Cloudflare Worker used by the web app in local
+development. It is ignored by Git and only needs to be created once per clone.
 
 Useful verification commands:
 

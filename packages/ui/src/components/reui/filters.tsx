@@ -14,12 +14,12 @@ import {
 import { useRender } from "@base-ui/react/use-render"
 import { cva } from "class-variance-authority"
 
-import { cn } from "@workspace/ui/lib/utils"
-import { Button } from "@workspace/ui/components/button"
+import { cn } from "@coin-archive/ui/lib/utils"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   ButtonGroup,
   ButtonGroupText,
-} from "@workspace/ui/components/button-group"
+} from "@coin-archive/ui/components/button-group"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -31,22 +31,22 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
-import { Input } from "@workspace/ui/components/input"
+} from "@coin-archive/ui/components/dropdown-menu"
+import { Input } from "@coin-archive/ui/components/input"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
-} from "@workspace/ui/components/input-group"
-import { Kbd } from "@workspace/ui/components/kbd"
-import { ScrollArea } from "@workspace/ui/components/scroll-area"
+} from "@coin-archive/ui/components/input-group"
+import { Kbd } from "@coin-archive/ui/components/kbd"
+import { ScrollArea } from "@coin-archive/ui/components/scroll-area"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@workspace/ui/components/tooltip"
+} from "@coin-archive/ui/components/tooltip"
 import { AlertCircleIcon, XIcon, CheckIcon } from "lucide-react"
 
 // i18n Configuration Interface

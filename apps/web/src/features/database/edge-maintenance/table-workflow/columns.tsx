@@ -1,13 +1,13 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { EdgeOption } from "@workspace/db"
-import { Button } from "@workspace/ui/components/button"
+import type { EdgeOption } from "@coin-archive/db"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+} from "@coin-archive/ui/components/dropdown-menu"
 
 import { Icons } from "@/components/icons"
 

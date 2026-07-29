@@ -11,13 +11,13 @@ const config = defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@workspace/auth/client": fileURLToPath(
+      "@coin-archive/auth/client": fileURLToPath(
         new URL("../../packages/auth/src/client.ts", import.meta.url)
       ),
-      "@workspace/auth/server": fileURLToPath(
+      "@coin-archive/auth/server": fileURLToPath(
         new URL("../../packages/auth/src/server.ts", import.meta.url)
       ),
-      "@workspace/feature-flags": fileURLToPath(
+      "@coin-archive/feature-flags": fileURLToPath(
         new URL("../../packages/feature-flags/src/index.ts", import.meta.url)
       ),
     },

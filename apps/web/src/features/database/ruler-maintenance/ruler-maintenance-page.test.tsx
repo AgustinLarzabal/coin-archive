@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { RulerOption } from "@workspace/db"
+import type { RulerOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { RULER_AUTHORIZATION_ERROR } from "./actions"

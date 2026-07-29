@@ -14,11 +14,11 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["./src/*"],
-      "@workspace/auth/client": ["../../packages/auth/src/client.ts"],
-      "@workspace/auth/server": ["../../packages/auth/src/server.ts"],
-      "@workspace/db": ["../../packages/db/src/index.ts"],
-      "@workspace/feature-flags": ["../../packages/feature-flags/src/index.ts"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@coin-archive/auth/client": ["../../packages/auth/src/client.ts"],
+      "@coin-archive/auth/server": ["../../packages/auth/src/server.ts"],
+      "@coin-archive/db": ["../../packages/db/src/index.ts"],
+      "@coin-archive/feature-flags": ["../../packages/feature-flags/src/index.ts"],
+      "@coin-archive/ui/*": ["../../packages/ui/src/*"]
     },
 
     /* Bundler mode */

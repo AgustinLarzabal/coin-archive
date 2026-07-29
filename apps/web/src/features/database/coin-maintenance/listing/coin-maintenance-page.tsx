@@ -7,7 +7,7 @@ import type {
   DistributionOption,
   IssuerOption,
   RulerOption,
-} from "@workspace/db"
+} from "@coin-archive/db"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -126,7 +126,7 @@ async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintena
     getDistributions,
     getIssuers,
     getRulers,
-  } = await import("@workspace/db")
+  } = await import("@coin-archive/db")
 
   return {
     getCoinMaintenanceList,

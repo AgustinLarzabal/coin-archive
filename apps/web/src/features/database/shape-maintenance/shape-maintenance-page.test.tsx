@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { ShapeOption } from "@workspace/db"
+import type { ShapeOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { SHAPE_AUTHORIZATION_ERROR } from "./actions"

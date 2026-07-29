@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -109,7 +109,7 @@ type OrientationMutationDependencies = {
 
 async function getDefaultOrientationMutationDependencies(): Promise<OrientationMutationDependencies> {
   const { createOrientation, deleteOrientation, updateOrientation } =
-    await import("@workspace/db")
+    await import("@coin-archive/db")
 
   return {
     createOrientation,

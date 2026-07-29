@@ -1,4 +1,4 @@
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 
 type DistributionsTableToolbarProps = {
   onCreateDistribution: () => void

@@ -1,4 +1,4 @@
-import type { RimOption } from "@workspace/db"
+import type { RimOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { RIM_AUTHORIZATION_ERROR } from "./actions"

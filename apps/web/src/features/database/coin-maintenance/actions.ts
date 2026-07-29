@@ -1,9 +1,9 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import type { CoinMaintenanceDeleteSummary } from "@workspace/db"
+import type { CoinMaintenanceDeleteSummary } from "@coin-archive/db"
 import type {
   SurfaceImageStorage,
   SurfaceImageUploadAuthorization,
@@ -534,7 +534,7 @@ async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
     createCoinMaintenance,
     getCoinMaintenanceRecord,
     updateCoinMaintenance,
-  } = await import("@workspace/db")
+  } = await import("@coin-archive/db")
   const { createR2SurfaceImageStorage } =
     await import("./surface-images/surface-image-storage")
 
@@ -571,7 +571,7 @@ async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
     getCoinMaintenanceDeleteSummary,
     getCoinMaintenanceRecord,
     recordSurfaceImageCleanupFailures,
-  } = await import("@workspace/db")
+  } = await import("@coin-archive/db")
   const { createR2SurfaceImageStorage } =
     await import("./surface-images/surface-image-storage")
 

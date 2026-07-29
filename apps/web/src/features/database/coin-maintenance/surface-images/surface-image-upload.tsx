@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
-import { FileUpload } from "@workspace/ui/components/motion/file-upload"
-import type { FileUploadItem } from "@workspace/ui/components/motion/file-upload"
+import { FileUpload } from "@coin-archive/ui/components/motion/file-upload"
+import type { FileUploadItem } from "@coin-archive/ui/components/motion/file-upload"
 
 type Surface = "obverse" | "reverse" | "edge"
 

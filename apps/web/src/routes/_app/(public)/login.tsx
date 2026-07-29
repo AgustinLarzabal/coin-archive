@@ -8,7 +8,7 @@ import {
 import { OAuthSignIn } from "../../../components/o-auth-signin"
 import { getEnabledProviders } from "../../../lib/enabled-providers"
 import { getAuthSession } from "../../../lib/auth-session"
-import { authClient } from "@workspace/auth/client"
+import { authClient } from "@coin-archive/auth/client"
 
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),

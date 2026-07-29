@@ -4,8 +4,8 @@ import {
 } from "@/lib/auth-redirect"
 import { getProductFlags } from "@/lib/product-flags"
 import { Link, useRouterState } from "@tanstack/react-router"
-import { authClient } from "@workspace/auth/client"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { authClient } from "@coin-archive/auth/client"
+import { buttonVariants } from "@coin-archive/ui/components/button"
 import { UserMenu } from "./user-menu"
 
 export function getLoginRedirectTarget({

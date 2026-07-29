@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { RimOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { RimOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createRimColumns } from "./columns"
 import { RimMaintenanceSheet } from "../sheet-workflow/rim-maintenance-sheet"

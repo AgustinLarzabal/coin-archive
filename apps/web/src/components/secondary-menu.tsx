@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coin-archive/ui/lib/utils"
 
 type Item = {
   to: string

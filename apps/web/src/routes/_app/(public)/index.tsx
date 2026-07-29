@@ -7,7 +7,7 @@ import {
   getIssuers,
   getRulers,
   getThemes,
-} from "@workspace/db"
+} from "@coin-archive/db"
 import {
   coinListInputSchema,
   coinSearchSchema,

@@ -6,15 +6,15 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@workspace/ui/components/sheet"
-import type { CatalogueOption } from "@workspace/db"
+} from "@coin-archive/ui/components/sheet"
+import type { CatalogueOption } from "@coin-archive/db"
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+} from "@coin-archive/ui/components/dropdown-menu"
 
 import {
   AlertDialog,
@@ -25,8 +25,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog"
-import { Button } from "@workspace/ui/components/button"
+} from "@coin-archive/ui/components/alert-dialog"
+import { Button } from "@coin-archive/ui/components/button"
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteCatalogue } from "../actions"

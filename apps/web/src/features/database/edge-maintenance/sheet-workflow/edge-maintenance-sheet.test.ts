@@ -1,4 +1,4 @@
-import type { EdgeOption } from "@workspace/db"
+import type { EdgeOption } from "@coin-archive/db"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -52,21 +52,21 @@ vi.mock("@tanstack/react-start", () => ({
   useServerFn: () => vi.fn(),
 }))
 
-vi.mock("@workspace/ui/components/sheet", () => ({
+vi.mock("@coin-archive/ui/components/sheet", () => ({
   Sheet: createOpenMockElement("div"),
   SheetContent: createMockElement("div"),
   SheetHeader: createMockElement("div"),
   SheetTitle: createMockElement("h1"),
 }))
 
-vi.mock("@workspace/ui/components/dropdown-menu", () => ({
+vi.mock("@coin-archive/ui/components/dropdown-menu", () => ({
   DropdownMenu: createMockElement("div"),
   DropdownMenuContent: createMockElement("div"),
   DropdownMenuItem: createMockElement("button"),
   DropdownMenuTrigger: createMockElement("button"),
 }))
 
-vi.mock("@workspace/ui/components/alert-dialog", () => ({
+vi.mock("@coin-archive/ui/components/alert-dialog", () => ({
   AlertDialog: createMockElement("div"),
   AlertDialogAction: createMockElement("button"),
   AlertDialogCancel: createMockElement("button"),
@@ -77,7 +77,7 @@ vi.mock("@workspace/ui/components/alert-dialog", () => ({
   AlertDialogTitle: createMockElement("h2"),
 }))
 
-vi.mock("@workspace/ui/components/button", () => ({
+vi.mock("@coin-archive/ui/components/button", () => ({
   Button: createMockElement("button"),
 }))
 

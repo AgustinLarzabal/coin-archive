@@ -1,4 +1,4 @@
-import type { OrientationOption } from "@workspace/db"
+import type { OrientationOption } from "@coin-archive/db"
 
 export type OrientationDraft = {
   code: string

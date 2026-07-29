@@ -1,4 +1,4 @@
-# `@workspace/db`
+# `@coin-archive/db`
 
 This README is for maintainers and coding agents changing the database layer. It explains the current Coin Archive database architecture from the package that owns schema, migrations, seed logic, client setup, database tests, and shared queries.
 
@@ -8,7 +8,7 @@ Use the glossary in [`/CONTEXT.md`](/CONTEXT.md) for canonical catalogue languag
 
 Applications should consume shared database behavior from the database package instead of owning schema details. That means:
 
-- import the shared client, schema exports, types, and query functions from `@workspace/db`
+- import the shared client, schema exports, types, and query functions from `@coin-archive/db`
 - add reusable query behavior in `packages/db/src/queries`
 - add schema and migration changes in `packages/db/src/schema` and `packages/db/migrations`
 - keep application code focused on application behavior, not duplicated database ownership
@@ -995,7 +995,7 @@ These are intentionally separate from the enforced invariants above:
 
 ## Consumer usage
 
-Consumers should import from `@workspace/db` instead of rebuilding database access locally.
+Consumers should import from `@coin-archive/db` instead of rebuilding database access locally.
 
 - use `db` when a caller needs direct shared access
 - prefer shared query functions such as `getCoins`, `getCurrencies`, `getIssuers`, `getRulers`, `getMints`, `getOrientations`, `getThemes`, and `getCatalogues` for reusable data access behavior
@@ -1097,7 +1097,7 @@ Terminology note:
 
 ### Database tests
 
-- fast package tests run with `pnpm --filter @workspace/db test`
+- fast package tests run with `pnpm --filter @coin-archive/db test`
 - PostgreSQL integration tests run with `pnpm db:test`
 - integration tests use `DATABASE_TEST_URL`, apply migrations before running, and clear known tables between tests
 - PostgreSQL must already be running before database tests; if it is not, start it explicitly with `pnpm db:start`
@@ -1126,10 +1126,10 @@ Run these from the repository root:
 
 These commands are what the root scripts delegate to inside `packages/db`:
 
-- `pnpm --filter @workspace/db typecheck`
-- `pnpm --filter @workspace/db test`
-- `pnpm --filter @workspace/db run test:db`
-- `pnpm --filter @workspace/db run generate`
-- `pnpm --filter @workspace/db run migrate`
-- `pnpm --filter @workspace/db run seed`
-- `pnpm --filter @workspace/db run studio`
+- `pnpm --filter @coin-archive/db typecheck`
+- `pnpm --filter @coin-archive/db test`
+- `pnpm --filter @coin-archive/db run test:db`
+- `pnpm --filter @coin-archive/db run generate`
+- `pnpm --filter @coin-archive/db run migrate`
+- `pnpm --filter @coin-archive/db run seed`
+- `pnpm --filter @coin-archive/db run studio`

@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { MintOption } from "@workspace/db"
+import type { MintOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { MINT_AUTHORIZATION_ERROR } from "./actions"

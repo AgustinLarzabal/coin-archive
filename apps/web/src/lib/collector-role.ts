@@ -1,5 +1,5 @@
-import type { CollectorRole } from "@workspace/auth/client"
-import { isCollectorRole } from "@workspace/auth/client"
+import type { CollectorRole } from "@coin-archive/auth/client"
+import { isCollectorRole } from "@coin-archive/auth/client"
 
 export type CollectorWithRole = {
   role?: string | null

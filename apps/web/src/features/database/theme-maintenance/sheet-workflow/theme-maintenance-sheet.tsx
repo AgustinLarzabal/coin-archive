@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { ThemeOption } from "@workspace/db"
+import type { ThemeOption } from "@coin-archive/db"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,20 +11,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog"
-import { Button } from "@workspace/ui/components/button"
+} from "@coin-archive/ui/components/alert-dialog"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+} from "@coin-archive/ui/components/dropdown-menu"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@workspace/ui/components/sheet"
+} from "@coin-archive/ui/components/sheet"
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"

@@ -1,4 +1,4 @@
-import type { MintOption } from "@workspace/db"
+import type { MintOption } from "@coin-archive/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"

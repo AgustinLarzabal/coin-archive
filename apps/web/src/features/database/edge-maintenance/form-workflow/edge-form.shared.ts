@@ -1,4 +1,4 @@
-import type { EdgeOption } from "@workspace/db"
+import type { EdgeOption } from "@coin-archive/db"
 
 export type EdgeDraft = {
   code: string

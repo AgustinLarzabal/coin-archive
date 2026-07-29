@@ -7,17 +7,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@workspace/ui/components/alert-dialog"
-import { Button } from "@workspace/ui/components/button"
+} from "@coin-archive/ui/components/alert-dialog"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
+} from "@coin-archive/ui/components/card"
+import { Input } from "@coin-archive/ui/components/input"
+import { Label } from "@coin-archive/ui/components/label"
 import { useEffect, useRef, useState } from "react"
 import type { MutableRefObject } from "react"
 

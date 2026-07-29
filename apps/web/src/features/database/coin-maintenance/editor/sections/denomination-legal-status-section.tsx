@@ -1,5 +1,5 @@
 import type { CoinDraft } from "../../actions"
-import { Card } from "@workspace/ui/components/card"
+import { Card } from "@coin-archive/ui/components/card"
 import {
   Field,
   FieldContent,
@@ -9,11 +9,11 @@ import {
   FieldLegend,
   FieldSet,
   FieldTitle,
-} from "@workspace/ui/components/field"
+} from "@coin-archive/ui/components/field"
 import {
   RadioGroup,
   RadioGroupItem,
-} from "@workspace/ui/components/radio-group"
+} from "@coin-archive/ui/components/radio-group"
 
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"

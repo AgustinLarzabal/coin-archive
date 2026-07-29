@@ -2,10 +2,10 @@ import * as React from "react"
 import { cva } from "class-variance-authority"
 import type { VariantProps } from "class-variance-authority"
 
-import { cn } from "@workspace/ui/lib/utils"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Textarea } from "@workspace/ui/components/textarea"
+import { cn } from "@coin-archive/ui/lib/utils"
+import { Button } from "@coin-archive/ui/components/button"
+import { Input } from "@coin-archive/ui/components/input"
+import { Textarea } from "@coin-archive/ui/components/textarea"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (

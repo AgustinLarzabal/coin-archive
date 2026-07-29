@@ -12,11 +12,11 @@
     "db:reset": "docker compose down --volumes",
     "db:start": "docker compose up -d --wait postgres",
     "db:stop": "docker compose stop postgres",
-    "db:generate": "pnpm --filter @workspace/db run generate",
-    "db:migrate": "pnpm --filter @workspace/db run migrate",
-    "db:seed": "pnpm --filter @workspace/db run seed",
-    "db:studio": "pnpm --filter @workspace/db run studio",
-    "db:test": "pnpm --filter @workspace/db run test:db",
+    "db:generate": "pnpm --filter @coin-archive/db run generate",
+    "db:migrate": "pnpm --filter @coin-archive/db run migrate",
+    "db:seed": "pnpm --filter @coin-archive/db run seed",
+    "db:studio": "pnpm --filter @coin-archive/db run studio",
+    "db:test": "pnpm --filter @coin-archive/db run test:db",
     "sandcastle": "pnpm exec tsx .sandcastle/main.mts"
   },
   "devDependencies": {

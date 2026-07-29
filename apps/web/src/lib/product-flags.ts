@@ -1,4 +1,4 @@
-import { productFlagDefaults } from "@workspace/feature-flags"
+import { productFlagDefaults } from "@coin-archive/feature-flags"
 
 function getBooleanFlag(value: string | undefined, defaultValue: boolean) {
   if (value === "true") {

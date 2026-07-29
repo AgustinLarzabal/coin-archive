@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { CatalogueOption } from "@workspace/db"
+import type { CatalogueOption } from "@coin-archive/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
@@ -33,7 +33,7 @@ type CatalogueReadDependencies = {
 }
 
 async function getDefaultCatalogueReadDependencies(): Promise<CatalogueReadDependencies> {
-  const { getCatalogues } = await import("@workspace/db")
+  const { getCatalogues } = await import("@coin-archive/db")
 
   return {
     getCatalogues,

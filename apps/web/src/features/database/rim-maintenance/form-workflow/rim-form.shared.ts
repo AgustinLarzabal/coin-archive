@@ -1,4 +1,4 @@
-import type { RimOption } from "@workspace/db"
+import type { RimOption } from "@coin-archive/db"
 
 export type RimDraft = {
   code: string

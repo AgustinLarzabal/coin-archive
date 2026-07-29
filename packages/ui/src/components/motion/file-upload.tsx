@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useId, useRef, useState } from "react";
-import { EASE_OUT } from "@workspace/ui/lib/ease";
-import { cn } from "@workspace/ui/lib/utils";
+import { EASE_OUT } from "@coin-archive/ui/lib/ease";
+import { cn } from "@coin-archive/ui/lib/utils";
 
 export type FileUploadStatus = "queued" | "uploading" | "success" | "error";
 export type FileUploadVariant = "default" | "centered";

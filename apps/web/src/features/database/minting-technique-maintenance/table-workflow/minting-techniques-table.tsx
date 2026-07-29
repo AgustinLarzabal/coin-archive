@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { TechniqueOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { TechniqueOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createMintingTechniqueColumns } from "./columns"
 import { MintingTechniqueMaintenanceSheet } from "../sheet-workflow/minting-technique-maintenance-sheet"

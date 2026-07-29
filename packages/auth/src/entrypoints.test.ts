@@ -22,7 +22,7 @@ describe("auth package entrypoints", () => {
 
     expect(Object.keys(source)).toContain("authClient")
     expect(Object.keys(source)).not.toContain("auth")
-    expect(clientFile).not.toContain("@workspace/db")
+    expect(clientFile).not.toContain("@coin-archive/db")
     expect(clientFile).not.toContain("better-auth/adapters/drizzle")
   })
 
@@ -33,6 +33,6 @@ describe("auth package entrypoints", () => {
     const serverFile = await readFile(resolve(sourceDirectory, "server.ts"), "utf8")
 
     expect(Object.keys(source)).toContain("auth")
-    expect(serverFile).toContain("@workspace/db")
+    expect(serverFile).toContain("@coin-archive/db")
   })
 })

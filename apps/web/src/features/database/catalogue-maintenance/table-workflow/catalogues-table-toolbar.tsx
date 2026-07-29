@@ -1,7 +1,7 @@
-import type { CatalogueOption } from "@workspace/db"
-import { Input } from "@workspace/ui/components/input"
+import type { CatalogueOption } from "@coin-archive/db"
+import { Input } from "@coin-archive/ui/components/input"
 import type { Table } from "@tanstack/react-table"
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 
 type CataloguesTableToolbarProps = {
   onCreateCatalogue: () => void

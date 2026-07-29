@@ -16,7 +16,7 @@ import type {
   ShapeOption,
   TechniqueOption,
   ThemeOption,
-} from "@workspace/db"
+} from "@coin-archive/db"
 
 import type { CoinDraft } from "../actions"
 
@@ -133,7 +133,7 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
     getShapes,
     getTechniques,
     getThemes,
-  } = await import("@workspace/db")
+  } = await import("@coin-archive/db")
 
   return {
     getCatalogues,

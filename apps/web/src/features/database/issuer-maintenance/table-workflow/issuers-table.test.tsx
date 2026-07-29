@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@workspace/db"
+import type { IssuerMaintenanceRecord } from "@coin-archive/db"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import type { Row } from "@tanstack/react-table"
@@ -22,7 +22,7 @@ vi.mock("../sheet-workflow/issuer-maintenance-sheet", () => ({
   IssuerMaintenanceSheet: () => null,
 }))
 
-vi.mock("@workspace/ui/components/dropdown-menu", () => ({
+vi.mock("@coin-archive/ui/components/dropdown-menu", () => ({
   DropdownMenu: createMockElement("div"),
   DropdownMenuContent: createMockElement("div"),
   DropdownMenuGroup: createMockElement("div"),

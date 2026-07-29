@@ -1,4 +1,4 @@
-import type { MintOption } from "@workspace/db"
+import type { MintOption } from "@coin-archive/db"
 
 export type MintDraft = {
   code: string

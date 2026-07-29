@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -101,7 +101,7 @@ type SubmitMintMutationOptions<TInput, TData> = {
 }
 
 async function getDefaultMintMutationDependencies(): Promise<MintMutationDependencies> {
-  const { createMint, deleteMint, updateMint } = await import("@workspace/db")
+  const { createMint, deleteMint, updateMint } = await import("@coin-archive/db")
 
   return {
     createMint,

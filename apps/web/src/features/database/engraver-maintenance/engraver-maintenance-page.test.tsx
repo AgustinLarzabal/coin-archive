@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { EngraverOption } from "@workspace/db"
+import type { EngraverOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { ENGRAVER_AUTHORIZATION_ERROR } from "./actions"

@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { TechniqueOption } from "@workspace/db"
+import type { TechniqueOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./actions"

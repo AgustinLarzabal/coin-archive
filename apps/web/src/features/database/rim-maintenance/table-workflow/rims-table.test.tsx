@@ -1,4 +1,4 @@
-import type { RimOption } from "@workspace/db"
+import type { RimOption } from "@coin-archive/db"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 

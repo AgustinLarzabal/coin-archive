@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@coin-archive/ui/components/button"
 
 export function AccessDenied() {
   return (

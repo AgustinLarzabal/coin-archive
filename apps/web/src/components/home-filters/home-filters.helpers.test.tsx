@@ -1,4 +1,4 @@
-import { createFilter } from "@workspace/ui/components/reui/filters"
+import { createFilter } from "@coin-archive/ui/components/reui/filters"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"

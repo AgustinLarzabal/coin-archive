@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { DistributionOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { DistributionOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createDistributionColumns } from "./columns"
 import { DistributionMaintenanceSheet } from "../sheet-workflow/distribution-maintenance-sheet"

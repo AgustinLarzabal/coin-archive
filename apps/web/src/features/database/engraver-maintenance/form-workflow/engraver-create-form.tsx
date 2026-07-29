@@ -7,9 +7,9 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
-import { SubmitButton } from "@workspace/ui/components/submit-button"
+} from "@coin-archive/ui/components/field"
+import { Input } from "@coin-archive/ui/components/input"
+import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type {

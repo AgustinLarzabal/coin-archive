@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { CompositionOption } from "@workspace/db"
+import type { CompositionOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -34,7 +34,7 @@ type CompositionMaintenanceReadDependencies = {
 }
 
 async function getDefaultCompositionReadDependencies(): Promise<CompositionMaintenanceReadDependencies> {
-  const { getCompositions } = await import("@workspace/db")
+  const { getCompositions } = await import("@coin-archive/db")
 
   return {
     getCompositions,

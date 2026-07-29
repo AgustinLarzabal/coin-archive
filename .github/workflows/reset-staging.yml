@@ -26,4 +26,4 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @workspace/db exec node --import tsx ./src/operations/staging-reset.ts
+      - run: pnpm --filter @coin-archive/db exec node --import tsx ./src/operations/staging-reset.ts

@@ -8,7 +8,7 @@ const { handler } = vi.hoisted(() => ({
   }),
 }))
 
-vi.mock("@workspace/auth/server", () => ({
+vi.mock("@coin-archive/auth/server", () => ({
   auth: {
     handler,
   },

@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { CatalogueOption } from "@workspace/db"
+import type { CatalogueOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { CATALOGUE_AUTHORIZATION_ERROR } from "./actions"

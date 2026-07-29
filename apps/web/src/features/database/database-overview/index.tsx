@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
+import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
@@ -22,7 +22,7 @@ type DatabaseOverviewDependencies = {
 }
 
 async function getDefaultDatabaseOverviewDependencies(): Promise<DatabaseOverviewDependencies> {
-  const { getDatabaseGeneralSummaryCounts } = await import("@workspace/db")
+  const { getDatabaseGeneralSummaryCounts } = await import("@coin-archive/db")
 
   return {
     getDatabaseGeneralSummaryCounts,

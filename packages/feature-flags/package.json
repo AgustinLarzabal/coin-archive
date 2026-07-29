@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/feature-flags",
+  "name": "@coin-archive/feature-flags",
   "version": "0.0.0",
   "type": "module",
   "private": true,

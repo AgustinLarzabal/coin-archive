@@ -15,8 +15,8 @@
   "menuAccent": "subtle",
   "aliases": {
     "components": "@/components",
-    "utils": "@workspace/ui/lib/utils",
-    "ui": "@workspace/ui/components",
+    "utils": "@coin-archive/ui/lib/utils",
+    "ui": "@coin-archive/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

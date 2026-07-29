@@ -1,4 +1,4 @@
-import type { CompositionOption } from "@workspace/db"
+import type { CompositionOption } from "@coin-archive/db"
 import { describe, expect, it } from "vitest"
 
 import { hasCompositionEditChanges } from "./composition-edit-form"

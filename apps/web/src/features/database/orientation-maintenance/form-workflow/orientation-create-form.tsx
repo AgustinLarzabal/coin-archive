@@ -2,7 +2,7 @@ import { useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import { SubmitButton } from "@workspace/ui/components/submit-button"
+import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type {

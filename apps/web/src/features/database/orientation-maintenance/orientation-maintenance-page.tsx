@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { OrientationOption } from "@workspace/db"
+import type { OrientationOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -34,7 +34,7 @@ type ReadDependencies = {
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getOrientations } = await import("@workspace/db")
+  const { getOrientations } = await import("@coin-archive/db")
 
   return {
     getOrientations,

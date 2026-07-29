@@ -125,6 +125,6 @@ Seed data is for local exploration and manual verification only. Automated behav
 
 ## Maintainer notes
 
-Applications should consume shared database behavior from `@workspace/db` rather than duplicating schema ownership or database query logic in app code.
+Applications should consume shared database behavior from `@coin-archive/db` rather than duplicating schema ownership or database query logic in app code.
 
 Database architecture stays in [`packages/db/README.md`](/packages/db/README.md). This root README intentionally keeps database detail to a pointer so the database package remains the single maintainer-facing source for schema workflow, current invariants, and operational database commands.

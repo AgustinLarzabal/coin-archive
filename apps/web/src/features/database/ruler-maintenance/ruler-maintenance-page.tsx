@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption, RulerOption } from "@workspace/db"
+import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
@@ -36,7 +36,7 @@ type RulerReadDependencies = {
 }
 
 async function getDefaultRulerReadDependencies(): Promise<RulerReadDependencies> {
-  const { getRulerGroups, getRulers } = await import("@workspace/db")
+  const { getRulerGroups, getRulers } = await import("@coin-archive/db")
 
   return {
     getRulerGroups,

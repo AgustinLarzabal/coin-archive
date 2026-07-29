@@ -1,4 +1,4 @@
-import type { ThemeOption } from "@workspace/db"
+import type { ThemeOption } from "@coin-archive/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"

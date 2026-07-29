@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { RulerGroupOption, RulerOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createRulerColumns } from "./columns"
 import { RulerMaintenanceSheet } from "../sheet-workflow/ruler-maintenance-sheet"

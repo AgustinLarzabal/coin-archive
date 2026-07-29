@@ -1,4 +1,4 @@
-import type { RulerGroupOption } from "@workspace/db"
+import type { RulerGroupOption } from "@coin-archive/db"
 
 export type RulerGroupDraft = {
   code: string

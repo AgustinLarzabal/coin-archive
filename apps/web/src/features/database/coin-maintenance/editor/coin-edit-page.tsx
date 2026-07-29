@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start"
 import type {
   CoinMaintenanceDeleteSummary,
   CoinMaintenanceRecord,
-} from "@workspace/db"
+} from "@coin-archive/db"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -56,7 +56,7 @@ async function getDefaultDependencies(): Promise<EditCoinReadDependencies> {
     { getCoinMaintenanceDeleteSummary, getCoinMaintenanceRecord },
     formOptionsDependencies,
   ] = await Promise.all([
-    import("@workspace/db"),
+    import("@coin-archive/db"),
     getCoinFormOptionsDependencies(),
   ])
 

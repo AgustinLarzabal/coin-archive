@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -102,7 +102,7 @@ type ThemeMutationDependencies = {
 
 async function getDefaultThemeMutationDependencies(): Promise<ThemeMutationDependencies> {
   const { createTheme, deleteTheme, updateTheme } =
-    await import("@workspace/db")
+    await import("@coin-archive/db")
 
   return {
     createTheme,

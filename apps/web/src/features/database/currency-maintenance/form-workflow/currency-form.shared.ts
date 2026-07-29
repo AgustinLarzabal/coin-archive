@@ -1,4 +1,4 @@
-import type { CurrencyOption } from "@workspace/db"
+import type { CurrencyOption } from "@coin-archive/db"
 
 export type CurrencyDraft = {
   code: string

@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { EngraverOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { EngraverOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createEngraverColumns } from "./columns"
 import { EngraverMaintenanceSheet } from "../sheet-workflow/engraver-maintenance-sheet"

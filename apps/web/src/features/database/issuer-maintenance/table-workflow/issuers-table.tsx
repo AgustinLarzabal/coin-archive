@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { IssuerMaintenanceRecord } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { IssuerMaintenanceSheet } from "../sheet-workflow/issuer-maintenance-sheet"
 

@@ -1,5 +1,5 @@
-import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
+import { Field, FieldError, FieldLabel } from "@coin-archive/ui/components/field"
+import { Input } from "@coin-archive/ui/components/input"
 import type { ComponentProps } from "react"
 
 type CoinInputFieldProps = {

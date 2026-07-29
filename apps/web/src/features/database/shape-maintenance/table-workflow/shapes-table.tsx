@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { ShapeOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { ShapeOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createShapeColumns } from "./columns"
 import { ShapeMaintenanceSheet } from "../sheet-workflow/shape-maintenance-sheet"

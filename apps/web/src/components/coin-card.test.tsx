@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react"
-import type { CoinListRecord } from "@workspace/db"
+import type { CoinListRecord } from "@coin-archive/db"
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"

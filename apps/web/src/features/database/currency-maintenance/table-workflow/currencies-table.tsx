@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import type { CurrencyOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { CurrencyOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createCurrencyColumns } from "./columns"
 import { CurrencyMaintenanceSheet } from "../sheet-workflow/currency-maintenance-sheet"

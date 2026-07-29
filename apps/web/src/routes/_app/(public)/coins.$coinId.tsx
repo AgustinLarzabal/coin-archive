@@ -1,18 +1,18 @@
-import { getCoin } from "@workspace/db"
-import type { CoinDetailRecord } from "@workspace/db"
+import { getCoin } from "@coin-archive/db"
+import type { CoinDetailRecord } from "@coin-archive/db"
 import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { Fragment } from "react"
 import type { ReactNode } from "react"
 import { z } from "zod"
-import { ImageZoom } from "@workspace/ui/components/kibo-ui/image-zoom"
-import { Separator } from "@workspace/ui/components/separator"
+import { ImageZoom } from "@coin-archive/ui/components/kibo-ui/image-zoom"
+import { Separator } from "@coin-archive/ui/components/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@workspace/ui/components/tooltip"
-import { Badge } from "@workspace/ui/components/badge"
+} from "@coin-archive/ui/components/tooltip"
+import { Badge } from "@coin-archive/ui/components/badge"
 import type { CoinSearch } from "../../../lib/coin-search"
 import { coinSearchSchema } from "../../../lib/coin-search"
 import {
@@ -20,9 +20,9 @@ import {
   getSurfaceImageUrl,
 } from "../../../lib/coin-images"
 import { RULER_FILTER_LABEL } from "../../../lib/ruler-filter"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@coin-archive/ui/components/button"
 import { ChevronLeft } from "lucide-react"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coin-archive/ui/lib/utils"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),

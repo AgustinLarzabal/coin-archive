@@ -1,4 +1,4 @@
-import type { ShapeOption } from "@workspace/db"
+import type { ShapeOption } from "@coin-archive/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"

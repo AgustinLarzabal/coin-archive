@@ -1,9 +1,9 @@
 import { Link, useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { Icons } from "./icons"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coin-archive/ui/lib/utils"
 import { getCollectorRole } from "@/lib/collector-role"
-import { authClient, hasEditorAccess } from "@workspace/auth/client"
+import { authClient, hasEditorAccess } from "@coin-archive/auth/client"
 import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 
 const icons = {

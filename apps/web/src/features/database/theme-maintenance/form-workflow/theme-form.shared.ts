@@ -1,4 +1,4 @@
-import type { ThemeOption } from "@workspace/db"
+import type { ThemeOption } from "@coin-archive/db"
 
 export type ThemeDraft = {
   code: string

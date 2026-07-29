@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import type { OrientationOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { OrientationOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createOrientationColumns } from "./columns"
 import { OrientationMaintenanceSheet } from "../sheet-workflow/orientation-maintenance-sheet"

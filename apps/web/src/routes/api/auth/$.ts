@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { auth } from "@workspace/auth/server"
+import { auth } from "@coin-archive/auth/server"
 
 export function handleAuthRequest({ request }: { request: Request }) {
   return auth.handler(request)

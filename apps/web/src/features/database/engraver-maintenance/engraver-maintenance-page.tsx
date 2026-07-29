@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { EngraverOption } from "@workspace/db"
+import type { EngraverOption } from "@coin-archive/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
@@ -33,7 +33,7 @@ type EngraverReadDependencies = {
 }
 
 async function getDefaultEngraverReadDependencies(): Promise<EngraverReadDependencies> {
-  const { getEngravers } = await import("@workspace/db")
+  const { getEngravers } = await import("@coin-archive/db")
 
   return {
     getEngravers,

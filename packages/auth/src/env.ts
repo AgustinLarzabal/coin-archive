@@ -1,4 +1,4 @@
-import { loadLocalEnvironmentFile } from "@workspace/db/local-environment"
+import { loadLocalEnvironmentFile } from "@coin-archive/db/local-environment"
 
 loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url)
 

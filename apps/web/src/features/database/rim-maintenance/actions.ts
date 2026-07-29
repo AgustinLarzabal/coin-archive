@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -102,7 +102,7 @@ type RimMutationDependencies = {
 }
 
 async function getDefaultRimMutationDependencies(): Promise<RimMutationDependencies> {
-  const { createRim, deleteRim, updateRim } = await import("@workspace/db")
+  const { createRim, deleteRim, updateRim } = await import("@coin-archive/db")
 
   return {
     createRim,

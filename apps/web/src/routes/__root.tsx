@@ -1,8 +1,8 @@
 import { NotFound } from "@/components/not-found"
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
-import { TooltipProvider } from "@workspace/ui/components/tooltip"
+import { TooltipProvider } from "@coin-archive/ui/components/tooltip"
 
-import appCss from "@workspace/ui/globals.css?url"
+import appCss from "@coin-archive/ui/globals.css?url"
 
 export const Route = createRootRoute({
   head: () => ({

@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { ThemeOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { ThemeOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createThemeColumns } from "./columns"
 import { ThemeMaintenanceSheet } from "../sheet-workflow/theme-maintenance-sheet"

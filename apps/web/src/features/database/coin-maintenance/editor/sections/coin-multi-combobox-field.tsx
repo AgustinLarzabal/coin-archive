@@ -8,13 +8,13 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
-} from "@workspace/ui/components/combobox"
+} from "@coin-archive/ui/components/combobox"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@workspace/ui/components/field"
+} from "@coin-archive/ui/components/field"
 import type { CoinOption } from "./coin-select-field"
 
 type CoinMultiComboboxFieldProps = {

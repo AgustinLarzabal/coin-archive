@@ -1,12 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { RulerOption } from "@workspace/db"
-import { Button } from "@workspace/ui/components/button"
+import type { RulerOption } from "@coin-archive/db"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+} from "@coin-archive/ui/components/dropdown-menu"
 
 import { Icons } from "@/components/icons"
 

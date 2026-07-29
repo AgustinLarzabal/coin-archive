@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { MintOption } from "@workspace/db"
+import type { MintOption } from "@coin-archive/db"
 
 import { AccessDenied } from "@/components/access-denied"
 import { getAuthSession } from "@/lib/auth-session"
@@ -33,7 +33,7 @@ type MintReadDependencies = {
 }
 
 async function getDefaultMintReadDependencies(): Promise<MintReadDependencies> {
-  const { getMints } = await import("@workspace/db")
+  const { getMints } = await import("@coin-archive/db")
 
   return {
     getMints,

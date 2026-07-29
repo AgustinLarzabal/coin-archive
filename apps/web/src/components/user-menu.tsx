@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router"
-import { authClient } from "@workspace/auth/client"
+import { authClient } from "@coin-archive/auth/client"
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@workspace/ui/components/avatar"
-import { Button } from "@workspace/ui/components/button"
+} from "@coin-archive/ui/components/avatar"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+} from "@coin-archive/ui/components/dropdown-menu"
 
 export function UserMenu() {
   const { data: session } = authClient.useSession()

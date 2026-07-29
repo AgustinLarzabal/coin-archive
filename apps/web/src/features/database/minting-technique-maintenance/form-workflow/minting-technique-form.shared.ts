@@ -1,4 +1,4 @@
-import type { TechniqueOption } from "@workspace/db"
+import type { TechniqueOption } from "@coin-archive/db"
 
 export type MintingTechniqueDraft = {
   code: string

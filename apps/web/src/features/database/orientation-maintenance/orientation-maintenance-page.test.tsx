@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { OrientationOption } from "@workspace/db"
+import type { OrientationOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { ORIENTATION_AUTHORIZATION_ERROR } from "./actions"

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import type { EdgeOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { EdgeOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createEdgeColumns } from "./columns"
 import { EdgeMaintenanceSheet } from "../sheet-workflow/edge-maintenance-sheet"

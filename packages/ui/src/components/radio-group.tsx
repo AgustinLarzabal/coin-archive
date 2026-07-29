@@ -2,7 +2,7 @@ import * as React from "react"
 import { Radio } from "@base-ui/react/radio"
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coin-archive/ui/lib/utils"
 
 function RadioGroup({
   className,

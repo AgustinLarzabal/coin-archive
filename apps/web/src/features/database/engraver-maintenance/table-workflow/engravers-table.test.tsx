@@ -1,4 +1,4 @@
-import type { EngraverOption } from "@workspace/db"
+import type { EngraverOption } from "@coin-archive/db"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 

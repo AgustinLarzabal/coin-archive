@@ -1,5 +1,5 @@
-import { Input } from "@workspace/ui/components/input"
-import { Button } from "@workspace/ui/components/button"
+import { Input } from "@coin-archive/ui/components/input"
+import { Button } from "@coin-archive/ui/components/button"
 
 type CompositionsTableToolbarProps = {
   nameFilter: string

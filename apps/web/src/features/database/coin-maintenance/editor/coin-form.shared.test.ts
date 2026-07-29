@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { CoinMaintenanceRecord } from "@workspace/db"
+import type { CoinMaintenanceRecord } from "@coin-archive/db"
 
 import {
   areCoinDraftsEqual,

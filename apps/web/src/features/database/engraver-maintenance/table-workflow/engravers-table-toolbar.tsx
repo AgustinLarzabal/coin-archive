@@ -1,4 +1,4 @@
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 
 type EngraversTableToolbarProps = {
   onCreateEngraver: () => void

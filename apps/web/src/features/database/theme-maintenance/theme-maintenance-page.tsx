@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { ThemeOption } from "@workspace/db"
+import type { ThemeOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -34,7 +34,7 @@ type ReadDependencies = {
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getThemes } = await import("@workspace/db")
+  const { getThemes } = await import("@coin-archive/db")
 
   return {
     getThemes,

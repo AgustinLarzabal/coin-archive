@@ -1,4 +1,4 @@
-import type { DistributionOption } from "@workspace/db"
+import type { DistributionOption } from "@coin-archive/db"
 
 export type DistributionDraft = {
   code: string

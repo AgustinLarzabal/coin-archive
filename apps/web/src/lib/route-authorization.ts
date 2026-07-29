@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 
 import { getCollectorRole } from "./collector-role"
 import type { CollectorWithRole } from "./collector-role"

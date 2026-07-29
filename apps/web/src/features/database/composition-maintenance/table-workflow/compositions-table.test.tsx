@@ -1,4 +1,4 @@
-import type { CompositionOption } from "@workspace/db"
+import type { CompositionOption } from "@coin-archive/db"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 

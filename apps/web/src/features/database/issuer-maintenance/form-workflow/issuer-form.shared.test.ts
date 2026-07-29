@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@workspace/db"
+import type { IssuerMaintenanceRecord } from "@coin-archive/db"
 import { describe, expect, it } from "vitest"
 
 import {

@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@workspace/db"
+import type { IssuerMaintenanceRecord } from "@coin-archive/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"

@@ -27,7 +27,7 @@ describe("initial Admin bootstrap workflow", () => {
       "INITIAL_ADMIN_EMAIL: ${{ secrets.INITIAL_ADMIN_EMAIL }}"
     )
     expect(initialAdminBootstrapWorkflow).toContain(
-      "pnpm --filter @workspace/db run bootstrap:initial-admin"
+      "pnpm --filter @coin-archive/db run bootstrap:initial-admin"
     )
   })
 })

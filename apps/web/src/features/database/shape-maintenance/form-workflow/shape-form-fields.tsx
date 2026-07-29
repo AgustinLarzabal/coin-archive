@@ -3,8 +3,8 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
+} from "@coin-archive/ui/components/field"
+import { Input } from "@coin-archive/ui/components/input"
 
 import type { ShapeFieldErrors } from "../actions"
 

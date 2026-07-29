@@ -5,8 +5,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@workspace/ui/components/select"
-import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+} from "@coin-archive/ui/components/select"
+import { Field, FieldError, FieldLabel } from "@coin-archive/ui/components/field"
 
 export type CoinOption = {
   id: string

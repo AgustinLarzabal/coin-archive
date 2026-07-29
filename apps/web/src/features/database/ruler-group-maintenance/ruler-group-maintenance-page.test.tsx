@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { RulerGroupOption } from "@workspace/db"
+import type { RulerGroupOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { RULER_GROUP_AUTHORIZATION_ERROR } from "./actions"

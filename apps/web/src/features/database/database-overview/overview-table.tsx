@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
+import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
 
 import { databaseMaintenanceSections } from "../navigation"
 import {
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@workspace/ui/components/table"
+} from "@coin-archive/ui/components/table"
 
 type DatabaseOverviewTableProps = {
   counts: DatabaseGeneralSummaryCounts

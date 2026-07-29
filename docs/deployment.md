@@ -44,7 +44,7 @@ Before deployment, the application validates this complete runtime contract and 
 
 ## Direct database connection check
 
-After supplying an environment's `DATABASE_URL`, run `pnpm --filter @workspace/db verify:connection`. The command issues a read-only `select 1` through the same direct `postgres` client used by the application, then closes the connection. Run it with the staging or production environment's URL before releasing that environment; it does not use Cloudflare Hyperdrive.
+After supplying an environment's `DATABASE_URL`, run `pnpm --filter @coin-archive/db verify:connection`. The command issues a read-only `select 1` through the same direct `postgres` client used by the application, then closes the connection. Run it with the staging or production environment's URL before releasing that environment; it does not use Cloudflare Hyperdrive.
 
 ## Production promotion
 

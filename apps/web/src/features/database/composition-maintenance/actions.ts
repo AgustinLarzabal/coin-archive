@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import type { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -97,7 +97,7 @@ const POSTGRES_CONSTRAINT_RESULTS: PostgresConstraintResult[] = [
 
 async function getDefaultCompositionMutationDependencies(): Promise<CompositionMutationDependencies> {
   const { createComposition, deleteComposition, updateComposition } =
-    await import("@workspace/db")
+    await import("@coin-archive/db")
 
   return {
     createComposition,

@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -111,7 +111,7 @@ type RulerMutationDependencies = {
 }
 
 async function getDefaultRulerMutationDependencies(): Promise<RulerMutationDependencies> {
-  const { createRuler, deleteRuler, updateRuler } = await import("@workspace/db")
+  const { createRuler, deleteRuler, updateRuler } = await import("@coin-archive/db")
 
   return {
     createRuler,

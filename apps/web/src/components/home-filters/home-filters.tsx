@@ -4,10 +4,10 @@ import type {
   IssuerOption,
   RulerOption,
   ThemeOption,
-} from "@workspace/db"
-import { Button } from "@workspace/ui/components/button"
-import { Filters } from "@workspace/ui/components/reui/filters"
-import type { Filter } from "@workspace/ui/components/reui/filters"
+} from "@coin-archive/db"
+import { Button } from "@coin-archive/ui/components/button"
+import { Filters } from "@coin-archive/ui/components/reui/filters"
+import type { Filter } from "@coin-archive/ui/components/reui/filters"
 import { FunnelX, ListFilter } from "lucide-react"
 import {
   getHomeFilterFields,

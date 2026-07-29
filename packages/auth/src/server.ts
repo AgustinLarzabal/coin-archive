@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
-import { account, db, session, user, verification } from "@workspace/db"
+import { account, db, session, user, verification } from "@coin-archive/db"
 
 import { getAuthEnvironment } from "./env"
 import {

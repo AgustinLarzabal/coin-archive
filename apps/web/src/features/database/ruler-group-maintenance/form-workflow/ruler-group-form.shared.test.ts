@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { RulerGroupOption } from "@workspace/db"
+import type { RulerGroupOption } from "@coin-archive/db"
 
 import {
   createRulerGroupDraft,

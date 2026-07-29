@@ -4,12 +4,12 @@ import type {
   IssuerOption,
   RulerOption,
   ThemeOption,
-} from "@workspace/db"
-import { createFilter } from "@workspace/ui/components/reui/filters"
+} from "@coin-archive/db"
+import { createFilter } from "@coin-archive/ui/components/reui/filters"
 import type {
   Filter,
   FilterFieldConfig,
-} from "@workspace/ui/components/reui/filters"
+} from "@coin-archive/ui/components/reui/filters"
 import { Coins, Crown, Globe, Map, PenTool } from "lucide-react"
 import { z } from "zod"
 import { RULER_FILTER_LABEL } from "../../lib/ruler-filter"

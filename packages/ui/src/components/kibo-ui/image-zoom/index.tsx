@@ -5,7 +5,7 @@ import type {
   ControlledProps,
   UncontrolledProps,
 } from "react-medium-image-zoom";
-import { cn } from "@workspace/ui/lib/utils";
+import { cn } from "@coin-archive/ui/lib/utils";
 
 export type ImageZoomProps = UncontrolledProps & {
   isZoomed?: ControlledProps["isZoomed"];

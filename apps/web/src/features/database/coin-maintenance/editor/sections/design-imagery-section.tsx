@@ -1,11 +1,11 @@
-import { Card } from "@workspace/ui/components/card"
+import { Card } from "@coin-archive/ui/components/card"
 import type { ComponentProps } from "react"
 import {
   FieldDescription,
   FieldGroup,
   FieldLegend,
   FieldSet,
-} from "@workspace/ui/components/field"
+} from "@coin-archive/ui/components/field"
 
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"

@@ -25,7 +25,7 @@ describe("Better Auth drizzle adapter configuration", () => {
   })
 
   it("passes the auth tables directly to the drizzle adapter schema", async () => {
-    const dbModule = await import("@workspace/db")
+    const dbModule = await import("@coin-archive/db")
 
     const { auth } = await import("./server")
 

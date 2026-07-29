@@ -1,4 +1,4 @@
-import type { DatabaseGeneralSummaryCounts } from "@workspace/db"
+import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
 
 type DatabaseMaintenanceSection = {
   to: string

@@ -20,7 +20,7 @@ vi.mock("@tanstack/react-router", () => ({
     }),
 }))
 
-vi.mock("@workspace/auth/client", () => ({
+vi.mock("@coin-archive/auth/client", () => ({
   authClient: {
     useSession: () => ({ data: authState.session }),
   },

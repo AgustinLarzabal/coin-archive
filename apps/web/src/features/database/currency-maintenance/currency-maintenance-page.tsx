@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { CurrencyOption } from "@workspace/db"
+import type { CurrencyOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -34,7 +34,7 @@ type ReadDependencies = {
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getCurrencies } = await import("@workspace/db")
+  const { getCurrencies } = await import("@coin-archive/db")
 
   return {
     getCurrencies,

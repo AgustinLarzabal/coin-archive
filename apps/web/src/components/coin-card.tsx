@@ -1,4 +1,4 @@
-import type { CoinListRecord } from "@workspace/db"
+import type { CoinListRecord } from "@coin-archive/db"
 import { Link } from "@tanstack/react-router"
 import {
   Card,
@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card"
+} from "@coin-archive/ui/components/card"
 import type { CoinSearch } from "../lib/coin-search"
 import { getCoinPreviewImageUrl } from "../lib/coin-images"
 

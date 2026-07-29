@@ -1,6 +1,6 @@
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@coin-archive/ui/components/button"
 import { Icons } from "./icons"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coin-archive/ui/lib/utils"
 
 export function GitHubLink() {
   return (

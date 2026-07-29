@@ -1,4 +1,4 @@
-import { hasEditorAccess } from "@workspace/auth/client"
+import { hasEditorAccess } from "@coin-archive/auth/client"
 import { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
@@ -99,7 +99,7 @@ type EdgeMutationDependencies = {
 }
 
 async function getDefaultEdgeMutationDependencies(): Promise<EdgeMutationDependencies> {
-  const { createEdge, deleteEdge, updateEdge } = await import("@workspace/db")
+  const { createEdge, deleteEdge, updateEdge } = await import("@coin-archive/db")
 
   return {
     createEdge,

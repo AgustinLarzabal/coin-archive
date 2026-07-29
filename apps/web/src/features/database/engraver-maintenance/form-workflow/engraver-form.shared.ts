@@ -1,4 +1,4 @@
-import type { EngraverOption } from "@workspace/db"
+import type { EngraverOption } from "@coin-archive/db"
 
 export type EngraverDraft = {
   code: string

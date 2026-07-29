@@ -14,11 +14,11 @@
   "menuColor": "default",
   "menuAccent": "subtle",
   "aliases": {
-    "components": "@workspace/ui/components",
-    "utils": "@workspace/ui/lib/utils",
-    "ui": "@workspace/ui/components",
-    "lib": "@workspace/ui/lib",
-    "hooks": "@workspace/ui/hooks"
+    "components": "@coin-archive/ui/components",
+    "utils": "@coin-archive/ui/lib/utils",
+    "ui": "@coin-archive/ui/components",
+    "lib": "@coin-archive/ui/lib",
+    "hooks": "@coin-archive/ui/hooks"
   },
   "registries": {
     "@beui": "https://beui.dev/r/{name}.json"

@@ -1,5 +1,5 @@
-import type { OAuthProvider } from "@workspace/auth/client"
-import { Button } from "@workspace/ui/components/button"
+import type { OAuthProvider } from "@coin-archive/auth/client"
+import { Button } from "@coin-archive/ui/components/button"
 import { Icons } from "./icons"
 
 const providerConfig: Record<

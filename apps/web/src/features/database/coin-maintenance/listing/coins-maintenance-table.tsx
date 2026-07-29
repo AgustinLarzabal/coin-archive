@@ -5,7 +5,7 @@ import type {
   DistributionOption,
   IssuerOption,
   RulerOption,
-} from "@workspace/db"
+} from "@coin-archive/db"
 
 import type { CoinMaintenanceSearch } from "./coin-maintenance-page"
 

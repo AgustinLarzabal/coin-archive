@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { ShapeOption } from "@workspace/db"
+import type { ShapeOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
@@ -34,7 +34,7 @@ type ReadDependencies = {
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getShapes } = await import("@workspace/db")
+  const { getShapes } = await import("@coin-archive/db")
 
   return {
     getShapes,

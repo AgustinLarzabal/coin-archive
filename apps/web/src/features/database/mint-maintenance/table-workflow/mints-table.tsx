@@ -1,6 +1,6 @@
 import { useState } from "react"
-import type { MintOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { MintOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createMintColumns } from "./columns"
 import { MintMaintenanceSheet } from "../sheet-workflow/mint-maintenance-sheet"

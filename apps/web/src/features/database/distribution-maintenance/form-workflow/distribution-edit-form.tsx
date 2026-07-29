@@ -2,15 +2,15 @@ import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { DistributionOption } from "@workspace/db"
+import type { DistributionOption } from "@coin-archive/db"
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
-import { SubmitButton } from "@workspace/ui/components/submit-button"
+} from "@coin-archive/ui/components/field"
+import { Input } from "@coin-archive/ui/components/input"
+import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type {

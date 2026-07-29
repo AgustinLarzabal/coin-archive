@@ -1,4 +1,4 @@
-import type { RulerGroupOption, RulerOption } from "@workspace/db"
+import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
 import type { z } from "zod"
 
 import type { RulerMutationResult } from "../actions"

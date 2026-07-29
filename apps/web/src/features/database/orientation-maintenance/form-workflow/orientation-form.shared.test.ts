@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { OrientationOption } from "@workspace/db"
+import type { OrientationOption } from "@coin-archive/db"
 
 import {
   createOrientationDraft,

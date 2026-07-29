@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import type { CatalogueOption } from "@workspace/db"
-import { DataTable } from "@workspace/ui/components/data-table"
+import type { CatalogueOption } from "@coin-archive/db"
+import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createCatalogueColumns } from "./columns"
 import { CatalogueEditSheet } from "../sheet-workflow/catalogue-edit-sheet"

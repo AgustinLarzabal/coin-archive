@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useBlocker, useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CoinMaintenanceRecord } from "@workspace/db"
-import { Button } from "@workspace/ui/components/button"
-import { SubmitButton } from "@workspace/ui/components/submit-button"
+import type { CoinMaintenanceRecord } from "@coin-archive/db"
+import { Button } from "@coin-archive/ui/components/button"
+import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type {
@@ -37,7 +37,7 @@ import { IdentityClassificationSection } from "./sections/identity-classificatio
 import { PhysicalCharacteristicsSection } from "./sections/physical-characteristics-section"
 import { ProductionChronologySection } from "./sections/production-chronology-section"
 import { ThemesSection } from "./sections/themes-section"
-import { FieldError } from "@workspace/ui/components/field"
+import { FieldError } from "@coin-archive/ui/components/field"
 
 const UNSAVED_CHANGES_WARNING =
   "You have unsaved changes. Are you sure you want to leave this page?"

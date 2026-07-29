@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { ThemeOption } from "@workspace/db"
+import type { ThemeOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { THEME_AUTHORIZATION_ERROR } from "./actions"

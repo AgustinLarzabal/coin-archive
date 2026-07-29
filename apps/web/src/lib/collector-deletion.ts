@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { DeleteCollectorIdentityResult } from "@workspace/db"
+import type { DeleteCollectorIdentityResult } from "@coin-archive/db"
 
 export const COLLECTOR_DELETION_UNAUTHENTICATED_ERROR =
   "You must be signed in to delete your Collector profile."
@@ -44,7 +44,7 @@ type CollectorIdentity = {
 }
 
 async function getDefaultCollectorDeletionDependencies(): Promise<CollectorDeletionDependencies> {
-  const { deleteCollectorIdentity } = await import("@workspace/db")
+  const { deleteCollectorIdentity } = await import("@coin-archive/db")
 
   return {
     deleteCollectorIdentity: async (collectorId) =>

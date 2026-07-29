@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { DistributionOption } from "@workspace/db"
+import type { DistributionOption } from "@coin-archive/db"
 
 import {
   createDistributionDraft,

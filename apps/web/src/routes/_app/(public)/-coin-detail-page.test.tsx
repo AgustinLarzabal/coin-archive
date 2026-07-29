@@ -13,23 +13,30 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
     ...actual,
     Link: ({
       children,
+      params,
       search,
       to = "",
       ...props
     }: ComponentPropsWithoutRef<"a"> & {
       search?: Record<string, string | undefined>
+      params?: Record<string, string>
       to?: string
     }) => {
-      const params = new URLSearchParams()
+      const searchParams = new URLSearchParams()
 
       for (const [key, value] of Object.entries(search ?? {})) {
         if (value !== undefined) {
-          params.set(key, value)
+          searchParams.set(key, value)
         }
       }
 
-      const query = params.toString()
-      const href = query === "" ? to : `${to}?${query}`
+      const query = searchParams.toString()
+      const path = Object.entries(params ?? {}).reduce(
+        (currentPath, [key, value]) =>
+          currentPath.replace(`$${key}`, value),
+        to
+      )
+      const href = query === "" ? path : `${path}?${query}`
 
       return (
         <a href={href} {...props}>
@@ -107,10 +114,15 @@ function renderCoinDetailPageMarkup(
     distribution?: string
     engraver?: string
     issuer?: string
-  }
+  },
+  canMaintainCoins = false
 ) {
   return renderToStaticMarkup(
-    <CoinDetailPage coin={coin} backHomeSearch={backHomeSearch} />
+    <CoinDetailPage
+      coin={coin}
+      backHomeSearch={backHomeSearch}
+      canMaintainCoins={canMaintainCoins}
+    />
   )
 }
 
@@ -131,6 +143,23 @@ describe("CoinDetailPage", () => {
     expect(markup).toContain("https://example.com/coins/detail-test/obverse-image")
     expect(markup).toContain("https://example.com/coins/detail-test/reverse-image")
     expect(markup).not.toContain("/finland-2-euro-2004-obverse.jpg")
+  })
+
+  it("shows an edit link only for collectors with database maintenance access", () => {
+    const authorizedMarkup = renderCoinDetailPageMarkup(
+      baseCoin,
+      undefined,
+      true
+    )
+    const unauthorizedMarkup = renderCoinDetailPageMarkup(
+      baseCoin,
+      undefined,
+      false
+    )
+
+    expect(authorizedMarkup).toContain("Edit coin")
+    expect(authorizedMarkup).toContain('href="/database/coins/coin-1/edit"')
+    expect(unauthorizedMarkup).not.toContain("Edit coin")
   })
 
   it("falls back to the placeholder image when a surface has no images", () => {

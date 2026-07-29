@@ -20,6 +20,8 @@ import {
   getSurfaceImageUrl,
 } from "../../../lib/coin-images"
 import { RULER_FILTER_LABEL } from "../../../lib/ruler-filter"
+import { getAuthSession } from "../../../lib/auth-session"
+import { getEditorRouteAuthorization } from "../../../lib/route-authorization"
 import { buttonVariants } from "@coin-archive/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@coin-archive/ui/lib/utils"
@@ -48,13 +50,25 @@ const getCoinData = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_app/(public)/coins/$coinId")({
   validateSearch: coinSearchSchema,
-  loader: ({ params }) => getCoinData({ data: params }),
+  loader: async ({ params }) => {
+    const [{ coin }, session] = await Promise.all([
+      getCoinData({ data: params }),
+      getAuthSession(),
+    ])
+
+    return {
+      coin,
+      canMaintainCoins: getEditorRouteAuthorization(session?.user ?? null)
+        .isAllowed,
+    }
+  },
   component: CoinRoute,
 })
 
 type CoinDetailPageProps = {
   coin: CoinDetailRecord
   backHomeSearch?: CoinSearch
+  canMaintainCoins?: boolean
 }
 
 type CoinDetailSurfaceView = {
@@ -123,13 +137,23 @@ function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
 }
 
 function CoinRoute() {
-  const { coin } = Route.useLoaderData()
+  const { coin, canMaintainCoins } = Route.useLoaderData()
   const search = Route.useSearch()
 
-  return <CoinDetailPage coin={coin} backHomeSearch={search} />
+  return (
+    <CoinDetailPage
+      coin={coin}
+      backHomeSearch={search}
+      canMaintainCoins={canMaintainCoins}
+    />
+  )
 }
 
-export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
+export function CoinDetailPage({
+  coin,
+  backHomeSearch,
+  canMaintainCoins = false,
+}: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
   const hasKnownIssueYearRange = coin.minYear !== null && coin.maxYear !== null
   const hasSingleYear = hasKnownIssueYearRange && coin.minYear === coin.maxYear
@@ -208,20 +232,32 @@ export function CoinDetailPage({ coin, backHomeSearch }: CoinDetailPageProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6 py-10 pb-20">
-      <Link
-        to="/"
-        search={backHomeSearch}
-        className={cn(
-          buttonVariants({
-            variant: "link",
-            size: "sm",
-          }),
-          "mb-4 w-fit px-0 text-sm text-muted-foreground"
-        )}
-      >
-        <ChevronLeft />
-        Home
-      </Link>
+      <div className="flex max-w-[60%] justify-between">
+        <Link
+          to="/"
+          search={backHomeSearch}
+          className={cn(
+            buttonVariants({
+              variant: "link",
+              size: "sm",
+            }),
+            "mb-4 w-fit px-0 text-sm text-muted-foreground"
+          )}
+        >
+          <ChevronLeft />
+          Home
+        </Link>
+
+        {canMaintainCoins ? (
+          <Link
+            to="/database/coins/$coinId/edit"
+            params={{ coinId: coin.id }}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Edit coin
+          </Link>
+        ) : null}
+      </div>
 
       <h1 className="max-w-[60%] text-2xl">{coin.title}</h1>
 

@@ -26,6 +26,9 @@ describe("production deployment workflow", () => {
     )
     expect(productionDeploymentWorkflow).toContain("pnpm db:migrate")
     expect(productionDeploymentWorkflow).toContain(
+      "VITE_SHOW_SIGN_IN_BUTTON: ${{ vars.VITE_SHOW_SIGN_IN_BUTTON }}"
+    )
+    expect(productionDeploymentWorkflow).toContain(
       "pnpm --filter web run deploy:production"
     )
     expect(productionDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)

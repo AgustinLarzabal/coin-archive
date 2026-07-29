@@ -26,6 +26,9 @@ describe("staging deployment workflow", () => {
     expect(stagingDeploymentWorkflow).toContain("pnpm db:test")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:migrate")
     expect(stagingDeploymentWorkflow).toContain(
+      "VITE_SHOW_SIGN_IN_BUTTON: ${{ vars.VITE_SHOW_SIGN_IN_BUTTON }}"
+    )
+    expect(stagingDeploymentWorkflow).toContain(
       "pnpm --filter web run deploy:staging"
     )
     expect(stagingDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)

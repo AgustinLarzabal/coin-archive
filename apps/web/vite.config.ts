@@ -17,6 +17,9 @@ const config = defineConfig({
       "@workspace/auth/server": fileURLToPath(
         new URL("../../packages/auth/src/server.ts", import.meta.url)
       ),
+      "@workspace/feature-flags": fileURLToPath(
+        new URL("../../packages/feature-flags/src/index.ts", import.meta.url)
+      ),
     },
     tsconfigPaths: true,
   },

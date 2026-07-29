@@ -2,6 +2,7 @@ import {
   getLocationRedirectTarget,
   getSafeAuthRedirect,
 } from "@/lib/auth-redirect"
+import { getProductFlags } from "@/lib/product-flags"
 import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@workspace/auth/client"
 import { buttonVariants } from "@workspace/ui/components/button"
@@ -27,6 +28,7 @@ export function getLoginRedirectTarget({
 
 export function Header() {
   const { data: session } = authClient.useSession()
+  const { showSignInButton } = getProductFlags()
   const loginRedirectTarget = useRouterState({
     select: (state) =>
       getLoginRedirectTarget({
@@ -42,16 +44,18 @@ export function Header() {
     <header className="z-10 flex h-[70px] items-center justify-end gap-4 border-b bg-background px-6">
       <div>
         {session === null ? (
-          <Link
-            to="/login"
-            search={signInSearch}
-            className={buttonVariants({
-              size: "sm",
-              variant: "outline",
-            })}
-          >
-            Sign in
-          </Link>
+          showSignInButton && (
+            <Link
+              to="/login"
+              search={signInSearch}
+              className={buttonVariants({
+                size: "sm",
+                variant: "outline",
+              })}
+            >
+              Sign in
+            </Link>
+          )
         ) : (
           <UserMenu />
         )}

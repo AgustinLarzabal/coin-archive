@@ -28,6 +28,7 @@
     "@tanstack/router-plugin": "^1.168.13",
     "@workspace/auth": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/feature-flags": "workspace:*",
     "@workspace/ui": "workspace:*",
     "aws4fetch": "^1.0.20",
     "lucide-react": "catalog:",

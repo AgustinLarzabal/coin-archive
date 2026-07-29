@@ -1,0 +1,3 @@
+# Shared Deploy-Time Product Flags
+
+Coin Archive will define cross-platform product-flag keys, defaults, and meanings in a framework-neutral `@workspace/feature-flags` package, while each client app supplies its own build-time configuration adapter. Flags have explicit defaults—`showSignInButton` defaults to enabled—and may control presentation or product rollout only, never Collector authentication or authorization. This prepares the forthcoming mobile app to share product semantics without coupling the package to web or mobile environment APIs, and avoids the operational cost of a runtime flag service until instant, targeted, or percentage rollouts are actually needed.

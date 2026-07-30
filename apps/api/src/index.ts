@@ -1,4 +1,8 @@
-import { createDatabase, getCoinsWithDatabase } from "@coin-archive/db"
+import {
+  createDatabase,
+  getPublicCoinWithDatabase,
+  getCoinsWithDatabase,
+} from "@coin-archive/db"
 import { createPublicApiApp } from "./app"
 
 export interface Env {
@@ -36,6 +40,7 @@ export default {
           (coin): coin is typeof coin & { createdAt: Date } =>
             coin.createdAt !== undefined
         ),
+      getCoin: (coinId) => getPublicCoinWithDatabase(database.db, coinId),
     })
     try {
       return await app.fetch(request)

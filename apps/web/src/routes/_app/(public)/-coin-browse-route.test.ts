@@ -13,7 +13,7 @@ describe("public Coin browse route", () => {
     browse.mockReset()
     vi.mocked(getPublicApiClient).mockReturnValue({
       coins: { browse },
-    } as ReturnType<typeof getPublicApiClient>)
+    } as unknown as ReturnType<typeof getPublicApiClient>)
   })
 
   it("renders Coin summaries returned by the shared API client for Title search and all catalogue filters", async () => {

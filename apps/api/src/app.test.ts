@@ -144,3 +144,145 @@ describe("GET /api/v1/coins", () => {
     expect(body).toMatchObject({ data: [{ surfaceImages: { obverse: null } }] })
   })
 })
+
+describe("GET /api/v1/coins/:id", () => {
+  it("returns a complete public Coin detail document and supports conditional requests", async () => {
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      getCoin: async () => ({
+        id: coins[0].id,
+        title: "First Coin",
+        comments: "A public Coin Comment.",
+        composition: {
+          code: "cu-ni",
+          name: "Copper-nickel",
+          description: null,
+        },
+        diameter: 25.75,
+        distribution: { code: "commemorative", name: "Commemorative" },
+        edge: { code: "reeded", name: "Reeded" },
+        faceValue: {
+          text: "2 Euros",
+          numericValue: 2,
+          currency: { code: "euro", name: "Euro", fullName: "Euro" },
+        },
+        isDemonetized: false,
+        issuer: { code: "spain", isoCode: "ES", name: "Spain", parent: null },
+        minYear: 2004,
+        maxYear: 2004,
+        mintage: 8_000_000,
+        mints: [{ code: "madrid", name: "Madrid" }],
+        orientation: { code: "medal", name: "Medal alignment" },
+        references: [
+          { catalogue: { code: "KM", title: "Krause-Mishler" }, number: "123" },
+        ],
+        rim: { code: "raised", name: "Raised" },
+        rulers: [{ code: "felipe-vi", name: "Felipe VI" }],
+        shape: { code: "round", name: "Round" },
+        surfaces: {
+          obverse: {
+            description: "Portrait.",
+            lettering: "FELIPE VI",
+            imageUrl: "https://images.coinarchive.app/obverse.jpg",
+            engravers: [{ code: "ana", name: "Ana" }],
+          },
+          reverse: null,
+          edge: { description: null, lettering: null, imageUrl: null },
+        },
+        technique: { code: "milled", name: "Milled" },
+        themes: [{ code: "history", name: "History" }],
+        thickness: 2.2,
+        weight: 8.5,
+      }),
+    })
+
+    const response = await app.request(
+      `https://api.coinarchive.app/api/v1/coins/${coins[0].id}`
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toMatchObject({
+      data: {
+        id: coins[0].id,
+        comments: "A public Coin Comment.",
+        diameter: "25.75",
+        faceValue: { numericValue: "2" },
+        mintage: "8000000",
+        weight: "8.5",
+        surfaces: {
+          obverse: { imageUrl: "https://images.coinarchive.app/obverse.jpg" },
+          reverse: null,
+          edge: { imageUrl: null },
+        },
+      },
+    })
+
+    const conditional = await app.request(
+      `https://api.coinarchive.app/api/v1/coins/${coins[0].id}`,
+      {
+        headers: { "If-None-Match": response.headers.get("ETag")! },
+      }
+    )
+    expect(conditional.status).toBe(304)
+  })
+
+  it("returns public problem documents for invalid and unknown Coin UUIDs", async () => {
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      getCoin: async () => null,
+    })
+
+    for (const [id, status] of [
+      ["not-a-uuid", 400],
+      [coins[0].id, 404],
+    ] as const) {
+      const response = await app.request(
+        `https://api.coinarchive.app/api/v1/coins/${id}`
+      )
+      expect(response.status).toBe(status)
+      expect(response.headers.get("Content-Type")).toContain(
+        "application/problem+json"
+      )
+      await expect(response.json()).resolves.toMatchObject({
+        type: `https://api.coinarchive.app/problems/${status}`,
+        status,
+        title: expect.any(String),
+        detail: expect.any(String),
+        instance: `/api/v1/coins/${id}`,
+        ...(status === 400
+          ? { invalidParams: [{ name: "uuid", reason: expect.any(String) }] }
+          : {}),
+      })
+    }
+  })
+})
+
+describe("GET /api/v1/openapi.json", () => {
+  it("documents Coin detail and its public error responses from the shared contract", async () => {
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/openapi.json"
+    )
+    const document = (await response.json()) as {
+      paths: Record<string, { get?: { responses: Record<string, unknown> } }>
+    }
+
+    expect(
+      document.paths["/api/v1/coins/{uuid}"]?.get?.responses
+    ).toMatchObject({
+      "200": expect.any(Object),
+      "400": expect.any(Object),
+      "404": expect.any(Object),
+    })
+  })
+})

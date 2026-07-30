@@ -1,7 +1,12 @@
 import { OpenAPIGenerator } from "@orpc/openapi"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 import { browseCoinsInputSchema, publicApiContract } from "@coin-archive/api"
-import type { BrowseCoinsInput, BrowseCoinsOutput } from "@coin-archive/api"
+import type {
+  BrowseCoinsInput,
+  BrowseCoinsOutput,
+  CoinDetail,
+  CoinDetailOutput,
+} from "@coin-archive/api"
 import { Hono } from "hono"
 
 const cacheControl =
@@ -35,13 +40,62 @@ export type BrowseCoins = (
   }
 ) => Promise<CoinSource[]>
 
+type CoinDetailSource = {
+  id: string
+  title: string
+  comments: string | null
+  composition: { code: string; name: string; description: string | null }
+  diameter: number | string | null
+  distribution: { code: string; name: string }
+  edge: { code: string; name: string } | null
+  faceValue: {
+    text: string
+    numericValue: number | string
+    currency: { code: string; name: string; fullName: string }
+  }
+  isDemonetized: boolean | null
+  issuer: { code: string; isoCode: string; name: string }
+  minYear: number | null
+  maxYear: number | null
+  mintage: number | string | null
+  mints: { code: string; name: string }[]
+  orientation: { code: string; name: string } | null
+  references: { catalogue: { code: string; title: string }; number: string }[]
+  rim: { code: string; name: string } | null
+  rulers: { code: string; name: string }[]
+  shape: { code: string; name: string } | null
+  surfaces: {
+    obverse: CoinFaceSurface | null
+    reverse: CoinFaceSurface | null
+    edge: CoinEdgeSurface | null
+  }
+  technique: { code: string; name: string } | null
+  themes: { code: string; name: string }[]
+  thickness: number | string | null
+  weight: number | string | null
+}
+
+type CoinEdgeSurface = {
+  description: string | null
+  lettering: string | null
+  imageUrl: string | null
+}
+
+type CoinFaceSurface = CoinEdgeSurface & {
+  engravers?: { code: string; name: string }[]
+}
+
+export type GetCoin = (id: string) => Promise<CoinDetailSource | null>
+
 export function createPublicApiApp({
   browseCoins,
+  getCoin = async () => null,
   environment,
   surfaceImageOrigin,
   rateLimit = async () => true,
 }: {
   browseCoins: BrowseCoins
+  getCoin?: GetCoin
   environment: "staging" | "production"
   surfaceImageOrigin: string
   rateLimit?: (clientIp: string) => Promise<boolean>
@@ -142,6 +196,51 @@ export function createPublicApiApp({
     )
   )
 
+  app.on(["GET", "HEAD"], "/api/v1/coins/:uuid", async (context) => {
+    const uuid = context.req.param("uuid")
+    if (!isUuid(uuid)) {
+      return problemResponse(
+        400,
+        "Invalid Coin UUID",
+        "Coin UUID is invalid",
+        context.req.path,
+        [{ name: "uuid", reason: "does not match UUID format" }]
+      )
+    }
+    const coin = await getCoin(uuid)
+    if (coin === null) {
+      return problemResponse(
+        404,
+        "Coin not found",
+        "No Coin matches this UUID",
+        context.req.path
+      )
+    }
+    const body: CoinDetailOutput = {
+      data: mapCoinDetail(coin, surfaceImageOrigin),
+    }
+    const serialized = JSON.stringify(body)
+    const etag = `"${await digest(serialized)}"`
+    const headers = { "Cache-Control": cacheControl, ETag: etag }
+    if (context.req.header("If-None-Match") === etag)
+      return context.body(null, 304, headers)
+    return context.req.method === "HEAD"
+      ? context.body(null, 200, headers)
+      : context.body(serialized, 200, {
+          ...headers,
+          "Content-Type": "application/json",
+        })
+  })
+
+  app.all("/api/v1/coins/:uuid", (context) =>
+    problemResponse(
+      405,
+      "Method Not Allowed",
+      "Only GET and HEAD are supported",
+      context.req.path
+    )
+  )
+
   app.get("/api/v1/openapi.json", async (context) => {
     const document = await new OpenAPIGenerator({
       schemaConverters: [new ZodToJsonSchemaConverter()],
@@ -225,6 +324,57 @@ function safeImageUrl(
   } catch {
     return null
   }
+}
+
+function mapCoinDetail(
+  coin: CoinDetailSource,
+  surfaceImageOrigin: string
+): CoinDetail {
+  const mapEdgeSurface = (surface: CoinEdgeSurface | null) =>
+    surface === null
+      ? null
+      : {
+          description: surface.description,
+          lettering: surface.lettering,
+          imageUrl: safeImageUrl(surface.imageUrl, surfaceImageOrigin),
+        }
+  const mapFaceSurface = (surface: CoinFaceSurface | null) =>
+    surface === null
+      ? null
+      : {
+          description: surface.description,
+          lettering: surface.lettering,
+          imageUrl: safeImageUrl(surface.imageUrl, surfaceImageOrigin),
+          engravers: surface.engravers ?? [],
+        }
+  const decimal = (value: number | string | null) => value?.toString() ?? null
+  return {
+    ...coin,
+    issuer: {
+      code: coin.issuer.code,
+      isoCode: coin.issuer.isoCode,
+      name: coin.issuer.name,
+    },
+    faceValue: {
+      ...coin.faceValue,
+      numericValue: coin.faceValue.numericValue.toString(),
+    },
+    diameter: decimal(coin.diameter),
+    mintage: decimal(coin.mintage),
+    thickness: decimal(coin.thickness),
+    weight: decimal(coin.weight),
+    surfaces: {
+      obverse: mapFaceSurface(coin.surfaces.obverse),
+      reverse: mapFaceSurface(coin.surfaces.reverse),
+      edge: mapEdgeSurface(coin.surfaces.edge),
+    },
+  }
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  )
 }
 
 function encodeCursor(coin: Pick<CoinSource, "createdAt" | "id">) {

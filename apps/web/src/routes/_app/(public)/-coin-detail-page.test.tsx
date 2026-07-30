@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react"
-import type { CoinDetailRecord } from "@coin-archive/db"
+import type { CoinDetail } from "@coin-archive/api"
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
@@ -32,8 +32,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
       const query = searchParams.toString()
       const path = Object.entries(params ?? {}).reduce(
-        (currentPath, [key, value]) =>
-          currentPath.replace(`$${key}`, value),
+        (currentPath, [key, value]) => currentPath.replace(`$${key}`, value),
         to
       )
       const href = query === "" ? path : `${path}?${query}`
@@ -47,7 +46,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   }
 })
 
-const baseCoin: CoinDetailRecord = {
+const baseCoin: CoinDetail = {
   id: "coin-1",
   title: "Detail Test Coin",
   comments: null,
@@ -64,7 +63,7 @@ const baseCoin: CoinDetailRecord = {
   edge: null,
   faceValue: {
     text: "2 Euros",
-    numericValue: 2,
+    numericValue: "2",
     currency: {
       code: "euro",
       name: "Euro",
@@ -76,7 +75,6 @@ const baseCoin: CoinDetailRecord = {
     code: "spain",
     isoCode: "ES",
     name: "Spain",
-    parent: null,
   },
   maxYear: 2004,
   mintage: null,
@@ -109,7 +107,7 @@ const baseCoin: CoinDetailRecord = {
 }
 
 function renderCoinDetailPageMarkup(
-  coin: CoinDetailRecord = baseCoin,
+  coin: CoinDetail = baseCoin,
   backHomeSearch?: {
     distribution?: string
     engraver?: string
@@ -140,8 +138,12 @@ describe("CoinDetailPage", () => {
     )
     expect(markup).toContain('href="/?issuer=spain"')
     expect(markup).toContain('href="/?distribution=standard-circulation"')
-    expect(markup).toContain("https://example.com/coins/detail-test/obverse-image")
-    expect(markup).toContain("https://example.com/coins/detail-test/reverse-image")
+    expect(markup).toContain(
+      "https://example.com/coins/detail-test/obverse-image"
+    )
+    expect(markup).toContain(
+      "https://example.com/coins/detail-test/reverse-image"
+    )
     expect(markup).not.toContain("/finland-2-euro-2004-obverse.jpg")
   })
 
@@ -251,7 +253,7 @@ describe("CoinDetailPage", () => {
   it("formats mintage with grouped digits", () => {
     const markup = renderCoinDetailPageMarkup({
       ...baseCoin,
-      mintage: 1250000,
+      mintage: "1250000",
     })
 
     expect(markup).toContain("1,250,000")

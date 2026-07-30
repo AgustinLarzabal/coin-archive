@@ -60,7 +60,12 @@ export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
 export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { bootstrapInitialAdmin } from "./mutations/bootstrap-initial-admin"
-export { buildGetCoinQuery, getCoin } from "./queries/get-coin"
+export {
+  buildGetCoinQuery,
+  getCoin,
+  getCoinWithDatabase,
+  getPublicCoinWithDatabase,
+} from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
 export { getCurrencies } from "./queries/get-currencies"
 export { getEdges } from "./queries/get-edges"
@@ -152,6 +157,7 @@ export type {
 } from "./coin-maintenance-record"
 export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"
+export type { PublicCoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"
 export type { DatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export type { CompositionOption } from "./queries/get-compositions"

@@ -1,5 +1,4 @@
-import { getCoin } from "@coin-archive/db"
-import type { CoinDetailRecord } from "@coin-archive/db"
+import type { CoinDetail } from "@coin-archive/api"
 import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { Fragment } from "react"
@@ -25,6 +24,7 @@ import { getEditorRouteAuthorization } from "../../../lib/route-authorization"
 import { buttonVariants } from "@coin-archive/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@coin-archive/ui/lib/utils"
+import { getPublicApiClient } from "../../../lib/public-api.server"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -39,14 +39,24 @@ const getCoinData = createServerFn({ method: "GET" })
       throw notFound()
     }
 
-    const coin = await getCoin(data.coinId)
-
-    if (coin === null) {
-      throw notFound()
+    try {
+      return { coin: await getPublicCoinDetail(data.coinId) }
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        error.status === 404
+      ) {
+        throw notFound()
+      }
+      throw error
     }
-
-    return { coin }
   })
+
+export async function getPublicCoinDetail(coinId: string) {
+  return (await getPublicApiClient().coins.detail({ uuid: coinId })).data
+}
 
 export const Route = createFileRoute("/_app/(public)/coins/$coinId")({
   validateSearch: coinSearchSchema,
@@ -66,7 +76,7 @@ export const Route = createFileRoute("/_app/(public)/coins/$coinId")({
 })
 
 type CoinDetailPageProps = {
-  coin: CoinDetailRecord
+  coin: CoinDetail
   backHomeSearch?: CoinSearch
   canMaintainCoins?: boolean
 }
@@ -87,15 +97,15 @@ type CoinMetadataItemView = {
 
 const wholeNumberFormatter = new Intl.NumberFormat("en-US")
 
-function formatMintage(mintage: number | null) {
+function formatMintage(mintage: string | null) {
   if (mintage === null) {
     return null
   }
 
-  return wholeNumberFormatter.format(mintage)
+  return wholeNumberFormatter.format(BigInt(mintage))
 }
 
-function mapCoinSurfaces(coin: CoinDetailRecord): CoinDetailSurfaceView[] {
+function mapCoinSurfaces(coin: CoinDetail): CoinDetailSurfaceView[] {
   const surfaces = [
     {
       key: "obverse",

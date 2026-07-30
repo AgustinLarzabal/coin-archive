@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm"
+import { and, asc, eq, sql } from "drizzle-orm"
 import { db } from "../client"
 import { catalogue } from "../schema/catalogue"
 import { coin } from "../schema/coin"
@@ -66,6 +66,19 @@ export type CoinDetailRecord = {
   themes: CoinThemeRecord[]
   thickness: number | null
   weight: number | null
+}
+
+export type PublicCoinDetailRecord = Omit<
+  CoinDetailRecord,
+  "diameter" | "faceValue" | "mintage" | "thickness" | "weight"
+> & {
+  diameter: string | null
+  faceValue: Omit<CoinDetailRecord["faceValue"], "numericValue"> & {
+    numericValue: string
+  }
+  mintage: string | null
+  thickness: string | null
+  weight: string | null
 }
 
 type GetCoinBaseRow = {
@@ -564,17 +577,20 @@ function buildGetCoinSurfacesQuery(database: typeof db, coinId: string) {
     )
     .leftJoin(engraver, eq(coinSurfaceEngraver.engraverId, engraver.id))
     .where(eq(coinSurface.coinId, coinId))
-    .orderBy(
-      asc(coinSurface.kind),
-      asc(engraver.name),
-      asc(engraver.code)
-    )
+    .orderBy(asc(coinSurface.kind), asc(engraver.name), asc(engraver.code))
 }
 
 export async function getCoin(
   coinId: string
 ): Promise<CoinDetailRecord | null> {
-  const rows = await buildGetCoinQuery(db, coinId)
+  return getCoinWithDatabase(db, coinId)
+}
+
+export async function getCoinWithDatabase(
+  database: typeof db,
+  coinId: string
+): Promise<CoinDetailRecord | null> {
+  const rows = await buildGetCoinQuery(database, coinId)
   const row = rows.at(0)
 
   if (!row) {
@@ -582,11 +598,11 @@ export async function getCoin(
   }
 
   const [mints, references, rulers, surfaces, themes] = await Promise.all([
-    buildGetCoinMintsQuery(db, coinId),
-    buildGetCoinReferencesQuery(db, coinId),
-    buildGetCoinRulersQuery(db, coinId),
-    buildGetCoinSurfacesQuery(db, coinId),
-    buildGetCoinThemesQuery(db, coinId),
+    buildGetCoinMintsQuery(database, coinId),
+    buildGetCoinReferencesQuery(database, coinId),
+    buildGetCoinRulersQuery(database, coinId),
+    buildGetCoinSurfacesQuery(database, coinId),
+    buildGetCoinThemesQuery(database, coinId),
   ])
 
   return mapCoinDetail(row, {
@@ -596,4 +612,37 @@ export async function getCoin(
     surfaces,
     themes,
   })
+}
+
+export async function getPublicCoinWithDatabase(
+  database: typeof db,
+  coinId: string
+): Promise<PublicCoinDetailRecord | null> {
+  const detail = await getCoinWithDatabase(database, coinId)
+  if (detail === null) return null
+
+  const values = await database
+    .select({
+      diameter: sql<string | null>`${coin.diameter}::text`,
+      faceValueNumericValue: sql<string>`${coin.faceValueNumericValue}::text`,
+      mintage: sql<string | null>`${coin.mintage}::text`,
+      thickness: sql<string | null>`${coin.thickness}::text`,
+      weight: sql<string | null>`${coin.weight}::text`,
+    })
+    .from(coin)
+    .where(eq(coin.id, coinId))
+  const decimals = values.at(0)
+  if (decimals === undefined) return null
+
+  return {
+    ...detail,
+    diameter: decimals.diameter,
+    faceValue: {
+      ...detail.faceValue,
+      numericValue: decimals.faceValueNumericValue,
+    },
+    mintage: decimals.mintage,
+    thickness: decimals.thickness,
+    weight: decimals.weight,
+  }
 }

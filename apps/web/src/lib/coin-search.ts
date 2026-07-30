@@ -10,18 +10,42 @@ const optionalStringSchema = z.preprocess((value) => {
   return normalizedValue === "" ? undefined : normalizedValue
 }, z.string().optional())
 
+const optionalTitleSearchSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const normalizedValue = value.trim()
+
+  return normalizedValue === "" ? undefined : normalizedValue
+}, z.string().optional())
+
+const optionalCursorSchema = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const normalizedValue = value.trim()
+
+  return normalizedValue === "" ? undefined : normalizedValue
+}, z.string().optional())
+
 export const coinSearchSchema = z.object({
+  cursor: optionalCursorSchema,
   distribution: optionalStringSchema,
   engraver: optionalStringSchema,
   issuer: optionalStringSchema,
+  q: optionalTitleSearchSchema,
   ruler: optionalStringSchema,
   theme: optionalStringSchema,
 })
 
 export const coinListInputSchema = z.object({
+  cursor: optionalCursorSchema,
   distributionCode: optionalStringSchema,
   engraverCode: optionalStringSchema,
   issuerCode: optionalStringSchema,
+  q: optionalTitleSearchSchema,
   rulerCode: optionalStringSchema,
   themeCode: optionalStringSchema,
 })
@@ -32,9 +56,11 @@ export type CoinSearchFilterName = keyof CoinSearch
 
 export function getCoinListLoaderDeps(search: CoinSearch): CoinListLoaderDeps {
   return {
+    cursor: search.cursor,
     distributionCode: search.distribution,
     engraverCode: search.engraver,
     issuerCode: search.issuer,
+    q: search.q,
     rulerCode: search.ruler,
     themeCode: search.theme,
   }
@@ -44,6 +70,7 @@ export function hasActiveCoinSearchFilters(search: CoinSearch): boolean {
   return (
     search.engraver !== undefined ||
     search.issuer !== undefined ||
+    search.q !== undefined ||
     search.ruler !== undefined ||
     search.distribution !== undefined ||
     search.theme !== undefined

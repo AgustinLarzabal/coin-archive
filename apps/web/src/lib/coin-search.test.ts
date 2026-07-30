@@ -11,14 +11,17 @@ import type { CoinListLoaderDeps, CoinSearch } from "./coin-search"
 const currentSearch = {
   engraver: "john-doe",
   issuer: "spain",
+  q: "euro commemorative",
   ruler: "charles-iii",
   theme: "map",
 } satisfies CoinSearch
 
 const baseCoinListLoaderDeps = {
+  cursor: undefined,
   distributionCode: undefined,
   engraverCode: "john-doe",
   issuerCode: "spain",
+  q: "euro commemorative",
   rulerCode: "charles-iii",
   themeCode: "map",
 } satisfies CoinListLoaderDeps
@@ -38,6 +41,7 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "john-doe",
         issuer: "spain",
+        q: "euro commemorative",
         ruler: "charles-iii",
         theme: "map",
         catalogue: "km",
@@ -52,12 +56,14 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "  JOHN-DOE  ",
         issuer: "  SPAIN  ",
+        q: "  Euro Commemorative  ",
         ruler: "  CHARLES-III  ",
         theme: "  MAP  ",
       })
     ).toStrictEqual({
       engraver: "john-doe",
       issuer: "spain",
+      q: "Euro Commemorative",
       ruler: "charles-iii",
       theme: "map",
     })
@@ -68,12 +74,14 @@ describe("coinSearchSchema", () => {
       coinSearchSchema.parse({
         engraver: "   ",
         issuer: "   ",
+        q: "   ",
         ruler: "   ",
         theme: "   ",
       })
     ).toStrictEqual({
       engraver: undefined,
       issuer: undefined,
+      q: undefined,
       ruler: undefined,
       theme: undefined,
     })
@@ -86,6 +94,7 @@ describe("coinListInputSchema", () => {
       coinListInputSchema.parse({
         engraverCode: "john-doe",
         issuerCode: "spain",
+        q: "euro commemorative",
         rulerCode: "charles-iii",
         themeCode: "map",
         catalogueCode: "km",
@@ -94,6 +103,7 @@ describe("coinListInputSchema", () => {
     ).toStrictEqual({
       engraverCode: "john-doe",
       issuerCode: "spain",
+      q: "euro commemorative",
       rulerCode: "charles-iii",
       themeCode: "map",
     })
@@ -104,12 +114,14 @@ describe("coinListInputSchema", () => {
       coinListInputSchema.parse({
         engraverCode: "  JOHN-DOE  ",
         issuerCode: "  SPAIN  ",
+        q: "  Euro Commemorative  ",
         rulerCode: "  CHARLES-III  ",
         themeCode: "  MAP  ",
       })
     ).toStrictEqual({
       engraverCode: "john-doe",
       issuerCode: "spain",
+      q: "Euro Commemorative",
       rulerCode: "charles-iii",
       themeCode: "map",
     })
@@ -129,6 +141,7 @@ describe("updateCoinSearchFilter", () => {
     ).toStrictEqual({
       engraver: "john-doe",
       issuer: "france",
+      q: "euro commemorative",
       ruler: "charles-iii",
       theme: "map",
     })
@@ -144,9 +157,11 @@ describe("getCoinListLoaderDeps", () => {
 
   it("preserves empty search objects", () => {
     expect(getCoinListLoaderDeps({})).toStrictEqual({
+      cursor: undefined,
       distributionCode: undefined,
       engraverCode: undefined,
       issuerCode: undefined,
+      q: undefined,
       rulerCode: undefined,
       themeCode: undefined,
     })
@@ -157,6 +172,7 @@ describe("hasActiveCoinSearchFilters", () => {
   it("returns true when any supported filter is present", () => {
     expect(hasActiveCoinSearchFilters({ engraver: "john-doe" })).toBe(true)
     expect(hasActiveCoinSearchFilters({ issuer: "spain" })).toBe(true)
+    expect(hasActiveCoinSearchFilters({ q: "euro" })).toBe(true)
     expect(hasActiveCoinSearchFilters({ ruler: "charles-iii" })).toBe(true)
     expect(hasActiveCoinSearchFilters({ theme: "map" })).toBe(true)
   })

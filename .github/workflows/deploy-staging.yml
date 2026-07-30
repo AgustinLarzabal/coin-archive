@@ -57,4 +57,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:migrate
+      - run: pnpm --filter api run deploy:staging
+      - run: echo "$DATABASE_URL" | pnpm --filter api exec wrangler secret put DATABASE_URL --env staging
       - run: pnpm --filter web run deploy:staging

@@ -31,11 +31,35 @@ describe("production deployment workflow", () => {
     expect(productionDeploymentWorkflow).toContain(
       "pnpm --filter web run deploy:production"
     )
+    expect(productionDeploymentWorkflow).toContain(
+      "pnpm --filter api run deploy:production"
+    )
+    expect(productionDeploymentWorkflow).toContain(
+      "wrangler secret put DATABASE_URL --env production"
+    )
     expect(productionDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)
     expect(productionDeploymentWorkflow).not.toMatch(/environment: staging/)
 
     expect(
       productionDeploymentWorkflow.indexOf("pnpm db:migrate")
+    ).toBeLessThan(
+      productionDeploymentWorkflow.indexOf(
+        "pnpm --filter api run deploy:production"
+      )
+    )
+    expect(
+      productionDeploymentWorkflow.indexOf(
+        "pnpm --filter api run deploy:production"
+      )
+    ).toBeLessThan(
+      productionDeploymentWorkflow.indexOf(
+        "wrangler secret put DATABASE_URL --env production"
+      )
+    )
+    expect(
+      productionDeploymentWorkflow.indexOf(
+        "wrangler secret put DATABASE_URL --env production"
+      )
     ).toBeLessThan(
       productionDeploymentWorkflow.indexOf(
         "pnpm --filter web run deploy:production"

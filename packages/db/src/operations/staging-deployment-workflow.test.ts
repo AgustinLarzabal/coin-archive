@@ -31,9 +31,29 @@ describe("staging deployment workflow", () => {
     expect(stagingDeploymentWorkflow).toContain(
       "pnpm --filter web run deploy:staging"
     )
+    expect(stagingDeploymentWorkflow).toContain(
+      "pnpm --filter api run deploy:staging"
+    )
+    expect(stagingDeploymentWorkflow).toContain(
+      "wrangler secret put DATABASE_URL --env staging"
+    )
     expect(stagingDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)
 
     expect(stagingDeploymentWorkflow.indexOf("pnpm db:migrate")).toBeLessThan(
+      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
+    )
+    expect(
+      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
+    ).toBeLessThan(
+      stagingDeploymentWorkflow.indexOf(
+        "wrangler secret put DATABASE_URL --env staging"
+      )
+    )
+    expect(
+      stagingDeploymentWorkflow.indexOf(
+        "wrangler secret put DATABASE_URL --env staging"
+      )
+    ).toBeLessThan(
       stagingDeploymentWorkflow.indexOf("pnpm --filter web run deploy:staging")
     )
     expect(stagingDeploymentWorkflow.indexOf("pnpm db:start")).toBeLessThan(

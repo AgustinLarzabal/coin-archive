@@ -2,10 +2,10 @@
 
 Coin Archive is deployed as a TanStack Start Cloudflare Worker. The Worker uses Node.js compatibility because Better Auth, `postgres`, and the AWS S3-compatible R2 client rely on Node.js APIs.
 
-Deploy the web application from `apps/web` with one of these commands. Each selects its named Wrangler environment during both the Vite build and deployment, so its non-secret Worker settings are included in the generated Worker configuration:
+Deploy both Workers from their app directories. Each command selects its named Wrangler environment, so the environment-specific Worker configuration is included in the deployment:
 
-- `pnpm deploy:staging`
-- `pnpm deploy:production`
+- `pnpm --filter api run deploy:staging`, then `pnpm --filter web run deploy:staging`
+- `pnpm --filter api run deploy:production`, then `pnpm --filter web run deploy:production`
 
 To validate either deployment without publishing it, use `pnpm validate:deployment:staging` or `pnpm validate:deployment:production`.
 
@@ -22,7 +22,7 @@ The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the
 | Worker name            | `coin-archive-staging`                   | `coin-archive`                           |
 | R2 bucket              | `coin-archive-staging-surface-images`    | `coin-archive-production-surface-images` |
 
-Set these secrets separately for each Worker environment. They must never be committed:
+Set `DATABASE_URL` separately for both the API and web Workers in each environment; the release workflows synchronize the API Worker secret from the corresponding protected GitHub environment. The remaining secrets belong only to the web Worker. They must never be committed:
 
 - `DATABASE_URL`: the environment's direct pooled Neon PostgreSQL connection URL. Do not configure Cloudflare Hyperdrive.
 - `BETTER_AUTH_SECRET`

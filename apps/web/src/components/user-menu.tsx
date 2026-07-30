@@ -60,6 +60,17 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            className="text-xs"
+            onClick={() => navigate({ to: "/settings" })}
+          >
+            Account
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem
           className="text-xs"
           onClick={() =>

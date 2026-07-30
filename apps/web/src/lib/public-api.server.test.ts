@@ -1,12 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { getPublicApiClient } from "./public-api.server"
 
 const { createPublicApiClient } = vi.hoisted(() => ({
   createPublicApiClient: vi.fn(),
 }))
 
 vi.mock("@coin-archive/api", () => ({ createPublicApiClient }))
-
-import { getPublicApiClient } from "./public-api.server"
 
 describe("getPublicApiClient", () => {
   afterEach(() => {

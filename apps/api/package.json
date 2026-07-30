@@ -23,6 +23,7 @@
     "@cloudflare/workers-types": "^5.20260730.1",
     "@tanstack/eslint-config": "catalog:",
     "@types/node": "catalog:",
+    "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "wrangler": "^4.115.0"

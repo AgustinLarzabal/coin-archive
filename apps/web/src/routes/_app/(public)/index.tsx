@@ -10,11 +10,11 @@ import {
 import {
   coinListInputSchema,
   coinSearchSchema,
-  type CoinListLoaderDeps,
   getCoinListLoaderDeps,
   hasActiveCoinSearchFilters,
   updateCoinSearchFilter,
 } from "../../../lib/coin-search"
+import type { CoinListLoaderDeps } from "../../../lib/coin-search"
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
 import { EmptyState } from "@/components/home/empty-state"

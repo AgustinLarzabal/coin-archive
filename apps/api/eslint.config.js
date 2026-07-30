@@ -14,5 +14,5 @@ export default [
       "pnpm/json-enforce-catalog": "off",
     },
   },
-  { ignores: ["eslint.config.js", ".prettierrc"] },
+  { ignores: ["eslint.config.js", ".prettierrc", ".wrangler/**"] },
 ]

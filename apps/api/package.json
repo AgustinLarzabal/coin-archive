@@ -1,0 +1,30 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@coin-archive/api": "workspace:*",
+    "@coin-archive/db": "workspace:*",
+    "@orpc/openapi": "^1.10.0",
+    "@orpc/server": "^1.10.0",
+    "@orpc/zod": "^1.10.0",
+    "hono": "^4.12.25",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260730.1",
+    "@tanstack/eslint-config": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "^4.114.0"
+  }
+}

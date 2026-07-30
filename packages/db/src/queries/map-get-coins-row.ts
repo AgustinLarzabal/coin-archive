@@ -12,6 +12,7 @@ export type GetCoinsRow = {
   issuerCode: string
   issuerIsoCode: string
   issuerName: string
+  createdAt?: Date
   surfaceKind: "obverse" | "reverse" | "edge-surface" | null
   surfaceDescription: string | null
   surfaceLettering: string | null
@@ -26,6 +27,7 @@ export type CoinListRecord = {
   title: string
   issuer: CoinListIssuer
   surfaces: CoinSurfaceSetRecord
+  createdAt?: Date
 }
 
 export function mapGetCoinsRowsToCoinRecords(
@@ -45,6 +47,7 @@ export function mapGetCoinsRowsToCoinRecords(
           isoCode: row.issuerIsoCode,
           name: row.issuerName,
         },
+        ...(row.createdAt === undefined ? {} : { createdAt: row.createdAt }),
         surfaces: {
           obverse: null,
           reverse: null,

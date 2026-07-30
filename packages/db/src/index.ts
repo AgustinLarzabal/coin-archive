@@ -1,4 +1,5 @@
 export { db } from "./client"
+export { createDatabase } from "./database"
 export {
   createCoinMaintenance,
   deleteCoinMaintenance,
@@ -72,7 +73,11 @@ export { getRulerGroups } from "./queries/get-ruler-groups"
 export { getShapes } from "./queries/get-shapes"
 export { getTechniques } from "./queries/get-techniques"
 export { getThemes } from "./queries/get-themes"
-export { buildGetCoinsQuery, getCoins } from "./queries/get-coins"
+export {
+  buildGetCoinsQuery,
+  getCoins,
+  getCoinsWithDatabase,
+} from "./queries/get-coins"
 export { getDistributions } from "./queries/get-distributions"
 export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"

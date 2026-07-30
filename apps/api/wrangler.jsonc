@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "coin-archive-api",
+  "main": "./src/index.ts",
+  "compatibility_date": "2026-07-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "242",
+      "simple": { "limit": 120, "period": 60 }
+    }
+  ],
+  "observability": { "enabled": true, "logs": { "invocation_logs": true, "head_sampling_rate": 1 } },
+  "env": {
+    "staging": {
+      "name": "coin-archive-api-staging",
+      "routes": [{ "pattern": "api.staging.coinarchive.app", "custom_domain": true }],
+      "vars": { "API_ENVIRONMENT": "staging", "SURFACE_IMAGE_ORIGIN": "https://images.staging.coinarchive.app" }
+    },
+    "production": {
+      "name": "coin-archive-api",
+      "routes": [{ "pattern": "api.coinarchive.app", "custom_domain": true }],
+      "vars": { "API_ENVIRONMENT": "production", "SURFACE_IMAGE_ORIGIN": "https://images.coinarchive.app" }
+    }
+  }
+}

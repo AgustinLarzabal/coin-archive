@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm"
+import { and, asc, desc, eq, ilike, lt, or, sql } from "drizzle-orm"
 import type { SQL } from "drizzle-orm"
 import { db } from "../client"
 import { coin } from "../schema/coin"
@@ -22,7 +22,17 @@ export type GetCoinsOptions = {
   issuerCode?: string
   rulerCode?: string
   themeCode?: string
+  titleSearch?: string
+  cursor?: { createdAt: Date; id: string }
   limit?: number
+}
+
+function buildTitleSearchFilter(titleSearch: string | undefined): SQL | undefined {
+  const normalizedTitleSearch = titleSearch?.trim()
+
+  return normalizedTitleSearch
+    ? ilike(coin.title, `%${normalizedTitleSearch}%`)
+    : undefined
 }
 
 function buildDistributionFilter(
@@ -81,7 +91,7 @@ function buildIssuerTreeFilter(
       with recursive issuer_tree(id) as (
         select "issuer"."id"
         from "issuer"
-        where "issuer"."code" = ${normalizedIssuerCode}
+        where lower("issuer"."code") = ${normalizedIssuerCode}
         union
         select "child_issuer"."id"
         from "issuer" as "child_issuer"
@@ -141,6 +151,8 @@ export function buildGetCoinsQuery(
     issuerCode,
     rulerCode,
     themeCode,
+    titleSearch,
+    cursor,
     limit = defaultGetCoinsLimit,
   } = options
   const distributionFilter = buildDistributionFilter(distributionCode)
@@ -148,12 +160,22 @@ export function buildGetCoinsQuery(
   const issuerFilter = buildIssuerTreeFilter(issuerCode)
   const rulerFilter = buildRulerFilter(rulerCode)
   const themeFilter = buildThemeFilter(themeCode)
+  const titleSearchFilter = buildTitleSearchFilter(titleSearch)
+  const cursorFilter =
+    cursor === undefined
+      ? undefined
+      : or(
+          lt(coin.createdAt, cursor.createdAt),
+          and(eq(coin.createdAt, cursor.createdAt), lt(coin.id, cursor.id))
+        )
   const filters = [
     distributionFilter,
     engraverFilter,
     issuerFilter,
     rulerFilter,
     themeFilter,
+    titleSearchFilter,
+    cursorFilter,
   ].filter((filter): filter is SQL => filter !== undefined)
   const limitedCoinsQuery = database
     .select({
@@ -163,7 +185,7 @@ export function buildGetCoinsQuery(
       createdAt: coin.createdAt,
     })
     .from(coin)
-    .orderBy(desc(coin.createdAt))
+    .orderBy(desc(coin.createdAt), desc(coin.id))
     .limit(limit)
 
   const filteredLimitedCoinsQuery =
@@ -184,6 +206,7 @@ export function buildGetCoinsQuery(
       issuerCode: issuer.code,
       issuerIsoCode: issuer.isoCode,
       issuerName: issuer.name,
+      createdAt: limitedCoins.createdAt,
       surfaceKind: coinSurface.kind,
       surfaceDescription: coinSurface.description,
       surfaceLettering: coinSurface.lettering,
@@ -202,6 +225,7 @@ export function buildGetCoinsQuery(
     .leftJoin(engraver, eq(coinSurfaceEngraver.engraverId, engraver.id))
     .orderBy(
       desc(limitedCoins.createdAt),
+      desc(limitedCoins.id),
       asc(coinSurface.kind),
       asc(engraver.name),
       asc(engraver.code)
@@ -211,7 +235,14 @@ export function buildGetCoinsQuery(
 export async function getCoins(
   options: GetCoinsOptions = {}
 ): Promise<CoinListRecord[]> {
-  const rows = await buildGetCoinsQuery(db, options)
+  return getCoinsWithDatabase(db, options)
+}
+
+export async function getCoinsWithDatabase(
+  database: typeof db,
+  options: GetCoinsOptions = {}
+): Promise<CoinListRecord[]> {
+  const rows = await buildGetCoinsQuery(database, options)
 
   return mapGetCoinsRowsToCoinRecords(rows)
 }

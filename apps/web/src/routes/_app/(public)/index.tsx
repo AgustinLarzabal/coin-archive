@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import {
-  getCoins,
   getDistributions,
   getEngravers,
   getIssuers,
@@ -18,10 +17,54 @@ import {
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
 import { EmptyState } from "@/components/home/empty-state"
+import { getPublicApiClient } from "@/lib/public-api.server"
 
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
-  .handler(async ({ data }) => ({ coins: await getCoins(data) }))
+  .handler(async ({ data }) => {
+    const response = await getPublicApiClient().coins.browse({
+      distribution: data.distributionCode,
+      engraver: data.engraverCode,
+      issuer: data.issuerCode,
+      ruler: data.rulerCode,
+      theme: data.themeCode,
+    })
+    return {
+      coins: response.data.map((coin) => ({
+        id: coin.id,
+        title: coin.title,
+        issuer: coin.issuer,
+        surfaces: {
+          obverse:
+            coin.surfaceImages.obverse === null
+              ? null
+              : {
+                  description: null,
+                  lettering: null,
+                  imageUrl: coin.surfaceImages.obverse,
+                  engravers: [],
+                },
+          reverse:
+            coin.surfaceImages.reverse === null
+              ? null
+              : {
+                  description: null,
+                  lettering: null,
+                  imageUrl: coin.surfaceImages.reverse,
+                  engravers: [],
+                },
+          edge:
+            coin.surfaceImages.edge === null
+              ? null
+              : {
+                  description: null,
+                  lettering: null,
+                  imageUrl: coin.surfaceImages.edge,
+                },
+        },
+      })),
+    }
+  })
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {

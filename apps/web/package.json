@@ -27,6 +27,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/router-plugin": "^1.168.13",
     "@coin-archive/auth": "workspace:*",
+    "@coin-archive/api": "workspace:*",
     "@coin-archive/db": "workspace:*",
     "@coin-archive/feature-flags": "workspace:*",
     "@coin-archive/ui": "workspace:*",

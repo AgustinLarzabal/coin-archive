@@ -1,0 +1,27 @@
+{
+  "name": "@coin-archive/api",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@orpc/client": "^1.10.0",
+    "@orpc/contract": "^1.10.0",
+    "@orpc/openapi": "^1.10.0",
+    "@orpc/openapi-client": "^1.10.0",
+    "@orpc/zod": "^1.10.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tanstack/eslint-config": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

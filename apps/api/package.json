@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "set -a; . ../../.env; set +a; wrangler dev --var \"DATABASE_URL:$DATABASE_URL\" --var \"API_ENVIRONMENT:staging\" --var \"SURFACE_IMAGE_ORIGIN:http://localhost:3000\"",
     "build": "wrangler deploy --dry-run",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -25,6 +25,6 @@
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "wrangler": "^4.114.0"
+    "wrangler": "^4.115.0"
   }
 }

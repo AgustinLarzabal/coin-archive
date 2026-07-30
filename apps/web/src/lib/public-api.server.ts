@@ -8,6 +8,6 @@ export function getPublicApiClient() {
         : process.env.CLOUDFLARE_ENV === "staging"
           ? "https://api.staging.coinarchive.app"
           : "http://127.0.0.1:8787",
-    fetch,
+    fetch: globalThis.fetch.bind(globalThis),
   })
 }

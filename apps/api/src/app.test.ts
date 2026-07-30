@@ -104,6 +104,10 @@ describe("GET /api/v1/coins", () => {
       browseCoins: async () => coins,
     }).request("https://api.coinarchive.app/api/v1/coins", { method: "POST" })
     expect(method.status).toBe(405)
+    expect(method.headers.get("Allow")).toBe("GET, HEAD, OPTIONS")
+    await expect(method.json()).resolves.toMatchObject({
+      detail: "Only GET, HEAD, and OPTIONS are supported",
+    })
   })
 
   it("passes all active filters to the Coin browse source and excludes cross-environment images", async () => {
@@ -260,6 +264,25 @@ describe("GET /api/v1/coins/:id", () => {
       })
     }
   })
+
+  it("advertises every supported method for an unsupported detail request", async () => {
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+    })
+
+    const response = await app.request(
+      `https://api.coinarchive.app/api/v1/coins/${coins[0].id}`,
+      { method: "POST" }
+    )
+
+    expect(response.status).toBe(405)
+    expect(response.headers.get("Content-Type")).toContain(
+      "application/problem+json"
+    )
+    expect(response.headers.get("Allow")).toBe("GET, HEAD, OPTIONS")
+  })
 })
 
 describe("GET /api/v1/openapi.json", () => {
@@ -273,16 +296,19 @@ describe("GET /api/v1/openapi.json", () => {
     const response = await app.request(
       "https://api.coinarchive.app/api/v1/openapi.json"
     )
-    const document = (await response.json()) as {
-      paths: Record<string, { get?: { responses: Record<string, unknown> } }>
-    }
-
-    expect(
-      document.paths["/api/v1/coins/{uuid}"]?.get?.responses
-    ).toMatchObject({
-      "200": expect.any(Object),
-      "400": expect.any(Object),
-      "404": expect.any(Object),
+    await expect(response.json()).resolves.toMatchObject({
+      paths: {
+        "/api/v1/coins/{uuid}": {
+          get: {
+            responses: {
+              "200": expect.any(Object),
+              "400": expect.any(Object),
+              "404": expect.any(Object),
+              "405": expect.any(Object),
+            },
+          },
+        },
+      },
     })
   })
 })

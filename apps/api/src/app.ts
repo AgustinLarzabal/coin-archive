@@ -191,8 +191,10 @@ export function createPublicApiApp({
     problemResponse(
       405,
       "Method Not Allowed",
-      "Only GET and HEAD are supported",
-      "/api/v1/coins"
+      "Only GET, HEAD, and OPTIONS are supported",
+      "/api/v1/coins",
+      undefined,
+      { Allow: "GET, HEAD, OPTIONS" }
     )
   )
 
@@ -236,8 +238,10 @@ export function createPublicApiApp({
     problemResponse(
       405,
       "Method Not Allowed",
-      "Only GET and HEAD are supported",
-      context.req.path
+      "Only GET, HEAD, and OPTIONS are supported",
+      context.req.path,
+      undefined,
+      { Allow: "GET, HEAD, OPTIONS" }
     )
   )
 

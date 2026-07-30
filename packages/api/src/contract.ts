@@ -109,7 +109,11 @@ export const publicApiContract = {
         summary: "Browse Coins",
       })
       .input(browseCoinsInputSchema)
-      .output(browseCoinsOutputSchema),
+      .output(browseCoinsOutputSchema)
+      .errors({
+        BAD_REQUEST: { status: 400, data: problemDocumentSchema },
+        METHOD_NOT_ALLOWED: { status: 405, data: problemDocumentSchema },
+      }),
     detail: oc
       .route({
         method: "GET",
@@ -121,6 +125,7 @@ export const publicApiContract = {
       .errors({
         BAD_REQUEST: { status: 400, data: problemDocumentSchema },
         NOT_FOUND: { status: 404, data: problemDocumentSchema },
+        METHOD_NOT_ALLOWED: { status: 405, data: problemDocumentSchema },
       }),
   },
 }

@@ -8,7 +8,11 @@ const wranglerConfig = readFileSync(
 )
 
 describe("API deployment configuration", () => {
-  it("binds the rate limiter in every deployed environment", () => {
+  it("binds the rate limiter in local development and every deployed environment", () => {
+    expect(wranglerConfig.indexOf('"ratelimits"')).toBeLessThan(
+      wranglerConfig.indexOf('"env"')
+    )
+
     for (const environment of ["staging", "production"]) {
       expect(wranglerConfig).toMatch(
         new RegExp(

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getPublicApiClient } from "@/lib/public-api.server"
-import { getPublicCoinDetail } from "./coins.$coinId"
+import { loadCoinDetail } from "./coins.$coinId"
 
 vi.mock("@/lib/public-api.server", () => ({ getPublicApiClient: vi.fn() }))
 
@@ -14,16 +14,24 @@ describe("public Coin detail route", () => {
     } as unknown as ReturnType<typeof getPublicApiClient>)
   })
 
-  it("uses the shared API client to retrieve a Coin by UUID", async () => {
+  it("server-renders a Coin retrieved by UUID through the shared API client", async () => {
     detail.mockResolvedValue({
       data: { id: "018f1a11-aaaa-7000-8000-000000000001" },
     })
 
     await expect(
-      getPublicCoinDetail("018f1a11-aaaa-7000-8000-000000000001")
+      loadCoinDetail("018f1a11-aaaa-7000-8000-000000000001")
     ).resolves.toMatchObject({ id: "018f1a11-aaaa-7000-8000-000000000001" })
     expect(detail).toHaveBeenCalledWith({
       uuid: "018f1a11-aaaa-7000-8000-000000000001",
     })
+  })
+
+  it("keeps the public not-found experience when the API returns 404", async () => {
+    detail.mockRejectedValue({ status: 404 })
+
+    await expect(
+      loadCoinDetail("018f1a11-aaaa-7000-8000-000000000001")
+    ).rejects.toMatchObject({ isNotFound: true })
   })
 })

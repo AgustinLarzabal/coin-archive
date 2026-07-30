@@ -39,22 +39,26 @@ const getCoinData = createServerFn({ method: "GET" })
       throw notFound()
     }
 
-    try {
-      return { coin: await getPublicCoinDetail(data.coinId) }
-    } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "status" in error &&
-        error.status === 404
-      ) {
-        throw notFound()
-      }
-      throw error
-    }
+    return { coin: await loadCoinDetail(data.coinId) }
   })
 
-export async function getPublicCoinDetail(coinId: string) {
+export async function loadCoinDetail(coinId: string) {
+  try {
+    return await getPublicCoinDetail(coinId)
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      error.status === 404
+    ) {
+      throw notFound()
+    }
+    throw error
+  }
+}
+
+async function getPublicCoinDetail(coinId: string) {
   return (await getPublicApiClient().coins.detail({ uuid: coinId })).data
 }
 

@@ -14,65 +14,18 @@ import {
   hasActiveCoinSearchFilters,
   updateCoinSearchFilter,
 } from "../../../lib/coin-search"
-import type { CoinListLoaderDeps } from "../../../lib/coin-search"
 import { HomeFilters } from "@/components/home-filters"
 import { CoinCard } from "@/components/coin-card"
 import { EmptyState } from "@/components/home/empty-state"
-import { getPublicApiClient } from "@/lib/public-api.server"
 import { Button } from "@coin-archive/ui/components/button"
 import { Input } from "@coin-archive/ui/components/input"
 
-export async function getPublicCoinList(data: CoinListLoaderDeps) {
-  const response = await getPublicApiClient().coins.browse({
-    cursor: data.cursor,
-    distribution: data.distributionCode,
-    engraver: data.engraverCode,
-    issuer: data.issuerCode,
-    q: data.q,
-    ruler: data.rulerCode,
-    theme: data.themeCode,
-  })
-  return {
-    coins: response.data.map((coin) => ({
-      id: coin.id,
-      title: coin.title,
-      issuer: coin.issuer,
-      surfaces: {
-        obverse:
-          coin.surfaceImages.obverse === null
-            ? null
-            : {
-                description: null,
-                lettering: null,
-                imageUrl: coin.surfaceImages.obverse,
-                engravers: [],
-              },
-        reverse:
-          coin.surfaceImages.reverse === null
-            ? null
-            : {
-                description: null,
-                lettering: null,
-                imageUrl: coin.surfaceImages.reverse,
-                engravers: [],
-              },
-        edge:
-          coin.surfaceImages.edge === null
-            ? null
-            : {
-                description: null,
-                lettering: null,
-                imageUrl: coin.surfaceImages.edge,
-              },
-      },
-    })),
-    nextCursor: response.nextCursor,
-  }
-}
-
 const getCoinListData = createServerFn({ method: "GET" })
   .inputValidator(coinListInputSchema)
-  .handler(async ({ data }) => getPublicCoinList(data))
+  .handler(async ({ data }) => {
+    const { getPublicCoinList } = await import("./-coin-list.server")
+    return getPublicCoinList(data)
+  })
 
 const getCoinFilterOptions = createServerFn({ method: "GET" }).handler(
   async () => {

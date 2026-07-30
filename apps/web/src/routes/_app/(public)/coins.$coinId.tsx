@@ -24,7 +24,6 @@ import { getEditorRouteAuthorization } from "../../../lib/route-authorization"
 import { buttonVariants } from "@coin-archive/ui/components/button"
 import { ChevronLeft } from "lucide-react"
 import { cn } from "@coin-archive/ui/lib/utils"
-import { getPublicApiClient } from "../../../lib/public-api.server"
 
 const coinParamsSchema = z.object({
   coinId: z.string(),
@@ -39,28 +38,9 @@ const getCoinData = createServerFn({ method: "GET" })
       throw notFound()
     }
 
+    const { loadCoinDetail } = await import("./-coin-detail.server")
     return { coin: await loadCoinDetail(data.coinId) }
   })
-
-export async function loadCoinDetail(coinId: string) {
-  try {
-    return await getPublicCoinDetail(coinId)
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "status" in error &&
-      error.status === 404
-    ) {
-      throw notFound()
-    }
-    throw error
-  }
-}
-
-async function getPublicCoinDetail(coinId: string) {
-  return (await getPublicApiClient().coins.detail({ uuid: coinId })).data
-}
 
 export const Route = createFileRoute("/_app/(public)/coins/$coinId")({
   validateSearch: coinSearchSchema,

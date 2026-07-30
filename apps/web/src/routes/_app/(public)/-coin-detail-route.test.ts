@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getPublicApiClient } from "@/lib/public-api.server"
-import { loadCoinDetail } from "./coins.$coinId"
+import { loadCoinDetail } from "./-coin-detail.server"
 
 vi.mock("@/lib/public-api.server", () => ({ getPublicApiClient: vi.fn() }))
 

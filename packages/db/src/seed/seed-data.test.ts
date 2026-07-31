@@ -4,6 +4,7 @@ import {
   seededCoinRulers,
   seededCoinSurfaceEngravers,
   seededCoinSurfaces,
+  seededCoinThemes,
   seededCoins,
   seededCompositions,
   seededCurrencies,
@@ -14,6 +15,7 @@ import {
   seededRims,
   seededShapes,
   seededTechniques,
+  seededThemes,
 } from "./seed-data"
 
 function getSortedCoinTitles(records: { title: string }[]) {
@@ -271,6 +273,22 @@ describe("seededEngravers", () => {
       seededCoinSurfaceEngravers.filter(
         ({ engraverCode }) => !engraverCodes.has(engraverCode)
       )
+    ).toEqual([])
+  })
+})
+
+describe("seededThemes", () => {
+  it("defines only the Map Theme", () => {
+    expect(seededThemes.map(({ code, name }) => ({ code, name }))).toEqual([
+      { code: "map", name: "Map" },
+    ])
+  })
+
+  it("only assigns configured Themes to seeded coins", () => {
+    const themeCodes = new Set(seededThemes.map(({ code }) => code))
+
+    expect(
+      seededCoinThemes.filter(({ themeCode }) => !themeCodes.has(themeCode))
     ).toEqual([])
   })
 })

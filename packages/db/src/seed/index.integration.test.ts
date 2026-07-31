@@ -52,32 +52,8 @@ const expectedSeededMints = [
 
 const expectedSeededThemes = [
   {
-    code: "animal",
-    name: "Animal",
-  },
-  {
-    code: "building",
-    name: "Building",
-  },
-  {
-    code: "flag",
-    name: "Flag",
-  },
-  {
-    code: "independence",
-    name: "Independence",
-  },
-  {
     code: "map",
     name: "Map",
-  },
-  {
-    code: "plant",
-    name: "Plant",
-  },
-  {
-    code: "portrait",
-    name: "Portrait",
   },
 ] as const
 
@@ -279,9 +255,13 @@ describe("seed integration", () => {
         )
       )
     )
-    await expectOptionsToIncludeExpectedRecords(
-      getThemes(),
-      expectedSeededThemes
+    const seededThemeOptions = await getThemes()
+
+    expect(seededThemeOptions).toHaveLength(expectedSeededThemes.length)
+    expect(seededThemeOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededThemes.map((record) => expect.objectContaining(record))
+      )
     )
 
     const seededCoins = await getCoins({ limit: 30 })

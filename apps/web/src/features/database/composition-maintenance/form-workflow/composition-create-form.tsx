@@ -147,7 +147,7 @@ export function CompositionCreateForm({
             value={draft.code}
             onChange={(event) => updateDraft("code", event.target.value)}
             aria-invalid={fieldErrors.code !== undefined}
-            placeholder="silver-900"
+            placeholder="silver"
             autoComplete="off"
           />
           {fieldErrors.code ? (
@@ -164,7 +164,7 @@ export function CompositionCreateForm({
             value={draft.name}
             onChange={(event) => updateDraft("name", event.target.value)}
             aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Silver (.900)"
+            placeholder="Silver"
             autoComplete="off"
           />
           {fieldErrors.name ? (

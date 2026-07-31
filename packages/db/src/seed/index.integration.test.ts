@@ -65,10 +65,6 @@ const expectedSeededThemes = [
 
 const expectedSeededOrientations = [
   {
-    code: "coin-alignment",
-    name: "Coin alignment",
-  },
-  {
     code: "medal-alignment",
     name: "Medal alignment",
   },
@@ -231,9 +227,17 @@ describe("seed integration", () => {
       )
     )
     await expectOptionsToIncludeExpectedRecords(getMints(), expectedSeededMints)
-    await expectOptionsToIncludeExpectedRecords(
-      getOrientations(),
-      expectedSeededOrientations
+    const seededOrientationOptions = await getOrientations()
+
+    expect(seededOrientationOptions).toHaveLength(
+      expectedSeededOrientations.length
+    )
+    expect(seededOrientationOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededOrientations.map((record) =>
+          expect.objectContaining(record)
+        )
+      )
     )
     const seededShapeOptions = await getShapes()
 

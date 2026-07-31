@@ -12,6 +12,7 @@ import {
   seededEngravers,
   seededIssuers,
   seededMints,
+  seededOrientations,
   seededRims,
   seededRulers,
   seededShapes,
@@ -306,6 +307,26 @@ describe("seededRulers", () => {
 
     expect(
       seededCoinRulers.filter(({ rulerCode }) => !rulerCodes.has(rulerCode))
+    ).toEqual([])
+  })
+})
+
+describe("seededOrientations", () => {
+  it("defines only Medal Alignment", () => {
+    expect(
+      seededOrientations.map(({ code, name }) => ({ code, name }))
+    ).toEqual([{ code: "medal-alignment", name: "Medal alignment" }])
+  })
+
+  it("only assigns configured Orientations to seeded coins", () => {
+    const orientationCodes = new Set(seededOrientations.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ orientationCode }) =>
+          orientationCode !== undefined &&
+          !orientationCodes.has(orientationCode)
+      )
     ).toEqual([])
   })
 })

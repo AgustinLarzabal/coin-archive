@@ -107,14 +107,6 @@ const expectedSeededRims = [
 
 const expectedSeededTechniques = [
   {
-    code: "cast",
-    name: "Cast",
-  },
-  {
-    code: "hammered",
-    name: "Hammered",
-  },
-  {
     code: "milled",
     name: "Milled",
   },
@@ -266,9 +258,15 @@ describe("seed integration", () => {
         expectedSeededRims.map((record) => expect.objectContaining(record))
       )
     )
-    await expectOptionsToIncludeExpectedRecords(
-      getTechniques(),
-      expectedSeededTechniques
+    const seededTechniqueOptions = await getTechniques()
+
+    expect(seededTechniqueOptions).toHaveLength(expectedSeededTechniques.length)
+    expect(seededTechniqueOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededTechniques.map((record) =>
+          expect.objectContaining(record)
+        )
+      )
     )
     await expectOptionsToIncludeExpectedRecords(
       getThemes(),

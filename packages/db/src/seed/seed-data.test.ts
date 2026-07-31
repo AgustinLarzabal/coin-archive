@@ -11,6 +11,7 @@ import {
   seededMints,
   seededRims,
   seededShapes,
+  seededTechniques,
 } from "./seed-data"
 
 function getSortedCoinTitles(records: { title: string }[]) {
@@ -227,6 +228,25 @@ describe("seededShapes", () => {
     expect(
       seededCoins.filter(
         ({ shapeCode }) => shapeCode !== undefined && !shapeCodes.has(shapeCode)
+      )
+    ).toEqual([])
+  })
+})
+
+describe("seededTechniques", () => {
+  it("defines only the Milled Minting Technique", () => {
+    expect(seededTechniques.map(({ code, name }) => ({ code, name }))).toEqual([
+      { code: "milled", name: "Milled" },
+    ])
+  })
+
+  it("only assigns configured Minting Techniques to seeded coins", () => {
+    const techniqueCodes = new Set(seededTechniques.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ techniqueCode }) =>
+          techniqueCode !== undefined && !techniqueCodes.has(techniqueCode)
       )
     ).toEqual([])
   })

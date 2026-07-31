@@ -93,12 +93,8 @@ const expectedSeededOrientations = [
 
 const expectedSeededShapes = [
   {
-    code: "round",
-    name: "Round",
-  },
-  {
-    code: "scalloped",
-    name: "Scalloped",
+    code: "circular",
+    name: "Circular",
   },
 ] as const
 
@@ -254,9 +250,13 @@ describe("seed integration", () => {
       getOrientations(),
       expectedSeededOrientations
     )
-    await expectOptionsToIncludeExpectedRecords(
-      getShapes(),
-      expectedSeededShapes
+    const seededShapeOptions = await getShapes()
+
+    expect(seededShapeOptions).toHaveLength(expectedSeededShapes.length)
+    expect(seededShapeOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededShapes.map((record) => expect.objectContaining(record))
+      )
     )
     const seededRimOptions = await getRims()
 

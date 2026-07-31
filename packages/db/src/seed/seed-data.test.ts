@@ -10,6 +10,7 @@ import {
   seededIssuers,
   seededMints,
   seededRims,
+  seededShapes,
 } from "./seed-data"
 
 function getSortedCoinTitles(records: { title: string }[]) {
@@ -208,6 +209,24 @@ describe("seededRims", () => {
     expect(
       seededCoins.filter(
         ({ rimCode }) => rimCode !== undefined && !rimCodes.has(rimCode)
+      )
+    ).toEqual([])
+  })
+})
+
+describe("seededShapes", () => {
+  it("defines only the Circular Shape", () => {
+    expect(seededShapes.map(({ code, name }) => ({ code, name }))).toEqual([
+      { code: "circular", name: "Circular" },
+    ])
+  })
+
+  it("only assigns configured Shapes to seeded coins", () => {
+    const shapeCodes = new Set(seededShapes.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ shapeCode }) => shapeCode !== undefined && !shapeCodes.has(shapeCode)
       )
     ).toEqual([])
   })

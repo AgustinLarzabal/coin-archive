@@ -19,20 +19,4 @@ export const seededCoinSurfaces: SeededCoinSurface[] = [
     description: "Finely reeded with incuse lettering.",
     lettering: "2 **",
   },
-  {
-    coinTitle: "2 Euros (Enlargement of the European Union)",
-    kind: "obverse",
-    description:
-      'A stylised pillar from which the sprouts grow upwards with the sprouts representing the enlargement of the European Union and the pillar representing the foundation for growth with the letters "EU" to the left of the pillar, and the date at the top in the outer ring along with the twelve stars of Europe',
-    lettering: "2004 EU M M",
-    imageUrl: "http://localhost:3000/finland-2-euro-2004-obverse.jpg",
-  },
-  {
-    coinTitle: "2 Euros (Enlargement of the European Union)",
-    kind: "reverse",
-    description:
-      "A map, next to the face value, shows the European continent without borders",
-    lettering: "2 EURO LL",
-    imageUrl: "http://localhost:3000/finland-2-euro-2004-reverse.jpg",
-  },
 ]

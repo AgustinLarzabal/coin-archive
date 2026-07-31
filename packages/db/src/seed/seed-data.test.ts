@@ -13,6 +13,7 @@ import {
   seededIssuers,
   seededMints,
   seededRims,
+  seededRulers,
   seededShapes,
   seededTechniques,
   seededThemes,
@@ -289,6 +290,22 @@ describe("seededThemes", () => {
 
     expect(
       seededCoinThemes.filter(({ themeCode }) => !themeCodes.has(themeCode))
+    ).toEqual([])
+  })
+})
+
+describe("seededRulers", () => {
+  it("defines only Felipe VI", () => {
+    expect(seededRulers.map(({ code, name }) => ({ code, name }))).toEqual([
+      { code: "felipe-vi", name: "Felipe VI" },
+    ])
+  })
+
+  it("only assigns configured Rulers to seeded coins", () => {
+    const rulerCodes = new Set(seededRulers.map(({ code }) => code))
+
+    expect(
+      seededCoinRulers.filter(({ rulerCode }) => !rulerCodes.has(rulerCode))
     ).toEqual([])
   })
 })

@@ -10,6 +10,7 @@ import {
   getMints,
   getOrientations,
   getRims,
+  getRulers,
   getShapes,
   getTechniques,
   getThemes,
@@ -20,7 +21,12 @@ import { coinSurface } from "../schema/coin-surface"
 import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { seededCoinRulers, seededEngravers, seededIssuers } from "./seed-data"
+import {
+  seededCoinRulers,
+  seededEngravers,
+  seededIssuers,
+  seededRulers,
+} from "./seed-data"
 import { seedDatabase } from "./index"
 
 const expectedSeededCurrencies = [
@@ -245,6 +251,16 @@ describe("seed integration", () => {
         expectedSeededRims.map((record) => expect.objectContaining(record))
       )
     )
+    const seededRulerOptions = await getRulers()
+
+    expect(seededRulerOptions).toHaveLength(seededRulers.length)
+    expect(seededRulerOptions).toEqual(
+      expect.arrayContaining(
+        seededRulers.map(({ code, name }) =>
+          expect.objectContaining({ code, name })
+        )
+      )
+    )
     const seededTechniqueOptions = await getTechniques()
 
     expect(seededTechniqueOptions).toHaveLength(expectedSeededTechniques.length)
@@ -273,16 +289,6 @@ describe("seed integration", () => {
         code: "spain",
         isoCode: "ES",
         name: "Spain",
-      },
-    })
-
-    expect(findCoinRecordByTitle(seededCoins, "Finland 2 Euro")).toMatchObject({
-      id: expect.any(String),
-      title: "Finland 2 Euro",
-      issuer: {
-        code: "finland",
-        isoCode: "FI",
-        name: "Finland",
       },
     })
   })
@@ -321,7 +327,6 @@ describe("seed integration", () => {
 
     const seededCoins = await getCoins({ limit: 30 })
     const spain2Euro = findCoinRecordByTitle(seededCoins, "Spain 2 Euro")
-    const finland2Euro = findCoinRecordByTitle(seededCoins, "Finland 2 Euro")
 
     await expect(getCoin(spain2Euro.id)).resolves.toMatchObject({
       title: "Spain 2 Euro",
@@ -332,29 +337,19 @@ describe("seed integration", () => {
         },
       ],
     })
-    await expect(getCoin(finland2Euro.id)).resolves.toMatchObject({
-      title: "Finland 2 Euro",
-      rulers: [
-        {
-          code: "republic-of-finland",
-          name: "Republic of Finland",
-        },
-      ],
-    })
   })
 
   it("keeps seeded ruler filtering exact to direct attributions", async () => {
     await seedDatabase()
 
     const filteredCoins = await getCoins({
-      rulerCode: "  REPUBLIC-OF-FINLAND  ",
+      rulerCode: "  FELIPE-VI  ",
       limit: 30,
     })
 
     expect(filteredCoins.map(({ title }) => title)).toEqual([
-      "Finland 1 Euro",
-      "Finland 2 Euro",
-      "2 Euros (Enlargement of the European Union)",
+      "Spain 1 Euro",
+      "Spain 2 Euro",
     ])
   })
 })

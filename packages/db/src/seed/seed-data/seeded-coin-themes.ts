@@ -5,8 +5,4 @@ export const seededCoinThemes: SeededCoinTheme[] = [
     coinTitle: "Spain 2 Euro",
     themeCode: "map",
   },
-  {
-    coinTitle: "2 Euros (Enlargement of the European Union)",
-    themeCode: "map",
-  },
 ]

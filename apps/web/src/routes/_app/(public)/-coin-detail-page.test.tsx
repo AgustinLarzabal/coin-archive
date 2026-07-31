@@ -53,8 +53,8 @@ const baseCoin: CoinDetail = {
   composition: {
     code: "copper-nickel",
     name: "Copper-nickel",
-    description: null,
   },
+  compositionDescription: null,
   diameter: null,
   distribution: {
     code: "standard-circulation",
@@ -257,6 +257,32 @@ describe("CoinDetailPage", () => {
     })
 
     expect(markup).toContain("1,250,000")
+  })
+
+  it("offers the Coin-owned Composition Description in a tooltip", () => {
+    const markup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      compositionDescription: "75% copper, 25% nickel.",
+    })
+
+    expect(markup).toContain("Copper-nickel")
+    expect(markup).toContain('data-slot="tooltip-trigger"')
+    expect(markup).toContain(
+      'aria-label="Composition Description: 75% copper, 25% nickel."'
+    )
+  })
+
+  it("renders the Composition name without an empty tooltip", () => {
+    const missingMarkup = renderCoinDetailPageMarkup(baseCoin)
+    const blankMarkup = renderCoinDetailPageMarkup({
+      ...baseCoin,
+      compositionDescription: "   ",
+    })
+
+    expect(missingMarkup).toContain("Copper-nickel")
+    expect(missingMarkup).not.toContain('data-slot="tooltip-trigger"')
+    expect(blankMarkup).toContain("Copper-nickel")
+    expect(blankMarkup).not.toContain('data-slot="tooltip-trigger"')
   })
 
   it("pluralizes the mint label when a coin has multiple mints", () => {

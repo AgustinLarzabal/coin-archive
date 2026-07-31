@@ -90,6 +90,7 @@ describe("getCoin integration", () => {
       title: "Detail Test Coin",
       issuerId: spain.id,
       compositionId: silverComposition.id,
+      compositionDescription: "90% silver, 10% copper",
       currencyId: euro.id,
       faceValueNumericValue: 2,
       faceValueText: "2 Euros",
@@ -217,8 +218,8 @@ describe("getCoin integration", () => {
       composition: {
         code: "silver-900",
         name: "Silver .900",
-        description: "90% silver, 10% copper",
       },
+      compositionDescription: "90% silver, 10% copper",
       distribution: {
         code: "standard-circulation",
         name: "Standard circulation",
@@ -338,6 +339,54 @@ describe("getCoin integration", () => {
         },
       ])
     )
+  })
+
+  it("returns independent Composition Descriptions for Coins sharing one Composition", async () => {
+    const issuer = await createIssuer({
+      code: "shared-composition-issuer",
+      name: "Shared Composition Issuer",
+    })
+    const sharedComposition = await createComposition({
+      code: "bimetallic",
+      name: "Bimetallic",
+      description: "Legacy shared text must not be exposed.",
+    })
+    const firstCoin = await createCoin({
+      title: "First Bimetallic Coin",
+      issuerId: issuer.id,
+      compositionId: sharedComposition.id,
+      compositionDescription: "Copper-nickel ring with brass core.",
+      createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    })
+    const secondCoin = await createCoin({
+      title: "Second Bimetallic Coin",
+      issuerId: issuer.id,
+      compositionId: sharedComposition.id,
+      compositionDescription: "Brass ring with copper-nickel core.",
+      createdAt: new Date("2026-07-02T00:00:00.000Z"),
+    })
+
+    const [firstDetail, secondDetail] = await Promise.all([
+      getCoin(firstCoin.id),
+      getCoin(secondCoin.id),
+    ])
+
+    expect(firstDetail).toMatchObject({
+      composition: {
+        code: "bimetallic",
+        name: "Bimetallic",
+      },
+      compositionDescription: "Copper-nickel ring with brass core.",
+    })
+    expect(secondDetail).toMatchObject({
+      composition: {
+        code: "bimetallic",
+        name: "Bimetallic",
+      },
+      compositionDescription: "Brass ring with copper-nickel core.",
+    })
+    expect(firstDetail?.composition).not.toHaveProperty("description")
+    expect(secondDetail?.composition).not.toHaveProperty("description")
   })
 
   it("returns null when the coin does not exist", async () => {

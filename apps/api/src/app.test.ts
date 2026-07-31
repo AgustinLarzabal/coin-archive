@@ -162,8 +162,8 @@ describe("GET /api/v1/coins/:id", () => {
         composition: {
           code: "cu-ni",
           name: "Copper-nickel",
-          description: null,
         },
+        compositionDescription: "75% copper, 25% nickel.",
         diameter: 25.75,
         distribution: { code: "commemorative", name: "Commemorative" },
         edge: { code: "reeded", name: "Reeded" },
@@ -212,6 +212,11 @@ describe("GET /api/v1/coins/:id", () => {
       data: {
         id: coins[0].id,
         comments: "A public Coin Comment.",
+        composition: {
+          code: "cu-ni",
+          name: "Copper-nickel",
+        },
+        compositionDescription: "75% copper, 25% nickel.",
         diameter: "25.75",
         faceValue: { numericValue: "2" },
         mintage: "8000000",

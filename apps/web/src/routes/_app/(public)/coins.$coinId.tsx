@@ -149,6 +149,7 @@ export function CoinDetailPage({
   canMaintainCoins = false,
 }: CoinDetailPageProps) {
   const coinSurfaces = mapCoinSurfaces(coin)
+  const compositionDescription = coin.compositionDescription?.trim() || null
   const hasKnownIssueYearRange = coin.minYear !== null && coin.maxYear !== null
   const hasSingleYear = hasKnownIssueYearRange && coin.minYear === coin.maxYear
   const metadataItems: CoinMetadataItemView[] = [
@@ -421,12 +422,18 @@ export function CoinDetailPage({
               <div className="flex items-center justify-between py-2 text-sm">
                 <span>Composition</span>
                 <span className="text-muted-foreground tabular-nums">
-                  <Tooltip>
-                    <TooltipTrigger>{coin.composition.name}</TooltipTrigger>
-                    <TooltipContent>
-                      {coin.composition.description}
-                    </TooltipContent>
-                  </Tooltip>
+                  {compositionDescription === null ? (
+                    coin.composition.name
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger
+                        aria-label={`Composition Description: ${compositionDescription}`}
+                      >
+                        {coin.composition.name}
+                      </TooltipTrigger>
+                      <TooltipContent>{compositionDescription}</TooltipContent>
+                    </Tooltip>
+                  )}
                 </span>
               </div>
             </div>

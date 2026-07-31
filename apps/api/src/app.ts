@@ -44,7 +44,8 @@ type CoinDetailSource = {
   id: string
   title: string
   comments: string | null
-  composition: { code: string; name: string; description: string | null }
+  composition: { code: string; name: string }
+  compositionDescription: string | null
   diameter: number | string | null
   distribution: { code: string; name: string }
   edge: { code: string; name: string } | null

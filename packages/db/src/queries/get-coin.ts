@@ -46,6 +46,7 @@ export type CoinDetailRecord = {
   title: string
   comments: string | null
   composition: CoinCompositionRecord
+  compositionDescription: string | null
   diameter: number | null
   distribution: CoinDistributionRecord
   edge: CoinEdgeRecord | null
@@ -163,7 +164,6 @@ function mapComposition(row: GetCoinBaseRow): CoinCompositionRecord {
   return {
     code: row.compositionCode,
     name: row.compositionName,
-    description: row.compositionDescription,
   }
 }
 
@@ -434,6 +434,7 @@ function mapCoinDetail(
     title: row.title,
     comments: row.comments,
     composition: mapComposition(row),
+    compositionDescription: row.compositionDescription,
     diameter: row.diameter,
     distribution: mapDistribution(row),
     edge: mapEdge(row),
@@ -464,7 +465,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       title: coin.title,
       comments: coin.comments,
       compositionCode: composition.code,
-      compositionDescription: composition.description,
+      compositionDescription: coin.compositionDescription,
       compositionName: composition.name,
       diameter: coin.diameter,
       distributionCode: distribution.code,

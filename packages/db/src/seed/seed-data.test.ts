@@ -6,6 +6,7 @@ import {
   seededCoins,
   seededCompositions,
   seededCurrencies,
+  seededEdges,
   seededIssuers,
   seededMints,
 } from "./seed-data"
@@ -165,6 +166,27 @@ describe("seededCurrencies", () => {
 
     expect(
       seededCoins.filter(({ currencyCode }) => !currencyCodes.has(currencyCode))
+    ).toEqual([])
+  })
+})
+
+describe("seededEdges", () => {
+  it("defines only the Lettered-Signs-Numbers Edge", () => {
+    expect(seededEdges.map(({ code, name }) => ({ code, name }))).toEqual([
+      {
+        code: "lettered-signs-numbers-reeded",
+        name: "Lettered-Signs-Numbers (reeded)",
+      },
+    ])
+  })
+
+  it("only assigns configured Edges to seeded coins", () => {
+    const edgeCodes = new Set(seededEdges.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ edgeCode }) => edgeCode !== undefined && !edgeCodes.has(edgeCode)
+      )
     ).toEqual([])
   })
 })

@@ -8,7 +8,7 @@ export const seededCoins: SeededCoin[] = [
     compositionCode: "bimetallic",
     currencyCode: "euro",
     distributionCode: "circulating-commemorative",
-    edgeCode: "lettered",
+    edgeCode: "lettered-signs-numbers-reeded",
     faceValueNumericValue: 2,
     faceValueText: "2 Euros",
     issuerCode: "spain",

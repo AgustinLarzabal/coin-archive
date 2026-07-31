@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
 import {
+  seededCoinMints,
   seededCoinRulers,
   seededCoinSurfaceEngravers,
   seededCoinSurfaces,
@@ -332,10 +333,18 @@ describe("seededOrientations", () => {
 })
 
 describe("seededMints", () => {
-  it("uses unique mint codes", () => {
-    expect(new Set(seededMints.map(({ code }) => code)).size).toBe(
-      seededMints.length
-    )
+  it("defines only the Royal Mint of Madrid", () => {
+    expect(seededMints.map(({ code, name }) => ({ code, name }))).toEqual([
+      { code: "royal-mint-of-madrid", name: "Royal Mint of Madrid" },
+    ])
+  })
+
+  it("only assigns configured Mints to seeded coins", () => {
+    const mintCodes = new Set(seededMints.map(({ code }) => code))
+
+    expect(
+      seededCoinMints.filter(({ mintCode }) => !mintCodes.has(mintCode))
+    ).toEqual([])
   })
 })
 

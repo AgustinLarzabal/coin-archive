@@ -39,18 +39,6 @@ const expectedSeededCurrencies = [
 
 const expectedSeededMints = [
   {
-    code: "buenos-aires-mint",
-    name: "Buenos Aires Mint",
-  },
-  {
-    code: "denver-mint",
-    name: "Denver Mint",
-  },
-  {
-    code: "philadelphia-mint",
-    name: "Philadelphia Mint",
-  },
-  {
     code: "royal-mint-of-madrid",
     name: "Royal Mint of Madrid",
   },
@@ -226,7 +214,14 @@ describe("seed integration", () => {
         )
       )
     )
-    await expectOptionsToIncludeExpectedRecords(getMints(), expectedSeededMints)
+    const seededMintOptions = await getMints()
+
+    expect(seededMintOptions).toHaveLength(expectedSeededMints.length)
+    expect(seededMintOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededMints.map((record) => expect.objectContaining(record))
+      )
+    )
     const seededOrientationOptions = await getOrientations()
 
     expect(seededOrientationOptions).toHaveLength(

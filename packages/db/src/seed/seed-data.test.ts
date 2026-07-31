@@ -57,8 +57,12 @@ describe("SeededCoin", () => {
     ])
   })
 
-  it("seeds at least 30 coins", () => {
-    expect(seededCoins.length).toBeGreaterThanOrEqual(30)
+  it("only seeds coins whose issuer is configured", () => {
+    const issuerCodes = new Set(seededIssuers.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(({ issuerCode }) => !issuerCodes.has(issuerCode))
+    ).toEqual([])
   })
 
   it("retains distinct Coin-owned Bimetallic Composition Descriptions", () => {
@@ -89,15 +93,39 @@ describe("SeededCoin", () => {
 })
 
 describe("seededIssuers", () => {
-  it("defines required ISO Codes for the demo issuers", () => {
-    expect(seededIssuers).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ code: "argentina", isoCode: "AR" }),
-        expect.objectContaining({ code: "buenos-aires", isoCode: "AR" }),
-        expect.objectContaining({ code: "united-states", isoCode: "US" }),
-        expect.objectContaining({ code: "spain", isoCode: "ES" }),
-      ])
-    )
+  it("defines exactly the requested issuers and ISO codes", () => {
+    expect(
+      seededIssuers.map(({ code, name, isoCode }) => ({ code, name, isoCode }))
+    ).toEqual([
+      { code: "germany", name: "Germany", isoCode: "DE" },
+      { code: "andorra", name: "Andorra", isoCode: "AD" },
+      { code: "austria", name: "Austria", isoCode: "AT" },
+      { code: "belgium", name: "Belgium", isoCode: "BE" },
+      { code: "cyprus", name: "Cyprus", isoCode: "CY" },
+      { code: "croatia", name: "Croatia", isoCode: "HR" },
+      { code: "slovakia", name: "Slovakia", isoCode: "SK" },
+      { code: "slovenia", name: "Slovenia", isoCode: "SI" },
+      { code: "spain", name: "Spain", isoCode: "ES" },
+      { code: "estonia", name: "Estonia", isoCode: "EE" },
+      { code: "finland", name: "Finland", isoCode: "FI" },
+      { code: "france", name: "France", isoCode: "FR" },
+      { code: "greece", name: "Greece", isoCode: "GR" },
+      { code: "ireland", name: "Ireland", isoCode: "IE" },
+      { code: "italy", name: "Italy", isoCode: "IT" },
+      { code: "latvia", name: "Latvia", isoCode: "LV" },
+      { code: "lithuania", name: "Lithuania", isoCode: "LT" },
+      { code: "luxembourg", name: "Luxembourg", isoCode: "LU" },
+      { code: "malta", name: "Malta", isoCode: "MT" },
+      { code: "monaco", name: "Monaco", isoCode: "MC" },
+      { code: "netherlands", name: "Netherlands", isoCode: "NL" },
+      { code: "portugal", name: "Portugal", isoCode: "PT" },
+      { code: "san-marino", name: "San Marino", isoCode: "SM" },
+      {
+        code: "vatican-city",
+        name: "Vatican City",
+        isoCode: "VA",
+      },
+    ])
   })
 })
 

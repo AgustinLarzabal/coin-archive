@@ -19,7 +19,7 @@ import { coinSurface } from "../schema/coin-surface"
 import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { seededCoinRulers } from "./seed-data"
+import { seededCoinRulers, seededIssuers } from "./seed-data"
 import { seedDatabase } from "./index"
 
 const expectedSeededCurrencies = [
@@ -256,34 +256,15 @@ describe("seed integration", () => {
       getCurrencies(),
       expectedSeededCurrencies
     )
-    await expect(getIssuers()).resolves.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          code: "argentina",
-          isoCode: "AR",
-          name: "Argentina",
-        }),
-        expect.objectContaining({
-          code: "buenos-aires",
-          isoCode: "AR",
-          name: "Buenos Aires",
-        }),
-        expect.objectContaining({
-          code: "finland",
-          isoCode: "FI",
-          name: "Finland",
-        }),
-        expect.objectContaining({
-          code: "spain",
-          isoCode: "ES",
-          name: "Spain",
-        }),
-        expect.objectContaining({
-          code: "united-states",
-          isoCode: "US",
-          name: "United States of America",
-        }),
-      ])
+    const seededIssuerOptions = await getIssuers()
+
+    expect(seededIssuerOptions).toHaveLength(seededIssuers.length)
+    expect(seededIssuerOptions).toEqual(
+      expect.arrayContaining(
+        seededIssuers.map(({ code, isoCode, name }) =>
+          expect.objectContaining({ code, isoCode, name })
+        )
+      )
     )
     await expectOptionsToIncludeExpectedRecords(getMints(), expectedSeededMints)
     await expectOptionsToIncludeExpectedRecords(
@@ -306,42 +287,6 @@ describe("seed integration", () => {
 
     const seededCoins = await getCoins({ limit: 30 })
 
-    expect(
-      findCoinRecordByTitle(seededCoins, "United States National Park Quarter")
-    ).toMatchObject({
-      id: expect.any(String),
-      title: "United States National Park Quarter",
-      issuer: {
-        code: "united-states",
-        isoCode: "US",
-        name: "United States of America",
-      },
-    })
-
-    expect(
-      findCoinRecordByTitle(seededCoins, "Buenos Aires Transition Half Real")
-    ).toMatchObject({
-      id: expect.any(String),
-      title: "Buenos Aires Transition Half Real",
-      issuer: {
-        code: "buenos-aires",
-        isoCode: "AR",
-        name: "Buenos Aires",
-      },
-    })
-
-    expect(
-      findCoinRecordByTitle(seededCoins, "Argentina Copper Peso")
-    ).toMatchObject({
-      id: expect.any(String),
-      title: "Argentina Copper Peso",
-      issuer: {
-        code: "argentina",
-        isoCode: "AR",
-        name: "Argentina",
-      },
-    })
-
     expect(findCoinRecordByTitle(seededCoins, "Spain 2 Euro")).toMatchObject({
       id: expect.any(String),
       title: "Spain 2 Euro",
@@ -352,39 +297,13 @@ describe("seed integration", () => {
       },
     })
 
-    expect(
-      findCoinRecordByTitle(seededCoins, "Buenos Aires 8 Reales 1813")
-    ).toMatchObject({
+    expect(findCoinRecordByTitle(seededCoins, "Finland 2 Euro")).toMatchObject({
       id: expect.any(String),
-      title: "Buenos Aires 8 Reales 1813",
+      title: "Finland 2 Euro",
       issuer: {
-        code: "buenos-aires",
-        isoCode: "AR",
-        name: "Buenos Aires",
-      },
-    })
-
-    expect(
-      findCoinRecordByTitle(seededCoins, "United States Lincoln Cent")
-    ).toMatchObject({
-      id: expect.any(String),
-      title: "United States Lincoln Cent",
-      issuer: {
-        code: "united-states",
-        isoCode: "US",
-        name: "United States of America",
-      },
-    })
-
-    expect(
-      findCoinRecordByTitle(seededCoins, "Argentina Convertible Peso")
-    ).toMatchObject({
-      id: expect.any(String),
-      title: "Argentina Convertible Peso",
-      issuer: {
-        code: "argentina",
-        isoCode: "AR",
-        name: "Argentina",
+        code: "finland",
+        isoCode: "FI",
+        name: "Finland",
       },
     })
   })
@@ -423,10 +342,7 @@ describe("seed integration", () => {
 
     const seededCoins = await getCoins({ limit: 30 })
     const spain2Euro = findCoinRecordByTitle(seededCoins, "Spain 2 Euro")
-    const buenosAiresCoin = findCoinRecordByTitle(
-      seededCoins,
-      "Buenos Aires 8 Reales 1813"
-    )
+    const finland2Euro = findCoinRecordByTitle(seededCoins, "Finland 2 Euro")
 
     await expect(getCoin(spain2Euro.id)).resolves.toMatchObject({
       title: "Spain 2 Euro",
@@ -437,12 +353,12 @@ describe("seed integration", () => {
         },
       ],
     })
-    await expect(getCoin(buenosAiresCoin.id)).resolves.toMatchObject({
-      title: "Buenos Aires 8 Reales 1813",
+    await expect(getCoin(finland2Euro.id)).resolves.toMatchObject({
+      title: "Finland 2 Euro",
       rulers: [
         {
-          code: "province-of-buenos-aires",
-          name: "Province of Buenos Aires",
+          code: "republic-of-finland",
+          name: "Republic of Finland",
         },
       ],
     })
@@ -452,18 +368,16 @@ describe("seed integration", () => {
     await seedDatabase()
 
     const filteredCoins = await getCoins({
-      rulerCode: "  ARGENTINE-REPUBLIC  ",
+      rulerCode: "  REPUBLIC-OF-FINLAND  ",
       limit: 30,
     })
 
     expect(filteredCoins.map(({ title }) => title)).toEqual([
-      "Argentina 2 Pesos",
-      "Argentina 50 Centavos",
-      "Argentina 10 Centavos",
-      "Argentina Convertible Peso",
-      "Argentina Copper Peso",
-      "Argentina 20 Centavos",
-      "Argentina Sol de Mayo Peso",
+      "Finland 10 Euro Cent",
+      "Finland 50 Euro Cent",
+      "Finland 1 Euro",
+      "Finland 2 Euro",
+      "2 Euros (Enlargement of the European Union)",
     ])
   })
 })

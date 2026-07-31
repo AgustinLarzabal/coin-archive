@@ -7,7 +7,6 @@ import { Link, useRouterState } from "@tanstack/react-router"
 import { authClient } from "@coin-archive/auth/client"
 import { buttonVariants } from "@coin-archive/ui/components/button"
 import { UserMenu } from "./user-menu"
-import { Icons } from "./icons"
 
 export function getLoginRedirectTarget({
   hash,
@@ -42,12 +41,7 @@ export function Header() {
     loginRedirectTarget === "/" ? {} : { redirect: loginRedirectTarget }
 
   return (
-    <header className="z-10 flex h-[70px] items-center justify-between gap-4 border-b bg-background px-6">
-      <div>
-        <Link to="/">
-          <Icons.LogoSmall />
-        </Link>
-      </div>
+    <header className="z-10 flex h-[70px] items-center justify-end gap-4 border-b bg-background px-6">
       <div>
         {session === null ? (
           showSignInButton && (

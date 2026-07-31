@@ -79,7 +79,7 @@ export function HomeFilters({
   }
 
   return (
-    <div className="mb-10">
+    <div className="">
       <div className="flex gap-2.5">
         <div className="flex-1">
           <Filters

@@ -75,6 +75,7 @@ export async function getCoinMaintenanceRecord(
           id: true,
           title: true,
           comments: true,
+          compositionDescription: true,
           compositionId: true,
           currencyId: true,
           diameter: true,

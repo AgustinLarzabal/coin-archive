@@ -12,6 +12,7 @@ CREATE TABLE "coin" (
 	"issuer_id" uuid NOT NULL,
 	"distribution_id" uuid NOT NULL,
 	"composition_id" uuid NOT NULL,
+	"composition_description" text,
 	"face_value_text" varchar(255) NOT NULL,
 	"face_value_numeric_value" numeric(20, 6) NOT NULL,
 	"currency_id" uuid NOT NULL,

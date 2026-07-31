@@ -12,6 +12,7 @@ const coin: CoinMaintenanceRecord = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",
+  compositionDescription: "Outer ring: nickel-brass; core: copper-nickel.",
   compositionId: "composition-1",
   currencyId: "currency-1",
   diameter: 24,
@@ -58,6 +59,7 @@ const coin: CoinMaintenanceRecord = {
 describe("createCoinDraft", () => {
   it("maps persisted aggregate record data into the editable draft shape", () => {
     expect(createCoinDraft(coin)).toMatchObject({
+      compositionDescription: "Outer ring: nickel-brass; core: copper-nickel.",
       rulers: [{ rulerId: "ruler-1" }, { rulerId: "ruler-2" }],
       mints: [{ mintId: "mint-1" }, { mintId: "mint-2" }],
       themes: [{ themeId: "theme-1" }],
@@ -137,6 +139,17 @@ describe("areCoinDraftsEqual", () => {
             number: "KM 99",
           },
         ],
+      })
+    ).toBe(false)
+  })
+
+  it("returns false when Composition Description changes", () => {
+    const draft = createCoinDraft(coin)
+
+    expect(
+      areCoinDraftsEqual(draft, {
+        ...draft,
+        compositionDescription: "",
       })
     ).toBe(false)
   })

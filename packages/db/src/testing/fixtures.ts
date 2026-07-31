@@ -31,12 +31,16 @@ import { getOrCreateDefaultDistribution as getDefaultDistribution } from "./defa
 
 const [, , edgeSurfaceKind] = coinSurfaceKinds
 type CoinSurfaceKind = (typeof coinSurfaceKinds)[number]
-type EngravableCoinSurfaceKind = Exclude<CoinSurfaceKind, typeof edgeSurfaceKind>
+type EngravableCoinSurfaceKind = Exclude<
+  CoinSurfaceKind,
+  typeof edgeSurfaceKind
+>
 
 type CreateCoinSurfaceDetailsInput = Omit<CreateCoinSurfaceInput, "coinId">
 
 type CreateCoinInput = {
   comments?: string | null
+  compositionDescription?: string | null
   compositionId?: string
   surfaces?: CreateCoinSurfaceDetailsInput[]
   currencyId?: string
@@ -65,6 +69,7 @@ type CreateCoinInput = {
 
 export async function createCoin({
   comments,
+  compositionDescription,
   compositionId,
   surfaces,
   currencyId,
@@ -109,6 +114,7 @@ export async function createCoin({
     .insert(coin)
     .values({
       comments: normalizeCoinComments(comments),
+      compositionDescription,
       createdAt,
       compositionId: resolvedCompositionId,
       currencyId: resolvedCurrencyId,

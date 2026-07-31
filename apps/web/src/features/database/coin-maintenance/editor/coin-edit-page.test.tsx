@@ -2,10 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import type { CoinMaintenanceRecord } from "@coin-archive/db"
 
-import {
-  CoinEditRouteComponent,
-  loadCoinEditPageData,
-} from "./coin-edit-page"
+import { CoinEditRouteComponent, loadCoinEditPageData } from "./coin-edit-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -19,6 +16,7 @@ const coin: CoinMaintenanceRecord = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",
+  compositionDescription: "Outer ring: nickel-brass; core: copper-nickel.",
   compositionId: "composition-1",
   currencyId: "currency-1",
   diameter: 24,

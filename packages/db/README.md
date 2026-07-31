@@ -41,10 +41,10 @@ Important model notes:
 
 The current core relationships map to these tables:
 
-- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional public plain-text `comments`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
+- `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, optional Coin-owned `composition_description`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional public plain-text `comments`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `coin_surface`: per-Coin surface detail row for Obverse, Reverse, and Edge Surface description or lettering details
 - `coin_face_engraver`: face-only Engraver Attribution join table from Obverse or Reverse Coin Surface rows to `engraver`
-- `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description`, and timestamps
+- `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description` retained temporarily during the ownership migration, and timestamps
 - `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
 - `edge`: shared coin-level Edge controlled classification with stable `code`, display `name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
@@ -240,6 +240,7 @@ Legend:
 | `thickness` | optional |
 | `weight` | optional |
 | `compositionId` | required |
+| `compositionDescription` | optional |
 | `faceValueText` | required |
 | `faceValueNumericValue` | required |
 | `currencyId` | required |

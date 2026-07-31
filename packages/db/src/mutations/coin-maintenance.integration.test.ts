@@ -79,6 +79,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: "  Public note.  ",
+      compositionDescription: "  Silver outer ring with a brass core.  ",
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: 22.5,
@@ -106,6 +107,7 @@ describe("coin maintenance mutations integration", () => {
     expect(createdCoin).toMatchObject({
       title: "Coin Maintenance Create Coin",
       comments: "Public note.",
+      compositionDescription: "Silver outer ring with a brass core.",
       faceValueText: "2 Test Units",
       issuerId: issuer.id,
       distributionId: distribution.id,
@@ -137,6 +139,65 @@ describe("coin maintenance mutations integration", () => {
         rulerOrder: 1,
       },
     ])
+
+    await expect(
+      getCoinMaintenanceRecord(createdCoin.id)
+    ).resolves.toMatchObject({
+      compositionDescription: "Silver outer ring with a brass core.",
+    })
+  })
+
+  it("stores blank Composition Description as null", async () => {
+    const issuer = await createIssuer({
+      code: "coin-maintenance-blank-description-issuer",
+      name: "Coin Maintenance Blank Description Issuer",
+    })
+    const ruler = await createRuler({
+      code: "coin-maintenance-blank-description-ruler",
+      name: "Coin Maintenance Blank Description Ruler",
+    })
+    const distribution = await createDistribution({
+      code: "coin-maintenance-blank-description-distribution",
+      name: "Coin Maintenance Blank Description Distribution",
+    })
+    const composition = await createComposition({
+      code: "coin-maintenance-blank-description-composition",
+      name: "Coin Maintenance Blank Description Composition",
+    })
+    const currency = await createCurrency({
+      code: "coin-maintenance-blank-description-currency",
+      name: "CMBD",
+      fullName: "Coin Maintenance Blank Description Currency",
+    })
+
+    const createdCoin = await createCoinMaintenance({
+      comments: null,
+      compositionDescription: "   ",
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      minYear: null,
+      mintIds: [],
+      mintage: null,
+      orientationId: null,
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      title: "Coin Maintenance Blank Description Coin",
+      weight: null,
+    })
+
+    expect(createdCoin.compositionDescription).toBeNull()
   })
 
   it("rolls back failed aggregate creates and leaves no partial Coin or owned child rows", async () => {
@@ -165,6 +226,7 @@ describe("coin maintenance mutations integration", () => {
     await expect(
       createCoinMaintenance({
         comments: null,
+        compositionDescription: null,
         compositionId: composition.id,
         currencyId: currency.id,
         diameter: null,
@@ -228,6 +290,10 @@ describe("coin maintenance mutations integration", () => {
       code: "coin-maintenance-update-composition",
       name: "Coin Maintenance Update Composition",
     })
+    const replacementComposition = await createComposition({
+      code: "coin-maintenance-update-replacement-composition",
+      name: "Coin Maintenance Update Replacement Composition",
+    })
     const currency = await createCurrency({
       code: "coin-maintenance-update-currency",
       name: "CMU",
@@ -264,6 +330,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: null,
+      compositionDescription: "Copper-nickel ring with brass core",
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -292,10 +359,10 @@ describe("coin maintenance mutations integration", () => {
       where: (record, { eq }) => eq(record.id, createdCoin.id),
     })
 
-    const updatedCoin = await updateCoinMaintenance({
-      id: createdCoin.id,
+    const updatedFields = {
       comments: "Updated public note",
-      compositionId: composition.id,
+      compositionDescription: "Copper-nickel ring with brass core",
+      compositionId: replacementComposition.id,
       currencyId: currency.id,
       diameter: 24,
       distributionId: distribution.id,
@@ -317,12 +384,18 @@ describe("coin maintenance mutations integration", () => {
       thickness: 2.1,
       title: "Updated Coin Maintenance Coin",
       weight: 8.2,
+    }
+    const updatedCoin = await updateCoinMaintenance({
+      id: createdCoin.id,
+      ...updatedFields,
     })
 
     expect(updatedCoin).toMatchObject({
       id: createdCoin.id,
       title: "Updated Coin Maintenance Coin",
       comments: "Updated public note",
+      compositionDescription: "Copper-nickel ring with brass core",
+      compositionId: replacementComposition.id,
       faceValueText: "5 Units",
       faceValueNumericValue: 5,
       minYear: 2024,
@@ -387,6 +460,102 @@ describe("coin maintenance mutations integration", () => {
     expect(persistedCoin?.updatedAt.getTime()).toBeGreaterThanOrEqual(
       beforeUpdate?.updatedAt.getTime() ?? 0
     )
+
+    const revisedCoin = await updateCoinMaintenance({
+      id: createdCoin.id,
+      ...updatedFields,
+      compositionDescription: "  Revised copper-nickel and brass detail.  ",
+    })
+
+    expect(revisedCoin?.compositionDescription).toBe(
+      "Revised copper-nickel and brass detail."
+    )
+
+    const clearedCoin = await updateCoinMaintenance({
+      id: createdCoin.id,
+      ...updatedFields,
+      compositionDescription: "  ",
+    })
+
+    expect(clearedCoin?.compositionDescription).toBeNull()
+  })
+
+  it("stores independent Composition Descriptions for Coins sharing one Composition", async () => {
+    const issuer = await createIssuer({
+      code: "coin-maintenance-shared-composition-issuer",
+      name: "Coin Maintenance Shared Composition Issuer",
+    })
+    const ruler = await createRuler({
+      code: "coin-maintenance-shared-composition-ruler",
+      name: "Coin Maintenance Shared Composition Ruler",
+    })
+    const distribution = await createDistribution({
+      code: "coin-maintenance-shared-composition-distribution",
+      name: "Coin Maintenance Shared Composition Distribution",
+    })
+    const composition = await createComposition({
+      code: "coin-maintenance-shared-composition",
+      name: "Bimetallic",
+    })
+    const currency = await createCurrency({
+      code: "coin-maintenance-shared-composition-currency",
+      name: "CMSC",
+      fullName: "Coin Maintenance Shared Composition Currency",
+    })
+    const baseFields = {
+      comments: null,
+      compositionDescription: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      minYear: null,
+      mintIds: [],
+      mintage: null,
+      orientationId: null,
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      weight: null,
+    }
+
+    const firstCoin = await createCoinMaintenance({
+      ...baseFields,
+      compositionDescription: "Outer ring: copper-nickel; core: nickel-brass.",
+      title: "First Shared Composition Coin",
+    })
+    const secondCoin = await createCoinMaintenance({
+      ...baseFields,
+      compositionDescription: "Outer ring: nickel-brass; core: copper-nickel.",
+      title: "Second Shared Composition Coin",
+    })
+
+    await expect(
+      Promise.all([
+        getCoinMaintenanceRecord(firstCoin.id),
+        getCoinMaintenanceRecord(secondCoin.id),
+      ])
+    ).resolves.toMatchObject([
+      {
+        compositionId: composition.id,
+        compositionDescription:
+          "Outer ring: copper-nickel; core: nickel-brass.",
+      },
+      {
+        compositionId: composition.id,
+        compositionDescription:
+          "Outer ring: nickel-brass; core: copper-nickel.",
+      },
+    ])
   })
 
   it("replaces owned child collections from submitted edit state, including removals back to empty", async () => {
@@ -430,6 +599,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -473,6 +643,7 @@ describe("coin maintenance mutations integration", () => {
     await updateCoinMaintenance({
       id: createdCoin.id,
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -536,9 +707,9 @@ describe("coin maintenance mutations integration", () => {
         where: (record, { eq }) => eq(record.coinId, createdCoin.id),
       })
     ).resolves.toHaveLength(0)
-    await expect(
-      db.query.coinSurfaceEngraver.findMany()
-    ).resolves.toHaveLength(0)
+    await expect(db.query.coinSurfaceEngraver.findMany()).resolves.toHaveLength(
+      0
+    )
   })
 
   it("creates and replaces Catalogue References and Surface Set details atomically", async () => {
@@ -582,6 +753,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -632,6 +804,7 @@ describe("coin maintenance mutations integration", () => {
       id: createdCoin.id,
       title: "Coin Maintenance Aggregate Coin",
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -678,6 +851,7 @@ describe("coin maintenance mutations integration", () => {
     await updateCoinMaintenance({
       id: createdCoin.id,
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -740,9 +914,9 @@ describe("coin maintenance mutations integration", () => {
       })
     ).resolves.toHaveLength(3)
 
-    await expect(
-      db.query.coinSurfaceEngraver.findMany()
-    ).resolves.toHaveLength(3)
+    await expect(db.query.coinSurfaceEngraver.findMany()).resolves.toHaveLength(
+      3
+    )
 
     const persistedCoin = await db.query.coin.findFirst({
       where: (record, { eq }) => eq(record.id, createdCoin.id),
@@ -786,6 +960,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -830,6 +1005,7 @@ describe("coin maintenance mutations integration", () => {
       updateCoinMaintenance({
         id: createdCoin.id,
         comments: null,
+        compositionDescription: null,
         compositionId: composition.id,
         currencyId: currency.id,
         diameter: null,
@@ -918,29 +1094,30 @@ describe("coin maintenance mutations integration", () => {
       updateCoinMaintenance({
         id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
         comments: null,
+        compositionDescription: null,
         compositionId: composition.id,
         currencyId: currency.id,
         diameter: null,
         distributionId: distribution.id,
         edgeId: null,
         faceValueNumericValue: 1,
-      faceValueText: "1 Unit",
-      isDemonetized: null,
-      issuerId: issuer.id,
-      maxYear: null,
-      minYear: null,
-      mintIds: [],
-      mintage: null,
-      orientationId: null,
-      rimId: null,
-      rulerIds: [ruler.id],
-      shapeId: null,
-      techniqueId: null,
-      themeIds: [],
-      thickness: null,
-      title: "Missing Coin",
-      weight: null,
-    })
+        faceValueText: "1 Unit",
+        isDemonetized: null,
+        issuerId: issuer.id,
+        maxYear: null,
+        minYear: null,
+        mintIds: [],
+        mintage: null,
+        orientationId: null,
+        rimId: null,
+        rulerIds: [ruler.id],
+        shapeId: null,
+        techniqueId: null,
+        themeIds: [],
+        thickness: null,
+        title: "Missing Coin",
+        weight: null,
+      })
     ).resolves.toBeNull()
 
     const matchingCoin = await db.query.coin.findFirst({
@@ -991,6 +1168,7 @@ describe("coin maintenance mutations integration", () => {
 
     const createdCoin = await createCoinMaintenance({
       comments: null,
+      compositionDescription: null,
       compositionId: composition.id,
       currencyId: currency.id,
       diameter: null,
@@ -1045,15 +1223,24 @@ describe("coin maintenance mutations integration", () => {
     ).resolves.toBeUndefined()
 
     await expect(
-      db.select({ count: count() }).from(coinRuler).where(eq(coinRuler.coinId, createdCoin.id))
+      db
+        .select({ count: count() })
+        .from(coinRuler)
+        .where(eq(coinRuler.coinId, createdCoin.id))
     ).resolves.toStrictEqual([{ count: 0 }])
 
     await expect(
-      db.select({ count: count() }).from(coinReference).where(eq(coinReference.coinId, createdCoin.id))
+      db
+        .select({ count: count() })
+        .from(coinReference)
+        .where(eq(coinReference.coinId, createdCoin.id))
     ).resolves.toStrictEqual([{ count: 0 }])
 
     await expect(
-      db.select({ count: count() }).from(coinSurface).where(eq(coinSurface.coinId, createdCoin.id))
+      db
+        .select({ count: count() })
+        .from(coinSurface)
+        .where(eq(coinSurface.coinId, createdCoin.id))
     ).resolves.toStrictEqual([{ count: 0 }])
 
     await expect(

@@ -91,6 +91,7 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
   rulers: [createEmptyRulerAttribution()],
   distributionId: "",
   compositionId: "",
+  compositionDescription: "",
   faceValueText: "",
   faceValueNumericValue: "",
   currencyId: "",
@@ -293,6 +294,7 @@ export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
     rulers: rulers.length > 0 ? rulers : [createEmptyRulerAttribution()],
     distributionId: coin.distributionId,
     compositionId: coin.compositionId,
+    compositionDescription: coin.compositionDescription ?? "",
     faceValueText: coin.faceValueText,
     faceValueNumericValue: String(coin.faceValueNumericValue),
     currencyId: coin.currencyId,
@@ -367,16 +369,14 @@ export function hasRequiredCoinLookupOptions(options: CoinFormOptions) {
   return REQUIRED_LOOKUP_OPTION_KEYS.every((key) => options[key].length > 0)
 }
 
-export function areCoinDraftsEqual(
-  left: CoinDraft,
-  right: CoinDraft
-): boolean {
+export function areCoinDraftsEqual(left: CoinDraft, right: CoinDraft): boolean {
   return (
     left.title === right.title &&
     left.issuerId === right.issuerId &&
     areDraftRowsEqual(left.rulers, right.rulers, "rulerId") &&
     left.distributionId === right.distributionId &&
     left.compositionId === right.compositionId &&
+    left.compositionDescription === right.compositionDescription &&
     left.faceValueText === right.faceValueText &&
     left.faceValueNumericValue === right.faceValueNumericValue &&
     left.currencyId === right.currencyId &&
@@ -406,9 +406,7 @@ function areDraftRowsEqual<
 >(left: TRow[], right: TRow[], fieldName: TFieldName) {
   return (
     left.length === right.length &&
-    left.every(
-      (row, index) => row[fieldName] === right[index]?.[fieldName]
-    )
+    left.every((row, index) => row[fieldName] === right[index]?.[fieldName])
   )
 }
 

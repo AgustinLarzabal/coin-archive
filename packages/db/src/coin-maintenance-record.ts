@@ -23,6 +23,7 @@ export type CoinMaintenanceRecord = {
   id: string
   title: string
   comments: string | null
+  compositionDescription: string | null
   compositionId: string
   currencyId: string
   diameter: number | null

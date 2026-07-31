@@ -102,6 +102,7 @@ export const coin = pgTable(
       .references(() => composition.id, {
         onDelete: "restrict",
       }),
+    compositionDescription: text("composition_description"),
     faceValueText: varchar("face_value_text", { length: 255 }).notNull(),
     faceValueNumericValue: numeric(
       "face_value_numeric_value",

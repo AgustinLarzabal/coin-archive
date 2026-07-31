@@ -203,6 +203,8 @@ export const seededCoins: SeededCoin[] = [
   {
     comments: "Fifth Enlargement of the European Union",
     compositionCode: "bimetallic",
+    compositionDescription:
+      "Outer ring: copper-nickel. Core: three layers of nickel-brass, nickel, and nickel-brass.",
     currencyCode: "euro",
     diameter: 25.75,
     distributionCode: "circulating-commemorative",
@@ -227,6 +229,8 @@ export const seededCoins: SeededCoin[] = [
   {
     title: "Spain 1 Euro",
     compositionCode: "bimetallic",
+    compositionDescription:
+      "Outer ring: nickel-brass. Core: three layers of copper-nickel, nickel, and copper-nickel.",
     currencyCode: "euro",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 1,

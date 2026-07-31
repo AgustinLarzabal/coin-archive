@@ -175,11 +175,7 @@ function removeSeededCoinRulersForCoinTitle(coinTitle: string) {
 
   expect(removedSeededCoinRulerCount).toBeGreaterThan(0)
 
-  seededCoinRulers.splice(
-    0,
-    seededCoinRulers.length,
-    ...seededCoinRulersToKeep
-  )
+  seededCoinRulers.splice(0, seededCoinRulers.length, ...seededCoinRulersToKeep)
 
   return () => {
     seededCoinRulers.splice(
@@ -410,9 +406,8 @@ describe("seed integration", () => {
   })
 
   it("rejects published seed data without a ruler attribution while leaving low-level fixtures outside that seam", async () => {
-    const restoreSeededCoinRulers = removeSeededCoinRulersForCoinTitle(
-      "Spain 2 Euro"
-    )
+    const restoreSeededCoinRulers =
+      removeSeededCoinRulersForCoinTitle("Spain 2 Euro")
 
     try {
       await expect(seedDatabase()).rejects.toThrow(

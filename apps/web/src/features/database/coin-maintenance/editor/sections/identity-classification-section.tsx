@@ -8,6 +8,7 @@ import {
   FieldSet,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
+import { Textarea } from "@coin-archive/ui/components/textarea"
 
 import { CoinFormFieldError } from "./coin-form-section.shared"
 import type { CoinFormSectionProps } from "./coin-form-section.shared"
@@ -85,6 +86,28 @@ export function IdentityClassificationSection({
                 value={draft.compositionId}
               />
             </div>
+            <Field
+              data-invalid={fieldErrors.compositionDescription !== undefined}
+            >
+              <FieldLabel htmlFor={`${idPrefix}-composition-description`}>
+                Composition Description
+              </FieldLabel>
+              <Textarea
+                id={`${idPrefix}-composition-description`}
+                name="compositionDescription"
+                value={draft.compositionDescription as string}
+                onChange={(event) =>
+                  updateDraft("compositionDescription", event.target.value)
+                }
+              />
+              <FieldDescription>
+                Record this Coin's specific alloys, fineness, proportions,
+                layers, plating, or parts.
+              </FieldDescription>
+              <CoinFormFieldError
+                message={fieldErrors.compositionDescription}
+              />
+            </Field>
             <CoinMultiComboboxField
               description="Search for and add every ruler attributed to this coin. The selected chip order determines the attribution order."
               errors={rulerErrors}

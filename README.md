@@ -97,7 +97,8 @@ Other catalogue dimensions in [`CONTEXT.md`](/CONTEXT.md), such as measurement, 
 After `pnpm db:seed`, every demo Coin has an explicit reusable Composition, and the homepage visibly shows that Composition while keeping the raw JSON block for debugging.
 
 - shared seeded Compositions include `Silver (.900)`, `Copper`, `Copper-nickel`, and `Copper-nickel clad`
-- seeded Coins intentionally reuse those Compositions across multiple records rather than embedding free-text material labels per Coin
+- seeded Coins reuse those broad Compositions across multiple records
+- at least two Bimetallic Coins demonstrate distinct Coin-owned Composition Descriptions for their specific ring and core materials
 - deleting a Composition that is still referenced by a Coin is rejected by the database
 
 ## Theme demo

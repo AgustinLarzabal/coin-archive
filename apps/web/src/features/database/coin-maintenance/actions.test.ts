@@ -23,6 +23,7 @@ const VALID_COIN_DRAFT: CoinDraft = {
   rulers: [{ rulerId: VALID_LOOKUP_ID }],
   distributionId: VALID_LOOKUP_ID,
   compositionId: VALID_LOOKUP_ID,
+  compositionDescription: "",
   faceValueText: "1 Test Unit",
   faceValueNumericValue: "1.5",
   currencyId: VALID_LOOKUP_ID,
@@ -217,6 +218,8 @@ describe("submitCreateCoin", () => {
         {
           ...VALID_COIN_DRAFT,
           title: "  Spanish Test Coin  ",
+          compositionDescription:
+            "  Outer ring: copper-nickel; core: nickel-brass.  ",
           faceValueText: "  1 Test Unit  ",
           comments: "  Public note.  ",
           mints: [{ mintId: VALID_LOOKUP_ID }],
@@ -237,6 +240,7 @@ describe("submitCreateCoin", () => {
       rulerIds: [VALID_LOOKUP_ID],
       distributionId: VALID_LOOKUP_ID,
       compositionId: VALID_LOOKUP_ID,
+      compositionDescription: "Outer ring: copper-nickel; core: nickel-brass.",
       faceValueText: "1 Test Unit",
       faceValueNumericValue: 1.5,
       currencyId: VALID_LOOKUP_ID,
@@ -590,6 +594,7 @@ describe("submitUpdateCoin", () => {
           id: VALID_COIN_ID,
           ...VALID_COIN_DRAFT,
           rulers: [{ rulerId: OTHER_LOOKUP_ID }],
+          compositionDescription: "  Revised material detail.  ",
           mints: [{ mintId: VALID_LOOKUP_ID }, { mintId: OTHER_LOOKUP_ID }],
           faceValueNumericValue: "2.25",
           themes: [{ themeId: OTHER_LOOKUP_ID }],
@@ -616,6 +621,7 @@ describe("submitUpdateCoin", () => {
       rulerIds: [OTHER_LOOKUP_ID],
       distributionId: VALID_LOOKUP_ID,
       compositionId: VALID_LOOKUP_ID,
+      compositionDescription: "Revised material detail.",
       faceValueText: "1 Test Unit",
       faceValueNumericValue: 2.25,
       currencyId: VALID_LOOKUP_ID,
@@ -641,6 +647,35 @@ describe("submitUpdateCoin", () => {
         edge: null,
       },
     })
+  })
+
+  it("clears Composition Description when an Editor submits blank text", async () => {
+    const dependencies = createDependencies({
+      updateCoinMaintenance: vi.fn().mockResolvedValue({
+        id: VALID_COIN_ID,
+      }),
+    })
+
+    await expect(
+      submitUpdateCoin(
+        { role: "editor" },
+        {
+          id: VALID_COIN_ID,
+          ...VALID_COIN_DRAFT,
+          compositionDescription: "   ",
+        },
+        dependencies
+      )
+    ).resolves.toMatchObject({
+      status: "success",
+      coinId: VALID_COIN_ID,
+    })
+
+    expect(dependencies.updateCoinMaintenance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        compositionDescription: null,
+      })
+    )
   })
 
   it("passes structured Catalogue References and Surface Set details through to persistence", async () => {
@@ -702,6 +737,7 @@ describe("submitUpdateCoin", () => {
       rulerIds: [VALID_LOOKUP_ID],
       distributionId: VALID_LOOKUP_ID,
       compositionId: VALID_LOOKUP_ID,
+      compositionDescription: null,
       faceValueText: "1 Test Unit",
       faceValueNumericValue: 1.5,
       currencyId: VALID_LOOKUP_ID,

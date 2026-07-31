@@ -156,6 +156,7 @@ export type SeededCoinTheme = {
 
 export type SeededCoin = {
   comments?: string | null
+  compositionDescription?: string | null
   compositionCode: string
   currencyCode: string
   diameter?: number

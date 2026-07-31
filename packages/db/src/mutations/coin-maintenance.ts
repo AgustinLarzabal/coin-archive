@@ -19,6 +19,7 @@ import { coinTheme } from "../schema/coin-theme"
 
 type CoinMaintenanceFields = {
   comments: string | null
+  compositionDescription: string | null
   compositionId: string
   currencyId: string
   diameter: number | null
@@ -55,7 +56,7 @@ type CoinMaintenanceTransaction = Parameters<
   Parameters<typeof db.transaction>[0]
 >[0]
 
-function normalizeOptionalSurfaceText(value: string | null) {
+function normalizeOptionalText(value: string | null) {
   if (value === null) {
     return null
   }
@@ -73,8 +74,8 @@ function normalizeCoinReference(reference: CoinMaintenanceReference) {
 
 function normalizeCoinSurface(surface: CoinMaintenanceSurface) {
   return {
-    description: normalizeOptionalSurfaceText(surface.description),
-    lettering: normalizeOptionalSurfaceText(surface.lettering),
+    description: normalizeOptionalText(surface.description),
+    lettering: normalizeOptionalText(surface.lettering),
     ...normalizeCoinSurfaceUrls(surface),
   }
 }
@@ -134,6 +135,9 @@ function getPersistedSurface(surface: CoinMaintenanceSurface | null) {
 function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
   return {
     comments: normalizeCoinComments(fields.comments),
+    compositionDescription: normalizeOptionalText(
+      fields.compositionDescription
+    ),
     compositionId: fields.compositionId,
     currencyId: fields.currencyId,
     diameter: fields.diameter,
@@ -160,7 +164,9 @@ function getCoinReferences(fields: CoinMaintenanceFields) {
   return fields.references ?? []
 }
 
-function getCoinSurfaces(fields: CoinMaintenanceFields): CoinMaintenanceSurfaceSet {
+function getCoinSurfaces(
+  fields: CoinMaintenanceFields
+): CoinMaintenanceSurfaceSet {
   return (
     fields.surfaces ?? {
       obverse: null,

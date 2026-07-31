@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createDistributionAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type DistributionMaintenancePageLoaderData = MaintenancePageLoaderData<{
   distributions: DistributionOption[]
 }>
 

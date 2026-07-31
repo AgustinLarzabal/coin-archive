@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createOrientationAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type OrientationMaintenancePageLoaderData = MaintenancePageLoaderData<{
   orientations: OrientationOption[]
 }>
 

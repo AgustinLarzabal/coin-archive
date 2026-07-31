@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createCurrencyAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type CurrencyMaintenancePageLoaderData = MaintenancePageLoaderData<{
   currencies: CurrencyOption[]
 }>
 

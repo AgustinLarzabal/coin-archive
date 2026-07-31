@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createShapeAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type ShapeMaintenancePageLoaderData = MaintenancePageLoaderData<{
   shapes: ShapeOption[]
 }>
 

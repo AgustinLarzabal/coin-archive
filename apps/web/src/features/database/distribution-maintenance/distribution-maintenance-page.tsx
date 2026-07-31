@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./distribution-maintenance-route-data"
+import type { DistributionMaintenancePageLoaderData } from "./distribution-maintenance-route-data"
 import { DistributionsTable } from "./table-workflow/distributions-table"
 
 type DistributionMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: DistributionMaintenancePageLoaderData
 }
 
 export function DistributionMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function DistributionMaintenanceRouteComponent({
   return renderDistributionMaintenancePage(loaderData)
 }
 
-export function renderDistributionMaintenancePage(loaderData: LoaderData) {
+export function renderDistributionMaintenancePage(
+  loaderData: DistributionMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ distributions }) => (
     <main className="mt-8">
       <DistributionsTable distributions={distributions} />

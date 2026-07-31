@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./edge-maintenance-route-data"
+import type { EdgeMaintenancePageLoaderData } from "./edge-maintenance-route-data"
 import { EdgesTable } from "./table-workflow/edges-table"
 
 type EdgeMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: EdgeMaintenancePageLoaderData
 }
 
 export function EdgeMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function EdgeMaintenanceRouteComponent({
   return renderEdgeMaintenancePage(loaderData)
 }
 
-export function renderEdgeMaintenancePage(loaderData: LoaderData) {
+export function renderEdgeMaintenancePage(
+  loaderData: EdgeMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ edges }) => (
     <main className="mt-8">
       <EdgesTable edges={edges} />

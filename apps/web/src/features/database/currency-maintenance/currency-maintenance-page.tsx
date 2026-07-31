@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./currency-maintenance-route-data"
+import type { CurrencyMaintenancePageLoaderData } from "./currency-maintenance-route-data"
 import { CurrenciesTable } from "./table-workflow/currencies-table"
 
 type CurrencyMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: CurrencyMaintenancePageLoaderData
 }
 
 export function CurrencyMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function CurrencyMaintenanceRouteComponent({
   return renderCurrencyMaintenancePage(loaderData)
 }
 
-export function renderCurrencyMaintenancePage(loaderData: LoaderData) {
+export function renderCurrencyMaintenancePage(
+  loaderData: CurrencyMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ currencies }) => (
     <main className="mt-8">
       <CurrenciesTable currencies={currencies} />

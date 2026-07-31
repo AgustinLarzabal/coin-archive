@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./shape-maintenance-route-data"
+import type { ShapeMaintenancePageLoaderData } from "./shape-maintenance-route-data"
 import { ShapesTable } from "./table-workflow/shapes-table"
 
 type ShapeMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: ShapeMaintenancePageLoaderData
 }
 
 export function ShapeMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function ShapeMaintenanceRouteComponent({
   return renderShapeMaintenancePage(loaderData)
 }
 
-export function renderShapeMaintenancePage(loaderData: LoaderData) {
+export function renderShapeMaintenancePage(
+  loaderData: ShapeMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ shapes }) => (
     <main className="mt-8">
       <ShapesTable shapes={shapes} />

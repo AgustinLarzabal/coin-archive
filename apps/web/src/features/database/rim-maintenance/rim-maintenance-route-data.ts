@@ -18,7 +18,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createRimAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type RimMaintenancePageLoaderData = MaintenancePageLoaderData<{
   rims: RimOption[]
 }>
 

@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createThemeAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type ThemeMaintenancePageLoaderData = MaintenancePageLoaderData<{
   themes: ThemeOption[]
 }>
 

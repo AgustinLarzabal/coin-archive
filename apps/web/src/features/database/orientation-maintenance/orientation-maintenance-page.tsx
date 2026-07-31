@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./orientation-maintenance-route-data"
+import type { OrientationMaintenancePageLoaderData } from "./orientation-maintenance-route-data"
 import { OrientationsTable } from "./table-workflow/orientations-table"
 
 type OrientationMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: OrientationMaintenancePageLoaderData
 }
 
 export function OrientationMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function OrientationMaintenanceRouteComponent({
   return renderOrientationMaintenancePage(loaderData)
 }
 
-export function renderOrientationMaintenancePage(loaderData: LoaderData) {
+export function renderOrientationMaintenancePage(
+  loaderData: OrientationMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ orientations }) => (
     <main className="mt-8">
       <OrientationsTable orientations={orientations} />

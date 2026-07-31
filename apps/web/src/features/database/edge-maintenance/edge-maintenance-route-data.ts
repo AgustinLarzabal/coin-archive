@@ -21,7 +21,7 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createEdgeAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
+export type EdgeMaintenancePageLoaderData = MaintenancePageLoaderData<{
   edges: EdgeOption[]
 }>
 

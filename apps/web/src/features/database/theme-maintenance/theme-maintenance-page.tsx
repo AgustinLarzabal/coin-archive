@@ -1,9 +1,9 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { LoaderData } from "./theme-maintenance-route-data"
+import type { ThemeMaintenancePageLoaderData } from "./theme-maintenance-route-data"
 import { ThemesTable } from "./table-workflow/themes-table"
 
 type ThemeMaintenanceRouteComponentProps = {
-  loaderData: LoaderData
+  loaderData: ThemeMaintenancePageLoaderData
 }
 
 export function ThemeMaintenanceRouteComponent({
@@ -12,7 +12,9 @@ export function ThemeMaintenanceRouteComponent({
   return renderThemeMaintenancePage(loaderData)
 }
 
-export function renderThemeMaintenancePage(loaderData: LoaderData) {
+export function renderThemeMaintenancePage(
+  loaderData: ThemeMaintenancePageLoaderData
+) {
   return renderMaintenancePage(loaderData, ({ themes }) => (
     <main className="mt-8">
       <ThemesTable themes={themes} />

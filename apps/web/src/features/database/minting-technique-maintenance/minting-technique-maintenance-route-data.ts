@@ -21,9 +21,10 @@ type LoadResult = MaintenancePageLoadResult<
   ReturnType<typeof createMintingTechniqueAuthorizationError>
 >
 
-export type LoaderData = MaintenancePageLoaderData<{
-  mintingTechniques: TechniqueOption[]
-}>
+export type MintingTechniqueMaintenancePageLoaderData =
+  MaintenancePageLoaderData<{
+    mintingTechniques: TechniqueOption[]
+  }>
 
 type ReadDependencies = {
   getTechniques: () => Promise<TechniqueOption[]>

@@ -24,24 +24,9 @@ import { seedDatabase } from "./index"
 
 const expectedSeededCurrencies = [
   {
-    code: "argentine-peso",
-    name: "Argentine peso",
-    fullName: "Argentine peso",
-  },
-  {
     code: "euro",
     name: "Euro",
     fullName: "Euro (2002-date)",
-  },
-  {
-    code: "real",
-    name: "Real",
-    fullName: "Real",
-  },
-  {
-    code: "united-states-dollar",
-    name: "United States dollar",
-    fullName: "United States dollar",
   },
 ] as const
 
@@ -252,9 +237,15 @@ describe("seed integration", () => {
     expect(kmReferenceCount?.count).toBe(1)
     expect(standardCirculationCount?.count).toBe(1)
     expect(circulatingCommemorativeCount?.count).toBe(1)
-    await expectOptionsToIncludeExpectedRecords(
-      getCurrencies(),
-      expectedSeededCurrencies
+    const seededCurrencyOptions = await getCurrencies()
+
+    expect(seededCurrencyOptions).toHaveLength(expectedSeededCurrencies.length)
+    expect(seededCurrencyOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededCurrencies.map((record) =>
+          expect.objectContaining(record)
+        )
+      )
     )
     const seededIssuerOptions = await getIssuers()
 

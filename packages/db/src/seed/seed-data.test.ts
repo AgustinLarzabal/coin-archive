@@ -5,6 +5,7 @@ import {
   seededCoinSurfaces,
   seededCoins,
   seededCompositions,
+  seededCurrencies,
   seededIssuers,
   seededMints,
 } from "./seed-data"
@@ -144,6 +145,26 @@ describe("seededCompositions", () => {
       seededCoins.filter(
         ({ compositionCode }) => !compositionCodes.has(compositionCode)
       )
+    ).toEqual([])
+  })
+})
+
+describe("seededCurrencies", () => {
+  it("defines only the Euro Currency", () => {
+    expect(
+      seededCurrencies.map(({ code, name, fullName }) => ({
+        code,
+        name,
+        fullName,
+      }))
+    ).toEqual([{ code: "euro", name: "Euro", fullName: "Euro (2002-date)" }])
+  })
+
+  it("only seeds coins with a configured Currency", () => {
+    const currencyCodes = new Set(seededCurrencies.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(({ currencyCode }) => !currencyCodes.has(currencyCode))
     ).toEqual([])
   })
 })

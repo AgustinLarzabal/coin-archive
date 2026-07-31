@@ -9,6 +9,7 @@ import {
   seededEdges,
   seededIssuers,
   seededMints,
+  seededRims,
 } from "./seed-data"
 
 function getSortedCoinTitles(records: { title: string }[]) {
@@ -186,6 +187,27 @@ describe("seededEdges", () => {
     expect(
       seededCoins.filter(
         ({ edgeCode }) => edgeCode !== undefined && !edgeCodes.has(edgeCode)
+      )
+    ).toEqual([])
+  })
+})
+
+describe("seededRims", () => {
+  it("defines only the Raised, Not Decorated, Both Sides Rim", () => {
+    expect(seededRims.map(({ code, name }) => ({ code, name }))).toEqual([
+      {
+        code: "raised-not-decorated-both-sides",
+        name: "Raised. Not decorated. Both sides",
+      },
+    ])
+  })
+
+  it("only assigns configured Rims to seeded coins", () => {
+    const rimCodes = new Set(seededRims.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ rimCode }) => rimCode !== undefined && !rimCodes.has(rimCode)
       )
     ).toEqual([])
   })

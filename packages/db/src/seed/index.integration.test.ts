@@ -104,16 +104,8 @@ const expectedSeededShapes = [
 
 const expectedSeededRims = [
   {
-    code: "lettered",
-    name: "Lettered",
-  },
-  {
-    code: "plain",
-    name: "Plain",
-  },
-  {
-    code: "raised-both-sides",
-    name: "Raised, both sides",
+    code: "raised-not-decorated-both-sides",
+    name: "Raised. Not decorated. Both sides",
   },
 ] as const
 
@@ -266,7 +258,14 @@ describe("seed integration", () => {
       getShapes(),
       expectedSeededShapes
     )
-    await expectOptionsToIncludeExpectedRecords(getRims(), expectedSeededRims)
+    const seededRimOptions = await getRims()
+
+    expect(seededRimOptions).toHaveLength(expectedSeededRims.length)
+    expect(seededRimOptions).toEqual(
+      expect.arrayContaining(
+        expectedSeededRims.map((record) => expect.objectContaining(record))
+      )
+    )
     await expectOptionsToIncludeExpectedRecords(
       getTechniques(),
       expectedSeededTechniques

@@ -2,14 +2,16 @@ import type { RimOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 
 import { RIM_AUTHORIZATION_ERROR } from "./actions"
-import { loadRimMaintenanceRims } from "./rim-maintenance-page"
+import { loadRimMaintenanceRims } from "./rim-maintenance-route-data"
 
 const rimTimestamps = {
   createdAt: new Date("2026-07-01T00:00:00.000Z"),
   updatedAt: new Date("2026-07-01T00:00:00.000Z"),
 } as const
 
-function createRim(overrides: Pick<RimOption, "id" | "code" | "name">): RimOption {
+function createRim(
+  overrides: Pick<RimOption, "id" | "code" | "name">
+): RimOption {
   return {
     ...rimTimestamps,
     ...overrides,
@@ -20,7 +22,9 @@ describe("loadRimMaintenanceRims", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
     const getRims = vi.fn()
 
-    await expect(loadRimMaintenanceRims(null, { getRims })).resolves.toStrictEqual({
+    await expect(
+      loadRimMaintenanceRims(null, { getRims })
+    ).resolves.toStrictEqual({
       status: "error",
       formError: RIM_AUTHORIZATION_ERROR,
     })

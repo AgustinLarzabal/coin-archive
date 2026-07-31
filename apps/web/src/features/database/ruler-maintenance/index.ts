@@ -1,4 +1,2 @@
-export {
-  loadRulerMaintenanceRouteData,
-  RulerMaintenanceRouteComponent,
-} from "./ruler-maintenance-page"
+export { RulerMaintenanceRouteComponent } from "./ruler-maintenance-page"
+export { loadRulerMaintenanceRouteData } from "./ruler-maintenance-route-data"

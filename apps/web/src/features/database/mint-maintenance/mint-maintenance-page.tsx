@@ -1,86 +1,6 @@
-import { createServerFn } from "@tanstack/react-start"
-import type { MintOption } from "@coin-archive/db"
-
-import { AccessDenied } from "@/components/access-denied"
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
-
-import {
-  createMintAuthorizationError,
-  hasMintMaintenanceAccess,
-} from "./actions"
-import type { MintAuthorizationErrorResult } from "./actions"
+import { renderMaintenancePage } from "../maintenance-page"
+import type { MintMaintenancePageLoaderData } from "./mint-maintenance-route-data"
 import { MintsTable } from "./table-workflow/mints-table"
-
-type LoadMintMaintenancePageDataResult =
-  | MintAuthorizationErrorResult
-  | {
-      status: "success"
-      mints: MintOption[]
-    }
-
-type MintMaintenancePageLoaderData =
-  | {
-      isAllowed: false
-    }
-  | {
-      isAllowed: true
-      mints: MintOption[]
-    }
-
-type MintReadDependencies = {
-  getMints: () => Promise<MintOption[]>
-}
-
-async function getDefaultMintReadDependencies(): Promise<MintReadDependencies> {
-  const { getMints } = await import("@coin-archive/db")
-
-  return {
-    getMints,
-  }
-}
-
-function toMintMaintenanceLoaderData(
-  result: LoadMintMaintenancePageDataResult
-): MintMaintenancePageLoaderData {
-  if (result.status === "error") {
-    return { isAllowed: false }
-  }
-
-  return {
-    isAllowed: true,
-    mints: result.mints,
-  }
-}
-
-export async function loadMintMaintenancePageData(
-  collector: CollectorWithRole | null,
-  dependencies?: MintReadDependencies
-): Promise<LoadMintMaintenancePageDataResult> {
-  if (!hasMintMaintenanceAccess(collector)) {
-    return createMintAuthorizationError()
-  }
-
-  const { getMints } = dependencies ?? (await getDefaultMintReadDependencies())
-
-  return {
-    status: "success",
-    mints: await getMints(),
-  }
-}
-
-const getMintMaintenanceLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadMintMaintenancePageData(session?.user ?? null)
-
-  return toMintMaintenanceLoaderData(result)
-})
-
-export function loadMintMaintenanceRouteData() {
-  return getMintMaintenanceLoaderData()
-}
 
 type MintMaintenanceRouteComponentProps = {
   loaderData: MintMaintenancePageLoaderData
@@ -95,17 +15,9 @@ export function MintMaintenanceRouteComponent({
 export function renderMintMaintenancePage(
   loaderData: MintMaintenancePageLoaderData
 ) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ mints }) => (
     <main className="mt-8">
-      <MintsTable mints={loaderData.mints} />
+      <MintsTable mints={mints} />
     </main>
-  )
+  ))
 }

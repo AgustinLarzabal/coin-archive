@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DISTRIBUTION_AUTHORIZATION_ERROR } from "./actions"
 
-import { loadDistributionMaintenanceDistributions } from "./distribution-maintenance-page"
+import { loadDistributionMaintenanceDistributions } from "./distribution-maintenance-route-data"
 
 describe("loadDistributionMaintenanceDistributions", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {

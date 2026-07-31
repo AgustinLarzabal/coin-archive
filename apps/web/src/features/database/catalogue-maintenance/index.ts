@@ -1,4 +1,2 @@
-export {
-  CatalogueMaintenanceRouteComponent,
-  loadCatalogueMaintenanceRouteData,
-} from "./catalogue-maintenance-page"
+export { CatalogueMaintenanceRouteComponent } from "./catalogue-maintenance-page"
+export { loadCatalogueMaintenanceRouteData } from "./catalogue-maintenance-route-data"

@@ -1,1 +1,2 @@
-export { ThemeMaintenanceRouteComponent, loadThemeMaintenanceRouteData } from "./theme-maintenance-page"
+export { ThemeMaintenanceRouteComponent } from "./theme-maintenance-page"
+export { loadThemeMaintenanceRouteData } from "./theme-maintenance-route-data"

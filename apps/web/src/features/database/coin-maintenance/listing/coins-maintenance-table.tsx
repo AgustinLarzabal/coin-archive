@@ -7,7 +7,7 @@ import type {
   RulerOption,
 } from "@coin-archive/db"
 
-import type { CoinMaintenanceSearch } from "./coin-maintenance-page"
+import type { CoinMaintenanceSearch } from "./coin-maintenance-route-data"
 
 type CoinMaintenanceFilterOptions = {
   issuers: IssuerOption[]

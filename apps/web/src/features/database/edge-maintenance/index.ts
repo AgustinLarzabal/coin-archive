@@ -1,1 +1,2 @@
-export { EdgeMaintenanceRouteComponent, loadEdgeMaintenanceRouteData } from "./edge-maintenance-page"
+export { EdgeMaintenanceRouteComponent } from "./edge-maintenance-page"
+export { loadEdgeMaintenanceRouteData } from "./edge-maintenance-route-data"

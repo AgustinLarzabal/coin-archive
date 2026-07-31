@@ -1,4 +1,2 @@
-export {
-  EngraverMaintenanceRouteComponent,
-  loadEngraverMaintenanceRouteData,
-} from "./engraver-maintenance-page"
+export { EngraverMaintenanceRouteComponent } from "./engraver-maintenance-page"
+export { loadEngraverMaintenanceRouteData } from "./engraver-maintenance-route-data"

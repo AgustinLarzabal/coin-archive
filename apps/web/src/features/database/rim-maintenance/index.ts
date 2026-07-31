@@ -1,1 +1,2 @@
-export { RimMaintenanceRouteComponent, loadRimMaintenanceRouteData } from "./rim-maintenance-page"
+export { RimMaintenanceRouteComponent } from "./rim-maintenance-page"
+export { loadRimMaintenanceRouteData } from "./rim-maintenance-route-data"

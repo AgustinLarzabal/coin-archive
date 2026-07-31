@@ -1,10 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-
-import {
-  loadDatabaseOverviewPageData,
-  renderDatabaseOverviewPage,
-} from "./index"
+import { renderDatabaseOverviewPage } from "./index"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -32,54 +28,6 @@ const counts = {
   orientations: 10,
   mints: 9,
 } as const
-
-describe("loadDatabaseOverviewPageData", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn()
-
-    await expect(
-      loadDatabaseOverviewPageData(null, {
-        getDatabaseGeneralSummaryCounts,
-      })
-    ).resolves.toStrictEqual({
-      isAllowed: false,
-    })
-
-    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn()
-
-    await expect(
-      loadDatabaseOverviewPageData(
-        { role: "collector" },
-        { getDatabaseGeneralSummaryCounts }
-      )
-    ).resolves.toStrictEqual({
-      isAllowed: false,
-    })
-
-    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
-  })
-
-  it("returns summary counts for Editors and Admins", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
-      await expect(
-        loadDatabaseOverviewPageData(
-          { role },
-          { getDatabaseGeneralSummaryCounts }
-        )
-      ).resolves.toStrictEqual({
-        isAllowed: true,
-        counts,
-      })
-    }
-  })
-})
 
 describe("renderDatabaseOverviewPage", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {

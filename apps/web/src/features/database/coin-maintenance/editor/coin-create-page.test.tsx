@@ -1,10 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-
-import {
-  CoinCreateRouteComponent,
-  loadCoinCreatePageData,
-} from "./coin-create-page"
+import { CoinCreateRouteComponent } from "./coin-create-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -68,60 +64,6 @@ const options = {
   rims: [],
   themes: [],
 }
-
-describe("loadCoinCreatePageData", () => {
-  it("rejects signed-in Collectors without editor access", async () => {
-    await expect(
-      loadCoinCreatePageData(
-        { role: "collector" },
-        {
-          getCatalogues: vi.fn(),
-          getIssuers: vi.fn(),
-          getRulers: vi.fn(),
-          getDistributions: vi.fn(),
-          getCompositions: vi.fn(),
-          getCurrencies: vi.fn(),
-          getEngravers: vi.fn(),
-          getMints: vi.fn(),
-          getOrientations: vi.fn(),
-          getShapes: vi.fn(),
-          getTechniques: vi.fn(),
-          getEdges: vi.fn(),
-          getRims: vi.fn(),
-          getThemes: vi.fn(),
-        }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-    })
-  })
-
-  it("returns the eager lookup options for Editors and Admins", async () => {
-    const dependencies = {
-      getCatalogues: vi.fn().mockResolvedValue(options.catalogues),
-      getIssuers: vi.fn().mockResolvedValue(options.issuers),
-      getRulers: vi.fn().mockResolvedValue(options.rulers),
-      getDistributions: vi.fn().mockResolvedValue(options.distributions),
-      getCompositions: vi.fn().mockResolvedValue(options.compositions),
-      getCurrencies: vi.fn().mockResolvedValue(options.currencies),
-      getEngravers: vi.fn().mockResolvedValue(options.engravers),
-      getMints: vi.fn().mockResolvedValue(options.mints),
-      getOrientations: vi.fn().mockResolvedValue(options.orientations),
-      getShapes: vi.fn().mockResolvedValue(options.shapes),
-      getTechniques: vi.fn().mockResolvedValue(options.techniques),
-      getEdges: vi.fn().mockResolvedValue(options.edges),
-      getRims: vi.fn().mockResolvedValue(options.rims),
-      getThemes: vi.fn().mockResolvedValue(options.themes),
-    }
-
-    await expect(
-      loadCoinCreatePageData({ role: "editor" }, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      options,
-    })
-  })
-})
 
 describe("CoinCreateRouteComponent", () => {
   it("renders the create page without a public Coin link", () => {

@@ -1,8 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import type { CoinMaintenanceRecord } from "@coin-archive/db"
-
-import { CoinEditRouteComponent, loadCoinEditPageData } from "./coin-edit-page"
+import { CoinEditRouteComponent } from "./coin-edit-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -110,69 +109,6 @@ const deleteSummary = {
   coinSurfaces: 0,
   engraverAttributions: 0,
 }
-
-describe("loadCoinEditPageData", () => {
-  it("rejects signed-in Collectors without editor access", async () => {
-    await expect(
-      loadCoinEditPageData(
-        { role: "collector" },
-        {
-          coinId: coin.id,
-        },
-        {
-          getCoinMaintenanceDeleteSummary: vi.fn(),
-          getCoinMaintenanceRecord: vi.fn(),
-          getCatalogues: vi.fn(),
-          getIssuers: vi.fn(),
-          getRulers: vi.fn(),
-          getDistributions: vi.fn(),
-          getCompositions: vi.fn(),
-          getCurrencies: vi.fn(),
-          getEngravers: vi.fn(),
-          getMints: vi.fn(),
-          getOrientations: vi.fn(),
-          getShapes: vi.fn(),
-          getTechniques: vi.fn(),
-          getEdges: vi.fn(),
-          getRims: vi.fn(),
-          getThemes: vi.fn(),
-        }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-    })
-  })
-
-  it("returns the current Coin and lookup options for Editors and Admins", async () => {
-    const dependencies = {
-      getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue(deleteSummary),
-      getCoinMaintenanceRecord: vi.fn().mockResolvedValue(coin),
-      getCatalogues: vi.fn().mockResolvedValue(options.catalogues),
-      getIssuers: vi.fn().mockResolvedValue(options.issuers),
-      getRulers: vi.fn().mockResolvedValue(options.rulers),
-      getDistributions: vi.fn().mockResolvedValue(options.distributions),
-      getCompositions: vi.fn().mockResolvedValue(options.compositions),
-      getCurrencies: vi.fn().mockResolvedValue(options.currencies),
-      getEngravers: vi.fn().mockResolvedValue(options.engravers),
-      getMints: vi.fn().mockResolvedValue(options.mints),
-      getOrientations: vi.fn().mockResolvedValue(options.orientations),
-      getShapes: vi.fn().mockResolvedValue(options.shapes),
-      getTechniques: vi.fn().mockResolvedValue(options.techniques),
-      getEdges: vi.fn().mockResolvedValue(options.edges),
-      getRims: vi.fn().mockResolvedValue(options.rims),
-      getThemes: vi.fn().mockResolvedValue(options.themes),
-    }
-
-    await expect(
-      loadCoinEditPageData({ role: "admin" }, { coinId: coin.id }, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      coin,
-      deleteSummary,
-      options,
-    })
-  })
-})
 
 describe("CoinEditRouteComponent", () => {
   it("renders the edit page with the public Coin link", () => {

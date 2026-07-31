@@ -1,1 +1,2 @@
-export { OrientationMaintenanceRouteComponent, loadOrientationMaintenanceRouteData } from "./orientation-maintenance-page"
+export { OrientationMaintenanceRouteComponent } from "./orientation-maintenance-page"
+export { loadOrientationMaintenanceRouteData } from "./orientation-maintenance-route-data"

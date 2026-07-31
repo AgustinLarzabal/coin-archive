@@ -1,1 +1,2 @@
-export { ShapeMaintenanceRouteComponent, loadShapeMaintenanceRouteData } from "./shape-maintenance-page"
+export { ShapeMaintenanceRouteComponent } from "./shape-maintenance-page"
+export { loadShapeMaintenanceRouteData } from "./shape-maintenance-route-data"

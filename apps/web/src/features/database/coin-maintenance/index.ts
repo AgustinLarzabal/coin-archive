@@ -1,17 +1,17 @@
+export { CoinMaintenanceRouteComponent } from "./listing/coin-maintenance-page"
 export {
-  CoinMaintenanceRouteComponent,
   coinMaintenanceSearchSchema,
   getCoinMaintenanceLoaderDeps,
   loadCoinMaintenanceRouteData,
-} from "./listing/coin-maintenance-page"
+} from "./listing/coin-maintenance-route-data"
+export { CoinCreateRouteComponent } from "./editor/coin-create-page"
 export {
-  CoinCreateRouteComponent,
   loadCoinCreatePageData,
   loadCoinCreateRouteData,
-} from "./editor/coin-create-page"
+} from "./editor/coin-create-route-data"
+export { CoinEditRouteComponent } from "./editor/coin-edit-page"
 export {
-  CoinEditRouteComponent,
   getCoinEditLoaderDeps,
   loadCoinEditPageData,
   loadCoinEditRouteData,
-} from "./editor/coin-edit-page"
+} from "./editor/coin-edit-route-data"

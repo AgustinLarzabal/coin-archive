@@ -1,4 +1,2 @@
-export {
-  CompositionMaintenanceRouteComponent,
-  loadCompositionMaintenanceRouteData,
-} from "./composition-maintenance-page"
+export { CompositionMaintenanceRouteComponent } from "./composition-maintenance-page"
+export { loadCompositionMaintenanceRouteData } from "./composition-maintenance-route-data"

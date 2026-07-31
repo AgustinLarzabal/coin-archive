@@ -41,7 +41,7 @@ Optional public free-text catalogue remarks attached to a Coin. A Coin has at mo
 _Avoid_: Note, private curator note, description, searchable field, structured annotation
 
 **Coin Maintenance**:
-The protected catalogue workflow for creating, editing, or deleting a Coin and its owned aggregate data in the database maintenance area. Coin Maintenance saves the whole Coin aggregate intentionally rather than as drafts, including ruler attributions, mint attributions, theme attributions, catalogue references, and Surface Set records, while shared lookup records remain maintained separately.
+The protected catalogue workflow for creating, editing, or deleting a Coin and its owned aggregate data in the database maintenance area. Coin Maintenance saves the whole Coin aggregate intentionally rather than as drafts, including Composition Description, ruler attributions, mint attributions, theme attributions, catalogue references, and Surface Set records, while shared lookup records remain maintained separately.
 _Avoid_: Draft workflow, specimen maintenance, inline lookup creation, public coin editing
 
 **Issue Year Range**:
@@ -221,16 +221,20 @@ A catalogue filter that returns coins whose numeric Face Value falls within the 
 _Avoid_: Market-price filter, exchange-rate conversion filter, minor-unit filter
 
 **Composition**:
-The named material makeup of catalogued coin types or issues, with optional descriptive detail about alloys, layers, or parts of the coin. Every Coin has exactly one Composition. A Composition has a display name and a globally unique composition code, and it describes coin types or issues rather than tested individual specimens.
-_Avoid_: Specimen assay, normalized metal inventory, parsed chemistry
+The broad reusable controlled material or construction category assigned to catalogued coin types or issues, such as copper, silver, clad, or bimetallic. A Composition has a display name and a globally unique Composition Code but no shared descriptive detail. Every Coin has exactly one Composition; Coins in the same Composition may have different detailed material makeups.
+_Avoid_: Fineness, percentages, layers, plating, ring or core recipes, coin-specific material recipe, specimen assay, normalized metal inventory, parsed chemistry
+
+**Composition Description**:
+Optional free-text detail owned by a Coin that describes its specific alloys, fineness, proportions, layers, plating, or parts. A Composition Description describes a coin type or issue rather than a tested individual specimen and is not parsed into structured chemistry.
+_Avoid_: Shared Composition description, specimen assay, normalized metal inventory, parsed chemistry
 
 **Composition Code**:
 The globally unique, stable, human-readable catalogue key for a composition, used to identify the composition in imports, filters, URLs, and administrative lookup. It uses lowercase slug-style text and is distinct from the composition's display name.
 _Avoid_: Display name, temporary label, parsed material formula
 
 **Composition Filter**:
-A catalogue filter that returns coins linked directly to the selected composition.
-_Avoid_: Metal component search, contains-text material search, issuer-style descendant filter
+A catalogue filter that returns coins linked directly to the selected Composition. Composition Description text does not affect filtering.
+_Avoid_: Composition Description search, metal component search, contains-text material search, issuer-style descendant filter
 
 **Measurement Filter**:
 A catalogue filter that returns coins whose known Weight, Diameter, or Thickness falls within the requested measurement range. Coins without the filtered measurement are excluded only when that measurement filter is applied.

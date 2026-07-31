@@ -373,8 +373,6 @@ describe("seed integration", () => {
     })
 
     expect(filteredCoins.map(({ title }) => title)).toEqual([
-      "Finland 10 Euro Cent",
-      "Finland 50 Euro Cent",
       "Finland 1 Euro",
       "Finland 2 Euro",
       "2 Euros (Enlargement of the European Union)",

@@ -4,6 +4,7 @@ import {
   seededCoinRulers,
   seededCoinSurfaces,
   seededCoins,
+  seededCompositions,
   seededIssuers,
   seededMints,
 } from "./seed-data"
@@ -126,6 +127,24 @@ describe("seededIssuers", () => {
         isoCode: "VA",
       },
     ])
+  })
+})
+
+describe("seededCompositions", () => {
+  it("defines only the Bimetallic Composition", () => {
+    expect(
+      seededCompositions.map(({ code, name }) => ({ code, name }))
+    ).toEqual([{ code: "bimetallic", name: "Bimetallic" }])
+  })
+
+  it("only seeds coins with a configured Composition", () => {
+    const compositionCodes = new Set(seededCompositions.map(({ code }) => code))
+
+    expect(
+      seededCoins.filter(
+        ({ compositionCode }) => !compositionCodes.has(compositionCode)
+      )
+    ).toEqual([])
   })
 })
 

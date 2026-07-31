@@ -17,16 +17,6 @@ export const seededCoinRulers: SeededCoinRuler[] = [
     rulerOrder: 1,
   },
   {
-    coinTitle: "Spain 50 Euro Cent",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Spain 10 Euro Cent",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
     coinTitle: "Finland 2 Euro",
     rulerCode: "republic-of-finland",
     rulerOrder: 1,
@@ -34,26 +24,6 @@ export const seededCoinRulers: SeededCoinRuler[] = [
   {
     coinTitle: "Finland 1 Euro",
     rulerCode: "republic-of-finland",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Finland 50 Euro Cent",
-    rulerCode: "republic-of-finland",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Finland 10 Euro Cent",
-    rulerCode: "republic-of-finland",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Spain 5 Euro Cent",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Spain 20 Euro Cent",
-    rulerCode: "felipe-vi",
     rulerOrder: 1,
   },
 ]

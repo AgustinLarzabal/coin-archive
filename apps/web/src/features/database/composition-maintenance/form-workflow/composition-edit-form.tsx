@@ -11,7 +11,6 @@ import {
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
-import { Textarea } from "@coin-archive/ui/components/textarea"
 
 import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateComposition } from "../actions"
@@ -25,7 +24,6 @@ import type { CompositionFieldErrors } from "../validation"
 type CompositionDraft = {
   code: string
   name: string
-  description: string
 }
 
 type CompositionEditFormProps = {
@@ -68,7 +66,6 @@ function createCompositionDraft(
   return {
     code: composition.code,
     name: composition.name,
-    description: composition.description ?? "",
   }
 }
 
@@ -78,7 +75,6 @@ function normalizeDraftForComparison(
   return {
     code: draft.code.trim(),
     name: draft.name.trim(),
-    description: draft.description.trim(),
   }
 }
 
@@ -93,8 +89,7 @@ export function hasCompositionEditChanges(
 
   return (
     normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name ||
-    normalizedDraft.description !== normalizedCurrent.description
+    normalizedDraft.name !== normalizedCurrent.name
   )
 }
 
@@ -216,22 +211,6 @@ export function CompositionEditForm({
           />
           {fieldErrors.name ? (
             <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.description !== undefined}>
-          <FieldLabel htmlFor="composition-description">
-            Composition Description
-          </FieldLabel>
-          <Textarea
-            id="composition-description"
-            name="description"
-            value={draft.description}
-            onChange={(event) => updateDraft("description", event.target.value)}
-            aria-invalid={fieldErrors.description !== undefined}
-            placeholder="Optional alloy, layer, or part details."
-          />
-          {fieldErrors.description ? (
-            <FieldError errors={[{ message: fieldErrors.description }]} />
           ) : null}
         </Field>
       </FieldGroup>

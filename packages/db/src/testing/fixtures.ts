@@ -200,20 +200,17 @@ export async function createCatalogue({ code, title }: CreateCatalogueInput) {
 type CreateCompositionInput = {
   code: string
   name: string
-  description?: string | null
 }
 
 export async function createComposition({
   code,
   name,
-  description,
 }: CreateCompositionInput) {
   const [createdComposition] = await db
     .insert(composition)
     .values({
       code,
       name,
-      description,
     })
     .returning()
 

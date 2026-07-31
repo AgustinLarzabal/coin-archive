@@ -12,7 +12,6 @@ const compositions: CompositionOption[] = [
     id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
     code: "copper-nickel",
     name: "Copper-nickel",
-    description: null,
     createdAt: new Date("2026-06-24T12:00:00.000Z"),
     updatedAt: new Date("2026-06-24T12:00:00.000Z"),
   },
@@ -20,8 +19,6 @@ const compositions: CompositionOption[] = [
     id: "9ee16bbd-4920-4fb8-a178-0ff0ed56d254",
     code: "silver-900",
     name: "Silver (.900)",
-    description:
-      "Ninety percent silver alloy with enough detail to verify that long Composition Description text stays visually contained within the table layout.",
     createdAt: new Date("2026-06-24T12:00:00.000Z"),
     updatedAt: new Date("2026-06-24T12:00:00.000Z"),
   },
@@ -48,20 +45,18 @@ describe("filterCompositionsByName", () => {
 })
 
 describe("CompositionsTable", () => {
-  it("renders code, name, and description with empty text for missing descriptions", () => {
+  it("renders code and name without a shared Composition Description column", () => {
     const markup = renderToStaticMarkup(
       <CompositionsTable compositions={compositions} />
     )
 
     expect(markup).toContain("Code")
     expect(markup).toContain("Name")
-    expect(markup).toContain("Description")
+    expect(markup).not.toContain("Description")
     expect(markup).toContain('aria-label="Actions"')
     expect(markup).toContain("Copper-nickel")
     expect(markup).toContain("Silver (.900)")
     expect(markup).toContain("Filter compositions by name...")
     expect(markup).toContain(">Create</button>")
-    expect(markup).toContain("max-w-[32rem] whitespace-pre-wrap break-words")
-    expect(markup).not.toContain(">null<")
   })
 })

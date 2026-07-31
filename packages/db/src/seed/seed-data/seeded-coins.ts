@@ -3,7 +3,7 @@ import type { SeededCoin } from "./types"
 export const seededCoins: SeededCoin[] = [
   {
     title: "Argentina Sol de Mayo Peso",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 1,
@@ -21,7 +21,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 8 Reales 1813",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 8,
@@ -75,7 +75,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 5 Decimos",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 0.5,
@@ -123,7 +123,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires Transition Half Real",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 0.5,
@@ -139,7 +139,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "United States Flowing Hair Dollar",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "united-states-dollar",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 1,
@@ -426,7 +426,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Argentina 50 Centavos",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "argentine-peso",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 0.5,
@@ -466,7 +466,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 2 Reales",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 2,
@@ -486,7 +486,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 1 Real",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 1,
@@ -506,7 +506,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "Buenos Aires 2 Decimos",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "real",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 0.2,
@@ -582,7 +582,7 @@ export const seededCoins: SeededCoin[] = [
   },
   {
     title: "United States Mercury Dime",
-    compositionCode: "silver-900",
+    compositionCode: "silver",
     currencyCode: "united-states-dollar",
     distributionCode: "standard-circulation",
     faceValueNumericValue: 0.1,

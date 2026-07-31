@@ -44,7 +44,7 @@ The current core relationships map to these tables:
 - `coin`: Coin record with `title`, required direct `issuer_id`, required `distribution_id`, required `composition_id`, optional Coin-owned `composition_description`, required Face Value fields in `face_value_text`, `face_value_numeric_value`, and `currency_id`, optional public plain-text `comments`, optional `orientation_id`, optional catalogue measurements in `weight`, `diameter`, and `thickness`, and optional closed Issue Year Range in `min_year`/`max_year`
 - `coin_surface`: per-Coin surface detail row for Obverse, Reverse, and Edge Surface description or lettering details
 - `coin_face_engraver`: face-only Engraver Attribution join table from Obverse or Reverse Coin Surface rows to `engraver`
-- `composition`: shared Composition record with stable `code`, display `name`, nullable shared `description` retained temporarily during the ownership migration, and timestamps
+- `composition`: shared Composition record with stable `code`, display `name`, and timestamps
 - `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
 - `edge`: shared coin-level Edge controlled classification with stable `code`, display `name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
@@ -83,7 +83,6 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
-| `description` | optional |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -325,12 +324,11 @@ The `coin_surface` table stores Coin Surface details for Obverse, Reverse, and E
 
 The `composition` table models the reusable material classification attached directly to each Coin:
 
-- a Composition row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, nullable `description`, and timestamps
+- a Composition row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
 - `composition.code` is the stable archive identity for the composition and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `composition.name` is display text only; it helps humans read the material label but is not treated as identity and is allowed to repeat across rows
-- `composition.description` is optional shared long-form text for extra material context
 - uniqueness and filter matching treat composition codes case-insensitively, while the schema also requires lowercase slug-style text on write
-- the schema does not currently trim, slugify, or otherwise normalize `composition.name` or `composition.description` on write; callers must provide the intended persisted text
+- the schema does not currently trim, slugify, or otherwise normalize `composition.name` on write; callers must provide the intended persisted text
 
 Composition-specific requirements and constraints:
 
@@ -339,7 +337,6 @@ Composition-specific requirements and constraints:
 - Composition Codes must be globally unique ignoring case through `composition_code_lower_unique_idx`
 - Composition Codes must satisfy the lowercase slug-style check enforced by `composition_code_slug_check`
 - Composition Names do not need to be unique
-- Composition Descriptions are optional
 - Composition primary keys are database-generated UUIDv7 values
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
@@ -347,7 +344,7 @@ Composition-specific indexes and query implications:
 
 - `composition_code_lower_unique_idx` protects the case-insensitive identity rule for composition codes
 - `composition_code_lookup_idx` supports shared case-insensitive lookups such as composition filtering in `getCoins`
-- `getCompositions` is the package-owned read model for composition options and currently returns `id`, `code`, `name`, `description`, `createdAt`, and `updatedAt`
+- `getCompositions` is the package-owned read model for composition options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
 - `getCompositions` sorts compositions by `name`, then `code`; callers should not depend on insertion order
 
 Relationship and lifecycle notes:
@@ -959,7 +956,6 @@ These are enforced by the current PostgreSQL schema and exercised by package tes
 - Currency Code must be unique ignoring case and use lowercase slug-style text
 - Currency Name and Currency full name are required display data, not identities
 - Composition Name is required but not unique
-- Composition Description is nullable shared long-form text
 - Coin Issue Year Range may be unknown with both `min_year` and `max_year` null
 - Coin Issue Year Range must be closed when present; half-entered ranges are rejected
 - Coin Issue Year Range must satisfy `min_year <= max_year`

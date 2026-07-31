@@ -16,31 +16,15 @@ import {
 describe("composition mutations integration", () => {
   useTestDatabaseIsolation(db)
 
-  it("trims Composition Code, Composition Name, and Composition Description before creating a Composition", async () => {
+  it("trims Composition Code and Composition Name before creating a Composition", async () => {
     await expect(
       createComposition({
         code: "  silver-900  ",
         name: "  Silver (.900)  ",
-        description: "  Ninety percent silver alloy.  ",
       })
     ).resolves.toMatchObject({
       code: "silver-900",
       name: "Silver (.900)",
-      description: "Ninety percent silver alloy.",
-    })
-  })
-
-  it("persists blank Composition Description as null", async () => {
-    await expect(
-      createComposition({
-        code: "copper-nickel",
-        name: "Copper-nickel",
-        description: "   ",
-      })
-    ).resolves.toMatchObject({
-      code: "copper-nickel",
-      name: "Copper-nickel",
-      description: null,
     })
   })
 
@@ -95,45 +79,22 @@ describe("composition mutations integration", () => {
     const existingComposition = await createCompositionFixture({
       code: "silver-900",
       name: "Silver (.900)",
-      description: "Before update",
     })
 
     const updatedComposition = await updateComposition({
       id: existingComposition.id,
       code: " silver-925 ",
       name: " Silver (.925) ",
-      description: "  Sterling-adjacent test detail.  ",
     })
 
     expect(updatedComposition).toMatchObject({
       id: existingComposition.id,
       code: "silver-925",
       name: "Silver (.925)",
-      description: "Sterling-adjacent test detail.",
     })
     expect(updatedComposition?.updatedAt.getTime()).toBeGreaterThanOrEqual(
       existingComposition.updatedAt.getTime()
     )
-  })
-
-  it("persists blank Composition Description as null when updating a Composition", async () => {
-    const existingComposition = await createCompositionFixture({
-      code: "copper-nickel",
-      name: "Copper-nickel",
-      description: "Before update",
-    })
-
-    await expect(
-      updateComposition({
-        id: existingComposition.id,
-        code: "copper-nickel",
-        name: "Copper-nickel",
-        description: "   ",
-      })
-    ).resolves.toMatchObject({
-      id: existingComposition.id,
-      description: null,
-    })
   })
 
   it("returns null when the Composition update target no longer exists", async () => {
@@ -142,7 +103,6 @@ describe("composition mutations integration", () => {
         id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
         code: "silver-900",
         name: "Silver (.900)",
-        description: null,
       })
     ).resolves.toBeNull()
   })
@@ -167,7 +127,6 @@ describe("composition mutations integration", () => {
       id: createdComposition.id,
       code: "silver-925",
       name: "Silver (.925)",
-      description: "Sterling silver alloy.",
     })
 
     expect(updatedComposition).toMatchObject({

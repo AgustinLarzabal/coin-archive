@@ -86,7 +86,6 @@ CREATE TABLE "composition" (
 	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"code" varchar(255) NOT NULL,
 	"name" varchar(255) NOT NULL,
-	"description" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "composition_code_slug_check" CHECK ("composition"."code" ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')

@@ -71,7 +71,6 @@ describe("getCoin integration", () => {
     const silverComposition = await createComposition({
       code: "silver-900",
       name: "Silver .900",
-      description: "90% silver, 10% copper",
     })
     const euro = await createCurrency({
       code: "euro",
@@ -349,7 +348,6 @@ describe("getCoin integration", () => {
     const sharedComposition = await createComposition({
       code: "bimetallic",
       name: "Bimetallic",
-      description: "Legacy shared text must not be exposed.",
     })
     const firstCoin = await createCoin({
       title: "First Bimetallic Coin",

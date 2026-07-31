@@ -11,7 +11,6 @@ describe("getCompositions integration", () => {
     const silver900 = await createComposition({
       code: "silver-900",
       name: "Silver (.900)",
-      description: "Ninety percent silver alloy.",
     })
     const copperNickel = await createComposition({
       code: "copper-nickel",
@@ -27,7 +26,6 @@ describe("getCompositions integration", () => {
         id: copper.id,
         code: "copper",
         name: "Copper-nickel",
-        description: null,
         createdAt: copper.createdAt,
         updatedAt: copper.updatedAt,
       },
@@ -35,7 +33,6 @@ describe("getCompositions integration", () => {
         id: copperNickel.id,
         code: "copper-nickel",
         name: "Copper-nickel",
-        description: null,
         createdAt: copperNickel.createdAt,
         updatedAt: copperNickel.updatedAt,
       },
@@ -43,7 +40,6 @@ describe("getCompositions integration", () => {
         id: silver900.id,
         code: "silver-900",
         name: "Silver (.900)",
-        description: "Ninety percent silver alloy.",
         createdAt: silver900.createdAt,
         updatedAt: silver900.updatedAt,
       },

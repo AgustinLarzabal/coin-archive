@@ -8,14 +8,13 @@ const getCompositionsSelection = {
   id: composition.id,
   code: composition.code,
   name: composition.name,
-  description: composition.description,
   createdAt: composition.createdAt,
   updatedAt: composition.updatedAt,
 }
 
 export type CompositionOption = Pick<
   Composition,
-  "id" | "code" | "name" | "description" | "createdAt" | "updatedAt"
+  "id" | "code" | "name" | "createdAt" | "updatedAt"
 >
 
 export async function getCompositions(): Promise<CompositionOption[]> {

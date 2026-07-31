@@ -13,7 +13,6 @@ export type SeededCatalogue = {
 export type SeededComposition = {
   code: string
   name: string
-  description?: string | null
   createdAt: Date
   updatedAt: Date
 }

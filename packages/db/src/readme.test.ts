@@ -15,6 +15,10 @@ const requiredReadmeSnippets = [
 
 const removedReadmeSnippets = [
   "Coin Face, not directly to the whole Coin",
+  "`composition.description`",
+  "nullable shared `description`",
+  "Composition Descriptions are optional",
+  "Composition Description is nullable shared long-form text",
 ] as const
 
 describe("packages/db README", () => {

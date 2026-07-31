@@ -3,7 +3,6 @@ import {
   check,
   index,
   pgTable,
-  text,
   timestamp,
   uniqueIndex,
   uuid,
@@ -29,7 +28,6 @@ export const composition = pgTable(
       .default(sql`uuidv7()`),
     code: varchar("code", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
-    description: text("description"),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

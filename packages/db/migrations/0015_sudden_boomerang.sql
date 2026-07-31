@@ -1,0 +1,1 @@
+ALTER TABLE "composition" DROP COLUMN "description";

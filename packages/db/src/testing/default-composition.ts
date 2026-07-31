@@ -8,7 +8,6 @@ type Database = typeof ClientModule.db
 export const defaultCompositionValues = {
   code: "copper-nickel",
   name: "Copper-nickel",
-  description: null,
 } as const
 
 export async function getOrCreateDefaultComposition(

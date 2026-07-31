@@ -7,7 +7,6 @@ import type { Composition } from "../schema/composition"
 type CompositionFields = {
   code: string
   name: string
-  description?: string | null
 }
 
 type UpdateCompositionInput = CompositionFields & {
@@ -18,25 +17,10 @@ type DeleteCompositionInput = {
   id: string
 }
 
-function trimOrNull(value?: string | null) {
-  const trimmedValue = value?.trim()
-
-  if (!trimmedValue) {
-    return null
-  }
-
-  return trimmedValue
-}
-
-function normalizeCompositionFields({
-  code,
-  name,
-  description,
-}: CompositionFields) {
+function normalizeCompositionFields({ code, name }: CompositionFields) {
   return {
     code: code.trim(),
     name: name.trim(),
-    description: trimOrNull(description),
   }
 }
 

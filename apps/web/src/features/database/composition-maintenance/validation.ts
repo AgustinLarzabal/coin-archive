@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { COMPOSITION_INVALID_CODE_ERROR } from "./messages"
 
-const COMPOSITION_FIELD_NAMES = ["code", "name", "description"] as const
+const COMPOSITION_FIELD_NAMES = ["code", "name"] as const
 
 const compositionCodeSchema = z
   .string()
@@ -17,23 +17,9 @@ const compositionNameSchema = z
   .min(1, "Composition Name cannot be blank.")
   .max(255, "Composition Name must be 255 characters or fewer.")
 
-const compositionDescriptionSchema = z
-  .string()
-  .optional()
-  .transform((description) => {
-    const trimmedDescription = description?.trim()
-
-    if (!trimmedDescription) {
-      return null
-    }
-
-    return trimmedDescription
-  })
-
 export const createCompositionInputSchema = z.object({
   code: compositionCodeSchema,
   name: compositionNameSchema,
-  description: compositionDescriptionSchema,
 })
 
 export const updateCompositionInputSchema = createCompositionInputSchema.extend(
@@ -56,7 +42,6 @@ function isCompositionFieldName(field: unknown): field is CompositionFieldName {
   switch (field) {
     case "code":
     case "name":
-    case "description":
       return true
     default:
       return false

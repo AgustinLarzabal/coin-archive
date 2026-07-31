@@ -10,7 +10,6 @@ import {
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
-import { Textarea } from "@coin-archive/ui/components/textarea"
 
 import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateComposition } from "../actions"
@@ -24,7 +23,6 @@ import type { CompositionFieldErrors } from "../validation"
 type CompositionDraft = {
   code: string
   name: string
-  description: string
 }
 
 type CompositionCreateFormProps = {
@@ -34,7 +32,6 @@ type CompositionCreateFormProps = {
 const EMPTY_DRAFT: CompositionDraft = {
   code: "",
   name: "",
-  description: "",
 }
 
 const createCompositionAction = createServerFn({
@@ -172,22 +169,6 @@ export function CompositionCreateForm({
           />
           {fieldErrors.name ? (
             <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.description !== undefined}>
-          <FieldLabel htmlFor="new-composition-description">
-            Composition Description
-          </FieldLabel>
-          <Textarea
-            id="new-composition-description"
-            name="description"
-            value={draft.description}
-            onChange={(event) => updateDraft("description", event.target.value)}
-            aria-invalid={fieldErrors.description !== undefined}
-            placeholder="Optional alloy, layer, or part details."
-          />
-          {fieldErrors.description ? (
-            <FieldError errors={[{ message: fieldErrors.description }]} />
           ) : null}
         </Field>
       </FieldGroup>

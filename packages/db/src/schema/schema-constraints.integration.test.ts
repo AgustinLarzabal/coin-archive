@@ -120,7 +120,6 @@ async function createCoinDependencies(codeSuffix = "") {
     }),
     createComposition({
       code: `silver-900${codeSuffix}`,
-      description: "Ninety percent silver alloy.",
       name: "Silver (.900)",
     }),
     createCurrency({

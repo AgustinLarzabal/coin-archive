@@ -19,7 +19,6 @@ const VALID_COMPOSITION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const SILVER_COMPOSITION = {
   code: "silver-900",
   name: "Silver (.900)",
-  description: "Ninety percent silver alloy.",
 }
 
 function createDependencies(overrides?: {
@@ -75,7 +74,6 @@ describe("submitCreateComposition", () => {
         {
           code: "Silver 900",
           name: " ",
-          description: "  test  ",
         },
         dependencies
       )
@@ -90,7 +88,7 @@ describe("submitCreateComposition", () => {
     expect(dependencies.createComposition).not.toHaveBeenCalled()
   })
 
-  it("trims Composition fields and normalizes blank Composition Description to null", async () => {
+  it("trims Composition fields", async () => {
     const dependencies = createDependencies({
       createComposition: vi.fn().mockResolvedValue({
         id: VALID_COMPOSITION_ID,
@@ -103,7 +101,6 @@ describe("submitCreateComposition", () => {
         {
           code: " silver-900 ",
           name: " Silver (.900) ",
-          description: "   ",
         },
         dependencies
       )
@@ -115,7 +112,6 @@ describe("submitCreateComposition", () => {
     expect(dependencies.createComposition).toHaveBeenCalledWith({
       code: "silver-900",
       name: "Silver (.900)",
-      description: null,
     })
   })
 
@@ -229,7 +225,6 @@ describe("submitUpdateComposition", () => {
           id: VALID_COMPOSITION_ID,
           code: "Silver 900",
           name: " ",
-          description: "  test  ",
         },
         dependencies
       )
@@ -258,7 +253,6 @@ describe("submitUpdateComposition", () => {
           id: VALID_COMPOSITION_ID,
           code: " silver-900 ",
           name: " Silver (.900) ",
-          description: "  Ninety percent silver alloy.  ",
         },
         dependencies
       )
@@ -271,38 +265,6 @@ describe("submitUpdateComposition", () => {
       id: VALID_COMPOSITION_ID,
       code: "silver-900",
       name: "Silver (.900)",
-      description: "Ninety percent silver alloy.",
-    })
-  })
-
-  it("trims blank Composition Description to null before updating", async () => {
-    const dependencies = createDependencies({
-      updateComposition: vi.fn().mockResolvedValue({
-        id: VALID_COMPOSITION_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateComposition(
-        { role: "editor" },
-        {
-          id: VALID_COMPOSITION_ID,
-          code: " silver-900 ",
-          name: " Silver (.900) ",
-          description: "   ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateComposition).toHaveBeenCalledWith({
-      id: VALID_COMPOSITION_ID,
-      code: "silver-900",
-      name: "Silver (.900)",
-      description: null,
     })
   })
 

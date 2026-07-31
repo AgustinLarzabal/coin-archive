@@ -24,15 +24,6 @@ export function createCompositionColumns(
       header: "Name",
     },
     {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => (
-        <div className="max-w-[32rem] whitespace-pre-wrap break-words">
-          {row.original.description ?? ""}
-        </div>
-      ),
-    },
-    {
       id: "actions",
       cell: ({ row }) => {
         const composition = row.original

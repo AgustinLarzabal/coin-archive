@@ -1,12 +1,4 @@
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Database,
-  Ellipsis,
-  LayoutDashboard,
-  EllipsisVertical,
-  Settings,
-} from "lucide-react"
+import { ArrowUpDown, Ellipsis, EllipsisVertical } from "lucide-react"
 
 type SVGIconProps = {
   size?: number
@@ -103,10 +95,6 @@ export const Icons = {
     </SVGIcon>
   ),
   ArrowUpDown: ArrowUpDown,
-  ChevronDown: ChevronDown,
-  Database: Database,
   More: Ellipsis,
   MoreVertical: EllipsisVertical,
-  Overview: LayoutDashboard,
-  Settings: Settings,
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router"
-import { authClient } from "@coin-archive/auth/client"
+import { authClient, hasEditorAccess } from "@coin-archive/auth/client"
 import {
   Avatar,
   AvatarFallback,
@@ -15,10 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@coin-archive/ui/components/dropdown-menu"
+import { getCollectorRole } from "@/lib/collector-role"
 
 export function UserMenu() {
   const { data: session } = authClient.useSession()
   const navigate = useNavigate()
+  const collectorRole = getCollectorRole(session?.user ?? null)
+  const canMaintainDatabase =
+    collectorRole !== null && hasEditorAccess(collectorRole)
 
   return (
     <DropdownMenu>
@@ -59,6 +63,21 @@ export function UserMenu() {
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
+
+        {canMaintainDatabase && (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={() => navigate({ to: "/database" })}
+              >
+                Database Maintenance
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+          </>
+        )}
 
         <DropdownMenuGroup>
           <DropdownMenuItem

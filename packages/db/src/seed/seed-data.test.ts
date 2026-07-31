@@ -2,11 +2,13 @@ import { describe, expect, expectTypeOf, it } from "vitest"
 import type { SeededCoin, SeededCoinSurfaceDetails } from "./seed-data"
 import {
   seededCoinRulers,
+  seededCoinSurfaceEngravers,
   seededCoinSurfaces,
   seededCoins,
   seededCompositions,
   seededCurrencies,
   seededEdges,
+  seededEngravers,
   seededIssuers,
   seededMints,
   seededRims,
@@ -247,6 +249,27 @@ describe("seededTechniques", () => {
       seededCoins.filter(
         ({ techniqueCode }) =>
           techniqueCode !== undefined && !techniqueCodes.has(techniqueCode)
+      )
+    ).toEqual([])
+  })
+})
+
+describe("seededEngravers", () => {
+  it("defines only Georgios Stamatópoulos", () => {
+    expect(seededEngravers.map(({ code, name }) => ({ code, name }))).toEqual([
+      {
+        code: "georgios-stamatopoulos",
+        name: "Georgios Stamatópoulos",
+      },
+    ])
+  })
+
+  it("only assigns configured Engravers to seeded Coin Faces", () => {
+    const engraverCodes = new Set(seededEngravers.map(({ code }) => code))
+
+    expect(
+      seededCoinSurfaceEngravers.filter(
+        ({ engraverCode }) => !engraverCodes.has(engraverCode)
       )
     ).toEqual([])
   })

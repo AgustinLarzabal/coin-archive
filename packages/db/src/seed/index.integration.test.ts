@@ -6,6 +6,7 @@ import {
   getCoins,
   getIssuers,
   getCurrencies,
+  getEngravers,
   getMints,
   getOrientations,
   getRims,
@@ -19,7 +20,7 @@ import { coinSurface } from "../schema/coin-surface"
 import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { seededCoinRulers, seededIssuers } from "./seed-data"
+import { seededCoinRulers, seededEngravers, seededIssuers } from "./seed-data"
 import { seedDatabase } from "./index"
 
 const expectedSeededCurrencies = [
@@ -224,6 +225,16 @@ describe("seed integration", () => {
       expect.arrayContaining(
         expectedSeededCurrencies.map((record) =>
           expect.objectContaining(record)
+        )
+      )
+    )
+    const seededEngraverOptions = await getEngravers()
+
+    expect(seededEngraverOptions).toHaveLength(seededEngravers.length)
+    expect(seededEngraverOptions).toEqual(
+      expect.arrayContaining(
+        seededEngravers.map(({ code, name }) =>
+          expect.objectContaining({ code, name })
         )
       )
     )

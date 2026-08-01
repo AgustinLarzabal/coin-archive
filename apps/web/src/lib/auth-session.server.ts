@@ -9,6 +9,7 @@ import { getPublicApiBaseUrl } from "./public-api.server"
 type CollectorSession = typeof authClient.$Infer.Session
 
 export async function getRequestAuthSession(): Promise<CollectorSession | null> {
+  const { env } = await import("cloudflare:workers")
   const incomingRequest = getRequest()
   const sessionUrl = new URL("/api/auth/get-session", incomingRequest.url)
   const response = await proxyAuthRequest(
@@ -16,7 +17,7 @@ export async function getRequestAuthSession(): Promise<CollectorSession | null> 
     {
       apiBaseUrl: getPublicApiBaseUrl(),
       allowSignInAttempt: async () => true,
-      fetchApi: globalThis.fetch.bind(globalThis),
+      fetchApi: env.AUTH_API.fetch.bind(env.AUTH_API),
     }
   )
 

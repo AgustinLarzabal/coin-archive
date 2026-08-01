@@ -5,6 +5,8 @@ dist-ssr
 *.local
 .env*
 !.env.example
+!.env.staging.example
+!.env.production.example
 .tanstack
 .wrangler
 .output

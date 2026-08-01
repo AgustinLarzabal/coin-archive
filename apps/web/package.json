@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "vite dev --port 3000",
+    "dev:staging": "if [ ! -f ../../.env.staging.local ]; then echo 'Missing .env.staging.local.'; exit 1; fi; vite dev --mode staging --port 3000",
+    "dev:production": "if [ \"$ALLOW_PRODUCTION_DEBUG\" != \"true\" ]; then echo 'Refusing to connect the local web app to production.'; exit 1; fi; if [ ! -f ../../.env.production.local ]; then echo 'Missing .env.production.local.'; exit 1; fi; vite dev --mode production --port 3000",
     "build": "vite build",
     "preview": "vite preview",
     "deploy:staging": "CLOUDFLARE_ENV=staging pnpm run build && wrangler deploy --config wrangler.jsonc dist/server/index.js --assets dist/client --env staging",

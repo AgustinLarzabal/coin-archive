@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { getPublicApiClient } from "./public-api.server"
+import { getPublicApiBaseUrl, getPublicApiClient } from "./public-api.server"
 
 const { createPublicApiClient } = vi.hoisted(() => ({
   createPublicApiClient: vi.fn(),
@@ -31,5 +31,26 @@ describe("getPublicApiClient", () => {
     await expect(
       options.fetch.call({}, new Request("https://api.example.test"))
     ).resolves.toBeInstanceOf(Response)
+  })
+})
+
+describe("getPublicApiBaseUrl", () => {
+  it("uses an explicit local debugging target before the deployed environment", () => {
+    expect(
+      getPublicApiBaseUrl({
+        CLOUDFLARE_ENV: "production",
+        PUBLIC_API_BASE_URL: " http://127.0.0.1:8787 ",
+      })
+    ).toBe("http://127.0.0.1:8787")
+  })
+
+  it.each([
+    ["staging", "https://api.staging.coinarchive.app"],
+    ["production", "https://api.coinarchive.app"],
+    [undefined, "http://127.0.0.1:8787"],
+  ])("selects the %s API target", (environment, expectedBaseUrl) => {
+    expect(getPublicApiBaseUrl({ CLOUDFLARE_ENV: environment })).toBe(
+      expectedBaseUrl
+    )
   })
 })

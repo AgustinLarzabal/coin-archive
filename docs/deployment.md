@@ -11,6 +11,31 @@ To validate either deployment without publishing it, use `pnpm validate:deployme
 
 Local development remains unchanged: copy `.env.example` to `.env`, fill the local values, and run `pnpm dev` from the repository root. Cloudflare credentials are not needed locally.
 
+## Run local code against a remote environment
+
+For production-like debugging, the web app and API Worker can run locally while using an environment's remote Neon database and R2 bucket. Copy the matching template and supply credentials for that environment:
+
+```sh
+cp .env.staging.example .env.staging.local
+cp .env.production.example .env.production.local
+```
+
+The `.local` profiles are ignored by Git. Keep `BETTER_AUTH_URL` and `PUBLIC_API_BASE_URL` pointed at localhost: the browser talks to the locally running web app, and the local web app talks to the locally running API Worker. The local API receives the selected environment's `API_ENVIRONMENT`, Surface Image origin, database URL, and rate-limit configuration.
+
+Run the staging profile with:
+
+```sh
+pnpm dev:staging
+```
+
+Connecting local code to production is deliberately guarded because maintenance actions can change real catalogue data and upload or delete real Surface Images. Prefer read-only or least-privilege production credentials. To acknowledge the risk and start the production profile:
+
+```sh
+ALLOW_PRODUCTION_DEBUG=true pnpm dev:production
+```
+
+These commands do not download Worker secrets from Cloudflare; secret values cannot be retrieved after being stored there. Populate the local profile from the matching password manager or secret source. A Google OAuth client used by a local profile must allow the localhost Better Auth callback.
+
 ## Environment contract
 
 The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the non-secret Worker settings for each isolated environment.

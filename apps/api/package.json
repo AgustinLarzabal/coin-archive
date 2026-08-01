@@ -5,9 +5,13 @@
   "private": true,
   "scripts": {
     "dev": "set -a; . ../../.env; set +a; wrangler dev --var \"DATABASE_URL:$DATABASE_URL\" --var \"API_ENVIRONMENT:staging\" --var \"SURFACE_IMAGE_ORIGIN:http://localhost:3000\"",
+    "dev:staging": "if [ ! -f ../../.env.staging.local ]; then echo 'Missing .env.staging.local.'; exit 1; fi; wrangler dev --env staging --env-file ../../.env.staging.local",
+    "dev:production": "if [ \"$ALLOW_PRODUCTION_DEBUG\" != \"true\" ]; then echo 'Refusing to connect the local API to production.'; exit 1; fi; if [ ! -f ../../.env.production.local ]; then echo 'Missing .env.production.local.'; exit 1; fi; wrangler dev --env production --env-file ../../.env.production.local",
     "build": "wrangler deploy --dry-run",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",
+    "validate:deployment:staging": "wrangler deploy --dry-run --env staging",
+    "validate:deployment:production": "wrangler deploy --dry-run --env production",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

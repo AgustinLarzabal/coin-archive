@@ -5,97 +5,76 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { OrientationFieldErrors } from "../orientation-validation"
+import type { ReactNode } from "react"
 
 import type { OrientationDraft } from "./orientation-form.shared"
 
 type OrientationFieldName = keyof OrientationDraft
+type OrientationFormFieldsProps = {
+  children: (config: OrientationFieldConfig) => ReactNode
+  variant: "create" | "edit"
+}
 
-type OrientationFieldConfig = {
+export type OrientationFieldConfig = {
   field: OrientationFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type OrientationFormFieldsProps = {
-  draft: OrientationDraft
-  fieldErrors: OrientationFieldErrors
-  onFieldChange: <TFieldName extends OrientationFieldName>(
-    field: TFieldName,
-    value: OrientationDraft[TFieldName]
-  ) => void
-  variant: "create" | "edit"
-}
-
-const CREATE_ORIENTATION_FIELD_CONFIGS: OrientationFieldConfig[] = [
-  {
-    field: "code",
-    id: "new-orientation-code",
-    label: "Orientation Code",
-    placeholder: "coin-alignment",
-  },
-  {
-    field: "name",
-    id: "new-orientation-name",
-    label: "Orientation Name",
-    placeholder: "Coin alignment",
-  },
-]
-
-const EDIT_ORIENTATION_FIELD_CONFIGS: OrientationFieldConfig[] = [
-  {
-    field: "code",
-    id: "orientation-code",
-    label: "Orientation Code",
-    placeholder: "coin-alignment",
-  },
-  {
-    field: "name",
-    id: "orientation-name",
-    label: "Orientation Name",
-    placeholder: "Coin alignment",
-  },
-]
-
-function getOrientationFieldConfigs(
-  variant: OrientationFormFieldsProps["variant"]
-) {
-  return variant === "create"
-    ? CREATE_ORIENTATION_FIELD_CONFIGS
-    : EDIT_ORIENTATION_FIELD_CONFIGS
+type OrientationTextFieldProps = OrientationFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
 }
 
 export function OrientationFormFields({
-  draft,
-  fieldErrors,
-  onFieldChange,
+  children,
   variant,
 }: OrientationFormFieldsProps) {
+  const prefix = variant === "create" ? "new-" : ""
+
   return (
     <FieldGroup>
-      {getOrientationFieldConfigs(variant).map(
-        ({ field, id, label, placeholder }) => {
-          const error = fieldErrors[field]
-
-          return (
-            <Field key={field} data-invalid={error !== undefined}>
-              <FieldLabel htmlFor={id}>{label}</FieldLabel>
-              <Input
-                id={id}
-                name={field}
-                value={draft[field]}
-                onChange={(event) => onFieldChange(field, event.target.value)}
-                aria-invalid={error !== undefined}
-                placeholder={placeholder}
-                autoComplete="off"
-              />
-              {error ? <FieldError errors={[{ message: error }]} /> : null}
-            </Field>
-          )
-        }
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}orientation-${field}`,
+          label: `Orientation ${field === "code" ? "Code" : "Name"}`,
+          placeholder: field === "code" ? "coin-alignment" : "Coin alignment",
+        })
       )}
     </FieldGroup>
+  )
+}
+
+export function OrientationTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: OrientationTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

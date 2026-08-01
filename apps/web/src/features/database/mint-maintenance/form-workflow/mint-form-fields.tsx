@@ -5,93 +5,74 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { MintFieldErrors } from "../mint-validation"
+import type { ReactNode } from "react"
 
 import type { MintDraft } from "./mint-form.shared"
 
 type MintFieldName = keyof MintDraft
+type MintFormFieldsProps = {
+  children: (config: MintFieldConfig) => ReactNode
+  variant: "create" | "edit"
+}
 
-type MintFieldConfig = {
+export type MintFieldConfig = {
   field: MintFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type MintFormFieldsProps = {
-  draft: MintDraft
-  fieldErrors: MintFieldErrors
-  onFieldChange: <TFieldName extends MintFieldName>(
-    field: TFieldName,
-    value: MintDraft[TFieldName]
-  ) => void
-  variant: "create" | "edit"
+type MintTextFieldProps = MintFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
 }
 
-const CREATE_MINT_FIELD_CONFIGS: MintFieldConfig[] = [
-  {
-    field: "code",
-    id: "new-mint-code",
-    label: "Mint Code",
-    placeholder: "buenos-aires-mint",
-  },
-  {
-    field: "name",
-    id: "new-mint-name",
-    label: "Mint Name",
-    placeholder: "Buenos Aires Mint",
-  },
-]
+export function MintFormFields({ children, variant }: MintFormFieldsProps) {
+  const prefix = variant === "create" ? "new-" : ""
 
-const EDIT_MINT_FIELD_CONFIGS: MintFieldConfig[] = [
-  {
-    field: "code",
-    id: "mint-code",
-    label: "Mint Code",
-    placeholder: "buenos-aires-mint",
-  },
-  {
-    field: "name",
-    id: "mint-name",
-    label: "Mint Name",
-    placeholder: "Buenos Aires Mint",
-  },
-]
-
-function getMintFieldConfigs(variant: MintFormFieldsProps["variant"]) {
-  return variant === "create"
-    ? CREATE_MINT_FIELD_CONFIGS
-    : EDIT_MINT_FIELD_CONFIGS
-}
-
-export function MintFormFields({
-  draft,
-  fieldErrors,
-  onFieldChange,
-  variant,
-}: MintFormFieldsProps) {
   return (
     <FieldGroup>
-      {getMintFieldConfigs(variant).map(({ field, id, label, placeholder }) => {
-        const error = fieldErrors[field]
-
-        return (
-          <Field key={field} data-invalid={error !== undefined}>
-            <FieldLabel htmlFor={id}>{label}</FieldLabel>
-            <Input
-              id={id}
-              name={field}
-              value={draft[field]}
-              onChange={(event) => onFieldChange(field, event.target.value)}
-              aria-invalid={error !== undefined}
-              placeholder={placeholder}
-              autoComplete="off"
-            />
-            {error ? <FieldError errors={[{ message: error }]} /> : null}
-          </Field>
-        )
-      })}
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}mint-${field}`,
+          label: `Mint ${field === "code" ? "Code" : "Name"}`,
+          placeholder:
+            field === "code" ? "buenos-aires-mint" : "Buenos Aires Mint",
+        })
+      )}
     </FieldGroup>
+  )
+}
+
+export function MintTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: MintTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

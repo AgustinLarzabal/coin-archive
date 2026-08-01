@@ -7,22 +7,22 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import type { ReactNode } from "react"
 
-import type { ThemeDraft } from "./theme-form.shared"
+import type { CurrencyDraft } from "./currency-form.shared"
 
-type ThemeFieldName = keyof ThemeDraft
-type ThemeFormFieldsProps = {
-  children: (config: ThemeFieldConfig) => ReactNode
+type CurrencyFieldName = keyof CurrencyDraft
+type CurrencyFormFieldsProps = {
+  children: (config: CurrencyFieldConfig) => ReactNode
   variant: "create" | "edit"
 }
 
-export type ThemeFieldConfig = {
-  field: ThemeFieldName
+export type CurrencyFieldConfig = {
+  field: CurrencyFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type ThemeTextFieldProps = ThemeFieldConfig & {
+type CurrencyTextFieldProps = CurrencyFieldConfig & {
   errors: Array<{ message?: string } | undefined>
   isInvalid: boolean
   onBlur: () => void
@@ -30,24 +30,36 @@ type ThemeTextFieldProps = ThemeFieldConfig & {
   value: string
 }
 
-export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
+export function CurrencyFormFields({
+  children,
+  variant,
+}: CurrencyFormFieldsProps) {
   const prefix = variant === "create" ? "new-" : ""
+  const configs: CurrencyFieldConfig[] = [
+    {
+      field: "code",
+      id: `${prefix}currency-code`,
+      label: "Currency Code",
+      placeholder: "ars",
+    },
+    {
+      field: "name",
+      id: `${prefix}currency-name`,
+      label: "Currency Name",
+      placeholder: "Peso",
+    },
+    {
+      field: "fullName",
+      id: `${prefix}currency-full-name`,
+      label: "Currency Full Name",
+      placeholder: "Argentine peso",
+    },
+  ]
 
-  return (
-    <FieldGroup>
-      {(["code", "name"] as const).map((field) =>
-        children({
-          field,
-          id: `${prefix}theme-${field}`,
-          label: `Theme ${field === "code" ? "Code" : "Name"}`,
-          placeholder: field === "code" ? "map" : "Map",
-        })
-      )}
-    </FieldGroup>
-  )
+  return <FieldGroup>{configs.map(children)}</FieldGroup>
 }
 
-export function ThemeTextField({
+export function CurrencyTextField({
   errors,
   field,
   id,
@@ -57,7 +69,7 @@ export function ThemeTextField({
   onChange,
   placeholder,
   value,
-}: ThemeTextFieldProps) {
+}: CurrencyTextFieldProps) {
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>

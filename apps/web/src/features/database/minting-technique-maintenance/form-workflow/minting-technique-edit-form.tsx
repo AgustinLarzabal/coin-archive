@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { TechniqueOption } from "@coin-archive/db"
@@ -11,17 +11,19 @@ import type {
   MintingTechniqueMutationResult,
 } from "../actions"
 import {
-  getMintingTechniqueFieldErrors,
+  createMintingTechniqueInputSchema,
   submitUpdateMintingTechnique,
-  updateMintingTechniqueInputSchema,
 } from "../actions"
 
 import {
   createMintingTechniqueDraft,
   normalizeMintingTechniqueDraft,
 } from "./minting-technique-form.shared"
+import {
+  MintingTechniqueFormFields,
+  MintingTechniqueTextField,
+} from "./minting-technique-form-fields"
 import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
-import { MintingTechniqueFormFields } from "./minting-technique-form-fields"
 
 type MintingTechniqueEditFormProps = {
   mintingTechnique: TechniqueOption
@@ -37,25 +39,6 @@ const updateMintingTechniqueAction = createServerFn({
 
     return submitUpdateMintingTechnique(session?.user ?? null, data)
   })
-
-function validateUpdateMintingTechniqueDraft(
-  mintingTechniqueId: string,
-  draft: MintingTechniqueDraft
-): MintingTechniqueMutationResult | null {
-  const parsedInput = updateMintingTechniqueInputSchema.safeParse({
-    id: mintingTechniqueId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getMintingTechniqueFieldErrors(parsedInput.error.issues),
-  }
-}
 
 export function hasMintingTechniqueEditChanges(
   mintingTechnique: TechniqueOption,
@@ -78,23 +61,33 @@ export function MintingTechniqueEditForm({
 }: MintingTechniqueEditFormProps) {
   const router = useRouter()
   const updateMintingTechnique = useServerFn(updateMintingTechniqueAction)
-  const [draft, setDraft] = useState<MintingTechniqueDraft>(
-    createMintingTechniqueDraft(mintingTechnique)
-  )
   const [fieldErrors, setFieldErrors] = useState<MintingTechniqueFieldErrors>(
     {}
   )
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasMintingTechniqueEditChanges(mintingTechnique, draft)
+
+  const form = useForm({
+    defaultValues: createMintingTechniqueDraft(mintingTechnique),
+    validators: { onSubmit: createMintingTechniqueInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateMintingTechnique({
+        data: { id: mintingTechnique.id, ...value },
+      })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createMintingTechniqueDraft(mintingTechnique))
+    form.reset(createMintingTechniqueDraft(mintingTechnique))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [mintingTechnique])
+  }, [form, mintingTechnique])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -116,81 +109,72 @@ export function MintingTechniqueEditForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof MintingTechniqueDraft>(
-    field: TFieldName,
-    value: MintingTechniqueDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateUpdateMintingTechniqueDraft(
-      mintingTechnique.id,
-      draft
-    )
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateMintingTechnique({
-        data: {
-          id: mintingTechnique.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-minting-technique-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <MintingTechniqueFormFields
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-        variant="edit"
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <MintingTechniqueFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <MintingTechniqueTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </MintingTechniqueFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !hasMintingTechniqueEditChanges(
+                    mintingTechnique,
+                    state.values
+                  )
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { EdgeOption } from "@coin-archive/db"
@@ -8,14 +8,11 @@ import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateEdge } from "../actions"
 import type { EdgeMutationResult } from "../edge-mutation-errors"
+import { createEdgeInputSchema } from "../edge-validation"
 import type { EdgeFieldErrors } from "../edge-validation"
 
-import { EdgeFormFields } from "./edge-form-fields"
-import {
-  createEdgeDraft,
-  hasEdgeEditChanges,
-  validateEdgeUpdateDraft,
-} from "./edge-form.shared"
+import { EdgeFormFields, EdgeTextField } from "./edge-form-fields"
+import { createEdgeDraft, hasEdgeEditChanges } from "./edge-form.shared"
 import type { EdgeDraft } from "./edge-form.shared"
 
 type EdgeEditFormProps = {
@@ -36,19 +33,29 @@ const updateEdgeAction = createServerFn({
 export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
   const router = useRouter()
   const updateEdge = useServerFn(updateEdgeAction)
-  const [draft, setDraft] = useState<EdgeDraft>(createEdgeDraft(edge))
   const [fieldErrors, setFieldErrors] = useState<EdgeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasEdgeEditChanges(edge, draft)
+
+  const form = useForm({
+    defaultValues: createEdgeDraft(edge),
+    validators: { onSubmit: createEdgeInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateEdge({ data: { id: edge.id, ...value } })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createEdgeDraft(edge))
+    form.reset(createEdgeDraft(edge))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [edge])
+  }, [edge, form])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -70,78 +77,68 @@ export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof EdgeDraft>(
-    field: TFieldName,
-    value: EdgeDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateEdgeUpdateDraft(edge.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateEdge({
-        data: {
-          id: edge.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-edge-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <EdgeFormFields
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onFieldChange={updateDraft}
-        variant="edit"
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <EdgeFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <EdgeTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </EdgeFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !hasEdgeEditChanges(edge, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

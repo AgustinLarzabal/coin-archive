@@ -1,5 +1,4 @@
-import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { RulerGroupOption } from "@coin-archive/db"
@@ -8,14 +7,13 @@ import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateRuler } from "../actions"
 
-import { RulerFormFields } from "./ruler-form-fields"
+import { RulerFormFields, RulerTextField } from "./ruler-form-fields"
 import {
   EMPTY_RULER_DRAFT,
   getCreateRulerSubmission,
   getRulerGroupSelectionOptions,
   isRulerDraftComplete,
 } from "./ruler-form.shared"
-import type { RulerDraft } from "./ruler-form.shared"
 import { useRulerFormFeedback } from "./use-ruler-form-feedback"
 
 type RulerCreateFormProps = {
@@ -41,86 +39,90 @@ export function RulerCreateForm({
 }: RulerCreateFormProps) {
   const router = useRouter()
   const createRuler = useServerFn(createRulerAction)
-  const [draft, setDraft] = useState<RulerDraft>(EMPTY_RULER_DRAFT)
-  const [isPending, setIsPending] = useState(false)
   const { fieldErrors, formError, clearFeedback, applyResult } =
     useRulerFormFeedback()
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
 
-  function updateDraft<TFieldName extends keyof RulerDraft>(
-    field: TFieldName,
-    value: RulerDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
+  const form = useForm({
+    defaultValues: EMPTY_RULER_DRAFT,
+    onSubmit: async ({ value }) => {
+      const submission = getCreateRulerSubmission(value, rulerGroups)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+      if (submission.status === "invalid") {
+        applyResult(submission.result)
+        return
+      }
 
-    clearFeedback()
-
-    const submission = getCreateRulerSubmission(draft, rulerGroups)
-
-    if (submission.status === "invalid") {
-      applyResult(submission.result)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
       const result = await createRuler({
         data: submission.data,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_RULER_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-ruler-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <RulerFormFields
-        codeInputId="new-ruler-code"
-        nameInputId="new-ruler-name"
-        rulerGroupInputId="new-ruler-group"
-        rulerGroupOptionsListId="ruler-group-options-create"
-        codePlaceholder="felipe-v"
-        namePlaceholder="Felipe V"
-        rulerGroupPlaceholder="House of Bourbon (house-of-bourbon)"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        rulerGroupOptions={rulerGroupOptions}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <RulerFormFields
+              rulerGroupOptionsListId="ruler-group-options-create"
+              rulerGroupOptions={rulerGroupOptions}
+              variant="create"
+            >
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.errorField]
+                    const isInvalid = serverError !== undefined
+                    return (
+                      <RulerTextField
+                        {...config}
+                        errors={serverError ? [{ message: serverError }] : []}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </RulerFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isRulerDraftComplete(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !isRulerDraftComplete(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

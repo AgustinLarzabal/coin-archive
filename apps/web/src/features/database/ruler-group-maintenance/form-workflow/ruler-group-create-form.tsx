@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
@@ -9,17 +9,16 @@ import type {
   RulerGroupFieldErrors,
   RulerGroupMutationResult,
 } from "../actions"
-import {
-  createRulerGroupInputSchema,
-  getRulerGroupFieldErrors,
-  submitCreateRulerGroup,
-} from "../actions"
+import { createRulerGroupInputSchema, submitCreateRulerGroup } from "../actions"
 
-import { RulerGroupFormFields } from "./ruler-group-form-fields"
 import {
   EMPTY_RULER_GROUP_DRAFT,
   isRulerGroupDraftComplete,
 } from "./ruler-group-form.shared"
+import {
+  RulerGroupFormFields,
+  RulerGroupTextField,
+} from "./ruler-group-form-fields"
 import type { RulerGroupDraft } from "./ruler-group-form.shared"
 
 type RulerGroupCreateFormProps = {
@@ -36,30 +35,11 @@ const createRulerGroupAction = createServerFn({
     return submitCreateRulerGroup(session?.user ?? null, data)
   })
 
-function validateRulerGroupDraft(
-  draft: RulerGroupDraft
-): RulerGroupMutationResult | null {
-  const parsedInput = createRulerGroupInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getRulerGroupFieldErrors(parsedInput.error.issues),
-  }
-}
-
-export function RulerGroupCreateForm({
-  onCreated,
-}: RulerGroupCreateFormProps) {
+export function RulerGroupCreateForm({ onCreated }: RulerGroupCreateFormProps) {
   const router = useRouter()
   const createRulerGroup = useServerFn(createRulerGroupAction)
-  const [draft, setDraft] = useState<RulerGroupDraft>(EMPTY_RULER_GROUP_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<RulerGroupFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -78,76 +58,82 @@ export function RulerGroupCreateForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof RulerGroupDraft>(
-    field: TFieldName,
-    value: RulerGroupDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateRulerGroupDraft(draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
+  const form = useForm({
+    defaultValues: EMPTY_RULER_GROUP_DRAFT,
+    validators: { onSubmit: createRulerGroupInputSchema },
+    onSubmit: async ({ value }) => {
       const result = await createRulerGroup({
-        data: draft,
+        data: value,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_RULER_GROUP_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-ruler-group-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <RulerGroupFormFields
-        codeInputId="new-ruler-group-code"
-        nameInputId="new-ruler-group-name"
-        codePlaceholder="house-of-bourbon"
-        namePlaceholder="House of Bourbon"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <RulerGroupFormFields variant="create">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <RulerGroupTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </RulerGroupFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isRulerGroupDraftComplete(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !isRulerGroupDraftComplete(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

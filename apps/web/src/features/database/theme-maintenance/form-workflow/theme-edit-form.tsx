@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { ThemeOption } from "@coin-archive/db"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  ThemeFieldErrors,
-  ThemeMutationResult,
-} from "../actions"
-import {
-  getThemeFieldErrors,
-  submitUpdateTheme,
-  updateThemeInputSchema,
-} from "../actions"
+import type { ThemeFieldErrors, ThemeMutationResult } from "../actions"
+import { createThemeInputSchema, submitUpdateTheme } from "../actions"
 
 import { createThemeDraft, normalizeThemeDraft } from "./theme-form.shared"
-import { ThemeFormFields } from "./theme-form-fields"
+import { ThemeFormFields, ThemeTextField } from "./theme-form-fields"
 import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeEditFormProps = {
@@ -35,25 +28,6 @@ const updateThemeAction = createServerFn({
     return submitUpdateTheme(session?.user ?? null, data)
   })
 
-function validateUpdateThemeDraft(
-  themeId: string,
-  draft: ThemeDraft
-): ThemeMutationResult | null {
-  const parsedInput = updateThemeInputSchema.safeParse({
-    id: themeId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getThemeFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function hasThemeEditChanges(theme: ThemeOption, draft: ThemeDraft) {
   const normalizedCurrent = normalizeThemeDraft(createThemeDraft(theme))
   const normalizedDraft = normalizeThemeDraft(draft)
@@ -67,19 +41,29 @@ export function hasThemeEditChanges(theme: ThemeOption, draft: ThemeDraft) {
 export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
   const router = useRouter()
   const updateTheme = useServerFn(updateThemeAction)
-  const [draft, setDraft] = useState<ThemeDraft>(createThemeDraft(theme))
   const [fieldErrors, setFieldErrors] = useState<ThemeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasThemeEditChanges(theme, draft)
+
+  const form = useForm({
+    defaultValues: createThemeDraft(theme),
+    validators: { onSubmit: createThemeInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateTheme({ data: { id: theme.id, ...value } })
+      const savedMessage = applyResult(result)
+      if (savedMessage !== null) {
+        await router.invalidate()
+        onSaved?.(savedMessage)
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createThemeDraft(theme))
+    form.reset(createThemeDraft(theme))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [theme])
+  }, [form, theme])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -101,81 +85,69 @@ export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
     return null
   }
 
-  function updateDraft<TFieldName extends keyof ThemeDraft>(
-    field: TFieldName,
-    value: ThemeDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateUpdateThemeDraft(theme.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateTheme({
-        data: {
-          id: theme.id,
-          ...draft,
-        },
-      })
-      const successMessage = applyResult(result)
-
-      if (successMessage !== null) {
-        await router.invalidate()
-        onSaved?.(successMessage)
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-theme-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <ThemeFormFields
-        codeInputId="theme-code"
-        nameInputId="theme-name"
-        codePlaceholder="map"
-        namePlaceholder="Map"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <ThemeFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <ThemeTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </ThemeFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !hasThemeEditChanges(theme, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

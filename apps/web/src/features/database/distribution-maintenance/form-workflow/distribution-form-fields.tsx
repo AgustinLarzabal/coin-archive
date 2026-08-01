@@ -7,22 +7,22 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import type { ReactNode } from "react"
 
-import type { ThemeDraft } from "./theme-form.shared"
+import type { DistributionDraft } from "./distribution-form.shared"
 
-type ThemeFieldName = keyof ThemeDraft
-type ThemeFormFieldsProps = {
-  children: (config: ThemeFieldConfig) => ReactNode
+type DistributionFieldName = keyof DistributionDraft
+type DistributionFormFieldsProps = {
+  children: (config: DistributionFieldConfig) => ReactNode
   variant: "create" | "edit"
 }
 
-export type ThemeFieldConfig = {
-  field: ThemeFieldName
+export type DistributionFieldConfig = {
+  field: DistributionFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type ThemeTextFieldProps = ThemeFieldConfig & {
+type DistributionTextFieldProps = DistributionFieldConfig & {
   errors: Array<{ message?: string } | undefined>
   isInvalid: boolean
   onBlur: () => void
@@ -30,7 +30,10 @@ type ThemeTextFieldProps = ThemeFieldConfig & {
   value: string
 }
 
-export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
+export function DistributionFormFields({
+  children,
+  variant,
+}: DistributionFormFieldsProps) {
   const prefix = variant === "create" ? "new-" : ""
 
   return (
@@ -38,16 +41,17 @@ export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
       {(["code", "name"] as const).map((field) =>
         children({
           field,
-          id: `${prefix}theme-${field}`,
-          label: `Theme ${field === "code" ? "Code" : "Name"}`,
-          placeholder: field === "code" ? "map" : "Map",
+          id: `${prefix}distribution-${field}`,
+          label: `Distribution ${field === "code" ? "Code" : "Name"}`,
+          placeholder:
+            field === "code" ? "standard-circulation" : "Standard circulation",
         })
       )}
     </FieldGroup>
   )
 }
 
-export function ThemeTextField({
+export function DistributionTextField({
   errors,
   field,
   id,
@@ -57,7 +61,7 @@ export function ThemeTextField({
   onChange,
   placeholder,
   value,
-}: ThemeTextFieldProps) {
+}: DistributionTextFieldProps) {
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>

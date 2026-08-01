@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import {
@@ -14,10 +14,7 @@ import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateComposition } from "../actions"
 import type { CompositionMutationResult } from "../actions"
-import {
-  createCompositionInputSchema,
-  getCompositionFieldErrors,
-} from "../validation"
+import { createCompositionInputSchema } from "../validation"
 import type { CompositionFieldErrors } from "../validation"
 
 type CompositionDraft = {
@@ -44,21 +41,6 @@ const createCompositionAction = createServerFn({
     return submitCreateComposition(session?.user ?? null, data)
   })
 
-function validateCompositionDraft(
-  draft: CompositionDraft
-): CompositionMutationResult | null {
-  const parsedInput = createCompositionInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getCompositionFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function isCompositionCreateReady(draft: CompositionDraft) {
   return draft.code.trim().length > 0 && draft.name.trim().length > 0
 }
@@ -68,10 +50,8 @@ export function CompositionCreateForm({
 }: CompositionCreateFormProps) {
   const router = useRouter()
   const createComposition = useServerFn(createCompositionAction)
-  const [draft, setDraft] = useState<CompositionDraft>(EMPTY_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -90,103 +70,107 @@ export function CompositionCreateForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof CompositionDraft>(
-    field: TFieldName,
-    value: CompositionDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateCompositionDraft(draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
+  const form = useForm({
+    defaultValues: EMPTY_DRAFT,
+    validators: { onSubmit: createCompositionInputSchema },
+    onSubmit: async ({ value }) => {
       const result = await createComposition({
-        data: draft,
+        data: value,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-composition-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-composition-code">
-            Composition Code
-          </FieldLabel>
-          <Input
-            id="new-composition-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="silver"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-composition-name">
-            Composition Name
-          </FieldLabel>
-          <Input
-            id="new-composition-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Silver"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <FieldGroup>
+              {(
+                [
+                  {
+                    name: "code",
+                    id: "new-composition-code",
+                    label: "Composition Code",
+                    placeholder: "silver",
+                  },
+                  {
+                    name: "name",
+                    id: "new-composition-name",
+                    label: "Composition Name",
+                    placeholder: "Silver",
+                  },
+                ] as const
+              ).map((config) => (
+                <form.Field key={config.name} name={config.name}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.name]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={config.id}>
+                          {config.label}
+                        </FieldLabel>
+                        <Input
+                          id={config.id}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={isInvalid}
+                          placeholder={config.placeholder}
+                          autoComplete="off"
+                        />
+                        {isInvalid ? <FieldError errors={errors} /> : null}
+                      </Field>
+                    )
+                  }}
+                </form.Field>
+              ))}
+            </FieldGroup>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isCompositionCreateReady(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !isCompositionCreateReady(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

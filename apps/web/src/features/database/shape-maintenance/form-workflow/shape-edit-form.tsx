@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { ShapeOption } from "@coin-archive/db"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  ShapeFieldErrors,
-  ShapeMutationResult,
-} from "../actions"
-import {
-  getShapeFieldErrors,
-  submitUpdateShape,
-  updateShapeInputSchema,
-} from "../actions"
+import type { ShapeFieldErrors, ShapeMutationResult } from "../actions"
+import { createShapeInputSchema, submitUpdateShape } from "../actions"
 
-import { ShapeFormFields } from "./shape-form-fields"
 import { createShapeDraft, normalizeShapeDraft } from "./shape-form.shared"
+import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
 import type { ShapeDraft } from "./shape-form.shared"
 
 type ShapeEditFormProps = {
@@ -35,25 +28,6 @@ const updateShapeAction = createServerFn({
     return submitUpdateShape(session?.user ?? null, data)
   })
 
-function validateUpdateShapeDraft(
-  shapeId: string,
-  draft: ShapeDraft
-): ShapeMutationResult | null {
-  const parsedInput = updateShapeInputSchema.safeParse({
-    id: shapeId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getShapeFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function hasShapeEditChanges(shape: ShapeOption, draft: ShapeDraft) {
   const normalizedCurrent = normalizeShapeDraft(createShapeDraft(shape))
   const normalizedDraft = normalizeShapeDraft(draft)
@@ -67,19 +41,29 @@ export function hasShapeEditChanges(shape: ShapeOption, draft: ShapeDraft) {
 export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
   const router = useRouter()
   const updateShape = useServerFn(updateShapeAction)
-  const [draft, setDraft] = useState<ShapeDraft>(createShapeDraft(shape))
   const [fieldErrors, setFieldErrors] = useState<ShapeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasShapeEditChanges(shape, draft)
+
+  const form = useForm({
+    defaultValues: createShapeDraft(shape),
+    validators: { onSubmit: createShapeInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateShape({ data: { id: shape.id, ...value } })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createShapeDraft(shape))
+    form.reset(createShapeDraft(shape))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [shape])
+  }, [form, shape])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -101,81 +85,69 @@ export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof ShapeDraft>(
-    field: TFieldName,
-    value: ShapeDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateUpdateShapeDraft(shape.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateShape({
-        data: {
-          id: shape.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-shape-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <ShapeFormFields
-        codeInputId="shape-code"
-        nameInputId="shape-name"
-        codePlaceholder="round"
-        namePlaceholder="Round"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <ShapeFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <ShapeTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </ShapeFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !hasShapeEditChanges(shape, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

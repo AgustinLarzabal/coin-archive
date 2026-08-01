@@ -5,68 +5,77 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { RulerGroupFieldErrors } from "../actions"
+import type { ReactNode } from "react"
 
 import type { RulerGroupDraft } from "./ruler-group-form.shared"
 
+type RulerGroupFieldName = keyof RulerGroupDraft
 type RulerGroupFormFieldsProps = {
-  codeInputId: string
-  nameInputId: string
-  codePlaceholder: string
-  namePlaceholder: string
-  draft: RulerGroupDraft
-  fieldErrors: RulerGroupFieldErrors
-  onDraftChange: <TFieldName extends keyof RulerGroupDraft>(
-    field: TFieldName,
-    value: RulerGroupDraft[TFieldName]
-  ) => void
+  children: (config: RulerGroupFieldConfig) => ReactNode
+  variant: "create" | "edit"
+}
+
+export type RulerGroupFieldConfig = {
+  field: RulerGroupFieldName
+  id: string
+  label: string
+  placeholder: string
+}
+
+type RulerGroupTextFieldProps = RulerGroupFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
 }
 
 export function RulerGroupFormFields({
-  codeInputId,
-  nameInputId,
-  codePlaceholder,
-  namePlaceholder,
-  draft,
-  fieldErrors,
-  onDraftChange,
+  children,
+  variant,
 }: RulerGroupFormFieldsProps) {
-  const hasCodeError = fieldErrors.code !== undefined
-  const hasNameError = fieldErrors.name !== undefined
+  const prefix = variant === "create" ? "new-" : ""
 
   return (
     <FieldGroup>
-      <Field data-invalid={hasCodeError}>
-        <FieldLabel htmlFor={codeInputId}>Ruler Group Code</FieldLabel>
-        <Input
-          id={codeInputId}
-          name="code"
-          value={draft.code}
-          onChange={(event) => onDraftChange("code", event.target.value)}
-          aria-invalid={hasCodeError}
-          placeholder={codePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.code ? (
-          <FieldError errors={[{ message: fieldErrors.code }]} />
-        ) : null}
-      </Field>
-      <Field data-invalid={hasNameError}>
-        <FieldLabel htmlFor={nameInputId}>Ruler Group Name</FieldLabel>
-        <Input
-          id={nameInputId}
-          name="name"
-          value={draft.name}
-          onChange={(event) => onDraftChange("name", event.target.value)}
-          aria-invalid={hasNameError}
-          placeholder={namePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.name ? (
-          <FieldError errors={[{ message: fieldErrors.name }]} />
-        ) : null}
-      </Field>
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}ruler-group-${field}`,
+          label: `Ruler Group ${field === "code" ? "Code" : "Name"}`,
+          placeholder:
+            field === "code" ? "house-of-bourbon" : "House of Bourbon",
+        })
+      )}
     </FieldGroup>
+  )
+}
+
+export function RulerGroupTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: RulerGroupTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

@@ -5,68 +5,73 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { RimFieldErrors } from "../actions"
+import type { ReactNode } from "react"
 
 import type { RimDraft } from "./rim-form.shared"
 
+type RimFieldName = keyof RimDraft
 type RimFormFieldsProps = {
-  codeInputId: string
-  nameInputId: string
-  codePlaceholder: string
-  namePlaceholder: string
-  draft: RimDraft
-  fieldErrors: RimFieldErrors
-  onDraftChange: <TFieldName extends keyof RimDraft>(
-    field: TFieldName,
-    value: RimDraft[TFieldName]
-  ) => void
+  children: (config: RimFieldConfig) => ReactNode
+  variant: "create" | "edit"
 }
 
-export function RimFormFields({
-  codeInputId,
-  nameInputId,
-  codePlaceholder,
-  namePlaceholder,
-  draft,
-  fieldErrors,
-  onDraftChange,
-}: RimFormFieldsProps) {
-  const hasCodeError = fieldErrors.code !== undefined
-  const hasNameError = fieldErrors.name !== undefined
+export type RimFieldConfig = {
+  field: RimFieldName
+  id: string
+  label: string
+  placeholder: string
+}
+
+type RimTextFieldProps = RimFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
+}
+
+export function RimFormFields({ children, variant }: RimFormFieldsProps) {
+  const prefix = variant === "create" ? "new-" : ""
 
   return (
     <FieldGroup>
-      <Field data-invalid={hasCodeError}>
-        <FieldLabel htmlFor={codeInputId}>Rim Code</FieldLabel>
-        <Input
-          id={codeInputId}
-          name="code"
-          value={draft.code}
-          onChange={(event) => onDraftChange("code", event.target.value)}
-          aria-invalid={hasCodeError}
-          placeholder={codePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.code ? (
-          <FieldError errors={[{ message: fieldErrors.code }]} />
-        ) : null}
-      </Field>
-      <Field data-invalid={hasNameError}>
-        <FieldLabel htmlFor={nameInputId}>Rim Name</FieldLabel>
-        <Input
-          id={nameInputId}
-          name="name"
-          value={draft.name}
-          onChange={(event) => onDraftChange("name", event.target.value)}
-          aria-invalid={hasNameError}
-          placeholder={namePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.name ? (
-          <FieldError errors={[{ message: fieldErrors.name }]} />
-        ) : null}
-      </Field>
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}rim-${field}`,
+          label: `Rim ${field === "code" ? "Code" : "Name"}`,
+          placeholder: field === "code" ? "raised" : "Raised",
+        })
+      )}
     </FieldGroup>
+  )
+}
+
+export function RimTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: RimTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

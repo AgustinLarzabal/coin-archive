@@ -1,14 +1,7 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -18,7 +11,6 @@ import type {
 } from "../actions"
 import {
   createDistributionInputSchema,
-  getDistributionFieldErrors,
   submitCreateDistribution,
 } from "../actions"
 
@@ -26,6 +18,10 @@ import {
   EMPTY_DISTRIBUTION_DRAFT,
   isDistributionDraftComplete,
 } from "./distribution-form.shared"
+import {
+  DistributionFormFields,
+  DistributionTextField,
+} from "./distribution-form-fields"
 import type { DistributionDraft } from "./distribution-form.shared"
 
 type DistributionCreateFormProps = {
@@ -42,30 +38,13 @@ const createDistributionAction = createServerFn({
     return submitCreateDistribution(session?.user ?? null, data)
   })
 
-function validateDistributionDraft(
-  draft: DistributionDraft
-): DistributionMutationResult | null {
-  const parsedInput = createDistributionInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getDistributionFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function DistributionCreateForm({
   onCreated,
 }: DistributionCreateFormProps) {
   const router = useRouter()
   const createDistribution = useServerFn(createDistributionAction)
-  const [draft, setDraft] = useState<DistributionDraft>(EMPTY_DISTRIBUTION_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<DistributionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -84,103 +63,83 @@ export function DistributionCreateForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof DistributionDraft>(
-    field: TFieldName,
-    value: DistributionDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateDistributionDraft(draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
+  const form = useForm({
+    defaultValues: EMPTY_DISTRIBUTION_DRAFT,
+    validators: { onSubmit: createDistributionInputSchema },
+    onSubmit: async ({ value }) => {
       const result = await createDistribution({
-        data: draft,
+        data: value,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_DISTRIBUTION_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-distribution-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="new-distribution-code">
-            Distribution Code
-          </FieldLabel>
-          <Input
-            id="new-distribution-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="standard-circulation"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="new-distribution-name">
-            Distribution Name
-          </FieldLabel>
-          <Input
-            id="new-distribution-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Standard circulation"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <DistributionFormFields variant="create">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <DistributionTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </DistributionFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isDistributionDraftComplete(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !isDistributionDraftComplete(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

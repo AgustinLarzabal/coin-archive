@@ -1,32 +1,19 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CurrencyOption } from "@coin-archive/db"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  CurrencyFieldErrors,
-  CurrencyMutationResult,
-} from "../actions"
-import {
-  getCurrencyFieldErrors,
-  submitUpdateCurrency,
-  updateCurrencyInputSchema,
-} from "../actions"
+import type { CurrencyFieldErrors, CurrencyMutationResult } from "../actions"
+import { createCurrencyInputSchema, submitUpdateCurrency } from "../actions"
 
 import {
   createCurrencyDraft,
   normalizeCurrencyDraft,
 } from "./currency-form.shared"
+import { CurrencyFormFields, CurrencyTextField } from "./currency-form-fields"
 import type { CurrencyDraft } from "./currency-form.shared"
 
 type CurrencyEditFormProps = {
@@ -43,25 +30,6 @@ const updateCurrencyAction = createServerFn({
 
     return submitUpdateCurrency(session?.user ?? null, data)
   })
-
-function validateCurrencyDraft(
-  currencyId: string,
-  draft: CurrencyDraft
-): CurrencyMutationResult | null {
-  const parsedInput = updateCurrencyInputSchema.safeParse({
-    id: currencyId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getCurrencyFieldErrors(parsedInput.error.issues),
-  }
-}
 
 export function hasCurrencyEditChanges(
   currency: CurrencyOption,
@@ -82,20 +50,31 @@ export function hasCurrencyEditChanges(
 export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
   const router = useRouter()
   const updateCurrency = useServerFn(updateCurrencyAction)
-  const [draft, setDraft] = useState<CurrencyDraft>(
-    createCurrencyDraft(currency)
-  )
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
+
+  const form = useForm({
+    defaultValues: createCurrencyDraft(currency),
+    validators: { onSubmit: createCurrencyInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateCurrency({
+        data: { id: currency.id, ...value },
+      })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createCurrencyDraft(currency))
+    form.reset(createCurrencyDraft(currency))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [currency])
+  }, [form, currency])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -117,121 +96,69 @@ export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof CurrencyDraft>(
-    field: TFieldName,
-    value: CurrencyDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateCurrencyDraft(currency.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateCurrency({
-        data: {
-          id: currency.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-currency-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="currency-code">Currency Code</FieldLabel>
-          <Input
-            id="currency-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="united-states-dollar"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="currency-name">Currency Name</FieldLabel>
-          <Input
-            id="currency-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Dollar"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.fullName !== undefined}>
-          <FieldLabel htmlFor="currency-full-name">
-            Currency Full Name
-          </FieldLabel>
-          <Input
-            id="currency-full-name"
-            name="fullName"
-            value={draft.fullName}
-            onChange={(event) => updateDraft("fullName", event.target.value)}
-            aria-invalid={fieldErrors.fullName !== undefined}
-            placeholder="United States dollar"
-            autoComplete="off"
-          />
-          {fieldErrors.fullName ? (
-            <FieldError errors={[{ message: fieldErrors.fullName }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <CurrencyFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <CurrencyTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </CurrencyFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasCurrencyEditChanges(currency, draft)}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !hasCurrencyEditChanges(currency, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

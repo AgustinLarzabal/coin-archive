@@ -1,22 +1,15 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  ShapeFieldErrors,
-  ShapeMutationResult,
-} from "../actions"
-import {
-  createShapeInputSchema,
-  getShapeFieldErrors,
-  submitCreateShape,
-} from "../actions"
+import type { ShapeFieldErrors, ShapeMutationResult } from "../actions"
+import { createShapeInputSchema, submitCreateShape } from "../actions"
 
-import { ShapeFormFields } from "./shape-form-fields"
 import { EMPTY_SHAPE_DRAFT, isShapeDraftComplete } from "./shape-form.shared"
+import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
 import type { ShapeDraft } from "./shape-form.shared"
 
 type ShapeCreateFormProps = {
@@ -33,26 +26,11 @@ const createShapeAction = createServerFn({
     return submitCreateShape(session?.user ?? null, data)
   })
 
-function validateShapeDraft(draft: ShapeDraft): ShapeMutationResult | null {
-  const parsedInput = createShapeInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getShapeFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
   const router = useRouter()
   const createShape = useServerFn(createShapeAction)
-  const [draft, setDraft] = useState<ShapeDraft>(EMPTY_SHAPE_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<ShapeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -71,76 +49,82 @@ export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof ShapeDraft>(
-    field: TFieldName,
-    value: ShapeDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateShapeDraft(draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
+  const form = useForm({
+    defaultValues: EMPTY_SHAPE_DRAFT,
+    validators: { onSubmit: createShapeInputSchema },
+    onSubmit: async ({ value }) => {
       const result = await createShape({
-        data: draft,
+        data: value,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_SHAPE_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-shape-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <ShapeFormFields
-        codeInputId="new-shape-code"
-        nameInputId="new-shape-name"
-        codePlaceholder="round"
-        namePlaceholder="Round"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <ShapeFormFields variant="create">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <ShapeTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </ShapeFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isShapeDraftComplete(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !isShapeDraftComplete(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

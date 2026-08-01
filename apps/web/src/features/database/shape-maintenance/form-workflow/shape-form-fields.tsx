@@ -5,68 +5,73 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { ShapeFieldErrors } from "../actions"
+import type { ReactNode } from "react"
 
 import type { ShapeDraft } from "./shape-form.shared"
 
+type ShapeFieldName = keyof ShapeDraft
 type ShapeFormFieldsProps = {
-  codeInputId: string
-  nameInputId: string
-  codePlaceholder: string
-  namePlaceholder: string
-  draft: ShapeDraft
-  fieldErrors: ShapeFieldErrors
-  onDraftChange: <TFieldName extends keyof ShapeDraft>(
-    field: TFieldName,
-    value: ShapeDraft[TFieldName]
-  ) => void
+  children: (config: ShapeFieldConfig) => ReactNode
+  variant: "create" | "edit"
 }
 
-export function ShapeFormFields({
-  codeInputId,
-  nameInputId,
-  codePlaceholder,
-  namePlaceholder,
-  draft,
-  fieldErrors,
-  onDraftChange,
-}: ShapeFormFieldsProps) {
-  const hasCodeError = fieldErrors.code !== undefined
-  const hasNameError = fieldErrors.name !== undefined
+export type ShapeFieldConfig = {
+  field: ShapeFieldName
+  id: string
+  label: string
+  placeholder: string
+}
+
+type ShapeTextFieldProps = ShapeFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
+}
+
+export function ShapeFormFields({ children, variant }: ShapeFormFieldsProps) {
+  const prefix = variant === "create" ? "new-" : ""
 
   return (
     <FieldGroup>
-      <Field data-invalid={hasCodeError}>
-        <FieldLabel htmlFor={codeInputId}>Shape Code</FieldLabel>
-        <Input
-          id={codeInputId}
-          name="code"
-          value={draft.code}
-          onChange={(event) => onDraftChange("code", event.target.value)}
-          aria-invalid={hasCodeError}
-          placeholder={codePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.code ? (
-          <FieldError errors={[{ message: fieldErrors.code }]} />
-        ) : null}
-      </Field>
-      <Field data-invalid={hasNameError}>
-        <FieldLabel htmlFor={nameInputId}>Shape Name</FieldLabel>
-        <Input
-          id={nameInputId}
-          name="name"
-          value={draft.name}
-          onChange={(event) => onDraftChange("name", event.target.value)}
-          aria-invalid={hasNameError}
-          placeholder={namePlaceholder}
-          autoComplete="off"
-        />
-        {fieldErrors.name ? (
-          <FieldError errors={[{ message: fieldErrors.name }]} />
-        ) : null}
-      </Field>
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}shape-${field}`,
+          label: `Shape ${field === "code" ? "Code" : "Name"}`,
+          placeholder: field === "code" ? "round" : "Round",
+        })
+      )}
     </FieldGroup>
+  )
+}
+
+export function ShapeTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: ShapeTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

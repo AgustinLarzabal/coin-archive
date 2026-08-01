@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { IssuerMaintenanceRecord } from "@coin-archive/db"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -24,6 +17,7 @@ import {
   normalizeIssuerDraft,
 } from "./issuer-form.shared"
 import type { IssuerDraft } from "./issuer-form.shared"
+import { IssuerFormFields, IssuerTextField } from "./issuer-form-fields"
 
 type IssuerEditFormProps = {
   issuer: IssuerMaintenanceRecord
@@ -74,25 +68,37 @@ export function IssuerEditForm({
 }: IssuerEditFormProps) {
   const router = useRouter()
   const updateIssuer = useServerFn(updateIssuerAction)
-  const [draft, setDraft] = useState<IssuerDraft>(
-    createIssuerDraft(issuer, issuers)
-  )
   const [fieldErrors, setFieldErrors] = useState<IssuerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
   const parentIssuerOptions = useMemo(
     () => getParentIssuerOptions(issuers, issuer.id),
     [issuer.id, issuers]
   )
-  const hasChanges = hasIssuerEditChanges(issuer, issuers, draft)
+
+  const form = useForm({
+    defaultValues: createIssuerDraft(issuer, issuers),
+    onSubmit: async ({ value }) => {
+      const submission = getUpdateIssuerSubmission(issuer.id, value, issuers)
+      if (submission.status === "invalid") {
+        applyResult(submission.result)
+        return
+      }
+      const result = await updateIssuer({ data: submission.data })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createIssuerDraft(issuer, issuers))
+    form.reset(createIssuerDraft(issuer, issuers))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [issuer, issuers])
+  }, [form, issuer, issuers])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -114,139 +120,67 @@ export function IssuerEditForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof IssuerDraft>(
-    field: TFieldName,
-    value: IssuerDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const submission = getUpdateIssuerSubmission(issuer.id, draft, issuers)
-
-    if (submission.status === "invalid") {
-      applyResult(submission.result)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateIssuer({
-        data: submission.data,
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-issuer-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="issuer-code">Issuer Code</FieldLabel>
-          <Input
-            id="issuer-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="argentine-republic"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="issuer-name">Issuer Name</FieldLabel>
-          <Input
-            id="issuer-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Argentine Republic"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.isoCode !== undefined}>
-          <FieldLabel htmlFor="issuer-iso-code">Issuer ISO Code</FieldLabel>
-          <Input
-            id="issuer-iso-code"
-            name="isoCode"
-            value={draft.isoCode}
-            onChange={(event) => updateDraft("isoCode", event.target.value)}
-            aria-invalid={fieldErrors.isoCode !== undefined}
-            placeholder="AR"
-            autoComplete="off"
-          />
-          {fieldErrors.isoCode ? (
-            <FieldError errors={[{ message: fieldErrors.isoCode }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.parentIssuerId !== undefined}>
-          <FieldLabel htmlFor="parent-issuer">Parent Issuer</FieldLabel>
-          <Input
-            id="parent-issuer"
-            name="parentIssuer"
-            list="issuer-parent-options-edit"
-            value={draft.parentIssuerLabel}
-            onChange={(event) =>
-              updateDraft("parentIssuerLabel", event.target.value)
-            }
-            aria-invalid={fieldErrors.parentIssuerId !== undefined}
-            placeholder="Search Parent Issuer..."
-            autoComplete="off"
-          />
-          <datalist id="issuer-parent-options-edit">
-            {parentIssuerOptions.map((option) => (
-              <option key={option.id} value={option.label} />
-            ))}
-          </datalist>
-          {fieldErrors.parentIssuerId ? (
-            <FieldError errors={[{ message: fieldErrors.parentIssuerId }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <IssuerFormFields
+              parentIssuerOptions={parentIssuerOptions}
+              parentIssuerOptionsListId="issuer-parent-options-edit"
+              variant="edit"
+            >
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.errorField]
+                    const isInvalid = serverError !== undefined
+                    return (
+                      <IssuerTextField
+                        {...config}
+                        errors={serverError ? [{ message: serverError }] : []}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </IssuerFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !hasIssuerEditChanges(issuer, issuers, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

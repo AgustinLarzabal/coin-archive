@@ -5,97 +5,76 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { MintingTechniqueFieldErrors } from "../actions"
+import type { ReactNode } from "react"
 
 import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
 
 type MintingTechniqueFieldName = keyof MintingTechniqueDraft
+type MintingTechniqueFormFieldsProps = {
+  children: (config: MintingTechniqueFieldConfig) => ReactNode
+  variant: "create" | "edit"
+}
 
-type MintingTechniqueFieldConfig = {
+export type MintingTechniqueFieldConfig = {
   field: MintingTechniqueFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type MintingTechniqueFormFieldsProps = {
-  draft: MintingTechniqueDraft
-  fieldErrors: MintingTechniqueFieldErrors
-  onDraftChange: <TFieldName extends MintingTechniqueFieldName>(
-    field: TFieldName,
-    value: MintingTechniqueDraft[TFieldName]
-  ) => void
-  variant: "create" | "edit"
-}
-
-const CREATE_MINTING_TECHNIQUE_FIELD_CONFIGS: MintingTechniqueFieldConfig[] = [
-  {
-    field: "code",
-    id: "new-minting-technique-code",
-    label: "Minting Technique Code",
-    placeholder: "hammered",
-  },
-  {
-    field: "name",
-    id: "new-minting-technique-name",
-    label: "Minting Technique Name",
-    placeholder: "Hammered",
-  },
-]
-
-const EDIT_MINTING_TECHNIQUE_FIELD_CONFIGS: MintingTechniqueFieldConfig[] = [
-  {
-    field: "code",
-    id: "minting-technique-code",
-    label: "Minting Technique Code",
-    placeholder: "hammered",
-  },
-  {
-    field: "name",
-    id: "minting-technique-name",
-    label: "Minting Technique Name",
-    placeholder: "Hammered",
-  },
-]
-
-function getMintingTechniqueFieldConfigs(
-  variant: MintingTechniqueFormFieldsProps["variant"]
-) {
-  return variant === "create"
-    ? CREATE_MINTING_TECHNIQUE_FIELD_CONFIGS
-    : EDIT_MINTING_TECHNIQUE_FIELD_CONFIGS
+type MintingTechniqueTextFieldProps = MintingTechniqueFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
 }
 
 export function MintingTechniqueFormFields({
-  draft,
-  fieldErrors,
-  onDraftChange,
+  children,
   variant,
 }: MintingTechniqueFormFieldsProps) {
+  const prefix = variant === "create" ? "new-" : ""
+
   return (
     <FieldGroup>
-      {getMintingTechniqueFieldConfigs(variant).map(
-        ({ field, id, label, placeholder }) => {
-          const error = fieldErrors[field]
-
-          return (
-            <Field key={field} data-invalid={error !== undefined}>
-              <FieldLabel htmlFor={id}>{label}</FieldLabel>
-              <Input
-                id={id}
-                name={field}
-                value={draft[field]}
-                onChange={(event) => onDraftChange(field, event.target.value)}
-                aria-invalid={error !== undefined}
-                placeholder={placeholder}
-                autoComplete="off"
-              />
-              {error ? <FieldError errors={[{ message: error }]} /> : null}
-            </Field>
-          )
-        }
+      {(["code", "name"] as const).map((field) =>
+        children({
+          field,
+          id: `${prefix}minting-technique-${field}`,
+          label: `Minting Technique ${field === "code" ? "Code" : "Name"}`,
+          placeholder: field === "code" ? "hammered" : "Hammered",
+        })
       )}
     </FieldGroup>
+  )
+}
+
+export function MintingTechniqueTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: MintingTechniqueTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

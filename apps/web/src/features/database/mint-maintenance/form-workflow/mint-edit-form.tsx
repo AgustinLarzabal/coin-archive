@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { MintOption } from "@coin-archive/db"
@@ -8,14 +8,11 @@ import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateMint } from "../actions"
 import type { MintMutationResult } from "../mint-mutation-errors"
+import { createMintInputSchema } from "../mint-validation"
 import type { MintFieldErrors } from "../mint-validation"
 
-import {
-  createMintDraft,
-  hasMintEditChanges,
-  validateMintUpdateDraft,
-} from "./mint-form.shared"
-import { MintFormFields } from "./mint-form-fields"
+import { MintFormFields, MintTextField } from "./mint-form-fields"
+import { createMintDraft, hasMintEditChanges } from "./mint-form.shared"
 import type { MintDraft } from "./mint-form.shared"
 
 type MintEditFormProps = {
@@ -36,19 +33,29 @@ const updateMintAction = createServerFn({
 export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
   const router = useRouter()
   const updateMint = useServerFn(updateMintAction)
-  const [draft, setDraft] = useState<MintDraft>(createMintDraft(mint))
   const [fieldErrors, setFieldErrors] = useState<MintFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasMintEditChanges(mint, draft)
+
+  const form = useForm({
+    defaultValues: createMintDraft(mint),
+    validators: { onSubmit: createMintInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateMint({ data: { id: mint.id, ...value } })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createMintDraft(mint))
+    form.reset(createMintDraft(mint))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [mint])
+  }, [mint, form])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -70,78 +77,68 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof MintDraft>(
-    field: TFieldName,
-    value: MintDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateMintUpdateDraft(mint.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateMint({
-        data: {
-          id: mint.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-mint-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <MintFormFields
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onFieldChange={updateDraft}
-        variant="edit"
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <MintFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <MintTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </MintFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !hasMintEditChanges(mint, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
@@ -7,14 +7,17 @@ import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateOrientation } from "../actions"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
+import { createOrientationInputSchema } from "../orientation-validation"
 import type { OrientationFieldErrors } from "../orientation-validation"
 
 import {
+  OrientationFormFields,
+  OrientationTextField,
+} from "./orientation-form-fields"
+import {
   EMPTY_ORIENTATION_DRAFT,
   isOrientationDraftComplete,
-  validateOrientationCreateDraft,
 } from "./orientation-form.shared"
-import { OrientationFormFields } from "./orientation-form-fields"
 import type { OrientationDraft } from "./orientation-form.shared"
 
 type OrientationCreateFormProps = {
@@ -36,10 +39,8 @@ export function OrientationCreateForm({
 }: OrientationCreateFormProps) {
   const router = useRouter()
   const createOrientation = useServerFn(createOrientationAction)
-  const [draft, setDraft] = useState<OrientationDraft>(EMPTY_ORIENTATION_DRAFT)
   const [fieldErrors, setFieldErrors] = useState<OrientationFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -58,73 +59,83 @@ export function OrientationCreateForm({
     return false
   }
 
-  function updateDraft<TFieldName extends keyof OrientationDraft>(
-    field: TFieldName,
-    value: OrientationDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateOrientationCreateDraft(draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
+  const form = useForm({
+    defaultValues: EMPTY_ORIENTATION_DRAFT,
+    validators: { onSubmit: createOrientationInputSchema },
+    onSubmit: async ({ value }) => {
       const result = await createOrientation({
-        data: draft,
+        data: value,
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
-        setDraft(EMPTY_ORIENTATION_DRAFT)
+        form.reset()
         await router.invalidate()
         onCreated?.()
       }
-    } finally {
-      setIsPending(false)
-    }
-  }
+    },
+  })
 
   return (
     <form
       id="database-orientation-create-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <OrientationFormFields
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onFieldChange={updateDraft}
-        variant="create"
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <OrientationFormFields variant="create">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <OrientationTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </OrientationFormFields>
 
-      {formError ? (
-        <p className="text-sm text-destructive">{formError}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!isOrientationDraftComplete(draft)}
-          className="w-full"
-        >
-          Create
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting ||
+                  !isOrientationDraftComplete(state.values)
+                }
+                className="w-full"
+              >
+                Create
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

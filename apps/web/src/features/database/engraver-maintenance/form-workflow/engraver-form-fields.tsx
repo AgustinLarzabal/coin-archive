@@ -7,22 +7,22 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import type { ReactNode } from "react"
 
-import type { ThemeDraft } from "./theme-form.shared"
+import type { EngraverDraft } from "./engraver-form.shared"
 
-type ThemeFieldName = keyof ThemeDraft
-type ThemeFormFieldsProps = {
-  children: (config: ThemeFieldConfig) => ReactNode
+type EngraverFieldName = keyof EngraverDraft
+type EngraverFormFieldsProps = {
+  children: (config: EngraverFieldConfig) => ReactNode
   variant: "create" | "edit"
 }
 
-export type ThemeFieldConfig = {
-  field: ThemeFieldName
+export type EngraverFieldConfig = {
+  field: EngraverFieldName
   id: string
   label: string
   placeholder: string
 }
 
-type ThemeTextFieldProps = ThemeFieldConfig & {
+type EngraverTextFieldProps = EngraverFieldConfig & {
   errors: Array<{ message?: string } | undefined>
   isInvalid: boolean
   onBlur: () => void
@@ -30,7 +30,10 @@ type ThemeTextFieldProps = ThemeFieldConfig & {
   value: string
 }
 
-export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
+export function EngraverFormFields({
+  children,
+  variant,
+}: EngraverFormFieldsProps) {
   const prefix = variant === "create" ? "new-" : ""
 
   return (
@@ -38,16 +41,16 @@ export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
       {(["code", "name"] as const).map((field) =>
         children({
           field,
-          id: `${prefix}theme-${field}`,
-          label: `Theme ${field === "code" ? "Code" : "Name"}`,
-          placeholder: field === "code" ? "map" : "Map",
+          id: `${prefix}engraver-${field}`,
+          label: `Engraver ${field === "code" ? "Code" : "Name"}`,
+          placeholder: field === "code" ? "barth" : "Barth",
         })
       )}
     </FieldGroup>
   )
 }
 
-export function ThemeTextField({
+export function EngraverTextField({
   errors,
   field,
   id,
@@ -57,7 +60,7 @@ export function ThemeTextField({
   onChange,
   placeholder,
   value,
-}: ThemeTextFieldProps) {
+}: EngraverTextFieldProps) {
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>

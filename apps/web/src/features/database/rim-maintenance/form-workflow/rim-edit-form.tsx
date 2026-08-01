@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
+import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { RimOption } from "@coin-archive/db"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  RimFieldErrors,
-  RimMutationResult,
-} from "../actions"
-import {
-  getRimFieldErrors,
-  submitUpdateRim,
-  updateRimInputSchema,
-} from "../actions"
+import type { RimFieldErrors, RimMutationResult } from "../actions"
+import { createRimInputSchema, submitUpdateRim } from "../actions"
 
-import { RimFormFields } from "./rim-form-fields"
 import { createRimDraft, normalizeRimDraft } from "./rim-form.shared"
+import { RimFormFields, RimTextField } from "./rim-form-fields"
 import type { RimDraft } from "./rim-form.shared"
 
 type RimEditFormProps = {
@@ -35,25 +28,6 @@ const updateRimAction = createServerFn({
     return submitUpdateRim(session?.user ?? null, data)
   })
 
-function validateUpdateRimDraft(
-  rimId: string,
-  draft: RimDraft
-): RimMutationResult | null {
-  const parsedInput = updateRimInputSchema.safeParse({
-    id: rimId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getRimFieldErrors(parsedInput.error.issues),
-  }
-}
-
 export function hasRimEditChanges(rim: RimOption, draft: RimDraft) {
   const normalizedCurrent = normalizeRimDraft(createRimDraft(rim))
   const normalizedDraft = normalizeRimDraft(draft)
@@ -67,19 +41,29 @@ export function hasRimEditChanges(rim: RimOption, draft: RimDraft) {
 export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
   const router = useRouter()
   const updateRim = useServerFn(updateRimAction)
-  const [draft, setDraft] = useState<RimDraft>(createRimDraft(rim))
   const [fieldErrors, setFieldErrors] = useState<RimFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const hasChanges = hasRimEditChanges(rim, draft)
+
+  const form = useForm({
+    defaultValues: createRimDraft(rim),
+    validators: { onSubmit: createRimInputSchema },
+    onSubmit: async ({ value }) => {
+      const result = await updateRim({ data: { id: rim.id, ...value } })
+      const shouldRefresh = applyResult(result)
+      if (shouldRefresh) {
+        await router.invalidate()
+        onSaved?.()
+      }
+    },
+  })
 
   useEffect(() => {
-    setDraft(createRimDraft(rim))
+    form.reset(createRimDraft(rim))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [rim])
+  }, [form, rim])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -101,79 +85,68 @@ export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
     return false
   }
 
-  function updateDraft<TFieldName extends keyof RimDraft>(
-    field: TFieldName,
-    value: RimDraft[TFieldName]
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    clearFeedback()
-
-    const validationResult = validateUpdateRimDraft(rim.id, draft)
-
-    if (validationResult !== null) {
-      applyResult(validationResult)
-      return
-    }
-
-    setIsPending(true)
-
-    try {
-      const result = await updateRim({
-        data: {
-          id: rim.id,
-          ...draft,
-        },
-      })
-      const shouldRefresh = applyResult(result)
-
-      if (shouldRefresh) {
-        await router.invalidate()
-        onSaved?.()
-      }
-    } finally {
-      setIsPending(false)
-    }
-  }
-
   return (
     <form
       id="database-rim-edit-form"
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault()
+        clearFeedback()
+        void form.handleSubmit()
+      }}
     >
-      <RimFormFields
-        codeInputId="rim-code"
-        nameInputId="rim-name"
-        codePlaceholder="raised"
-        namePlaceholder="Raised rim"
-        draft={draft}
-        fieldErrors={fieldErrors}
-        onDraftChange={updateDraft}
-      />
+      <form.Subscribe selector={(state) => state}>
+        {(state) => (
+          <>
+            <RimFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
+                  {(field) => {
+                    const serverError = fieldErrors[config.field]
+                    const isInvalid =
+                      (field.state.meta.isTouched &&
+                        !field.state.meta.isValid) ||
+                      serverError !== undefined
+                    const errors = serverError
+                      ? [...field.state.meta.errors, { message: serverError }]
+                      : field.state.meta.errors
+                    return (
+                      <RimTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
+                    )
+                  }}
+                </form.Field>
+              )}
+            </RimFormFields>
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
-      {successMessage ? (
-        <p className="text-sm text-emerald-700">{successMessage}</p>
-      ) : null}
+            {formError ? (
+              <p className="text-sm text-destructive">{formError}</p>
+            ) : null}
+            {successMessage ? (
+              <p className="text-sm text-emerald-700">{successMessage}</p>
+            ) : null}
 
-      <div className="mt-auto flex gap-2 border-t pt-4">
-        <SubmitButton
-          type="submit"
-          isSubmitting={isPending}
-          disabled={!hasChanges}
-          className="w-full"
-        >
-          Save
-        </SubmitButton>
-      </div>
+            <div className="mt-auto flex gap-2 border-t pt-4">
+              <SubmitButton
+                type="submit"
+                isSubmitting={state.isSubmitting}
+                disabled={
+                  state.isSubmitting || !hasRimEditChanges(rim, state.values)
+                }
+                className="w-full"
+              >
+                Save
+              </SubmitButton>
+            </div>
+          </>
+        )}
+      </form.Subscribe>
     </form>
   )
 }

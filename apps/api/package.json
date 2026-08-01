@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "set -a; . ../../.env; set +a; wrangler dev --var \"DATABASE_URL:$DATABASE_URL\" --var \"API_ENVIRONMENT:staging\" --var \"SURFACE_IMAGE_ORIGIN:http://localhost:3000\"",
+    "dev": "wrangler dev --env-file ../../.env",
+    "cf-typegen": "wrangler types",
     "dev:staging": "if [ ! -f ../../.env.staging.local ]; then echo 'Missing .env.staging.local.'; exit 1; fi; wrangler dev --env staging --env-file ../../.env.staging.local",
     "dev:production": "if [ \"$ALLOW_PRODUCTION_DEBUG\" != \"true\" ]; then echo 'Refusing to connect the local API to production.'; exit 1; fi; if [ ! -f ../../.env.production.local ]; then echo 'Missing .env.production.local.'; exit 1; fi; wrangler dev --env production --env-file ../../.env.production.local",
     "build": "wrangler deploy --dry-run",
@@ -18,6 +19,7 @@
   },
   "dependencies": {
     "@coin-archive/api": "workspace:*",
+    "@coin-archive/auth": "workspace:*",
     "@coin-archive/db": "workspace:*",
     "@orpc/openapi": "^1.10.0",
     "@orpc/server": "^1.10.0",
@@ -26,7 +28,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260730.1",
     "@tanstack/eslint-config": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",

@@ -1,9 +1,9 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { account, db, session, user, verification } from "@coin-archive/db"
 
 import { getAuthEnvironment } from "./env"
+import type { AuthEnvironment } from "./env"
 import {
   collectorRoleValues,
   hasAdminAccess,
@@ -11,13 +11,32 @@ import {
   isCollectorRole,
 } from "./roles"
 
-function createAuth() {
-  const authEnvironment = getAuthEnvironment()
+type AuthDatabase = typeof db
+
+export function createAuth({
+  database = db,
+  environment = getAuthEnvironment(),
+}: {
+  database?: AuthDatabase
+  environment?: AuthEnvironment
+} = {}) {
+  const trustedOrigins = [
+    ...new Set([environment.betterAuthUrl, ...environment.trustedOrigins]),
+  ]
 
   return betterAuth({
-    secret: authEnvironment.betterAuthSecret,
-    baseURL: authEnvironment.betterAuthUrl,
-    database: drizzleAdapter(db, {
+    secret: environment.betterAuthSecret,
+    baseURL: {
+      allowedHosts: trustedOrigins.map((origin) => new URL(origin).host),
+      fallback: environment.betterAuthUrl,
+      protocol: "auto",
+    },
+    trustedOrigins,
+    advanced: {
+      disableOriginCheck: false,
+      trustedProxyHeaders: true,
+    },
+    database: drizzleAdapter(database, {
       provider: "pg",
       schema: {
         account,
@@ -26,12 +45,14 @@ function createAuth() {
         verification,
       },
     }),
-    plugins: [tanstackStartCookies()],
     socialProviders: {
       google: {
-        clientId: authEnvironment.googleClientId,
-        clientSecret: authEnvironment.googleClientSecret,
+        clientId: environment.googleClientId,
+        clientSecret: environment.googleClientSecret,
       },
+    },
+    session: {
+      cookieCache: { enabled: false },
     },
     user: {
       additionalFields: {
@@ -61,6 +82,8 @@ export const auth = new Proxy({} as ReturnType<typeof createAuth>, {
     return typeof value === "function" ? value.bind(getAuth()) : value
   },
 })
+
+export type Auth = ReturnType<typeof createAuth>
 
 export { collectorRoleValues, hasAdminAccess, hasEditorAccess, isCollectorRole }
 

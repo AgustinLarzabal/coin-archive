@@ -47,18 +47,19 @@ The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the
 | Worker name            | `coin-archive-staging`                   | `coin-archive`                           |
 | R2 bucket              | `coin-archive-staging-surface-images`    | `coin-archive-production-surface-images` |
 
-Set `DATABASE_URL` separately for both the API and web Workers in each environment; the release workflows synchronize the API Worker secret from the corresponding protected GitHub environment. The remaining secrets belong only to the web Worker. They must never be committed:
+Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth and Google OAuth secrets belong only to the API Worker; R2 credentials remain on the web Worker until Surface Image maintenance moves to the API. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
 
 - `DATABASE_URL`: the environment's direct pooled Neon PostgreSQL connection URL. Do not configure Cloudflare Hyperdrive.
-- `BETTER_AUTH_SECRET`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
+- `BETTER_AUTH_SECRET` (API only)
+- `GOOGLE_CLIENT_ID` (API only)
+- `GOOGLE_CLIENT_SECRET` (API only)
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
 
-The Worker also requires these non-secret runtime settings, which are supplied by `wrangler.jsonc`:
+The Workers also require these non-secret runtime settings, which are supplied by their `wrangler.jsonc` files:
 
-- `BETTER_AUTH_URL`
+- `BETTER_AUTH_URL` (API auth origin)
+- `BETTER_AUTH_TRUSTED_ORIGINS` (matching web origin)
 - `R2_ENDPOINT`
 - `R2_BUCKET`
 - `R2_PUBLIC_BASE_URL`
@@ -73,7 +74,7 @@ After supplying an environment's `DATABASE_URL`, run `pnpm --filter @coin-archiv
 
 ## Production promotion
 
-Production promotion begins only when the **Deploy staging** GitHub Actions workflow succeeds. Configure the repository's `production` GitHub environment with the maintainer as its required reviewer and store only production `DATABASE_URL` and `CLOUDFLARE_API_TOKEN` secrets there. GitHub records the staging deployment and the required environment approval.
+Production promotion begins only when the **Deploy staging** GitHub Actions workflow succeeds. Configure the repository's `production` GitHub environment with the maintainer as its required reviewer and store the production `DATABASE_URL`, `BETTER_AUTH_SECRET`, Google OAuth credentials, and `CLOUDFLARE_API_TOKEN` secrets there. GitHub records the staging deployment and the required environment approval.
 
 The production workflow checks out the exact commit from that successful staging run, then waits for the protected `production` environment approval. The maintainer approves only after manual staging verification. It applies pending production migrations before deploying the production Worker, never resets or seeds data, and stops the release before Worker deployment if a migration fails.
 

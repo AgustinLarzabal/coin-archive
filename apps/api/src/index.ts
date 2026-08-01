@@ -3,14 +3,8 @@ import {
   getPublicCoinWithDatabase,
   getCoinsWithDatabase,
 } from "@coin-archive/db"
+import { createAuth } from "@coin-archive/auth/server"
 import { createPublicApiApp } from "./app"
-
-export interface Env {
-  API_ENVIRONMENT: "staging" | "production"
-  DATABASE_URL: string
-  SURFACE_IMAGE_ORIGIN: string
-  API_RATE_LIMITER: RateLimit
-}
 
 export default {
   async fetch(request: Request, env: Env) {
@@ -41,6 +35,19 @@ export default {
             coin.createdAt !== undefined
         ),
       getCoin: (coinId) => getPublicCoinWithDatabase(database.db, coinId),
+      handleAuthRequest: (authRequest) =>
+        createAuth({
+          database: database.db,
+          environment: {
+            betterAuthSecret: env.BETTER_AUTH_SECRET,
+            betterAuthUrl: env.BETTER_AUTH_URL,
+            trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS.split(",")
+              .map((origin) => origin.trim())
+              .filter(Boolean),
+            googleClientId: env.GOOGLE_CLIENT_ID,
+            googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+          },
+        }).handler(authRequest),
     })
     try {
       return await app.fetch(request)

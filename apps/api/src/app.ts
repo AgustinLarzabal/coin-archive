@@ -88,18 +88,22 @@ type CoinFaceSurface = CoinEdgeSurface & {
 
 export type GetCoin = (id: string) => Promise<CoinDetailSource | null>
 
+export type HandleAuthRequest = (request: Request) => Promise<Response>
+
 export function createPublicApiApp({
   browseCoins,
   getCoin = async () => null,
   environment,
   surfaceImageOrigin,
   rateLimit = async () => true,
+  handleAuthRequest,
 }: {
   browseCoins: BrowseCoins
   getCoin?: GetCoin
   environment: "staging" | "production"
   surfaceImageOrigin: string
   rateLimit?: (clientIp: string) => Promise<boolean>
+  handleAuthRequest?: HandleAuthRequest
 }) {
   const app = new Hono()
   const allowedOrigin =
@@ -107,7 +111,11 @@ export function createPublicApiApp({
       ? "https://coinarchive.app"
       : "https://staging.coinarchive.app"
 
-  app.use("/api/*", async (context, next) => {
+  if (handleAuthRequest !== undefined) {
+    app.all("/api/auth/*", (context) => handleAuthRequest(context.req.raw))
+  }
+
+  app.use("/api/v1/*", async (context, next) => {
     const origin = context.req.header("origin")
     if (origin === allowedOrigin) {
       context.header("Access-Control-Allow-Origin", origin)

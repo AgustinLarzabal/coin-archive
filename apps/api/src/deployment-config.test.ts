@@ -21,4 +21,19 @@ describe("API deployment configuration", () => {
       )
     }
   })
+
+  it("configures the API auth origin and matching trusted web origin", () => {
+    expect(wranglerConfig).toContain(
+      '"BETTER_AUTH_URL": "https://api.staging.coinarchive.app"'
+    )
+    expect(wranglerConfig).toContain(
+      '"BETTER_AUTH_TRUSTED_ORIGINS": "https://staging.coinarchive.app"'
+    )
+    expect(wranglerConfig).toContain(
+      '"BETTER_AUTH_URL": "https://api.coinarchive.app"'
+    )
+    expect(wranglerConfig).toContain(
+      '"BETTER_AUTH_TRUSTED_ORIGINS": "https://coinarchive.app"'
+    )
+  })
 })

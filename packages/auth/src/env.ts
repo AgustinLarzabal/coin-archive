@@ -4,6 +4,7 @@ loadLocalEnvironmentFile(process.loadEnvFile, import.meta.url)
 
 type AuthEnvironmentVariableName =
   | "BETTER_AUTH_SECRET"
+  | "BETTER_AUTH_TRUSTED_ORIGINS"
   | "BETTER_AUTH_URL"
   | "GOOGLE_CLIENT_ID"
   | "GOOGLE_CLIENT_SECRET"
@@ -11,6 +12,7 @@ type AuthEnvironmentVariableName =
 export type AuthEnvironment = {
   betterAuthSecret: string
   betterAuthUrl: string
+  trustedOrigins: string[]
   googleClientId: string
   googleClientSecret: string
 }
@@ -25,6 +27,13 @@ export function getAuthEnvironment(): AuthEnvironment {
       "BETTER_AUTH_URL",
       "BETTER_AUTH_URL is required"
     ),
+    trustedOrigins: getRequiredEnvironmentVariable(
+      "BETTER_AUTH_TRUSTED_ORIGINS",
+      "BETTER_AUTH_TRUSTED_ORIGINS is required"
+    )
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     googleClientId: getRequiredEnvironmentVariable(
       "GOOGLE_CLIENT_ID",
       "GOOGLE_CLIENT_ID is required"

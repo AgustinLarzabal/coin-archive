@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { createPublicApiApp } from "./app"
 
 const coins = [
@@ -21,6 +21,73 @@ const coins = [
     surfaces: { obverse: null, reverse: null, edge: null },
   },
 ]
+
+describe("/api/auth/*", () => {
+  it("delegates session resolution to the API-hosted authentication backend", async () => {
+    const handleAuthRequest = vi.fn(async (request: Request) => {
+      expect(request.headers.get("cookie")).toBe(
+        "better-auth.session_token=valid-session"
+      )
+
+      return Response.json({
+        session: { id: "session-id" },
+        user: { id: "collector-id", role: "editor" },
+      })
+    })
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      handleAuthRequest,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/auth/get-session",
+      { headers: { Cookie: "better-auth.session_token=valid-session" } }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      user: { id: "collector-id", role: "editor" },
+    })
+    expect(handleAuthRequest).toHaveBeenCalledTimes(1)
+  })
+
+  it("preserves invalid-session responses from the authentication backend", async () => {
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      handleAuthRequest: async () => Response.json(null),
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/auth/get-session",
+      { headers: { Cookie: "better-auth.session_token=invalid-session" } }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toBeNull()
+  })
+
+  it("keeps authentication outside the anonymous public API rate limit", async () => {
+    const rateLimit = vi.fn(async () => false)
+    const app = createPublicApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      rateLimit,
+      handleAuthRequest: async () => Response.json(null),
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/auth/get-session"
+    )
+
+    expect(response.status).toBe(200)
+    expect(rateLimit).not.toHaveBeenCalled()
+  })
+})
 
 describe("GET /api/v1/coins", () => {
   it("returns compact Coin summaries with cache validation and a stable next cursor", async () => {

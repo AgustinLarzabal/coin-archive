@@ -1,10 +1,27 @@
 import "@tanstack/react-start/server-only"
 
-import { getRequestHeaders } from "@tanstack/react-start/server"
-import { auth } from "@coin-archive/auth/server"
+import { getRequest } from "@tanstack/react-start/server"
+import type { authClient } from "@coin-archive/auth/client"
 
-export function getRequestAuthSession() {
-  return auth.api.getSession({
-    headers: getRequestHeaders(),
-  })
+import { proxyAuthRequest } from "./auth-proxy.server"
+import { getPublicApiBaseUrl } from "./public-api.server"
+
+type CollectorSession = typeof authClient.$Infer.Session
+
+export async function getRequestAuthSession(): Promise<CollectorSession | null> {
+  const incomingRequest = getRequest()
+  const sessionUrl = new URL("/api/auth/get-session", incomingRequest.url)
+  const response = await proxyAuthRequest(
+    new Request(sessionUrl, { headers: incomingRequest.headers }),
+    {
+      apiBaseUrl: getPublicApiBaseUrl(),
+      fetchApi: globalThis.fetch.bind(globalThis),
+    }
+  )
+
+  if (!response.ok) {
+    return null
+  }
+
+  return response.json()
 }

@@ -4,6 +4,20 @@
   "main": "./src/index.ts",
   "compatibility_date": "2026-07-29",
   "compatibility_flags": ["nodejs_compat"],
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "DATABASE_URL",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+    ],
+  },
+  "vars": {
+    "API_ENVIRONMENT": "staging",
+    "BETTER_AUTH_TRUSTED_ORIGINS": "http://localhost:3000",
+    "BETTER_AUTH_URL": "http://127.0.0.1:8787",
+    "SURFACE_IMAGE_ORIGIN": "http://localhost:3000",
+  },
   "ratelimits": [
     {
       "name": "API_RATE_LIMITER",
@@ -28,8 +42,18 @@
           "simple": { "limit": 120, "period": 60 },
         },
       ],
+      "secrets": {
+        "required": [
+          "BETTER_AUTH_SECRET",
+          "DATABASE_URL",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+        ],
+      },
       "vars": {
         "API_ENVIRONMENT": "staging",
+        "BETTER_AUTH_TRUSTED_ORIGINS": "https://staging.coinarchive.app",
+        "BETTER_AUTH_URL": "https://api.staging.coinarchive.app",
         "SURFACE_IMAGE_ORIGIN": "https://images.staging.coinarchive.app",
       },
     },
@@ -43,8 +67,18 @@
           "simple": { "limit": 120, "period": 60 },
         },
       ],
+      "secrets": {
+        "required": [
+          "BETTER_AUTH_SECRET",
+          "DATABASE_URL",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+        ],
+      },
       "vars": {
         "API_ENVIRONMENT": "production",
+        "BETTER_AUTH_TRUSTED_ORIGINS": "https://coinarchive.app",
+        "BETTER_AUTH_URL": "https://api.coinarchive.app",
         "SURFACE_IMAGE_ORIGIN": "https://images.coinarchive.app",
       },
     },

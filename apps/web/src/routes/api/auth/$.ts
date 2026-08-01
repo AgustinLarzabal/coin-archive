@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { auth } from "@coin-archive/auth/server"
+import { proxyAuthRequest } from "@/lib/auth-proxy.server"
+import { getPublicApiBaseUrl } from "@/lib/public-api.server"
+
+export { proxyAuthRequest } from "@/lib/auth-proxy.server"
 
 export function handleAuthRequest({ request }: { request: Request }) {
-  return auth.handler(request)
+  return proxyAuthRequest(request, {
+    apiBaseUrl: getPublicApiBaseUrl(),
+    fetchApi: globalThis.fetch.bind(globalThis),
+  })
 }
 
 export const Route = createFileRoute("/api/auth/$")({

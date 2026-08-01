@@ -13,10 +13,6 @@ vi.mock("better-auth/adapters/drizzle", () => ({
   drizzleAdapter: drizzleAdapterMock,
 }))
 
-vi.mock("better-auth/tanstack-start", () => ({
-  tanstackStartCookies: () => ({ id: "tanstack-start-cookies" }),
-}))
-
 describe("Better Auth drizzle adapter configuration", () => {
   beforeEach(() => {
     vi.resetModules()

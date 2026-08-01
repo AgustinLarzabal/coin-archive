@@ -14,9 +14,6 @@ const config = defineConfig({
       "@coin-archive/auth/client": fileURLToPath(
         new URL("../../packages/auth/src/client.ts", import.meta.url)
       ),
-      "@coin-archive/auth/server": fileURLToPath(
-        new URL("../../packages/auth/src/server.ts", import.meta.url)
-      ),
       "@coin-archive/feature-flags": fileURLToPath(
         new URL("../../packages/feature-flags/src/index.ts", import.meta.url)
       ),

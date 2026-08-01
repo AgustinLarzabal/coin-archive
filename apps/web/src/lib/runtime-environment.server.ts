@@ -3,12 +3,6 @@ import "@tanstack/react-start/server-only"
 type Environment = Record<string, string | undefined>
 
 export type RuntimeEnvironment = {
-  auth: {
-    betterAuthSecret: string
-    betterAuthUrl: string
-    googleClientId: string
-    googleClientSecret: string
-  }
   databaseUrl: string
   r2: {
     accessKeyId: string
@@ -20,11 +14,7 @@ export type RuntimeEnvironment = {
 }
 
 const requiredSettingNames = [
-  "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_URL",
   "DATABASE_URL",
-  "GOOGLE_CLIENT_ID",
-  "GOOGLE_CLIENT_SECRET",
   "R2_ACCESS_KEY_ID",
   "R2_BUCKET",
   "R2_ENDPOINT",
@@ -48,12 +38,6 @@ export function getRuntimeEnvironment(
 
   return {
     databaseUrl: values.DATABASE_URL!,
-    auth: {
-      betterAuthSecret: values.BETTER_AUTH_SECRET!,
-      betterAuthUrl: values.BETTER_AUTH_URL!,
-      googleClientId: values.GOOGLE_CLIENT_ID!,
-      googleClientSecret: values.GOOGLE_CLIENT_SECRET!,
-    },
     r2: {
       endpoint: values.R2_ENDPOINT!,
       bucket: values.R2_BUCKET!,

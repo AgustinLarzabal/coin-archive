@@ -5,14 +5,13 @@ import {
   FieldLabel,
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
-
-import type { CatalogueFieldErrors } from "../catalogue-validation"
+import type { ReactNode } from "react"
 
 import type { CatalogueDraft } from "./catalogue-form.shared"
 
 type CatalogueFieldName = keyof CatalogueDraft
 
-type CatalogueFieldConfig = {
+export type CatalogueFieldConfig = {
   field: CatalogueFieldName
   id: string
   label: string
@@ -20,13 +19,16 @@ type CatalogueFieldConfig = {
 }
 
 type CatalogueFormFieldsProps = {
-  draft: CatalogueDraft
-  fieldErrors: CatalogueFieldErrors
-  onFieldChange: <TFieldName extends CatalogueFieldName>(
-    field: TFieldName,
-    value: CatalogueDraft[TFieldName]
-  ) => void
+  children: (config: CatalogueFieldConfig) => ReactNode
   variant: "create" | "edit"
+}
+
+type CatalogueTextFieldProps = CatalogueFieldConfig & {
+  errors: Array<{ message?: string } | undefined>
+  isInvalid: boolean
+  onBlur: () => void
+  onChange: (value: string) => void
+  value: string
 }
 
 const CREATE_CATALOGUE_FIELD_CONFIGS: CatalogueFieldConfig[] = [
@@ -68,34 +70,39 @@ function getCatalogueFieldConfigs(
 }
 
 export function CatalogueFormFields({
-  draft,
-  fieldErrors,
-  onFieldChange,
+  children,
   variant,
 }: CatalogueFormFieldsProps) {
   return (
-    <FieldGroup>
-      {getCatalogueFieldConfigs(variant).map(
-        ({ field, id, label, placeholder }) => {
-          const error = fieldErrors[field]
+    <FieldGroup>{getCatalogueFieldConfigs(variant).map(children)}</FieldGroup>
+  )
+}
 
-          return (
-            <Field key={field} data-invalid={error !== undefined}>
-              <FieldLabel htmlFor={id}>{label}</FieldLabel>
-              <Input
-                id={id}
-                name={field}
-                value={draft[field]}
-                onChange={(event) => onFieldChange(field, event.target.value)}
-                aria-invalid={error !== undefined}
-                placeholder={placeholder}
-                autoComplete="off"
-              />
-              {error ? <FieldError errors={[{ message: error }]} /> : null}
-            </Field>
-          )
-        }
-      )}
-    </FieldGroup>
+export function CatalogueTextField({
+  errors,
+  field,
+  id,
+  isInvalid,
+  label,
+  onBlur,
+  onChange,
+  placeholder,
+  value,
+}: CatalogueTextFieldProps) {
+  return (
+    <Field data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        name={field}
+        value={value}
+        onBlur={onBlur}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={isInvalid}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {isInvalid ? <FieldError errors={errors} /> : null}
+    </Field>
   )
 }

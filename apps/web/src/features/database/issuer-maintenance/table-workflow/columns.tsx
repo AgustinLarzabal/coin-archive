@@ -25,6 +25,20 @@ export function createIssuerColumns(
       header: ({ column }) => (
         <SortableColumnHeader column={column}>Issuer Name</SortableColumnHeader>
       ),
+      cell: ({ row }) => {
+        const issuer = row.original
+
+        return (
+          <div className="flex items-center gap-2">
+            <img
+              src={`https://flagcdn.com/${issuer.isoCode.toLowerCase()}.svg`}
+              alt={`${issuer.name} flag`}
+              className="size-4 rounded-full object-cover"
+            />
+            <span>{issuer.name}</span>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "code",

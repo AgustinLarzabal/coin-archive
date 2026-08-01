@@ -109,6 +109,8 @@ describe("IssuersTable", () => {
     expect(markup).toContain("Issuer ISO Code")
     expect(markup).toContain("Parent Issuer")
     expect(markup).toContain("Argentine Republic")
+    expect(markup).toContain('src="https://flagcdn.com/ar.svg"')
+    expect(markup).toContain('alt="Argentine Republic flag"')
     expect(markup).toContain("Provincia de La Rioja")
     expect(markup).toContain("argentine-republic")
     expect(markup).toContain("No Parent Issuer")

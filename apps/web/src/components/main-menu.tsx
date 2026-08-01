@@ -9,11 +9,10 @@ import { databaseSecondaryMenuItems } from "@/features/database/navigation"
 const icons = {
   "/": () => <Icons.Overview size={20} />,
   "/database": () => <Icons.Database size={20} />,
-  "/settings": () => <Icons.Settings size={20} />,
 } as const
 type CollectorSession = typeof authClient.$Infer.Session
 type DatabaseNavigationPath = (typeof databaseSecondaryMenuItems)[number]["to"]
-type NavigationPath = "/" | DatabaseNavigationPath | "/settings"
+type NavigationPath = "/" | DatabaseNavigationPath
 type NavigationParentPath = keyof typeof icons
 
 type NavigationItem = {
@@ -42,11 +41,6 @@ const publicNavigationItems: NavigationItem[] = [
 const catalogueMaintenanceNavigationLink: PrivateNavigationLink = {
   label: "Database",
   to: "/database",
-}
-
-const settingsNavigationLink: PrivateNavigationLink = {
-  label: "Settings",
-  to: "/settings",
 }
 
 type Props = {
@@ -279,31 +273,19 @@ export function getPrivateNavigationLinks(
   }
 
   if (hasEditorAccess(role)) {
-    return [catalogueMaintenanceNavigationLink, settingsNavigationLink]
+    return [catalogueMaintenanceNavigationLink]
   }
 
-  return [settingsNavigationLink]
+  return []
 }
 
 export function getPrivateNavigationItem(
   link: PrivateNavigationLink
 ): NavigationItem {
-  switch (link.to) {
-    case "/database":
-      return {
-        ...link,
-        children: [...databaseSecondaryMenuItems],
-      }
-    case "/settings":
-      return {
-        ...link,
-        children: [{ to: "/settings", label: "General" }],
-      }
+  return {
+    ...link,
+    children: [...databaseSecondaryMenuItems],
   }
-
-  const exhaustiveLink: never = link.to
-
-  throw new Error(`Unsupported private navigation path: ${exhaustiveLink}`)
 }
 
 function isNavigationItemActive(to: NavigationPath, pathname: string) {

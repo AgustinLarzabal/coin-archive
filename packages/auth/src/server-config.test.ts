@@ -18,6 +18,7 @@ describe("Better Auth server configuration", () => {
       protocol: "auto",
     })
     expect(auth.options.advanced).toMatchObject({ trustedProxyHeaders: true })
+    expect(auth.options.advanced).toMatchObject({ useSecureCookies: false })
   })
 
   it("configures the collector role field with a default and disallows user input", async () => {
@@ -30,7 +31,7 @@ describe("Better Auth server configuration", () => {
       defaultValue: "collector",
       input: false,
     })
-    expect(auth.options.session?.cookieCache).toMatchObject({ enabled: false })
+    expect(auth.options.session.cookieCache).toMatchObject({ enabled: false })
   })
 
   it("configures Google as the initial social sign-in provider", async () => {
@@ -44,6 +45,25 @@ describe("Better Auth server configuration", () => {
         clientSecret: "test-google-client-secret",
       },
     })
+  })
+
+  it("uses secure cookies explicitly for deployed HTTPS auth origins", async () => {
+    setAuthTestEnvironment()
+
+    const { db } = await import("@coin-archive/db")
+    const { createAuth } = await import("./server")
+    const deployedAuth = createAuth({
+      database: db,
+      environment: {
+        betterAuthSecret: "test-secret",
+        betterAuthUrl: "https://api.coinarchive.app",
+        trustedOrigins: ["https://coinarchive.app"],
+        googleClientId: "test-google-client-id",
+        googleClientSecret: "test-google-client-secret",
+      },
+    })
+
+    expect(deployedAuth.options.advanced.useSecureCookies).toBe(true)
   })
 
   it("rejects authentication mutations from an untrusted origin", async () => {

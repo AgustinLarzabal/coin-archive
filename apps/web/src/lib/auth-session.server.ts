@@ -15,6 +15,7 @@ export async function getRequestAuthSession(): Promise<CollectorSession | null> 
     new Request(sessionUrl, { headers: incomingRequest.headers }),
     {
       apiBaseUrl: getPublicApiBaseUrl(),
+      allowSignInAttempt: async () => true,
       fetchApi: globalThis.fetch.bind(globalThis),
     }
   )

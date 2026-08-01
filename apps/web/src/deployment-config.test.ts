@@ -17,4 +17,18 @@ describe("web deployment configuration", () => {
       )
     }
   })
+
+  it("binds a separate sign-in rate limiter in every environment", () => {
+    expect(wranglerConfig.indexOf('"ratelimits"')).toBeLessThan(
+      wranglerConfig.indexOf('"env"')
+    )
+
+    for (const environment of ["staging", "production"]) {
+      expect(wranglerConfig).toMatch(
+        new RegExp(
+          `"${environment}": \\{[\\s\\S]*?"ratelimits": \\[\\s*\\{\\s*"name": "AUTH_RATE_LIMITER"`
+        )
+      )
+    }
+  })
 })

@@ -90,7 +90,7 @@ export type GetCoin = (id: string) => Promise<CoinDetailSource | null>
 
 export type HandleAuthRequest = (request: Request) => Promise<Response>
 
-export function createPublicApiApp({
+export function createApiApp({
   browseCoins,
   getCoin = async () => null,
   environment,
@@ -112,7 +112,24 @@ export function createPublicApiApp({
       : "https://staging.coinarchive.app"
 
   if (handleAuthRequest !== undefined) {
-    app.all("/api/auth/*", (context) => handleAuthRequest(context.req.raw))
+    app.all("/api/auth/*", async (context) => {
+      const requestId =
+        context.req.header("x-request-id") ?? crypto.randomUUID()
+      const headers = new Headers(context.req.raw.headers)
+      headers.set("x-request-id", requestId)
+      const response = await handleAuthRequest(
+        new Request(context.req.raw, { headers })
+      )
+      const responseHeaders = new Headers(response.headers)
+      responseHeaders.set("Cache-Control", "private, no-store")
+      responseHeaders.set("X-Request-ID", requestId)
+
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+      })
+    })
   }
 
   app.use("/api/v1/*", async (context, next) => {

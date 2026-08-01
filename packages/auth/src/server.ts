@@ -2,8 +2,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { account, db, session, user, verification } from "@coin-archive/db"
 
-import { getAuthEnvironment } from "./env"
-import type { AuthEnvironment } from "./env"
+import { getAuthEnvironment, parseTrustedOrigins } from "./env"
 import {
   collectorRoleValues,
   hasAdminAccess,
@@ -18,7 +17,7 @@ export function createAuth({
   environment = getAuthEnvironment(),
 }: {
   database?: AuthDatabase
-  environment?: AuthEnvironment
+  environment?: ReturnType<typeof getAuthEnvironment>
 } = {}) {
   const trustedOrigins = [
     ...new Set([environment.betterAuthUrl, ...environment.trustedOrigins]),
@@ -35,6 +34,8 @@ export function createAuth({
     advanced: {
       disableOriginCheck: false,
       trustedProxyHeaders: true,
+      useSecureCookies:
+        new URL(environment.betterAuthUrl).protocol === "https:",
     },
     database: drizzleAdapter(database, {
       provider: "pg",
@@ -85,6 +86,12 @@ export const auth = new Proxy({} as ReturnType<typeof createAuth>, {
 
 export type Auth = ReturnType<typeof createAuth>
 
-export { collectorRoleValues, hasAdminAccess, hasEditorAccess, isCollectorRole }
+export {
+  collectorRoleValues,
+  hasAdminAccess,
+  hasEditorAccess,
+  isCollectorRole,
+  parseTrustedOrigins,
+}
 
 export type { CollectorRole } from "./roles"

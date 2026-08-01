@@ -5,9 +5,17 @@ import { getPublicApiBaseUrl } from "@/lib/public-api.server"
 
 export { proxyAuthRequest } from "@/lib/auth-proxy.server"
 
-export function handleAuthRequest({ request }: { request: Request }) {
+export async function handleAuthRequest({ request }: { request: Request }) {
+  const { env } = await import("cloudflare:workers")
+
   return proxyAuthRequest(request, {
     apiBaseUrl: getPublicApiBaseUrl(),
+    allowSignInAttempt: async (clientIp) =>
+      (
+        await env.AUTH_RATE_LIMITER.limit({
+          key: `${env.CLOUDFLARE_ENV ?? "local"}:${clientIp}`,
+        })
+      ).success,
     fetchApi: globalThis.fetch.bind(globalThis),
   })
 }

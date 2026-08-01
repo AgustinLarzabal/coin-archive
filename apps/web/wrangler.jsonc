@@ -7,6 +7,13 @@
   "secrets": {
     "required": ["DATABASE_URL", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"],
   },
+  "ratelimits": [
+    {
+      "name": "AUTH_RATE_LIMITER",
+      "namespace_id": "243",
+      "simple": { "limit": 10, "period": 60 },
+    },
+  ],
   "observability": {
     "enabled": true,
     "logs": {
@@ -19,6 +26,13 @@
       "name": "coin-archive-staging",
       "routes": [
         { "pattern": "staging.coinarchive.app", "custom_domain": true },
+      ],
+      "ratelimits": [
+        {
+          "name": "AUTH_RATE_LIMITER",
+          "namespace_id": "243",
+          "simple": { "limit": 10, "period": 60 },
+        },
       ],
       "secrets": {
         "required": [
@@ -37,6 +51,13 @@
     "production": {
       "name": "coin-archive",
       "routes": [{ "pattern": "coinarchive.app", "custom_domain": true }],
+      "ratelimits": [
+        {
+          "name": "AUTH_RATE_LIMITER",
+          "namespace_id": "243",
+          "simple": { "limit": 10, "period": 60 },
+        },
+      ],
       "secrets": {
         "required": [
           "DATABASE_URL",

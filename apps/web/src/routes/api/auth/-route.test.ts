@@ -15,6 +15,7 @@ describe("handleAuthRequest", () => {
       )
       expect(request.headers.get("x-forwarded-proto")).toBe("https")
       expect(request.headers.get("x-forwarded-for")).toBe("203.0.113.9")
+      expect(request.headers.get("x-request-id")).toBe("request-id")
       await expect(request.json()).resolves.toEqual({ provider: "google" })
 
       return new Response(null, {
@@ -44,6 +45,8 @@ describe("handleAuthRequest", () => {
 
     const response = await proxyAuthRequest(request, {
       apiBaseUrl: "https://api.example.test",
+      allowSignInAttempt: async () => true,
+      createRequestId: () => "request-id",
       fetchApi,
     })
 
@@ -54,6 +57,57 @@ describe("handleAuthRequest", () => {
     expect(response.headers.get("set-cookie")).toBe(
       "session=new-session; Path=/; HttpOnly; Secure"
     )
+    expect(response.headers.get("x-request-id")).toBe("request-id")
     expect(fetchApi).toHaveBeenCalledTimes(1)
+  })
+
+  it("rejects cross-origin mutations without forwarding credentials", async () => {
+    const fetchApi = vi.fn()
+    const { proxyAuthRequest } = await import("./$")
+    const response = await proxyAuthRequest(
+      new Request("https://archive.example.test/api/auth/sign-out", {
+        method: "POST",
+        headers: {
+          Cookie: "session=collector-session",
+          Origin: "https://attacker.example",
+        },
+      }),
+      {
+        apiBaseUrl: "https://api.example.test",
+        allowSignInAttempt: async () => true,
+        createRequestId: () => "request-id",
+        fetchApi,
+      }
+    )
+
+    expect(response.status).toBe(403)
+    expect(response.headers.get("x-request-id")).toBe("request-id")
+    expect(fetchApi).not.toHaveBeenCalled()
+  })
+
+  it("rate limits sign-in attempts by originating browser IP", async () => {
+    const fetchApi = vi.fn()
+    const allowSignInAttempt = vi.fn(async () => false)
+    const { proxyAuthRequest } = await import("./$")
+    const response = await proxyAuthRequest(
+      new Request("https://archive.example.test/api/auth/sign-in/social", {
+        method: "POST",
+        headers: {
+          "CF-Connecting-IP": "203.0.113.9",
+          Origin: "https://archive.example.test",
+        },
+      }),
+      {
+        apiBaseUrl: "https://api.example.test",
+        allowSignInAttempt,
+        createRequestId: () => "request-id",
+        fetchApi,
+      }
+    )
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get("retry-after")).toBe("60")
+    expect(allowSignInAttempt).toHaveBeenCalledWith("203.0.113.9")
+    expect(fetchApi).not.toHaveBeenCalled()
   })
 })

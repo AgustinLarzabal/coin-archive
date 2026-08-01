@@ -12,7 +12,7 @@ type AuthEnvironmentVariableName =
 export type AuthEnvironment = {
   betterAuthSecret: string
   betterAuthUrl: string
-  trustedOrigins: string[]
+  trustedOrigins: Array<string>
   googleClientId: string
   googleClientSecret: string
 }
@@ -27,13 +27,12 @@ export function getAuthEnvironment(): AuthEnvironment {
       "BETTER_AUTH_URL",
       "BETTER_AUTH_URL is required"
     ),
-    trustedOrigins: getRequiredEnvironmentVariable(
-      "BETTER_AUTH_TRUSTED_ORIGINS",
-      "BETTER_AUTH_TRUSTED_ORIGINS is required"
-    )
-      .split(",")
-      .map((origin) => origin.trim())
-      .filter(Boolean),
+    trustedOrigins: parseTrustedOrigins(
+      getRequiredEnvironmentVariable(
+        "BETTER_AUTH_TRUSTED_ORIGINS",
+        "BETTER_AUTH_TRUSTED_ORIGINS is required"
+      )
+    ),
     googleClientId: getRequiredEnvironmentVariable(
       "GOOGLE_CLIENT_ID",
       "GOOGLE_CLIENT_ID is required"
@@ -43,6 +42,13 @@ export function getAuthEnvironment(): AuthEnvironment {
       "GOOGLE_CLIENT_SECRET is required"
     ),
   }
+}
+
+export function parseTrustedOrigins(value: string) {
+  return value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
 }
 
 function getRequiredEnvironmentVariable(

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createPublicApiApp } from "./app"
+import { createApiApp } from "./app"
 
 const coins = [
   {
@@ -28,13 +28,14 @@ describe("/api/auth/*", () => {
       expect(request.headers.get("cookie")).toBe(
         "better-auth.session_token=valid-session"
       )
+      expect(request.headers.get("x-request-id")).toBe("request-id")
 
       return Response.json({
         session: { id: "session-id" },
         user: { id: "collector-id", role: "editor" },
       })
     })
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -43,10 +44,17 @@ describe("/api/auth/*", () => {
 
     const response = await app.request(
       "https://api.coinarchive.app/api/auth/get-session",
-      { headers: { Cookie: "better-auth.session_token=valid-session" } }
+      {
+        headers: {
+          Cookie: "better-auth.session_token=valid-session",
+          "X-Request-ID": "request-id",
+        },
+      }
     )
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("cache-control")).toBe("private, no-store")
+    expect(response.headers.get("x-request-id")).toBe("request-id")
     await expect(response.json()).resolves.toMatchObject({
       user: { id: "collector-id", role: "editor" },
     })
@@ -54,7 +62,7 @@ describe("/api/auth/*", () => {
   })
 
   it("preserves invalid-session responses from the authentication backend", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -72,7 +80,7 @@ describe("/api/auth/*", () => {
 
   it("keeps authentication outside the anonymous public API rate limit", async () => {
     const rateLimit = vi.fn(async () => false)
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -91,7 +99,7 @@ describe("/api/auth/*", () => {
 
 describe("GET /api/v1/coins", () => {
   it("returns compact Coin summaries with cache validation and a stable next cursor", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -127,7 +135,7 @@ describe("GET /api/v1/coins", () => {
   })
 
   it("rejects repeated or blank query parameters", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -146,7 +154,7 @@ describe("GET /api/v1/coins", () => {
   })
 
   it("uses restrictive CORS and standard problem responses for limits and methods", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -165,7 +173,7 @@ describe("GET /api/v1/coins", () => {
     )
     expect(limited.headers.get("Retry-After")).toBe("60")
 
-    const method = await createPublicApiApp({
+    const method = await createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -179,7 +187,7 @@ describe("GET /api/v1/coins", () => {
 
   it("passes all active filters to the Coin browse source and excludes cross-environment images", async () => {
     let received: unknown
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async (input) => {
@@ -218,7 +226,7 @@ describe("GET /api/v1/coins", () => {
 
 describe("GET /api/v1/coins/:id", () => {
   it("returns a complete public Coin detail document and supports conditional requests", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -306,7 +314,7 @@ describe("GET /api/v1/coins/:id", () => {
   })
 
   it("returns public problem documents for invalid and unknown Coin UUIDs", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -338,7 +346,7 @@ describe("GET /api/v1/coins/:id", () => {
   })
 
   it("advertises every supported method for an unsupported detail request", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
@@ -359,7 +367,7 @@ describe("GET /api/v1/coins/:id", () => {
 
 describe("GET /api/v1/openapi.json", () => {
   it("documents Coin detail and its public error responses from the shared contract", async () => {
-    const app = createPublicApiApp({
+    const app = createApiApp({
       environment: "production",
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,

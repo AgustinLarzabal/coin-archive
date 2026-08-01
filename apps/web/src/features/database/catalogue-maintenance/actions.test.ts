@@ -2,15 +2,17 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   CATALOGUE_AUTHORIZATION_ERROR,
-  CATALOGUE_DUPLICATE_CODE_ERROR,
-  CATALOGUE_GENERIC_SAVE_ERROR,
-  CATALOGUE_IN_USE_DELETE_ERROR,
-  CATALOGUE_MISSING_ERROR,
   hasCatalogueMaintenanceAccess,
   submitCreateCatalogue,
   submitDeleteCatalogue,
   submitUpdateCatalogue,
 } from "./actions"
+import {
+  CATALOGUE_DUPLICATE_CODE_ERROR,
+  CATALOGUE_GENERIC_SAVE_ERROR,
+  CATALOGUE_IN_USE_DELETE_ERROR,
+  CATALOGUE_MISSING_ERROR,
+} from "./catalogue-mutation-errors"
 
 const VALID_CATALOGUE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const STANDARD_CATALOGUE = {

@@ -3,30 +3,20 @@ import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { CatalogueOption } from "@coin-archive/db"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  CatalogueFieldErrors,
-  CatalogueMutationResult,
-} from "../actions"
-import {
-  getCatalogueFieldErrors,
-  submitUpdateCatalogue,
-  updateCatalogueInputSchema,
-} from "../actions"
+import { submitUpdateCatalogue } from "../actions"
+import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
+import type { CatalogueFieldErrors } from "../catalogue-validation"
 
-type CatalogueDraft = {
-  code: string
-  title: string
-}
+import { CatalogueFormFields } from "./catalogue-form-fields"
+import {
+  createCatalogueDraft,
+  hasCatalogueEditChanges,
+  validateCatalogueUpdateDraft,
+} from "./catalogue-form.shared"
+import type { CatalogueDraft } from "./catalogue-form.shared"
 
 const updateCatalogueMaintenanceCatalogue = createServerFn({
   method: "POST",
@@ -37,25 +27,6 @@ const updateCatalogueMaintenanceCatalogue = createServerFn({
 
     return submitUpdateCatalogue(session?.user ?? null, data)
   })
-
-function validateCatalogueDraft(
-  catalogueId: string,
-  draft: CatalogueDraft
-): CatalogueMutationResult | null {
-  const parsedInput = updateCatalogueInputSchema.safeParse({
-    id: catalogueId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getCatalogueFieldErrors(parsedInput.error.issues),
-  }
-}
 
 type CatalogueEditFormProps = {
   catalogue: CatalogueOption
@@ -68,27 +39,22 @@ export function CatalogueEditForm({
 }: CatalogueEditFormProps) {
   const router = useRouter()
   const updateCatalogue = useServerFn(updateCatalogueMaintenanceCatalogue)
-  const [draft, setDraft] = useState<CatalogueDraft>({
-    code: catalogue.code,
-    title: catalogue.title,
-  })
+  const [draft, setDraft] = useState<CatalogueDraft>(() =>
+    createCatalogueDraft(catalogue)
+  )
   const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
-    setDraft({
-      code: catalogue.code,
-      title: catalogue.title,
-    })
+    setDraft(createCatalogueDraft(catalogue))
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
   }, [catalogue])
 
-  const hasChanges =
-    draft.code !== catalogue.code || draft.title !== catalogue.title
+  const hasChanges = hasCatalogueEditChanges(catalogue, draft)
 
   function clearFeedback() {
     setFieldErrors({})
@@ -115,7 +81,7 @@ export function CatalogueEditForm({
 
     clearFeedback()
 
-    const validationResult = validateCatalogueDraft(catalogue.id, draft)
+    const validationResult = validateCatalogueUpdateDraft(catalogue.id, draft)
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -148,48 +114,14 @@ export function CatalogueEditForm({
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="catalogue-code">Code</FieldLabel>
-          <Input
-            id="catalogue-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                code: event.target.value,
-              }))
-            }
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="KM"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.title !== undefined}>
-          <FieldLabel htmlFor="catalogue-title">Title</FieldLabel>
-          <Input
-            id="catalogue-title"
-            name="title"
-            value={draft.title}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                title: event.target.value,
-              }))
-            }
-            aria-invalid={fieldErrors.title !== undefined}
-            placeholder="Standard Catalog of World Coins"
-            autoComplete="off"
-          />
-          {fieldErrors.title ? (
-            <FieldError errors={[{ message: fieldErrors.title }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <CatalogueFormFields
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onFieldChange={(field, value) =>
+          setDraft((current) => ({ ...current, [field]: value }))
+        }
+        variant="edit"
+      />
 
       {formError ? (
         <p className="text-sm text-destructive">{formError}</p>

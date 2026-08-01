@@ -11,6 +11,8 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 const NO_PARENT_ISSUER_LABEL = "No Parent Issuer"
 
 export function createIssuerColumns(
@@ -20,19 +22,32 @@ export function createIssuerColumns(
   return [
     {
       accessorKey: "name",
-      header: "Issuer Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Issuer Name</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "code",
-      header: "Issuer Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Issuer Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "isoCode",
-      header: "Issuer ISO Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Issuer ISO Code
+        </SortableColumnHeader>
+      ),
     },
     {
       id: "parent",
-      header: "Parent Issuer",
+      accessorFn: (issuer) => issuer.parent?.name ?? NO_PARENT_ISSUER_LABEL,
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Parent Issuer
+        </SortableColumnHeader>
+      ),
       cell: ({ row }) => {
         const parent = row.original.parent
 

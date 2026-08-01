@@ -11,6 +11,8 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createEngraverColumns(
   onEditEngraver: (engraver: EngraverOption) => void,
   onDeleteEngraver: (engraver: EngraverOption) => void
@@ -18,11 +20,19 @@ export function createEngraverColumns(
   return [
     {
       accessorKey: "name",
-      header: "Engraver Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Engraver Name
+        </SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "code",
-      header: "Engraver Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Engraver Code
+        </SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

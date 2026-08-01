@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createEdgeColumns(
   onEditEdge: (edge: EdgeOption) => void
 ): ColumnDef<EdgeOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Edge Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Edge Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Edge Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Edge Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

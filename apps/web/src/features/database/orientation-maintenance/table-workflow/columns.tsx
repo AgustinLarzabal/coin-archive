@@ -11,17 +11,27 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createOrientationColumns(
   onEditOrientation: (orientation: OrientationOption) => void
 ): ColumnDef<OrientationOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Orientation Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Orientation Code
+        </SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Orientation Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Orientation Name
+        </SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

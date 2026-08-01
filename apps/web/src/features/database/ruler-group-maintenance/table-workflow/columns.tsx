@@ -10,17 +10,27 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createRulerGroupColumns(
   openEditRulerGroupSheet: (rulerGroup: RulerGroupOption) => void
 ): ColumnDef<RulerGroupOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Ruler Group Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Ruler Group Code
+        </SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Ruler Group Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>
+          Ruler Group Name
+        </SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

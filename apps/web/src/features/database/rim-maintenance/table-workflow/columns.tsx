@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createRimColumns(
   onEditRim: (rim: RimOption) => void
 ): ColumnDef<RimOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Rim Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Rim Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Rim Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Rim Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

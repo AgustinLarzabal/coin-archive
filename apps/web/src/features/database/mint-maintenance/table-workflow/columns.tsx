@@ -11,6 +11,8 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createMintColumns(
   onEditMint: (mint: MintOption) => void,
   onDeleteMint: (mint: MintOption) => void
@@ -18,11 +20,15 @@ export function createMintColumns(
   return [
     {
       accessorKey: "code",
-      header: "Mint Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Mint Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Mint Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Mint Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

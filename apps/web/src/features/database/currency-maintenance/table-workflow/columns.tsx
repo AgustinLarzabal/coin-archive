@@ -11,21 +11,29 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createCurrencyColumns(
   onEditCurrency: (currency: CurrencyOption) => void
 ): ColumnDef<CurrencyOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Name</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "fullName",
-      header: "Full Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Full Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

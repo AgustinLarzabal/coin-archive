@@ -10,37 +10,23 @@ import {
 } from "@coin-archive/ui/components/dropdown-menu"
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createCatalogueColumns(
   onEditCatalogue: (catalogue: CatalogueOption) => void
 ): ColumnDef<CatalogueOption>[] {
   return [
     {
       accessorKey: "code",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Code
-            <Icons.ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "title",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Title
-            <Icons.ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Title</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

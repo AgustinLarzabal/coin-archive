@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createThemeColumns(
   openEditThemeSheet: (theme: ThemeOption) => void
 ): ColumnDef<ThemeOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Theme Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Theme Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Theme Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Theme Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

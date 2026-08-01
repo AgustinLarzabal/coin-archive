@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createDistributionColumns(
   onEditDistribution: (distribution: DistributionOption) => void
 ): ColumnDef<DistributionOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

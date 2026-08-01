@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createShapeColumns(
   openEditShapeSheet: (shape: ShapeOption) => void
 ): ColumnDef<ShapeOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Shape Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Shape Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Shape Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Shape Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

@@ -11,17 +11,23 @@ import {
 
 import { Icons } from "@/components/icons"
 
+import { SortableColumnHeader } from "../../sortable-column-header"
+
 export function createCompositionColumns(
   onEditComposition: (composition: CompositionOption) => void
 ): ColumnDef<CompositionOption>[] {
   return [
     {
       accessorKey: "code",
-      header: "Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Name</SortableColumnHeader>
+      ),
     },
     {
       id: "actions",

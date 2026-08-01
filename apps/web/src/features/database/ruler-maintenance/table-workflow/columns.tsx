@@ -11,6 +11,7 @@ import {
 import { Icons } from "@/components/icons"
 
 import { buildRulerGroupOptionLabel } from "../form-workflow/ruler-form.shared"
+import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createRulerColumns(
   openEditRulerSheet: (ruler: RulerOption) => void
@@ -18,15 +19,25 @@ export function createRulerColumns(
   return [
     {
       accessorKey: "code",
-      header: "Ruler Code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Ruler Code</SortableColumnHeader>
+      ),
     },
     {
       accessorKey: "name",
-      header: "Ruler Name",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Ruler Name</SortableColumnHeader>
+      ),
     },
     {
       id: "group",
-      header: "Ruler Group",
+      accessorFn: (ruler) =>
+        ruler.group
+          ? buildRulerGroupOptionLabel(ruler.group)
+          : "No Ruler Group",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Ruler Group</SortableColumnHeader>
+      ),
       cell: ({ row }) => {
         const group = row.original.group
 

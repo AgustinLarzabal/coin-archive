@@ -1,0 +1,13 @@
+# API-Owned Authentication and Catalogue Maintenance
+
+Coin Archive's API is the sole application boundary for protected catalogue maintenance and hosts the shared Better Auth backend. Web and mobile clients own their sign-in experience and secure credential storage, but both credentials resolve to the same Collector and every protected API operation authenticates that Collector and enforces the Collector Role; only the API may invoke catalogue-maintenance database operations, including protected reads, Coin and shared-lookup mutations, Database Maintenance overview data, and the Surface Image lifecycle.
+
+Every maintenance resource admits Editors and Admins under the same policy on web and mobile. The API returns `401 Unauthorized` when no valid Collector session is present and `403 Forbidden` when a signed-in Collector lacks Editor access; client-side route guards and hidden controls are usability measures rather than authorization boundaries.
+
+Credentials prove Collector identity but do not make client-supplied or long-lived role claims authoritative. Every maintenance request is authorized from the current server-owned Collector Role, subject only to a deliberately short and bounded server-side cache, so revoked Editor access cannot persist for the lifetime of a device credential.
+
+Public catalogue reads remain a separate public API surface, while Collector Deletion and Collector Role management remain outside this catalogue-maintenance boundary. The web client will use API-hosted secure cookie sessions, and the future mobile client will use the secure session mechanism officially supported by its selected framework rather than defining a second identity system.
+
+Transport contracts and typed clients belong to `@coin-archive/api`; feature-owned authentication-independent maintenance orchestration belongs to `apps/api`; database queries and transactions remain in `@coin-archive/db`; and web and mobile own only presentation and transport adaptation. Similarity among lookup endpoints does not authorize a generic CRUD factory: ADR 0033's feature-local validation, conflict mapping, and behavior continue at the API boundary.
+
+Protected authentication and maintenance use rate-limit budgets separate from the anonymous public API. The web backend-for-frontend limits unauthenticated sign-in attempts using the originating browser IP, Better Auth retains its endpoint protections, and authenticated maintenance is limited primarily per Collector with distinct read and mutation budgets; direct mobile traffic may also use IP as a secondary signal, and throttled responses include `Retry-After`.

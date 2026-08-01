@@ -9,11 +9,11 @@ A catalogued physical coin type or issue in the archive, not an individual owned
 _Avoid_: Coina, specimen, item
 
 **Coin Maintenance**:
-The controlled catalogue activity of creating, editing, or deleting Coins, including their owned Surface Set, Catalogue References, and catalogue attributions. Coin Maintenance operates on publishable catalogue entries rather than draft records.
-_Avoid_: Draft editing, specimen management, lookup-only editing
+The controlled catalogue activity of creating, editing, or permanently deleting publishable Coins and their owned Surface Set, Catalogue References, and catalogue attributions. Coin Maintenance does not use draft records or include maintenance of shared lookup records.
+_Avoid_: Draft editing, specimen management, lookup maintenance, soft deletion
 
 **Collector**:
-A person who signs in to Coin Archive. A Collector may later receive permissions to maintain catalogue data.
+A person with one Coin Archive identity shared across client applications, including web and mobile. A Collector may later receive permissions to maintain catalogue data.
 _Avoid_: User, account, visitor, Personal Account
 
 **Collector Role**:
@@ -39,10 +39,6 @@ _Avoid_: Name, generated catalogue data
 **Coin Comment**:
 Optional public free-text catalogue remarks attached to a Coin. A Coin has at most one Coin Comment, and it is not structured, parsed, or filterable catalogue data.
 _Avoid_: Note, private curator note, description, searchable field, structured annotation
-
-**Coin Maintenance**:
-The protected catalogue workflow for creating, editing, or deleting a Coin and its owned aggregate data in the database maintenance area. Coin Maintenance saves the whole Coin aggregate intentionally rather than as drafts, including Composition Description, ruler attributions, mint attributions, theme attributions, catalogue references, and Surface Set records, while shared lookup records remain maintained separately.
-_Avoid_: Draft workflow, specimen maintenance, inline lookup creation, public coin editing
 
 **Issue Year Range**:
 The closed earliest and latest known years in which a coin type or issue is understood to have been minted or issued, represented as astronomical integer years when structured. The range describes the coin type or issue itself, not the issuer's lifetime, a ruler's reign, catalogue publication date, or archive record creation date.

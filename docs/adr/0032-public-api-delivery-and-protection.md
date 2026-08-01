@@ -6,4 +6,6 @@ Public API read responses will use `Cache-Control: public, max-age=60, s-maxage=
 
 Workers invocation logging remains enabled at full sampling. Application logging may include the request method, route template, status, duration, request ID, and unexpected error details, and has a 30-day retention period. It must not include request or response bodies, cookies, authorization headers, database connection strings, or raw personal data.
 
+The same logging and retention policy applies to protected authentication and maintenance traffic. A request ID is created at the first trusted boundary and propagated through the web backend-for-frontend, API, response, and sanitized error reporting; logs additionally must not contain presigned URLs, opaque upload references, database constraint names, or raw Collector data, while API problem responses may expose the request ID for support correlation.
+
 The existing environment-specific Surface Image delivery policy remains in force. Production API responses may use the public `images.coinarchive.app` hostname; staging API responses may use only the Cloudflare Access-protected `images.staging.coinarchive.app` hostname. An environment must neither accept nor return the other environment's Surface Image URLs. Production Surface Images are publicly cacheable for one year because replacements receive new opaque URLs.

@@ -28,11 +28,11 @@ import {
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
+import { submitDeleteRuler } from "../actions"
 import {
   RULER_GENERIC_SAVE_ERROR,
   RULER_IN_USE_DELETE_GUIDANCE,
-  submitDeleteRuler,
-} from "../actions"
+} from "../ruler-mutation-errors"
 
 import { RulerCreateForm } from "../form-workflow/ruler-create-form"
 import { RulerEditForm } from "../form-workflow/ruler-edit-form"
@@ -44,8 +44,7 @@ type RulerMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const RULER_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Ruler. ${RULER_IN_USE_DELETE_GUIDANCE}`
+export const RULER_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Ruler. ${RULER_IN_USE_DELETE_GUIDANCE}`
 
 const deleteRulerAction = createServerFn({
   method: "POST",

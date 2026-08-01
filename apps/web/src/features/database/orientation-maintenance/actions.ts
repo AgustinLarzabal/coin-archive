@@ -1,104 +1,37 @@
 import { hasEditorAccess } from "@coin-archive/auth/client"
-import { z } from "zod"
+import type { z } from "zod"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
+import {
+  ORIENTATION_MISSING_ERROR,
+  createOrientationFieldErrorResult,
+  createOrientationFormErrorResult,
+  createOrientationPersistenceError,
+} from "./orientation-mutation-errors"
+import type { OrientationMutationResult } from "./orientation-mutation-errors"
+import {
+  createOrientationInputSchema,
+  deleteOrientationInputSchema,
+  updateOrientationInputSchema,
+  validateOrientationInput,
+} from "./orientation-validation"
+import type {
+  CreateOrientationData,
+  CreateOrientationInput,
+  DeleteOrientationData,
+  DeleteOrientationInput,
+  UpdateOrientationData,
+  UpdateOrientationInput,
+} from "./orientation-validation"
+
 export const ORIENTATION_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Orientations."
-export const ORIENTATION_DUPLICATE_CODE_ERROR =
-  "An Orientation with this code already exists."
-export const ORIENTATION_GENERIC_SAVE_ERROR =
-  "Unable to save Orientation right now."
-export const ORIENTATION_MISSING_ERROR = "Orientation no longer exists."
-export const ORIENTATION_IN_USE_DELETE_GUIDANCE =
-  "Existing Coins must have the Orientation removed or reassigned before deletion."
-export const ORIENTATION_IN_USE_DELETE_ERROR = `Orientation cannot be deleted while Coins still use it. ${ORIENTATION_IN_USE_DELETE_GUIDANCE}`
-export const ORIENTATION_INVALID_CODE_ERROR =
-  "Orientation Code must use lowercase letters, numbers, and hyphens only."
-
-const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
-const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
-const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
-const DUPLICATE_ORIENTATION_CODE_CONSTRAINT =
-  "orientation_code_lower_unique_idx"
-const INVALID_ORIENTATION_CODE_CONSTRAINT = "orientation_code_slug_check"
-const ORIENTATION_IN_USE_DELETE_CONSTRAINT =
-  "coin_orientation_id_orientation_id_fk"
-const ORIENTATION_FIELD_NAMES = ["code", "name"] as const
-
-const orientationCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Orientation Code cannot be blank.")
-  .max(255, "Orientation Code must be 255 characters or fewer.")
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, ORIENTATION_INVALID_CODE_ERROR)
-
-const orientationNameSchema = z
-  .string()
-  .trim()
-  .min(1, "Orientation Name cannot be blank.")
-  .max(255, "Orientation Name must be 255 characters or fewer.")
-
-export const createOrientationInputSchema = z.object({
-  code: orientationCodeSchema,
-  name: orientationNameSchema,
-})
-
-export const updateOrientationInputSchema = createOrientationInputSchema.extend(
-  {
-    id: z.uuid(),
-  }
-)
-
-export const deleteOrientationInputSchema = z.object({
-  id: z.uuid(),
-})
-
-type OrientationFieldName = (typeof ORIENTATION_FIELD_NAMES)[number]
-
-export type OrientationFieldErrors = Partial<
-  Record<OrientationFieldName, string>
->
-
-export type OrientationMutationResult =
-  | {
-      status: "error"
-      fieldErrors: OrientationFieldErrors
-      formError?: string
-    }
-  | {
-      status: "success"
-      message: string
-    }
 
 export type OrientationAuthorizationErrorResult = {
   status: "error"
   formError: typeof ORIENTATION_AUTHORIZATION_ERROR
-}
-
-type CreateOrientationInput = z.input<typeof createOrientationInputSchema>
-type CreateOrientationData = z.output<typeof createOrientationInputSchema>
-type UpdateOrientationInput = z.input<typeof updateOrientationInputSchema>
-type UpdateOrientationData = z.output<typeof updateOrientationInputSchema>
-type DeleteOrientationInput = z.input<typeof deleteOrientationInputSchema>
-type DeleteOrientationData = z.output<typeof deleteOrientationInputSchema>
-
-type ValidationResult<TData> =
-  | { success: true; data: TData }
-  | { success: false; result: OrientationMutationResult }
-
-type SubmitOrientationMutationOptions<TInput, TData> = {
-  collector: CollectorWithRole | null
-  input: TInput
-  dependencies?: OrientationMutationDependencies
-  validate: (input: TInput) => ValidationResult<TData>
-  execute: (
-    dependencies: OrientationMutationDependencies,
-    data: TData
-  ) => Promise<unknown | null>
-  createSuccessResult: () => OrientationMutationResult
-  createNullResult?: () => OrientationMutationResult
 }
 
 type OrientationMutationDependencies = {
@@ -111,48 +44,11 @@ async function getDefaultOrientationMutationDependencies(): Promise<OrientationM
   const { createOrientation, deleteOrientation, updateOrientation } =
     await import("@coin-archive/db")
 
-  return {
-    createOrientation,
-    deleteOrientation,
-    updateOrientation,
-  }
-}
-
-async function resolveOrientationMutationDependencies(
-  dependencies?: OrientationMutationDependencies
-): Promise<OrientationMutationDependencies> {
-  return dependencies ?? getDefaultOrientationMutationDependencies()
+  return { createOrientation, deleteOrientation, updateOrientation }
 }
 
 export function createOrientationAuthorizationError(): OrientationAuthorizationErrorResult {
-  return {
-    status: "error",
-    formError: ORIENTATION_AUTHORIZATION_ERROR,
-  }
-}
-
-function createAuthorizationError(): OrientationMutationResult {
-  return {
-    ...createOrientationAuthorizationError(),
-    fieldErrors: {},
-  }
-}
-
-function createFieldErrorResult(
-  fieldErrors: OrientationFieldErrors
-): OrientationMutationResult {
-  return {
-    status: "error",
-    fieldErrors,
-  }
-}
-
-function createFormErrorResult(formError: string): OrientationMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError,
-  }
+  return { status: "error", formError: ORIENTATION_AUTHORIZATION_ERROR }
 }
 
 export function hasOrientationMaintenanceAccess(
@@ -163,181 +59,48 @@ export function hasOrientationMaintenanceAccess(
   return role !== null && hasEditorAccess(role)
 }
 
-function isOrientationFieldName(field: unknown): field is OrientationFieldName {
-  return (
-    typeof field === "string" &&
-    ORIENTATION_FIELD_NAMES.includes(field as OrientationFieldName)
-  )
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
-
-export function getOrientationFieldErrors(
-  issues: z.ZodIssue[]
-): OrientationFieldErrors {
-  const fieldErrors: OrientationFieldErrors = {}
-
-  for (const issue of issues) {
-    const field = issue.path.at(0)
-
-    if (isOrientationFieldName(field)) {
-      fieldErrors[field] = issue.message
-    }
-  }
-
-  return fieldErrors
-}
-
-function createValidationError(
-  issues: z.ZodIssue[]
-): OrientationMutationResult {
-  return createFieldErrorResult(getOrientationFieldErrors(issues))
-}
-
-function getPostgresError(error: unknown) {
-  if (!isObjectRecord(error)) {
-    return null
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (!isObjectRecord(postgresError)) {
-    return null
-  }
-
-  return postgresError
-}
-
-function matchesPostgresConstraint(
-  error: unknown,
-  code: string,
-  constraintName: string
-) {
-  const postgresError = getPostgresError(error)
-
-  return (
-    postgresError !== null &&
-    "code" in postgresError &&
-    postgresError.code === code &&
-    "constraint_name" in postgresError &&
-    postgresError.constraint_name === constraintName
-  )
-}
-
-function createPersistenceError(error: unknown): OrientationMutationResult {
-  if (
-    matchesPostgresConstraint(
-      error,
-      DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-      DUPLICATE_ORIENTATION_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: ORIENTATION_DUPLICATE_CODE_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      error,
-      FK_VIOLATION_POSTGRES_ERROR_CODE,
-      ORIENTATION_IN_USE_DELETE_CONSTRAINT
-    )
-  ) {
-    return createFormErrorResult(ORIENTATION_IN_USE_DELETE_ERROR)
-  }
-
-  if (
-    matchesPostgresConstraint(
-      error,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      INVALID_ORIENTATION_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: ORIENTATION_INVALID_CODE_ERROR,
-    })
-  }
-
-  return createFormErrorResult(ORIENTATION_GENERIC_SAVE_ERROR)
-}
-
-function validateOrientationInput<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: z.input<TSchema>
-): ValidationResult<z.output<TSchema>> {
-  const parsedInput = schema.safeParse(input)
-
-  if (!parsedInput.success) {
-    return {
-      success: false,
-      result: createValidationError(parsedInput.error.issues),
-    }
-  }
-
-  return {
-    success: true,
-    data: parsedInput.data,
-  }
-}
-
-function validateCreateOrientationInput(
-  input: CreateOrientationInput
-): ValidationResult<CreateOrientationData> {
-  return validateOrientationInput(createOrientationInputSchema, input)
-}
-
-function validateUpdateOrientationInput(
-  input: UpdateOrientationInput
-): ValidationResult<UpdateOrientationData> {
-  return validateOrientationInput(updateOrientationInputSchema, input)
-}
-
-function validateDeleteOrientationInput(
-  input: DeleteOrientationInput
-): ValidationResult<DeleteOrientationData> {
-  return validateOrientationInput(deleteOrientationInputSchema, input)
-}
-
-async function submitOrientationMutation<TInput, TData>({
+async function submitOrientationMutation<TSchema extends z.ZodType>({
   collector,
   input,
   dependencies,
-  validate,
+  schema,
   execute,
-  createSuccessResult,
-  createNullResult,
-}: SubmitOrientationMutationOptions<
-  TInput,
-  TData
->): Promise<OrientationMutationResult> {
+  successMessage,
+}: {
+  collector: CollectorWithRole | null
+  input: z.input<TSchema>
+  dependencies?: OrientationMutationDependencies
+  schema: TSchema
+  execute: (
+    dependencies: OrientationMutationDependencies,
+    data: z.output<TSchema>
+  ) => Promise<unknown | null>
+  successMessage: string
+}): Promise<OrientationMutationResult> {
   if (!hasOrientationMaintenanceAccess(collector)) {
-    return createAuthorizationError()
+    return {
+      ...createOrientationAuthorizationError(),
+      fieldErrors: {},
+    }
   }
 
-  const validationResult = validate(input)
+  const validationResult = validateOrientationInput(schema, input)
 
   if (!validationResult.success) {
-    return validationResult.result
+    return createOrientationFieldErrorResult(validationResult.fieldErrors)
   }
 
   const resolvedDependencies =
-    await resolveOrientationMutationDependencies(dependencies)
+    dependencies ?? (await getDefaultOrientationMutationDependencies())
 
   try {
     const result = await execute(resolvedDependencies, validationResult.data)
 
-    if (result === null) {
-      return createNullResult
-        ? createNullResult()
-        : createFormErrorResult(ORIENTATION_MISSING_ERROR)
-    }
-
-    return createSuccessResult()
+    return result === null
+      ? createOrientationFormErrorResult(ORIENTATION_MISSING_ERROR)
+      : { status: "success", message: successMessage }
   } catch (error) {
-    return createPersistenceError(error)
+    return createOrientationPersistenceError(error)
   }
 }
 
@@ -350,13 +113,10 @@ export async function submitCreateOrientation(
     collector,
     input,
     dependencies,
-    validate: validateCreateOrientationInput,
+    schema: createOrientationInputSchema,
     execute: (resolvedDependencies, data) =>
       resolvedDependencies.createOrientation(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Orientation added.",
-    }),
+    successMessage: "Orientation added.",
   })
 }
 
@@ -369,13 +129,10 @@ export async function submitUpdateOrientation(
     collector,
     input,
     dependencies,
-    validate: validateUpdateOrientationInput,
+    schema: updateOrientationInputSchema,
     execute: (resolvedDependencies, data) =>
       resolvedDependencies.updateOrientation(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Saved.",
-    }),
+    successMessage: "Saved.",
   })
 }
 
@@ -388,12 +145,9 @@ export async function submitDeleteOrientation(
     collector,
     input,
     dependencies,
-    validate: validateDeleteOrientationInput,
+    schema: deleteOrientationInputSchema,
     execute: (resolvedDependencies, data) =>
       resolvedDependencies.deleteOrientation(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Orientation deleted.",
-    }),
+    successMessage: "Orientation deleted.",
   })
 }

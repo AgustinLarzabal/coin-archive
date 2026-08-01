@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { ORIENTATION_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { ORIENTATION_IN_USE_DELETE_GUIDANCE } from "../orientation-mutation-errors"
 
 import {
   ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -88,7 +85,8 @@ vi.mock("@/components/icons", () => ({
 }))
 
 vi.mock("../form-workflow/orientation-create-form", () => ({
-  OrientationCreateForm: () => createElement("div", null, "OrientationCreateForm"),
+  OrientationCreateForm: () =>
+    createElement("div", null, "OrientationCreateForm"),
 }))
 
 vi.mock("../form-workflow/orientation-edit-form", () => ({
@@ -103,7 +101,9 @@ const orientation: OrientationOption = {
   updatedAt: new Date("2026-06-24T12:00:00.000Z"),
 }
 
-function renderOrientationMaintenanceSheet(orientationOption: OrientationOption | null) {
+function renderOrientationMaintenanceSheet(
+  orientationOption: OrientationOption | null
+) {
   return renderToStaticMarkup(
     createElement(OrientationMaintenanceSheet, {
       orientation: orientationOption,

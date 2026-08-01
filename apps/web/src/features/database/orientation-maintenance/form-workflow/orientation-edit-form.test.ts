@@ -3,7 +3,8 @@ import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { OrientationEditForm, hasOrientationEditChanges } from "./orientation-edit-form"
+import { OrientationEditForm } from "./orientation-edit-form"
+import { hasOrientationEditChanges } from "./orientation-form.shared"
 
 const orientation: OrientationOption = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
@@ -35,7 +36,9 @@ describe("hasOrientationEditChanges", () => {
 
 describe("OrientationEditForm", () => {
   it("renders explicit Orientation field labels with the current values and disables Save until something changed", () => {
-    const markup = renderToStaticMarkup(createElement(OrientationEditForm, { orientation }))
+    const markup = renderToStaticMarkup(
+      createElement(OrientationEditForm, { orientation })
+    )
     const expectedFields = [
       ["Orientation Code", 'value="reeded"'],
       ["Orientation Name", 'value="Reeded"'],

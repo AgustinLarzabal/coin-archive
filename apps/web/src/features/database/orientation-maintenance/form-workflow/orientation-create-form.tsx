@@ -5,19 +5,14 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  OrientationFieldErrors,
-  OrientationMutationResult,
-} from "../actions"
-import {
-  createOrientationInputSchema,
-  getOrientationFieldErrors,
-  submitCreateOrientation,
-} from "../actions"
+import { submitCreateOrientation } from "../actions"
+import type { OrientationMutationResult } from "../orientation-mutation-errors"
+import type { OrientationFieldErrors } from "../orientation-validation"
 
 import {
   EMPTY_ORIENTATION_DRAFT,
   isOrientationDraftComplete,
+  validateOrientationCreateDraft,
 } from "./orientation-form.shared"
 import { OrientationFormFields } from "./orientation-form-fields"
 import type { OrientationDraft } from "./orientation-form.shared"
@@ -35,21 +30,6 @@ const createOrientationAction = createServerFn({
 
     return submitCreateOrientation(session?.user ?? null, data)
   })
-
-function validateOrientationDraft(
-  draft: OrientationDraft
-): OrientationMutationResult | null {
-  const parsedInput = createOrientationInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getOrientationFieldErrors(parsedInput.error.issues),
-  }
-}
 
 export function OrientationCreateForm({
   onCreated,
@@ -93,7 +73,7 @@ export function OrientationCreateForm({
 
     clearFeedback()
 
-    const validationResult = validateOrientationDraft(draft)
+    const validationResult = validateOrientationCreateDraft(draft)
 
     if (validationResult !== null) {
       applyResult(validationResult)

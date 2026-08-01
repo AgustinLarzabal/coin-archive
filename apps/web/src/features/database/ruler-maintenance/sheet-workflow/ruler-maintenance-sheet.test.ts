@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { RULER_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { RULER_IN_USE_DELETE_GUIDANCE } from "../ruler-mutation-errors"
 
 import {
   RULER_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }

@@ -2,16 +2,18 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   EDGE_AUTHORIZATION_ERROR,
-  EDGE_DUPLICATE_CODE_ERROR,
-  EDGE_GENERIC_SAVE_ERROR,
-  EDGE_IN_USE_DELETE_ERROR,
-  EDGE_INVALID_CODE_ERROR,
-  EDGE_MISSING_ERROR,
   hasEdgeMaintenanceAccess,
   submitCreateEdge,
   submitDeleteEdge,
   submitUpdateEdge,
 } from "./actions"
+import {
+  EDGE_DUPLICATE_CODE_ERROR,
+  EDGE_GENERIC_SAVE_ERROR,
+  EDGE_IN_USE_DELETE_ERROR,
+  EDGE_INVALID_CODE_ERROR,
+  EDGE_MISSING_ERROR,
+} from "./edge-mutation-errors"
 
 const VALID_EDGE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const REEDED_EDGE = {

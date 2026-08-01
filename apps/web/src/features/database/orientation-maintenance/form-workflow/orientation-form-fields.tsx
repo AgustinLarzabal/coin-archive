@@ -6,7 +6,7 @@ import {
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
 
-import type { OrientationFieldErrors } from "../actions"
+import type { OrientationFieldErrors } from "../orientation-validation"
 
 import type { OrientationDraft } from "./orientation-form.shared"
 

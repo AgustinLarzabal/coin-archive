@@ -66,10 +66,7 @@ describe("RulerEditForm", () => {
     const expectedFields = [
       ["Ruler Code", 'value="felipe-v"'],
       ["Ruler Name", 'value="Felipe V"'],
-      [
-        "Ruler Group",
-        'value="House of Bourbon (house-of-bourbon)"',
-      ],
+      ["Ruler Group", 'value="House of Bourbon (house-of-bourbon)"'],
     ] as const
 
     for (const [label, value] of expectedFields) {

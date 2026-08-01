@@ -3,7 +3,8 @@ import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MintEditForm, hasMintEditChanges } from "./mint-edit-form"
+import { MintEditForm } from "./mint-edit-form"
+import { hasMintEditChanges } from "./mint-form.shared"
 
 function createServerFnMock() {
   return {
@@ -17,9 +18,7 @@ function createServerFnMock() {
 }
 
 function renderMintEditForm(mintOption: MintOption) {
-  return renderToStaticMarkup(
-    createElement(MintEditForm, { mint: mintOption })
-  )
+  return renderToStaticMarkup(createElement(MintEditForm, { mint: mintOption }))
 }
 
 vi.mock("@tanstack/react-router", () => ({

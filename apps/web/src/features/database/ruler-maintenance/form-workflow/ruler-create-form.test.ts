@@ -51,10 +51,7 @@ describe("RulerCreateForm", () => {
     const expectedFields = [
       ["Ruler Code", 'placeholder="felipe-v"'],
       ["Ruler Name", 'placeholder="Felipe V"'],
-      [
-        "Ruler Group",
-        'placeholder="House of Bourbon (house-of-bourbon)"',
-      ],
+      ["Ruler Group", 'placeholder="House of Bourbon (house-of-bourbon)"'],
     ] as const
 
     for (const [label, placeholder] of expectedFields) {
@@ -62,9 +59,7 @@ describe("RulerCreateForm", () => {
       expect(markup).toContain(placeholder)
     }
 
-    expect(markup).toContain(
-      'value="House of Bourbon (house-of-bourbon)"'
-    )
+    expect(markup).toContain('value="House of Bourbon (house-of-bourbon)"')
     expect(markup).toContain('id="database-ruler-create-form"')
     expect(markup).toContain(">Create<")
     expect(markup).toContain('type="submit"')

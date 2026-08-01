@@ -27,12 +27,14 @@ type RulerEditFormProps = {
 const updateRulerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: {
-    id: string
-    code: string
-    name: string
-    rulerGroupId: string | null
-  }) => data)
+  .inputValidator(
+    (data: {
+      id: string
+      code: string
+      name: string
+      rulerGroupId: string | null
+    }) => data
+  )
   .handler(async ({ data }) => {
     const session = await getAuthSession()
 
@@ -59,13 +61,8 @@ export function RulerEditForm({
   const updateRuler = useServerFn(updateRulerAction)
   const [draft, setDraft] = useState<RulerDraft>(createRulerDraft(ruler))
   const [isPending, setIsPending] = useState(false)
-  const {
-    fieldErrors,
-    formError,
-    successMessage,
-    clearFeedback,
-    applyResult,
-  } = useRulerFormFeedback()
+  const { fieldErrors, formError, successMessage, clearFeedback, applyResult } =
+    useRulerFormFeedback()
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
   const hasChanges = hasRulerEditChanges(ruler, draft)
 
@@ -133,7 +130,9 @@ export function RulerEditForm({
         onDraftChange={updateDraft}
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

@@ -5,17 +5,15 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  MintFieldErrors,
-  MintMutationResult,
-} from "../actions"
-import {
-  createMintInputSchema,
-  getMintFieldErrors,
-  submitCreateMint,
-} from "../actions"
+import { submitCreateMint } from "../actions"
+import type { MintMutationResult } from "../mint-mutation-errors"
+import type { MintFieldErrors } from "../mint-validation"
 
-import { EMPTY_MINT_DRAFT, isMintDraftComplete } from "./mint-form.shared"
+import {
+  EMPTY_MINT_DRAFT,
+  isMintDraftComplete,
+  validateMintCreateDraft,
+} from "./mint-form.shared"
 import { MintFormFields } from "./mint-form-fields"
 import type { MintDraft } from "./mint-form.shared"
 
@@ -32,19 +30,6 @@ const createMintAction = createServerFn({
 
     return submitCreateMint(session?.user ?? null, data)
   })
-
-function validateMintDraft(draft: MintDraft): MintMutationResult | null {
-  const parsedInput = createMintInputSchema.safeParse(draft)
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getMintFieldErrors(parsedInput.error.issues),
-  }
-}
 
 export function MintCreateForm({ onCreated }: MintCreateFormProps) {
   const router = useRouter()
@@ -86,7 +71,7 @@ export function MintCreateForm({ onCreated }: MintCreateFormProps) {
 
     clearFeedback()
 
-    const validationResult = validateMintDraft(draft)
+    const validationResult = validateMintCreateDraft(draft)
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -124,7 +109,9 @@ export function MintCreateForm({ onCreated }: MintCreateFormProps) {
         variant="create"
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

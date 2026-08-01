@@ -3,16 +3,18 @@ import { describe, expect, it, vi } from "vitest"
 import {
   hasRulerMaintenanceAccess,
   RULER_AUTHORIZATION_ERROR,
+  submitCreateRuler,
+  submitDeleteRuler,
+  submitUpdateRuler,
+} from "./actions"
+import {
   RULER_DUPLICATE_CODE_ERROR,
   RULER_GENERIC_SAVE_ERROR,
   RULER_IN_USE_DELETE_ERROR,
   RULER_INVALID_CODE_ERROR,
   RULER_MISSING_ERROR,
   RULER_MISSING_RULER_GROUP_ERROR,
-  submitCreateRuler,
-  submitDeleteRuler,
-  submitUpdateRuler,
-} from "./actions"
+} from "./ruler-mutation-errors"
 
 const VALID_RULER_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const VALID_RULER_GROUP_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"
@@ -57,9 +59,9 @@ describe("hasRulerMaintenanceAccess", () => {
 
 describe("submitCreateRuler", () => {
   it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(submitCreateRuler(null, FELIPE_V_RULER)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
+    await expect(
+      submitCreateRuler(null, FELIPE_V_RULER)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
       submitCreateRuler({ role: "collector" }, FELIPE_V_RULER)
@@ -290,11 +292,7 @@ describe("submitDeleteRuler", () => {
     })
 
     await expect(
-      submitDeleteRuler(
-        { role: "admin" },
-        { id: VALID_RULER_ID },
-        dependencies
-      )
+      submitDeleteRuler({ role: "admin" }, { id: VALID_RULER_ID }, dependencies)
     ).resolves.toStrictEqual({
       status: "success",
       message: "Ruler deleted.",

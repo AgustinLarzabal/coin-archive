@@ -2,10 +2,7 @@ import type { OrientationOption } from "@coin-archive/db"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import {
-  filterOrientations,
-  OrientationsTable,
-} from "./orientations-table"
+import { filterOrientations, OrientationsTable } from "./orientations-table"
 
 const orientations: OrientationOption[] = [
   {

@@ -6,17 +6,15 @@ import type { MintOption } from "@coin-archive/db"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  MintFieldErrors,
-  MintMutationResult,
-} from "../actions"
-import {
-  getMintFieldErrors,
-  submitUpdateMint,
-  updateMintInputSchema,
-} from "../actions"
+import { submitUpdateMint } from "../actions"
+import type { MintMutationResult } from "../mint-mutation-errors"
+import type { MintFieldErrors } from "../mint-validation"
 
-import { createMintDraft, normalizeMintDraft } from "./mint-form.shared"
+import {
+  createMintDraft,
+  hasMintEditChanges,
+  validateMintUpdateDraft,
+} from "./mint-form.shared"
 import { MintFormFields } from "./mint-form-fields"
 import type { MintDraft } from "./mint-form.shared"
 
@@ -34,35 +32,6 @@ const updateMintAction = createServerFn({
 
     return submitUpdateMint(session?.user ?? null, data)
   })
-
-function validateMintDraft(
-  mintId: string,
-  draft: MintDraft
-): MintMutationResult | null {
-  const parsedInput = updateMintInputSchema.safeParse({
-    id: mintId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getMintFieldErrors(parsedInput.error.issues),
-  }
-}
-
-export function hasMintEditChanges(mint: MintOption, draft: MintDraft) {
-  const normalizedCurrent = normalizeMintDraft(createMintDraft(mint))
-  const normalizedDraft = normalizeMintDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
 
 export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
   const router = useRouter()
@@ -116,7 +85,7 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
 
     clearFeedback()
 
-    const validationResult = validateMintDraft(mint.id, draft)
+    const validationResult = validateMintUpdateDraft(mint.id, draft)
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -156,7 +125,9 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
         variant="edit"
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

@@ -1,9 +1,7 @@
 import { useCallback, useState } from "react"
 
-import type {
-  RulerFieldErrors,
-  RulerMutationResult,
-} from "../actions"
+import type { RulerMutationResult } from "../ruler-mutation-errors"
+import type { RulerFieldErrors } from "../ruler-validation"
 
 export function useRulerFormFeedback() {
   const [fieldErrors, setFieldErrors] = useState<RulerFieldErrors>({})

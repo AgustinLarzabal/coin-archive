@@ -28,11 +28,11 @@ import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
+import { submitDeleteEdge } from "../actions"
 import {
   EDGE_GENERIC_SAVE_ERROR,
   EDGE_IN_USE_DELETE_ERROR,
-  submitDeleteEdge,
-} from "../actions"
+} from "../edge-mutation-errors"
 
 import { EdgeCreateForm } from "../form-workflow/edge-create-form"
 import { EdgeEditForm } from "../form-workflow/edge-edit-form"
@@ -43,13 +43,13 @@ type EdgeMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE = EDGE_IN_USE_DELETE_ERROR.replace(
-  "Edge cannot be deleted while Coins still use it. ",
-  ""
-)
+const EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE =
+  EDGE_IN_USE_DELETE_ERROR.replace(
+    "Edge cannot be deleted while Coins still use it. ",
+    ""
+  )
 
-export const EDGE_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Edge. ${EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+export const EDGE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Edge. ${EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
 
 const deleteEdgeAction = createServerFn({
   method: "POST",

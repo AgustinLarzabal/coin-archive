@@ -3,27 +3,19 @@ import type { FormEvent } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { EdgeOption } from "@coin-archive/db"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  EdgeFieldErrors,
-  EdgeMutationResult,
-} from "../actions"
-import {
-  getEdgeFieldErrors,
-  submitUpdateEdge,
-  updateEdgeInputSchema,
-} from "../actions"
+import { submitUpdateEdge } from "../actions"
+import type { EdgeMutationResult } from "../edge-mutation-errors"
+import type { EdgeFieldErrors } from "../edge-validation"
 
-import { createEdgeDraft, normalizeEdgeDraft } from "./edge-form.shared"
+import { EdgeFormFields } from "./edge-form-fields"
+import {
+  createEdgeDraft,
+  hasEdgeEditChanges,
+  validateEdgeUpdateDraft,
+} from "./edge-form.shared"
 import type { EdgeDraft } from "./edge-form.shared"
 
 type EdgeEditFormProps = {
@@ -40,35 +32,6 @@ const updateEdgeAction = createServerFn({
 
     return submitUpdateEdge(session?.user ?? null, data)
   })
-
-function validateUpdateEdgeDraft(
-  edgeId: string,
-  draft: EdgeDraft
-): EdgeMutationResult | null {
-  const parsedInput = updateEdgeInputSchema.safeParse({
-    id: edgeId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getEdgeFieldErrors(parsedInput.error.issues),
-  }
-}
-
-export function hasEdgeEditChanges(edge: EdgeOption, draft: EdgeDraft) {
-  const normalizedCurrent = normalizeEdgeDraft(createEdgeDraft(edge))
-  const normalizedDraft = normalizeEdgeDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
 
 export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
   const router = useRouter()
@@ -122,7 +85,7 @@ export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
 
     clearFeedback()
 
-    const validationResult = validateUpdateEdgeDraft(edge.id, draft)
+    const validationResult = validateEdgeUpdateDraft(edge.id, draft)
 
     if (validationResult !== null) {
       applyResult(validationResult)
@@ -155,40 +118,16 @@ export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
       className="flex min-h-0 flex-1 flex-col gap-6 px-4 pb-4"
       onSubmit={handleSubmit}
     >
-      <FieldGroup>
-        <Field data-invalid={fieldErrors.code !== undefined}>
-          <FieldLabel htmlFor="edge-code">Edge Code</FieldLabel>
-          <Input
-            id="edge-code"
-            name="code"
-            value={draft.code}
-            onChange={(event) => updateDraft("code", event.target.value)}
-            aria-invalid={fieldErrors.code !== undefined}
-            placeholder="reeded"
-            autoComplete="off"
-          />
-          {fieldErrors.code ? (
-            <FieldError errors={[{ message: fieldErrors.code }]} />
-          ) : null}
-        </Field>
-        <Field data-invalid={fieldErrors.name !== undefined}>
-          <FieldLabel htmlFor="edge-name">Edge Name</FieldLabel>
-          <Input
-            id="edge-name"
-            name="name"
-            value={draft.name}
-            onChange={(event) => updateDraft("name", event.target.value)}
-            aria-invalid={fieldErrors.name !== undefined}
-            placeholder="Reeded"
-            autoComplete="off"
-          />
-          {fieldErrors.name ? (
-            <FieldError errors={[{ message: fieldErrors.name }]} />
-          ) : null}
-        </Field>
-      </FieldGroup>
+      <EdgeFormFields
+        draft={draft}
+        fieldErrors={fieldErrors}
+        onFieldChange={updateDraft}
+        variant="edit"
+      />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
       {successMessage ? (
         <p className="text-sm text-emerald-700">{successMessage}</p>
       ) : null}

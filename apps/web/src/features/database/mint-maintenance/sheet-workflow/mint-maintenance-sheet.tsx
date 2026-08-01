@@ -28,11 +28,11 @@ import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
+import { submitDeleteMint } from "../actions"
 import {
   MINT_GENERIC_SAVE_ERROR,
   MINT_IN_USE_DELETE_GUIDANCE,
-  submitDeleteMint,
-} from "../actions"
+} from "../mint-mutation-errors"
 
 import { MintCreateForm } from "../form-workflow/mint-create-form"
 import { MintEditForm } from "../form-workflow/mint-edit-form"
@@ -44,8 +44,7 @@ type MintMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const MINT_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Mint. ${MINT_IN_USE_DELETE_GUIDANCE}`
+export const MINT_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Mint. ${MINT_IN_USE_DELETE_GUIDANCE}`
 
 const deleteMintAction = createServerFn({
   method: "POST",

@@ -1,12 +1,12 @@
 import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
 import type { z } from "zod"
 
-import type { RulerMutationResult } from "../actions"
+import type { RulerMutationResult } from "../ruler-mutation-errors"
 import {
   createRulerInputSchema,
   getRulerFieldErrors,
   updateRulerInputSchema,
-} from "../actions"
+} from "../ruler-validation"
 
 export type RulerDraft = {
   code: string
@@ -94,7 +94,9 @@ export function resolveRulerGroupId(
     return null
   }
 
-  const matchedOption = options.find((option) => option.label === normalizedLabel)
+  const matchedOption = options.find(
+    (option) => option.label === normalizedLabel
+  )
 
   return matchedOption?.id ?? INVALID_RULER_GROUP_SELECTION
 }

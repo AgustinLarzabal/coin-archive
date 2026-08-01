@@ -3,7 +3,8 @@ import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { EdgeEditForm, hasEdgeEditChanges } from "./edge-edit-form"
+import { EdgeEditForm } from "./edge-edit-form"
+import { hasEdgeEditChanges } from "./edge-form.shared"
 
 const edge: EdgeOption = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",

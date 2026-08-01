@@ -2,16 +2,18 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   ORIENTATION_AUTHORIZATION_ERROR,
-  ORIENTATION_DUPLICATE_CODE_ERROR,
-  ORIENTATION_GENERIC_SAVE_ERROR,
-  ORIENTATION_IN_USE_DELETE_ERROR,
-  ORIENTATION_INVALID_CODE_ERROR,
-  ORIENTATION_MISSING_ERROR,
   hasOrientationMaintenanceAccess,
   submitCreateOrientation,
   submitDeleteOrientation,
   submitUpdateOrientation,
 } from "./actions"
+import {
+  ORIENTATION_DUPLICATE_CODE_ERROR,
+  ORIENTATION_GENERIC_SAVE_ERROR,
+  ORIENTATION_IN_USE_DELETE_ERROR,
+  ORIENTATION_INVALID_CODE_ERROR,
+  ORIENTATION_MISSING_ERROR,
+} from "./orientation-mutation-errors"
 
 const VALID_ORIENTATION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const REEDED_ORIENTATION = {
@@ -54,9 +56,9 @@ describe("hasOrientationMaintenanceAccess", () => {
 
 describe("submitCreateOrientation", () => {
   it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(submitCreateOrientation(null, REEDED_ORIENTATION)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
+    await expect(
+      submitCreateOrientation(null, REEDED_ORIENTATION)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
       submitCreateOrientation({ role: "collector" }, REEDED_ORIENTATION)
@@ -165,13 +167,19 @@ describe("submitCreateOrientation", () => {
     })
 
     await expect(
-      submitCreateOrientation({ role: "editor" }, REEDED_ORIENTATION, dependencies)
+      submitCreateOrientation(
+        { role: "editor" },
+        REEDED_ORIENTATION,
+        dependencies
+      )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Orientation added.",
     })
 
-    expect(dependencies.createOrientation).toHaveBeenCalledWith(REEDED_ORIENTATION)
+    expect(dependencies.createOrientation).toHaveBeenCalledWith(
+      REEDED_ORIENTATION
+    )
   })
 
   it("returns a generic form error for unexpected persistence failures", async () => {
@@ -198,9 +206,9 @@ describe("submitUpdateOrientation", () => {
   }
 
   it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(submitUpdateOrientation(null, updateInput)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
+    await expect(
+      submitUpdateOrientation(null, updateInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
       submitUpdateOrientation({ role: "collector" }, updateInput)
@@ -321,9 +329,9 @@ describe("submitDeleteOrientation", () => {
   }
 
   it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(submitDeleteOrientation(null, deleteInput)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
+    await expect(
+      submitDeleteOrientation(null, deleteInput)
+    ).resolves.toStrictEqual(authorizationErrorResult)
 
     await expect(
       submitDeleteOrientation({ role: "collector" }, deleteInput)
@@ -334,7 +342,11 @@ describe("submitDeleteOrientation", () => {
     const dependencies = createDependencies()
 
     await expect(
-      submitDeleteOrientation({ role: "editor" }, { id: "not-a-uuid" }, dependencies)
+      submitDeleteOrientation(
+        { role: "editor" },
+        { id: "not-a-uuid" },
+        dependencies
+      )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {},

@@ -6,19 +6,14 @@ import type { OrientationOption } from "@coin-archive/db"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { getAuthSession } from "@/lib/auth-session"
-import type {
-  OrientationFieldErrors,
-  OrientationMutationResult,
-} from "../actions"
-import {
-  getOrientationFieldErrors,
-  submitUpdateOrientation,
-  updateOrientationInputSchema,
-} from "../actions"
+import { submitUpdateOrientation } from "../actions"
+import type { OrientationMutationResult } from "../orientation-mutation-errors"
+import type { OrientationFieldErrors } from "../orientation-validation"
 
 import {
   createOrientationDraft,
-  normalizeOrientationDraft,
+  hasOrientationEditChanges,
+  validateOrientationUpdateDraft,
 } from "./orientation-form.shared"
 import { OrientationFormFields } from "./orientation-form-fields"
 import type { OrientationDraft } from "./orientation-form.shared"
@@ -37,40 +32,6 @@ const updateOrientationAction = createServerFn({
 
     return submitUpdateOrientation(session?.user ?? null, data)
   })
-
-function validateUpdateOrientationDraft(
-  orientationId: string,
-  draft: OrientationDraft
-): OrientationMutationResult | null {
-  const parsedInput = updateOrientationInputSchema.safeParse({
-    id: orientationId,
-    ...draft,
-  })
-
-  if (parsedInput.success) {
-    return null
-  }
-
-  return {
-    status: "error",
-    fieldErrors: getOrientationFieldErrors(parsedInput.error.issues),
-  }
-}
-
-export function hasOrientationEditChanges(
-  orientation: OrientationOption,
-  draft: OrientationDraft
-) {
-  const normalizedCurrent = normalizeOrientationDraft(
-    createOrientationDraft(orientation)
-  )
-  const normalizedDraft = normalizeOrientationDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
 
 export function OrientationEditForm({
   orientation,
@@ -129,7 +90,7 @@ export function OrientationEditForm({
 
     clearFeedback()
 
-    const validationResult = validateUpdateOrientationDraft(
+    const validationResult = validateOrientationUpdateDraft(
       orientation.id,
       draft
     )

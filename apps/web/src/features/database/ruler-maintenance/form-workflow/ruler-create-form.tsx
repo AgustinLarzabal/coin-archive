@@ -26,11 +26,9 @@ type RulerCreateFormProps = {
 const createRulerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: {
-    code: string
-    name: string
-    rulerGroupId: string | null
-  }) => data)
+  .inputValidator(
+    (data: { code: string; name: string; rulerGroupId: string | null }) => data
+  )
   .handler(async ({ data }) => {
     const session = await getAuthSession()
 
@@ -109,7 +107,9 @@ export function RulerCreateForm({
         onDraftChange={updateDraft}
       />
 
-      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
+      {formError ? (
+        <p className="text-sm text-destructive">{formError}</p>
+      ) : null}
 
       <div className="mt-auto flex gap-2 border-t pt-4">
         <SubmitButton

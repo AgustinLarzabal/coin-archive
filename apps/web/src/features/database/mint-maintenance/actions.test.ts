@@ -2,16 +2,18 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   MINT_AUTHORIZATION_ERROR,
-  MINT_DUPLICATE_CODE_ERROR,
-  MINT_GENERIC_SAVE_ERROR,
-  MINT_IN_USE_DELETE_ERROR,
-  MINT_INVALID_CODE_ERROR,
-  MINT_MISSING_ERROR,
   hasMintMaintenanceAccess,
   submitCreateMint,
   submitDeleteMint,
   submitUpdateMint,
 } from "./actions"
+import {
+  MINT_DUPLICATE_CODE_ERROR,
+  MINT_GENERIC_SAVE_ERROR,
+  MINT_IN_USE_DELETE_ERROR,
+  MINT_INVALID_CODE_ERROR,
+  MINT_MISSING_ERROR,
+} from "./mint-mutation-errors"
 
 const VALID_MINT_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const BUENOS_AIRES_MINT = {

@@ -39,7 +39,9 @@ export function createOrientationColumns(
             />
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => onEditOrientation(orientation)}>
+                <DropdownMenuItem
+                  onClick={() => onEditOrientation(orientation)}
+                >
                   Edit
                 </DropdownMenuItem>
               </DropdownMenuGroup>

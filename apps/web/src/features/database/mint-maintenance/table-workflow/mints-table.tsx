@@ -10,7 +10,10 @@ type MintsTableProps = {
   mints: MintOption[]
 }
 
-export function filterMints(mints: MintOption[], filterValue: string): MintOption[] {
+export function filterMints(
+  mints: MintOption[],
+  filterValue: string
+): MintOption[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {

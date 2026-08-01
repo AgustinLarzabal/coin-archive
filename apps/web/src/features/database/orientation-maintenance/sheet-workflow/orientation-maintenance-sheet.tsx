@@ -28,11 +28,11 @@ import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
 import { getAuthSession } from "@/lib/auth-session"
+import { submitDeleteOrientation } from "../actions"
 import {
   ORIENTATION_GENERIC_SAVE_ERROR,
   ORIENTATION_IN_USE_DELETE_GUIDANCE,
-  submitDeleteOrientation,
-} from "../actions"
+} from "../orientation-mutation-errors"
 
 import { OrientationCreateForm } from "../form-workflow/orientation-create-form"
 import { OrientationEditForm } from "../form-workflow/orientation-edit-form"

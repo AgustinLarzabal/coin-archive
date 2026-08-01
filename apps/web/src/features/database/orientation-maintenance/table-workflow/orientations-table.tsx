@@ -27,15 +27,11 @@ export function filterOrientations(
   )
 }
 
-function getOrientationFilterValues(
-  orientation: OrientationOption
-): string[] {
+function getOrientationFilterValues(orientation: OrientationOption): string[] {
   return [orientation.code, orientation.name]
 }
 
-export function OrientationsTable({
-  orientations,
-}: OrientationsTableProps) {
+export function OrientationsTable({ orientations }: OrientationsTableProps) {
   const [selectedOrientation, setSelectedOrientation] =
     useState<OrientationOption | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)

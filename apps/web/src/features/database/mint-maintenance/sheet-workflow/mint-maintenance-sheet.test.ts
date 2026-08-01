@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MINT_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { MINT_IN_USE_DELETE_GUIDANCE } from "../mint-mutation-errors"
 
 import {
   MINT_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }

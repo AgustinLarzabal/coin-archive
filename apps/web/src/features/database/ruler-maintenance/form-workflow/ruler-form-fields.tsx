@@ -6,7 +6,7 @@ import {
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
 
-import type { RulerFieldErrors } from "../actions"
+import type { RulerFieldErrors } from "../ruler-validation"
 
 import type { RulerDraft, RulerGroupSelectionOption } from "./ruler-form.shared"
 

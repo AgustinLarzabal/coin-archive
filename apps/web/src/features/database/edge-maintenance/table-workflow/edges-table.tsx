@@ -10,7 +10,10 @@ type EdgesTableProps = {
   edges: EdgeOption[]
 }
 
-export function filterEdges(edges: EdgeOption[], filterValue: string): EdgeOption[] {
+export function filterEdges(
+  edges: EdgeOption[],
+  filterValue: string
+): EdgeOption[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {

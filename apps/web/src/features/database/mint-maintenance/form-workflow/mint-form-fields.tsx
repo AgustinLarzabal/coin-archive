@@ -6,7 +6,7 @@ import {
 } from "@coin-archive/ui/components/field"
 import { Input } from "@coin-archive/ui/components/input"
 
-import type { MintFieldErrors } from "../actions"
+import type { MintFieldErrors } from "../mint-validation"
 
 import type { MintDraft } from "./mint-form.shared"
 

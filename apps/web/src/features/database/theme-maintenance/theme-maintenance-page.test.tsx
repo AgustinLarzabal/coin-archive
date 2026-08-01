@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { ThemeOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderThemeMaintenancePage } from "./theme-maintenance-page"
+import { ThemeMaintenanceRouteComponent } from "./theme-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -25,10 +25,10 @@ const PORTRAIT_THEME = createTheme({
   name: "Portrait",
 })
 
-describe("renderThemeMaintenancePage", () => {
+describe("ThemeMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderThemeMaintenancePage({ isAllowed: false })
+      <ThemeMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -36,10 +36,12 @@ describe("renderThemeMaintenancePage", () => {
 
   it("renders the Themes table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
-      renderThemeMaintenancePage({
-        isAllowed: true,
-        themes: [MAP_THEME, PORTRAIT_THEME],
-      })
+      <ThemeMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          themes: [MAP_THEME, PORTRAIT_THEME],
+        }}
+      />
     )
 
     expect(markup).toContain("Theme Code")

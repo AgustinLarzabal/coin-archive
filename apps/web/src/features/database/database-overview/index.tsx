@@ -15,13 +15,7 @@ type DatabaseOverviewRouteComponentProps = {
 export function DatabaseOverviewRouteComponent({
   loaderData,
 }: DatabaseOverviewRouteComponentProps) {
-  return renderDatabaseOverviewPage(loaderData)
-}
-
-export function renderDatabaseOverviewPage(
-  pageData: DatabaseOverviewPageLoaderData
-) {
-  if (!pageData.isAllowed) {
+  if (!loaderData.isAllowed) {
     return (
       <div className="grid items-center">
         <AccessDenied />
@@ -31,7 +25,7 @@ export function renderDatabaseOverviewPage(
 
   return (
     <main className="mt-8">
-      <DatabaseOverviewTable counts={pageData.counts} />
+      <DatabaseOverviewTable counts={loaderData.counts} />
     </main>
   )
 }

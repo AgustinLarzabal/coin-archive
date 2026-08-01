@@ -9,12 +9,6 @@ type CatalogueMaintenanceRouteComponentProps = {
 export function CatalogueMaintenanceRouteComponent({
   loaderData,
 }: CatalogueMaintenanceRouteComponentProps) {
-  return renderCatalogueMaintenancePage(loaderData)
-}
-
-export function renderCatalogueMaintenancePage(
-  loaderData: CatalogueMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ catalogues }) => (
     <main className="mt-8">
       <CataloguesTable catalogues={catalogues} />

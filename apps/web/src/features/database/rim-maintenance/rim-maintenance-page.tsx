@@ -9,12 +9,6 @@ type RimMaintenanceRouteComponentProps = {
 export function RimMaintenanceRouteComponent({
   loaderData,
 }: RimMaintenanceRouteComponentProps) {
-  return renderRimMaintenancePage(loaderData)
-}
-
-export function renderRimMaintenancePage(
-  loaderData: RimMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ rims }) => (
     <main className="mt-8">
       <RimsTable rims={rims} />

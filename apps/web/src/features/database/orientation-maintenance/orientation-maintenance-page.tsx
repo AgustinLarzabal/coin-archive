@@ -9,12 +9,6 @@ type OrientationMaintenanceRouteComponentProps = {
 export function OrientationMaintenanceRouteComponent({
   loaderData,
 }: OrientationMaintenanceRouteComponentProps) {
-  return renderOrientationMaintenancePage(loaderData)
-}
-
-export function renderOrientationMaintenancePage(
-  loaderData: OrientationMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ orientations }) => (
     <main className="mt-8">
       <OrientationsTable orientations={orientations} />

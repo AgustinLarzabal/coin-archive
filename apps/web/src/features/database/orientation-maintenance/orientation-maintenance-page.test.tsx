@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { OrientationOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderOrientationMaintenancePage } from "./orientation-maintenance-page"
+import { OrientationMaintenanceRouteComponent } from "./orientation-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -21,10 +21,10 @@ function createOrientation(
   }
 }
 
-describe("renderOrientationMaintenancePage", () => {
+describe("OrientationMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderOrientationMaintenancePage({ isAllowed: false })
+      <OrientationMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -32,21 +32,23 @@ describe("renderOrientationMaintenancePage", () => {
 
   it("renders the Orientations maintenance table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      renderOrientationMaintenancePage({
-        isAllowed: true,
-        orientations: [
-          createOrientation({
-            id: "645c07ac-cfbb-4a29-b056-9680634c6c2c",
-            code: "coin-alignment",
-            name: "Coin alignment",
-          }),
-          createOrientation({
-            id: "9c65c9ed-eb9d-4cf5-986f-1346d6a326ca",
-            code: "medal-alignment",
-            name: "Medal alignment",
-          }),
-        ],
-      })
+      <OrientationMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          orientations: [
+            createOrientation({
+              id: "645c07ac-cfbb-4a29-b056-9680634c6c2c",
+              code: "coin-alignment",
+              name: "Coin alignment",
+            }),
+            createOrientation({
+              id: "9c65c9ed-eb9d-4cf5-986f-1346d6a326ca",
+              code: "medal-alignment",
+              name: "Medal alignment",
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Orientation Code")

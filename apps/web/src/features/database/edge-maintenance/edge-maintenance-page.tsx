@@ -9,12 +9,6 @@ type EdgeMaintenanceRouteComponentProps = {
 export function EdgeMaintenanceRouteComponent({
   loaderData,
 }: EdgeMaintenanceRouteComponentProps) {
-  return renderEdgeMaintenancePage(loaderData)
-}
-
-export function renderEdgeMaintenancePage(
-  loaderData: EdgeMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ edges }) => (
     <main className="mt-8">
       <EdgesTable edges={edges} />

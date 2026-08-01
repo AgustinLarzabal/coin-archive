@@ -9,12 +9,6 @@ type ThemeMaintenanceRouteComponentProps = {
 export function ThemeMaintenanceRouteComponent({
   loaderData,
 }: ThemeMaintenanceRouteComponentProps) {
-  return renderThemeMaintenancePage(loaderData)
-}
-
-export function renderThemeMaintenancePage(
-  loaderData: ThemeMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ themes }) => (
     <main className="mt-8">
       <ThemesTable themes={themes} />

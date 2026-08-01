@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerGroupOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderRulerGroupMaintenancePage } from "./ruler-group-maintenance-page"
+import { RulerGroupMaintenanceRouteComponent } from "./ruler-group-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -26,10 +26,10 @@ function createRulerGroup(
   }
 }
 
-describe("renderRulerGroupMaintenancePage", () => {
+describe("RulerGroupMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderRulerGroupMaintenancePage({ isAllowed: false })
+      <RulerGroupMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -37,21 +37,23 @@ describe("renderRulerGroupMaintenancePage", () => {
 
   it("renders the Ruler Groups table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
-      renderRulerGroupMaintenancePage({
-        isAllowed: true,
-        rulerGroups: [
-          createRulerGroup({
-            id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-            code: "house-of-bourbon",
-            name: "House of Bourbon",
-          }),
-          createRulerGroup({
-            id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
-            code: "julio-claudians",
-            name: "Julio-Claudians",
-          }),
-        ],
-      })
+      <RulerGroupMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          rulerGroups: [
+            createRulerGroup({
+              id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+              code: "house-of-bourbon",
+              name: "House of Bourbon",
+            }),
+            createRulerGroup({
+              id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
+              code: "julio-claudians",
+              name: "Julio-Claudians",
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Ruler groups table:")

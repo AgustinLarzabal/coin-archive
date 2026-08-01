@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { MintOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderMintMaintenancePage } from "./mint-maintenance-page"
+import { MintMaintenanceRouteComponent } from "./mint-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -26,10 +26,10 @@ function createMint(
   }
 }
 
-describe("renderMintMaintenancePage", () => {
+describe("MintMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderMintMaintenancePage({ isAllowed: false })
+      <MintMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -37,21 +37,23 @@ describe("renderMintMaintenancePage", () => {
 
   it("renders the Mints maintenance table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      renderMintMaintenancePage({
-        isAllowed: true,
-        mints: [
-          createMint({
-            id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
-            code: "buenos-aires-mint",
-            name: "Buenos Aires Mint",
-          }),
-          createMint({
-            id: "2f7265fc-0ddf-49bc-b90a-71b3466ee3bd",
-            code: "royal-mint-of-madrid",
-            name: "Royal Mint of Madrid",
-          }),
-        ],
-      })
+      <MintMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          mints: [
+            createMint({
+              id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
+              code: "buenos-aires-mint",
+              name: "Buenos Aires Mint",
+            }),
+            createMint({
+              id: "2f7265fc-0ddf-49bc-b90a-71b3466ee3bd",
+              code: "royal-mint-of-madrid",
+              name: "Royal Mint of Madrid",
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Mints table:")

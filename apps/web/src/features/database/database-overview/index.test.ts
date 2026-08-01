@@ -13,7 +13,6 @@ describe("database-overview public API", () => {
       "DatabaseOverviewRouteComponent",
       "loadDatabaseOverviewPageData",
       "loadDatabaseOverviewRouteData",
-      "renderDatabaseOverviewPage",
     ],
     feature,
     featureAlias: FEATURE_ALIAS,

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { TechniqueOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderMintingTechniqueMaintenancePage } from "./minting-technique-maintenance-page"
+import { MintingTechniqueMaintenanceRouteComponent } from "./minting-technique-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -25,10 +25,12 @@ function createMintingTechnique(
   }
 }
 
-describe("renderMintingTechniqueMaintenancePage", () => {
+describe("MintingTechniqueMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderMintingTechniqueMaintenancePage({ isAllowed: false })
+      <MintingTechniqueMaintenanceRouteComponent
+        loaderData={{ isAllowed: false }}
+      />
     )
 
     expect(markup).toContain("Access denied")
@@ -36,21 +38,23 @@ describe("renderMintingTechniqueMaintenancePage", () => {
 
   it("renders the Minting Techniques table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
-      renderMintingTechniqueMaintenancePage({
-        isAllowed: true,
-        mintingTechniques: [
-          createMintingTechnique({
-            id: "f45b35fd-a6df-4255-adc5-005d7eb06251",
-            code: "hammered",
-            name: "Hammered",
-          }),
-          createMintingTechnique({
-            id: "1484fbeb-4dbc-45e4-860f-cbf1d7bd54db",
-            code: "machine-struck",
-            name: "Machine struck",
-          }),
-        ],
-      })
+      <MintingTechniqueMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          mintingTechniques: [
+            createMintingTechnique({
+              id: "f45b35fd-a6df-4255-adc5-005d7eb06251",
+              code: "hammered",
+              name: "Hammered",
+            }),
+            createMintingTechnique({
+              id: "1484fbeb-4dbc-45e4-860f-cbf1d7bd54db",
+              code: "machine-struck",
+              name: "Machine struck",
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Minting Technique Code")

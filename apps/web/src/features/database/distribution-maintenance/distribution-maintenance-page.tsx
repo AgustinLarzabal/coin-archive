@@ -9,12 +9,6 @@ type DistributionMaintenanceRouteComponentProps = {
 export function DistributionMaintenanceRouteComponent({
   loaderData,
 }: DistributionMaintenanceRouteComponentProps) {
-  return renderDistributionMaintenancePage(loaderData)
-}
-
-export function renderDistributionMaintenancePage(
-  loaderData: DistributionMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ distributions }) => (
     <main className="mt-8">
       <DistributionsTable distributions={distributions} />

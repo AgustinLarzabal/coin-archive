@@ -9,12 +9,6 @@ type CompositionMaintenanceRouteComponentProps = {
 export function CompositionMaintenanceRouteComponent({
   loaderData,
 }: CompositionMaintenanceRouteComponentProps) {
-  return renderCompositionMaintenancePage(loaderData)
-}
-
-export function renderCompositionMaintenancePage(
-  loaderData: CompositionMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ compositions }) => (
     <main className="mt-8">
       <CompositionsTable compositions={compositions} />

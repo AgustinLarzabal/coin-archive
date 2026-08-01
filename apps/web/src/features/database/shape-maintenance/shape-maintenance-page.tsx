@@ -9,12 +9,6 @@ type ShapeMaintenanceRouteComponentProps = {
 export function ShapeMaintenanceRouteComponent({
   loaderData,
 }: ShapeMaintenanceRouteComponentProps) {
-  return renderShapeMaintenancePage(loaderData)
-}
-
-export function renderShapeMaintenancePage(
-  loaderData: ShapeMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ shapes }) => (
     <main className="mt-8">
       <ShapesTable shapes={shapes} />

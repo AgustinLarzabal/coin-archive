@@ -9,12 +9,6 @@ type RulerMaintenanceRouteComponentProps = {
 export function RulerMaintenanceRouteComponent({
   loaderData,
 }: RulerMaintenanceRouteComponentProps) {
-  return renderRulerMaintenancePage(loaderData)
-}
-
-export function renderRulerMaintenancePage(
-  loaderData: RulerMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ rulers, rulerGroups }) => (
     <main className="mt-8">
       <RulersTable rulers={rulers} rulerGroups={rulerGroups} />

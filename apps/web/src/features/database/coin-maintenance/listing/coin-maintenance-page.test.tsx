@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import { COIN_MAINTENANCE_PAGE_SIZE } from "./coin-maintenance-route-data"
-import { renderCoinMaintenancePage } from "./coin-maintenance-page"
+import { CoinMaintenanceRouteComponent } from "./coin-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -95,10 +95,10 @@ const filterOptions = {
   ],
 }
 
-describe("renderCoinMaintenancePage", () => {
+describe("CoinMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderCoinMaintenancePage({ isAllowed: false })
+      <CoinMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -106,15 +106,17 @@ describe("renderCoinMaintenancePage", () => {
 
   it("renders the maintenance table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      renderCoinMaintenancePage({
-        isAllowed: true,
-        search: {
-          title: "spanish",
-          page: 1,
-        },
-        list,
-        filterOptions,
-      })
+      <CoinMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          search: {
+            title: "spanish",
+            page: 1,
+          },
+          list,
+          filterOptions,
+        }}
+      />
     )
 
     expect(markup).toContain("Coins maintenance table")

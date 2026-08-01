@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { ShapeOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderShapeMaintenancePage } from "./shape-maintenance-page"
+import { ShapeMaintenanceRouteComponent } from "./shape-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -21,10 +21,10 @@ function createShape(
   }
 }
 
-describe("renderShapeMaintenancePage", () => {
+describe("ShapeMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderShapeMaintenancePage({ isAllowed: false })
+      <ShapeMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -32,21 +32,23 @@ describe("renderShapeMaintenancePage", () => {
 
   it("renders the Shapes table for allowed Editors and Admins with maintenance actions", () => {
     const markup = renderToStaticMarkup(
-      renderShapeMaintenancePage({
-        isAllowed: true,
-        shapes: [
-          createShape({
-            id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-            code: "round",
-            name: "Round",
-          }),
-          createShape({
-            id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
-            code: "scalloped",
-            name: "Scalloped",
-          }),
-        ],
-      })
+      <ShapeMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          shapes: [
+            createShape({
+              id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+              code: "round",
+              name: "Round",
+            }),
+            createShape({
+              id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
+              code: "scalloped",
+              name: "Scalloped",
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Shape Code")

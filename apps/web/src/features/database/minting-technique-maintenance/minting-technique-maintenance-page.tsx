@@ -9,12 +9,6 @@ type MintingTechniqueMaintenanceRouteComponentProps = {
 export function MintingTechniqueMaintenanceRouteComponent({
   loaderData,
 }: MintingTechniqueMaintenanceRouteComponentProps) {
-  return renderMintingTechniqueMaintenancePage(loaderData)
-}
-
-export function renderMintingTechniqueMaintenancePage(
-  loaderData: MintingTechniqueMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ mintingTechniques }) => (
     <main className="mt-8">
       <MintingTechniquesTable mintingTechniques={mintingTechniques} />

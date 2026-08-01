@@ -9,12 +9,6 @@ type CurrencyMaintenanceRouteComponentProps = {
 export function CurrencyMaintenanceRouteComponent({
   loaderData,
 }: CurrencyMaintenanceRouteComponentProps) {
-  return renderCurrencyMaintenancePage(loaderData)
-}
-
-export function renderCurrencyMaintenancePage(
-  loaderData: CurrencyMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ currencies }) => (
     <main className="mt-8">
       <CurrenciesTable currencies={currencies} />

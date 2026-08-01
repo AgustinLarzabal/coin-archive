@@ -9,12 +9,6 @@ type CoinMaintenanceRouteComponentProps = {
 export function CoinMaintenanceRouteComponent({
   loaderData,
 }: CoinMaintenanceRouteComponentProps) {
-  return renderCoinMaintenancePage(loaderData)
-}
-
-export function renderCoinMaintenancePage(
-  loaderData: CoinMaintenancePageLoaderData
-) {
   return renderMaintenancePage(
     loaderData,
     ({ search, list, filterOptions }) => (

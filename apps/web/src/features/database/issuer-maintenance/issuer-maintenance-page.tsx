@@ -9,12 +9,6 @@ type IssuerMaintenanceRouteComponentProps = {
 export function IssuerMaintenanceRouteComponent({
   loaderData,
 }: IssuerMaintenanceRouteComponentProps) {
-  return renderIssuerMaintenancePage(loaderData)
-}
-
-export function renderIssuerMaintenancePage(
-  loaderData: IssuerMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ issuers }) => (
     <main className="mt-8">
       <IssuersTable issuers={issuers} />

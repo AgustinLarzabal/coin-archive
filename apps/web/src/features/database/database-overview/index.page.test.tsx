@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-import { renderDatabaseOverviewPage } from "./index"
+import { DatabaseOverviewRouteComponent } from "./index"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -29,10 +29,10 @@ const counts = {
   mints: 9,
 } as const
 
-describe("renderDatabaseOverviewPage", () => {
+describe("DatabaseOverviewRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderDatabaseOverviewPage({ isAllowed: false })
+      <DatabaseOverviewRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -40,10 +40,12 @@ describe("renderDatabaseOverviewPage", () => {
 
   it("renders the overview table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      renderDatabaseOverviewPage({
-        isAllowed: true,
-        counts: { ...counts },
-      })
+      <DatabaseOverviewRouteComponent
+        loaderData={{
+          isAllowed: true,
+          counts: { ...counts },
+        }}
+      />
     )
 
     expect(markup).toContain("Database overview table")

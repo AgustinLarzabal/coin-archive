@@ -9,12 +9,6 @@ type EngraverMaintenanceRouteComponentProps = {
 export function EngraverMaintenanceRouteComponent({
   loaderData,
 }: EngraverMaintenanceRouteComponentProps) {
-  return renderEngraverMaintenancePage(loaderData)
-}
-
-export function renderEngraverMaintenancePage(
-  loaderData: EngraverMaintenancePageLoaderData
-) {
   return renderMaintenancePage(loaderData, ({ engravers }) => (
     <main className="mt-8">
       <EngraversTable engravers={engravers} />

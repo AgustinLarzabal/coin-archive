@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type { RulerOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
-import { renderRulerMaintenancePage } from "./ruler-maintenance-page"
+import { RulerMaintenanceRouteComponent } from "./ruler-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -13,10 +13,10 @@ function createRuler(
   return overrides
 }
 
-describe("renderRulerMaintenancePage", () => {
+describe("RulerMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderRulerMaintenancePage({ isAllowed: false })
+      <RulerMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -24,36 +24,38 @@ describe("renderRulerMaintenancePage", () => {
 
   it("renders the Rulers table for allowed Editors and Admins with group details and maintenance actions", () => {
     const markup = renderToStaticMarkup(
-      renderRulerMaintenancePage({
-        isAllowed: true,
-        rulerGroups: [
-          {
-            id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-            code: "house-of-bourbon",
-            name: "House of Bourbon",
-            createdAt: new Date("2026-07-01T00:00:00.000Z"),
-            updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-          },
-        ],
-        rulers: [
-          createRuler({
-            id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-            code: "felipe-v",
-            name: "Felipe V",
-            group: {
+      <RulerMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          rulerGroups: [
+            {
               id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
               code: "house-of-bourbon",
               name: "House of Bourbon",
+              createdAt: new Date("2026-07-01T00:00:00.000Z"),
+              updatedAt: new Date("2026-07-01T00:00:00.000Z"),
             },
-          }),
-          createRuler({
-            id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
-            code: "liberty",
-            name: "Liberty",
-            group: null,
-          }),
-        ],
-      })
+          ],
+          rulers: [
+            createRuler({
+              id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+              code: "felipe-v",
+              name: "Felipe V",
+              group: {
+                id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+                code: "house-of-bourbon",
+                name: "House of Bourbon",
+              },
+            }),
+            createRuler({
+              id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
+              code: "liberty",
+              name: "Liberty",
+              group: null,
+            }),
+          ],
+        }}
+      />
     )
 
     expect(markup).toContain("Ruler Code")

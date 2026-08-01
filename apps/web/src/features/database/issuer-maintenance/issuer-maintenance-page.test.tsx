@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import type * as TanstackReactRouter from "@tanstack/react-router"
 import { describe, expect, it, vi } from "vitest"
-import { renderIssuerMaintenancePage } from "./issuer-maintenance-page"
+import { IssuerMaintenanceRouteComponent } from "./issuer-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -43,10 +43,10 @@ const issuerMaintenanceRecords = [
   },
 ] as const
 
-describe("renderIssuerMaintenancePage", () => {
+describe("IssuerMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
     const markup = renderToStaticMarkup(
-      renderIssuerMaintenancePage({ isAllowed: false })
+      <IssuerMaintenanceRouteComponent loaderData={{ isAllowed: false }} />
     )
 
     expect(markup).toContain("Access denied")
@@ -54,10 +54,12 @@ describe("renderIssuerMaintenancePage", () => {
 
   it("renders the Issuers table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
-      renderIssuerMaintenancePage({
-        isAllowed: true,
-        issuers: [...issuerMaintenanceRecords],
-      })
+      <IssuerMaintenanceRouteComponent
+        loaderData={{
+          isAllowed: true,
+          issuers: [...issuerMaintenanceRecords],
+        }}
+      />
     )
 
     expect(markup).toContain("Issuers table")

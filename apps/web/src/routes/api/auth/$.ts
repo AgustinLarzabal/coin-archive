@@ -16,7 +16,7 @@ export async function handleAuthRequest({ request }: { request: Request }) {
           key: `${env.CLOUDFLARE_ENV ?? "local"}:${clientIp}`,
         })
       ).success,
-    fetchApi: globalThis.fetch.bind(globalThis),
+    fetchApi: env.AUTH_API.fetch.bind(env.AUTH_API),
   })
 }
 

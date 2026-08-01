@@ -40,6 +40,7 @@ describe("/api/auth/*", () => {
       surfaceImageOrigin: "https://images.coinarchive.app",
       browseCoins: async () => coins,
       handleAuthRequest,
+      trustProxyHeaders: true,
     })
 
     const response = await app.request(
@@ -58,6 +59,38 @@ describe("/api/auth/*", () => {
     await expect(response.json()).resolves.toMatchObject({
       user: { id: "collector-id", role: "editor" },
     })
+    expect(handleAuthRequest).toHaveBeenCalledTimes(1)
+  })
+
+  it("replaces request IDs and proxy headers on direct public requests", async () => {
+    const handleAuthRequest = vi.fn(async (request: Request) => {
+      expect(request.headers.get("x-request-id")).not.toBe("spoofed-id")
+      expect(request.headers.get("x-forwarded-for")).toBeNull()
+      expect(request.headers.get("x-forwarded-host")).toBeNull()
+      expect(request.headers.get("x-forwarded-proto")).toBeNull()
+      return Response.json(null)
+    })
+    const app = createApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      handleAuthRequest,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/auth/get-session",
+      {
+        headers: {
+          "X-Forwarded-For": "203.0.113.9",
+          "X-Forwarded-Host": "attacker.example",
+          "X-Forwarded-Proto": "http",
+          "X-Request-ID": "spoofed-id",
+        },
+      }
+    )
+
+    expect(response.headers.get("x-request-id")).not.toBe("spoofed-id")
+    expect(response.headers.get("x-request-id")).toHaveLength(36)
     expect(handleAuthRequest).toHaveBeenCalledTimes(1)
   })
 

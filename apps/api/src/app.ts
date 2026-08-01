@@ -97,6 +97,7 @@ export function createApiApp({
   surfaceImageOrigin,
   rateLimit = async () => true,
   handleAuthRequest,
+  trustProxyHeaders = false,
 }: {
   browseCoins: BrowseCoins
   getCoin?: GetCoin
@@ -104,6 +105,7 @@ export function createApiApp({
   surfaceImageOrigin: string
   rateLimit?: (clientIp: string) => Promise<boolean>
   handleAuthRequest?: HandleAuthRequest
+  trustProxyHeaders?: boolean
 }) {
   const app = new Hono()
   const allowedOrigin =
@@ -113,10 +115,16 @@ export function createApiApp({
 
   if (handleAuthRequest !== undefined) {
     app.all("/api/auth/*", async (context) => {
-      const requestId =
-        context.req.header("x-request-id") ?? crypto.randomUUID()
+      const requestId = trustProxyHeaders
+        ? (context.req.header("x-request-id") ?? crypto.randomUUID())
+        : crypto.randomUUID()
       const headers = new Headers(context.req.raw.headers)
       headers.set("x-request-id", requestId)
+      if (!trustProxyHeaders) {
+        headers.delete("x-forwarded-for")
+        headers.delete("x-forwarded-host")
+        headers.delete("x-forwarded-proto")
+      }
       const response = await handleAuthRequest(
         new Request(context.req.raw, { headers })
       )

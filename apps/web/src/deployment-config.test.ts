@@ -31,4 +31,17 @@ describe("web deployment configuration", () => {
       )
     }
   })
+
+  it("routes authentication to the API's trusted service entrypoint", () => {
+    for (const [environment, service] of [
+      ["staging", "coin-archive-api-staging"],
+      ["production", "coin-archive-api"],
+    ]) {
+      expect(wranglerConfig).toMatch(
+        new RegExp(
+          `"${environment}": \\{[\\s\\S]*?"binding": "AUTH_API",[\\s\\S]*?"service": "${service}",[\\s\\S]*?"entrypoint": "AuthProxy"`
+        )
+      )
+    }
+  })
 })

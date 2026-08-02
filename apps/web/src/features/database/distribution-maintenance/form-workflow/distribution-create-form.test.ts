@@ -30,8 +30,8 @@ describe("DistributionCreateForm", () => {
   it("suggests a broad reusable Distribution category", () => {
     const markup = renderToStaticMarkup(createElement(DistributionCreateForm))
 
-    expect(markup).toContain('placeholder="silver"')
-    expect(markup).toContain('placeholder="Silver"')
+    expect(markup).toContain('placeholder="standard-circulation"')
+    expect(markup).toContain('placeholder="Standard circulation"')
     expect(markup).not.toContain("silver-900")
     expect(markup).not.toContain("Silver (.900)")
   })

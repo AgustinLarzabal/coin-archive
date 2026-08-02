@@ -3,13 +3,6 @@ import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { Distribution } from "@coin-archive/api"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@coin-archive/ui/components/field"
-import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
 import { submitUpdateDistribution } from "../actions"
@@ -17,10 +10,15 @@ import type { DistributionMutationResult } from "../actions"
 import { createDistributionInputSchema } from "../validation"
 import type { DistributionFieldErrors } from "../validation"
 
-type DistributionDraft = {
-  code: string
-  name: string
-}
+import {
+  createDistributionDraft,
+  normalizeDistributionDraft,
+} from "./distribution-form.shared"
+import {
+  DistributionFormFields,
+  DistributionTextField,
+} from "./distribution-form-fields"
+import type { DistributionDraft } from "./distribution-form.shared"
 
 type DistributionEditFormProps = {
   distribution: Distribution
@@ -35,32 +33,14 @@ const updateDistributionAction = createServerFn({
   )
   .handler(async ({ data }) => submitUpdateDistribution(data))
 
-function createDistributionDraft(
-  distribution: Distribution
-): DistributionDraft {
-  return {
-    code: distribution.code,
-    name: distribution.name,
-  }
-}
-
-function normalizeDraftForComparison(
-  draft: DistributionDraft
-): DistributionDraft {
-  return {
-    code: draft.code.trim(),
-    name: draft.name.trim(),
-  }
-}
-
 export function hasDistributionEditChanges(
   distribution: Distribution,
   draft: DistributionDraft
 ) {
-  const normalizedCurrent = normalizeDraftForComparison(
+  const normalizedCurrent = normalizeDistributionDraft(
     createDistributionDraft(distribution)
   )
-  const normalizedDraft = normalizeDraftForComparison(draft)
+  const normalizedDraft = normalizeDistributionDraft(draft)
 
   return (
     normalizedDraft.code !== normalizedCurrent.code ||
@@ -98,7 +78,7 @@ export function DistributionEditForm({
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [distribution, form])
+  }, [form, distribution])
 
   function clearFeedback() {
     setFieldErrors({})
@@ -133,26 +113,11 @@ export function DistributionEditForm({
       <form.Subscribe selector={(state) => state}>
         {(state) => (
           <>
-            <FieldGroup>
-              {(
-                [
-                  {
-                    name: "code",
-                    id: "distribution-code",
-                    label: "Distribution Code",
-                    placeholder: "silver",
-                  },
-                  {
-                    name: "name",
-                    id: "distribution-name",
-                    label: "Distribution Name",
-                    placeholder: "Silver",
-                  },
-                ] as const
-              ).map((config) => (
-                <form.Field key={config.name} name={config.name}>
+            <DistributionFormFields variant="edit">
+              {(config) => (
+                <form.Field key={config.field} name={config.field}>
                   {(field) => {
-                    const serverError = fieldErrors[config.name]
+                    const serverError = fieldErrors[config.field]
                     const isInvalid =
                       (field.state.meta.isTouched &&
                         !field.state.meta.isValid) ||
@@ -161,29 +126,19 @@ export function DistributionEditForm({
                       ? [...field.state.meta.errors, { message: serverError }]
                       : field.state.meta.errors
                     return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={config.id}>
-                          {config.label}
-                        </FieldLabel>
-                        <Input
-                          id={config.id}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
-                          aria-invalid={isInvalid}
-                          placeholder={config.placeholder}
-                          autoComplete="off"
-                        />
-                        {isInvalid ? <FieldError errors={errors} /> : null}
-                      </Field>
+                      <DistributionTextField
+                        {...config}
+                        errors={errors}
+                        isInvalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        onChange={field.handleChange}
+                        value={field.state.value}
+                      />
                     )
                   }}
                 </form.Field>
-              ))}
-            </FieldGroup>
+              )}
+            </DistributionFormFields>
 
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>

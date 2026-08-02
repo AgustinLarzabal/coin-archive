@@ -66,8 +66,8 @@ describe("DistributionEditForm", () => {
       createElement(DistributionEditForm, { distribution })
     )
 
-    expect(markup).toContain('placeholder="silver"')
-    expect(markup).toContain('placeholder="Silver"')
+    expect(markup).toContain('placeholder="standard-circulation"')
+    expect(markup).toContain('placeholder="Standard circulation"')
     expect(markup).not.toContain('placeholder="silver-900"')
     expect(markup).not.toContain('placeholder="Silver (.900)"')
   })

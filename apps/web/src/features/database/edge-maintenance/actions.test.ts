@@ -16,8 +16,8 @@ const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const etag = '"opaque-version"'
 const edge = {
   id,
-  code: "silver",
-  name: "Silver",
+  code: "reeded",
+  name: "Reeded",
   version: 1,
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
@@ -73,8 +73,8 @@ describe("Edge web mutation adapter", () => {
     await expect(
       submitCreateEdge(
         {
-          code: " silver ",
-          name: " Silver ",
+          code: " reeded ",
+          name: " Reeded ",
           idempotencyKey: "attempt-1",
         },
         { createEdge }
@@ -85,7 +85,7 @@ describe("Edge web mutation adapter", () => {
     })
     expect(createEdge).toHaveBeenCalledWith({
       headers: { "idempotency-key": "attempt-1" },
-      body: { code: "silver", name: "Silver" },
+      body: { code: "reeded", name: "Reeded" },
     })
   })
 
@@ -96,8 +96,8 @@ describe("Edge web mutation adapter", () => {
       body: { data: edge },
     }))
     const submission = {
-      code: "silver",
-      name: "Silver",
+      code: "reeded",
+      name: "Reeded",
       idempotencyKey: "stable-attempt",
     }
 
@@ -131,7 +131,7 @@ describe("Edge web mutation adapter", () => {
 
     await expect(
       submitUpdateEdge(
-        { id, etag, code: "gold", name: "Gold" },
+        { id, etag, code: "plain", name: "Plain" },
         { replaceEdge }
       )
     ).resolves.toMatchObject({ status: "success", message: "Saved." })
@@ -145,7 +145,7 @@ describe("Edge web mutation adapter", () => {
     expect(replaceEdge).toHaveBeenCalledWith({
       params: { uuid: id },
       headers: { "if-match": etag },
-      body: { code: "gold", name: "Gold" },
+      body: { code: "plain", name: "Plain" },
     })
     expect(deleteEdge).toHaveBeenCalledWith({
       params: { uuid: id },
@@ -157,8 +157,8 @@ describe("Edge web mutation adapter", () => {
     await expect(
       submitCreateEdge(
         {
-          code: "silver",
-          name: "Silver",
+          code: "reeded",
+          name: "Reeded",
           idempotencyKey: "attempt-1",
         },
         {
@@ -172,8 +172,8 @@ describe("Edge web mutation adapter", () => {
     await expect(
       submitCreateEdge(
         {
-          code: "silver",
-          name: "Silver",
+          code: "reeded",
+          name: "Reeded",
           idempotencyKey: "attempt-1",
         },
         {
@@ -188,7 +188,7 @@ describe("Edge web mutation adapter", () => {
 
     await expect(
       submitUpdateEdge(
-        { id, etag, code: "silver", name: "Silver" },
+        { id, etag, code: "reeded", name: "Reeded" },
         {
           replaceEdge: vi
             .fn()
@@ -211,8 +211,8 @@ describe("Edge web mutation adapter", () => {
     await expect(
       submitCreateEdge(
         {
-          code: "silver",
-          name: "Silver",
+          code: "reeded",
+          name: "Reeded",
           idempotencyKey: "attempt-1",
         },
         {

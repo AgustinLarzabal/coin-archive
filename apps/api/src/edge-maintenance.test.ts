@@ -5,16 +5,16 @@ import { createApiApp } from "./app"
 const edges = [
   {
     id: "018f1a11-aaaa-7000-8000-000000000001",
-    code: "silver",
-    name: "Silver",
+    code: "reeded",
+    name: "Reeded",
     version: 1,
     createdAt: new Date("2026-08-02T10:15:30.000Z"),
     updatedAt: new Date("2026-08-02T10:15:30.000Z"),
   },
   {
     id: "018f1a11-aaaa-7000-8000-000000000002",
-    code: "gold",
-    name: "Gold",
+    code: "plain",
+    name: "Plain",
     version: 2,
     createdAt: new Date("2026-08-02T10:16:30.000Z"),
     updatedAt: new Date("2026-08-02T10:17:30.000Z"),
@@ -36,8 +36,7 @@ function createApp(
         cursorSecondaryValue:
           edge[input.sort === "name" ? "code" : "name"].toLowerCase(),
       })),
-    getEdge: async (id) =>
-      edges.find((edge) => edge.id === id) ?? null,
+    getEdge: async (id) => edges.find((edge) => edge.id === id) ?? null,
     createEdge: async ({ fields }) => ({
       status: "created" as const,
       edge: {
@@ -102,7 +101,7 @@ describe("protected Edge maintenance reads", () => {
     )
     const app = createApp({ listEdges })
     const list = await app.request(
-      "https://api.coinarchive.app/api/v1/maintenance/edges?limit=1&q=silver&sort=name&order=asc"
+      "https://api.coinarchive.app/api/v1/maintenance/edges?limit=1&q=reeded&sort=name&order=asc"
     )
 
     expect(list.status).toBe(200)
@@ -119,14 +118,14 @@ describe("protected Edge maintenance reads", () => {
       nextCursor: expect.any(String),
     })
     expect(listEdges).toHaveBeenCalledWith({
-      q: "silver",
+      q: "reeded",
       limit: 2,
       sort: "name",
       order: "asc",
     })
 
     const options = await app.request(
-      "https://api.coinarchive.app/api/v1/maintenance/edges/options?q=silver"
+      "https://api.coinarchive.app/api/v1/maintenance/edges/options?q=reeded"
     )
     await expect(options.json()).resolves.toStrictEqual({
       data: edges.map(({ id, code, name }) => ({ id, code, name })),
@@ -178,7 +177,7 @@ describe("protected Edge maintenance mutations", () => {
           "Content-Type": "application/json",
           "Idempotency-Key": "attempt-1",
         },
-        body: JSON.stringify({ code: "silver", name: "Silver" }),
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
       }
     )
 
@@ -202,7 +201,7 @@ describe("protected Edge maintenance mutations", () => {
           "Content-Type": "application/json",
           "Idempotency-Key": "attempt-1",
         },
-        body: JSON.stringify({ code: " silver ", name: " Silver " }),
+        body: JSON.stringify({ code: " reeded ", name: " Reeded " }),
       }
     )
 
@@ -217,7 +216,7 @@ describe("protected Edge maintenance mutations", () => {
         collectorId: "collector-id",
         idempotencyKey: "attempt-1",
         requestHash: expect.stringMatching(/^[a-f0-9]{64}$/),
-        fields: { code: "silver", name: "Silver" },
+        fields: { code: "reeded", name: "Reeded" },
       })
     )
   })
@@ -259,7 +258,7 @@ describe("protected Edge maintenance mutations", () => {
           "Content-Type": "application/json",
           "Idempotency-Key": "attempt-2",
         },
-        body: JSON.stringify({ code: "Silver Alloy", name: "Silver" }),
+        body: JSON.stringify({ code: "Reeded Edge", name: "Reeded" }),
       }
     )
     expect(invalidCode.status).toBe(422)
@@ -268,6 +267,27 @@ describe("protected Edge maintenance mutations", () => {
         expect.objectContaining({
           name: "/code",
           code: "edge_code_invalid",
+        }),
+      ],
+    })
+
+    const invalidBody = await createApp().request(
+      "https://api.coinarchive.app/api/v1/maintenance/edges",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "attempt-3",
+        },
+        body: "null",
+      }
+    )
+    expect(invalidBody.status).toBe(422)
+    await expect(invalidBody.json()).resolves.toMatchObject({
+      invalidParams: [
+        expect.objectContaining({
+          name: "/",
+          code: "edge_body_invalid",
         }),
       ],
     })
@@ -285,7 +305,7 @@ describe("protected Edge maintenance mutations", () => {
         "Content-Type": "application/json",
         "Idempotency-Key": "attempt-1",
       },
-      body: JSON.stringify({ code: "silver", name: "Silver" }),
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
     })
     expect(replayed.status).toBe(201)
 
@@ -297,7 +317,7 @@ describe("protected Edge maintenance mutations", () => {
         "Content-Type": "application/json",
         "Idempotency-Key": "attempt-1",
       },
-      body: JSON.stringify({ code: "gold", name: "Gold" }),
+      body: JSON.stringify({ code: "plain", name: "Plain" }),
     })
     expect(mismatch.status).toBe(409)
     await expect(mismatch.json()).resolves.toMatchObject({
@@ -321,7 +341,7 @@ describe("protected Edge maintenance mutations", () => {
       {
         method: "PUT",
         headers: { "Content-Type": "application/json", "If-Match": ifMatch },
-        body: JSON.stringify({ code: "gold", name: "Gold" }),
+        body: JSON.stringify({ code: "plain", name: "Plain" }),
       }
     )
     expect(replace.status).toBe(200)
@@ -329,7 +349,7 @@ describe("protected Edge maintenance mutations", () => {
     expect(replaceEdge).toHaveBeenCalledWith({
       id: edges[0].id,
       expectedVersion: 1,
-      fields: { code: "gold", name: "Gold" },
+      fields: { code: "plain", name: "Plain" },
     })
 
     const deleted = await app.request(
@@ -351,7 +371,7 @@ describe("protected Edge maintenance mutations", () => {
           "Content-Type": "application/json",
           "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
         },
-        body: JSON.stringify({ code: "silver", name: "Silver" }),
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
       }
     )
     expect(stale.status).toBe(412)
@@ -388,7 +408,7 @@ describe("protected Edge maintenance mutations", () => {
         "Content-Type": "application/json",
         "Idempotency-Key": "attempt-1",
       },
-      body: JSON.stringify({ code: "silver", name: "Silver" }),
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
     })
     expect(duplicate.status).toBe(409)
     await expect(duplicate.json()).resolves.toMatchObject({
@@ -428,7 +448,7 @@ describe("protected Edge maintenance mutations", () => {
         "Content-Type": "application/json",
         "Idempotency-Key": "attempt-1",
       },
-      body: JSON.stringify({ code: "silver", name: "Silver" }),
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
     })
 
     expect(response.status).toBe(500)
@@ -463,5 +483,8 @@ describe("Edge maintenance OpenAPI", () => {
     expect(detail.delete).toMatchObject({
       security: [{ collectorSession: [] }],
     })
+    const edgeOperations = JSON.stringify({ collection, detail })
+    expect(edgeOperations).toContain("edge_code_invalid")
+    expect(edgeOperations).toContain("edge_in_use")
   })
 })

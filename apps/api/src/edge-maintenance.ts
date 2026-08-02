@@ -1,14 +1,18 @@
 import {
+  edgeCreateInputSchema,
+  edgeDeleteInputSchema,
+  edgeDetailInputSchema,
   edgeListInputSchema,
   edgeMutationBodySchema,
   edgeOptionsInputSchema,
+  edgeReplaceInputSchema,
 } from "@coin-archive/api"
 import type { Edge, EdgeListInput } from "@coin-archive/api"
 import type { Hono } from "hono"
 
 import type { MaintenanceCollector } from "./orientation-maintenance"
 
-type Source = Omit<Edge, "createdAt" | "updatedAt" | "etag"> & {
+type EdgeSourceRecord = Omit<Edge, "createdAt" | "updatedAt" | "etag"> & {
   createdAt: Date
   updatedAt: Date
 }
@@ -20,9 +24,9 @@ export type EdgeMaintenanceDependencies = {
       cursor?: Cursor
     }
   ) => Promise<
-    (Source & { cursorValue: string; cursorSecondaryValue: string })[]
+    (EdgeSourceRecord & { cursorValue: string; cursorSecondaryValue: string })[]
   >
-  getEdge: (id: string) => Promise<Source | null>
+  getEdge: (id: string) => Promise<EdgeSourceRecord | null>
   createEdge: (input: {
     collectorId: string
     idempotencyKey: string
@@ -30,7 +34,7 @@ export type EdgeMaintenanceDependencies = {
     expiresAt: Date
     fields: { code: string; name: string }
   }) => Promise<
-    | { status: "created" | "replayed"; edge: Source }
+    | { status: "created" | "replayed"; edge: EdgeSourceRecord }
     | { status: "mismatch" }
   >
   replaceEdge: (input: {
@@ -38,13 +42,15 @@ export type EdgeMaintenanceDependencies = {
     expectedVersion: number
     fields: { code: string; name: string }
   }) => Promise<
-    { status: "updated"; edge: Source } | { status: "missing" | "stale" }
+    | { status: "updated"; edge: EdgeSourceRecord }
+    | { status: "missing" | "stale" }
   >
   deleteEdge: (input: {
     id: string
     expectedVersion: number
   }) => Promise<
-    { status: "deleted"; edge: Source } | { status: "missing" | "stale" }
+    | { status: "deleted"; edge: EdgeSourceRecord }
+    | { status: "missing" | "stale" }
   >
 }
 type Env = { Variables: { collector: MaintenanceCollector; requestId: string } }
@@ -73,7 +79,10 @@ export function registerEdgeMaintenanceRoutes(
         "Edge create requires an Idempotency-Key header",
         c.req.path
       )
-    if (key.length > 255)
+    const parsedHeaders = edgeCreateInputSchema.shape.headers.safeParse({
+      "idempotency-key": key,
+    })
+    if (!parsedHeaders.success)
       return problem(
         400,
         "invalid-idempotency-key",
@@ -84,13 +93,17 @@ export function registerEdgeMaintenanceRoutes(
       )
     const fields = await parseBody(c.req.raw)
     if (fields instanceof Response) return fields
+    const input = edgeCreateInputSchema.parse({
+      headers: parsedHeaders.data,
+      body: fields,
+    })
     try {
       const result = await dependencies.createEdge({
         collectorId: c.get("collector").id,
-        idempotencyKey: key,
-        requestHash: await digest(JSON.stringify(fields)),
+        idempotencyKey: input.headers["idempotency-key"],
+        requestHash: await digest(JSON.stringify(input.body)),
         expiresAt: new Date(Date.now() + 86400000),
-        fields,
+        fields: input.body,
       })
       if (result.status === "mismatch")
         return problem(
@@ -110,9 +123,7 @@ export function registerEdgeMaintenanceRoutes(
       return mapError(error, "create", c.req.path)
     }
   })
-  app.all("/api/v1/maintenance/edges", (c) =>
-    method(c.req.path, "GET, POST")
-  )
+  app.all("/api/v1/maintenance/edges", (c) => method(c.req.path, "GET, POST"))
   app.get("/api/v1/maintenance/edges/options", async (c) => {
     const input = parseCollection(c.req.url, true)
     if (input instanceof Response) return input
@@ -132,28 +143,33 @@ export function registerEdgeMaintenanceRoutes(
       200
     )
   })
-  app.all("/api/v1/maintenance/edges/options", (c) =>
-    method(c.req.path, "GET")
-  )
+  app.all("/api/v1/maintenance/edges/options", (c) => method(c.req.path, "GET"))
   app.get("/api/v1/maintenance/edges/:uuid", async (c) => {
     const id = c.req.param("uuid")
-    if (!uuid(id)) return invalidId(c.req.path)
+    if (!edgeDetailInputSchema.safeParse({ uuid: id }).success)
+      return invalidId(c.req.path)
     const record = await dependencies.getEdge(id)
     if (!record) return notFound(c.req.path)
     return c.json({ data: serialize(record) }, 200, { ETag: etag(record) })
   })
   app.put("/api/v1/maintenance/edges/:uuid", async (c) => {
     const id = c.req.param("uuid")
-    if (!uuid(id)) return invalidId(c.req.path)
+    if (!edgeReplaceInputSchema.shape.params.safeParse({ uuid: id }).success)
+      return invalidId(c.req.path)
     const version = precondition(c.req.header("if-match"), id, c.req.path)
     if (version instanceof Response) return version
     const fields = await parseBody(c.req.raw)
     if (fields instanceof Response) return fields
+    const input = edgeReplaceInputSchema.parse({
+      params: { uuid: id },
+      headers: { "if-match": c.req.header("if-match") },
+      body: fields,
+    })
     try {
       const result = await dependencies.replaceEdge({
-        id,
+        id: input.params.uuid,
         expectedVersion: version,
-        fields,
+        fields: input.body,
       })
       if (result.status !== "updated")
         return result.status === "missing"
@@ -167,12 +183,17 @@ export function registerEdgeMaintenanceRoutes(
   })
   app.delete("/api/v1/maintenance/edges/:uuid", async (c) => {
     const id = c.req.param("uuid")
-    if (!uuid(id)) return invalidId(c.req.path)
+    if (!edgeDeleteInputSchema.shape.params.safeParse({ uuid: id }).success)
+      return invalidId(c.req.path)
     const version = precondition(c.req.header("if-match"), id, c.req.path)
     if (version instanceof Response) return version
+    const input = edgeDeleteInputSchema.parse({
+      params: { uuid: id },
+      headers: { "if-match": c.req.header("if-match") },
+    })
     try {
       const result = await dependencies.deleteEdge({
-        id,
+        id: input.params.uuid,
         expectedVersion: version,
       })
       if (result.status === "missing") return notFound(c.req.path)
@@ -187,14 +208,17 @@ export function registerEdgeMaintenanceRoutes(
   )
 }
 
-type Input = {
+type EdgeCollectionInput = {
   q?: string
   cursor?: Cursor
   limit: number
   sort: "code" | "name"
   order: "asc" | "desc"
 }
-function parseCollection(url: string, optionsOnly: boolean): Input | Response {
+function parseCollection(
+  url: string,
+  optionsOnly: boolean
+): EdgeCollectionInput | Response {
   const requestUrl = new URL(url),
     names = optionsOnly
       ? ["q", "cursor", "limit"]
@@ -215,10 +239,10 @@ function parseCollection(url: string, optionsOnly: boolean): Input | Response {
   if (!parsed.success) return invalidQuery(requestUrl.pathname)
   const sort = optionsOnly
       ? "name"
-      : ((raw.sort as Input["sort"] | undefined) ?? "name"),
+      : ((raw.sort as EdgeCollectionInput["sort"] | undefined) ?? "name"),
     order = optionsOnly
       ? "asc"
-      : ((raw.order as Input["order"] | undefined) ?? "asc")
+      : ((raw.order as EdgeCollectionInput["order"] | undefined) ?? "asc")
   const cursor =
     parsed.data.cursor === undefined
       ? undefined
@@ -228,8 +252,11 @@ function parseCollection(url: string, optionsOnly: boolean): Input | Response {
     : { q: parsed.data.q, cursor, limit: parsed.data.limit ?? 30, sort, order }
 }
 function page(
-  records: (Source & { cursorValue: string; cursorSecondaryValue: string })[],
-  input: Pick<Input, "limit" | "sort" | "order">
+  records: (EdgeSourceRecord & {
+    cursorValue: string
+    cursorSecondaryValue: string
+  })[],
+  input: Pick<EdgeCollectionInput, "limit" | "sort" | "order">
 ) {
   const selected = records.slice(0, input.limit),
     last = records.length > selected.length ? selected.at(-1) : undefined
@@ -247,7 +274,7 @@ function page(
   }
 }
 function serialize(
-  record: Source & {
+  record: EdgeSourceRecord & {
     cursorValue?: string
     cursorSecondaryValue?: string
   }
@@ -288,7 +315,15 @@ async function parseBody(request: Request) {
     "The Edge could not be saved",
     new URL(request.url).pathname,
     parsed.error.issues.map((issue) => {
-      const field = issue.path.at(0) === "code" ? "code" : "name"
+      const pathField = issue.path.at(0)
+      if (pathField !== "code" && pathField !== "name") {
+        return {
+          name: "/",
+          code: "edge_body_invalid",
+          reason: "The Edge request body must be an object.",
+        }
+      }
+      const field = pathField
       const failure =
         issue.code === "too_small"
           ? "required"
@@ -473,7 +508,7 @@ function method(instance: string, allow: string) {
     { Allow: allow }
   )
 }
-function etag(record: Pick<Source, "id" | "version">) {
+function etag(record: Pick<EdgeSourceRecord, "id" | "version">) {
   return `"${to64(`${record.id}:${record.version}`)}"`
 }
 function encodeCursor(value: Cursor & { sort: string; order: string }) {

@@ -459,6 +459,7 @@ export const edgeOptionsOutputSchema = z.object({
   data: z.array(edgeOptionSchema),
   nextCursor: z.string().nullable(),
 })
+export const edgeDetailInputSchema = z.object({ uuid: z.uuid() })
 export const edgeDetailOutputSchema = z.object({ data: edgeSchema })
 export const edgeMutationBodySchema = z.object({
   code: z
@@ -496,6 +497,46 @@ export const edgeDeleteInputSchema = z.object({
   headers: z.object({ "if-match": ifMatchSchema }),
 })
 export const edgeDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const edgeMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "edge_code_conflict",
+      "edge_in_use",
+      "edge_not_found",
+      "edge_precondition_failed",
+      "edge_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_edge_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "edge_body_invalid",
+            "edge_code_invalid",
+            "edge_code_required",
+            "edge_code_too_long",
+            "edge_name_invalid",
+            "edge_name_required",
+            "edge_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
 
 const currencyCodeSchema = z
   .string()
@@ -613,6 +654,15 @@ const maintenanceMutationErrors = {
   },
 } as const
 
+const edgeMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: { status: 409, data: edgeMaintenanceProblemDocumentSchema },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: edgeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
 export const publicApiContract = {
   coins: {
     browse: oc
@@ -635,7 +685,7 @@ export const publicApiContract = {
         summary: "Get Coin detail",
         tags: ["Coins"],
       })
-      .input(z.object({ uuid: z.uuid() }))
+      .input(edgeDetailInputSchema)
       .output(coinDetailOutputSchema)
       .errors({
         BAD_REQUEST: { status: 400, data: problemDocumentSchema },
@@ -911,7 +961,7 @@ export const maintenanceApiContract = {
       })
       .input(edgeCreateInputSchema)
       .output(edgeCreateOutputSchema)
-      .errors(maintenanceMutationErrors),
+      .errors(edgeMaintenanceMutationErrors),
     replace: oc
       .route({
         method: "PUT",
@@ -923,7 +973,7 @@ export const maintenanceApiContract = {
       })
       .input(edgeReplaceInputSchema)
       .output(edgeReplaceOutputSchema)
-      .errors(maintenanceMutationErrors),
+      .errors(edgeMaintenanceMutationErrors),
     delete: oc
       .route({
         method: "DELETE",
@@ -936,7 +986,7 @@ export const maintenanceApiContract = {
       })
       .input(edgeDeleteInputSchema)
       .output(edgeDeleteOutputSchema)
-      .errors(maintenanceMutationErrors),
+      .errors(edgeMaintenanceMutationErrors),
   },
   currencies: {
     list: oc

@@ -32,6 +32,7 @@ import {
   edgeListInputSchema,
   edgeListOutputSchema,
   edgeOptionsOutputSchema,
+  edgeMaintenanceProblemDocumentSchema,
   edgeReplaceInputSchema,
   currencyCreateInputSchema,
   currencyCreateOutputSchema,
@@ -574,6 +575,38 @@ describe("Distribution maintenance contract", () => {
 })
 
 describe("Edge maintenance contract", () => {
+  it("declares stable Edge validation and dependent-Coin conflict codes", () => {
+    expect(
+      edgeMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/edge-validation",
+          title: "Edge validation failed",
+          status: 422,
+          detail: "The Edge could not be saved",
+          instance: "/api/v1/maintenance/edges",
+          code: "edge_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "edge_code_invalid",
+              reason: "Edge Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("edge_code_invalid")
+    expect(
+      edgeMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/edge-in-use",
+        title: "Edge is in use",
+        status: 409,
+        detail: "Coins still use this Edge",
+        instance: `/api/v1/maintenance/edges/${edge.id}`,
+        code: "edge_in_use",
+      }).code
+    ).toBe("edge_in_use")
+  })
+
   it("defines bounded cursor pagination and compact options", () => {
     expect(
       edgeListInputSchema.parse({

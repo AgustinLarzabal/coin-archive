@@ -5,7 +5,6 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateOrientation } from "../actions"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
 import { createOrientationInputSchema } from "../orientation-validation"
@@ -29,12 +28,10 @@ type OrientationEditFormProps = {
 const updateOrientationAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: OrientationDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateOrientation(session?.user ?? null, data)
-  })
+  .inputValidator(
+    (data: OrientationDraft & { id: string; etag: string }) => data
+  )
+  .handler(async ({ data }) => submitUpdateOrientation(data))
 
 export function OrientationEditForm({
   orientation,
@@ -51,7 +48,7 @@ export function OrientationEditForm({
     validators: { onSubmit: createOrientationInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateOrientation({
-        data: { id: orientation.id, ...value },
+        data: { id: orientation.id, etag: orientation.etag, ...value },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

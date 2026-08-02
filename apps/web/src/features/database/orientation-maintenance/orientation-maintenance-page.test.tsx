@@ -11,6 +11,7 @@ const orientationTimestamps = {
   version: 1,
   createdAt: "2026-07-01T00:00:00.000Z",
   updatedAt: "2026-07-01T00:00:00.000Z",
+  etag: '"orientation-version-1"',
 } as const
 
 function createOrientation(

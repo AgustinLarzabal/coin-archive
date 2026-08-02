@@ -8,12 +8,19 @@ export {
   coinSummarySchema,
   apiContract,
   maintenanceApiContract,
+  orientationCreateInputSchema,
+  orientationCreateOutputSchema,
+  orientationDeleteInputSchema,
+  orientationDeleteOutputSchema,
   orientationDetailOutputSchema,
   orientationListInputSchema,
   orientationListOutputSchema,
   orientationOptionSchema,
   orientationOptionsInputSchema,
   orientationOptionsOutputSchema,
+  orientationMutationBodySchema,
+  orientationReplaceInputSchema,
+  orientationReplaceOutputSchema,
   orientationSchema,
   publicApiContract,
 } from "./contract"
@@ -29,6 +36,7 @@ export type {
   OrientationOption,
   OrientationOptionsInput,
   OrientationOptionsOutput,
+  OrientationMutationBody,
 } from "./contract"
 export { createMaintenanceApiClient, createPublicApiClient } from "./client"
 export type { MaintenanceApiClient, PublicApiClient } from "./client"

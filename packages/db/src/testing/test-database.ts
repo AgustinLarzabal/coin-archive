@@ -19,6 +19,7 @@ import { edge } from "../schema/edge"
 import { engraver } from "../schema/engraver"
 import { issuer } from "../schema/issuer"
 import { mint } from "../schema/mint"
+import { maintenanceIdempotency } from "../schema/maintenance-idempotency"
 import { orientation } from "../schema/orientation"
 import { rim } from "../schema/rim"
 import { ruler } from "../schema/ruler"
@@ -47,6 +48,7 @@ export function createTestDatabase(databaseUrl: string) {
 }
 
 export async function clearTestData(database: TestDatabase) {
+  await database.delete(maintenanceIdempotency)
   await database.delete(account)
   await database.delete(session)
   await database.delete(verification)

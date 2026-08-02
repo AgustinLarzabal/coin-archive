@@ -38,6 +38,27 @@ function createApp(
       })),
     getOrientation: async (id) =>
       orientations.find((orientation) => orientation.id === id) ?? null,
+    createOrientation: async ({ fields }) => ({
+      status: "created" as const,
+      orientation: {
+        ...orientations[0],
+        id: "018f1a11-aaaa-7000-8000-000000000003",
+        ...fields,
+      },
+    }),
+    replaceOrientation: async ({ id, fields }) => ({
+      status: "updated" as const,
+      orientation: {
+        ...orientations[0],
+        id,
+        ...fields,
+        version: 2,
+      },
+    }),
+    deleteOrientation: async () => ({
+      status: "deleted" as const,
+      orientation: orientations[0],
+    }),
     ...overrides,
   })
 }
@@ -110,6 +131,7 @@ describe("protected Orientation maintenance reads", () => {
       data: [
         {
           ...orientations[0],
+          etag: '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
           createdAt: "2026-08-02T10:15:30.000Z",
           updatedAt: "2026-08-02T10:15:30.000Z",
         },
@@ -162,6 +184,7 @@ describe("protected Orientation maintenance reads", () => {
     await expect(response.json()).resolves.toStrictEqual({
       data: {
         ...orientations[0],
+        etag: '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
         createdAt: "2026-08-02T10:15:30.000Z",
         updatedAt: "2026-08-02T10:15:30.000Z",
       },
@@ -199,7 +222,7 @@ describe("protected Orientation maintenance reads", () => {
 
     expect(response.status).toBe(429)
     expect(response.headers.get("retry-after")).toBe("60")
-    expect(maintenanceRateLimit).toHaveBeenCalledWith("collector-id")
+    expect(maintenanceRateLimit).toHaveBeenCalledWith("collector-id", "read")
   })
 
   it("sanitizes unexpected protected-read failures", async () => {
@@ -218,6 +241,283 @@ describe("protected Orientation maintenance reads", () => {
     )
     expect(response.headers.get("cache-control")).toBe("private, no-store")
     expect(await response.text()).not.toContain("secret-database")
+  })
+})
+
+describe("protected Orientation maintenance mutations", () => {
+  it("authorizes every mutation at the protected API boundary", async () => {
+    const request = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "attempt-1",
+      },
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+    }
+    const signedOut = await createApp({
+      getCollector: async () => null,
+    }).request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      request
+    )
+    const collectorOnly = await createApp({
+      getCollector: async () => ({ id: "collector-id", role: "collector" }),
+    }).request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      request
+    )
+
+    expect(signedOut.status).toBe(401)
+    expect(collectorOnly.status).toBe(403)
+  })
+
+  it("creates with 201, Location, ETag, and replay-safe idempotency", async () => {
+    const createOrientation = vi.fn(async ({ fields }) => ({
+      status: "created" as const,
+      orientation: {
+        ...orientations[0],
+        id: "018f1a11-aaaa-7000-8000-000000000003",
+        ...fields,
+      },
+    }))
+    const app = createApp({ createOrientation })
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "attempt-1",
+        },
+        body: JSON.stringify({ code: " reeded ", name: " Reeded " }),
+      }
+    )
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get("location")).toMatch(
+      /^\/api\/v1\/maintenance\/orientations\//
+    )
+    expect(response.headers.get("etag")).toMatch(/^"[A-Za-z0-9_-]+"$/)
+    expect(response.headers.get("cache-control")).toBe("private, no-store")
+    await expect(response.json()).resolves.toMatchObject({
+      data: { code: "reeded", name: "Reeded", version: 1 },
+    })
+    expect(createOrientation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collectorId: "collector-id",
+        idempotencyKey: "attempt-1",
+        requestHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        fields: { code: "reeded", name: "Reeded" },
+      })
+    )
+  })
+
+  it("requires an Idempotency-Key and rejects mismatched reuse", async () => {
+    const missingKey = await createApp().request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+      }
+    )
+    expect(missingKey.status).toBe(400)
+
+    const mismatch = await createApp({
+      createOrientation: async () => ({ status: "mismatch" }),
+    }).request("https://api.coinarchive.app/api/v1/maintenance/orientations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "attempt-1",
+      },
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+    })
+    expect(mismatch.status).toBe(409)
+    await expect(mismatch.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/idempotency-key-reuse",
+      code: "idempotency_key_reused",
+    })
+  })
+
+  it("returns pointer-addressed authoritative validation problems", async () => {
+    const response = await createApp().request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "attempt-1",
+        },
+        body: JSON.stringify({ code: "Reeded", name: " " }),
+      }
+    )
+
+    expect(response.status).toBe(422)
+    await expect(response.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/orientation-validation",
+      code: "orientation_validation_failed",
+      invalidParams: expect.arrayContaining([
+        expect.objectContaining({
+          name: "/code",
+          code: "invalid_orientation_code",
+        }),
+        expect.objectContaining({
+          name: "/name",
+          code: "invalid_orientation_name",
+        }),
+      ]),
+    })
+  })
+
+  it("replaces with If-Match and returns the incremented representation", async () => {
+    const replaceOrientation = vi.fn(async ({ id, fields }) => ({
+      status: "updated" as const,
+      orientation: { ...orientations[0], id, ...fields, version: 2 },
+    }))
+    const app = createApp({ replaceOrientation })
+    const response = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+        body: JSON.stringify({ code: "medal-alignment", name: "Medal" }),
+      }
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("etag")).not.toBe(
+      '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"'
+    )
+    await expect(response.json()).resolves.toMatchObject({
+      data: { version: 2, code: "medal-alignment" },
+    })
+    expect(replaceOrientation).toHaveBeenCalledWith({
+      id: orientations[0].id,
+      expectedVersion: 1,
+      fields: { code: "medal-alignment", name: "Medal" },
+    })
+  })
+
+  it("returns 412 for stale replacement and deletion preconditions", async () => {
+    const app = createApp({
+      replaceOrientation: async () => ({ status: "stale" }),
+      deleteOrientation: async () => ({ status: "stale" }),
+    })
+    const headers = {
+      "Content-Type": "application/json",
+      "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+    }
+    const replacement = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+      }
+    )
+    const deletion = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      { method: "DELETE", headers }
+    )
+
+    for (const response of [replacement, deletion]) {
+      expect(response.status).toBe(412)
+      await expect(response.json()).resolves.toMatchObject({
+        type: "https://api.coinarchive.app/problems/stale-orientation",
+        code: "orientation_precondition_failed",
+      })
+    }
+  })
+
+  it("returns a stable 404 when a mutation target is missing", async () => {
+    const app = createApp({
+      replaceOrientation: async () => ({ status: "missing" }),
+    })
+    const response = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+      }
+    )
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/orientation-not-found",
+      code: "orientation_not_found",
+    })
+  })
+
+  it("returns stable duplicate and Coin-dependency conflicts", async () => {
+    const duplicate = await createApp({
+      createOrientation: async () => {
+        throw {
+          cause: {
+            code: "23505",
+            constraint_name: "orientation_code_lower_unique_idx",
+          },
+        }
+      },
+    }).request("https://api.coinarchive.app/api/v1/maintenance/orientations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "attempt-1",
+      },
+      body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+    })
+    expect(duplicate.status).toBe(409)
+    await expect(duplicate.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/orientation-code-conflict",
+      code: "orientation_code_conflict",
+    })
+
+    const dependency = await createApp({
+      deleteOrientation: async () => {
+        throw {
+          cause: {
+            code: "23001",
+            constraint_name: "coin_orientation_id_orientation_id_fk",
+          },
+        }
+      },
+    }).request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+      }
+    )
+    expect(dependency.status).toBe(409)
+    await expect(dependency.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/orientation-in-use",
+      code: "orientation_in_use",
+    })
+  })
+
+  it("permanently deletes with 204", async () => {
+    const response = await createApp().request(
+      `https://api.coinarchive.app/api/v1/maintenance/orientations/${orientations[0].id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+      }
+    )
+
+    expect(response.status).toBe(204)
+    expect(await response.text()).toBe("")
   })
 })
 
@@ -247,5 +547,17 @@ describe("combined OpenAPI document", () => {
       tags: ["Orientation Maintenance"],
       security: [{ collectorSession: [] }],
     })
+    expect(
+      document.paths["/api/v1/maintenance/orientations"].post
+    ).toMatchObject({
+      tags: ["Orientation Maintenance"],
+      security: [{ collectorSession: [] }],
+    })
+    expect(
+      document.paths["/api/v1/maintenance/orientations/{uuid}"].put
+    ).toMatchObject({ security: [{ collectorSession: [] }] })
+    expect(
+      document.paths["/api/v1/maintenance/orientations/{uuid}"].delete
+    ).toMatchObject({ security: [{ collectorSession: [] }] })
   })
 })

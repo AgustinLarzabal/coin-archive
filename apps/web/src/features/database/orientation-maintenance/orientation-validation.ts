@@ -25,10 +25,14 @@ export const createOrientationInputSchema = z.object({
 export const updateOrientationInputSchema = createOrientationInputSchema.extend(
   {
     id: z.uuid(),
+    etag: z.string().min(1),
   }
 )
 
-export const deleteOrientationInputSchema = z.object({ id: z.uuid() })
+export const deleteOrientationInputSchema = z.object({
+  id: z.uuid(),
+  etag: z.string().min(1),
+})
 
 type OrientationFieldName = (typeof ORIENTATION_FIELD_NAMES)[number]
 
@@ -38,19 +42,10 @@ export type OrientationFieldErrors = Partial<
 export type CreateOrientationInput = z.input<
   typeof createOrientationInputSchema
 >
-export type CreateOrientationData = z.output<
-  typeof createOrientationInputSchema
->
 export type UpdateOrientationInput = z.input<
   typeof updateOrientationInputSchema
 >
-export type UpdateOrientationData = z.output<
-  typeof updateOrientationInputSchema
->
 export type DeleteOrientationInput = z.input<
-  typeof deleteOrientationInputSchema
->
-export type DeleteOrientationData = z.output<
   typeof deleteOrientationInputSchema
 >
 

@@ -4,7 +4,6 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateOrientation } from "../actions"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
 import { createOrientationInputSchema } from "../orientation-validation"
@@ -28,11 +27,7 @@ const createOrientationAction = createServerFn({
   method: "POST",
 })
   .inputValidator((data: OrientationDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateOrientation(session?.user ?? null, data)
-  })
+  .handler(async ({ data }) => submitCreateOrientation(data))
 
 export function OrientationCreateForm({
   onCreated,

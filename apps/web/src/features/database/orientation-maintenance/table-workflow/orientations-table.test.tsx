@@ -12,6 +12,7 @@ const orientations: OrientationOption[] = [
     version: 1,
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
+    etag: '"coin-alignment-version-1"',
   },
   {
     id: "9c65c9ed-eb9d-4cf5-986f-1346d6a326ca",
@@ -20,6 +21,7 @@ const orientations: OrientationOption[] = [
     version: 1,
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
+    etag: '"medal-alignment-version-1"',
   },
 ]
 

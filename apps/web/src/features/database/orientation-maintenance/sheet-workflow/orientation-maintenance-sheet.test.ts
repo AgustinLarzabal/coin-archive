@@ -100,6 +100,7 @@ const orientation: OrientationOption = {
   version: 1,
   createdAt: "2026-06-24T12:00:00.000Z",
   updatedAt: "2026-06-24T12:00:00.000Z",
+  etag: '"orientation-version-1"',
 }
 
 function renderOrientationMaintenanceSheet(

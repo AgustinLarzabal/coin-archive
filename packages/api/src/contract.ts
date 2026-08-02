@@ -19,6 +19,15 @@ export const problemDocumentSchema = z.object({
 
 export const maintenanceProblemDocumentSchema = problemDocumentSchema.extend({
   code: z.string().min(1),
+  invalidParams: z
+    .array(
+      z.object({
+        name: z.string().startsWith("/"),
+        code: z.string().min(1),
+        reason: z.string(),
+      })
+    )
+    .optional(),
 })
 
 export const coinSummarySchema = z.object({
@@ -113,6 +122,7 @@ export const orientationSchema = z.object({
   version: z.number().int().min(1),
   createdAt: utcTimestampSchema,
   updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
 })
 
 export const orientationOptionSchema = orientationSchema.pick({
@@ -149,6 +159,54 @@ export const orientationDetailOutputSchema = z.object({
   data: orientationSchema,
 })
 
+export const orientationMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+
+const idempotencyKeySchema = z.string().trim().min(1).max(255)
+const ifMatchSchema = z.string().trim().min(1)
+
+export const orientationCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: orientationMutationBodySchema,
+})
+
+export const orientationCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/orientations/"),
+    etag: z.string(),
+  }),
+  body: orientationDetailOutputSchema,
+})
+
+export const orientationReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: orientationMutationBodySchema,
+})
+
+export const orientationReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: orientationDetailOutputSchema,
+})
+
+export const orientationDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+
+export const orientationDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+
 const maintenanceReadErrors = {
   BAD_REQUEST: { status: 400, data: maintenanceProblemDocumentSchema },
   UNAUTHORIZED: { status: 401, data: maintenanceProblemDocumentSchema },
@@ -163,6 +221,20 @@ const maintenanceReadErrors = {
   },
   INTERNAL_SERVER_ERROR: {
     status: 500,
+    data: maintenanceProblemDocumentSchema,
+  },
+} as const
+
+const maintenanceMutationErrors = {
+  ...maintenanceReadErrors,
+  NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+  CONFLICT: { status: 409, data: maintenanceProblemDocumentSchema },
+  PRECONDITION_FAILED: {
+    status: 412,
+    data: maintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
     data: maintenanceProblemDocumentSchema,
   },
 } as const
@@ -234,6 +306,44 @@ export const maintenanceApiContract = {
         ...maintenanceReadErrors,
         NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
       }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/orientations",
+        summary: "Create an Orientation",
+        tags: ["Orientation Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(orientationCreateInputSchema)
+      .output(orientationCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/orientations/{uuid}",
+        summary: "Replace an Orientation",
+        tags: ["Orientation Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(orientationReplaceInputSchema)
+      .output(orientationReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/orientations/{uuid}",
+        summary: "Permanently delete an Orientation",
+        tags: ["Orientation Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(orientationDeleteInputSchema)
+      .output(orientationDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
   },
 }
 
@@ -258,4 +368,7 @@ export type OrientationOptionsOutput = z.infer<
 >
 export type OrientationDetailOutput = z.infer<
   typeof orientationDetailOutputSchema
+>
+export type OrientationMutationBody = z.infer<
+  typeof orientationMutationBodySchema
 >

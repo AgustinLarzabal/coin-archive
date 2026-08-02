@@ -16,7 +16,10 @@ export function createPublicApiClient({
   fetch: typeof globalThis.fetch
 }): PublicApiClient {
   return createORPCClient(
-    new OpenAPILink(publicApiContract, { url: baseUrl, fetch })
+    new OpenAPILink(publicApiContract, {
+      url: baseUrl,
+      fetch: normalizeProblemJsonFetch(fetch),
+    })
   )
 }
 
@@ -28,6 +31,33 @@ export function createMaintenanceApiClient({
   fetch: typeof globalThis.fetch
 }): MaintenanceApiClient {
   return createORPCClient(
-    new OpenAPILink(maintenanceApiContract, { url: baseUrl, fetch })
+    new OpenAPILink(maintenanceApiContract, {
+      url: baseUrl,
+      fetch: normalizeProblemJsonFetch(fetch),
+    })
   )
+}
+
+function normalizeProblemJsonFetch(
+  fetchImplementation: typeof globalThis.fetch
+) {
+  return async (...args: Parameters<typeof globalThis.fetch>) => {
+    const response = await fetchImplementation(...args)
+    if (
+      !response.headers
+        .get("content-type")
+        ?.toLowerCase()
+        .startsWith("application/problem+json")
+    ) {
+      return response
+    }
+
+    const headers = new Headers(response.headers)
+    headers.set("Content-Type", "application/json")
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    })
+  }
 }

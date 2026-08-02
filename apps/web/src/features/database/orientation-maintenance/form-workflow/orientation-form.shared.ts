@@ -4,7 +4,6 @@ import { createOrientationFieldErrorResult } from "../orientation-mutation-error
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
 import {
   createOrientationInputSchema,
-  updateOrientationInputSchema,
   validateOrientationInput,
 } from "../orientation-validation"
 
@@ -68,13 +67,10 @@ export function validateOrientationCreateDraft(
 }
 
 export function validateOrientationUpdateDraft(
-  orientationId: string,
+  _orientationId: string,
   draft: OrientationDraft
 ): OrientationMutationResult | null {
-  const result = validateOrientationInput(updateOrientationInputSchema, {
-    id: orientationId,
-    ...draft,
-  })
+  const result = validateOrientationInput(createOrientationInputSchema, draft)
 
   return result.success
     ? null

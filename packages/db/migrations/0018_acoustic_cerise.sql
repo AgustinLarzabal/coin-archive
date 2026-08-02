@@ -1,0 +1,1 @@
+CREATE INDEX "maintenance_idempotency_expires_at_idx" ON "maintenance_idempotency" USING btree ("expires_at");

@@ -18,12 +18,14 @@ describe("orientation-maintenance public API", () => {
     featureDirectoryUrl: FEATURE_DIRECTORY_URL,
   })
 
-  it("keeps the migrated read adapter outside the database package boundary", () => {
-    expect(
-      readFeatureSource(
-        FEATURE_DIRECTORY_URL,
-        "orientation-maintenance-route-data.ts"
+  it("keeps migrated Orientation reads and writes outside the database package boundary", () => {
+    for (const file of [
+      "actions.ts",
+      "orientation-maintenance-route-data.ts",
+    ]) {
+      expect(readFeatureSource(FEATURE_DIRECTORY_URL, file)).not.toContain(
+        "@coin-archive/db"
       )
-    ).not.toContain("@coin-archive/db")
+    }
   })
 })

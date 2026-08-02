@@ -1,9 +1,12 @@
 import {
+  createOrientationIdempotentlyWithDatabase,
   createDatabase,
+  deleteOrientationIfVersionWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
   getCoinsWithDatabase,
+  replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
 import { WorkerEntrypoint } from "cloudflare:workers"
@@ -47,10 +50,10 @@ async function handleRequest(
           key: `${env.API_ENVIRONMENT}:${clientIp}`,
         })
       ).success,
-    maintenanceRateLimit: async (collectorId) =>
+    maintenanceRateLimit: async (collectorId, kind) =>
       (
         await env.API_RATE_LIMITER.limit({
-          key: `${env.API_ENVIRONMENT}:collector:${collectorId}:maintenance-read`,
+          key: `${env.API_ENVIRONMENT}:collector:${collectorId}:maintenance-${kind}`,
         })
       ).success,
     browseCoins: async (input) =>
@@ -85,6 +88,16 @@ async function handleRequest(
       getOrientationMaintenanceRecordsWithDatabase(database.db, input),
     getOrientation: (orientationId) =>
       getOrientationMaintenanceRecordWithDatabase(database.db, orientationId),
+    createOrientation: (input) =>
+      createOrientationIdempotentlyWithDatabase(database.db, input),
+    replaceOrientation: ({ id, expectedVersion, fields }) =>
+      replaceOrientationWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteOrientation: (input) =>
+      deleteOrientationIfVersionWithDatabase(database.db, input),
     handleAuthRequest: (authRequest) => auth.handler(authRequest),
   })
   try {

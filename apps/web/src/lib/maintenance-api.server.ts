@@ -15,7 +15,7 @@ export async function proxyMaintenanceApiRequest(
   request: Request,
   {
     apiBaseUrl,
-    createRequestId = crypto.randomUUID,
+    createRequestId = () => crypto.randomUUID(),
     fetchApi,
   }: MaintenanceProxyOptions
 ) {
@@ -28,6 +28,16 @@ export async function proxyMaintenanceApiRequest(
   }
 
   const requestId = createRequestId()
+  if (
+    !isSafeMethod(request.method) &&
+    request.headers.get("origin") !== browserUrl.origin
+  ) {
+    return Response.json(
+      { error: "Maintenance mutation must be same-origin." },
+      { status: 403, headers: { "X-Request-ID": requestId } }
+    )
+  }
+
   const apiUrl = new URL(
     `${browserUrl.pathname}${browserUrl.search}`,
     apiBaseUrl
@@ -49,6 +59,10 @@ export async function proxyMaintenanceApiRequest(
   })
 }
 
+function isSafeMethod(method: string) {
+  return method === "GET" || method === "HEAD" || method === "OPTIONS"
+}
+
 export async function getMaintenanceApiClient() {
   const { env } = await import("cloudflare:workers")
   const incomingRequest = getRequest()
@@ -64,6 +78,10 @@ export async function getMaintenanceApiClient() {
       if (!request.headers.has("cookie")) {
         const cookie = incomingRequest.headers.get("cookie")
         if (cookie !== null) request.headers.set("cookie", cookie)
+      }
+      if (!isSafeMethod(request.method) && !request.headers.has("origin")) {
+        const origin = incomingRequest.headers.get("origin")
+        if (origin !== null) request.headers.set("origin", origin)
       }
 
       return proxyMaintenanceApiRequest(request, {

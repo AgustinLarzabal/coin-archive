@@ -9,7 +9,13 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import {
   createOrientation,
+  createOrientationIdempotently,
+  createOrientationIdempotentlyWithDatabase,
   deleteOrientation,
+  deleteOrientationIfVersion,
+  deleteOrientationIfVersionWithDatabase,
+  replaceOrientation,
+  replaceOrientationWithDatabase,
   updateOrientation,
 } from "./orientation"
 
@@ -76,6 +82,138 @@ describe("orientation mutations integration", () => {
     expect(firstOrientation.id).not.toBe(secondOrientation.id)
   })
 
+  it("persists and replays an identical idempotent create response", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "orientation-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    }
+
+    const first = await createOrientationIdempotently(input)
+    const retry = await createOrientationIdempotently(input)
+
+    expect(first).toMatchObject({ status: "created" })
+    expect(retry).toStrictEqual({
+      status: "replayed",
+      orientation:
+        first.status === "created" ? first.orientation : expect.anything(),
+    })
+    await expect(db.query.orientation.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("supports request-scoped database clients for API mutations", async () => {
+    const created = await createOrientationIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "request-scoped-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+
+    const replaced = await replaceOrientationWithDatabase(db, {
+      id: created.orientation.id,
+      expectedVersion: 1,
+      code: "medal-alignment",
+      name: "Medal alignment",
+    })
+    expect(replaced).toMatchObject({ status: "updated" })
+
+    await expect(
+      deleteOrientationIfVersionWithDatabase(db, {
+        id: created.orientation.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
+  })
+
+  it("rejects payload-mismatched reuse of an Orientation create key", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "orientation-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    }
+    await createOrientationIdempotently(input)
+
+    await expect(
+      createOrientationIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "medal-alignment", name: "Medal alignment" },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.orientation.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("creates only one Orientation when identical requests race", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "concurrent-orientation-attempt",
+      requestHash: "c".repeat(64),
+      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    }
+
+    const results = await Promise.all([
+      createOrientationIdempotently(input),
+      createOrientationIdempotently(input),
+    ])
+
+    expect(results.map((result) => result.status).sort()).toStrictEqual([
+      "created",
+      "replayed",
+    ])
+    await expect(db.query.orientation.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("allows an expired idempotency key to begin a new create", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "expired-orientation-attempt",
+      requestHash: "d".repeat(64),
+      expiresAt: new Date("2020-01-01T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    }
+    await createOrientationIdempotently(input)
+
+    await expect(
+      createOrientationIdempotently({
+        ...input,
+        requestHash: "e".repeat(64),
+        expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+        fields: { code: "medal-alignment", name: "Medal alignment" },
+      })
+    ).resolves.toMatchObject({ status: "created" })
+    await expect(db.query.orientation.findMany()).resolves.toHaveLength(2)
+  })
+
+  it("cleans all expired idempotency records when processing a create", async () => {
+    await createOrientationIdempotently({
+      collectorId: "collector-1",
+      idempotencyKey: "expired-unrelated-key",
+      requestHash: "1".repeat(64),
+      expiresAt: new Date("2020-01-01T00:00:00.000Z"),
+      fields: { code: "coin-alignment", name: "Coin alignment" },
+    })
+    await createOrientationIdempotently({
+      collectorId: "collector-2",
+      idempotencyKey: "current-key",
+      requestHash: "2".repeat(64),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+      fields: { code: "medal-alignment", name: "Medal alignment" },
+    })
+
+    await expect(
+      db.query.maintenanceIdempotency.findMany()
+    ).resolves.toMatchObject([
+      { collectorId: "collector-2", key: "current-key" },
+    ])
+  })
+
   it("trims Orientation Code and Orientation Name before updating an Orientation", async () => {
     const existingOrientation = await createOrientationFixture({
       code: "coin-alignment",
@@ -94,6 +232,33 @@ describe("orientation mutations integration", () => {
       name: "Medal alignment",
       version: 2,
     })
+  })
+
+  it("atomically replaces only the expected Orientation version", async () => {
+    const existing = await createOrientationFixture({
+      code: "coin-alignment",
+      name: "Coin alignment",
+    })
+
+    await expect(
+      replaceOrientation({
+        id: existing.id,
+        expectedVersion: 1,
+        code: "medal-alignment",
+        name: "Medal alignment",
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      orientation: { version: 2, code: "medal-alignment" },
+    })
+    await expect(
+      replaceOrientation({
+        id: existing.id,
+        expectedVersion: 1,
+        code: "coin-alignment",
+        name: "Coin alignment",
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
   })
 
   it("returns null when the Orientation update target no longer exists", async () => {
@@ -162,6 +327,23 @@ describe("orientation mutations integration", () => {
       id: existingOrientation.id,
       code: "obsolete-orientation",
     })
+  })
+
+  it("atomically deletes only the expected Orientation version", async () => {
+    const existing = await createOrientationFixture({
+      code: "obsolete-orientation",
+      name: "Obsolete Orientation",
+    })
+
+    await expect(
+      deleteOrientationIfVersion({ id: existing.id, expectedVersion: 2 })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteOrientationIfVersion({ id: existing.id, expectedVersion: 1 })
+    ).resolves.toMatchObject({ status: "deleted" })
+    await expect(
+      deleteOrientationIfVersion({ id: existing.id, expectedVersion: 1 })
+    ).resolves.toStrictEqual({ status: "missing" })
   })
 
   it("rejects deleting an Orientation while Coins still use it", async () => {

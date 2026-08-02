@@ -2,410 +2,163 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   ORIENTATION_AUTHORIZATION_ERROR,
-  hasOrientationMaintenanceAccess,
   submitCreateOrientation,
   submitDeleteOrientation,
   submitUpdateOrientation,
 } from "./actions"
 import {
   ORIENTATION_DUPLICATE_CODE_ERROR,
-  ORIENTATION_GENERIC_SAVE_ERROR,
   ORIENTATION_IN_USE_DELETE_ERROR,
-  ORIENTATION_INVALID_CODE_ERROR,
-  ORIENTATION_MISSING_ERROR,
+  ORIENTATION_STALE_ERROR,
 } from "./orientation-mutation-errors"
 
-const VALID_ORIENTATION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const REEDED_ORIENTATION = {
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const orientation = {
+  id,
   code: "reeded",
   name: "Reeded",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createOrientation?: ReturnType<typeof vi.fn>
-  deleteOrientation?: ReturnType<typeof vi.fn>
-  updateOrientation?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number) {
   return {
-    createOrientation: vi.fn(),
-    deleteOrientation: vi.fn(),
-    updateOrientation: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/orientations",
+        code,
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: ORIENTATION_AUTHORIZATION_ERROR,
-}
-
-describe("hasOrientationMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasOrientationMaintenanceAccess(null)).toBe(false)
-    expect(hasOrientationMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasOrientationMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasOrientationMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasOrientationMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasOrientationMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateOrientation", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateOrientation(null, REEDED_ORIENTATION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateOrientation({ role: "collector" }, REEDED_ORIENTATION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Orientation web mutation adapter", () => {
+  it("retains client validation before calling the typed create operation", async () => {
+    const createOrientation = vi.fn()
 
     await expect(
       submitCreateOrientation(
-        { role: "editor" },
-        {
-          code: "Reeded",
-          name: " ",
-        },
-        dependencies
+        { code: "Reeded", name: " " },
+        { createOrientation, createIdempotencyKey: () => "attempt-1" }
       )
-    ).resolves.toStrictEqual({
+    ).resolves.toMatchObject({
       status: "error",
       fieldErrors: {
-        code: ORIENTATION_INVALID_CODE_ERROR,
-        name: "Orientation Name cannot be blank.",
+        code: expect.any(String),
+        name: expect.any(String),
       },
     })
-
-    expect(dependencies.createOrientation).not.toHaveBeenCalled()
+    expect(createOrientation).not.toHaveBeenCalled()
   })
 
-  it("trims Orientation fields before creating an Orientation", async () => {
-    const dependencies = createDependencies({
-      createOrientation: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createOrientation = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/orientations/${id}` },
+      body: { data: orientation },
+    }))
 
     await expect(
       submitCreateOrientation(
-        { role: "editor" },
-        {
-          code: " reeded ",
-          name: " Reeded ",
-        },
-        dependencies
+        { code: " reeded ", name: " Reeded " },
+        { createOrientation, createIdempotencyKey: () => "attempt-1" }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Orientation added.",
     })
-
-    expect(dependencies.createOrientation).toHaveBeenCalledWith({
-      code: "reeded",
-      name: "Reeded",
+    expect(createOrientation).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
     })
   })
 
-  it("maps duplicate Orientation Codes to the Orientation Code field", async () => {
-    await expect(
-      submitCreateOrientation(
-        { role: "admin" },
-        REEDED_ORIENTATION,
-        createDependencies({
-          createOrientation: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "orientation_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ORIENTATION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("maps Orientation Code slug check failures to the Orientation Code field", async () => {
-    await expect(
-      submitCreateOrientation(
-        { role: "admin" },
-        REEDED_ORIENTATION,
-        createDependencies({
-          createOrientation: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "orientation_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ORIENTATION_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createOrientation: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
-
-    await expect(
-      submitCreateOrientation(
-        { role: "editor" },
-        REEDED_ORIENTATION,
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Orientation added.",
-    })
-
-    expect(dependencies.createOrientation).toHaveBeenCalledWith(
-      REEDED_ORIENTATION
-    )
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateOrientation(
-        { role: "admin" },
-        REEDED_ORIENTATION,
-        createDependencies({
-          createOrientation: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ORIENTATION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateOrientation", () => {
-  const updateInput = {
-    id: VALID_ORIENTATION_ID,
-    ...REEDED_ORIENTATION,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateOrientation(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateOrientation({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceOrientation = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: { data: { ...orientation, version: 2, etag: '"next-version"' } },
+    }))
+    const deleteOrientation = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
       submitUpdateOrientation(
-        { role: "editor" },
-        {
-          id: VALID_ORIENTATION_ID,
-          code: "Reeded",
-          name: " ",
-        },
-        dependencies
+        { id, etag, code: "plain", name: "Plain" },
+        { replaceOrientation }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ORIENTATION_INVALID_CODE_ERROR,
-        name: "Orientation Name cannot be blank.",
-      },
-    })
-
-    expect(dependencies.updateOrientation).not.toHaveBeenCalled()
-  })
-
-  it("trims Orientation fields before updating an Orientation", async () => {
-    const dependencies = createDependencies({
-      updateOrientation: vi.fn().mockResolvedValue({
-        id: VALID_ORIENTATION_ID,
-      }),
-    })
-
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitUpdateOrientation(
-        { role: "editor" },
-        {
-          id: VALID_ORIENTATION_ID,
-          code: " reeded ",
-          name: " Reeded ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateOrientation).toHaveBeenCalledWith({
-      id: VALID_ORIENTATION_ID,
-      code: "reeded",
-      name: "Reeded",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
-    await expect(
-      submitUpdateOrientation(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateOrientation: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ORIENTATION_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Orientation Codes to the Orientation Code field during update", async () => {
-    await expect(
-      submitUpdateOrientation(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateOrientation: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "orientation_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ORIENTATION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateOrientation(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateOrientation: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ORIENTATION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteOrientation", () => {
-  const deleteInput = {
-    id: VALID_ORIENTATION_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(
-      submitDeleteOrientation(null, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitDeleteOrientation({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitDeleteOrientation(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteOrientation).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
-    await expect(
-      submitDeleteOrientation(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteOrientation: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ORIENTATION_MISSING_ERROR,
-    })
-  })
-
-  it("maps restricted deletes to an Orientation-specific form error", async () => {
-    await expect(
-      submitDeleteOrientation(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteOrientation: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_orientation_id_orientation_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ORIENTATION_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = createDependencies({
-      deleteOrientation: vi.fn().mockResolvedValue({
-        id: VALID_ORIENTATION_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteOrientation({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteOrientation({ id, etag }, { deleteOrientation })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Orientation deleted.",
     })
 
-    expect(dependencies.deleteOrientation).toHaveBeenCalledWith(deleteInput)
+    expect(replaceOrientation).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "plain", name: "Plain" },
+    })
+    expect(deleteOrientation).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems to current feedback", async () => {
+    await expect(
+      submitCreateOrientation(
+        { code: "reeded", name: "Reeded" },
+        {
+          createOrientation: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+          createIdempotencyKey: () => "attempt-1",
+        }
+      )
+    ).resolves.toMatchObject({ formError: ORIENTATION_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateOrientation(
+        { code: "reeded", name: "Reeded" },
+        {
+          createOrientation: vi
+            .fn()
+            .mockRejectedValue(problem("orientation_code_conflict", 409)),
+          createIdempotencyKey: () => "attempt-1",
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: ORIENTATION_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateOrientation(
+        { id, etag, code: "reeded", name: "Reeded" },
+        {
+          replaceOrientation: vi
+            .fn()
+            .mockRejectedValue(problem("orientation_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ORIENTATION_STALE_ERROR })
+
+    await expect(
+      submitDeleteOrientation(
+        { id, etag },
+        {
+          deleteOrientation: vi
+            .fn()
+            .mockRejectedValue(problem("orientation_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ORIENTATION_IN_USE_DELETE_ERROR })
   })
 })

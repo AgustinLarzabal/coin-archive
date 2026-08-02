@@ -27,7 +27,6 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteOrientation } from "../actions"
 import {
   ORIENTATION_GENERIC_SAVE_ERROR,
@@ -48,12 +47,8 @@ export const ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently del
 const deleteOrientationAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteOrientation(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteOrientation(data))
 
 export function OrientationMaintenanceSheet({
   orientation,
@@ -92,6 +87,7 @@ export function OrientationMaintenanceSheet({
       const result = await deleteOrientation({
         data: {
           id: orientation.id,
+          etag: orientation.etag,
         },
       })
 

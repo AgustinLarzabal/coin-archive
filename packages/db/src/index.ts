@@ -44,8 +44,19 @@ export {
 export { createMint, deleteMint, updateMint } from "./mutations/mint"
 export {
   createOrientation,
+  createOrientationIdempotently,
+  createOrientationIdempotentlyWithDatabase,
   deleteOrientation,
+  deleteOrientationIfVersion,
+  deleteOrientationIfVersionWithDatabase,
+  replaceOrientation,
+  replaceOrientationWithDatabase,
   updateOrientation,
+} from "./mutations/orientation"
+export type {
+  CreateOrientationIdempotentlyResult,
+  DeleteOrientationIfVersionResult,
+  ReplaceOrientationResult,
 } from "./mutations/orientation"
 export {
   createTechnique,

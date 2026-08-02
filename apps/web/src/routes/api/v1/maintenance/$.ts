@@ -19,8 +19,12 @@ export async function handleMaintenanceApiRequest({
 export const Route = createFileRoute("/api/v1/maintenance/$")({
   server: {
     handlers: {
+      DELETE: handleMaintenanceApiRequest,
       GET: handleMaintenanceApiRequest,
       HEAD: handleMaintenanceApiRequest,
+      OPTIONS: handleMaintenanceApiRequest,
+      POST: handleMaintenanceApiRequest,
+      PUT: handleMaintenanceApiRequest,
     },
   },
 })

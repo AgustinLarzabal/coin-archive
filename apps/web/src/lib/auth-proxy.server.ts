@@ -1,5 +1,7 @@
 import "@tanstack/react-start/server-only"
 
+import { createTrustedForwardingHeaders } from "./trusted-forwarding-headers.server"
+
 type AuthProxyOptions = {
   apiBaseUrl: string
   allowSignInAttempt: (clientIp: string) => Promise<boolean>
@@ -48,17 +50,7 @@ export async function proxyAuthRequest(
     `${browserUrl.pathname}${browserUrl.search}`,
     apiBaseUrl
   )
-  const headers = new Headers(request.headers)
-  const clientIp = headers.get("cf-connecting-ip")
-
-  headers.set("x-forwarded-host", browserUrl.host)
-  headers.set("x-forwarded-proto", browserUrl.protocol.slice(0, -1))
-  headers.set("x-request-id", requestId)
-  if (clientIp === null) {
-    headers.delete("x-forwarded-for")
-  } else {
-    headers.set("x-forwarded-for", clientIp)
-  }
+  const headers = createTrustedForwardingHeaders(request, requestId)
 
   const forwardedRequest = new Request(apiUrl, request)
   for (const [name, value] of headers) {

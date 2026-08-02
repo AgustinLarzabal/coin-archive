@@ -96,6 +96,15 @@ export type GetCoin = (id: string) => Promise<CoinDetailSource | null>
 
 export type HandleAuthRequest = (request: Request) => Promise<Response>
 
+export type OperationalLogEntry = {
+  durationMs: number
+  method: string
+  outcome?: "unexpected_error"
+  requestId: string
+  route: string
+  status: number
+}
+
 export function createApiApp({
   browseCoins,
   getCoin = async () => null,
@@ -117,6 +126,9 @@ export function createApiApp({
     throw new Error("Orientation deletion is not configured")
   },
   trustProxyHeaders = false,
+  createRequestId = () => crypto.randomUUID(),
+  now = () => Date.now(),
+  writeLog,
 }: {
   browseCoins: BrowseCoins
   getCoin?: GetCoin
@@ -127,7 +139,8 @@ export function createApiApp({
   getCollector?: (request: Request) => Promise<MaintenanceCollector | null>
   maintenanceRateLimit?: (
     collectorId: string,
-    kind: "mutation" | "read"
+    kind: "mutation" | "read",
+    clientIp?: string
   ) => Promise<boolean>
   listOrientations?: OrientationMaintenanceDependencies["listOrientations"]
   getOrientation?: OrientationMaintenanceDependencies["getOrientation"]
@@ -135,8 +148,13 @@ export function createApiApp({
   replaceOrientation?: OrientationMaintenanceDependencies["replaceOrientation"]
   deleteOrientation?: OrientationMaintenanceDependencies["deleteOrientation"]
   trustProxyHeaders?: boolean
+  createRequestId?: () => string
+  now?: () => number
+  writeLog?: (entry: OperationalLogEntry) => void
 }) {
-  const app = new Hono<{ Variables: { collector: MaintenanceCollector } }>()
+  const app = new Hono<{
+    Variables: { collector: MaintenanceCollector; requestId: string }
+  }>()
   const allowedOrigin =
     environment === "production"
       ? "https://coinarchive.app"
@@ -153,11 +171,50 @@ export function createApiApp({
       : context.text("Internal Server Error", 500)
   )
 
+  app.use("*", async (context, next) => {
+    const startedAt = now()
+    const requestId = trustProxyHeaders
+      ? (context.req.header("x-request-id") ?? createRequestId())
+      : createRequestId()
+    context.set("requestId", requestId)
+
+    await next()
+
+    const response = context.res
+    if (
+      context.req.path.startsWith("/api/v1/maintenance/") &&
+      response.headers.get("content-type")?.includes("application/problem+json")
+    ) {
+      const problem: unknown = await response.clone().json()
+      context.res = new Response(
+        JSON.stringify(
+          typeof problem === "object" && problem !== null
+            ? { ...problem, requestId }
+            : { requestId }
+        ),
+        {
+          status: response.status,
+          statusText: response.statusText,
+          headers: new Headers(response.headers),
+        }
+      )
+    }
+    context.header("X-Request-ID", requestId)
+    writeLog?.({
+      durationMs: Math.max(0, now() - startedAt),
+      method: context.req.method,
+      ...(context.res.status >= 500
+        ? { outcome: "unexpected_error" as const }
+        : {}),
+      requestId,
+      route: context.req.routePath || "unmatched",
+      status: context.res.status,
+    })
+  })
+
   if (handleAuthRequest !== undefined) {
     app.all("/api/auth/*", async (context) => {
-      const requestId = trustProxyHeaders
-        ? (context.req.header("x-request-id") ?? crypto.randomUUID())
-        : crypto.randomUUID()
+      const requestId = context.get("requestId")
       const headers = new Headers(context.req.raw.headers)
       headers.set("x-request-id", requestId)
       if (!trustProxyHeaders) {
@@ -238,7 +295,14 @@ export function createApiApp({
       context.req.method === "GET" || context.req.method === "HEAD"
         ? "read"
         : "mutation"
-    if (!(await maintenanceRateLimit(collector.id, requestKind))) {
+    const directClientIp = trustProxyHeaders
+      ? undefined
+      : context.req.header("cf-connecting-ip")
+    const allowed =
+      directClientIp === undefined
+        ? await maintenanceRateLimit(collector.id, requestKind)
+        : await maintenanceRateLimit(collector.id, requestKind, directClientIp)
+    if (!allowed) {
       return maintenanceProblemResponse(
         429,
         "Too Many Requests",

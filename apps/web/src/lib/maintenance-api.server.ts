@@ -4,6 +4,7 @@ import { createMaintenanceApiClient } from "@coin-archive/api"
 import { getRequest } from "@tanstack/react-start/server"
 
 import { getPublicApiBaseUrl } from "./public-api.server"
+import { createTrustedForwardingHeaders } from "./trusted-forwarding-headers.server"
 
 type MaintenanceProxyOptions = {
   apiBaseUrl: string
@@ -32,9 +33,24 @@ export async function proxyMaintenanceApiRequest(
     !isSafeMethod(request.method) &&
     request.headers.get("origin") !== browserUrl.origin
   ) {
-    return Response.json(
-      { error: "Maintenance mutation must be same-origin." },
-      { status: 403, headers: { "X-Request-ID": requestId } }
+    return new Response(
+      JSON.stringify({
+        type: "https://api.coinarchive.app/problems/cross-origin-maintenance-mutation",
+        title: "Same-origin request required",
+        status: 403,
+        detail: "Maintenance mutations must be sent from this web origin",
+        instance: browserUrl.pathname,
+        code: "same_origin_required",
+        requestId,
+      }),
+      {
+        status: 403,
+        headers: {
+          "Cache-Control": "private, no-store",
+          "Content-Type": "application/problem+json",
+          "X-Request-ID": requestId,
+        },
+      }
     )
   }
 
@@ -42,8 +58,7 @@ export async function proxyMaintenanceApiRequest(
     `${browserUrl.pathname}${browserUrl.search}`,
     apiBaseUrl
   )
-  const headers = new Headers(request.headers)
-  headers.set("x-request-id", requestId)
+  const headers = createTrustedForwardingHeaders(request, requestId)
 
   const forwardedRequest = new Request(apiUrl, request)
   const response = await fetchApi(

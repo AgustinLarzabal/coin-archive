@@ -24,6 +24,16 @@
       "namespace_id": "242",
       "simple": { "limit": 120, "period": 60 },
     },
+    {
+      "name": "MAINTENANCE_READ_RATE_LIMITER",
+      "namespace_id": "244",
+      "simple": { "limit": 120, "period": 60 },
+    },
+    {
+      "name": "MAINTENANCE_MUTATION_RATE_LIMITER",
+      "namespace_id": "245",
+      "simple": { "limit": 30, "period": 60 },
+    },
   ],
   "observability": {
     "enabled": true,
@@ -40,6 +50,16 @@
           "name": "API_RATE_LIMITER",
           "namespace_id": "242",
           "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "MAINTENANCE_READ_RATE_LIMITER",
+          "namespace_id": "244",
+          "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "MAINTENANCE_MUTATION_RATE_LIMITER",
+          "namespace_id": "245",
+          "simple": { "limit": 30, "period": 60 },
         },
       ],
       "secrets": {
@@ -65,6 +85,16 @@
           "name": "API_RATE_LIMITER",
           "namespace_id": "242",
           "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "MAINTENANCE_READ_RATE_LIMITER",
+          "namespace_id": "244",
+          "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "MAINTENANCE_MUTATION_RATE_LIMITER",
+          "namespace_id": "245",
+          "simple": { "limit": 30, "period": 60 },
         },
       ],
       "secrets": {

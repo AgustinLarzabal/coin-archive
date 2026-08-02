@@ -90,6 +90,42 @@ describe("protected Orientation maintenance reads", () => {
     }
   })
 
+  it("propagates a trusted proxy request ID through sanitized problems", async () => {
+    const app = createApp({
+      getCollector: async () => null,
+      trustProxyHeaders: true,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      { headers: { "X-Request-ID": "proxy-request-id" } }
+    )
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("x-request-id")).toBe("proxy-request-id")
+    await expect(response.json()).resolves.toMatchObject({
+      code: "authentication_required",
+      requestId: "proxy-request-id",
+    })
+  })
+
+  it("replaces spoofed request IDs at the direct API boundary", async () => {
+    const app = createApp({
+      createRequestId: () => "api-request-id",
+      getCollector: async () => null,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      { headers: { "X-Request-ID": "spoofed-request-id" } }
+    )
+
+    expect(response.headers.get("x-request-id")).toBe("api-request-id")
+    await expect(response.json()).resolves.toMatchObject({
+      requestId: "api-request-id",
+    })
+  })
+
   it("allows Admins to read current Orientation data", async () => {
     const app = createApp({
       getCollector: async () => ({ id: "admin-id", role: "admin" }),
@@ -225,6 +261,35 @@ describe("protected Orientation maintenance reads", () => {
     expect(maintenanceRateLimit).toHaveBeenCalledWith("collector-id", "read")
   })
 
+  it("uses client IP only as a secondary signal for direct maintenance traffic", async () => {
+    const directRateLimit = vi.fn(async () => false)
+    const direct = createApp({ maintenanceRateLimit: directRateLimit })
+    const directResponse = await direct.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      { headers: { "CF-Connecting-IP": "203.0.113.9" } }
+    )
+
+    expect(directResponse.status).toBe(429)
+    expect(directRateLimit).toHaveBeenCalledWith(
+      "collector-id",
+      "read",
+      "203.0.113.9"
+    )
+
+    const proxiedRateLimit = vi.fn(async () => false)
+    const proxied = createApp({
+      maintenanceRateLimit: proxiedRateLimit,
+      trustProxyHeaders: true,
+    })
+    const proxiedResponse = await proxied.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      { headers: { "CF-Connecting-IP": "198.51.100.4" } }
+    )
+
+    expect(proxiedResponse.status).toBe(429)
+    expect(proxiedRateLimit).toHaveBeenCalledWith("collector-id", "read")
+  })
+
   it("sanitizes unexpected protected-read failures", async () => {
     const app = createApp({
       listOrientations: async () => {
@@ -242,9 +307,70 @@ describe("protected Orientation maintenance reads", () => {
     expect(response.headers.get("cache-control")).toBe("private, no-store")
     expect(await response.text()).not.toContain("secret-database")
   })
+
+  it("logs only allowlisted operational metadata for unexpected failures", async () => {
+    const writeLog = vi.fn()
+    const app = createApp({
+      createRequestId: () => "generated-request-id",
+      now: vi.fn().mockReturnValueOnce(1_000).mockReturnValueOnce(1_012),
+      writeLog,
+      listOrientations: async () => {
+        throw new Error(
+          "postgresql://collector:secret@database?constraint=orientation_code_lower_unique_idx&upload=opaque-reference&url=https://presigned.example"
+        )
+      },
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      {
+        headers: {
+          Authorization: "Bearer secret-credential",
+          Cookie: "better-auth.session_token=secret-session",
+        },
+      }
+    )
+
+    expect(response.status).toBe(500)
+    expect(writeLog).toHaveBeenCalledWith({
+      durationMs: 12,
+      method: "GET",
+      outcome: "unexpected_error",
+      requestId: "generated-request-id",
+      route: "/api/v1/maintenance/orientations",
+      status: 500,
+    })
+    expect(JSON.stringify(writeLog.mock.calls)).not.toMatch(
+      /collector|secret|database|constraint|opaque-reference|presigned/i
+    )
+  })
 })
 
 describe("protected Orientation maintenance mutations", () => {
+  it("rate-limits mutations with the separate Collector mutation budget", async () => {
+    const maintenanceRateLimit = vi.fn(async () => false)
+    const app = createApp({ maintenanceRateLimit })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/orientations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "attempt-1",
+        },
+        body: JSON.stringify({ code: "reeded", name: "Reeded" }),
+      }
+    )
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get("retry-after")).toBe("60")
+    expect(maintenanceRateLimit).toHaveBeenCalledWith(
+      "collector-id",
+      "mutation"
+    )
+  })
+
   it("authorizes every mutation at the protected API boundary", async () => {
     const request = {
       method: "POST",

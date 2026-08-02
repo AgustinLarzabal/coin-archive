@@ -12,13 +12,25 @@ describe("proxyMaintenanceApiRequest", () => {
         "better-auth.session_token=valid-session"
       )
       expect(request.headers.get("x-request-id")).toBe("request-id")
+      expect(request.headers.get("x-forwarded-host")).toBe("coinarchive.app")
+      expect(request.headers.get("x-forwarded-proto")).toBe("https")
+      expect(request.headers.get("x-forwarded-for")).toBe("203.0.113.9")
       return Response.json({ data: [], nextCursor: null })
     })
 
     const response = await proxyMaintenanceApiRequest(
       new Request(
         "https://coinarchive.app/api/v1/maintenance/orientations?limit=30",
-        { headers: { Cookie: "better-auth.session_token=valid-session" } }
+        {
+          headers: {
+            Cookie: "better-auth.session_token=valid-session",
+            "CF-Connecting-IP": "203.0.113.9",
+            "X-Forwarded-For": "198.51.100.4",
+            "X-Forwarded-Host": "attacker.example",
+            "X-Forwarded-Proto": "http",
+            "X-Request-ID": "spoofed-request-id",
+          },
+        }
       ),
       {
         apiBaseUrl: "https://api.coinarchive.app",
@@ -102,7 +114,16 @@ describe("proxyMaintenanceApiRequest", () => {
     )
 
     expect(response.status).toBe(403)
+    expect(response.headers.get("content-type")).toContain(
+      "application/problem+json"
+    )
+    expect(response.headers.get("cache-control")).toBe("private, no-store")
     expect(response.headers.get("x-request-id")).toBe("request-id")
+    await expect(response.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/cross-origin-maintenance-mutation",
+      code: "same_origin_required",
+      requestId: "request-id",
+    })
     expect(fetchApi).not.toHaveBeenCalled()
   })
 })

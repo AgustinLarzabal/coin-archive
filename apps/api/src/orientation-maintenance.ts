@@ -69,7 +69,7 @@ export type OrientationMaintenanceDependencies = {
 }
 
 type MaintenanceApiEnvironment = {
-  Variables: { collector: MaintenanceCollector }
+  Variables: { collector: MaintenanceCollector; requestId: string }
 }
 
 export function registerOrientationMaintenanceRoutes(

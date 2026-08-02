@@ -50,12 +50,23 @@ async function handleRequest(
           key: `${env.API_ENVIRONMENT}:${clientIp}`,
         })
       ).success,
-    maintenanceRateLimit: async (collectorId, kind) =>
-      (
-        await env.API_RATE_LIMITER.limit({
-          key: `${env.API_ENVIRONMENT}:collector:${collectorId}:maintenance-${kind}`,
+    maintenanceRateLimit: async (collectorId, kind, clientIp) => {
+      const limiter =
+        kind === "read"
+          ? env.MAINTENANCE_READ_RATE_LIMITER
+          : env.MAINTENANCE_MUTATION_RATE_LIMITER
+      const collectorResult = await limiter.limit({
+        key: `${env.API_ENVIRONMENT}:collector:${collectorId}`,
+      })
+      if (!collectorResult.success || clientIp === undefined) {
+        return collectorResult.success
+      }
+      return (
+        await limiter.limit({
+          key: `${env.API_ENVIRONMENT}:ip:${clientIp}`,
         })
-      ).success,
+      ).success
+    },
     browseCoins: async (input) =>
       (
         await getCoinsWithDatabase(database.db, {
@@ -99,6 +110,7 @@ async function handleRequest(
     deleteOrientation: (input) =>
       deleteOrientationIfVersionWithDatabase(database.db, input),
     handleAuthRequest: (authRequest) => auth.handler(authRequest),
+    writeLog: (entry) => console.log(JSON.stringify(entry)),
   })
   try {
     return await app.fetch(request)

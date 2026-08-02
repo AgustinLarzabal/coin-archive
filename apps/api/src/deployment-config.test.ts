@@ -22,6 +22,19 @@ describe("API deployment configuration", () => {
     }
   })
 
+  it("gives maintenance reads and mutations separate budgets in every environment", () => {
+    expect(
+      wranglerConfig.match(
+        /"name": "MAINTENANCE_READ_RATE_LIMITER"[\s\S]*?"limit": 120/g
+      )
+    ).toHaveLength(3)
+    expect(
+      wranglerConfig.match(
+        /"name": "MAINTENANCE_MUTATION_RATE_LIMITER"[\s\S]*?"limit": 30/g
+      )
+    ).toHaveLength(3)
+  })
+
   it("configures the API auth origin and matching trusted web origin", () => {
     expect(wranglerConfig).toContain(
       '"BETTER_AUTH_URL": "https://api.staging.coinarchive.app"'

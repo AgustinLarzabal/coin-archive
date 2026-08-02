@@ -19,6 +19,8 @@ describe("Better Auth server configuration", () => {
     })
     expect(auth.options.advanced).toMatchObject({ trustedProxyHeaders: true })
     expect(auth.options.advanced).toMatchObject({ useSecureCookies: false })
+    expect(auth.options.logger).toMatchObject({ disabled: true })
+    expect(auth.options.rateLimit).toMatchObject({ enabled: true })
   })
 
   it("configures the collector role field with a default and disallows user input", async () => {

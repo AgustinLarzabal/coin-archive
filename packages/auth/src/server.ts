@@ -31,6 +31,8 @@ export function createAuth({
       protocol: "auto",
     },
     trustedOrigins,
+    logger: { disabled: true },
+    rateLimit: { enabled: true },
     advanced: {
       disableOriginCheck: false,
       trustedProxyHeaders: true,

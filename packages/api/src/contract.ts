@@ -486,7 +486,7 @@ export const publicApiContract = {
         summary: "Get Coin detail",
         tags: ["Coins"],
       })
-      .input(currencyDetailInputSchema)
+      .input(z.object({ uuid: z.uuid() }))
       .output(coinDetailOutputSchema)
       .errors({
         BAD_REQUEST: { status: 400, data: problemDocumentSchema },
@@ -671,7 +671,7 @@ export const maintenanceApiContract = {
         summary: "Get Currency maintenance detail",
         tags: ["Currency Maintenance"],
       })
-      .input(z.object({ uuid: z.uuid() }))
+      .input(currencyDetailInputSchema)
       .output(currencyDetailOutputSchema)
       .errors({
         ...maintenanceReadErrors,

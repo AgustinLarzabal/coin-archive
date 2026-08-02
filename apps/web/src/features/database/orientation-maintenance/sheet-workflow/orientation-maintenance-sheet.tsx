@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,

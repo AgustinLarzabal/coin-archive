@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 import { db } from "../client"
 import { orientation } from "../schema/orientation"
@@ -49,6 +49,7 @@ export async function updateOrientation({
       .set({
         ...normalizeOrientationFields(fields),
         updatedAt: new Date(),
+        version: sql`${orientation.version} + 1`,
       })
       .where(eq(orientation.id, id))
       .returning()

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createOrientationColumns } from "./columns"

@@ -73,6 +73,10 @@ export { getEngravers } from "./queries/get-engravers"
 export { getIssuerMaintenanceRecords } from "./queries/get-issuer-maintenance-records"
 export { getMints } from "./queries/get-mints"
 export { getOrientations } from "./queries/get-orientations"
+export {
+  getOrientationMaintenanceRecordWithDatabase,
+  getOrientationMaintenanceRecordsWithDatabase,
+} from "./queries/get-orientation-maintenance"
 export { getRims } from "./queries/get-rims"
 export { getRulerGroups } from "./queries/get-ruler-groups"
 export { getShapes } from "./queries/get-shapes"
@@ -167,6 +171,11 @@ export type { EngraverOption } from "./queries/get-engravers"
 export type { IssuerMaintenanceRecord } from "./queries/get-issuer-maintenance-records"
 export type { MintOption } from "./queries/get-mints"
 export type { OrientationOption } from "./queries/get-orientations"
+export type {
+  GetOrientationMaintenanceRecordsOptions,
+  OrientationMaintenanceCursor,
+  OrientationMaintenanceListRecord,
+} from "./queries/get-orientation-maintenance"
 export type { RimOption } from "./queries/get-rims"
 export type { RulerGroupOption } from "./queries/get-ruler-groups"
 export type { ShapeOption } from "./queries/get-shapes"

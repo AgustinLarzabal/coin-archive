@@ -1,4 +1,4 @@
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
@@ -10,8 +10,9 @@ const orientation: OrientationOption = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
   code: "reeded",
   name: "Reeded",
-  createdAt: new Date("2026-06-24T12:00:00.000Z"),
-  updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+  version: 1,
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasOrientationEditChanges", () => {

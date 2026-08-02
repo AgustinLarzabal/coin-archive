@@ -25,6 +25,7 @@ describe("orientation mutations integration", () => {
     ).resolves.toMatchObject({
       code: "coin-alignment",
       name: "Coin alignment",
+      version: 1,
     })
   })
 
@@ -91,6 +92,7 @@ describe("orientation mutations integration", () => {
       id: existingOrientation.id,
       code: "medal-alignment",
       name: "Medal alignment",
+      version: 2,
     })
   })
 

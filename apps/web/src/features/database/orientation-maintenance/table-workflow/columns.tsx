@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,

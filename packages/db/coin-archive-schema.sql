@@ -154,6 +154,7 @@ CREATE TABLE "orientation" (
 	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
 	"code" varchar(255) NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"version" integer DEFAULT 1 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "orientation_code_slug_check" CHECK ("orientation"."code" ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')

@@ -4,6 +4,7 @@ import { z } from "zod"
 const codeSchema = z.string().min(1)
 const namedCodeSchema = z.object({ code: codeSchema, name: z.string() })
 const decimalSchema = z.string().regex(/^-?\d+(?:\.\d+)?$/)
+const utcTimestampSchema = z.iso.datetime()
 
 export const problemDocumentSchema = z.object({
   type: z.string().url(),
@@ -14,6 +15,10 @@ export const problemDocumentSchema = z.object({
   invalidParams: z
     .array(z.object({ name: z.string(), reason: z.string() }))
     .optional(),
+})
+
+export const maintenanceProblemDocumentSchema = problemDocumentSchema.extend({
+  code: z.string().min(1),
 })
 
 export const coinSummarySchema = z.object({
@@ -101,6 +106,67 @@ export const coinDetailSchema = z.object({
 
 export const coinDetailOutputSchema = z.object({ data: coinDetailSchema })
 
+export const orientationSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+})
+
+export const orientationOptionSchema = orientationSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+
+export const orientationListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+
+export const orientationListOutputSchema = z.object({
+  data: z.array(orientationSchema),
+  nextCursor: z.string().nullable(),
+})
+
+export const orientationOptionsInputSchema = orientationListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+
+export const orientationOptionsOutputSchema = z.object({
+  data: z.array(orientationOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+
+export const orientationDetailOutputSchema = z.object({
+  data: orientationSchema,
+})
+
+const maintenanceReadErrors = {
+  BAD_REQUEST: { status: 400, data: maintenanceProblemDocumentSchema },
+  UNAUTHORIZED: { status: 401, data: maintenanceProblemDocumentSchema },
+  FORBIDDEN: { status: 403, data: maintenanceProblemDocumentSchema },
+  METHOD_NOT_ALLOWED: {
+    status: 405,
+    data: maintenanceProblemDocumentSchema,
+  },
+  TOO_MANY_REQUESTS: {
+    status: 429,
+    data: maintenanceProblemDocumentSchema,
+  },
+  INTERNAL_SERVER_ERROR: {
+    status: 500,
+    data: maintenanceProblemDocumentSchema,
+  },
+} as const
+
 export const publicApiContract = {
   coins: {
     browse: oc
@@ -108,6 +174,7 @@ export const publicApiContract = {
         method: "GET",
         path: "/api/v1/coins",
         summary: "Browse Coins",
+        tags: ["Coins"],
       })
       .input(browseCoinsInputSchema)
       .output(browseCoinsOutputSchema)
@@ -120,6 +187,7 @@ export const publicApiContract = {
         method: "GET",
         path: "/api/v1/coins/{uuid}",
         summary: "Get Coin detail",
+        tags: ["Coins"],
       })
       .input(z.object({ uuid: z.uuid() }))
       .output(coinDetailOutputSchema)
@@ -131,7 +199,63 @@ export const publicApiContract = {
   },
 }
 
+export const maintenanceApiContract = {
+  orientations: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/orientations",
+        summary: "Browse Orientations for maintenance",
+        tags: ["Orientation Maintenance"],
+      })
+      .input(orientationListInputSchema)
+      .output(orientationListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/orientations/options",
+        summary: "Search compact Orientation options",
+        tags: ["Orientation Maintenance"],
+      })
+      .input(orientationOptionsInputSchema)
+      .output(orientationOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/orientations/{uuid}",
+        summary: "Get Orientation maintenance detail",
+        tags: ["Orientation Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(orientationDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+  },
+}
+
+export const apiContract = {
+  ...publicApiContract,
+  maintenance: maintenanceApiContract,
+}
+
 export type BrowseCoinsInput = z.infer<typeof browseCoinsInputSchema>
 export type BrowseCoinsOutput = z.infer<typeof browseCoinsOutputSchema>
 export type CoinDetail = z.infer<typeof coinDetailSchema>
 export type CoinDetailOutput = z.infer<typeof coinDetailOutputSchema>
+export type Orientation = z.infer<typeof orientationSchema>
+export type OrientationOption = z.infer<typeof orientationOptionSchema>
+export type OrientationListInput = z.infer<typeof orientationListInputSchema>
+export type OrientationListOutput = z.infer<typeof orientationListOutputSchema>
+export type OrientationOptionsInput = z.infer<
+  typeof orientationOptionsInputSchema
+>
+export type OrientationOptionsOutput = z.infer<
+  typeof orientationOptionsOutputSchema
+>
+export type OrientationDetailOutput = z.infer<
+  typeof orientationDetailOutputSchema
+>

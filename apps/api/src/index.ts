@@ -1,5 +1,7 @@
 import {
   createDatabase,
+  getOrientationMaintenanceRecordWithDatabase,
+  getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
   getCoinsWithDatabase,
 } from "@coin-archive/db"
@@ -25,6 +27,16 @@ async function handleRequest(
   trustProxyHeaders: boolean
 ) {
   const database = createDatabase(env.DATABASE_URL)
+  const auth = createAuth({
+    database: database.db,
+    environment: {
+      betterAuthSecret: env.BETTER_AUTH_SECRET,
+      betterAuthUrl: env.BETTER_AUTH_URL,
+      trustedOrigins: parseTrustedOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS),
+      googleClientId: env.GOOGLE_CLIENT_ID,
+      googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+  })
   const app = createApiApp({
     trustProxyHeaders,
     environment: env.API_ENVIRONMENT,
@@ -33,6 +45,12 @@ async function handleRequest(
       (
         await env.API_RATE_LIMITER.limit({
           key: `${env.API_ENVIRONMENT}:${clientIp}`,
+        })
+      ).success,
+    maintenanceRateLimit: async (collectorId) =>
+      (
+        await env.API_RATE_LIMITER.limit({
+          key: `${env.API_ENVIRONMENT}:collector:${collectorId}:maintenance-read`,
         })
       ).success,
     browseCoins: async (input) =>
@@ -52,17 +70,22 @@ async function handleRequest(
           coin.createdAt !== undefined
       ),
     getCoin: (coinId) => getPublicCoinWithDatabase(database.db, coinId),
-    handleAuthRequest: (authRequest) =>
-      createAuth({
-        database: database.db,
-        environment: {
-          betterAuthSecret: env.BETTER_AUTH_SECRET,
-          betterAuthUrl: env.BETTER_AUTH_URL,
-          trustedOrigins: parseTrustedOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS),
-          googleClientId: env.GOOGLE_CLIENT_ID,
-          googleClientSecret: env.GOOGLE_CLIENT_SECRET,
-        },
-      }).handler(authRequest),
+    getCollector: async (collectorRequest) => {
+      const resolved = await auth.api.getSession({
+        headers: collectorRequest.headers,
+      })
+      if (resolved === null) return null
+      const role = resolved.user.role
+      if (role !== "collector" && role !== "editor" && role !== "admin") {
+        return null
+      }
+      return { id: resolved.user.id, role }
+    },
+    listOrientations: (input) =>
+      getOrientationMaintenanceRecordsWithDatabase(database.db, input),
+    getOrientation: (orientationId) =>
+      getOrientationMaintenanceRecordWithDatabase(database.db, orientationId),
+    handleAuthRequest: (authRequest) => auth.handler(authRequest),
   })
   try {
     return await app.fetch(request)

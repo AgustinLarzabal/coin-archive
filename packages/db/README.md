@@ -48,7 +48,7 @@ The current core relationships map to these tables:
 - `currency`: shared Currency record with stable `code`, display `name`, required `full_name`, and timestamps
 - `edge`: shared coin-level Edge controlled classification with stable `code`, display `name`, and timestamps
 - `issuer`: Issuer record with optional `parent_issuer_id` for Issuer Grouping
-- `orientation`: shared Orientation record with stable `code`, display `name`, and timestamps
+- `orientation`: shared Orientation record with stable `code`, display `name`, explicit `version`, and timestamps
 - `rim`: shared coin-level Rim controlled classification with stable `code`, display `name`, and timestamps
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
@@ -156,6 +156,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -605,7 +606,7 @@ Known limitations and non-goals:
 
 The `orientation` table models the shared obverse-reverse alignment classification that may be attached to a Coin:
 
-- an Orientation row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- an Orientation row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `orientation.code` is the stable archive identity for the orientation and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `orientation.name` is display text only; it helps humans read the orientation label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat orientation codes case-insensitively, while the schema also requires lowercase slug-style text on write
@@ -619,6 +620,7 @@ Orientation-specific requirements and constraints:
 - Orientation Codes must satisfy the lowercase slug-style check enforced by `orientation_code_slug_check`
 - Orientation Names do not need to be unique
 - Orientation primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Orientation Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Orientation-specific indexes and query implications:
@@ -627,6 +629,7 @@ Orientation-specific indexes and query implications:
 - `orientation_code_lookup_idx` supports shared case-insensitive lookups such as orientation filtering in `getCoins`
 - `getOrientations` is the package-owned read model for orientation options and currently returns `id`, `code`, `name`, `createdAt`, and `updatedAt`
 - `getOrientations` sorts orientations by `name`, then `code`; callers should not depend on insertion order
+- `getOrientationMaintenanceRecordsWithDatabase` supplies stable searchable cursor pagination by Orientation Name or Orientation Code, and `getOrientationMaintenanceRecordWithDatabase` supplies current versioned detail
 
 Relationship and lifecycle notes:
 

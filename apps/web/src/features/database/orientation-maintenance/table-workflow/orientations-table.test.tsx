@@ -1,4 +1,4 @@
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
@@ -9,15 +9,17 @@ const orientations: OrientationOption[] = [
     id: "645c07ac-cfbb-4a29-b056-9680634c6c2c",
     code: "coin-alignment",
     name: "Coin alignment",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    version: 1,
+    createdAt: "2026-07-01T00:00:00.000Z",
+    updatedAt: "2026-07-01T00:00:00.000Z",
   },
   {
     id: "9c65c9ed-eb9d-4cf5-986f-1346d6a326ca",
     code: "medal-alignment",
     name: "Medal alignment",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    version: 1,
+    createdAt: "2026-07-01T00:00:00.000Z",
+    updatedAt: "2026-07-01T00:00:00.000Z",
   },
 ]
 

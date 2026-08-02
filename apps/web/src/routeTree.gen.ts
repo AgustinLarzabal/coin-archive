@@ -19,6 +19,7 @@ import { Route as AppAuthedSettingsRouteRouteImport } from './routes/_app/_authe
 import { Route as AppAuthedDatabaseRouteRouteImport } from './routes/_app/_authed/database/route'
 import { Route as AppAuthedSettingsIndexRouteImport } from './routes/_app/_authed/settings/index'
 import { Route as AppAuthedDatabaseIndexRouteImport } from './routes/_app/_authed/database/index'
+import { Route as ApiV1MaintenanceSplatRouteImport } from './routes/api/v1/maintenance/$'
 import { Route as AppAuthedDatabaseThemesRouteImport } from './routes/_app/_authed/database/themes'
 import { Route as AppAuthedDatabaseShapesRouteImport } from './routes/_app/_authed/database/shapes'
 import { Route as AppAuthedDatabaseRulersRouteImport } from './routes/_app/_authed/database/rulers'
@@ -85,6 +86,11 @@ const AppAuthedDatabaseIndexRoute = AppAuthedDatabaseIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppAuthedDatabaseRouteRoute,
+} as any)
+const ApiV1MaintenanceSplatRoute = ApiV1MaintenanceSplatRouteImport.update({
+  id: '/api/v1/maintenance/$',
+  path: '/api/v1/maintenance/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppAuthedDatabaseThemesRoute = AppAuthedDatabaseThemesRouteImport.update({
   id: '/themes',
@@ -216,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/database/themes': typeof AppAuthedDatabaseThemesRoute
+  '/api/v1/maintenance/$': typeof ApiV1MaintenanceSplatRoute
   '/database/': typeof AppAuthedDatabaseIndexRoute
   '/settings/': typeof AppAuthedSettingsIndexRoute
   '/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/database/themes': typeof AppAuthedDatabaseThemesRoute
+  '/api/v1/maintenance/$': typeof ApiV1MaintenanceSplatRoute
   '/database': typeof AppAuthedDatabaseIndexRoute
   '/settings': typeof AppAuthedSettingsIndexRoute
   '/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/_app/_authed/database/rulers': typeof AppAuthedDatabaseRulersRoute
   '/_app/_authed/database/shapes': typeof AppAuthedDatabaseShapesRoute
   '/_app/_authed/database/themes': typeof AppAuthedDatabaseThemesRoute
+  '/api/v1/maintenance/$': typeof ApiV1MaintenanceSplatRoute
   '/_app/_authed/database/': typeof AppAuthedDatabaseIndexRoute
   '/_app/_authed/settings/': typeof AppAuthedSettingsIndexRoute
   '/_app/_authed/database/coins/new': typeof AppAuthedDatabaseCoinsNewRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/database/rulers'
     | '/database/shapes'
     | '/database/themes'
+    | '/api/v1/maintenance/$'
     | '/database/'
     | '/settings/'
     | '/database/coins/new'
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/database/rulers'
     | '/database/shapes'
     | '/database/themes'
+    | '/api/v1/maintenance/$'
     | '/database'
     | '/settings'
     | '/database/coins/new'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/_app/_authed/database/rulers'
     | '/_app/_authed/database/shapes'
     | '/_app/_authed/database/themes'
+    | '/api/v1/maintenance/$'
     | '/_app/_authed/database/'
     | '/_app/_authed/settings/'
     | '/_app/_authed/database/coins/new'
@@ -370,6 +382,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiV1MaintenanceSplatRoute: typeof ApiV1MaintenanceSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -443,6 +456,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/database/'
       preLoaderRoute: typeof AppAuthedDatabaseIndexRouteImport
       parentRoute: typeof AppAuthedDatabaseRouteRoute
+    }
+    '/api/v1/maintenance/$': {
+      id: '/api/v1/maintenance/$'
+      path: '/api/v1/maintenance/$'
+      fullPath: '/api/v1/maintenance/$'
+      preLoaderRoute: typeof ApiV1MaintenanceSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/_authed/database/themes': {
       id: '/_app/_authed/database/themes'
@@ -705,6 +725,7 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiV1MaintenanceSplatRoute: ApiV1MaintenanceSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

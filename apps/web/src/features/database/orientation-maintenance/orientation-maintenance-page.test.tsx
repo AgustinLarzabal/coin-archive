@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 import { OrientationMaintenanceRouteComponent } from "./orientation-maintenance-page"
 
@@ -8,8 +8,9 @@ vi.mock("@/components/access-denied", () => ({
 }))
 
 const orientationTimestamps = {
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+  version: 1,
+  createdAt: "2026-07-01T00:00:00.000Z",
+  updatedAt: "2026-07-01T00:00:00.000Z",
 } as const
 
 function createOrientation(

@@ -1,70 +1,92 @@
+import type { MaintenanceApiClient, Orientation } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { OrientationOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createOrientationAuthorizationError,
-  hasOrientationMaintenanceAccess,
-} from "./actions"
+import { createOrientationAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
   {
-    orientations: OrientationOption[]
+    orientations: Orientation[]
   },
   ReturnType<typeof createOrientationAuthorizationError>
 >
 
 export type OrientationMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  orientations: OrientationOption[]
+  orientations: Orientation[]
 }>
 
 type ReadDependencies = {
-  getOrientations: () => Promise<OrientationOption[]>
+  listOrientations: MaintenanceApiClient["orientations"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getOrientations } = await import("@coin-archive/db")
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
 
   return {
-    getOrientations,
+    listOrientations: client.orientations.list,
   }
 }
 
 export async function loadOrientationMaintenanceOrientations(
-  collector: CollectorWithRole | null,
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasOrientationMaintenanceAccess(collector)) {
-    return createOrientationAuthorizationError()
-  }
-
-  const { getOrientations } =
+  const { listOrientations } =
     dependencies ?? (await getDefaultReadDependencies())
+  const orientations: Orientation[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listOrientations({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      orientations.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Orientation maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createOrientationAuthorizationError()
+    }
+    throw error
+  }
 
   return {
     status: "success",
-    orientations: await getOrientations(),
+    orientations,
   }
 }
 
 const getLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadOrientationMaintenanceOrientations(
-    session?.user ?? null
-  )
+  const result = await loadOrientationMaintenanceOrientations()
 
   return toMaintenancePageLoaderData(result)
 })
 
 export function loadOrientationMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

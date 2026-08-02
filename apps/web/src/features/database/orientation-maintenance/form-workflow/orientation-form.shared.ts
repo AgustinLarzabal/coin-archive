@@ -1,4 +1,4 @@
-import type { OrientationOption } from "@coin-archive/db"
+import type { Orientation as OrientationOption } from "@coin-archive/api"
 
 import { createOrientationFieldErrorResult } from "../orientation-mutation-errors"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"

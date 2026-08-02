@@ -4,7 +4,17 @@ export {
   coinDetailOutputSchema,
   coinDetailSchema,
   problemDocumentSchema,
+  maintenanceProblemDocumentSchema,
   coinSummarySchema,
+  apiContract,
+  maintenanceApiContract,
+  orientationDetailOutputSchema,
+  orientationListInputSchema,
+  orientationListOutputSchema,
+  orientationOptionSchema,
+  orientationOptionsInputSchema,
+  orientationOptionsOutputSchema,
+  orientationSchema,
   publicApiContract,
 } from "./contract"
 export type {
@@ -12,6 +22,13 @@ export type {
   BrowseCoinsOutput,
   CoinDetail,
   CoinDetailOutput,
+  Orientation,
+  OrientationDetailOutput,
+  OrientationListInput,
+  OrientationListOutput,
+  OrientationOption,
+  OrientationOptionsInput,
+  OrientationOptionsOutput,
 } from "./contract"
-export { createPublicApiClient } from "./client"
-export type { PublicApiClient } from "./client"
+export { createMaintenanceApiClient, createPublicApiClient } from "./client"
+export type { MaintenanceApiClient, PublicApiClient } from "./client"

@@ -348,11 +348,20 @@ export const compositionDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
 
+const currencyCodeSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(255)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+const currencyNameSchema = z.string().trim().min(1).max(255)
+const currencyFullNameSchema = z.string().trim().min(1).max(255)
+
 export const currencySchema = z.object({
   id: z.uuid(),
-  code: codeSchema,
-  name: z.string(),
-  fullName: z.string(),
+  code: currencyCodeSchema,
+  name: currencyNameSchema,
+  fullName: currencyFullNameSchema,
   version: z.number().int().min(1),
   createdAt: utcTimestampSchema,
   updatedAt: utcTimestampSchema,
@@ -386,14 +395,9 @@ export const currencyOptionsOutputSchema = z.object({
 })
 export const currencyDetailOutputSchema = z.object({ data: currencySchema })
 export const currencyMutationBodySchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .min(1)
-    .max(255)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  name: z.string().trim().min(1).max(255),
-  fullName: z.string().trim().min(1).max(255),
+  code: currencyCodeSchema,
+  name: currencyNameSchema,
+  fullName: currencyFullNameSchema,
 })
 export const currencyCreateInputSchema = z.object({
   headers: z.object({ "idempotency-key": idempotencyKeySchema }),

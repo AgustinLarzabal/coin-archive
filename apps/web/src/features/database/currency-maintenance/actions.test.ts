@@ -42,29 +42,6 @@ function problem(code: string, status: number, invalidParams?: unknown[]) {
 }
 
 describe("Currency web mutation adapter", () => {
-  it("retains client validation before calling the typed create operation", async () => {
-    const createCurrency = vi.fn()
-
-    await expect(
-      submitCreateCurrency(
-        {
-          code: " ",
-          name: "".padStart(256, "A"),
-          fullName: "Dollar",
-          idempotencyKey: "attempt-1",
-        },
-        { createCurrency }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: "Currency Code cannot be blank.",
-        name: "Currency Name must be 255 characters or fewer.",
-      },
-    })
-    expect(createCurrency).not.toHaveBeenCalled()
-  })
-
   it("creates through the typed API with a client-owned idempotency key", async () => {
     const createCurrency = vi.fn(async () => ({
       status: 201 as const,
@@ -89,9 +66,9 @@ describe("Currency web mutation adapter", () => {
     expect(createCurrency).toHaveBeenCalledWith({
       headers: { "idempotency-key": "attempt-1" },
       body: {
-        code: "united-states-dollar",
-        name: "Dollar",
-        fullName: "United States dollar",
+        code: " united-states-dollar ",
+        name: " Dollar ",
+        fullName: " United States dollar ",
       },
     })
   })

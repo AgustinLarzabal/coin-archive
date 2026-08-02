@@ -1,7 +1,10 @@
 import {
+  currencyCreateInputSchema,
+  currencyDeleteInputSchema,
   currencyListInputSchema,
   currencyMutationBodySchema,
   currencyOptionsInputSchema,
+  currencyReplaceInputSchema,
 } from "@coin-archive/api"
 import type { Currency, CurrencyListInput } from "@coin-archive/api"
 import type { Hono } from "hono"
@@ -84,13 +87,18 @@ export function registerCurrencyMaintenanceRoutes(
       )
     const fields = await parseBody(c.req.raw)
     if (fields instanceof Response) return fields
+    const requestInput = currencyCreateInputSchema.safeParse({
+      headers: { "idempotency-key": key },
+      body: fields,
+    })
+    if (!requestInput.success) return invalidRequest(c.req.path)
     try {
       const result = await dependencies.createCurrency({
         collectorId: c.get("collector").id,
-        idempotencyKey: key,
-        requestHash: await digest(JSON.stringify(fields)),
+        idempotencyKey: requestInput.data.headers["idempotency-key"],
+        requestHash: await digest(JSON.stringify(requestInput.data.body)),
         expiresAt: new Date(Date.now() + 86400000),
-        fields,
+        fields: requestInput.data.body,
       })
       if (result.status === "mismatch")
         return problem(
@@ -150,15 +158,29 @@ export function registerCurrencyMaintenanceRoutes(
   app.put("/api/v1/maintenance/currencies/:uuid", async (c) => {
     const id = c.req.param("uuid")
     if (!uuid(id)) return invalidId(c.req.path)
-    const version = precondition(c.req.header("if-match"), id, c.req.path)
-    if (version instanceof Response) return version
     const fields = await parseBody(c.req.raw)
     if (fields instanceof Response) return fields
+    const requestInput = currencyReplaceInputSchema.safeParse({
+      params: { uuid: id },
+      headers: { "if-match": c.req.header("if-match") },
+      body: fields,
+    })
+    if (!requestInput.success) {
+      return c.req.header("if-match")
+        ? invalidRequest(c.req.path)
+        : ifMatchRequired(c.req.path)
+    }
+    const version = precondition(
+      requestInput.data.headers["if-match"],
+      id,
+      c.req.path
+    )
+    if (version instanceof Response) return version
     try {
       const result = await dependencies.replaceCurrency({
         id,
         expectedVersion: version,
-        fields,
+        fields: requestInput.data.body,
       })
       if (result.status !== "updated")
         return result.status === "missing"
@@ -173,7 +195,20 @@ export function registerCurrencyMaintenanceRoutes(
   app.delete("/api/v1/maintenance/currencies/:uuid", async (c) => {
     const id = c.req.param("uuid")
     if (!uuid(id)) return invalidId(c.req.path)
-    const version = precondition(c.req.header("if-match"), id, c.req.path)
+    const requestInput = currencyDeleteInputSchema.safeParse({
+      params: { uuid: id },
+      headers: { "if-match": c.req.header("if-match") },
+    })
+    if (!requestInput.success) {
+      return c.req.header("if-match")
+        ? invalidRequest(c.req.path)
+        : ifMatchRequired(c.req.path)
+    }
+    const version = precondition(
+      requestInput.data.headers["if-match"],
+      id,
+      c.req.path
+    )
     if (version instanceof Response) return version
     try {
       const result = await dependencies.deleteCurrency({
@@ -321,15 +356,7 @@ function precondition(
   id: string,
   instance: string
 ): number | Response {
-  if (!value)
-    return problem(
-      400,
-      "if-match-required",
-      "if_match_required",
-      "If-Match required",
-      "Currency replacement and deletion require an If-Match header",
-      instance
-    )
+  if (!value) return ifMatchRequired(instance)
   try {
     if (!/^"[A-Za-z0-9_-]+"$/.test(value)) throw Error()
     const text = from64(value.slice(1, -1)),
@@ -352,6 +379,16 @@ function precondition(
       instance
     )
   }
+}
+function ifMatchRequired(instance: string) {
+  return problem(
+    400,
+    "if-match-required",
+    "if_match_required",
+    "If-Match required",
+    "Currency replacement and deletion require an If-Match header",
+    instance
+  )
 }
 function mapError(
   error: unknown,
@@ -376,7 +413,7 @@ function mapError(
       "currency-in-use",
       "currency_in_use",
       "Currency is in use",
-      "Coins still use this Currency, so it cannot be deleted",
+      "Coins still use this Currency in their Face Values, so it cannot be deleted",
       instance
     )
   throw error
@@ -436,6 +473,16 @@ function invalidQuery(instance: string) {
     "invalid_request",
     "Invalid query parameters",
     "Query parameters do not match the maintenance API contract",
+    instance
+  )
+}
+function invalidRequest(instance: string) {
+  return problem(
+    400,
+    "invalid-request",
+    "invalid_request",
+    "Invalid request",
+    "The request does not match the Currency maintenance contract",
     instance
   )
 }

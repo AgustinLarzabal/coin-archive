@@ -118,6 +118,13 @@ describe("currency mutations integration", () => {
       status: "replayed",
       currency: first.status === "created" ? first.currency : expect.anything(),
     })
+    await expect(
+      createCurrencyIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "euro", name: "Euro", fullName: "Euro" },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
     if (first.status !== "created") throw new Error("Expected create")
     await expect(
       replaceCurrencyWithDatabase(db, {
@@ -261,8 +268,9 @@ describe("currency mutations integration", () => {
     })
 
     await expect(
-      deleteCurrency({
+      deleteCurrencyIfVersionWithDatabase(db, {
         id: existingCurrency.id,
+        expectedVersion: 1,
       })
     ).rejects.toMatchObject({
       cause: expect.objectContaining({

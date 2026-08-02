@@ -16,12 +16,6 @@ import {
   CURRENCY_DELETED_MESSAGE,
   CURRENCY_UPDATED_MESSAGE,
 } from "./messages"
-import {
-  createCurrencyInputSchema,
-  deleteCurrencyInputSchema,
-  updateCurrencyInputSchema,
-  validateCurrencyInput,
-} from "./validation"
 import type {
   CreateCurrencyInput,
   DeleteCurrencyInput,
@@ -80,16 +74,12 @@ export async function submitCreateCurrency(
   dependencies?: CreateDependencies
 ): Promise<CurrencyMutationResult> {
   const { idempotencyKey, ...fields } = input
-  const validation = validateCurrencyInput(createCurrencyInputSchema, fields)
-  if (!validation.success) {
-    return createCurrencyFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultCreateDependencies())
 
   try {
     await resolved.createCurrency({
       headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
+      body: fields,
     })
     return { status: "success", message: CURRENCY_CREATED_MESSAGE }
   } catch (error) {
@@ -101,12 +91,8 @@ export async function submitUpdateCurrency(
   input: UpdateCurrencyInput,
   dependencies?: ReplaceDependencies
 ): Promise<CurrencyMutationResult> {
-  const validation = validateCurrencyInput(updateCurrencyInputSchema, input)
-  if (!validation.success) {
-    return createCurrencyFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
+  const { id, etag, ...body } = input
 
   try {
     await resolved.replaceCurrency({
@@ -124,16 +110,12 @@ export async function submitDeleteCurrency(
   input: DeleteCurrencyInput,
   dependencies?: DeleteDependencies
 ): Promise<CurrencyMutationResult> {
-  const validation = validateCurrencyInput(deleteCurrencyInputSchema, input)
-  if (!validation.success) {
-    return createCurrencyFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultDeleteDependencies())
 
   try {
     await resolved.deleteCurrency({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
+      params: { uuid: input.id },
+      headers: { "if-match": input.etag },
     })
     return { status: "success", message: CURRENCY_DELETED_MESSAGE }
   } catch (error) {

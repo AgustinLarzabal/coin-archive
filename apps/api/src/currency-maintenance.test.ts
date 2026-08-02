@@ -457,6 +457,7 @@ describe("protected Currency maintenance mutations", () => {
     expect(inUse.status).toBe(409)
     await expect(inUse.json()).resolves.toMatchObject({
       code: "currency_in_use",
+      detail: expect.stringContaining("Face Values"),
     })
   })
 

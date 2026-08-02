@@ -180,4 +180,77 @@ describe("createMaintenanceApiClient", () => {
       data: { body: { code: "orientation_code_conflict" } },
     })
   })
+
+  it("serializes Currency routes and concurrency headers", async () => {
+    const requests: Request[] = []
+    const uuid = "018f1a11-aaaa-7000-8000-000000000004"
+    const currency = {
+      id: uuid,
+      code: "united-states-dollar",
+      name: "Dollar",
+      fullName: "United States dollar",
+      version: 1,
+      createdAt: "2026-08-02T10:15:30.000Z",
+      updatedAt: "2026-08-02T10:15:30.000Z",
+      etag: '"currency-version-1"',
+    }
+    const client = createMaintenanceApiClient({
+      baseUrl: "https://coinarchive.app",
+      fetch: async (input) => {
+        const request = input instanceof Request ? input : new Request(input)
+        requests.push(request)
+        if (request.method === "DELETE") {
+          return new Response(null, { status: 204 })
+        }
+        if (request.method === "POST" || request.method === "PUT") {
+          return Response.json(
+            { data: currency },
+            {
+              status: request.method === "POST" ? 201 : 200,
+              headers: {
+                ETag: currency.etag,
+                Location: `/api/v1/maintenance/currencies/${uuid}`,
+              },
+            }
+          )
+        }
+        return Response.json({ data: [], nextCursor: null })
+      },
+    })
+
+    await client.currencies.list({ limit: 30, sort: "fullName" })
+    await client.currencies.options({ q: "dollar" })
+    await client.currencies.create({
+      headers: { "idempotency-key": "attempt-1" },
+      body: {
+        code: currency.code,
+        name: currency.name,
+        fullName: currency.fullName,
+      },
+    })
+    await client.currencies.replace({
+      params: { uuid },
+      headers: { "if-match": currency.etag },
+      body: {
+        code: currency.code,
+        name: currency.name,
+        fullName: currency.fullName,
+      },
+    })
+    await client.currencies.delete({
+      params: { uuid },
+      headers: { "if-match": currency.etag },
+    })
+
+    expect(requests.map((request) => request.url)).toStrictEqual([
+      "https://coinarchive.app/api/v1/maintenance/currencies?limit=30&sort=fullName",
+      "https://coinarchive.app/api/v1/maintenance/currencies/options?q=dollar",
+      "https://coinarchive.app/api/v1/maintenance/currencies",
+      `https://coinarchive.app/api/v1/maintenance/currencies/${uuid}`,
+      `https://coinarchive.app/api/v1/maintenance/currencies/${uuid}`,
+    ])
+    expect(requests[2].headers.get("idempotency-key")).toBe("attempt-1")
+    expect(requests[3].headers.get("if-match")).toBe(currency.etag)
+    expect(requests[4].headers.get("if-match")).toBe(currency.etag)
+  })
 })

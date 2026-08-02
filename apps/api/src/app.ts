@@ -22,6 +22,8 @@ import { registerCurrencyMaintenanceRoutes } from "./currency-maintenance"
 import type { CurrencyMaintenanceDependencies } from "./currency-maintenance"
 import { registerDistributionMaintenanceRoutes } from "./distribution-maintenance"
 import type { DistributionMaintenanceDependencies } from "./distribution-maintenance"
+import { registerEdgeMaintenanceRoutes } from "./edge-maintenance"
+import type { EdgeMaintenanceDependencies } from "./edge-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -166,6 +168,17 @@ export function createApiApp({
   deleteDistribution = async () => {
     throw new Error("Distribution deletion is not configured")
   },
+  listEdges = async () => [],
+  getEdge = async () => null,
+  createEdge = async () => {
+    throw new Error("Edge create is not configured")
+  },
+  replaceEdge = async () => {
+    throw new Error("Edge replacement is not configured")
+  },
+  deleteEdge = async () => {
+    throw new Error("Edge deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -214,6 +227,11 @@ export function createApiApp({
   createDistribution?: DistributionMaintenanceDependencies["createDistribution"]
   replaceDistribution?: DistributionMaintenanceDependencies["replaceDistribution"]
   deleteDistribution?: DistributionMaintenanceDependencies["deleteDistribution"]
+  listEdges?: EdgeMaintenanceDependencies["listEdges"]
+  getEdge?: EdgeMaintenanceDependencies["getEdge"]
+  createEdge?: EdgeMaintenanceDependencies["createEdge"]
+  replaceEdge?: EdgeMaintenanceDependencies["replaceEdge"]
+  deleteEdge?: EdgeMaintenanceDependencies["deleteEdge"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -416,6 +434,13 @@ export function createApiApp({
     createDistribution,
     replaceDistribution,
     deleteDistribution,
+  })
+  registerEdgeMaintenanceRoutes(app, {
+    listEdges,
+    getEdge,
+    createEdge,
+    replaceEdge,
+    deleteEdge,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

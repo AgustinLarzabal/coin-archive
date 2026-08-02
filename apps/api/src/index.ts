@@ -3,12 +3,14 @@ import {
   createCompositionIdempotentlyWithDatabase,
   createCurrencyIdempotentlyWithDatabase,
   createDistributionIdempotentlyWithDatabase,
+  createEdgeIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
   deleteCompositionIfVersionWithDatabase,
   deleteCurrencyIfVersionWithDatabase,
   deleteDistributionIfVersionWithDatabase,
+  deleteEdgeIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
@@ -18,6 +20,8 @@ import {
   getCurrencyMaintenanceRecordsWithDatabase,
   getDistributionMaintenanceRecordWithDatabase,
   getDistributionMaintenanceRecordsWithDatabase,
+  getEdgeMaintenanceRecordWithDatabase,
+  getEdgeMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
@@ -26,6 +30,7 @@ import {
   replaceCompositionWithDatabase,
   replaceCurrencyWithDatabase,
   replaceDistributionWithDatabase,
+  replaceEdgeWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -146,6 +151,20 @@ async function handleRequest(
       }),
     deleteDistribution: (input) =>
       deleteDistributionIfVersionWithDatabase(database.db, input),
+    listEdges: (input) =>
+      getEdgeMaintenanceRecordsWithDatabase(database.db, input),
+    getEdge: (edgeId) =>
+      getEdgeMaintenanceRecordWithDatabase(database.db, edgeId),
+    createEdge: (input) =>
+      createEdgeIdempotentlyWithDatabase(database.db, input),
+    replaceEdge: ({ id, expectedVersion, fields }) =>
+      replaceEdgeWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteEdge: (input) =>
+      deleteEdgeIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

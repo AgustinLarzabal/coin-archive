@@ -2,33 +2,28 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateEdge } from "../actions"
-import type { EdgeMutationResult } from "../edge-mutation-errors"
+import type { EdgeMutationResult } from "../actions"
 import { createEdgeInputSchema } from "../edge-validation"
 import type { EdgeFieldErrors } from "../edge-validation"
 
-import { EdgeFormFields, EdgeTextField } from "./edge-form-fields"
 import { createEdgeDraft, hasEdgeEditChanges } from "./edge-form.shared"
+import { EdgeFormFields, EdgeTextField } from "./edge-form-fields"
 import type { EdgeDraft } from "./edge-form.shared"
 
 type EdgeEditFormProps = {
-  edge: EdgeOption
+  edge: Edge
   onSaved?: () => void
 }
 
 const updateEdgeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: EdgeDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateEdge(session?.user ?? null, data)
-  })
+  .inputValidator((data: EdgeDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateEdge(data))
 
 export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
   const router = useRouter()
@@ -41,7 +36,9 @@ export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
     defaultValues: createEdgeDraft(edge),
     validators: { onSubmit: createEdgeInputSchema },
     onSubmit: async ({ value }) => {
-      const result = await updateEdge({ data: { id: edge.id, ...value } })
+      const result = await updateEdge({
+        data: { id: edge.id, etag: edge.etag, ...value },
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()
@@ -55,7 +52,7 @@ export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [edge, form])
+  }, [form, edge])
 
   function clearFeedback() {
     setFieldErrors({})

@@ -48,7 +48,20 @@ export type {
   DeleteDistributionIfVersionResult,
   ReplaceDistributionResult,
 } from "./mutations/distribution"
-export { createEdge, deleteEdge, updateEdge } from "./mutations/edge"
+export {
+  createEdge,
+  createEdgeIdempotently,
+  createEdgeIdempotentlyWithDatabase,
+  deleteEdge,
+  deleteEdgeIfVersionWithDatabase,
+  replaceEdgeWithDatabase,
+  updateEdge,
+} from "./mutations/edge"
+export type {
+  CreateEdgeIdempotentlyResult,
+  DeleteEdgeIfVersionResult,
+  ReplaceEdgeResult,
+} from "./mutations/edge"
 export { createRim, deleteRim, updateRim } from "./mutations/rim"
 export { createRuler, deleteRuler, updateRuler } from "./mutations/ruler"
 export {
@@ -133,6 +146,10 @@ export {
 } from "./queries/get-composition-maintenance"
 export { getCurrencies } from "./queries/get-currencies"
 export { getEdges } from "./queries/get-edges"
+export {
+  getEdgeMaintenanceRecordWithDatabase,
+  getEdgeMaintenanceRecordsWithDatabase,
+} from "./queries/get-edge-maintenance"
 export { getEngravers } from "./queries/get-engravers"
 export { getIssuerMaintenanceRecords } from "./queries/get-issuer-maintenance-records"
 export { getMints } from "./queries/get-mints"

@@ -7,7 +7,15 @@ import {
   createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createEdge, deleteEdge, updateEdge } from "./edge"
+import {
+  createEdge,
+  createEdgeIdempotently,
+  createEdgeIdempotentlyWithDatabase,
+  deleteEdge,
+  deleteEdgeIfVersionWithDatabase,
+  replaceEdgeWithDatabase,
+  updateEdge,
+} from "./edge"
 
 describe("edge mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -69,6 +77,130 @@ describe("edge mutations integration", () => {
 
     expect(firstEdge.name).toBe(secondEdge.name)
     expect(firstEdge.id).not.toBe(secondEdge.id)
+  })
+
+  it("persists and replays an identical idempotent Edge create", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "edge-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: " reeded ", name: " Reeded " },
+    }
+    const first = await createEdgeIdempotently(input)
+    const retry = await createEdgeIdempotently(input)
+    expect(first).toMatchObject({
+      status: "created",
+      edge: { code: "reeded", name: "Reeded", version: 1 },
+    })
+    expect(retry).toStrictEqual({
+      status: "replayed",
+      edge: first.status === "created" ? first.edge : expect.anything(),
+    })
+    await expect(db.query.edge.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("rejects payload-mismatched reuse of an Edge create key", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "edge-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "reeded", name: "Reeded" },
+    }
+    await createEdgeIdempotently(input)
+    await expect(
+      createEdgeIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "plain", name: "Plain" },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.edge.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("atomically enforces Edge versions for replacement and deletion", async () => {
+    const created = await createEdgeIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "request-scoped-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "reeded", name: "Reeded" },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+    await expect(
+      replaceEdgeWithDatabase(db, {
+        id: created.edge.id,
+        expectedVersion: 1,
+        code: " plain ",
+        name: " Plain ",
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      edge: { version: 2, code: "plain", name: "Plain" },
+    })
+    await expect(
+      replaceEdgeWithDatabase(db, {
+        id: created.edge.id,
+        expectedVersion: 1,
+        code: "reeded",
+        name: "Reeded",
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteEdgeIfVersionWithDatabase(db, {
+        id: created.edge.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteEdgeIfVersionWithDatabase(db, {
+        id: created.edge.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
+  })
+
+  it("preserves Edge constraints through versioned API mutations", async () => {
+    const first = await createEdgeFixture({ code: "reeded", name: "Reeded" })
+    const second = await createEdgeFixture({ code: "plain", name: "Plain" })
+
+    await expect(
+      replaceEdgeWithDatabase(db, {
+        id: second.id,
+        expectedVersion: 1,
+        code: "reeded",
+        name: second.name,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23505",
+        constraint_name: "edge_code_lower_unique_idx",
+      }),
+    })
+
+    const issuer = await createIssuer({
+      code: "versioned-edge-delete-issuer",
+      name: "Versioned Edge Delete Issuer",
+    })
+    await createCoin({
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      issuerId: issuer.id,
+      edgeId: first.id,
+      title: "Versioned Edge Delete Coin",
+    })
+
+    await expect(
+      deleteEdgeIfVersionWithDatabase(db, {
+        id: first.id,
+        expectedVersion: 1,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_edge_id_edge_id_fk",
+      }),
+    })
   })
 
   it("trims Edge Code and Edge Name before updating an Edge", async () => {

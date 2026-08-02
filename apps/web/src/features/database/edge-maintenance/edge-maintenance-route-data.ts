@@ -1,67 +1,79 @@
+import type { Edge, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { EdgeOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createEdgeAuthorizationError,
-  hasEdgeMaintenanceAccess,
-} from "./actions"
+import { createEdgeAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
-  {
-    edges: EdgeOption[]
-  },
+  { edges: Edge[] },
   ReturnType<typeof createEdgeAuthorizationError>
 >
 
 export type EdgeMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  edges: EdgeOption[]
+  edges: Edge[]
 }>
 
 type ReadDependencies = {
-  getEdges: () => Promise<EdgeOption[]>
+  listEdges: MaintenanceApiClient["edges"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getEdges } = await import("@coin-archive/db")
-
-  return {
-    getEdges,
-  }
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listEdges: client.edges.list }
 }
 
-export async function loadEdgeMaintenanceEdges(
-  collector: CollectorWithRole | null,
+export async function loadEdgeMaintenancePageData(
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasEdgeMaintenanceAccess(collector)) {
-    return createEdgeAuthorizationError()
+  const { listEdges } = dependencies ?? (await getDefaultReadDependencies())
+  const edges: Edge[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listEdges({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      edges.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Edge maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createEdgeAuthorizationError()
+    }
+    throw error
   }
 
-  const { getEdges } = dependencies ?? (await getDefaultReadDependencies())
-
-  return {
-    status: "success",
-    edges: await getEdges(),
-  }
+  return { status: "success", edges }
 }
 
-const getLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadEdgeMaintenanceEdges(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadEdgeMaintenancePageData())
+)
 
 export function loadEdgeMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

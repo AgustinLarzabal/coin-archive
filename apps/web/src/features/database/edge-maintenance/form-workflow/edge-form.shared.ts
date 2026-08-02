@@ -1,12 +1,4 @@
-import type { EdgeOption } from "@coin-archive/db"
-
-import { createEdgeFieldErrorResult } from "../edge-mutation-errors"
-import type { EdgeMutationResult } from "../edge-mutation-errors"
-import {
-  createEdgeInputSchema,
-  updateEdgeInputSchema,
-  validateEdgeInput,
-} from "../edge-validation"
+import type { Edge } from "@coin-archive/api"
 
 export type EdgeDraft = {
   code: string
@@ -18,7 +10,7 @@ export const EMPTY_EDGE_DRAFT: EdgeDraft = {
   name: "",
 }
 
-export function createEdgeDraft(edge: EdgeOption): EdgeDraft {
+export function createEdgeDraft(edge: Pick<Edge, "code" | "name">): EdgeDraft {
   return {
     code: edge.code,
     name: edge.name,
@@ -38,29 +30,14 @@ export function isEdgeDraftComplete(draft: EdgeDraft) {
   return normalizedDraft.code.length > 0 && normalizedDraft.name.length > 0
 }
 
-export function hasEdgeEditChanges(edge: EdgeOption, draft: EdgeDraft) {
+export function hasEdgeEditChanges(
+  edge: Pick<Edge, "code" | "name">,
+  draft: EdgeDraft
+) {
   const normalizedCurrent = normalizeEdgeDraft(createEdgeDraft(edge))
   const normalizedDraft = normalizeEdgeDraft(draft)
   return (
     normalizedDraft.code !== normalizedCurrent.code ||
     normalizedDraft.name !== normalizedCurrent.name
   )
-}
-
-export function validateEdgeCreateDraft(
-  draft: EdgeDraft
-): EdgeMutationResult | null {
-  const result = validateEdgeInput(createEdgeInputSchema, draft)
-  return result.success ? null : createEdgeFieldErrorResult(result.fieldErrors)
-}
-
-export function validateEdgeUpdateDraft(
-  edgeId: string,
-  draft: EdgeDraft
-): EdgeMutationResult | null {
-  const result = validateEdgeInput(updateEdgeInputSchema, {
-    id: edgeId,
-    ...draft,
-  })
-  return result.success ? null : createEdgeFieldErrorResult(result.fieldErrors)
 }

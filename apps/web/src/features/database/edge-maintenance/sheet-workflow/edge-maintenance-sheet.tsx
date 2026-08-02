@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,39 +27,25 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteEdge } from "../actions"
-import {
-  EDGE_GENERIC_SAVE_ERROR,
-  EDGE_IN_USE_DELETE_ERROR,
-} from "../edge-mutation-errors"
+import { EDGE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { EdgeCreateForm } from "../form-workflow/edge-create-form"
 import { EdgeEditForm } from "../form-workflow/edge-edit-form"
 
 type EdgeMaintenanceSheetProps = {
-  edge: EdgeOption | null
+  edge: Edge | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE =
-  EDGE_IN_USE_DELETE_ERROR.replace(
-    "Edge cannot be deleted while Coins still use it. ",
-    ""
-  )
-
-export const EDGE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Edge. ${EDGE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+export const EDGE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Edge. ${EDGE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteEdgeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteEdge(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteEdge(data))
 
 export function EdgeMaintenanceSheet({
   edge,
@@ -71,17 +57,11 @@ export function EdgeMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingEdge = edge !== null
-  const sheetTitle = isEditingEdge ? "Edit Edge" : "Create Edge"
 
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [edge?.id, open])
 
   async function handleDeleteEdge() {
@@ -96,6 +76,7 @@ export function EdgeMaintenanceSheet({
       const result = await deleteEdge({
         data: {
           id: edge.id,
+          etag: edge.etag,
         },
       })
 
@@ -105,7 +86,7 @@ export function EdgeMaintenanceSheet({
         return
       }
 
-      setDeleteError(result.formError ?? EDGE_GENERIC_SAVE_ERROR)
+      setDeleteError(result.formError ?? "Unable to delete Edge right now.")
     } finally {
       setIsDeletePending(false)
     }
@@ -115,9 +96,9 @@ export function EdgeMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>{edge ? "Edit Edge" : "Create Edge"}</SheetTitle>
 
-          {isEditingEdge ? (
+          {edge !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -177,7 +158,7 @@ export function EdgeMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingEdge ? (
+        {edge ? (
           <EdgeEditForm edge={edge} onSaved={() => onOpenChange(false)} />
         ) : (
           <EdgeCreateForm onCreated={() => onOpenChange(false)} />

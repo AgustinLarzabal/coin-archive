@@ -25,6 +25,14 @@ import {
   distributionListOutputSchema,
   distributionOptionsOutputSchema,
   distributionReplaceInputSchema,
+  edgeCreateInputSchema,
+  edgeCreateOutputSchema,
+  edgeDeleteInputSchema,
+  edgeDetailOutputSchema,
+  edgeListInputSchema,
+  edgeListOutputSchema,
+  edgeOptionsOutputSchema,
+  edgeReplaceInputSchema,
   currencyCreateInputSchema,
   currencyCreateOutputSchema,
   currencyDeleteInputSchema,
@@ -73,6 +81,16 @@ const distribution = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-distribution-version"',
+}
+
+const edge = {
+  id: "018f1a11-aaaa-7000-8000-000000000006",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-edge-version"',
 }
 
 const catalogue = {
@@ -551,6 +569,97 @@ describe("Distribution maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: distribution.id },
       headers: { "if-match": distribution.etag },
+    })
+  })
+})
+
+describe("Edge maintenance contract", () => {
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      edgeListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "reeded",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "reeded",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => edgeListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      edgeOptionsOutputSchema.parse({
+        data: [{ id: edge.id, code: edge.code, name: edge.name }],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [{ id: edge.id, code: edge.code, name: edge.name }],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      edgeListOutputSchema.parse({ data: [edge], nextCursor: null })
+    ).toStrictEqual({ data: [edge], nextCursor: null })
+    expect(edgeDetailOutputSchema.parse({ data: edge })).toStrictEqual({
+      data: edge,
+    })
+    expect(() =>
+      edgeDetailOutputSchema.parse({
+        data: { ...edge, createdAt: new Date(edge.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      edgeCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " reeded ", name: " Reeded " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
+    })
+    expect(
+      edgeCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: edge.etag,
+          location: `/api/v1/maintenance/edges/${edge.id}`,
+        },
+        body: { data: edge },
+      })
+    ).toMatchObject({ status: 201, body: { data: edge } })
+    expect(() =>
+      edgeCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Reeded Edge", name: "Reeded" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      edgeReplaceInputSchema.parse({
+        params: { uuid: edge.id },
+        headers: { "if-match": edge.etag },
+        body: { code: edge.code, name: edge.name },
+      })
+    ).toMatchObject({ headers: { "if-match": edge.etag } })
+    expect(
+      edgeDeleteInputSchema.parse({
+        params: { uuid: edge.id },
+        headers: { "if-match": edge.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: edge.id },
+      headers: { "if-match": edge.etag },
     })
   })
 })

@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createEdgeColumns(
-  onEditEdge: (edge: EdgeOption) => void
-): ColumnDef<EdgeOption>[] {
+  onEditEdge: (edge: Edge) => void
+): ColumnDef<Edge>[] {
   return [
     {
       accessorKey: "code",

@@ -425,6 +425,78 @@ export const distributionDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
 
+export const edgeSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const edgeOptionSchema = edgeSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const edgeListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const edgeListOutputSchema = z.object({
+  data: z.array(edgeSchema),
+  nextCursor: z.string().nullable(),
+})
+export const edgeOptionsInputSchema = edgeListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const edgeOptionsOutputSchema = z.object({
+  data: z.array(edgeOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const edgeDetailOutputSchema = z.object({ data: edgeSchema })
+export const edgeMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const edgeCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: edgeMutationBodySchema,
+})
+export const edgeCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/edges/"),
+    etag: z.string(),
+  }),
+  body: edgeDetailOutputSchema,
+})
+export const edgeReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: edgeMutationBodySchema,
+})
+export const edgeReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: edgeDetailOutputSchema,
+})
+export const edgeDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const edgeDeleteOutputSchema = z.object({ status: z.literal(204) })
+
 const currencyCodeSchema = z
   .string()
   .trim()
@@ -793,6 +865,79 @@ export const maintenanceApiContract = {
       .output(distributionDeleteOutputSchema)
       .errors(maintenanceMutationErrors),
   },
+  edges: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/edges",
+        summary: "Browse Edges for maintenance",
+        tags: ["Edge Maintenance"],
+      })
+      .input(edgeListInputSchema)
+      .output(edgeListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/edges/options",
+        summary: "Search compact Edge options",
+        tags: ["Edge Maintenance"],
+      })
+      .input(edgeOptionsInputSchema)
+      .output(edgeOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/edges/{uuid}",
+        summary: "Get Edge maintenance detail",
+        tags: ["Edge Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(edgeDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/edges",
+        summary: "Create an Edge",
+        tags: ["Edge Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(edgeCreateInputSchema)
+      .output(edgeCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/edges/{uuid}",
+        summary: "Replace an Edge",
+        tags: ["Edge Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(edgeReplaceInputSchema)
+      .output(edgeReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/edges/{uuid}",
+        summary: "Permanently delete an Edge",
+        tags: ["Edge Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(edgeDeleteInputSchema)
+      .output(edgeDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -1010,6 +1155,14 @@ export type DistributionDetailOutput = z.infer<
 export type DistributionMutationBody = z.infer<
   typeof distributionMutationBodySchema
 >
+export type Edge = z.infer<typeof edgeSchema>
+export type EdgeOption = z.infer<typeof edgeOptionSchema>
+export type EdgeListInput = z.infer<typeof edgeListInputSchema>
+export type EdgeListOutput = z.infer<typeof edgeListOutputSchema>
+export type EdgeOptionsInput = z.infer<typeof edgeOptionsInputSchema>
+export type EdgeOptionsOutput = z.infer<typeof edgeOptionsOutputSchema>
+export type EdgeDetailOutput = z.infer<typeof edgeDetailOutputSchema>
+export type EdgeMutationBody = z.infer<typeof edgeMutationBodySchema>
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>
 export type CurrencyListInput = z.infer<typeof currencyListInputSchema>

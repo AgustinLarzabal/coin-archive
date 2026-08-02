@@ -1,4 +1,4 @@
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -92,15 +92,17 @@ vi.mock("../form-workflow/edge-edit-form", () => ({
   EdgeEditForm: () => createElement("div", null, "EdgeEditForm"),
 }))
 
-const edge: EdgeOption = {
+const edge: Edge = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
   code: "reeded",
   name: "Reeded",
-  createdAt: new Date("2026-06-24T12:00:00.000Z"),
-  updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+  version: 1,
+  etag: '"edge-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderEdgeMaintenanceSheet(edgeOption: EdgeOption | null) {
+function renderEdgeMaintenanceSheet(edgeOption: Edge | null) {
   return renderToStaticMarkup(
     createElement(EdgeMaintenanceSheet, {
       edge: edgeOption,

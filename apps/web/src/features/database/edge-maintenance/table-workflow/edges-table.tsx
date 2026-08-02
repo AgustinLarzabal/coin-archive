@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createEdgeColumns } from "./columns"
@@ -7,13 +7,10 @@ import { EdgeMaintenanceSheet } from "../sheet-workflow/edge-maintenance-sheet"
 import { EdgesTableToolbar } from "./edges-table-toolbar"
 
 type EdgesTableProps = {
-  edges: EdgeOption[]
+  edges: Edge[]
 }
 
-export function filterEdges(
-  edges: EdgeOption[],
-  filterValue: string
-): EdgeOption[] {
+export function filterEdges(edges: Edge[], filterValue: string): Edge[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
@@ -28,7 +25,7 @@ export function filterEdges(
 }
 
 export function EdgesTable({ edges }: EdgesTableProps) {
-  const [selectedEdge, setSelectedEdge] = useState<EdgeOption | null>(null)
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [filterValue, setFilterValue] = useState("")
   const columns = useMemo(

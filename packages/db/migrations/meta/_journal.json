@@ -162,6 +162,13 @@
       "when": 1785685857091,
       "tag": "0022_kind_paibok",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1785688298750,
+      "tag": "0023_lush_the_twelve",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { EdgeOption } from "@coin-archive/db"
+import type { Edge } from "@coin-archive/api"
 
 import {
   createEdgeDraft,
@@ -8,12 +8,14 @@ import {
   normalizeEdgeDraft,
 } from "./edge-form.shared"
 
-const edge: EdgeOption = {
+const edge: Edge = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
   code: "reeded",
   name: "Reeded",
-  createdAt: new Date("2026-06-24T12:00:00.000Z"),
-  updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+  version: 1,
+  etag: '"edge-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("createEdgeDraft", () => {

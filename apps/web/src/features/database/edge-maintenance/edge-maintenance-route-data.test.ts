@@ -1,62 +1,74 @@
+import type { Edge } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
+
 import { EDGE_AUTHORIZATION_ERROR } from "./actions"
-import { loadEdgeMaintenanceEdges } from "./edge-maintenance-route-data"
+import { loadEdgeMaintenancePageData } from "./edge-maintenance-route-data"
 
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
+const edges: Edge[] = [
+  {
+    id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+    code: "silver",
+    name: "Silver",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"edge-version-1"',
+  },
+  {
+    id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
+    code: "gold",
+    name: "Gold",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"edge-version-1"',
+  },
+]
 
-describe("loadEdgeMaintenanceEdges", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getEdges = vi.fn()
+describe("loadEdgeMaintenancePageData", () => {
+  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+    "maps API %s problems to the current access-denied presentation",
+    async (code) => {
+      const listEdges = vi.fn().mockRejectedValue({ code })
+
+      await expect(
+        loadEdgeMaintenancePageData({ listEdges })
+      ).resolves.toStrictEqual({
+        status: "error",
+        formError: EDGE_AUTHORIZATION_ERROR,
+      })
+    }
+  )
+
+  it("loads every cursor page through the typed maintenance client", async () => {
+    const listEdges = vi
+      .fn()
+      .mockResolvedValueOnce({ data: [edges[0]], nextCursor: "next" })
+      .mockResolvedValueOnce({ data: [edges[1]], nextCursor: null })
 
     await expect(
-      loadEdgeMaintenanceEdges(null, { getEdges })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: EDGE_AUTHORIZATION_ERROR,
+      loadEdgeMaintenancePageData({ listEdges })
+    ).resolves.toStrictEqual({ status: "success", edges })
+    expect(listEdges).toHaveBeenNthCalledWith(1, {
+      limit: 100,
+      sort: "name",
+      order: "asc",
     })
-
-    expect(getEdges).not.toHaveBeenCalled()
+    expect(listEdges).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
   })
 
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getEdges = vi.fn()
+  it("does not hide unexpected API failures as authorization failures", async () => {
+    const failure = new Error("API unavailable")
 
     await expect(
-      loadEdgeMaintenanceEdges({ role: "collector" }, { getEdges })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: EDGE_AUTHORIZATION_ERROR,
-    })
-
-    expect(getEdges).not.toHaveBeenCalled()
-  })
-
-  it("returns Edge data for Editors and Admins", async () => {
-    const edges = [
-      {
-        id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
-        code: "reeded",
-        name: "Reeded",
-        createdAt: new Date("2026-06-24T12:00:00.000Z"),
-        updatedAt: new Date("2026-06-24T12:00:00.000Z"),
-      },
-    ]
-    const getEdges = vi.fn().mockResolvedValue(edges)
-
-    await expect(
-      loadEdgeMaintenanceEdges({ role: "editor" }, { getEdges })
-    ).resolves.toStrictEqual({
-      status: "success",
-      edges,
-    })
-
-    await expect(
-      loadEdgeMaintenanceEdges({ role: "admin" }, { getEdges })
-    ).resolves.toStrictEqual({
-      status: "success",
-      edges,
-    })
+      loadEdgeMaintenancePageData({
+        listEdges: vi.fn().mockRejectedValue(failure),
+      })
+    ).rejects.toBe(failure)
   })
 })

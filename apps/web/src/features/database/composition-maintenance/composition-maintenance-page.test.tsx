@@ -29,8 +29,10 @@ describe("CompositionMaintenanceRouteComponent", () => {
               id: "c3e497b8-fda5-48d6-a8c3-f37bc1c8f2a6",
               code: "silver-900",
               name: "Silver (.900)",
-              createdAt: new Date("2026-06-24T12:00:00.000Z"),
-              updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+              version: 1,
+              etag: '"composition-version-1"',
+              createdAt: "2026-06-24T12:00:00.000Z",
+              updatedAt: "2026-06-24T12:00:00.000Z",
             },
           ],
         }}

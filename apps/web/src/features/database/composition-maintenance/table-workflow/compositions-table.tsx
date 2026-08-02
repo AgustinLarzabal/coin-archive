@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createCompositionColumns } from "./columns"
@@ -7,13 +7,13 @@ import { CompositionsTableToolbar } from "./compositions-table-toolbar"
 import { CompositionMaintenanceSheet } from "../sheet-workflow/composition-maintenance-sheet"
 
 type CompositionsTableProps = {
-  compositions: CompositionOption[]
+  compositions: Composition[]
 }
 
 export function filterCompositionsByName(
-  compositions: CompositionOption[],
+  compositions: Composition[],
   nameFilter: string
-): CompositionOption[] {
+): Composition[] {
   const normalizedNameFilter = nameFilter.trim().toLocaleLowerCase()
 
   if (normalizedNameFilter === "") {
@@ -27,7 +27,7 @@ export function filterCompositionsByName(
 
 export function CompositionsTable({ compositions }: CompositionsTableProps) {
   const [selectedComposition, setSelectedComposition] =
-    useState<CompositionOption | null>(null)
+    useState<Composition | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [nameFilter, setNameFilter] = useState("")
   const columns = useMemo(

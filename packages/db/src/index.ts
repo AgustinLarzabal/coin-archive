@@ -22,8 +22,17 @@ export type {
 } from "./mutations/catalogue"
 export {
   createComposition,
+  createCompositionIdempotently,
+  createCompositionIdempotentlyWithDatabase,
   deleteComposition,
+  deleteCompositionIfVersionWithDatabase,
+  replaceCompositionWithDatabase,
   updateComposition,
+} from "./mutations/composition"
+export type {
+  CreateCompositionIdempotentlyResult,
+  DeleteCompositionIfVersionResult,
+  ReplaceCompositionResult,
 } from "./mutations/composition"
 export {
   createDistribution,
@@ -91,6 +100,10 @@ export {
   getPublicCoinWithDatabase,
 } from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
+export {
+  getCompositionMaintenanceRecordWithDatabase,
+  getCompositionMaintenanceRecordsWithDatabase,
+} from "./queries/get-composition-maintenance"
 export { getCurrencies } from "./queries/get-currencies"
 export { getEdges } from "./queries/get-edges"
 export { getEngravers } from "./queries/get-engravers"

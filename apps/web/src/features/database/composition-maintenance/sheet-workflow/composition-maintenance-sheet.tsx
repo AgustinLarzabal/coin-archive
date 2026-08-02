@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,19 +27,14 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  submitDeleteComposition,
-} from "../actions"
-import {
-  COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE,
-} from "../messages"
+import { submitDeleteComposition } from "../actions"
+import { COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { CompositionCreateForm } from "../form-workflow/composition-create-form"
 import { CompositionEditForm } from "../form-workflow/composition-edit-form"
 
 type CompositionMaintenanceSheetProps = {
-  composition: CompositionOption | null
+  composition: Composition | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -50,18 +45,13 @@ const COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
     "existing Coins"
   )
 
-export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Composition. ${COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
+export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Composition. ${COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
 const deleteCompositionAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteComposition(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteComposition(data))
 
 export function CompositionMaintenanceSheet({
   composition,
@@ -92,6 +82,7 @@ export function CompositionMaintenanceSheet({
       const result = await deleteComposition({
         data: {
           id: composition.id,
+          etag: composition.etag,
         },
       })
 

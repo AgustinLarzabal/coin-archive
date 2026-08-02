@@ -1,6 +1,6 @@
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import {
@@ -30,12 +30,14 @@ vi.mock("@tanstack/react-start", () => ({
   useServerFn: () => vi.fn(),
 }))
 
-const composition: CompositionOption = {
+const composition: Composition = {
   id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
   code: "silver-900",
   name: "Silver (.900)",
-  createdAt: new Date("2026-06-24T12:00:00.000Z"),
-  updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+  version: 1,
+  etag: '"composition-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasCompositionEditChanges", () => {

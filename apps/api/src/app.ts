@@ -16,6 +16,8 @@ import type {
 } from "./orientation-maintenance"
 import { registerCatalogueMaintenanceRoutes } from "./catalogue-maintenance"
 import type { CatalogueMaintenanceDependencies } from "./catalogue-maintenance"
+import { registerCompositionMaintenanceRoutes } from "./composition-maintenance"
+import type { CompositionMaintenanceDependencies } from "./composition-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -138,6 +140,17 @@ export function createApiApp({
   deleteCatalogue = async () => {
     throw new Error("Catalogue deletion is not configured")
   },
+  listCompositions = async () => [],
+  getComposition = async () => null,
+  createComposition = async () => {
+    throw new Error("Composition create is not configured")
+  },
+  replaceComposition = async () => {
+    throw new Error("Composition replacement is not configured")
+  },
+  deleteComposition = async () => {
+    throw new Error("Composition deletion is not configured")
+  },
   trustProxyHeaders = false,
   createRequestId = () => crypto.randomUUID(),
   now = () => Date.now(),
@@ -165,6 +178,11 @@ export function createApiApp({
   createCatalogue?: CatalogueMaintenanceDependencies["createCatalogue"]
   replaceCatalogue?: CatalogueMaintenanceDependencies["replaceCatalogue"]
   deleteCatalogue?: CatalogueMaintenanceDependencies["deleteCatalogue"]
+  listCompositions?: CompositionMaintenanceDependencies["listCompositions"]
+  getComposition?: CompositionMaintenanceDependencies["getComposition"]
+  createComposition?: CompositionMaintenanceDependencies["createComposition"]
+  replaceComposition?: CompositionMaintenanceDependencies["replaceComposition"]
+  deleteComposition?: CompositionMaintenanceDependencies["deleteComposition"]
   trustProxyHeaders?: boolean
   createRequestId?: () => string
   now?: () => number
@@ -348,6 +366,13 @@ export function createApiApp({
     createCatalogue,
     replaceCatalogue,
     deleteCatalogue,
+  })
+  registerCompositionMaintenanceRoutes(app, {
+    listCompositions,
+    getComposition,
+    createComposition,
+    replaceComposition,
+    deleteComposition,
   })
 
   app.on(["GET", "HEAD"], "/api/v1/coins", async (context) => {

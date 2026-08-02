@@ -2,366 +2,235 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   COMPOSITION_AUTHORIZATION_ERROR,
-  COMPOSITION_DUPLICATE_CODE_ERROR,
-  COMPOSITION_GENERIC_SAVE_ERROR,
-  COMPOSITION_IN_USE_DELETE_ERROR,
-  COMPOSITION_INVALID_CODE_ERROR,
-  COMPOSITION_MISSING_ERROR,
-} from "./messages"
-import {
-  hasCompositionMaintenanceAccess,
   submitCreateComposition,
   submitDeleteComposition,
   submitUpdateComposition,
 } from "./actions"
+import {
+  COMPOSITION_DUPLICATE_CODE_ERROR,
+  COMPOSITION_IN_USE_DELETE_ERROR,
+  COMPOSITION_STALE_ERROR,
+} from "./composition-mutation-errors"
 
-const VALID_COMPOSITION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const SILVER_COMPOSITION = {
-  code: "silver-900",
-  name: "Silver (.900)",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const composition = {
+  id,
+  code: "silver",
+  name: "Silver",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createComposition?: ReturnType<typeof vi.fn>
-  deleteComposition?: ReturnType<typeof vi.fn>
-  updateComposition?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createComposition: vi.fn(),
-    deleteComposition: vi.fn(),
-    updateComposition: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/compositions",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: COMPOSITION_AUTHORIZATION_ERROR,
-}
-
-describe("hasCompositionMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasCompositionMaintenanceAccess(null)).toBe(false)
-    expect(hasCompositionMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasCompositionMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasCompositionMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasCompositionMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasCompositionMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateComposition", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateComposition(null, SILVER_COMPOSITION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateComposition({ role: "collector" }, SILVER_COMPOSITION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Composition web mutation adapter", () => {
+  it("retains client validation before calling the typed create operation", async () => {
+    const createComposition = vi.fn()
 
     await expect(
       submitCreateComposition(
-        { role: "editor" },
         {
-          code: "Silver 900",
-          name: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createComposition }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: COMPOSITION_INVALID_CODE_ERROR,
-        name: "Composition Name cannot be blank.",
+        code: "Composition Code cannot be blank.",
+        name: "Composition Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createComposition).not.toHaveBeenCalled()
+    expect(createComposition).not.toHaveBeenCalled()
   })
 
-  it("trims Composition fields", async () => {
-    const dependencies = createDependencies({
-      createComposition: vi.fn().mockResolvedValue({
-        id: VALID_COMPOSITION_ID,
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createComposition = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/compositions/${id}` },
+      body: { data: composition },
+    }))
 
     await expect(
       submitCreateComposition(
-        { role: "editor" },
         {
-          code: " silver-900 ",
-          name: " Silver (.900) ",
+          code: " silver ",
+          name: " Silver ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createComposition }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Composition added.",
     })
-
-    expect(dependencies.createComposition).toHaveBeenCalledWith({
-      code: "silver-900",
-      name: "Silver (.900)",
+    expect(createComposition).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: "silver", name: "Silver" },
     })
   })
 
-  it("maps duplicate Composition Codes to the Composition Code field", async () => {
-    await expect(
-      submitCreateComposition(
-        { role: "admin" },
-        SILVER_COMPOSITION,
-        createDependencies({
-          createComposition: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "composition_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: COMPOSITION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createComposition = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/compositions/${id}` },
+      body: { data: composition },
+    }))
+    const submission = {
+      code: "silver",
+      name: "Silver",
+      idempotencyKey: "stable-attempt",
+    }
 
-  it("maps Composition Code slug check failures to the Composition Code field", async () => {
-    await expect(
-      submitCreateComposition(
-        { role: "admin" },
-        SILVER_COMPOSITION,
-        createDependencies({
-          createComposition: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "composition_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: COMPOSITION_INVALID_CODE_ERROR,
-      },
-    })
-  })
+    await submitCreateComposition(submission, { createComposition })
+    await submitCreateComposition(submission, { createComposition })
 
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createComposition: vi.fn().mockResolvedValue({
-        id: VALID_COMPOSITION_ID,
-      }),
-    })
-
-    await expect(
-      submitCreateComposition(
-        { role: "editor" },
-        SILVER_COMPOSITION,
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Composition added.",
-    })
-
-    expect(dependencies.createComposition).toHaveBeenCalledWith(
-      SILVER_COMPOSITION
+    expect(createComposition).toHaveBeenCalledTimes(2)
+    expect(createComposition).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createComposition).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
   })
 
-  it("returns a generic form error for unexpected persistence failures", async () => {
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceComposition = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...composition, version: 2, etag: '"next-version"' },
+      },
+    }))
+    const deleteComposition = vi.fn(async () => ({ status: 204 as const }))
+
+    await expect(
+      submitUpdateComposition(
+        { id, etag, code: "gold", name: "Gold" },
+        { replaceComposition }
+      )
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
+    await expect(
+      submitDeleteComposition({ id, etag }, { deleteComposition })
+    ).resolves.toMatchObject({
+      status: "success",
+      message: "Composition deleted.",
+    })
+
+    expect(replaceComposition).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "gold", name: "Gold" },
+    })
+    expect(deleteComposition).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
     await expect(
       submitCreateComposition(
-        { role: "admin" },
-        SILVER_COMPOSITION,
-        createDependencies({
-          createComposition: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COMPOSITION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateComposition", () => {
-  const updateInput = {
-    id: VALID_COMPOSITION_ID,
-    ...SILVER_COMPOSITION,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateComposition(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateComposition({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitUpdateComposition(
-        { role: "editor" },
         {
-          id: VALID_COMPOSITION_ID,
-          code: "Silver 900",
-          name: " ",
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: COMPOSITION_INVALID_CODE_ERROR,
-        name: "Composition Name cannot be blank.",
-      },
-    })
-
-    expect(dependencies.updateComposition).not.toHaveBeenCalled()
-  })
-
-  it("trims Composition fields before updating a Composition", async () => {
-    const dependencies = createDependencies({
-      updateComposition: vi.fn().mockResolvedValue({
-        id: VALID_COMPOSITION_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateComposition(
-        { role: "editor" },
         {
-          id: VALID_COMPOSITION_ID,
-          code: " silver-900 ",
-          name: " Silver (.900) ",
+          createComposition: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: COMPOSITION_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateComposition(
+        {
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        {
+          createComposition: vi
+            .fn()
+            .mockRejectedValue(problem("composition_code_conflict", 409)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
+    ).resolves.toMatchObject({
+      fieldErrors: { code: COMPOSITION_DUPLICATE_CODE_ERROR },
     })
 
-    expect(dependencies.updateComposition).toHaveBeenCalledWith({
-      id: VALID_COMPOSITION_ID,
-      code: "silver-900",
-      name: "Silver (.900)",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
     await expect(
       submitUpdateComposition(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateComposition: vi.fn().mockResolvedValue(null),
-        })
+        { id, etag, code: "silver", name: "Silver" },
+        {
+          replaceComposition: vi
+            .fn()
+            .mockRejectedValue(problem("composition_precondition_failed", 412)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COMPOSITION_MISSING_ERROR,
-    })
-  })
+    ).resolves.toMatchObject({ formError: COMPOSITION_STALE_ERROR })
 
-  it("maps duplicate Composition Codes to the Composition Code field during update", async () => {
-    await expect(
-      submitUpdateComposition(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateComposition: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "composition_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: COMPOSITION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateComposition(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateComposition: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COMPOSITION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteComposition", () => {
-  const deleteInput = {
-    id: VALID_COMPOSITION_ID,
-  }
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
     await expect(
       submitDeleteComposition(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteComposition: vi.fn().mockResolvedValue(null),
-        })
+        { id, etag },
+        {
+          deleteComposition: vi
+            .fn()
+            .mockRejectedValue(problem("composition_in_use", 409)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COMPOSITION_MISSING_ERROR,
-    })
+    ).resolves.toMatchObject({ formError: COMPOSITION_IN_USE_DELETE_ERROR })
   })
 
-  it("maps restricted deletes to a Composition-specific form error", async () => {
+  it("maps authoritative validation pointers back to current controls", async () => {
     await expect(
-      submitDeleteComposition(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteComposition: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_composition_id_composition_id_fk",
-            },
-          }),
-        })
+      submitCreateComposition(
+        {
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createComposition: vi.fn().mockRejectedValue(
+            problem("composition_validation_failed", 422, [
+              { name: "/code", code: "composition_code_required" },
+              { name: "/name", code: "composition_name_too_long" },
+            ])
+          ),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COMPOSITION_IN_USE_DELETE_ERROR,
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Composition Code cannot be blank.",
+        name: "Composition Name must be 255 characters or fewer.",
+      },
     })
   })
 })

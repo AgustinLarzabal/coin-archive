@@ -1,71 +1,80 @@
+import type { Composition, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { CompositionOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import { hasCompositionMaintenanceAccess } from "./actions"
-import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
+import { createCompositionAuthorizationError } from "./actions"
 
-type LoadCompositionMaintenancePageDataResult = MaintenancePageLoadResult<
-  {
-    compositions: CompositionOption[]
-  },
-  {
-    formError: typeof COMPOSITION_AUTHORIZATION_ERROR
-  }
+type LoadResult = MaintenancePageLoadResult<
+  { compositions: Composition[] },
+  ReturnType<typeof createCompositionAuthorizationError>
 >
 
 export type CompositionMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  compositions: CompositionOption[]
+  compositions: Composition[]
 }>
 
-type CompositionMaintenanceReadDependencies = {
-  getCompositions: () => Promise<CompositionOption[]>
+type ReadDependencies = {
+  listCompositions: MaintenanceApiClient["compositions"]["list"]
 }
 
-async function getDefaultCompositionReadDependencies(): Promise<CompositionMaintenanceReadDependencies> {
-  const { getCompositions } = await import("@coin-archive/db")
-
-  return {
-    getCompositions,
-  }
+async function getDefaultReadDependencies(): Promise<ReadDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listCompositions: client.compositions.list }
 }
 
 export async function loadCompositionMaintenancePageData(
-  collector: CollectorWithRole | null,
-  dependencies?: CompositionMaintenanceReadDependencies
-): Promise<LoadCompositionMaintenancePageDataResult> {
-  if (!hasCompositionMaintenanceAccess(collector)) {
-    return {
-      status: "error",
-      formError: COMPOSITION_AUTHORIZATION_ERROR,
+  dependencies?: ReadDependencies
+): Promise<Awaited<LoadResult>> {
+  const { listCompositions } =
+    dependencies ?? (await getDefaultReadDependencies())
+  const compositions: Composition[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listCompositions({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      compositions.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Composition maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createCompositionAuthorizationError()
     }
+    throw error
   }
 
-  const { getCompositions } =
-    dependencies ?? (await getDefaultCompositionReadDependencies())
-
-  return {
-    status: "success",
-    compositions: await getCompositions(),
-  }
+  return { status: "success", compositions }
 }
 
-const getCompositionMaintenanceLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadCompositionMaintenancePageData(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadCompositionMaintenancePageData())
+)
 
 export function loadCompositionMaintenanceRouteData() {
-  return getCompositionMaintenanceLoaderData()
+  return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

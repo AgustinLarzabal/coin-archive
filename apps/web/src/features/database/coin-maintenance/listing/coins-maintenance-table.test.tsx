@@ -88,8 +88,6 @@ describe("CoinsMaintenanceTable", () => {
               id: "composition-1",
               code: "silver-900",
               name: "Silver .900",
-              createdAt: new Date("2026-06-24T12:00:00.000Z"),
-              updatedAt: new Date("2026-06-24T12:00:00.000Z"),
             },
           ],
         }}
@@ -112,7 +110,11 @@ describe("CoinsMaintenanceTable", () => {
     expect(markup).toContain("1 Euro (Euro)")
     expect(markup).toContain('value="spanish"')
     expect(markup).toContain('value="spain" selected=""')
-    expect(markup).toContain('href="/database/coins?title=spanish&amp;issuer=spain&amp;page=1"')
-    expect(markup).toContain('href="/database/coins?title=spanish&amp;issuer=spain&amp;page=3"')
+    expect(markup).toContain(
+      'href="/database/coins?title=spanish&amp;issuer=spain&amp;page=1"'
+    )
+    expect(markup).toContain(
+      'href="/database/coins?title=spanish&amp;issuer=spain&amp;page=3"'
+    )
   })
 })

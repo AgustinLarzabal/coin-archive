@@ -9,6 +9,14 @@ import {
   catalogueListOutputSchema,
   catalogueOptionsOutputSchema,
   catalogueReplaceInputSchema,
+  compositionCreateInputSchema,
+  compositionCreateOutputSchema,
+  compositionDeleteInputSchema,
+  compositionDetailOutputSchema,
+  compositionListInputSchema,
+  compositionListOutputSchema,
+  compositionOptionsOutputSchema,
+  compositionReplaceInputSchema,
   maintenanceProblemDocumentSchema,
   orientationCreateInputSchema,
   orientationCreateOutputSchema,
@@ -19,6 +27,16 @@ import {
   orientationOptionsOutputSchema,
   orientationReplaceInputSchema,
 } from "./contract"
+
+const composition = {
+  id: "018f1a11-aaaa-7000-8000-000000000003",
+  code: "silver",
+  name: "Silver",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-composition-version"',
+}
 
 const catalogue = {
   id: "018f1a11-aaaa-7000-8000-000000000002",
@@ -284,6 +302,112 @@ describe("Catalogue maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: catalogue.id },
       headers: { "if-match": catalogue.etag },
+    })
+  })
+})
+
+describe("Composition maintenance contract", () => {
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      compositionListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "silver",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "silver",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => compositionListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      compositionOptionsOutputSchema.parse({
+        data: [
+          {
+            id: composition.id,
+            code: composition.code,
+            name: composition.name,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [
+        {
+          id: composition.id,
+          code: composition.code,
+          name: composition.name,
+        },
+      ],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      compositionListOutputSchema.parse({
+        data: [composition],
+        nextCursor: null,
+      })
+    ).toStrictEqual({ data: [composition], nextCursor: null })
+    expect(
+      compositionDetailOutputSchema.parse({ data: composition })
+    ).toStrictEqual({ data: composition })
+    expect(() =>
+      compositionDetailOutputSchema.parse({
+        data: { ...composition, createdAt: new Date(composition.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes authoritative mutation input and preserves success headers", () => {
+    expect(
+      compositionCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " silver ", name: " Silver " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "silver", name: "Silver" },
+    })
+    expect(
+      compositionCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: composition.etag,
+          location: `/api/v1/maintenance/compositions/${composition.id}`,
+        },
+        body: { data: composition },
+      })
+    ).toMatchObject({ status: 201, body: { data: composition } })
+    expect(() =>
+      compositionCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Silver Alloy", name: "Silver" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      compositionReplaceInputSchema.parse({
+        params: { uuid: composition.id },
+        headers: { "if-match": composition.etag },
+        body: { code: composition.code, name: composition.name },
+      })
+    ).toMatchObject({ headers: { "if-match": composition.etag } })
+    expect(
+      compositionDeleteInputSchema.parse({
+        params: { uuid: composition.id },
+        headers: { "if-match": composition.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: composition.id },
+      headers: { "if-match": composition.etag },
     })
   })
 })

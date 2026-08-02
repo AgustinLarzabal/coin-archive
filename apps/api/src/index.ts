@@ -1,16 +1,21 @@
 import {
   createCatalogueIdempotentlyWithDatabase,
+  createCompositionIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
+  deleteCompositionIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
+  getCompositionMaintenanceRecordWithDatabase,
+  getCompositionMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
   getCoinsWithDatabase,
   replaceCatalogueWithDatabase,
+  replaceCompositionWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -103,6 +108,20 @@ async function handleRequest(
       }),
     deleteCatalogue: (input) =>
       deleteCatalogueIfVersionWithDatabase(database.db, input),
+    listCompositions: (input) =>
+      getCompositionMaintenanceRecordsWithDatabase(database.db, input),
+    getComposition: (compositionId) =>
+      getCompositionMaintenanceRecordWithDatabase(database.db, compositionId),
+    createComposition: (input) =>
+      createCompositionIdempotentlyWithDatabase(database.db, input),
+    replaceComposition: ({ id, expectedVersion, fields }) =>
+      replaceCompositionWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteComposition: (input) =>
+      deleteCompositionIfVersionWithDatabase(database.db, input),
     getCollector: async (collectorRequest) => {
       const resolved = await auth.api.getSession({
         headers: collectorRequest.headers,

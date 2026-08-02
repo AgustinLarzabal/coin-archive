@@ -1,4 +1,4 @@
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
@@ -7,20 +7,24 @@ import {
   filterCompositionsByName,
 } from "./compositions-table"
 
-const compositions: CompositionOption[] = [
+const compositions: Composition[] = [
   {
     id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
     code: "copper-nickel",
     name: "Copper-nickel",
-    createdAt: new Date("2026-06-24T12:00:00.000Z"),
-    updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+    version: 1,
+    etag: '"composition-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
   {
     id: "9ee16bbd-4920-4fb8-a178-0ff0ed56d254",
     code: "silver-900",
     name: "Silver (.900)",
-    createdAt: new Date("2026-06-24T12:00:00.000Z"),
-    updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+    version: 1,
+    etag: '"composition-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
 ]
 

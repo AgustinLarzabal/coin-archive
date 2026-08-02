@@ -11,7 +11,6 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateComposition } from "../actions"
 import type { CompositionMutationResult } from "../actions"
 import { createCompositionInputSchema } from "../validation"
@@ -34,12 +33,8 @@ const EMPTY_DRAFT: CompositionDraft = {
 const createCompositionAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CompositionDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateComposition(session?.user ?? null, data)
-  })
+  .inputValidator((data: CompositionDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateComposition(data))
 
 export function isCompositionCreateReady(draft: CompositionDraft) {
   return draft.code.trim().length > 0 && draft.name.trim().length > 0
@@ -52,6 +47,9 @@ export function CompositionCreateForm({
   const createComposition = useServerFn(createCompositionAction)
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -75,12 +73,13 @@ export function CompositionCreateForm({
     validators: { onSubmit: createCompositionInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createComposition({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

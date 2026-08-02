@@ -271,6 +271,83 @@ export const catalogueDeleteInputSchema = z.object({
 })
 export const catalogueDeleteOutputSchema = z.object({ status: z.literal(204) })
 
+export const compositionSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+
+export const compositionOptionSchema = compositionSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const compositionListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const compositionListOutputSchema = z.object({
+  data: z.array(compositionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const compositionOptionsInputSchema = compositionListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const compositionOptionsOutputSchema = z.object({
+  data: z.array(compositionOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const compositionDetailOutputSchema = z.object({
+  data: compositionSchema,
+})
+export const compositionMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const compositionCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: compositionMutationBodySchema,
+})
+export const compositionCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/compositions/"),
+    etag: z.string(),
+  }),
+  body: compositionDetailOutputSchema,
+})
+export const compositionReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: compositionMutationBodySchema,
+})
+export const compositionReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: compositionDetailOutputSchema,
+})
+export const compositionDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const compositionDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+
 export const orientationDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
@@ -413,6 +490,79 @@ export const maintenanceApiContract = {
       .output(catalogueDeleteOutputSchema)
       .errors(maintenanceMutationErrors),
   },
+  compositions: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/compositions",
+        summary: "Browse Compositions for maintenance",
+        tags: ["Composition Maintenance"],
+      })
+      .input(compositionListInputSchema)
+      .output(compositionListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/compositions/options",
+        summary: "Search compact Composition options",
+        tags: ["Composition Maintenance"],
+      })
+      .input(compositionOptionsInputSchema)
+      .output(compositionOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/compositions/{uuid}",
+        summary: "Get Composition maintenance detail",
+        tags: ["Composition Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(compositionDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/compositions",
+        summary: "Create a Composition",
+        tags: ["Composition Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(compositionCreateInputSchema)
+      .output(compositionCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/compositions/{uuid}",
+        summary: "Replace a Composition",
+        tags: ["Composition Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(compositionReplaceInputSchema)
+      .output(compositionReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/compositions/{uuid}",
+        summary: "Permanently delete a Composition",
+        tags: ["Composition Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(compositionDeleteInputSchema)
+      .output(compositionDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   orientations: {
     list: oc
       .route({
@@ -523,3 +673,19 @@ export type CatalogueOptionsOutput = z.infer<
 >
 export type CatalogueDetailOutput = z.infer<typeof catalogueDetailOutputSchema>
 export type CatalogueMutationBody = z.infer<typeof catalogueMutationBodySchema>
+export type Composition = z.infer<typeof compositionSchema>
+export type CompositionOption = z.infer<typeof compositionOptionSchema>
+export type CompositionListInput = z.infer<typeof compositionListInputSchema>
+export type CompositionListOutput = z.infer<typeof compositionListOutputSchema>
+export type CompositionOptionsInput = z.infer<
+  typeof compositionOptionsInputSchema
+>
+export type CompositionOptionsOutput = z.infer<
+  typeof compositionOptionsOutputSchema
+>
+export type CompositionDetailOutput = z.infer<
+  typeof compositionDetailOutputSchema
+>
+export type CompositionMutationBody = z.infer<
+  typeof compositionMutationBodySchema
+>

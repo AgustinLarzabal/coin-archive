@@ -1,346 +1,216 @@
-import { hasEditorAccess } from "@coin-archive/auth/client"
-import type { z } from "zod"
+import type { MaintenanceApiClient } from "@coin-archive/api"
 
-import { getCollectorRole } from "@/lib/collector-role"
-import type { CollectorWithRole } from "@/lib/collector-role"
-
+import {
+  COMPOSITION_DUPLICATE_CODE_ERROR,
+  COMPOSITION_GENERIC_SAVE_ERROR,
+  COMPOSITION_IN_USE_DELETE_ERROR,
+  COMPOSITION_MISSING_ERROR,
+  COMPOSITION_STALE_ERROR,
+  createCompositionFieldErrorResult,
+  createCompositionFormErrorResult,
+} from "./composition-mutation-errors"
+import type { CompositionMutationResult } from "./composition-mutation-errors"
 import {
   COMPOSITION_AUTHORIZATION_ERROR,
   COMPOSITION_CREATED_MESSAGE,
   COMPOSITION_DELETED_MESSAGE,
-  COMPOSITION_DUPLICATE_CODE_ERROR,
-  COMPOSITION_GENERIC_SAVE_ERROR,
-  COMPOSITION_IN_USE_DELETE_ERROR,
-  COMPOSITION_INVALID_CODE_ERROR,
-  COMPOSITION_MISSING_ERROR,
   COMPOSITION_UPDATED_MESSAGE,
 } from "./messages"
 import {
   createCompositionInputSchema,
   deleteCompositionInputSchema,
-  getCompositionFieldErrors,
   updateCompositionInputSchema,
+  validateCompositionInput,
 } from "./validation"
-import type { CompositionFieldErrors } from "./validation"
+import type {
+  CreateCompositionInput,
+  DeleteCompositionInput,
+  UpdateCompositionInput,
+} from "./validation"
 
-const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
-const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
-const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
-const DUPLICATE_COMPOSITION_CODE_CONSTRAINT =
-  "composition_code_lower_unique_idx"
-const INVALID_COMPOSITION_CODE_CONSTRAINT = "composition_code_slug_check"
-const COMPOSITION_IN_USE_DELETE_CONSTRAINT =
-  "coin_composition_id_composition_id_fk"
-
-export type CompositionMutationResult =
-  | {
-      status: "error"
-      fieldErrors: CompositionFieldErrors
-      formError?: string
-    }
-  | {
-      status: "success"
-      message: string
-    }
+export { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
+export type { CompositionMutationResult } from "./composition-mutation-errors"
 
 export type CompositionAuthorizationErrorResult = {
   status: "error"
   formError: typeof COMPOSITION_AUTHORIZATION_ERROR
 }
 
-type CreateCompositionInput = z.input<typeof createCompositionInputSchema>
-type CreateCompositionData = z.output<typeof createCompositionInputSchema>
-type UpdateCompositionInput = z.input<typeof updateCompositionInputSchema>
-type UpdateCompositionData = z.output<typeof updateCompositionInputSchema>
-type DeleteCompositionInput = z.input<typeof deleteCompositionInputSchema>
-type DeleteCompositionData = z.output<typeof deleteCompositionInputSchema>
-type ValidationResult<TData> =
-  | { success: true; data: TData }
-  | { success: false; result: CompositionMutationResult }
-type PostgresConstraintResult = {
-  code: string
-  constraintName: string
-  result: CompositionMutationResult
-}
-type PostgresError = {
-  code: unknown
-  constraint_name: unknown
+type CreateDependencies = {
+  createComposition: MaintenanceApiClient["compositions"]["create"]
 }
 
-type CompositionMutationDependencies = {
-  createComposition: (input: CreateCompositionData) => Promise<unknown>
-  deleteComposition: (input: DeleteCompositionData) => Promise<unknown | null>
-  updateComposition: (input: UpdateCompositionData) => Promise<unknown | null>
+type ReplaceDependencies = {
+  replaceComposition: MaintenanceApiClient["compositions"]["replace"]
 }
 
-const POSTGRES_CONSTRAINT_RESULTS: PostgresConstraintResult[] = [
-  {
-    code: DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-    constraintName: DUPLICATE_COMPOSITION_CODE_CONSTRAINT,
-    result: createFieldErrorResult({
-      code: COMPOSITION_DUPLICATE_CODE_ERROR,
-    }),
-  },
-  {
-    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: COMPOSITION_IN_USE_DELETE_CONSTRAINT,
-    result: createFormErrorResult(COMPOSITION_IN_USE_DELETE_ERROR),
-  },
-  {
-    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: INVALID_COMPOSITION_CODE_CONSTRAINT,
-    result: createFieldErrorResult({
-      code: COMPOSITION_INVALID_CODE_ERROR,
-    }),
-  },
-]
-
-async function getDefaultCompositionMutationDependencies(): Promise<CompositionMutationDependencies> {
-  const { createComposition, deleteComposition, updateComposition } =
-    await import("@coin-archive/db")
-
-  return {
-    createComposition,
-    deleteComposition,
-    updateComposition,
-  }
-}
-
-async function resolveCompositionMutationDependencies(
-  dependencies?: CompositionMutationDependencies
-): Promise<CompositionMutationDependencies> {
-  return dependencies ?? getDefaultCompositionMutationDependencies()
+type DeleteDependencies = {
+  deleteComposition: MaintenanceApiClient["compositions"]["delete"]
 }
 
 export function createCompositionAuthorizationError(): CompositionAuthorizationErrorResult {
+  return { status: "error", formError: COMPOSITION_AUTHORIZATION_ERROR }
+}
+
+async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
   return {
-    status: "error",
-    formError: COMPOSITION_AUTHORIZATION_ERROR,
+    createComposition: client.compositions.create,
   }
 }
 
-function createAuthorizationError(): CompositionMutationResult {
-  return {
-    ...createCompositionAuthorizationError(),
-    fieldErrors: {},
-  }
+async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { replaceComposition: client.compositions.replace }
 }
 
-function createFieldErrorResult(
-  fieldErrors: CompositionFieldErrors
-): CompositionMutationResult {
-  return {
-    status: "error",
-    fieldErrors,
-  }
-}
-
-function createFormErrorResult(formError: string): CompositionMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError,
-  }
-}
-
-function createSuccessResult(message: string): CompositionMutationResult {
-  return {
-    status: "success",
-    message,
-  }
-}
-
-export function hasCompositionMaintenanceAccess(
-  collector: CollectorWithRole | null
-) {
-  const role = getCollectorRole(collector)
-
-  return role !== null && hasEditorAccess(role)
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
-
-function isPostgresError(value: unknown): value is PostgresError {
-  return isObjectRecord(value) && "code" in value && "constraint_name" in value
-}
-
-function createValidationError(
-  issues: z.ZodIssue[]
-): CompositionMutationResult {
-  return createFieldErrorResult(getCompositionFieldErrors(issues))
-}
-
-function getPostgresError(error: unknown): PostgresError | null {
-  if (!isObjectRecord(error)) {
-    return null
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (!isPostgresError(postgresError)) {
-    return null
-  }
-
-  return postgresError
-}
-
-function matchesPostgresConstraint(
-  postgresError: PostgresError,
-  code: string,
-  constraintName: string
-): boolean {
-  return (
-    postgresError.code === code &&
-    postgresError.constraint_name === constraintName
-  )
-}
-
-function createPersistenceError(error: unknown): CompositionMutationResult {
-  const postgresError = getPostgresError(error)
-
-  if (postgresError === null) {
-    return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
-  }
-
-  for (const entry of POSTGRES_CONSTRAINT_RESULTS) {
-    if (
-      matchesPostgresConstraint(postgresError, entry.code, entry.constraintName)
-    ) {
-      return entry.result
-    }
-  }
-
-  return createFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
-}
-
-function validateCompositionInput<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: z.input<TSchema>
-): ValidationResult<z.output<TSchema>> {
-  const parsedInput = schema.safeParse(input)
-
-  if (!parsedInput.success) {
-    return {
-      success: false,
-      result: createValidationError(parsedInput.error.issues),
-    }
-  }
-
-  return {
-    success: true,
-    data: parsedInput.data,
-  }
-}
-
-function validateCreateCompositionInput(
-  input: CreateCompositionInput
-): ValidationResult<CreateCompositionData> {
-  return validateCompositionInput(createCompositionInputSchema, input)
-}
-
-function validateUpdateCompositionInput(
-  input: UpdateCompositionInput
-): ValidationResult<UpdateCompositionData> {
-  return validateCompositionInput(updateCompositionInputSchema, input)
-}
-
-function validateDeleteCompositionInput(
-  input: DeleteCompositionInput
-): ValidationResult<DeleteCompositionData> {
-  return validateCompositionInput(deleteCompositionInputSchema, input)
+async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { deleteComposition: client.compositions.delete }
 }
 
 export async function submitCreateComposition(
-  collector: CollectorWithRole | null,
-  input: CreateCompositionInput,
-  dependencies?: CompositionMutationDependencies
+  input: CreateCompositionInput & { idempotencyKey: string },
+  dependencies?: CreateDependencies
 ): Promise<CompositionMutationResult> {
-  if (!hasCompositionMaintenanceAccess(collector)) {
-    return createAuthorizationError()
+  const { idempotencyKey, ...fields } = input
+  const validation = validateCompositionInput(
+    createCompositionInputSchema,
+    fields
+  )
+  if (!validation.success) {
+    return createCompositionFieldErrorResult(validation.fieldErrors)
   }
-
-  const validationResult = validateCreateCompositionInput(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const mutationDependencies =
-    await resolveCompositionMutationDependencies(dependencies)
+  const resolved = dependencies ?? (await getDefaultCreateDependencies())
 
   try {
-    await mutationDependencies.createComposition(validationResult.data)
-
-    return createSuccessResult(COMPOSITION_CREATED_MESSAGE)
+    await resolved.createComposition({
+      headers: { "idempotency-key": idempotencyKey },
+      body: validation.data,
+    })
+    return { status: "success", message: COMPOSITION_CREATED_MESSAGE }
   } catch (error) {
-    return createPersistenceError(error)
+    return mapCompositionApiProblem(error)
   }
 }
 
 export async function submitUpdateComposition(
-  collector: CollectorWithRole | null,
   input: UpdateCompositionInput,
-  dependencies?: CompositionMutationDependencies
+  dependencies?: ReplaceDependencies
 ): Promise<CompositionMutationResult> {
-  if (!hasCompositionMaintenanceAccess(collector)) {
-    return createAuthorizationError()
+  const validation = validateCompositionInput(
+    updateCompositionInputSchema,
+    input
+  )
+  if (!validation.success) {
+    return createCompositionFieldErrorResult(validation.fieldErrors)
   }
-
-  const validationResult = validateUpdateCompositionInput(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const mutationDependencies =
-    await resolveCompositionMutationDependencies(dependencies)
+  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
+  const { id, etag, ...body } = validation.data
 
   try {
-    const updatedComposition = await mutationDependencies.updateComposition(
-      validationResult.data
-    )
-
-    if (updatedComposition === null) {
-      return createFormErrorResult(COMPOSITION_MISSING_ERROR)
-    }
-
-    return createSuccessResult(COMPOSITION_UPDATED_MESSAGE)
+    await resolved.replaceComposition({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body,
+    })
+    return { status: "success", message: COMPOSITION_UPDATED_MESSAGE }
   } catch (error) {
-    return createPersistenceError(error)
+    return mapCompositionApiProblem(error)
   }
 }
 
 export async function submitDeleteComposition(
-  collector: CollectorWithRole | null,
   input: DeleteCompositionInput,
-  dependencies?: CompositionMutationDependencies
+  dependencies?: DeleteDependencies
 ): Promise<CompositionMutationResult> {
-  if (!hasCompositionMaintenanceAccess(collector)) {
-    return createAuthorizationError()
+  const validation = validateCompositionInput(
+    deleteCompositionInputSchema,
+    input
+  )
+  if (!validation.success) {
+    return createCompositionFieldErrorResult(validation.fieldErrors)
   }
-
-  const validationResult = validateDeleteCompositionInput(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const mutationDependencies =
-    await resolveCompositionMutationDependencies(dependencies)
+  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
 
   try {
-    const deletedComposition = await mutationDependencies.deleteComposition(
-      validationResult.data
-    )
-
-    if (deletedComposition === null) {
-      return createFormErrorResult(COMPOSITION_MISSING_ERROR)
-    }
-
-    return createSuccessResult(COMPOSITION_DELETED_MESSAGE)
+    await resolved.deleteComposition({
+      params: { uuid: validation.data.id },
+      headers: { "if-match": validation.data.etag },
+    })
+    return { status: "success", message: COMPOSITION_DELETED_MESSAGE }
   } catch (error) {
-    return createPersistenceError(error)
+    return mapCompositionApiProblem(error)
   }
+}
+
+function mapCompositionApiProblem(error: unknown): CompositionMutationResult {
+  const body = getProblemBody(error)
+  switch (body?.code) {
+    case "authentication_required":
+    case "editor_access_required":
+      return createCompositionFormErrorResult(COMPOSITION_AUTHORIZATION_ERROR)
+    case "composition_code_conflict":
+      return createCompositionFieldErrorResult({
+        code: COMPOSITION_DUPLICATE_CODE_ERROR,
+      })
+    case "composition_validation_failed":
+      return mapValidationProblem(body)
+    case "composition_in_use":
+      return createCompositionFormErrorResult(COMPOSITION_IN_USE_DELETE_ERROR)
+    case "composition_not_found":
+      return createCompositionFormErrorResult(COMPOSITION_MISSING_ERROR)
+    case "composition_precondition_failed":
+      return createCompositionFormErrorResult(COMPOSITION_STALE_ERROR)
+    default:
+      return createCompositionFormErrorResult(COMPOSITION_GENERIC_SAVE_ERROR)
+  }
+}
+
+function mapValidationProblem(
+  body: Record<string, unknown>
+): CompositionMutationResult {
+  const invalidParams = Array.isArray(body.invalidParams)
+    ? body.invalidParams
+    : []
+  const fieldErrors: { code?: string; name?: string } = {}
+
+  for (const parameter of invalidParams) {
+    if (typeof parameter !== "object" || parameter === null) continue
+    if (!("name" in parameter) || !("code" in parameter)) continue
+    if (parameter.name === "/code") {
+      fieldErrors.code =
+        parameter.code === "composition_code_too_long"
+          ? "Composition Code must be 255 characters or fewer."
+          : parameter.code === "composition_code_invalid"
+            ? "Composition Code must use lowercase letters, numbers, and single hyphens only."
+            : "Composition Code cannot be blank."
+    }
+    if (parameter.name === "/name") {
+      fieldErrors.name =
+        parameter.code === "composition_name_too_long"
+          ? "Composition Name must be 255 characters or fewer."
+          : "Composition Name cannot be blank."
+    }
+  }
+  return createCompositionFieldErrorResult(fieldErrors)
+}
+
+function getProblemBody(error: unknown): Record<string, unknown> | undefined {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return undefined
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return undefined
+  }
+  return typeof data.body === "object" && data.body !== null
+    ? (data.body as Record<string, unknown>)
+    : undefined
 }

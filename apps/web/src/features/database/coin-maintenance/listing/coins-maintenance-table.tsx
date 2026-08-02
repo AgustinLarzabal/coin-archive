@@ -1,11 +1,11 @@
 import type {
   CoinMaintenanceListResult,
-  CompositionOption,
   CurrencyOption,
   DistributionOption,
   IssuerOption,
   RulerOption,
 } from "@coin-archive/db"
+import type { CompositionOption } from "@coin-archive/api"
 
 import type { CoinMaintenanceSearch } from "./coin-maintenance-route-data"
 
@@ -137,7 +137,12 @@ export function CoinsMaintenanceTable({
           search.issuer,
           "Issuer"
         )}
-        {renderFilterOptions(filterOptions.rulers, "ruler", search.ruler, "Ruler")}
+        {renderFilterOptions(
+          filterOptions.rulers,
+          "ruler",
+          search.ruler,
+          "Ruler"
+        )}
         {renderFilterOptions(
           filterOptions.distributions,
           "distribution",
@@ -160,7 +165,10 @@ export function CoinsMaintenanceTable({
           <button type="submit" className="rounded border px-4 py-2 text-sm">
             Apply Filters
           </button>
-          <a href="/database/coins" className="text-sm underline underline-offset-4">
+          <a
+            href="/database/coins"
+            className="text-sm underline underline-offset-4"
+          >
             Clear
           </a>
         </div>
@@ -220,7 +228,9 @@ export function CoinsMaintenanceTable({
         </span>
         <div className="flex gap-4">
           {list.hasPreviousPage ? (
-            <a href={buildCoinMaintenanceHref(search, list.page - 1)}>Previous</a>
+            <a href={buildCoinMaintenanceHref(search, list.page - 1)}>
+              Previous
+            </a>
           ) : (
             <span aria-disabled="true">Previous</span>
           )}

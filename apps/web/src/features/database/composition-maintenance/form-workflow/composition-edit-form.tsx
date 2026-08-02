@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import {
   Field,
   FieldError,
@@ -12,7 +12,6 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateComposition } from "../actions"
 import type { CompositionMutationResult } from "../actions"
 import { createCompositionInputSchema } from "../validation"
@@ -24,23 +23,19 @@ type CompositionDraft = {
 }
 
 type CompositionEditFormProps = {
-  composition: CompositionOption
+  composition: Composition
   onSaved?: () => void
 }
 
 const updateCompositionAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CompositionDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
+  .inputValidator(
+    (data: CompositionDraft & { id: string; etag: string }) => data
+  )
+  .handler(async ({ data }) => submitUpdateComposition(data))
 
-    return submitUpdateComposition(session?.user ?? null, data)
-  })
-
-function createCompositionDraft(
-  composition: CompositionOption
-): CompositionDraft {
+function createCompositionDraft(composition: Composition): CompositionDraft {
   return {
     code: composition.code,
     name: composition.name,
@@ -57,7 +52,7 @@ function normalizeDraftForComparison(
 }
 
 export function hasCompositionEditChanges(
-  composition: CompositionOption,
+  composition: Composition,
   draft: CompositionDraft
 ) {
   const normalizedCurrent = normalizeDraftForComparison(
@@ -86,7 +81,7 @@ export function CompositionEditForm({
     validators: { onSubmit: createCompositionInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateComposition({
-        data: { id: composition.id, ...value },
+        data: { id: composition.id, etag: composition.etag, ...value },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

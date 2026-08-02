@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { CompositionOption } from "@coin-archive/db"
+import type { Composition } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createCompositionColumns(
-  onEditComposition: (composition: CompositionOption) => void
-): ColumnDef<CompositionOption>[] {
+  onEditComposition: (composition: Composition) => void
+): ColumnDef<Composition>[] {
   return [
     {
       accessorKey: "code",

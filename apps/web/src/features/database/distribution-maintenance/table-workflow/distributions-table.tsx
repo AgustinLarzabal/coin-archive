@@ -1,33 +1,47 @@
-import { useState } from "react"
-import type { DistributionOption } from "@coin-archive/db"
+import { useMemo, useState } from "react"
+import type { Distribution } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createDistributionColumns } from "./columns"
-import { DistributionMaintenanceSheet } from "../sheet-workflow/distribution-maintenance-sheet"
 import { DistributionsTableToolbar } from "./distributions-table-toolbar"
+import { DistributionMaintenanceSheet } from "../sheet-workflow/distribution-maintenance-sheet"
 
 type DistributionsTableProps = {
-  distributions: DistributionOption[]
+  distributions: Distribution[]
 }
 
-export function DistributionsTable({
-  distributions,
-}: DistributionsTableProps) {
+export function filterDistributionsByName(
+  distributions: Distribution[],
+  nameFilter: string
+): Distribution[] {
+  const normalizedNameFilter = nameFilter.trim().toLocaleLowerCase()
+
+  if (normalizedNameFilter === "") {
+    return distributions
+  }
+
+  return distributions.filter((distribution) =>
+    distribution.name.toLocaleLowerCase().includes(normalizedNameFilter)
+  )
+}
+
+export function DistributionsTable({ distributions }: DistributionsTableProps) {
   const [selectedDistribution, setSelectedDistribution] =
-    useState<DistributionOption | null>(null)
+    useState<Distribution | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
-
-  function openCreateDistributionSheet() {
-    setSelectedDistribution(null)
-    setIsMaintenanceSheetOpen(true)
-  }
-
-  function openEditDistributionSheet(distribution: DistributionOption) {
-    setSelectedDistribution(distribution)
-    setIsMaintenanceSheetOpen(true)
-  }
-
-  const columns = createDistributionColumns(openEditDistributionSheet)
+  const [nameFilter, setNameFilter] = useState("")
+  const columns = useMemo(
+    () =>
+      createDistributionColumns((distribution) => {
+        setSelectedDistribution(distribution)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
+  const filteredDistributions = filterDistributionsByName(
+    distributions,
+    nameFilter
+  )
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
@@ -37,14 +51,21 @@ export function DistributionsTable({
     }
   }
 
+  function handleCreateDistribution() {
+    setSelectedDistribution(null)
+    setIsMaintenanceSheetOpen(true)
+  }
+
   return (
     <>
       <DataTable
         columns={columns}
-        data={distributions}
+        data={filteredDistributions}
         toolbar={() => (
           <DistributionsTableToolbar
-            onCreateDistribution={openCreateDistributionSheet}
+            nameFilter={nameFilter}
+            onCreateDistribution={handleCreateDistribution}
+            onNameFilterChange={setNameFilter}
           />
         )}
       />

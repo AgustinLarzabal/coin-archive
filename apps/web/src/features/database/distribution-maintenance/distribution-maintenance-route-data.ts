@@ -1,70 +1,80 @@
+import type { Distribution, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { DistributionOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createDistributionAuthorizationError,
-  hasDistributionMaintenanceAccess,
-} from "./actions"
+import { createDistributionAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
-  {
-    distributions: DistributionOption[]
-  },
+  { distributions: Distribution[] },
   ReturnType<typeof createDistributionAuthorizationError>
 >
 
 export type DistributionMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  distributions: DistributionOption[]
+  distributions: Distribution[]
 }>
 
 type ReadDependencies = {
-  getDistributions: () => Promise<DistributionOption[]>
+  listDistributions: MaintenanceApiClient["distributions"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getDistributions } = await import("@coin-archive/db")
-
-  return {
-    getDistributions,
-  }
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listDistributions: client.distributions.list }
 }
 
-export async function loadDistributionMaintenanceDistributions(
-  collector: CollectorWithRole | null,
+export async function loadDistributionMaintenancePageData(
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasDistributionMaintenanceAccess(collector)) {
-    return createDistributionAuthorizationError()
-  }
-
-  const { getDistributions } =
+  const { listDistributions } =
     dependencies ?? (await getDefaultReadDependencies())
+  const distributions: Distribution[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
 
-  return {
-    status: "success",
-    distributions: await getDistributions(),
+  try {
+    do {
+      const page = await listDistributions({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      distributions.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Distribution maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createDistributionAuthorizationError()
+    }
+    throw error
   }
+
+  return { status: "success", distributions }
 }
 
-const getLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadDistributionMaintenanceDistributions(
-    session?.user ?? null
-  )
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadDistributionMaintenancePageData())
+)
 
 export function loadDistributionMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

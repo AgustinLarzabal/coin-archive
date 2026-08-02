@@ -1,11 +1,13 @@
 import type {
-  CoinMaintenanceListResult,
+  CompositionOption,
+  CurrencyOption,
   DistributionOption,
+} from "@coin-archive/api"
+import type {
+  CoinMaintenanceListResult,
   IssuerOption,
   RulerOption,
 } from "@coin-archive/db"
-import type { CompositionOption, CurrencyOption } from "@coin-archive/api"
-
 import type { CoinMaintenanceSearch } from "./coin-maintenance-route-data"
 
 type CoinMaintenanceFilterOptions = {

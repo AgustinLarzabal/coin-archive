@@ -2,408 +2,237 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   DISTRIBUTION_AUTHORIZATION_ERROR,
-  DISTRIBUTION_DUPLICATE_CODE_ERROR,
-  DISTRIBUTION_GENERIC_SAVE_ERROR,
-  DISTRIBUTION_IN_USE_DELETE_ERROR,
-  DISTRIBUTION_INVALID_CODE_ERROR,
-  DISTRIBUTION_MISSING_ERROR,
-  hasDistributionMaintenanceAccess,
   submitCreateDistribution,
   submitDeleteDistribution,
   submitUpdateDistribution,
 } from "./actions"
+import {
+  DISTRIBUTION_DUPLICATE_CODE_ERROR,
+  DISTRIBUTION_IN_USE_DELETE_ERROR,
+  DISTRIBUTION_STALE_ERROR,
+} from "./distribution-mutation-errors"
 
-const VALID_DISTRIBUTION_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const STANDARD_CIRCULATION = {
-  code: "standard-circulation",
-  name: "Standard circulation",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const distribution = {
+  id,
+  code: "silver",
+  name: "Silver",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createDistribution?: ReturnType<typeof vi.fn>
-  deleteDistribution?: ReturnType<typeof vi.fn>
-  updateDistribution?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createDistribution: vi.fn(),
-    deleteDistribution: vi.fn(),
-    updateDistribution: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/distributions",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: DISTRIBUTION_AUTHORIZATION_ERROR,
-}
-
-describe("hasDistributionMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasDistributionMaintenanceAccess(null)).toBe(false)
-    expect(hasDistributionMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasDistributionMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasDistributionMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasDistributionMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasDistributionMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateDistribution", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateDistribution(null, STANDARD_CIRCULATION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateDistribution({ role: "collector" }, STANDARD_CIRCULATION)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Distribution web mutation adapter", () => {
+  it("retains client validation before calling the typed create operation", async () => {
+    const createDistribution = vi.fn()
 
     await expect(
       submitCreateDistribution(
-        { role: "editor" },
         {
-          code: "Standard Circulation",
-          name: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createDistribution }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: DISTRIBUTION_INVALID_CODE_ERROR,
-        name: "Distribution Name cannot be blank.",
+        code: "Distribution Code cannot be blank.",
+        name: "Distribution Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createDistribution).not.toHaveBeenCalled()
+    expect(createDistribution).not.toHaveBeenCalled()
   })
 
-  it("trims Distribution fields before creating a Distribution", async () => {
-    const dependencies = createDependencies({
-      createDistribution: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createDistribution = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/distributions/${id}` },
+      body: { data: distribution },
+    }))
 
     await expect(
       submitCreateDistribution(
-        { role: "editor" },
         {
-          code: " standard-circulation ",
-          name: " Standard circulation ",
+          code: " silver ",
+          name: " Silver ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createDistribution }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Distribution added.",
     })
-
-    expect(dependencies.createDistribution).toHaveBeenCalledWith({
-      code: "standard-circulation",
-      name: "Standard circulation",
+    expect(createDistribution).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: "silver", name: "Silver" },
     })
   })
 
-  it("maps duplicate Distribution Codes to the Distribution Code field", async () => {
-    await expect(
-      submitCreateDistribution(
-        { role: "admin" },
-        STANDARD_CIRCULATION,
-        createDependencies({
-          createDistribution: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "distribution_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: DISTRIBUTION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createDistribution = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/distributions/${id}` },
+      body: { data: distribution },
+    }))
+    const submission = {
+      code: "silver",
+      name: "Silver",
+      idempotencyKey: "stable-attempt",
+    }
 
-  it("maps Distribution Code slug check failures to the Distribution Code field", async () => {
-    await expect(
-      submitCreateDistribution(
-        { role: "admin" },
-        STANDARD_CIRCULATION,
-        createDependencies({
-          createDistribution: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "distribution_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: DISTRIBUTION_INVALID_CODE_ERROR,
-      },
-    })
-  })
+    await submitCreateDistribution(submission, { createDistribution })
+    await submitCreateDistribution(submission, { createDistribution })
 
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createDistribution: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
-
-    await expect(
-      submitCreateDistribution(
-        { role: "editor" },
-        STANDARD_CIRCULATION,
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Distribution added.",
-    })
-
-    expect(dependencies.createDistribution).toHaveBeenCalledWith(
-      STANDARD_CIRCULATION
+    expect(createDistribution).toHaveBeenCalledTimes(2)
+    expect(createDistribution).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createDistribution).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
   })
 
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateDistribution(
-        { role: "admin" },
-        STANDARD_CIRCULATION,
-        createDependencies({
-          createDistribution: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: DISTRIBUTION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateDistribution", () => {
-  const updateInput = {
-    id: VALID_DISTRIBUTION_ID,
-    ...STANDARD_CIRCULATION,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateDistribution(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateDistribution({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitUpdateDistribution(
-        { role: "editor" },
-        {
-          id: VALID_DISTRIBUTION_ID,
-          code: "Standard Circulation",
-          name: " ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: DISTRIBUTION_INVALID_CODE_ERROR,
-        name: "Distribution Name cannot be blank.",
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceDistribution = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...distribution, version: 2, etag: '"next-version"' },
       },
-    })
-
-    expect(dependencies.updateDistribution).not.toHaveBeenCalled()
-  })
-
-  it("trims Distribution fields before updating a Distribution", async () => {
-    const dependencies = createDependencies({
-      updateDistribution: vi.fn().mockResolvedValue({
-        id: VALID_DISTRIBUTION_ID,
-      }),
-    })
+    }))
+    const deleteDistribution = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
       submitUpdateDistribution(
-        { role: "editor" },
-        {
-          id: VALID_DISTRIBUTION_ID,
-          code: " standard-circulation ",
-          name: " Standard circulation ",
-        },
-        dependencies
+        { id, etag, code: "gold", name: "Gold" },
+        { replaceDistribution }
       )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateDistribution).toHaveBeenCalledWith({
-      id: VALID_DISTRIBUTION_ID,
-      code: "standard-circulation",
-      name: "Standard circulation",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitUpdateDistribution(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateDistribution: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: DISTRIBUTION_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Distribution Codes to the Distribution Code field during update", async () => {
-    await expect(
-      submitUpdateDistribution(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateDistribution: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "distribution_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: DISTRIBUTION_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateDistribution(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateDistribution: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: DISTRIBUTION_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteDistribution", () => {
-  const deleteInput = {
-    id: VALID_DISTRIBUTION_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(
-      submitDeleteDistribution(null, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitDeleteDistribution({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitDeleteDistribution(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteDistribution).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
-    await expect(
-      submitDeleteDistribution(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteDistribution: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: DISTRIBUTION_MISSING_ERROR,
-    })
-  })
-
-  it("maps restricted deletes to a Distribution-specific form error", async () => {
-    await expect(
-      submitDeleteDistribution(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteDistribution: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_distribution_id_distribution_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: DISTRIBUTION_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = createDependencies({
-      deleteDistribution: vi.fn().mockResolvedValue({
-        id: VALID_DISTRIBUTION_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteDistribution({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteDistribution({ id, etag }, { deleteDistribution })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Distribution deleted.",
     })
 
-    expect(dependencies.deleteDistribution).toHaveBeenCalledWith(deleteInput)
+    expect(replaceDistribution).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "gold", name: "Gold" },
+    })
+    expect(deleteDistribution).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateDistribution(
+        {
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createDistribution: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: DISTRIBUTION_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateDistribution(
+        {
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createDistribution: vi
+            .fn()
+            .mockRejectedValue(problem("distribution_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: DISTRIBUTION_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateDistribution(
+        { id, etag, code: "silver", name: "Silver" },
+        {
+          replaceDistribution: vi
+            .fn()
+            .mockRejectedValue(
+              problem("distribution_precondition_failed", 412)
+            ),
+        }
+      )
+    ).resolves.toMatchObject({ formError: DISTRIBUTION_STALE_ERROR })
+
+    await expect(
+      submitDeleteDistribution(
+        { id, etag },
+        {
+          deleteDistribution: vi
+            .fn()
+            .mockRejectedValue(problem("distribution_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: DISTRIBUTION_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateDistribution(
+        {
+          code: "silver",
+          name: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createDistribution: vi.fn().mockRejectedValue(
+            problem("distribution_validation_failed", 422, [
+              { name: "/code", code: "distribution_code_required" },
+              { name: "/name", code: "distribution_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Distribution Code cannot be blank.",
+        name: "Distribution Name must be 255 characters or fewer.",
+      },
+    })
   })
 })

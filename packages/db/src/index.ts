@@ -36,8 +36,17 @@ export type {
 } from "./mutations/composition"
 export {
   createDistribution,
+  createDistributionIdempotently,
+  createDistributionIdempotentlyWithDatabase,
   deleteDistribution,
+  deleteDistributionIfVersionWithDatabase,
+  replaceDistributionWithDatabase,
   updateDistribution,
+} from "./mutations/distribution"
+export type {
+  CreateDistributionIdempotentlyResult,
+  DeleteDistributionIfVersionResult,
+  ReplaceDistributionResult,
 } from "./mutations/distribution"
 export { createEdge, deleteEdge, updateEdge } from "./mutations/edge"
 export { createRim, deleteRim, updateRim } from "./mutations/rim"
@@ -143,6 +152,10 @@ export {
   getCoinsWithDatabase,
 } from "./queries/get-coins"
 export { getDistributions } from "./queries/get-distributions"
+export {
+  getDistributionMaintenanceRecordWithDatabase,
+  getDistributionMaintenanceRecordsWithDatabase,
+} from "./queries/get-distribution-maintenance"
 export { getIssuers } from "./queries/get-issuers"
 export { getRulers } from "./queries/get-rulers"
 export { catalogue } from "./schema/catalogue"

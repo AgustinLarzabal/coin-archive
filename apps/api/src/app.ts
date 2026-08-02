@@ -20,6 +20,8 @@ import { registerCompositionMaintenanceRoutes } from "./composition-maintenance"
 import type { CompositionMaintenanceDependencies } from "./composition-maintenance"
 import { registerCurrencyMaintenanceRoutes } from "./currency-maintenance"
 import type { CurrencyMaintenanceDependencies } from "./currency-maintenance"
+import { registerDistributionMaintenanceRoutes } from "./distribution-maintenance"
+import type { DistributionMaintenanceDependencies } from "./distribution-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -153,6 +155,17 @@ export function createApiApp({
   deleteComposition = async () => {
     throw new Error("Composition deletion is not configured")
   },
+  listDistributions = async () => [],
+  getDistribution = async () => null,
+  createDistribution = async () => {
+    throw new Error("Distribution create is not configured")
+  },
+  replaceDistribution = async () => {
+    throw new Error("Distribution replacement is not configured")
+  },
+  deleteDistribution = async () => {
+    throw new Error("Distribution deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -196,6 +209,11 @@ export function createApiApp({
   createComposition?: CompositionMaintenanceDependencies["createComposition"]
   replaceComposition?: CompositionMaintenanceDependencies["replaceComposition"]
   deleteComposition?: CompositionMaintenanceDependencies["deleteComposition"]
+  listDistributions?: DistributionMaintenanceDependencies["listDistributions"]
+  getDistribution?: DistributionMaintenanceDependencies["getDistribution"]
+  createDistribution?: DistributionMaintenanceDependencies["createDistribution"]
+  replaceDistribution?: DistributionMaintenanceDependencies["replaceDistribution"]
+  deleteDistribution?: DistributionMaintenanceDependencies["deleteDistribution"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -391,6 +409,13 @@ export function createApiApp({
     createComposition,
     replaceComposition,
     deleteComposition,
+  })
+  registerDistributionMaintenanceRoutes(app, {
+    listDistributions,
+    getDistribution,
+    createDistribution,
+    replaceDistribution,
+    deleteDistribution,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

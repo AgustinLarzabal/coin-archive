@@ -348,6 +348,83 @@ export const compositionDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
 
+export const distributionSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+
+export const distributionOptionSchema = distributionSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const distributionListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const distributionListOutputSchema = z.object({
+  data: z.array(distributionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const distributionOptionsInputSchema = distributionListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const distributionOptionsOutputSchema = z.object({
+  data: z.array(distributionOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const distributionDetailOutputSchema = z.object({
+  data: distributionSchema,
+})
+export const distributionMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const distributionCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: distributionMutationBodySchema,
+})
+export const distributionCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/distributions/"),
+    etag: z.string(),
+  }),
+  body: distributionDetailOutputSchema,
+})
+export const distributionReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: distributionMutationBodySchema,
+})
+export const distributionReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: distributionDetailOutputSchema,
+})
+export const distributionDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const distributionDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+
 const currencyCodeSchema = z
   .string()
   .trim()
@@ -643,6 +720,79 @@ export const maintenanceApiContract = {
       .output(compositionDeleteOutputSchema)
       .errors(maintenanceMutationErrors),
   },
+  distributions: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/distributions",
+        summary: "Browse Distributions for maintenance",
+        tags: ["Distribution Maintenance"],
+      })
+      .input(distributionListInputSchema)
+      .output(distributionListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/distributions/options",
+        summary: "Search compact Distribution options",
+        tags: ["Distribution Maintenance"],
+      })
+      .input(distributionOptionsInputSchema)
+      .output(distributionOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/distributions/{uuid}",
+        summary: "Get Distribution maintenance detail",
+        tags: ["Distribution Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(distributionDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/distributions",
+        summary: "Create a Distribution",
+        tags: ["Distribution Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(distributionCreateInputSchema)
+      .output(distributionCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/distributions/{uuid}",
+        summary: "Replace a Distribution",
+        tags: ["Distribution Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(distributionReplaceInputSchema)
+      .output(distributionReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/distributions/{uuid}",
+        summary: "Permanently delete a Distribution",
+        tags: ["Distribution Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(distributionDeleteInputSchema)
+      .output(distributionDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -841,6 +991,24 @@ export type CompositionDetailOutput = z.infer<
 >
 export type CompositionMutationBody = z.infer<
   typeof compositionMutationBodySchema
+>
+export type Distribution = z.infer<typeof distributionSchema>
+export type DistributionOption = z.infer<typeof distributionOptionSchema>
+export type DistributionListInput = z.infer<typeof distributionListInputSchema>
+export type DistributionListOutput = z.infer<
+  typeof distributionListOutputSchema
+>
+export type DistributionOptionsInput = z.infer<
+  typeof distributionOptionsInputSchema
+>
+export type DistributionOptionsOutput = z.infer<
+  typeof distributionOptionsOutputSchema
+>
+export type DistributionDetailOutput = z.infer<
+  typeof distributionDetailOutputSchema
+>
+export type DistributionMutationBody = z.infer<
+  typeof distributionMutationBodySchema
 >
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>

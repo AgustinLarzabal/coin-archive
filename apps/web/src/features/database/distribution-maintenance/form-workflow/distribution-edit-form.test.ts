@@ -1,25 +1,51 @@
-import type { DistributionOption } from "@coin-archive/db"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it } from "vitest"
+import type { Distribution } from "@coin-archive/api"
+import { describe, expect, it, vi } from "vitest"
 
 import {
   DistributionEditForm,
   hasDistributionEditChanges,
 } from "./distribution-edit-form"
 
-const distribution: DistributionOption = {
-  id: "84863d38-795b-443c-bd27-1dedb73c0fad",
-  code: "standard-circulation",
-  name: "Standard circulation",
+function createServerFnMock() {
+  return {
+    inputValidator() {
+      return this
+    },
+    handler() {
+      return {}
+    },
+  }
+}
+
+vi.mock("@tanstack/react-router", () => ({
+  useRouter: () => ({
+    invalidate: vi.fn(),
+  }),
+}))
+
+vi.mock("@tanstack/react-start", () => ({
+  createServerFn: createServerFnMock,
+  useServerFn: () => vi.fn(),
+}))
+
+const distribution: Distribution = {
+  id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
+  code: "silver-900",
+  name: "Silver (.900)",
+  version: 1,
+  etag: '"distribution-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasDistributionEditChanges", () => {
   it("returns false when trimmed editable values match the current Distribution", () => {
     expect(
       hasDistributionEditChanges(distribution, {
-        code: " standard-circulation ",
-        name: " Standard circulation ",
+        code: " silver-900 ",
+        name: " Silver (.900) ",
       })
     ).toBe(false)
   })
@@ -27,30 +53,22 @@ describe("hasDistributionEditChanges", () => {
   it("returns true when any normalized editable field changed", () => {
     expect(
       hasDistributionEditChanges(distribution, {
-        code: "circulating-commemorative",
-        name: "Circulating commemorative",
+        code: "silver-925",
+        name: "Silver (.925)",
       })
     ).toBe(true)
   })
 })
 
 describe("DistributionEditForm", () => {
-  it("renders explicit Distribution field labels with the current values and disables Save until something changed", () => {
+  it("suggests a broad reusable Distribution category", () => {
     const markup = renderToStaticMarkup(
       createElement(DistributionEditForm, { distribution })
     )
-    const expectedFields = [
-      ["Distribution Code", 'value="standard-circulation"'],
-      ["Distribution Name", 'value="Standard circulation"'],
-    ] as const
 
-    for (const [label, value] of expectedFields) {
-      expect(markup).toContain(label)
-      expect(markup).toContain(value)
-    }
-
-    expect(markup).toContain(">Save<")
-    expect(markup).toContain('type="submit"')
-    expect(markup).toContain('disabled=""')
+    expect(markup).toContain('placeholder="silver"')
+    expect(markup).toContain('placeholder="Silver"')
+    expect(markup).not.toContain('placeholder="silver-900"')
+    expect(markup).not.toContain('placeholder="Silver (.900)"')
   })
 })

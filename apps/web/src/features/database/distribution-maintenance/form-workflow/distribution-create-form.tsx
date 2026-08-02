@@ -2,41 +2,45 @@ import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@coin-archive/ui/components/field"
+import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type {
-  DistributionFieldErrors,
-  DistributionMutationResult,
-} from "../actions"
-import {
-  createDistributionInputSchema,
-  submitCreateDistribution,
-} from "../actions"
+import { submitCreateDistribution } from "../actions"
+import type { DistributionMutationResult } from "../actions"
+import { createDistributionInputSchema } from "../validation"
+import type { DistributionFieldErrors } from "../validation"
 
-import {
-  EMPTY_DISTRIBUTION_DRAFT,
-  isDistributionDraftComplete,
-} from "./distribution-form.shared"
-import {
-  DistributionFormFields,
-  DistributionTextField,
-} from "./distribution-form-fields"
-import type { DistributionDraft } from "./distribution-form.shared"
+type DistributionDraft = {
+  code: string
+  name: string
+}
 
 type DistributionCreateFormProps = {
   onCreated?: () => void
 }
 
+const EMPTY_DRAFT: DistributionDraft = {
+  code: "",
+  name: "",
+}
+
 const createDistributionAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: DistributionDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
+  .inputValidator(
+    (data: DistributionDraft & { idempotencyKey: string }) => data
+  )
+  .handler(async ({ data }) => submitCreateDistribution(data))
 
-    return submitCreateDistribution(session?.user ?? null, data)
-  })
+export function isDistributionCreateReady(draft: DistributionDraft) {
+  return draft.code.trim().length > 0 && draft.name.trim().length > 0
+}
 
 export function DistributionCreateForm({
   onCreated,
@@ -45,6 +49,9 @@ export function DistributionCreateForm({
   const createDistribution = useServerFn(createDistributionAction)
   const [fieldErrors, setFieldErrors] = useState<DistributionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -64,16 +71,17 @@ export function DistributionCreateForm({
   }
 
   const form = useForm({
-    defaultValues: EMPTY_DISTRIBUTION_DRAFT,
+    defaultValues: EMPTY_DRAFT,
     validators: { onSubmit: createDistributionInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createDistribution({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }
@@ -93,11 +101,26 @@ export function DistributionCreateForm({
       <form.Subscribe selector={(state) => state}>
         {(state) => (
           <>
-            <DistributionFormFields variant="create">
-              {(config) => (
-                <form.Field key={config.field} name={config.field}>
+            <FieldGroup>
+              {(
+                [
+                  {
+                    name: "code",
+                    id: "new-distribution-code",
+                    label: "Distribution Code",
+                    placeholder: "silver",
+                  },
+                  {
+                    name: "name",
+                    id: "new-distribution-name",
+                    label: "Distribution Name",
+                    placeholder: "Silver",
+                  },
+                ] as const
+              ).map((config) => (
+                <form.Field key={config.name} name={config.name}>
                   {(field) => {
-                    const serverError = fieldErrors[config.field]
+                    const serverError = fieldErrors[config.name]
                     const isInvalid =
                       (field.state.meta.isTouched &&
                         !field.state.meta.isValid) ||
@@ -106,19 +129,29 @@ export function DistributionCreateForm({
                       ? [...field.state.meta.errors, { message: serverError }]
                       : field.state.meta.errors
                     return (
-                      <DistributionTextField
-                        {...config}
-                        errors={errors}
-                        isInvalid={isInvalid}
-                        onBlur={field.handleBlur}
-                        onChange={field.handleChange}
-                        value={field.state.value}
-                      />
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={config.id}>
+                          {config.label}
+                        </FieldLabel>
+                        <Input
+                          id={config.id}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          aria-invalid={isInvalid}
+                          placeholder={config.placeholder}
+                          autoComplete="off"
+                        />
+                        {isInvalid ? <FieldError errors={errors} /> : null}
+                      </Field>
                     )
                   }}
                 </form.Field>
-              )}
-            </DistributionFormFields>
+              ))}
+            </FieldGroup>
 
             {formError ? (
               <p className="text-sm text-destructive">{formError}</p>
@@ -129,8 +162,7 @@ export function DistributionCreateForm({
                 type="submit"
                 isSubmitting={state.isSubmitting}
                 disabled={
-                  state.isSubmitting ||
-                  !isDistributionDraftComplete(state.values)
+                  state.isSubmitting || !isDistributionCreateReady(state.values)
                 }
                 className="w-full"
               >

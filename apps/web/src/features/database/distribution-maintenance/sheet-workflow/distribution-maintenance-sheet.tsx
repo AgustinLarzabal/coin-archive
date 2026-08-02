@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { DistributionOption } from "@coin-archive/db"
+import type { Distribution } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,34 +27,31 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE,
-  DISTRIBUTION_GENERIC_SAVE_ERROR,
-  submitDeleteDistribution,
-} from "../actions"
+import { submitDeleteDistribution } from "../actions"
+import { DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { DistributionCreateForm } from "../form-workflow/distribution-create-form"
 import { DistributionEditForm } from "../form-workflow/distribution-edit-form"
 
 type DistributionMaintenanceSheetProps = {
-  distribution: DistributionOption | null
+  distribution: Distribution | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Distribution. ${DISTRIBUTION_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE}`
+const DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
+  DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE.replace(
+    "those Coins",
+    "existing Coins"
+  )
+
+export const DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Distribution. ${DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
 const deleteDistributionAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteDistribution(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteDistribution(data))
 
 export function DistributionMaintenanceSheet({
   distribution,
@@ -66,16 +63,11 @@ export function DistributionMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingDistribution = distribution !== null
 
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [distribution?.id, open])
 
   async function handleDeleteDistribution() {
@@ -90,6 +82,7 @@ export function DistributionMaintenanceSheet({
       const result = await deleteDistribution({
         data: {
           id: distribution.id,
+          etag: distribution.etag,
         },
       })
 
@@ -99,7 +92,9 @@ export function DistributionMaintenanceSheet({
         return
       }
 
-      setDeleteError(result.formError ?? DISTRIBUTION_GENERIC_SAVE_ERROR)
+      setDeleteError(
+        result.formError ?? "Unable to delete Distribution right now."
+      )
     } finally {
       setIsDeletePending(false)
     }
@@ -113,7 +108,7 @@ export function DistributionMaintenanceSheet({
             {distribution ? "Edit Distribution" : "Create Distribution"}
           </SheetTitle>
 
-          {isEditingDistribution ? (
+          {distribution !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger

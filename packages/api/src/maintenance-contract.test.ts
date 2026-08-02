@@ -17,6 +17,14 @@ import {
   compositionListOutputSchema,
   compositionOptionsOutputSchema,
   compositionReplaceInputSchema,
+  distributionCreateInputSchema,
+  distributionCreateOutputSchema,
+  distributionDeleteInputSchema,
+  distributionDetailOutputSchema,
+  distributionListInputSchema,
+  distributionListOutputSchema,
+  distributionOptionsOutputSchema,
+  distributionReplaceInputSchema,
   currencyCreateInputSchema,
   currencyCreateOutputSchema,
   currencyDeleteInputSchema,
@@ -55,6 +63,16 @@ const composition = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-composition-version"',
+}
+
+const distribution = {
+  id: "018f1a11-aaaa-7000-8000-000000000005",
+  code: "standard-circulation",
+  name: "Standard circulation",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-distribution-version"',
 }
 
 const catalogue = {
@@ -427,6 +445,112 @@ describe("Composition maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: composition.id },
       headers: { "if-match": composition.etag },
+    })
+  })
+})
+
+describe("Distribution maintenance contract", () => {
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      distributionListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "silver",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "silver",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => distributionListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      distributionOptionsOutputSchema.parse({
+        data: [
+          {
+            id: distribution.id,
+            code: distribution.code,
+            name: distribution.name,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [
+        {
+          id: distribution.id,
+          code: distribution.code,
+          name: distribution.name,
+        },
+      ],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      distributionListOutputSchema.parse({
+        data: [distribution],
+        nextCursor: null,
+      })
+    ).toStrictEqual({ data: [distribution], nextCursor: null })
+    expect(
+      distributionDetailOutputSchema.parse({ data: distribution })
+    ).toStrictEqual({ data: distribution })
+    expect(() =>
+      distributionDetailOutputSchema.parse({
+        data: { ...distribution, createdAt: new Date(distribution.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes authoritative mutation input and preserves success headers", () => {
+    expect(
+      distributionCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " silver ", name: " Silver " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "silver", name: "Silver" },
+    })
+    expect(
+      distributionCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: distribution.etag,
+          location: `/api/v1/maintenance/distributions/${distribution.id}`,
+        },
+        body: { data: distribution },
+      })
+    ).toMatchObject({ status: 201, body: { data: distribution } })
+    expect(() =>
+      distributionCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Silver Alloy", name: "Silver" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      distributionReplaceInputSchema.parse({
+        params: { uuid: distribution.id },
+        headers: { "if-match": distribution.etag },
+        body: { code: distribution.code, name: distribution.name },
+      })
+    ).toMatchObject({ headers: { "if-match": distribution.etag } })
+    expect(
+      distributionDeleteInputSchema.parse({
+        params: { uuid: distribution.id },
+        headers: { "if-match": distribution.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: distribution.id },
+      headers: { "if-match": distribution.etag },
     })
   })
 })

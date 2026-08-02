@@ -2,11 +2,13 @@ import {
   createCatalogueIdempotentlyWithDatabase,
   createCompositionIdempotentlyWithDatabase,
   createCurrencyIdempotentlyWithDatabase,
+  createDistributionIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
   deleteCompositionIfVersionWithDatabase,
   deleteCurrencyIfVersionWithDatabase,
+  deleteDistributionIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
@@ -14,6 +16,8 @@ import {
   getCompositionMaintenanceRecordsWithDatabase,
   getCurrencyMaintenanceRecordWithDatabase,
   getCurrencyMaintenanceRecordsWithDatabase,
+  getDistributionMaintenanceRecordWithDatabase,
+  getDistributionMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
@@ -21,6 +25,7 @@ import {
   replaceCatalogueWithDatabase,
   replaceCompositionWithDatabase,
   replaceCurrencyWithDatabase,
+  replaceDistributionWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -127,6 +132,20 @@ async function handleRequest(
       }),
     deleteComposition: (input) =>
       deleteCompositionIfVersionWithDatabase(database.db, input),
+    listDistributions: (input) =>
+      getDistributionMaintenanceRecordsWithDatabase(database.db, input),
+    getDistribution: (distributionId) =>
+      getDistributionMaintenanceRecordWithDatabase(database.db, distributionId),
+    createDistribution: (input) =>
+      createDistributionIdempotentlyWithDatabase(database.db, input),
+    replaceDistribution: ({ id, expectedVersion, fields }) =>
+      replaceDistributionWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteDistribution: (input) =>
+      deleteDistributionIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

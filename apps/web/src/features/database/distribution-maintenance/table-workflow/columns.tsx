@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { DistributionOption } from "@coin-archive/db"
+import type { Distribution } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createDistributionColumns(
-  onEditDistribution: (distribution: DistributionOption) => void
-): ColumnDef<DistributionOption>[] {
+  onEditDistribution: (distribution: Distribution) => void
+): ColumnDef<Distribution>[] {
   return [
     {
       accessorKey: "code",

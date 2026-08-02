@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createCurrencyColumns(
-  onEditCurrency: (currency: CurrencyOption) => void
-): ColumnDef<CurrencyOption>[] {
+  onEditCurrency: (currency: Currency) => void
+): ColumnDef<Currency>[] {
   return [
     {
       accessorKey: "code",

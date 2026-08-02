@@ -4,9 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { CurrencyFieldErrors, CurrencyMutationResult } from "../actions"
-import { createCurrencyInputSchema, submitCreateCurrency } from "../actions"
+import { submitCreateCurrency } from "../actions"
+import type { CurrencyMutationResult } from "../actions"
+import { createCurrencyInputSchema } from "../validation"
+import type { CurrencyFieldErrors } from "../validation"
 
 import {
   EMPTY_CURRENCY_DRAFT,
@@ -22,18 +23,17 @@ type CurrencyCreateFormProps = {
 const createCurrencyAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CurrencyDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateCurrency(session?.user ?? null, data)
-  })
+  .inputValidator((data: CurrencyDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateCurrency(data))
 
 export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
   const router = useRouter()
   const createCurrency = useServerFn(createCurrencyAction)
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -57,12 +57,13 @@ export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
     validators: { onSubmit: createCurrencyInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createCurrency({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

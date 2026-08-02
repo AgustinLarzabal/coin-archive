@@ -2,12 +2,13 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { CurrencyFieldErrors, CurrencyMutationResult } from "../actions"
-import { createCurrencyInputSchema, submitUpdateCurrency } from "../actions"
+import { submitUpdateCurrency } from "../actions"
+import type { CurrencyMutationResult } from "../actions"
+import { createCurrencyInputSchema } from "../validation"
+import type { CurrencyFieldErrors } from "../validation"
 
 import {
   createCurrencyDraft,
@@ -17,22 +18,18 @@ import { CurrencyFormFields, CurrencyTextField } from "./currency-form-fields"
 import type { CurrencyDraft } from "./currency-form.shared"
 
 type CurrencyEditFormProps = {
-  currency: CurrencyOption
+  currency: Currency
   onSaved?: () => void
 }
 
 const updateCurrencyAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CurrencyDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateCurrency(session?.user ?? null, data)
-  })
+  .inputValidator((data: CurrencyDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateCurrency(data))
 
 export function hasCurrencyEditChanges(
-  currency: CurrencyOption,
+  currency: Currency,
   draft: CurrencyDraft
 ) {
   const normalizedCurrent = normalizeCurrencyDraft(
@@ -59,7 +56,7 @@ export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
     validators: { onSubmit: createCurrencyInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateCurrency({
-        data: { id: currency.id, ...value },
+        data: { id: currency.id, etag: currency.etag, ...value },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

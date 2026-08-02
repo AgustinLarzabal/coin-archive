@@ -7,7 +7,14 @@ import {
   createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createCurrency, deleteCurrency, updateCurrency } from "./currency"
+import {
+  createCurrency,
+  createCurrencyIdempotently,
+  deleteCurrency,
+  deleteCurrencyIfVersionWithDatabase,
+  replaceCurrencyWithDatabase,
+  updateCurrency,
+} from "./currency"
 
 describe("currency mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -92,6 +99,50 @@ describe("currency mutations integration", () => {
 
     expect(firstCurrency.fullName).toBe(secondCurrency.fullName)
     expect(firstCurrency.id).not.toBe(secondCurrency.id)
+  })
+
+  it("replays creation and atomically enforces Currency versions", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "currency-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: {
+        code: " united-states-dollar ",
+        name: " Dollar ",
+        fullName: " United States dollar ",
+      },
+    }
+    const first = await createCurrencyIdempotently(input)
+    await expect(createCurrencyIdempotently(input)).resolves.toStrictEqual({
+      status: "replayed",
+      currency: first.status === "created" ? first.currency : expect.anything(),
+    })
+    if (first.status !== "created") throw new Error("Expected create")
+    await expect(
+      replaceCurrencyWithDatabase(db, {
+        id: first.currency.id,
+        expectedVersion: 1,
+        code: "euro",
+        name: "Euro",
+        fullName: "Euro",
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      currency: { version: 2, code: "euro" },
+    })
+    await expect(
+      deleteCurrencyIfVersionWithDatabase(db, {
+        id: first.currency.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteCurrencyIfVersionWithDatabase(db, {
+        id: first.currency.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
   })
 
   it("trims Currency fields and updates updatedAt when updating a Currency", async () => {

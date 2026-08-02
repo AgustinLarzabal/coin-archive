@@ -1,9 +1,12 @@
-import type { CatalogueOption, CompositionOption } from "@coin-archive/api"
+import type {
+  CatalogueOption,
+  CompositionOption,
+  CurrencyOption,
+} from "@coin-archive/api"
 import type {
   CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,
   CoinMaintenanceSurface,
-  CurrencyOption,
   DistributionOption,
   EdgeOption,
   EngraverOption,
@@ -122,7 +125,6 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
 export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
   const [
     {
-      getCurrencies,
       getDistributions,
       getEdges,
       getEngravers,
@@ -147,7 +149,8 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
       loadAllMaintenanceOptions(maintenanceClient.catalogues.options),
     getCompositions: () =>
       loadAllMaintenanceOptions(maintenanceClient.compositions.options),
-    getCurrencies,
+    getCurrencies: () =>
+      loadAllMaintenanceOptions(maintenanceClient.currencies.options),
     getDistributions,
     getEdges,
     getEngravers,

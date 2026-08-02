@@ -56,8 +56,17 @@ export {
 export { createIssuer, deleteIssuer, updateIssuer } from "./mutations/issuer"
 export {
   createCurrency,
+  createCurrencyIdempotently,
+  createCurrencyIdempotentlyWithDatabase,
   deleteCurrency,
+  deleteCurrencyIfVersionWithDatabase,
+  replaceCurrencyWithDatabase,
   updateCurrency,
+} from "./mutations/currency"
+export type {
+  CreateCurrencyIdempotentlyResult,
+  DeleteCurrencyIfVersionResult,
+  ReplaceCurrencyResult,
 } from "./mutations/currency"
 export { createMint, deleteMint, updateMint } from "./mutations/mint"
 export {
@@ -100,6 +109,15 @@ export {
   getPublicCoinWithDatabase,
 } from "./queries/get-coin"
 export { getCompositions } from "./queries/get-compositions"
+export {
+  getCurrencyMaintenanceRecordsWithDatabase,
+  getCurrencyMaintenanceRecordWithDatabase,
+} from "./queries/get-currency-maintenance"
+export type {
+  CurrencyMaintenanceCursor,
+  CurrencyMaintenanceListRecord,
+  GetCurrencyMaintenanceRecordsOptions,
+} from "./queries/get-currency-maintenance"
 export {
   getCompositionMaintenanceRecordWithDatabase,
   getCompositionMaintenanceRecordsWithDatabase,

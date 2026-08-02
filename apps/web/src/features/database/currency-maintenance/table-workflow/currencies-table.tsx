@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createCurrencyColumns } from "./columns"
@@ -7,13 +7,13 @@ import { CurrencyMaintenanceSheet } from "../sheet-workflow/currency-maintenance
 import { CurrenciesTableToolbar } from "./currencies-table-toolbar"
 
 type CurrenciesTableProps = {
-  currencies: CurrencyOption[]
+  currencies: Currency[]
 }
 
 export function filterCurrencies(
-  currencies: CurrencyOption[],
+  currencies: Currency[],
   filterValue: string
-): CurrencyOption[] {
+): Currency[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
@@ -28,7 +28,7 @@ export function filterCurrencies(
 }
 
 export function CurrenciesTable({ currencies }: CurrenciesTableProps) {
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyOption | null>(
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(
     null
   )
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)

@@ -1,25 +1,29 @@
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
 import { CurrenciesTable, filterCurrencies } from "./currencies-table"
 
-const currencies: CurrencyOption[] = [
+const currencies: Currency[] = [
   {
     id: "d77c3a0c-1a77-4332-ae7c-732cbf95d479",
     code: "argentine-peso",
     name: "Peso",
     fullName: "Argentine peso",
-    createdAt: new Date("2026-06-24T12:00:00.000Z"),
-    updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
+    version: 1,
+    etag: '"currency-1"',
   },
   {
     id: "baf020cb-1009-40b9-a286-cf5bd49d6a0b",
     code: "united-states-dollar",
     name: "Dollar",
     fullName: "United States dollar",
-    createdAt: new Date("2026-06-24T12:00:00.000Z"),
-    updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
+    version: 1,
+    etag: '"currency-2"',
   },
 ]
 

@@ -1,9 +1,8 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { CompositionOption } from "@coin-archive/api"
+import type { CompositionOption, CurrencyOption } from "@coin-archive/api"
 import type {
   CoinMaintenanceListOptions,
   CoinMaintenanceListResult,
-  CurrencyOption,
   DistributionOption,
   IssuerOption,
   RulerOption,
@@ -117,13 +116,7 @@ const COIN_MAINTENANCE_FILTER_KEYS = [
 
 async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintenanceReadDependencies> {
   const [
-    {
-      getCoinMaintenanceList,
-      getCurrencies,
-      getDistributions,
-      getIssuers,
-      getRulers,
-    },
+    { getCoinMaintenanceList, getDistributions, getIssuers, getRulers },
     { getMaintenanceApiClient },
   ] = await Promise.all([
     import("@coin-archive/db"),
@@ -136,7 +129,8 @@ async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintena
     getIssuers,
     getRulers,
     getDistributions,
-    getCurrencies,
+    getCurrencies: () =>
+      loadAllMaintenanceOptions(maintenanceClient.currencies.options),
     getCompositions: () =>
       loadAllMaintenanceOptions(maintenanceClient.compositions.options),
   }

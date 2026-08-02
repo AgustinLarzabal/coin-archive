@@ -1,67 +1,80 @@
+import type { Currency, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { CurrencyOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createCurrencyAuthorizationError,
-  hasCurrencyMaintenanceAccess,
-} from "./actions"
+import { createCurrencyAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
-  {
-    currencies: CurrencyOption[]
-  },
+  { currencies: Currency[] },
   ReturnType<typeof createCurrencyAuthorizationError>
 >
 
 export type CurrencyMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  currencies: CurrencyOption[]
+  currencies: Currency[]
 }>
 
 type ReadDependencies = {
-  getCurrencies: () => Promise<CurrencyOption[]>
+  listCurrencies: MaintenanceApiClient["currencies"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getCurrencies } = await import("@coin-archive/db")
-
-  return {
-    getCurrencies,
-  }
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listCurrencies: client.currencies.list }
 }
 
-export async function loadCurrencyMaintenanceCurrencies(
-  collector: CollectorWithRole | null,
+export async function loadCurrencyMaintenancePageData(
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasCurrencyMaintenanceAccess(collector)) {
-    return createCurrencyAuthorizationError()
+  const { listCurrencies } =
+    dependencies ?? (await getDefaultReadDependencies())
+  const currencies: Currency[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listCurrencies({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      currencies.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Currency maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createCurrencyAuthorizationError()
+    }
+    throw error
   }
 
-  const { getCurrencies } = dependencies ?? (await getDefaultReadDependencies())
-
-  return {
-    status: "success",
-    currencies: await getCurrencies(),
-  }
+  return { status: "success", currencies }
 }
 
-const getLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadCurrencyMaintenanceCurrencies(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadCurrencyMaintenancePageData())
+)
 
 export function loadCurrencyMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

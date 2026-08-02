@@ -348,6 +348,81 @@ export const compositionDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
 
+export const currencySchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  fullName: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const currencyOptionSchema = currencySchema.pick({
+  id: true,
+  code: true,
+  name: true,
+  fullName: true,
+})
+export const currencyListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "fullName", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const currencyListOutputSchema = z.object({
+  data: z.array(currencySchema),
+  nextCursor: z.string().nullable(),
+})
+export const currencyOptionsInputSchema = currencyListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const currencyOptionsOutputSchema = z.object({
+  data: z.array(currencyOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const currencyDetailOutputSchema = z.object({ data: currencySchema })
+export const currencyMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+  fullName: z.string().trim().min(1).max(255),
+})
+export const currencyCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: currencyMutationBodySchema,
+})
+export const currencyCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/currencies/"),
+    etag: z.string(),
+  }),
+  body: currencyDetailOutputSchema,
+})
+export const currencyReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: currencyMutationBodySchema,
+})
+export const currencyReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: currencyDetailOutputSchema,
+})
+export const currencyDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const currencyDeleteOutputSchema = z.object({ status: z.literal(204) })
+
 export const orientationDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
@@ -563,6 +638,79 @@ export const maintenanceApiContract = {
       .output(compositionDeleteOutputSchema)
       .errors(maintenanceMutationErrors),
   },
+  currencies: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/currencies",
+        summary: "Browse Currencies for maintenance",
+        tags: ["Currency Maintenance"],
+      })
+      .input(currencyListInputSchema)
+      .output(currencyListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/currencies/options",
+        summary: "Search compact Currency options",
+        tags: ["Currency Maintenance"],
+      })
+      .input(currencyOptionsInputSchema)
+      .output(currencyOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/currencies/{uuid}",
+        summary: "Get Currency maintenance detail",
+        tags: ["Currency Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(currencyDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/currencies",
+        summary: "Create a Currency",
+        tags: ["Currency Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(currencyCreateInputSchema)
+      .output(currencyCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/currencies/{uuid}",
+        summary: "Replace a Currency",
+        tags: ["Currency Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(currencyReplaceInputSchema)
+      .output(currencyReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/currencies/{uuid}",
+        summary: "Permanently delete a Currency",
+        tags: ["Currency Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(currencyDeleteInputSchema)
+      .output(currencyDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   orientations: {
     list: oc
       .route({
@@ -689,3 +837,11 @@ export type CompositionDetailOutput = z.infer<
 export type CompositionMutationBody = z.infer<
   typeof compositionMutationBodySchema
 >
+export type Currency = z.infer<typeof currencySchema>
+export type CurrencyOption = z.infer<typeof currencyOptionSchema>
+export type CurrencyListInput = z.infer<typeof currencyListInputSchema>
+export type CurrencyListOutput = z.infer<typeof currencyListOutputSchema>
+export type CurrencyOptionsInput = z.infer<typeof currencyOptionsInputSchema>
+export type CurrencyOptionsOutput = z.infer<typeof currencyOptionsOutputSchema>
+export type CurrencyDetailOutput = z.infer<typeof currencyDetailOutputSchema>
+export type CurrencyMutationBody = z.infer<typeof currencyMutationBodySchema>

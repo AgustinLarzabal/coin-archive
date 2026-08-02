@@ -30,8 +30,10 @@ describe("CurrencyMaintenanceRouteComponent", () => {
               code: "argentine-peso",
               name: "Peso",
               fullName: "Argentine peso",
-              createdAt: new Date("2026-06-24T12:00:00.000Z"),
-              updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+              createdAt: "2026-06-24T12:00:00.000Z",
+              updatedAt: "2026-06-24T12:00:00.000Z",
+              version: 1,
+              etag: '"currency-version"',
             },
           ],
         }}

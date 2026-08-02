@@ -1,12 +1,15 @@
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../actions"
+import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
-import { CURRENCY_DELETE_CONFIRMATION_DESCRIPTION, CurrencyMaintenanceSheet  } from "./currency-maintenance-sheet"
+import {
+  CURRENCY_DELETE_CONFIRMATION_DESCRIPTION,
+  CurrencyMaintenanceSheet,
+} from "./currency-maintenance-sheet"
 
 type MockComponentProps = {
   children?: ReactNode
@@ -23,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -92,16 +92,18 @@ vi.mock("../form-workflow/currency-edit-form", () => ({
   CurrencyEditForm: () => createElement("div", null, "CurrencyEditForm"),
 }))
 
-const currency: CurrencyOption = {
+const currency: Currency = {
   id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
   code: "united-states-dollar",
   name: "Dollar",
   fullName: "United States dollar",
-  createdAt: new Date("2026-06-26T00:00:00.000Z"),
-  updatedAt: new Date("2026-06-26T00:00:00.000Z"),
+  createdAt: "2026-06-26T00:00:00.000Z",
+  updatedAt: "2026-06-26T00:00:00.000Z",
+  version: 1,
+  etag: '"currency-version"',
 }
 
-function renderCurrencyMaintenanceSheet(currencyOption: CurrencyOption | null) {
+function renderCurrencyMaintenanceSheet(currencyOption: Currency | null) {
   return renderToStaticMarkup(
     createElement(CurrencyMaintenanceSheet, {
       currency: currencyOption,

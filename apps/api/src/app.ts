@@ -18,6 +18,8 @@ import { registerCatalogueMaintenanceRoutes } from "./catalogue-maintenance"
 import type { CatalogueMaintenanceDependencies } from "./catalogue-maintenance"
 import { registerCompositionMaintenanceRoutes } from "./composition-maintenance"
 import type { CompositionMaintenanceDependencies } from "./composition-maintenance"
+import { registerCurrencyMaintenanceRoutes } from "./currency-maintenance"
+import type { CurrencyMaintenanceDependencies } from "./currency-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -151,6 +153,17 @@ export function createApiApp({
   deleteComposition = async () => {
     throw new Error("Composition deletion is not configured")
   },
+  listCurrencies = async () => [],
+  getCurrency = async () => null,
+  createCurrency = async () => {
+    throw new Error("Currency create is not configured")
+  },
+  replaceCurrency = async () => {
+    throw new Error("Currency replacement is not configured")
+  },
+  deleteCurrency = async () => {
+    throw new Error("Currency deletion is not configured")
+  },
   trustProxyHeaders = false,
   createRequestId = () => crypto.randomUUID(),
   now = () => Date.now(),
@@ -183,6 +196,11 @@ export function createApiApp({
   createComposition?: CompositionMaintenanceDependencies["createComposition"]
   replaceComposition?: CompositionMaintenanceDependencies["replaceComposition"]
   deleteComposition?: CompositionMaintenanceDependencies["deleteComposition"]
+  listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
+  getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
+  createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
+  replaceCurrency?: CurrencyMaintenanceDependencies["replaceCurrency"]
+  deleteCurrency?: CurrencyMaintenanceDependencies["deleteCurrency"]
   trustProxyHeaders?: boolean
   createRequestId?: () => string
   now?: () => number
@@ -373,6 +391,13 @@ export function createApiApp({
     createComposition,
     replaceComposition,
     deleteComposition,
+  })
+  registerCurrencyMaintenanceRoutes(app, {
+    listCurrencies,
+    getCurrency,
+    createCurrency,
+    replaceCurrency,
+    deleteCurrency,
   })
 
   app.on(["GET", "HEAD"], "/api/v1/coins", async (context) => {

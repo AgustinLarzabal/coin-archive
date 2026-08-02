@@ -1,21 +1,26 @@
 import {
   createCatalogueIdempotentlyWithDatabase,
   createCompositionIdempotentlyWithDatabase,
+  createCurrencyIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
   deleteCompositionIfVersionWithDatabase,
+  deleteCurrencyIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
   getCompositionMaintenanceRecordWithDatabase,
   getCompositionMaintenanceRecordsWithDatabase,
+  getCurrencyMaintenanceRecordWithDatabase,
+  getCurrencyMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
   getCoinsWithDatabase,
   replaceCatalogueWithDatabase,
   replaceCompositionWithDatabase,
+  replaceCurrencyWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -122,6 +127,20 @@ async function handleRequest(
       }),
     deleteComposition: (input) =>
       deleteCompositionIfVersionWithDatabase(database.db, input),
+    listCurrencies: (input) =>
+      getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
+    getCurrency: (currencyId) =>
+      getCurrencyMaintenanceRecordWithDatabase(database.db, currencyId),
+    createCurrency: (input) =>
+      createCurrencyIdempotentlyWithDatabase(database.db, input),
+    replaceCurrency: ({ id, expectedVersion, fields }) =>
+      replaceCurrencyWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteCurrency: (input) =>
+      deleteCurrencyIfVersionWithDatabase(database.db, input),
     getCollector: async (collectorRequest) => {
       const resolved = await auth.api.getSession({
         headers: collectorRequest.headers,

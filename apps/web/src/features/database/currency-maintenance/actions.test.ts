@@ -2,413 +2,248 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   CURRENCY_AUTHORIZATION_ERROR,
-  CURRENCY_DUPLICATE_CODE_ERROR,
-  CURRENCY_GENERIC_SAVE_ERROR,
-  CURRENCY_IN_USE_DELETE_ERROR,
-  CURRENCY_INVALID_CODE_ERROR,
-  CURRENCY_MISSING_ERROR,
-  hasCurrencyMaintenanceAccess,
   submitCreateCurrency,
   submitDeleteCurrency,
   submitUpdateCurrency,
 } from "./actions"
+import {
+  CURRENCY_DUPLICATE_CODE_ERROR,
+  CURRENCY_IN_USE_DELETE_ERROR,
+  CURRENCY_STALE_ERROR,
+} from "./currency-mutation-errors"
 
-const VALID_CURRENCY_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const UNITED_STATES_DOLLAR = {
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const currency = {
+  id,
   code: "united-states-dollar",
   name: "Dollar",
   fullName: "United States dollar",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createCurrency?: ReturnType<typeof vi.fn>
-  deleteCurrency?: ReturnType<typeof vi.fn>
-  updateCurrency?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createCurrency: vi.fn(),
-    deleteCurrency: vi.fn(),
-    updateCurrency: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/currencies",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: CURRENCY_AUTHORIZATION_ERROR,
-}
-
-describe("hasCurrencyMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasCurrencyMaintenanceAccess(null)).toBe(false)
-    expect(hasCurrencyMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasCurrencyMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasCurrencyMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasCurrencyMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasCurrencyMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateCurrency", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateCurrency(null, UNITED_STATES_DOLLAR)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateCurrency({ role: "collector" }, UNITED_STATES_DOLLAR)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Currency web mutation adapter", () => {
+  it("retains client validation before calling the typed create operation", async () => {
+    const createCurrency = vi.fn()
 
     await expect(
       submitCreateCurrency(
-        { role: "editor" },
         {
-          code: "United States Dollar",
-          name: " ",
-          fullName: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          fullName: "Dollar",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createCurrency }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: CURRENCY_INVALID_CODE_ERROR,
-        name: "Currency Name cannot be blank.",
-        fullName: "Currency Full Name cannot be blank.",
+        code: "Currency Code cannot be blank.",
+        name: "Currency Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createCurrency).not.toHaveBeenCalled()
+    expect(createCurrency).not.toHaveBeenCalled()
   })
 
-  it("trims Currency fields before creating a Currency", async () => {
-    const dependencies = createDependencies({
-      createCurrency: vi.fn().mockResolvedValue({
-        id: VALID_CURRENCY_ID,
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createCurrency = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/currencies/${id}` },
+      body: { data: currency },
+    }))
 
     await expect(
       submitCreateCurrency(
-        { role: "editor" },
         {
           code: " united-states-dollar ",
           name: " Dollar ",
           fullName: " United States dollar ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createCurrency }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Currency added.",
     })
+    expect(createCurrency).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: {
+        code: "united-states-dollar",
+        name: "Dollar",
+        fullName: "United States dollar",
+      },
+    })
+  })
 
-    expect(dependencies.createCurrency).toHaveBeenCalledWith({
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createCurrency = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/currencies/${id}` },
+      body: { data: currency },
+    }))
+    const submission = {
       code: "united-states-dollar",
       name: "Dollar",
       fullName: "United States dollar",
-    })
-  })
+      idempotencyKey: "stable-attempt",
+    }
 
-  it("maps duplicate Currency Codes to the Currency Code field", async () => {
-    await expect(
-      submitCreateCurrency(
-        { role: "admin" },
-        UNITED_STATES_DOLLAR,
-        createDependencies({
-          createCurrency: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "currency_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: CURRENCY_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
+    await submitCreateCurrency(submission, { createCurrency })
+    await submitCreateCurrency(submission, { createCurrency })
 
-  it("maps Currency Code slug check failures to the Currency Code field", async () => {
-    await expect(
-      submitCreateCurrency(
-        { role: "admin" },
-        UNITED_STATES_DOLLAR,
-        createDependencies({
-          createCurrency: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "currency_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: CURRENCY_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createCurrency: vi.fn().mockResolvedValue({
-        id: VALID_CURRENCY_ID,
-      }),
-    })
-
-    await expect(
-      submitCreateCurrency({ role: "editor" }, UNITED_STATES_DOLLAR, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Currency added.",
-    })
-
-    expect(dependencies.createCurrency).toHaveBeenCalledWith(
-      UNITED_STATES_DOLLAR
+    expect(createCurrency).toHaveBeenCalledTimes(2)
+    expect(createCurrency).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createCurrency).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
   })
 
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateCurrency(
-        { role: "admin" },
-        UNITED_STATES_DOLLAR,
-        createDependencies({
-          createCurrency: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CURRENCY_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateCurrency", () => {
-  const updateInput = {
-    id: VALID_CURRENCY_ID,
-    ...UNITED_STATES_DOLLAR,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateCurrency(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateCurrency({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitUpdateCurrency(
-        { role: "editor" },
-        {
-          id: VALID_CURRENCY_ID,
-          code: "United States Dollar",
-          name: " ",
-          fullName: " ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: CURRENCY_INVALID_CODE_ERROR,
-        name: "Currency Name cannot be blank.",
-        fullName: "Currency Full Name cannot be blank.",
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceCurrency = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...currency, version: 2, etag: '"next-version"' },
       },
-    })
-
-    expect(dependencies.updateCurrency).not.toHaveBeenCalled()
-  })
-
-  it("trims Currency fields before updating a Currency", async () => {
-    const dependencies = createDependencies({
-      updateCurrency: vi.fn().mockResolvedValue({
-        id: VALID_CURRENCY_ID,
-      }),
-    })
+    }))
+    const deleteCurrency = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
       submitUpdateCurrency(
-        { role: "editor" },
-        {
-          id: VALID_CURRENCY_ID,
-          code: " united-states-dollar ",
-          name: " Dollar ",
-          fullName: " United States dollar ",
-        },
-        dependencies
+        { id, etag, code: "euro", name: "Euro", fullName: "Euro" },
+        { replaceCurrency }
       )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateCurrency).toHaveBeenCalledWith({
-      id: VALID_CURRENCY_ID,
-      code: "united-states-dollar",
-      name: "Dollar",
-      fullName: "United States dollar",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitUpdateCurrency(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateCurrency: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CURRENCY_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Currency Codes to the Currency Code field during update", async () => {
-    await expect(
-      submitUpdateCurrency(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateCurrency: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "currency_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: CURRENCY_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateCurrency(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateCurrency: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CURRENCY_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteCurrency", () => {
-  const deleteInput = {
-    id: VALID_CURRENCY_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(
-      submitDeleteCurrency(null, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitDeleteCurrency({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitDeleteCurrency(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteCurrency).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
-    await expect(
-      submitDeleteCurrency(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteCurrency: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CURRENCY_MISSING_ERROR,
-    })
-  })
-
-  it("maps restricted deletes to a Currency-specific form error", async () => {
-    await expect(
-      submitDeleteCurrency(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteCurrency: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_currency_id_currency_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CURRENCY_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = createDependencies({
-      deleteCurrency: vi.fn().mockResolvedValue({
-        id: VALID_CURRENCY_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteCurrency({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteCurrency({ id, etag }, { deleteCurrency })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Currency deleted.",
     })
 
-    expect(dependencies.deleteCurrency).toHaveBeenCalledWith(deleteInput)
+    expect(replaceCurrency).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "euro", name: "Euro", fullName: "Euro" },
+    })
+    expect(deleteCurrency).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateCurrency(
+        {
+          code: "silver",
+          name: "Silver",
+          fullName: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCurrency: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CURRENCY_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateCurrency(
+        {
+          code: "silver",
+          name: "Silver",
+          fullName: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCurrency: vi
+            .fn()
+            .mockRejectedValue(problem("currency_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: CURRENCY_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateCurrency(
+        { id, etag, code: "silver", name: "Silver", fullName: "Silver" },
+        {
+          replaceCurrency: vi
+            .fn()
+            .mockRejectedValue(problem("currency_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CURRENCY_STALE_ERROR })
+
+    await expect(
+      submitDeleteCurrency(
+        { id, etag },
+        {
+          deleteCurrency: vi
+            .fn()
+            .mockRejectedValue(problem("currency_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CURRENCY_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateCurrency(
+        {
+          code: "silver",
+          name: "Silver",
+          fullName: "Silver",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCurrency: vi.fn().mockRejectedValue(
+            problem("currency_validation_failed", 422, [
+              { name: "/code", code: "currency_code_required" },
+              { name: "/name", code: "currency_name_too_long" },
+              { name: "/fullName", code: "currency_full_name_required" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Currency Code cannot be blank.",
+        name: "Currency Name must be 255 characters or fewer.",
+        fullName: "Currency Full Name cannot be blank.",
+      },
+    })
   })
 })

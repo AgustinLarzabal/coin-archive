@@ -1,4 +1,4 @@
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 
 export type CurrencyDraft = {
   code: string
@@ -12,7 +12,7 @@ export const EMPTY_CURRENCY_DRAFT: CurrencyDraft = {
   fullName: "",
 }
 
-export function createCurrencyDraft(currency: CurrencyOption): CurrencyDraft {
+export function createCurrencyDraft(currency: Currency): CurrencyDraft {
   return {
     code: currency.code,
     name: currency.name,

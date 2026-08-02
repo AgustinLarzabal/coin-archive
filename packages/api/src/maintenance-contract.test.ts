@@ -17,6 +17,14 @@ import {
   compositionListOutputSchema,
   compositionOptionsOutputSchema,
   compositionReplaceInputSchema,
+  currencyCreateInputSchema,
+  currencyCreateOutputSchema,
+  currencyDeleteInputSchema,
+  currencyDetailOutputSchema,
+  currencyListInputSchema,
+  currencyListOutputSchema,
+  currencyOptionsOutputSchema,
+  currencyReplaceInputSchema,
   maintenanceProblemDocumentSchema,
   orientationCreateInputSchema,
   orientationCreateOutputSchema,
@@ -27,6 +35,17 @@ import {
   orientationOptionsOutputSchema,
   orientationReplaceInputSchema,
 } from "./contract"
+
+const currency = {
+  id: "018f1a11-aaaa-7000-8000-000000000004",
+  code: "united-states-dollar",
+  name: "Dollar",
+  fullName: "United States dollar",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-currency-version"',
+}
 
 const composition = {
   id: "018f1a11-aaaa-7000-8000-000000000003",
@@ -408,6 +427,102 @@ describe("Composition maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: composition.id },
       headers: { "if-match": composition.etag },
+    })
+  })
+})
+
+describe("Currency maintenance contract", () => {
+  it("defines canonical paginated, option, detail, and mutation representations", () => {
+    expect(
+      currencyListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "dollar",
+        sort: "fullName",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "dollar",
+      sort: "fullName",
+      order: "desc",
+    })
+    expect(() => currencyListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      currencyOptionsOutputSchema.parse({
+        data: [
+          {
+            id: currency.id,
+            code: currency.code,
+            name: currency.name,
+            fullName: currency.fullName,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [
+        {
+          id: currency.id,
+          code: currency.code,
+          name: currency.name,
+          fullName: currency.fullName,
+        },
+      ],
+      nextCursor: null,
+    })
+    expect(
+      currencyListOutputSchema.parse({ data: [currency], nextCursor: null })
+    ).toStrictEqual({ data: [currency], nextCursor: null })
+    expect(currencyDetailOutputSchema.parse({ data: currency })).toStrictEqual({
+      data: currency,
+    })
+    expect(
+      currencyCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: {
+          code: " united-states-dollar ",
+          name: " Dollar ",
+          fullName: " United States dollar ",
+        },
+      })
+    ).toMatchObject({
+      body: {
+        code: currency.code,
+        name: currency.name,
+        fullName: currency.fullName,
+      },
+    })
+    expect(
+      currencyCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: currency.etag,
+          location: `/api/v1/maintenance/currencies/${currency.id}`,
+        },
+        body: { data: currency },
+      })
+    ).toMatchObject({ status: 201, body: { data: currency } })
+    expect(
+      currencyReplaceInputSchema.parse({
+        params: { uuid: currency.id },
+        headers: { "if-match": currency.etag },
+        body: {
+          code: currency.code,
+          name: currency.name,
+          fullName: currency.fullName,
+        },
+      })
+    ).toMatchObject({ headers: { "if-match": currency.etag } })
+    expect(
+      currencyDeleteInputSchema.parse({
+        params: { uuid: currency.id },
+        headers: { "if-match": currency.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: currency.id },
+      headers: { "if-match": currency.etag },
     })
   })
 })

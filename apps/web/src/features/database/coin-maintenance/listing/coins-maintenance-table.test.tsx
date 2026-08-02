@@ -79,8 +79,6 @@ describe("CoinsMaintenanceTable", () => {
               code: "euro",
               name: "Euro",
               fullName: "Euro",
-              createdAt: new Date("2026-06-24T12:00:00.000Z"),
-              updatedAt: new Date("2026-06-24T12:00:00.000Z"),
             },
           ],
           compositions: [

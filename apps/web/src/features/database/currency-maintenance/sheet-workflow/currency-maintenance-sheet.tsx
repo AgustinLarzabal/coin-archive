@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,17 +27,14 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE,
-  submitDeleteCurrency,
-} from "../actions"
+import { submitDeleteCurrency } from "../actions"
+import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { CurrencyCreateForm } from "../form-workflow/currency-create-form"
 import { CurrencyEditForm } from "../form-workflow/currency-edit-form"
 
 type CurrencyMaintenanceSheetProps = {
-  currency: CurrencyOption | null
+  currency: Currency | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -48,18 +45,13 @@ const CURRENCY_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
     "existing Coins"
   )
 
-export const CURRENCY_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Currency. ${CURRENCY_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
+export const CURRENCY_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Currency. ${CURRENCY_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
 const deleteCurrencyAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteCurrency(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteCurrency(data))
 
 export function CurrencyMaintenanceSheet({
   currency,
@@ -90,6 +82,7 @@ export function CurrencyMaintenanceSheet({
       const result = await deleteCurrency({
         data: {
           id: currency.id,
+          etag: currency.etag,
         },
       })
 
@@ -109,7 +102,9 @@ export function CurrencyMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{currency ? "Edit Currency" : "Create Currency"}</SheetTitle>
+          <SheetTitle>
+            {currency ? "Edit Currency" : "Create Currency"}
+          </SheetTitle>
 
           {currency !== null ? (
             <>
@@ -172,7 +167,10 @@ export function CurrencyMaintenanceSheet({
         </SheetHeader>
 
         {currency ? (
-          <CurrencyEditForm currency={currency} onSaved={() => onOpenChange(false)} />
+          <CurrencyEditForm
+            currency={currency}
+            onSaved={() => onOpenChange(false)}
+          />
         ) : (
           <CurrencyCreateForm onCreated={() => onOpenChange(false)} />
         )}

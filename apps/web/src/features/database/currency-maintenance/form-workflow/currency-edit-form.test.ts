@@ -1,20 +1,19 @@
-import type { CurrencyOption } from "@coin-archive/db"
+import type { Currency } from "@coin-archive/api"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import {
-  CurrencyEditForm,
-  hasCurrencyEditChanges,
-} from "./currency-edit-form"
+import { CurrencyEditForm, hasCurrencyEditChanges } from "./currency-edit-form"
 
-const currency: CurrencyOption = {
+const currency: Currency = {
   id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
   code: "united-states-dollar",
   name: "Dollar",
   fullName: "United States dollar",
-  createdAt: new Date("2026-06-26T00:00:00.000Z"),
-  updatedAt: new Date("2026-06-26T00:00:00.000Z"),
+  createdAt: "2026-06-26T00:00:00.000Z",
+  updatedAt: "2026-06-26T00:00:00.000Z",
+  version: 1,
+  etag: '"currency-version"',
 }
 
 describe("hasCurrencyEditChanges", () => {

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm"
 import {
   index,
+  integer,
   pgTable,
   timestamp,
   uniqueIndex,
@@ -27,6 +28,7 @@ export const catalogue = pgTable(
       .default(sql`uuidv7()`),
     code: varchar("code", { length: 255 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

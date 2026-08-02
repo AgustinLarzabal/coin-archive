@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@coin-archive/ui/components/sheet"
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 
 import {
   DropdownMenu,
@@ -28,13 +28,12 @@ import {
 } from "@coin-archive/ui/components/alert-dialog"
 import { Button } from "@coin-archive/ui/components/button"
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteCatalogue } from "../actions"
 import { CatalogueCreateForm } from "../form-workflow/catalogue-create-form"
 import { CatalogueEditForm } from "../form-workflow/catalogue-edit-form"
 
 type CatalogueEditSheetProps = {
-  catalogue: CatalogueOption | null
+  catalogue: Catalogue | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -42,12 +41,8 @@ type CatalogueEditSheetProps = {
 const deleteCatalogueMaintenanceCatalogue = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteCatalogue(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteCatalogue(data))
 
 export function CatalogueEditSheet({
   catalogue,
@@ -72,6 +67,7 @@ export function CatalogueEditSheet({
       const result = await deleteCatalogue({
         data: {
           id: catalogue.id,
+          etag: catalogue.etag,
         },
       })
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createCatalogueColumns } from "./columns"
@@ -7,12 +7,13 @@ import { CatalogueEditSheet } from "../sheet-workflow/catalogue-edit-sheet"
 import { CataloguesTableToolbar } from "./catalogues-table-toolbar"
 
 type CatalogueTableProps = {
-  catalogues: CatalogueOption[]
+  catalogues: Catalogue[]
 }
 
 export function CataloguesTable({ catalogues }: CatalogueTableProps) {
-  const [editingCatalogue, setEditingCatalogue] =
-    useState<CatalogueOption | null>(null)
+  const [editingCatalogue, setEditingCatalogue] = useState<Catalogue | null>(
+    null
+  )
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const columns = useMemo(
     () =>

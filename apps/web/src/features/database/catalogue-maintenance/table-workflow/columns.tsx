@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -13,8 +13,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createCatalogueColumns(
-  onEditCatalogue: (catalogue: CatalogueOption) => void
-): ColumnDef<CatalogueOption>[] {
+  onEditCatalogue: (catalogue: Catalogue) => void
+): ColumnDef<Catalogue>[] {
   return [
     {
       accessorKey: "code",

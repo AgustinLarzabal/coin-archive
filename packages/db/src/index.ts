@@ -8,8 +8,17 @@ export {
 export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
 export {
   createCatalogue,
+  createCatalogueIdempotently,
+  createCatalogueIdempotentlyWithDatabase,
   deleteCatalogue,
+  deleteCatalogueIfVersionWithDatabase,
+  replaceCatalogueWithDatabase,
   updateCatalogue,
+} from "./mutations/catalogue"
+export type {
+  CreateCatalogueIdempotentlyResult,
+  DeleteCatalogueIfVersionResult,
+  ReplaceCatalogueResult,
 } from "./mutations/catalogue"
 export {
   createComposition,
@@ -65,6 +74,10 @@ export {
 } from "./mutations/technique"
 export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
+export {
+  getCatalogueMaintenanceRecordWithDatabase,
+  getCatalogueMaintenanceRecordsWithDatabase,
+} from "./queries/get-catalogue-maintenance"
 export { getCoinMaintenanceList } from "./queries/get-coin-maintenance-list"
 export { getCoinMaintenanceDeleteSummary } from "./queries/get-coin-maintenance-delete-summary"
 export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
@@ -174,6 +187,11 @@ export type { Catalogue } from "./schema/catalogue"
 export type { CoinDetailRecord } from "./queries/get-coin"
 export type { PublicCoinDetailRecord } from "./queries/get-coin"
 export type { CatalogueOption } from "./queries/get-catalogues"
+export type {
+  CatalogueMaintenanceCursor,
+  CatalogueMaintenanceListRecord,
+  GetCatalogueMaintenanceRecordsOptions,
+} from "./queries/get-catalogue-maintenance"
 export type { DatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
 export type { CompositionOption } from "./queries/get-compositions"
 export type { CurrencyOption } from "./queries/get-currencies"

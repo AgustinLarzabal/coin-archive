@@ -1,11 +1,11 @@
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 import { Input } from "@coin-archive/ui/components/input"
 import type { Table } from "@tanstack/react-table"
 import { Button } from "@coin-archive/ui/components/button"
 
 type CataloguesTableToolbarProps = {
   onCreateCatalogue: () => void
-  table: Table<CatalogueOption>
+  table: Table<Catalogue>
 }
 
 export function CataloguesTableToolbar({

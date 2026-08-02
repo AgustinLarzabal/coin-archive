@@ -21,10 +21,12 @@ export const createCatalogueInputSchema = z.object({
 
 export const updateCatalogueInputSchema = createCatalogueInputSchema.extend({
   id: z.uuid(),
+  etag: z.string().min(1),
 })
 
 export const deleteCatalogueInputSchema = z.object({
   id: z.uuid(),
+  etag: z.string().min(1),
 })
 
 type CatalogueFieldName = (typeof CATALOGUE_FIELD_NAMES)[number]

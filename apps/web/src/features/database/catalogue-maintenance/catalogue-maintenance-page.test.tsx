@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { CatalogueMaintenanceRouteComponent } from "./catalogue-maintenance-page"
@@ -9,14 +9,9 @@ vi.mock("@/components/access-denied", () => ({
 }))
 
 vi.mock("./table-workflow/catalogues-table", () => ({
-  CataloguesTable: ({ catalogues }: { catalogues: CatalogueOption[] }) =>
+  CataloguesTable: ({ catalogues }: { catalogues: Catalogue[] }) =>
     `Catalogues table: ${catalogues.map((catalogue) => catalogue.title).join(", ")}`,
 }))
-
-const catalogueTimestamps = {
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-} as const
 
 describe("CatalogueMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
@@ -34,10 +29,13 @@ describe("CatalogueMaintenanceRouteComponent", () => {
           isAllowed: true,
           catalogues: [
             {
-              ...catalogueTimestamps,
               id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
               code: "KM",
               title: "Standard Catalog of World Coins",
+              version: 1,
+              createdAt: "2026-07-01T00:00:00.000Z",
+              updatedAt: "2026-07-01T00:00:00.000Z",
+              etag: '"catalogue-version-1"',
             },
           ],
         }}

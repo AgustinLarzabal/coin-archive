@@ -2,11 +2,10 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 import { FieldError } from "@coin-archive/ui/components/field"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateCatalogue } from "../actions"
 import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
 import { createCatalogueInputSchema } from "../catalogue-validation"
@@ -25,15 +24,11 @@ import type { CatalogueDraft } from "./catalogue-form.shared"
 const updateCatalogueMaintenanceCatalogue = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CatalogueDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateCatalogue(session?.user ?? null, data)
-  })
+  .inputValidator((data: CatalogueDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateCatalogue(data))
 
 type CatalogueEditFormProps = {
-  catalogue: CatalogueOption
+  catalogue: Catalogue
   onSaved?: () => void
 }
 
@@ -56,6 +51,7 @@ export function CatalogueEditForm({
       const result = await updateCatalogue({
         data: {
           id: catalogue.id,
+          etag: catalogue.etag,
           ...value,
         },
       })

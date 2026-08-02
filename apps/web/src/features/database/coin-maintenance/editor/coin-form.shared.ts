@@ -1,5 +1,5 @@
+import type { CatalogueOption, MaintenanceApiClient } from "@coin-archive/api"
 import type {
-  CatalogueOption,
   CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,
   CoinMaintenanceSurface,
@@ -119,25 +119,32 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
 }
 
 export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
-  const {
-    getCatalogues,
-    getCompositions,
-    getCurrencies,
-    getDistributions,
-    getEdges,
-    getEngravers,
-    getIssuers,
-    getMints,
-    getOrientations,
-    getRims,
-    getRulers,
-    getShapes,
-    getTechniques,
-    getThemes,
-  } = await import("@coin-archive/db")
+  const [
+    {
+      getCompositions,
+      getCurrencies,
+      getDistributions,
+      getEdges,
+      getEngravers,
+      getIssuers,
+      getMints,
+      getOrientations,
+      getRims,
+      getRulers,
+      getShapes,
+      getTechniques,
+      getThemes,
+    },
+    { getMaintenanceApiClient },
+  ] = await Promise.all([
+    import("@coin-archive/db"),
+    import("@/lib/maintenance-api.server"),
+  ])
+  const maintenanceClient = await getMaintenanceApiClient()
 
   return {
-    getCatalogues,
+    getCatalogues: () =>
+      loadAllCatalogueOptions(maintenanceClient.catalogues.options),
     getCompositions,
     getCurrencies,
     getDistributions,
@@ -152,6 +159,29 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
     getTechniques,
     getThemes,
   }
+}
+
+export async function loadAllCatalogueOptions(
+  listOptions: MaintenanceApiClient["catalogues"]["options"]
+): Promise<CatalogueOption[]> {
+  const catalogues: CatalogueOption[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  do {
+    const page = await listOptions({
+      ...(cursor === undefined ? {} : { cursor }),
+      limit: 100,
+    })
+    catalogues.push(...page.data)
+    cursor = page.nextCursor ?? undefined
+    if (cursor !== undefined && seenCursors.has(cursor)) {
+      throw new Error("Catalogue options API repeated a cursor.")
+    }
+    if (cursor !== undefined) seenCursors.add(cursor)
+  } while (cursor !== undefined)
+
+  return catalogues
 }
 
 export async function loadCoinFormOptions(

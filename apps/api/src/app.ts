@@ -14,6 +14,8 @@ import type {
   MaintenanceCollector,
   OrientationMaintenanceDependencies,
 } from "./orientation-maintenance"
+import { registerCatalogueMaintenanceRoutes } from "./catalogue-maintenance"
+import type { CatalogueMaintenanceDependencies } from "./catalogue-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -125,6 +127,17 @@ export function createApiApp({
   deleteOrientation = async () => {
     throw new Error("Orientation deletion is not configured")
   },
+  listCatalogues = async () => [],
+  getCatalogue = async () => null,
+  createCatalogue = async () => {
+    throw new Error("Catalogue create is not configured")
+  },
+  replaceCatalogue = async () => {
+    throw new Error("Catalogue replacement is not configured")
+  },
+  deleteCatalogue = async () => {
+    throw new Error("Catalogue deletion is not configured")
+  },
   trustProxyHeaders = false,
   createRequestId = () => crypto.randomUUID(),
   now = () => Date.now(),
@@ -147,6 +160,11 @@ export function createApiApp({
   createOrientation?: OrientationMaintenanceDependencies["createOrientation"]
   replaceOrientation?: OrientationMaintenanceDependencies["replaceOrientation"]
   deleteOrientation?: OrientationMaintenanceDependencies["deleteOrientation"]
+  listCatalogues?: CatalogueMaintenanceDependencies["listCatalogues"]
+  getCatalogue?: CatalogueMaintenanceDependencies["getCatalogue"]
+  createCatalogue?: CatalogueMaintenanceDependencies["createCatalogue"]
+  replaceCatalogue?: CatalogueMaintenanceDependencies["replaceCatalogue"]
+  deleteCatalogue?: CatalogueMaintenanceDependencies["deleteCatalogue"]
   trustProxyHeaders?: boolean
   createRequestId?: () => string
   now?: () => number
@@ -323,6 +341,13 @@ export function createApiApp({
     createOrientation,
     replaceOrientation,
     deleteOrientation,
+  })
+  registerCatalogueMaintenanceRoutes(app, {
+    listCatalogues,
+    getCatalogue,
+    createCatalogue,
+    replaceCatalogue,
+    deleteCatalogue,
   })
 
   app.on(["GET", "HEAD"], "/api/v1/coins", async (context) => {

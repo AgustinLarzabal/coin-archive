@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { CatalogueOption } from "@coin-archive/db"
+import type { Catalogue } from "@coin-archive/api"
 
 import {
   createCatalogueDraft,
@@ -12,12 +12,14 @@ import {
 } from "./catalogue-form.shared"
 
 const VALID_CATALOGUE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const catalogue: CatalogueOption = {
+const catalogue: Catalogue = {
   id: VALID_CATALOGUE_ID,
   code: "KM",
   title: "Standard Catalog of World Coins",
-  createdAt: new Date("2026-06-24T12:00:00.000Z"),
-  updatedAt: new Date("2026-06-24T12:00:00.000Z"),
+  version: 1,
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
+  etag: '"catalogue-version-1"',
 }
 
 describe("createCatalogueDraft", () => {

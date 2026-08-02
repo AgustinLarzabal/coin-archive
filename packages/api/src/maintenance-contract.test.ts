@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  catalogueCreateInputSchema,
+  catalogueCreateOutputSchema,
+  catalogueDeleteInputSchema,
+  catalogueDetailOutputSchema,
+  catalogueListInputSchema,
+  catalogueListOutputSchema,
+  catalogueOptionsOutputSchema,
+  catalogueReplaceInputSchema,
   maintenanceProblemDocumentSchema,
   orientationCreateInputSchema,
   orientationCreateOutputSchema,
@@ -11,6 +19,16 @@ import {
   orientationOptionsOutputSchema,
   orientationReplaceInputSchema,
 } from "./contract"
+
+const catalogue = {
+  id: "018f1a11-aaaa-7000-8000-000000000002",
+  code: "KM",
+  title: "Standard Catalog of World Coins",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-catalogue-version"',
+}
 
 const orientation = {
   id: "018f1a11-aaaa-7000-8000-000000000001",
@@ -169,6 +187,103 @@ describe("Orientation maintenance contract", () => {
       })
     ).toMatchObject({
       invalidParams: [{ name: "/code", code: "invalid_orientation_code" }],
+    })
+  })
+})
+
+describe("Catalogue maintenance contract", () => {
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      catalogueListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "world",
+        sort: "title",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "world",
+      sort: "title",
+      order: "desc",
+    })
+    expect(() => catalogueListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      catalogueOptionsOutputSchema.parse({
+        data: [
+          {
+            id: catalogue.id,
+            code: catalogue.code,
+            title: catalogue.title,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [
+        {
+          id: catalogue.id,
+          code: catalogue.code,
+          title: catalogue.title,
+        },
+      ],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      catalogueListOutputSchema.parse({ data: [catalogue], nextCursor: null })
+    ).toStrictEqual({ data: [catalogue], nextCursor: null })
+    expect(
+      catalogueDetailOutputSchema.parse({ data: catalogue })
+    ).toStrictEqual({ data: catalogue })
+    expect(() =>
+      catalogueDetailOutputSchema.parse({
+        data: { ...catalogue, createdAt: new Date(catalogue.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes authoritative mutation input and preserves success headers", () => {
+    expect(
+      catalogueCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " KM ", title: " World Coins " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "KM", title: "World Coins" },
+    })
+    expect(
+      catalogueCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: catalogue.etag,
+          location: `/api/v1/maintenance/catalogues/${catalogue.id}`,
+        },
+        body: { data: catalogue },
+      })
+    ).toMatchObject({ status: 201, body: { data: catalogue } })
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      catalogueReplaceInputSchema.parse({
+        params: { uuid: catalogue.id },
+        headers: { "if-match": catalogue.etag },
+        body: { code: catalogue.code, title: catalogue.title },
+      })
+    ).toMatchObject({ headers: { "if-match": catalogue.etag } })
+    expect(
+      catalogueDeleteInputSchema.parse({
+        params: { uuid: catalogue.id },
+        headers: { "if-match": catalogue.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: catalogue.id },
+      headers: { "if-match": catalogue.etag },
     })
   })
 })

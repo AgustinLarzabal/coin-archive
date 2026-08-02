@@ -5,7 +5,6 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { FieldError } from "@coin-archive/ui/components/field"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateCatalogue } from "../actions"
 import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
 import { createCatalogueInputSchema } from "../catalogue-validation"
@@ -28,18 +27,17 @@ type CatalogueCreateFormProps = {
 const createCatalogueMaintenanceCatalogue = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: CatalogueDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateCatalogue(session?.user ?? null, data)
-  })
+  .inputValidator((data: CatalogueDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateCatalogue(data))
 
 export function CatalogueCreateForm({ onCreated }: CatalogueCreateFormProps) {
   const router = useRouter()
   const createCatalogue = useServerFn(createCatalogueMaintenanceCatalogue)
   const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -65,12 +63,13 @@ export function CatalogueCreateForm({ onCreated }: CatalogueCreateFormProps) {
     },
     onSubmit: async ({ value }) => {
       const result = await createCatalogue({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

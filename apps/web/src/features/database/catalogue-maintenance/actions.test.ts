@@ -2,103 +2,56 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   CATALOGUE_AUTHORIZATION_ERROR,
-  hasCatalogueMaintenanceAccess,
   submitCreateCatalogue,
   submitDeleteCatalogue,
   submitUpdateCatalogue,
 } from "./actions"
 import {
   CATALOGUE_DUPLICATE_CODE_ERROR,
-  CATALOGUE_GENERIC_SAVE_ERROR,
   CATALOGUE_IN_USE_DELETE_ERROR,
-  CATALOGUE_MISSING_ERROR,
+  CATALOGUE_STALE_ERROR,
 } from "./catalogue-mutation-errors"
 
-const VALID_CATALOGUE_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const STANDARD_CATALOGUE = {
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const catalogue = {
+  id,
   code: "KM",
   title: "Standard Catalog of World Coins",
-}
-const ROMAN_CATALOGUE = {
-  code: "RIC",
-  title: "Roman Imperial Coinage",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createCatalogue?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createCatalogue: vi.fn(),
-    deleteCatalogue: vi.fn(),
-    updateCatalogue: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/catalogues",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-function updateDependencies(overrides?: {
-  updateCatalogue?: ReturnType<typeof vi.fn>
-}) {
-  return {
-    createCatalogue: vi.fn(),
-    deleteCatalogue: vi.fn(),
-    updateCatalogue: vi.fn(),
-    ...overrides,
-  }
-}
-
-function deleteDependencies(overrides?: {
-  deleteCatalogue?: ReturnType<typeof vi.fn>
-}) {
-  return {
-    createCatalogue: vi.fn(),
-    deleteCatalogue: vi.fn(),
-    updateCatalogue: vi.fn(),
-    ...overrides,
-  }
-}
-
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: CATALOGUE_AUTHORIZATION_ERROR,
-}
-
-describe("hasCatalogueMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasCatalogueMaintenanceAccess(null)).toBe(false)
-    expect(hasCatalogueMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasCatalogueMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasCatalogueMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasCatalogueMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasCatalogueMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateCatalogue", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateCatalogue(null, STANDARD_CATALOGUE)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateCatalogue({ role: "collector" }, STANDARD_CATALOGUE)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Catalogue web mutation adapter", () => {
+  it("retains client validation before calling the typed create operation", async () => {
+    const createCatalogue = vi.fn()
 
     await expect(
       submitCreateCatalogue(
-        { role: "editor" },
         {
-          code: "  ",
+          code: " ",
           title: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createCatalogue }
       )
     ).resolves.toStrictEqual({
       status: "error",
@@ -107,293 +60,177 @@ describe("submitCreateCatalogue", () => {
         title: "Catalogue Title must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createCatalogue).not.toHaveBeenCalled()
+    expect(createCatalogue).not.toHaveBeenCalled()
   })
 
-  it("trims Catalogue fields before creating a Catalogue", async () => {
-    const dependencies = createDependencies({
-      createCatalogue: vi.fn().mockResolvedValue({
-        id: VALID_CATALOGUE_ID,
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createCatalogue = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/catalogues/${id}` },
+      body: { data: catalogue },
+    }))
 
     await expect(
       submitCreateCatalogue(
-        { role: "editor" },
         {
           code: " KM ",
           title: " Standard Catalog of World Coins ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createCatalogue }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Catalogue added.",
     })
+    expect(createCatalogue).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: "KM", title: "Standard Catalog of World Coins" },
+    })
+  })
 
-    expect(dependencies.createCatalogue).toHaveBeenCalledWith(
-      STANDARD_CATALOGUE
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createCatalogue = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/catalogues/${id}` },
+      body: { data: catalogue },
+    }))
+    const submission = {
+      code: "KM",
+      title: "Standard Catalog of World Coins",
+      idempotencyKey: "stable-attempt",
+    }
+
+    await submitCreateCatalogue(submission, { createCatalogue })
+    await submitCreateCatalogue(submission, { createCatalogue })
+
+    expect(createCatalogue).toHaveBeenCalledTimes(2)
+    expect(createCatalogue).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createCatalogue).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
   })
 
-  it("maps duplicate Catalogue codes to the Code field", async () => {
-    await expect(
-      submitCreateCatalogue(
-        { role: "admin" },
-        STANDARD_CATALOGUE,
-        createDependencies({
-          createCatalogue: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "catalogue_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: CATALOGUE_DUPLICATE_CODE_ERROR,
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceCatalogue = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...catalogue, version: 2, etag: '"next-version"' },
       },
-    })
-  })
-
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createCatalogue: vi.fn().mockResolvedValue({
-        id: VALID_CATALOGUE_ID,
-      }),
-    })
-
-    await expect(
-      submitCreateCatalogue(
-        { role: "editor" },
-        STANDARD_CATALOGUE,
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Catalogue added.",
-    })
-
-    expect(dependencies.createCatalogue).toHaveBeenCalledWith(
-      STANDARD_CATALOGUE
-    )
-  })
-})
-
-describe("submitUpdateCatalogue", () => {
-  const updateInput = {
-    id: VALID_CATALOGUE_ID,
-    ...STANDARD_CATALOGUE,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateCatalogue(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateCatalogue({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = updateDependencies()
+    }))
+    const deleteCatalogue = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
       submitUpdateCatalogue(
-        { role: "editor" },
-        {
-          id: VALID_CATALOGUE_ID,
-          code: " ",
-          title: "".padStart(256, "R"),
-        },
-        dependencies
+        { id, etag, code: "RIC", title: "Roman Imperial Coinage" },
+        { replaceCatalogue }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: "Catalogue Code cannot be blank.",
-        title: "Catalogue Title must be 255 characters or fewer.",
-      },
-    })
-
-    expect(dependencies.updateCatalogue).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitUpdateCatalogue(
-        { role: "editor" },
-        updateInput,
-        updateDependencies({
-          updateCatalogue: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_MISSING_ERROR,
-    })
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitUpdateCatalogue(
-        { role: "admin" },
-        updateInput,
-        updateDependencies({
-          updateCatalogue: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_GENERIC_SAVE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid update submissions", async () => {
-    const dependencies = updateDependencies({
-      updateCatalogue: vi.fn().mockResolvedValue({
-        id: VALID_CATALOGUE_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateCatalogue(
-        { role: "editor" },
-        {
-          id: VALID_CATALOGUE_ID,
-          ...ROMAN_CATALOGUE,
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateCatalogue).toHaveBeenCalledWith({
-      id: VALID_CATALOGUE_ID,
-      ...ROMAN_CATALOGUE,
-    })
-  })
-
-  it("trims Catalogue fields before updating a Catalogue", async () => {
-    const dependencies = updateDependencies({
-      updateCatalogue: vi.fn().mockResolvedValue({
-        id: VALID_CATALOGUE_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateCatalogue(
-        { role: "editor" },
-        {
-          id: VALID_CATALOGUE_ID,
-          code: " RIC ",
-          title: " Roman Imperial Coinage ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateCatalogue).toHaveBeenCalledWith({
-      id: VALID_CATALOGUE_ID,
-      ...ROMAN_CATALOGUE,
-    })
-  })
-})
-
-describe("submitDeleteCatalogue", () => {
-  const deleteInput = {
-    id: VALID_CATALOGUE_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(
-      submitDeleteCatalogue(null, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitDeleteCatalogue({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps validation issues into typed field errors", async () => {
-    const dependencies = deleteDependencies()
-
-    await expect(
-      submitDeleteCatalogue(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteCatalogue).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
-    await expect(
-      submitDeleteCatalogue(
-        { role: "editor" },
-        deleteInput,
-        deleteDependencies({
-          deleteCatalogue: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_MISSING_ERROR,
-    })
-  })
-
-  it("maps restricted deletes to a form error", async () => {
-    await expect(
-      submitDeleteCatalogue(
-        { role: "admin" },
-        deleteInput,
-        deleteDependencies({
-          deleteCatalogue: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_reference_catalogue_id_catalogue_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: CATALOGUE_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = deleteDependencies({
-      deleteCatalogue: vi.fn().mockResolvedValue({
-        id: VALID_CATALOGUE_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteCatalogue({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteCatalogue({ id, etag }, { deleteCatalogue })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Catalogue deleted.",
     })
 
-    expect(dependencies.deleteCatalogue).toHaveBeenCalledWith(deleteInput)
+    expect(replaceCatalogue).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "RIC", title: "Roman Imperial Coinage" },
+    })
+    expect(deleteCatalogue).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateCatalogue(
+        {
+          code: "KM",
+          title: "Standard Catalog of World Coins",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCatalogue: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CATALOGUE_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateCatalogue(
+        {
+          code: "KM",
+          title: "Standard Catalog of World Coins",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCatalogue: vi
+            .fn()
+            .mockRejectedValue(problem("catalogue_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: CATALOGUE_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateCatalogue(
+        { id, etag, code: "KM", title: "Standard Catalog of World Coins" },
+        {
+          replaceCatalogue: vi
+            .fn()
+            .mockRejectedValue(problem("catalogue_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CATALOGUE_STALE_ERROR })
+
+    await expect(
+      submitDeleteCatalogue(
+        { id, etag },
+        {
+          deleteCatalogue: vi
+            .fn()
+            .mockRejectedValue(problem("catalogue_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CATALOGUE_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateCatalogue(
+        {
+          code: "KM",
+          title: "Standard Catalog of World Coins",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createCatalogue: vi.fn().mockRejectedValue(
+            problem("catalogue_validation_failed", 422, [
+              { name: "/code", code: "catalogue_code_required" },
+              { name: "/title", code: "catalogue_title_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Catalogue Code cannot be blank.",
+        title: "Catalogue Title must be 255 characters or fewer.",
+      },
+    })
   })
 })

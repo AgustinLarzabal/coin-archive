@@ -9,7 +9,15 @@ import {
   createIssuer,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createCatalogue, deleteCatalogue, updateCatalogue } from "./catalogue"
+import {
+  createCatalogue,
+  createCatalogueIdempotently,
+  createCatalogueIdempotentlyWithDatabase,
+  deleteCatalogue,
+  deleteCatalogueIfVersionWithDatabase,
+  replaceCatalogueWithDatabase,
+  updateCatalogue,
+} from "./catalogue"
 
 describe("catalogue mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -41,6 +49,155 @@ describe("catalogue mutations integration", () => {
       cause: expect.objectContaining({
         code: "23505",
         constraint_name: "catalogue_code_lower_unique_idx",
+      }),
+    })
+  })
+
+  it("persists and replays an identical idempotent create response", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "catalogue-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: " KM ", title: " World Coins " },
+    }
+
+    const first = await createCatalogueIdempotently(input)
+    const retry = await createCatalogueIdempotently(input)
+
+    expect(first).toMatchObject({
+      status: "created",
+      catalogue: { code: "KM", title: "World Coins", version: 1 },
+    })
+    expect(retry).toStrictEqual({
+      status: "replayed",
+      catalogue:
+        first.status === "created" ? first.catalogue : expect.anything(),
+    })
+    await expect(db.query.catalogue.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("rejects payload-mismatched reuse of a Catalogue create key", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "catalogue-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "KM", title: "World Coins" },
+    }
+    await createCatalogueIdempotently(input)
+
+    await expect(
+      createCatalogueIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "RIC", title: "Roman Imperial Coinage" },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.catalogue.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("supports request-scoped, atomically versioned API mutations", async () => {
+    const created = await createCatalogueIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "request-scoped-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "KM", title: "World Coins" },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+
+    await expect(
+      replaceCatalogueWithDatabase(db, {
+        id: created.catalogue.id,
+        expectedVersion: 1,
+        code: " RIC ",
+        title: " Roman Imperial Coinage ",
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      catalogue: {
+        version: 2,
+        code: "RIC",
+        title: "Roman Imperial Coinage",
+      },
+    })
+    await expect(
+      replaceCatalogueWithDatabase(db, {
+        id: created.catalogue.id,
+        expectedVersion: 1,
+        code: "KM",
+        title: "World Coins",
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteCatalogueIfVersionWithDatabase(db, {
+        id: created.catalogue.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteCatalogueIfVersionWithDatabase(db, {
+        id: created.catalogue.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
+    await expect(
+      deleteCatalogueIfVersionWithDatabase(db, {
+        id: created.catalogue.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toStrictEqual({ status: "missing" })
+  })
+
+  it("preserves Catalogue constraints through versioned API mutations", async () => {
+    const first = await createCatalogueFixture({
+      code: "KM",
+      title: "World Coins",
+    })
+    const second = await createCatalogueFixture({
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    })
+
+    await expect(
+      replaceCatalogueWithDatabase(db, {
+        id: second.id,
+        expectedVersion: 1,
+        code: "km",
+        title: second.title,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23505",
+        constraint_name: "catalogue_code_lower_unique_idx",
+      }),
+    })
+
+    const issuer = await createIssuer({
+      code: "versioned-catalogue-delete-issuer",
+      name: "Versioned Catalogue Delete Issuer",
+    })
+    const coin = await createCoin({
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      issuerId: issuer.id,
+      title: "Versioned Catalogue Delete Coin",
+    })
+    await createCoinReference({
+      catalogueId: first.id,
+      coinId: coin.id,
+      number: "123",
+    })
+
+    await expect(
+      deleteCatalogueIfVersionWithDatabase(db, {
+        id: first.id,
+        expectedVersion: 1,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_reference_catalogue_id_catalogue_id_fk",
       }),
     })
   })

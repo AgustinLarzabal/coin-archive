@@ -203,6 +203,74 @@ export const orientationDeleteInputSchema = z.object({
   headers: z.object({ "if-match": ifMatchSchema }),
 })
 
+export const catalogueSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  title: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+
+export const catalogueOptionSchema = catalogueSchema.pick({
+  id: true,
+  code: true,
+  title: true,
+})
+export const catalogueListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["title", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const catalogueListOutputSchema = z.object({
+  data: z.array(catalogueSchema),
+  nextCursor: z.string().nullable(),
+})
+export const catalogueOptionsInputSchema = catalogueListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const catalogueOptionsOutputSchema = z.object({
+  data: z.array(catalogueOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const catalogueDetailOutputSchema = z.object({ data: catalogueSchema })
+export const catalogueMutationBodySchema = z.object({
+  code: z.string().trim().min(1).max(255),
+  title: z.string().trim().min(1).max(255),
+})
+export const catalogueCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: catalogueMutationBodySchema,
+})
+export const catalogueCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/catalogues/"),
+    etag: z.string(),
+  }),
+  body: catalogueDetailOutputSchema,
+})
+export const catalogueReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: catalogueMutationBodySchema,
+})
+export const catalogueReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: catalogueDetailOutputSchema,
+})
+export const catalogueDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const catalogueDeleteOutputSchema = z.object({ status: z.literal(204) })
+
 export const orientationDeleteOutputSchema = z.object({
   status: z.literal(204),
 })
@@ -272,6 +340,79 @@ export const publicApiContract = {
 }
 
 export const maintenanceApiContract = {
+  catalogues: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/catalogues",
+        summary: "Browse Catalogues for maintenance",
+        tags: ["Catalogue Maintenance"],
+      })
+      .input(catalogueListInputSchema)
+      .output(catalogueListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/catalogues/options",
+        summary: "Search compact Catalogue options",
+        tags: ["Catalogue Maintenance"],
+      })
+      .input(catalogueOptionsInputSchema)
+      .output(catalogueOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/catalogues/{uuid}",
+        summary: "Get Catalogue maintenance detail",
+        tags: ["Catalogue Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(catalogueDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/catalogues",
+        summary: "Create a Catalogue",
+        tags: ["Catalogue Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(catalogueCreateInputSchema)
+      .output(catalogueCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/catalogues/{uuid}",
+        summary: "Replace a Catalogue",
+        tags: ["Catalogue Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(catalogueReplaceInputSchema)
+      .output(catalogueReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/catalogues/{uuid}",
+        summary: "Permanently delete a Catalogue",
+        tags: ["Catalogue Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(catalogueDeleteInputSchema)
+      .output(catalogueDeleteOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   orientations: {
     list: oc
       .route({
@@ -372,3 +513,13 @@ export type OrientationDetailOutput = z.infer<
 export type OrientationMutationBody = z.infer<
   typeof orientationMutationBodySchema
 >
+export type Catalogue = z.infer<typeof catalogueSchema>
+export type CatalogueOption = z.infer<typeof catalogueOptionSchema>
+export type CatalogueListInput = z.infer<typeof catalogueListInputSchema>
+export type CatalogueListOutput = z.infer<typeof catalogueListOutputSchema>
+export type CatalogueOptionsInput = z.infer<typeof catalogueOptionsInputSchema>
+export type CatalogueOptionsOutput = z.infer<
+  typeof catalogueOptionsOutputSchema
+>
+export type CatalogueDetailOutput = z.infer<typeof catalogueDetailOutputSchema>
+export type CatalogueMutationBody = z.infer<typeof catalogueMutationBodySchema>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import type { CoinMaintenanceRecord } from "@coin-archive/db"
 
 import {
@@ -6,6 +6,7 @@ import {
   createCoinDraft,
   getNextEditSuccessMessage,
   hasRequiredCoinDraftFields,
+  loadAllCatalogueOptions,
 } from "./coin-form.shared"
 
 const coin: CoinMaintenanceRecord = {
@@ -84,6 +85,43 @@ describe("createCoinDraft", () => {
         },
       },
     })
+  })
+})
+
+describe("loadAllCatalogueOptions", () => {
+  it("loads every compact Catalogue option page through the typed client", async () => {
+    const first = {
+      id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+      code: "KM",
+      title: "World Coins",
+    }
+    const second = {
+      id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
+      code: "RIC",
+      title: "Roman Imperial Coinage",
+    }
+    const listOptions = vi
+      .fn()
+      .mockResolvedValueOnce({ data: [first], nextCursor: "next" })
+      .mockResolvedValueOnce({ data: [second], nextCursor: null })
+
+    await expect(loadAllCatalogueOptions(listOptions)).resolves.toStrictEqual([
+      first,
+      second,
+    ])
+    expect(listOptions).toHaveBeenNthCalledWith(1, { limit: 100 })
+    expect(listOptions).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+    })
+  })
+
+  it("propagates authorization failures from the Catalogue options API", async () => {
+    const failure = { code: "FORBIDDEN" }
+
+    await expect(
+      loadAllCatalogueOptions(vi.fn().mockRejectedValue(failure))
+    ).rejects.toBe(failure)
   })
 })
 

@@ -1,5 +1,3 @@
-import type { CatalogueOption } from "@coin-archive/db"
-
 import { createCatalogueFieldErrorResult } from "../catalogue-mutation-errors"
 import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
 import {
@@ -7,6 +5,13 @@ import {
   updateCatalogueInputSchema,
   validateCatalogueInput,
 } from "../catalogue-validation"
+
+type CatalogueOption = {
+  id: string
+  code: string
+  title: string
+  etag?: string
+}
 
 export type CatalogueDraft = {
   code: string
@@ -27,9 +32,7 @@ export function createCatalogueDraft(
   }
 }
 
-export function normalizeCatalogueDraft(
-  draft: CatalogueDraft
-): CatalogueDraft {
+export function normalizeCatalogueDraft(draft: CatalogueDraft): CatalogueDraft {
   return {
     code: draft.code.trim(),
     title: draft.title.trim(),
@@ -68,6 +71,7 @@ export function validateCatalogueUpdateDraft(
 ): CatalogueMutationResult | null {
   const validationResult = validateCatalogueInput(updateCatalogueInputSchema, {
     id: catalogueId,
+    etag: "validation-only",
     ...draft,
   })
 

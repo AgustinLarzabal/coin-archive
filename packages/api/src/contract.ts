@@ -685,7 +685,7 @@ export const publicApiContract = {
         summary: "Get Coin detail",
         tags: ["Coins"],
       })
-      .input(edgeDetailInputSchema)
+      .input(z.object({ uuid: z.uuid() }))
       .output(coinDetailOutputSchema)
       .errors({
         BAD_REQUEST: { status: 400, data: problemDocumentSchema },
@@ -943,7 +943,7 @@ export const maintenanceApiContract = {
         summary: "Get Edge maintenance detail",
         tags: ["Edge Maintenance"],
       })
-      .input(z.object({ uuid: z.uuid() }))
+      .input(edgeDetailInputSchema)
       .output(edgeDetailOutputSchema)
       .errors({
         ...maintenanceReadErrors,

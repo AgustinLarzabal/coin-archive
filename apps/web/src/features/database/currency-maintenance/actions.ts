@@ -47,26 +47,27 @@ export function createCurrencyAuthorizationError(): CurrencyAuthorizationErrorRe
 }
 
 async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
+  const currencies = await getCurrencyOperations()
   return {
-    createCurrency: client.currencies.create,
+    createCurrency: currencies.create,
   }
 }
 
 async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceCurrency: client.currencies.replace }
+  const currencies = await getCurrencyOperations()
+  return { replaceCurrency: currencies.replace }
 }
 
 async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
+  const currencies = await getCurrencyOperations()
+  return { deleteCurrency: currencies.delete }
+}
+
+async function getCurrencyOperations() {
   const { getMaintenanceApiClient } =
     await import("@/lib/maintenance-api.server")
   const client = await getMaintenanceApiClient()
-  return { deleteCurrency: client.currencies.delete }
+  return client.currencies
 }
 
 export async function submitCreateCurrency(

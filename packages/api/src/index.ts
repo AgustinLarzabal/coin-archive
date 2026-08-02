@@ -39,6 +39,7 @@ export {
   currencyCreateOutputSchema,
   currencyDeleteInputSchema,
   currencyDeleteOutputSchema,
+  currencyDetailInputSchema,
   currencyDetailOutputSchema,
   currencyListInputSchema,
   currencyListOutputSchema,

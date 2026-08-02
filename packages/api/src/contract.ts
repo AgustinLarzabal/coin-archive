@@ -393,6 +393,7 @@ export const currencyOptionsOutputSchema = z.object({
   data: z.array(currencyOptionSchema),
   nextCursor: z.string().nullable(),
 })
+export const currencyDetailInputSchema = z.object({ uuid: z.uuid() })
 export const currencyDetailOutputSchema = z.object({ data: currencySchema })
 export const currencyMutationBodySchema = z.object({
   code: currencyCodeSchema,
@@ -485,7 +486,7 @@ export const publicApiContract = {
         summary: "Get Coin detail",
         tags: ["Coins"],
       })
-      .input(z.object({ uuid: z.uuid() }))
+      .input(currencyDetailInputSchema)
       .output(coinDetailOutputSchema)
       .errors({
         BAD_REQUEST: { status: 400, data: problemDocumentSchema },

@@ -1,6 +1,7 @@
 import {
   currencyCreateInputSchema,
   currencyDeleteInputSchema,
+  currencyDetailInputSchema,
   currencyListInputSchema,
   currencyMutationBodySchema,
   currencyOptionsInputSchema,
@@ -11,7 +12,7 @@ import type { Hono } from "hono"
 
 import type { MaintenanceCollector } from "./orientation-maintenance"
 
-type Source = Omit<Currency, "createdAt" | "updatedAt" | "etag"> & {
+type CurrencySource = Omit<Currency, "createdAt" | "updatedAt" | "etag"> & {
   createdAt: Date
   updatedAt: Date
 }
@@ -23,9 +24,9 @@ export type CurrencyMaintenanceDependencies = {
       cursor?: Cursor
     }
   ) => Promise<
-    (Source & { cursorValue: string; cursorSecondaryValue: string })[]
+    (CurrencySource & { cursorValue: string; cursorSecondaryValue: string })[]
   >
-  getCurrency: (id: string) => Promise<Source | null>
+  getCurrency: (id: string) => Promise<CurrencySource | null>
   createCurrency: (input: {
     collectorId: string
     idempotencyKey: string
@@ -33,7 +34,7 @@ export type CurrencyMaintenanceDependencies = {
     expiresAt: Date
     fields: { code: string; name: string; fullName: string }
   }) => Promise<
-    | { status: "created" | "replayed"; currency: Source }
+    | { status: "created" | "replayed"; currency: CurrencySource }
     | { status: "mismatch" }
   >
   replaceCurrency: (input: {
@@ -41,13 +42,15 @@ export type CurrencyMaintenanceDependencies = {
     expectedVersion: number
     fields: { code: string; name: string; fullName: string }
   }) => Promise<
-    { status: "updated"; currency: Source } | { status: "missing" | "stale" }
+    | { status: "updated"; currency: CurrencySource }
+    | { status: "missing" | "stale" }
   >
   deleteCurrency: (input: {
     id: string
     expectedVersion: number
   }) => Promise<
-    { status: "deleted"; currency: Source } | { status: "missing" | "stale" }
+    | { status: "deleted"; currency: CurrencySource }
+    | { status: "missing" | "stale" }
   >
 }
 type Env = { Variables: { collector: MaintenanceCollector; requestId: string } }
@@ -149,8 +152,11 @@ export function registerCurrencyMaintenanceRoutes(
     method(c.req.path, "GET")
   )
   app.get("/api/v1/maintenance/currencies/:uuid", async (c) => {
-    const id = c.req.param("uuid")
-    if (!uuid(id)) return invalidId(c.req.path)
+    const requestInput = currencyDetailInputSchema.safeParse({
+      uuid: c.req.param("uuid"),
+    })
+    if (!requestInput.success) return invalidId(c.req.path)
+    const id = requestInput.data.uuid
     const record = await dependencies.getCurrency(id)
     if (!record) return notFound(c.req.path)
     return c.json({ data: serialize(record) }, 200, { ETag: etag(record) })
@@ -227,14 +233,17 @@ export function registerCurrencyMaintenanceRoutes(
   )
 }
 
-type Input = {
+type CurrencyCollectionInput = {
   q?: string
   cursor?: Cursor
   limit: number
   sort: "code" | "fullName" | "name"
   order: "asc" | "desc"
 }
-function parseCollection(url: string, optionsOnly: boolean): Input | Response {
+function parseCollection(
+  url: string,
+  optionsOnly: boolean
+): CurrencyCollectionInput | Response {
   const requestUrl = new URL(url),
     names = optionsOnly
       ? ["q", "cursor", "limit"]
@@ -255,10 +264,10 @@ function parseCollection(url: string, optionsOnly: boolean): Input | Response {
   if (!parsed.success) return invalidQuery(requestUrl.pathname)
   const sort = optionsOnly
       ? "name"
-      : ((raw.sort as Input["sort"] | undefined) ?? "name"),
+      : ((raw.sort as CurrencyCollectionInput["sort"] | undefined) ?? "name"),
     order = optionsOnly
       ? "asc"
-      : ((raw.order as Input["order"] | undefined) ?? "asc")
+      : ((raw.order as CurrencyCollectionInput["order"] | undefined) ?? "asc")
   const cursor =
     parsed.data.cursor === undefined
       ? undefined
@@ -268,8 +277,11 @@ function parseCollection(url: string, optionsOnly: boolean): Input | Response {
     : { q: parsed.data.q, cursor, limit: parsed.data.limit ?? 30, sort, order }
 }
 function page(
-  records: (Source & { cursorValue: string; cursorSecondaryValue: string })[],
-  input: Pick<Input, "limit" | "sort" | "order">
+  records: (CurrencySource & {
+    cursorValue: string
+    cursorSecondaryValue: string
+  })[],
+  input: Pick<CurrencyCollectionInput, "limit" | "sort" | "order">
 ) {
   const selected = records.slice(0, input.limit),
     last = records.length > selected.length ? selected.at(-1) : undefined
@@ -287,7 +299,7 @@ function page(
   }
 }
 function serialize(
-  record: Source & {
+  record: CurrencySource & {
     cursorValue?: string
     cursorSecondaryValue?: string
   }
@@ -528,7 +540,7 @@ function method(instance: string, allow: string) {
     { Allow: allow }
   )
 }
-function etag(record: Pick<Source, "id" | "version">) {
+function etag(record: Pick<CurrencySource, "id" | "version">) {
   return `"${to64(`${record.id}:${record.version}`)}"`
 }
 function encodeCursor(value: Cursor & { sort: string; order: string }) {

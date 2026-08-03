@@ -1,6 +1,10 @@
 import {
   createCatalogueIdempotentlyWithDatabase,
-  createCoinMaintenanceIdempotentlyWithDatabase,
+  claimSurfaceImageUploadWithDatabase,
+  completeCoinMaintenanceCreateWithDatabase,
+  releaseCoinCreateResourcesWithDatabase,
+  releaseSurfaceImageUploadClaimWithDatabase,
+  reserveCoinMaintenanceCreateWithDatabase,
   createCompositionIdempotentlyWithDatabase,
   createCurrencyIdempotentlyWithDatabase,
   createDistributionIdempotentlyWithDatabase,
@@ -33,6 +37,7 @@ import {
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getDatabaseGeneralSummaryCountsWithDatabase,
+  recordSurfaceImageCleanupFailures,
   getCoinMaintenanceDeleteSummaryWithDatabase,
   getCoinMaintenanceApiRecordWithDatabase,
   getCoinMaintenanceRecordsWithDatabase,
@@ -136,16 +141,27 @@ async function handleRequest(
       ),
     cancelSurfaceImageUpload: ({ reference, surface }) =>
       surfaceImageStorage.cancelUpload(reference, surface),
-    consumeSurfaceImageUpload: (reference, surface) =>
-      surfaceImageStorage.consumeUpload(reference, surface),
+    prepareSurfaceImageUpload: (reference, surface) =>
+      surfaceImageStorage.prepareUpload(reference, surface),
+    finalizeSurfaceImageUpload: (reference, surface) =>
+      surfaceImageStorage.finalizeUpload(reference, surface),
     deletePublishedSurfaceImage: (imageUrl) =>
       surfaceImageStorage.deletePublishedImage(imageUrl),
-    createMaintenanceCoin: (input, prepareFields) =>
-      createCoinMaintenanceIdempotentlyWithDatabase(
-        database.db,
-        input,
-        prepareFields
-      ),
+    recordSurfaceImageCleanupFailures: ({ cleanupSubjectId, failures }) =>
+      recordSurfaceImageCleanupFailures({
+        deletedCoinId: cleanupSubjectId,
+        failures,
+      }),
+    reserveMaintenanceCoinCreate: (input) =>
+      reserveCoinMaintenanceCreateWithDatabase(database.db, input),
+    completeMaintenanceCoinCreate: (input) =>
+      completeCoinMaintenanceCreateWithDatabase(database.db, input),
+    releaseCoinCreateResources: (input) =>
+      releaseCoinCreateResourcesWithDatabase(database.db, input),
+    claimSurfaceImageUpload: (input) =>
+      claimSurfaceImageUploadWithDatabase(database.db, input),
+    releaseSurfaceImageUploadClaim: (input) =>
+      releaseSurfaceImageUploadClaimWithDatabase(database.db, input),
     rateLimit: async (clientIp) =>
       (
         await env.API_RATE_LIMITER.limit({

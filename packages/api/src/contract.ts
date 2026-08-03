@@ -2091,9 +2091,9 @@ export const coinMaintenanceCreateBodySchema = z
     faceValueText: z.string().trim().min(1).max(255),
     isDemonetized: z.boolean().nullable(),
     issuerId: z.uuid(),
-    maxYear: z.number().int().nullable(),
+    maxYear: z.number().int().min(-2_147_483_648).max(2_147_483_647).nullable(),
     mintIds: z.array(z.uuid()),
-    minYear: z.number().int().nullable(),
+    minYear: z.number().int().min(-2_147_483_648).max(2_147_483_647).nullable(),
     mintage: z
       .string()
       .regex(/^\d+$/)

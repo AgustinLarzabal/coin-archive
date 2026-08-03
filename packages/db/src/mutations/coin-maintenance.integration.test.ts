@@ -28,6 +28,8 @@ import {
   createCoinMaintenance,
   createCoinMaintenanceIdempotently,
   createCoinMaintenanceIdempotentlyWithDatabase,
+  releaseCoinMaintenanceCreateWithDatabase,
+  reserveCoinMaintenanceCreateWithDatabase,
   deleteCoinMaintenance,
   updateCoinMaintenance,
 } from "./coin-maintenance"
@@ -172,6 +174,22 @@ describe("coin maintenance mutations integration", () => {
       name: "IC",
       fullName: "Currency",
     })
+    const mint = await createMint({
+      code: "idempotent-coin-mint",
+      name: "Mint",
+    })
+    const theme = await createTheme({
+      code: "idempotent-coin-theme",
+      name: "Theme",
+    })
+    const catalogue = await createCatalogue({
+      code: "IDEM",
+      title: "Idempotent Catalogue",
+    })
+    const engraver = await createEngraver({
+      code: "idempotent-coin-engraver",
+      name: "Engraver",
+    })
     const fields = {
       title: "Idempotent Coin",
       comments: null,
@@ -186,17 +204,30 @@ describe("coin maintenance mutations integration", () => {
       isDemonetized: null,
       issuerId: issuer.id,
       maxYear: null,
-      mintIds: [],
+      mintIds: [mint.id],
       minYear: null,
       mintage: null,
       orientationId: null,
-      references: [],
+      references: [{ catalogueId: catalogue.id, number: "42" }],
       rimId: null,
       rulerIds: [ruler.id],
       shapeId: null,
-      surfaces: { obverse: null, reverse: null, edge: null },
+      surfaces: {
+        obverse: {
+          description: "Portrait",
+          lettering: "UNIT",
+          imageUrl: "https://images.example.test/obverse.webp",
+          engraverIds: [engraver.id],
+        },
+        reverse: null,
+        edge: {
+          description: "Reeded",
+          lettering: null,
+          imageUrl: null,
+        },
+      },
       techniqueId: null,
-      themeIds: [],
+      themeIds: [theme.id],
       thickness: null,
       weight: null,
     }
@@ -206,22 +237,14 @@ describe("coin maintenance mutations integration", () => {
       requestHash: "a".repeat(64),
       expiresAt: new Date("2030-08-03T00:00:00.000Z"),
     }
-    let preparations = 0
-    const prepareFields = async () => {
-      preparations += 1
-      return fields
-    }
-
-    const first = await createCoinMaintenanceIdempotentlyWithDatabase(
-      db,
-      request,
-      prepareFields
-    )
-    const retry = await createCoinMaintenanceIdempotentlyWithDatabase(
-      db,
-      request,
-      prepareFields
-    )
+    const first = await createCoinMaintenanceIdempotentlyWithDatabase(db, {
+      ...request,
+      fields,
+    })
+    const retry = await createCoinMaintenanceIdempotentlyWithDatabase(db, {
+      ...request,
+      fields: { ...fields, title: "Ignored on replay" },
+    })
     const mismatch = await createCoinMaintenanceIdempotently({
       ...request,
       requestHash: "b".repeat(64),
@@ -237,9 +260,33 @@ describe("coin maintenance mutations integration", () => {
       coin: first.status === "created" ? first.coin : expect.anything(),
     })
     expect(mismatch).toStrictEqual({ status: "mismatch" })
-    expect(preparations).toBe(1)
+    await expect(
+      reserveCoinMaintenanceCreateWithDatabase(db, request)
+    ).resolves.toMatchObject({
+      status: "replayed",
+      coin: first.status === "created" ? first.coin : expect.anything(),
+    })
     await expect(db.query.coin.findMany()).resolves.toHaveLength(1)
     await expect(db.query.coinRuler.findMany()).resolves.toHaveLength(1)
+    await expect(db.query.coinMint.findMany()).resolves.toHaveLength(1)
+    await expect(db.query.coinTheme.findMany()).resolves.toHaveLength(1)
+    await expect(db.query.coinReference.findMany()).resolves.toHaveLength(1)
+    await expect(db.query.coinSurface.findMany()).resolves.toHaveLength(2)
+    await expect(db.query.coinSurfaceEngraver.findMany()).resolves.toHaveLength(
+      1
+    )
+
+    const pending = { ...request, idempotencyKey: "pending-attempt" }
+    await expect(
+      reserveCoinMaintenanceCreateWithDatabase(db, pending)
+    ).resolves.toStrictEqual({ status: "reserved" })
+    await expect(
+      reserveCoinMaintenanceCreateWithDatabase(db, {
+        ...pending,
+        requestHash: "b".repeat(64),
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await releaseCoinMaintenanceCreateWithDatabase(db, pending)
   })
 
   it("stores blank Composition Description as null", async () => {

@@ -1,4 +1,4 @@
-import { and, eq, lte, sql } from "drizzle-orm"
+import { and, eq, isNull, lte, sql } from "drizzle-orm"
 
 import { db } from "../client"
 import type { db as databaseClient } from "../client"
@@ -53,6 +53,11 @@ type CreateCoinMaintenanceInput = CoinMaintenanceFields
 
 export type CreateCoinMaintenanceIdempotentlyResult =
   | { status: "created" | "replayed"; coin: Coin }
+  | { status: "mismatch" }
+
+export type CoinMaintenanceCreateIdempotencyStatus =
+  | { status: "reserved" | "in_progress" }
+  | { status: "replayed"; coin: Coin }
   | { status: "mismatch" }
 
 type UpdateCoinMaintenanceInput = CoinMaintenanceFields & {
@@ -345,23 +350,20 @@ export function createCoinMaintenanceIdempotently(
   return createCoinMaintenanceIdempotentlyWithDatabase(db, input)
 }
 
-export async function createCoinMaintenanceIdempotentlyWithDatabase(
+export async function reserveCoinMaintenanceCreateWithDatabase(
   database: typeof databaseClient,
   {
     collectorId,
     idempotencyKey,
     requestHash,
     expiresAt,
-    fields,
   }: {
     collectorId: string
     idempotencyKey: string
     requestHash: string
     expiresAt: Date
-    fields?: CreateCoinMaintenanceInput
-  },
-  prepareFields?: () => Promise<CreateCoinMaintenanceInput>
-): Promise<CreateCoinMaintenanceIdempotentlyResult> {
+  }
+): Promise<CoinMaintenanceCreateIdempotencyStatus> {
   return database.transaction(async (transaction) => {
     await transaction
       .delete(maintenanceIdempotency)
@@ -379,29 +381,114 @@ export async function createCoinMaintenanceIdempotentlyWithDatabase(
         .onConflictDoNothing()
         .returning()
     ).at(0)
-    const record =
-      inserted ??
-      (await transaction.query.maintenanceIdempotency.findFirst({
+    if (inserted !== undefined) return { status: "reserved" }
+    const record = await transaction.query.maintenanceIdempotency.findFirst({
+      where: (entry, { and: all, eq: equal }) =>
+        all(
+          equal(entry.collectorId, collectorId),
+          equal(entry.operation, "coin.create"),
+          equal(entry.key, idempotencyKey)
+        ),
+    })
+    if (record === undefined || record.requestHash !== requestHash) {
+      return { status: "mismatch" }
+    }
+    return record.response === null
+      ? { status: "in_progress" }
+      : { status: "replayed", coin: deserializeCoin(record.response) }
+  })
+}
+
+export async function releaseCoinMaintenanceCreateWithDatabase(
+  database: typeof databaseClient,
+  input: { collectorId: string; idempotencyKey: string; requestHash: string }
+) {
+  await database
+    .delete(maintenanceIdempotency)
+    .where(
+      and(
+        eq(maintenanceIdempotency.collectorId, input.collectorId),
+        eq(maintenanceIdempotency.operation, "coin.create"),
+        eq(maintenanceIdempotency.key, input.idempotencyKey),
+        eq(maintenanceIdempotency.requestHash, input.requestHash),
+        isNull(maintenanceIdempotency.response)
+      )
+    )
+}
+
+export async function createCoinMaintenanceIdempotentlyWithDatabase(
+  database: typeof databaseClient,
+  {
+    collectorId,
+    idempotencyKey,
+    requestHash,
+    expiresAt,
+    fields,
+  }: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    expiresAt: Date
+    fields: CreateCoinMaintenanceInput
+  }
+): Promise<CreateCoinMaintenanceIdempotentlyResult> {
+  const reservation = await reserveCoinMaintenanceCreateWithDatabase(database, {
+    collectorId,
+    idempotencyKey,
+    requestHash,
+    expiresAt,
+  })
+  if (reservation.status === "mismatch") return reservation
+  if (reservation.status === "replayed") return reservation
+  if (reservation.status === "in_progress") {
+    return { status: "mismatch" }
+  }
+  try {
+    return await completeCoinMaintenanceCreateWithDatabase(database, {
+      collectorId,
+      idempotencyKey,
+      requestHash,
+      fields,
+    })
+  } catch (error) {
+    await releaseCoinMaintenanceCreateWithDatabase(database, {
+      collectorId,
+      idempotencyKey,
+      requestHash,
+    })
+    throw error
+  }
+}
+
+export async function completeCoinMaintenanceCreateWithDatabase(
+  database: typeof databaseClient,
+  {
+    collectorId,
+    idempotencyKey,
+    requestHash,
+    fields,
+  }: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    fields: CreateCoinMaintenanceInput
+  }
+): Promise<{ status: "created"; coin: Coin }> {
+  return database.transaction(async (transaction) => {
+    const reservation =
+      await transaction.query.maintenanceIdempotency.findFirst({
         where: (entry, { and: all, eq: equal }) =>
           all(
             equal(entry.collectorId, collectorId),
             equal(entry.operation, "coin.create"),
-            equal(entry.key, idempotencyKey)
+            equal(entry.key, idempotencyKey),
+            equal(entry.requestHash, requestHash)
           ),
-      }))
-    if (record === undefined || record.requestHash !== requestHash) {
-      return { status: "mismatch" }
+      })
+    if (reservation === undefined || reservation.response !== null) {
+      throw new Error("Coin create reservation is unavailable")
     }
-    if (record.response !== null) {
-      return { status: "replayed", coin: deserializeCoin(record.response) }
-    }
-
-    const resolvedFields =
-      prepareFields === undefined ? fields : await prepareFields()
-    if (resolvedFields === undefined) {
-      throw new Error("Coin create fields are required")
-    }
-    const createdCoin = await createCoinAggregate(resolvedFields, transaction)
+    const createdCoin = await createCoinAggregate(fields, transaction)
     await transaction
       .update(maintenanceIdempotency)
       .set({ response: serializeCoin(createdCoin) })

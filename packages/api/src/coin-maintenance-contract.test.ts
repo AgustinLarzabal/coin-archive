@@ -137,6 +137,46 @@ describe("Coin Maintenance read contract", () => {
 })
 
 describe("Coin Maintenance create contract", () => {
+  it("rejects Issue Years outside PostgreSQL integer storage", () => {
+    const valid = coinMaintenanceCreateInputSchema.shape.body.parse({
+      title: "2 Pesos",
+      comments: null,
+      compositionDescription: null,
+      compositionId: id,
+      currencyId: id,
+      diameter: null,
+      distributionId: id,
+      edgeId: null,
+      faceValueNumericValue: "2",
+      faceValueText: "2 Pesos",
+      isDemonetized: null,
+      issuerId: id,
+      maxYear: 2_147_483_647,
+      mintIds: [],
+      minYear: 2_147_483_647,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [id],
+      shapeId: null,
+      surfaces: { obverse: null, reverse: null, edge: null },
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      weight: null,
+    })
+
+    expect(valid.minYear).toBe(2_147_483_647)
+    expect(() =>
+      coinMaintenanceCreateInputSchema.shape.body.parse({
+        ...valid,
+        minYear: 2_147_483_648,
+        maxYear: 2_147_483_648,
+      })
+    ).toThrow()
+  })
+
   it("defines a complete whole-Coin input independently of UI and database types", () => {
     const body = {
       title: "2 Pesos",

@@ -860,21 +860,12 @@ export async function removeSurfaceImageUpload(
 }
 
 function getSurfaceImageApiError(error: unknown) {
-  if (typeof error !== "object" || error === null || !("data" in error)) {
-    return SURFACE_IMAGE_UPLOAD_ERROR
-  }
-  const data = error.data
-  if (typeof data !== "object" || data === null || !("body" in data)) {
-    return SURFACE_IMAGE_UPLOAD_ERROR
-  }
-  const body = data.body
-  if (typeof body !== "object" || body === null || !("code" in body)) {
-    return SURFACE_IMAGE_UPLOAD_ERROR
-  }
-  return body.code === "authentication_required" ||
-    body.code === "editor_access_required"
+  const problem = getApiProblem(error)
+  if (problem === null) return SURFACE_IMAGE_UPLOAD_ERROR
+  return problem.code === "authentication_required" ||
+    problem.code === "editor_access_required"
     ? COIN_AUTHORIZATION_ERROR
-    : body.code === "surface_image_upload_validation_failed"
+    : problem.code === "surface_image_upload_validation_failed"
       ? "Surface Images must be JPEG, PNG, or WebP files up to 10 MB."
       : SURFACE_IMAGE_UPLOAD_ERROR
 }

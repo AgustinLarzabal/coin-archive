@@ -170,13 +170,19 @@ export function createApiApp({
     mintingTechniques: [],
     themes: [],
   }),
-  createMaintenanceCoin = async () => {
+  completeMaintenanceCoinCreate = async () => {
     throw new Error("Coin create is not configured")
   },
-  consumeSurfaceImageUpload = async () => {
-    throw new Error("Surface Image consumption is not configured")
+  reserveMaintenanceCoinCreate = async () => ({ status: "reserved" }),
+  releaseCoinCreateResources = async () => true,
+  claimSurfaceImageUpload = async () => true,
+  releaseSurfaceImageUploadClaim = async () => {},
+  prepareSurfaceImageUpload = async () => {
+    throw new Error("Surface Image preparation is not configured")
   },
+  finalizeSurfaceImageUpload = async () => {},
   deletePublishedSurfaceImage = async () => {},
+  recordSurfaceImageCleanupFailures = async () => {},
   listOrientations = async () => [],
   getOrientation = async () => null,
   createOrientation = async () => {
@@ -370,9 +376,15 @@ export function createApiApp({
   getMaintenanceCoin?: CoinMaintenanceDependencies["getMaintenanceCoin"]
   getMaintenanceCoinDeleteSummary?: CoinMaintenanceDependencies["getMaintenanceCoinDeleteSummary"]
   getCoinMaintenanceOptions?: CoinMaintenanceDependencies["getCoinMaintenanceOptions"]
-  createMaintenanceCoin?: CoinMaintenanceDependencies["createMaintenanceCoin"]
-  consumeSurfaceImageUpload?: CoinMaintenanceDependencies["consumeSurfaceImageUpload"]
+  reserveMaintenanceCoinCreate?: CoinMaintenanceDependencies["reserveMaintenanceCoinCreate"]
+  completeMaintenanceCoinCreate?: CoinMaintenanceDependencies["completeMaintenanceCoinCreate"]
+  releaseCoinCreateResources?: CoinMaintenanceDependencies["releaseCoinCreateResources"]
+  claimSurfaceImageUpload?: CoinMaintenanceDependencies["claimSurfaceImageUpload"]
+  releaseSurfaceImageUploadClaim?: CoinMaintenanceDependencies["releaseSurfaceImageUploadClaim"]
+  prepareSurfaceImageUpload?: CoinMaintenanceDependencies["prepareSurfaceImageUpload"]
+  finalizeSurfaceImageUpload?: CoinMaintenanceDependencies["finalizeSurfaceImageUpload"]
   deletePublishedSurfaceImage?: CoinMaintenanceDependencies["deletePublishedSurfaceImage"]
+  recordSurfaceImageCleanupFailures?: CoinMaintenanceDependencies["recordSurfaceImageCleanupFailures"]
   listOrientations?: OrientationMaintenanceDependencies["listOrientations"]
   getOrientation?: OrientationMaintenanceDependencies["getOrientation"]
   createOrientation?: OrientationMaintenanceDependencies["createOrientation"]
@@ -639,9 +651,15 @@ export function createApiApp({
     getMaintenanceCoin,
     getMaintenanceCoinDeleteSummary,
     getCoinMaintenanceOptions,
-    createMaintenanceCoin,
-    consumeSurfaceImageUpload,
+    reserveMaintenanceCoinCreate,
+    completeMaintenanceCoinCreate,
+    releaseCoinCreateResources,
+    claimSurfaceImageUpload,
+    releaseSurfaceImageUploadClaim,
+    prepareSurfaceImageUpload,
+    finalizeSurfaceImageUpload,
     deletePublishedSurfaceImage,
+    recordSurfaceImageCleanupFailures,
   })
   registerCatalogueMaintenanceRoutes(app, {
     listCatalogues,

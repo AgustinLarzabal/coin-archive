@@ -40,7 +40,7 @@ export type SurfaceImageUploadObjectStorage = {
     contentType: string | undefined
     firstBytes: Uint8Array
   }>
-  moveObject: (
+  copyObject: (
     sourceObjectKey: string,
     destinationObjectKey: string
   ) => Promise<void>
@@ -53,10 +53,11 @@ export type SurfaceImageUploadStorage = {
     expiresAt: Date
   }>
   cancelUpload: (reference: string, surface: Surface) => Promise<void>
-  consumeUpload: (
+  prepareUpload: (
     reference: string,
     surface: Surface
   ) => Promise<{ imageUrl: string }>
+  finalizeUpload: (reference: string, surface: Surface) => Promise<void>
   deletePublishedImage: (imageUrl: string) => Promise<void>
 }
 
@@ -69,6 +70,8 @@ export class SurfaceImageUploadReferenceError extends Error {
     this.name = "SurfaceImageUploadReferenceError"
   }
 }
+
+export class SurfaceImageObjectNotFoundError extends Error {}
 
 export function createR2SurfaceImageUploadStorage(
   configuration: Configuration,
@@ -105,14 +108,23 @@ export function createR2SurfaceImageUploadStorage(
       await objectStorage.deleteObject(payload.objectKey)
     },
 
-    async consumeUpload(reference, surface) {
+    async prepareUpload(reference, surface) {
       const payload = resolveReference(
         reference,
         surface,
         configuration.secretAccessKey,
         now()
       )
-      const object = await objectStorage.inspectObject(payload.objectKey)
+      let object
+      try {
+        object = await objectStorage.inspectObject(payload.objectKey)
+      } catch (error) {
+        if (!(error instanceof SurfaceImageObjectNotFoundError)) throw error
+        throw new SurfaceImageUploadReferenceError(
+          "invalid",
+          "Authorized Surface Image upload is missing."
+        )
+      }
       if (
         object.contentLength !== payload.contentLength ||
         object.contentType !== payload.contentType
@@ -132,13 +144,24 @@ export function createR2SurfaceImageUploadStorage(
         "surface-images/temporary/",
         "surface-images/published/"
       )
-      await objectStorage.moveObject(payload.objectKey, publishedObjectKey)
+      await objectStorage.copyObject(payload.objectKey, publishedObjectKey)
       return {
         imageUrl: new URL(
           publishedObjectKey,
           `${configuration.publicBaseUrl}/`
         ).toString(),
       }
+    },
+
+    async finalizeUpload(reference, surface) {
+      const payload = parseReference(reference, configuration.secretAccessKey)
+      if (payload.surface !== surface) {
+        throw new SurfaceImageUploadReferenceError(
+          "invalid",
+          "Surface Image upload reference is not authorized for this Surface."
+        )
+      }
+      await objectStorage.deleteObject(payload.objectKey)
     },
 
     async deletePublishedImage(imageUrl) {
@@ -343,6 +366,7 @@ function createS3ObjectStorage(
     async inspectObject(objectKey) {
       const url = objectUrl(objectKey)
       const metadata = await client.fetch(new Request(url, { method: "HEAD" }))
+      if (metadata.status === 404) throw new SurfaceImageObjectNotFoundError()
       await assertSuccessfulResponse(metadata)
       const body = await client.fetch(
         new Request(url, { headers: { Range: "bytes=0-11" } })
@@ -355,7 +379,7 @@ function createS3ObjectStorage(
         firstBytes: new Uint8Array(await body.arrayBuffer()),
       }
     },
-    async moveObject(sourceObjectKey, destinationObjectKey) {
+    async copyObject(sourceObjectKey, destinationObjectKey) {
       const destination = objectUrl(destinationObjectKey)
       const copy = await client.fetch(
         new Request(destination, {
@@ -366,17 +390,6 @@ function createS3ObjectStorage(
         })
       )
       await assertSuccessfulResponse(copy)
-      try {
-        const deletion = await client.fetch(
-          new Request(objectUrl(sourceObjectKey), { method: "DELETE" })
-        )
-        await assertSuccessfulResponse(deletion)
-      } catch (error) {
-        try {
-          await client.fetch(new Request(destination, { method: "DELETE" }))
-        } catch {}
-        throw error
-      }
     },
   }
 }

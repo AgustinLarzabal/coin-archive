@@ -4,15 +4,24 @@ export {
   createCoinMaintenance,
   createCoinMaintenanceIdempotently,
   createCoinMaintenanceIdempotentlyWithDatabase,
+  completeCoinMaintenanceCreateWithDatabase,
+  releaseCoinMaintenanceCreateWithDatabase,
+  reserveCoinMaintenanceCreateWithDatabase,
   deleteCoinMaintenance,
   updateCoinMaintenance,
 } from "./mutations/coin-maintenance"
 export type {
   CoinMaintenanceFields,
   CreateCoinMaintenanceIdempotentlyResult,
+  CoinMaintenanceCreateIdempotencyStatus,
 } from "./mutations/coin-maintenance"
 export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
 export { authorizeSurfaceImageUploadIdempotentlyWithDatabase } from "./mutations/surface-image-upload-idempotency"
+export {
+  claimSurfaceImageUploadWithDatabase,
+  releaseCoinCreateResourcesWithDatabase,
+  releaseSurfaceImageUploadClaimWithDatabase,
+} from "./mutations/surface-image-upload-consumption"
 export {
   createCatalogue,
   createCatalogueIdempotently,

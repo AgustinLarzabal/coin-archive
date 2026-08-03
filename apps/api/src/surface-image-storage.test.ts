@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS,
+  SurfaceImageObjectNotFoundError,
   createR2SurfaceImageUploadStorage,
 } from "./surface-image-storage"
 import type { SurfaceImageUploadObjectStorage } from "./surface-image-storage"
@@ -22,7 +23,7 @@ describe("API-owned temporary Surface Image storage", () => {
         .mockResolvedValue("https://r2.example.test/direct-put"),
       deleteObject: vi.fn(),
       inspectObject: vi.fn(),
-      moveObject: vi.fn(),
+      copyObject: vi.fn(),
     }
     const now = new Date("2026-08-03T10:00:00.000Z")
     const storage = createR2SurfaceImageUploadStorage(
@@ -55,7 +56,7 @@ describe("API-owned temporary Surface Image storage", () => {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
       inspectObject: vi.fn(),
-      moveObject: vi.fn(),
+      copyObject: vi.fn(),
     }
     const storage = createR2SurfaceImageUploadStorage(
       configuration,
@@ -83,7 +84,7 @@ describe("API-owned temporary Surface Image storage", () => {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
       inspectObject: vi.fn(),
-      moveObject: vi.fn(),
+      copyObject: vi.fn(),
     }
     let currentTime = Date.parse("2026-08-03T10:00:00.000Z")
     const storage = createR2SurfaceImageUploadStorage(
@@ -126,7 +127,7 @@ describe("API-owned temporary Surface Image storage", () => {
     ).rejects.toThrow("reference is invalid")
   })
 
-  it("verifies and consumes an authorized temporary image before publishing it", async () => {
+  it("verifies and copies an authorized temporary image, then finalizes it", async () => {
     const objectStorage: SurfaceImageUploadObjectStorage = {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
@@ -137,7 +138,7 @@ describe("API-owned temporary Surface Image storage", () => {
           0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
         ]),
       }),
-      moveObject: vi.fn(),
+      copyObject: vi.fn(),
     }
     const storage = createR2SurfaceImageUploadStorage(
       configuration,
@@ -153,7 +154,7 @@ describe("API-owned temporary Surface Image storage", () => {
     })
 
     await expect(
-      storage.consumeUpload(authorization.reference, "reverse")
+      storage.prepareUpload(authorization.reference, "reverse")
     ).resolves.toStrictEqual({
       imageUrl:
         "https://images.example.test/surface-images/published/opaque-id",
@@ -161,9 +162,15 @@ describe("API-owned temporary Surface Image storage", () => {
     expect(objectStorage.inspectObject).toHaveBeenCalledWith(
       "surface-images/temporary/opaque-id"
     )
-    expect(objectStorage.moveObject).toHaveBeenCalledWith(
+    expect(objectStorage.copyObject).toHaveBeenCalledWith(
       "surface-images/temporary/opaque-id",
       "surface-images/published/opaque-id"
+    )
+    expect(objectStorage.deleteObject).not.toHaveBeenCalled()
+
+    await storage.finalizeUpload(authorization.reference, "reverse")
+    expect(objectStorage.deleteObject).toHaveBeenCalledWith(
+      "surface-images/temporary/opaque-id"
     )
   })
 
@@ -184,7 +191,7 @@ describe("API-owned temporary Surface Image storage", () => {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
       inspectObject,
-      moveObject: vi.fn(),
+      copyObject: vi.fn(),
     }
     const storage = createR2SurfaceImageUploadStorage(
       configuration,
@@ -197,11 +204,35 @@ describe("API-owned temporary Surface Image storage", () => {
     })
 
     await expect(
-      storage.consumeUpload(authorization.reference, "obverse")
+      storage.prepareUpload(authorization.reference, "obverse")
     ).rejects.toThrow("does not match its authorization")
     await expect(
-      storage.consumeUpload(authorization.reference, "obverse")
+      storage.prepareUpload(authorization.reference, "obverse")
     ).rejects.toThrow("content is invalid")
-    expect(objectStorage.moveObject).not.toHaveBeenCalled()
+    expect(objectStorage.copyObject).not.toHaveBeenCalled()
+  })
+
+  it("classifies a missing authorized object as an invalid upload", async () => {
+    const objectStorage: SurfaceImageUploadObjectStorage = {
+      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
+      deleteObject: vi.fn(),
+      inspectObject: vi
+        .fn()
+        .mockRejectedValue(new SurfaceImageObjectNotFoundError()),
+      copyObject: vi.fn(),
+    }
+    const storage = createR2SurfaceImageUploadStorage(
+      configuration,
+      objectStorage
+    )
+    const authorization = await storage.authorizeUpload({
+      surface: "obverse",
+      contentType: "image/png",
+      contentLength: 8,
+    })
+
+    await expect(
+      storage.prepareUpload(authorization.reference, "obverse")
+    ).rejects.toThrow("upload is missing")
   })
 })

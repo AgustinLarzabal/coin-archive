@@ -13,6 +13,7 @@ import type {
 import type { Hono } from "hono"
 
 import type { MaintenanceCollector } from "./orientation-maintenance"
+import { SurfaceImageUploadReferenceError } from "./surface-image-storage"
 
 type Cursor = { value: string; secondaryValue: string; id: string }
 type ListSource = Omit<CoinMaintenanceListItem, "createdAt" | "updatedAt"> & {
@@ -59,23 +60,49 @@ export type CoinMaintenanceDependencies = {
     id: string
   ) => Promise<CoinMaintenanceDeleteSummary | null>
   getCoinMaintenanceOptions: () => Promise<CoinMaintenanceOptionsOutput["data"]>
-  createMaintenanceCoin: (
-    input: {
-      collectorId: string
-      idempotencyKey: string
-      requestHash: string
-      expiresAt: Date
-    },
-    prepareFields: () => Promise<CoinCreatePersistenceFields>
-  ) => Promise<
-    | { status: "created" | "replayed"; coin: { id: string } }
-    | { status: "mismatch" }
+  reserveMaintenanceCoinCreate: (input: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    expiresAt: Date
+  }) => Promise<
+    | { status: "reserved" | "in_progress" | "mismatch" }
+    | { status: "replayed"; coin: { id: string } }
   >
-  consumeSurfaceImageUpload: (
+  completeMaintenanceCoinCreate: (input: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    fields: CoinCreatePersistenceFields
+  }) => Promise<{ status: "created"; coin: { id: string } }>
+  releaseCoinCreateResources: (input: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    uploadClaims: ClaimedImage[]
+  }) => Promise<boolean>
+  claimSurfaceImageUpload: (input: {
+    claimToken: string
+    referenceHash: string
+    expiresAt: Date
+  }) => Promise<boolean>
+  releaseSurfaceImageUploadClaim: (input: {
+    claimToken: string
+    referenceHash: string
+  }) => Promise<void>
+  prepareSurfaceImageUpload: (
     reference: string,
     surface: "obverse" | "reverse" | "edge"
   ) => Promise<{ imageUrl: string }>
+  finalizeSurfaceImageUpload: (
+    reference: string,
+    surface: "obverse" | "reverse" | "edge"
+  ) => Promise<void>
   deletePublishedSurfaceImage: (imageUrl: string) => Promise<void>
+  recordSurfaceImageCleanupFailures: (input: {
+    cleanupSubjectId: string
+    failures: Array<{ errorMessage: string; imageUrl: string }>
+  }) => Promise<void>
 }
 
 type CoinCreatePersistenceFields = Omit<
@@ -175,24 +202,22 @@ export function registerCoinMaintenanceRoutes(
       return validationProblem(context.req.path, parsedBody.error.issues)
     }
 
-    const publishedImageUrls: string[] = []
+    const preparedImages: PreparedImage[] = []
+    const claimedImages: ClaimedImage[] = []
     let aggregatePersisted = false
+    let coinCreateReserved = false
+    let request: CoinCreateRequest | undefined
     try {
-      const result = await dependencies.createMaintenanceCoin(
-        {
-          collectorId: context.get("collector").id,
-          idempotencyKey: parsedHeaders.data["idempotency-key"],
-          requestHash: await digest(JSON.stringify(parsedBody.data)),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-        async () =>
-          toPersistenceFields(
-            parsedBody.data,
-            dependencies.consumeSurfaceImageUpload,
-            publishedImageUrls
-          )
-      )
-      if (result.status === "mismatch") {
+      request = {
+        collectorId: context.get("collector").id,
+        idempotencyKey: parsedHeaders.data["idempotency-key"],
+        requestHash: await digest(JSON.stringify(parsedBody.data)),
+      }
+      const previous = await dependencies.reserveMaintenanceCoinCreate({
+        ...request,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      })
+      if (previous.status === "mismatch") {
         return problem(
           409,
           "Idempotency-Key already used",
@@ -201,7 +226,51 @@ export function registerCoinMaintenanceRoutes(
           "idempotency_key_reused"
         )
       }
+      if (previous.status === "in_progress") {
+        return problem(
+          409,
+          "Idempotent request in progress",
+          "A request with this Idempotency-Key is already in progress",
+          context.req.path,
+          "idempotency_request_in_progress"
+        )
+      }
+      coinCreateReserved = previous.status === "reserved"
+      const result =
+        previous.status === "replayed"
+          ? previous
+          : await dependencies.completeMaintenanceCoinCreate({
+              ...request,
+              fields: await toPersistenceFields(
+                parsedBody.data,
+                dependencies,
+                claimedImages,
+                preparedImages
+              ),
+            })
       aggregatePersisted = true
+      const finalization = await Promise.allSettled(
+        preparedImages.map(({ reference, surface }) =>
+          dependencies.finalizeSurfaceImageUpload(reference, surface)
+        )
+      )
+      const finalizationFailures = finalization.flatMap(
+        (finalizationResult, index) =>
+          finalizationResult.status === "rejected"
+            ? [
+                {
+                  imageUrl: `temporary-upload-reference:${preparedImages[index].reference}`,
+                  errorMessage: `Temporary upload finalization failed: ${cleanupErrorMessage(finalizationResult.reason)}`,
+                },
+              ]
+            : []
+      )
+      if (finalizationFailures.length > 0) {
+        await dependencies.recordSurfaceImageCleanupFailures({
+          cleanupSubjectId: result.coin.id,
+          failures: finalizationFailures,
+        })
+      }
       const record = await dependencies.getMaintenanceCoin(result.coin.id)
       if (record === null) throw new Error("Created Coin could not be read")
       const data = serializeDetail(record)
@@ -211,11 +280,45 @@ export function registerCoinMaintenanceRoutes(
       })
     } catch (error) {
       if (!aggregatePersisted) {
-        await Promise.allSettled(
-          publishedImageUrls.map((url) =>
-            dependencies.deletePublishedSurfaceImage(url)
+        let resourcesReleased = true
+        if (coinCreateReserved && request !== undefined) {
+          resourcesReleased = await dependencies.releaseCoinCreateResources({
+            ...request,
+            uploadClaims: claimedImages,
+          })
+        } else {
+          await Promise.all(
+            claimedImages.map(({ claimToken, referenceHash }) =>
+              dependencies.releaseSurfaceImageUploadClaim({
+                claimToken,
+                referenceHash,
+              })
+            )
           )
-        )
+        }
+        if (resourcesReleased) {
+          const cleanup = await Promise.allSettled(
+            preparedImages.map(({ imageUrl }) =>
+              dependencies.deletePublishedSurfaceImage(imageUrl)
+            )
+          )
+          const failures = cleanup.flatMap((result, index) =>
+            result.status === "rejected"
+              ? [
+                  {
+                    imageUrl: preparedImages[index].imageUrl,
+                    errorMessage: cleanupErrorMessage(result.reason),
+                  },
+                ]
+              : []
+          )
+          if (failures.length > 0) {
+            await dependencies.recordSurfaceImageCleanupFailures({
+              cleanupSubjectId: crypto.randomUUID(),
+              failures,
+            })
+          }
+        }
       }
       if (error instanceof CoinSurfaceImageError) {
         return problem(
@@ -283,10 +386,24 @@ export function registerCoinMaintenanceRoutes(
 
 class CoinSurfaceImageError extends Error {}
 
+type CoinCreateRequest = {
+  collectorId: string
+  idempotencyKey: string
+  requestHash: string
+}
+type ClaimedImage = { claimToken: string; referenceHash: string }
+
+type PreparedImage = {
+  imageUrl: string
+  reference: string
+  surface: "obverse" | "reverse" | "edge"
+}
+
 async function toPersistenceFields(
   body: CoinMaintenanceCreateBody,
-  consume: CoinMaintenanceDependencies["consumeSurfaceImageUpload"],
-  publishedImageUrls: string[]
+  dependencies: CoinMaintenanceDependencies,
+  claimedImages: ClaimedImage[],
+  preparedImages: PreparedImage[]
 ): Promise<CoinCreatePersistenceFields> {
   const consumeImage = async (
     reference: string | null,
@@ -294,10 +411,27 @@ async function toPersistenceFields(
   ) => {
     if (reference === null) return null
     try {
-      const result = await consume(reference, surface)
-      publishedImageUrls.push(result.imageUrl)
+      const claim = {
+        claimToken: crypto.randomUUID(),
+        referenceHash: await digest(reference),
+      }
+      if (
+        !(await dependencies.claimSurfaceImageUpload({
+          ...claim,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        }))
+      ) {
+        throw new CoinSurfaceImageError("Surface Image upload was consumed")
+      }
+      claimedImages.push(claim)
+      const result = await dependencies.prepareSurfaceImageUpload(
+        reference,
+        surface
+      )
+      preparedImages.push({ ...result, reference, surface })
       return result.imageUrl
     } catch (error) {
+      if (!(error instanceof SurfaceImageUploadReferenceError)) throw error
       throw new CoinSurfaceImageError("Surface Image upload is invalid", {
         cause: error,
       })
@@ -336,6 +470,12 @@ async function toPersistenceFields(
             },
     },
   }
+}
+
+function cleanupErrorMessage(error: unknown) {
+  return (
+    error instanceof Error ? error.message : "Unknown cleanup error"
+  ).slice(0, 2000)
 }
 
 function numberOrNull(value: string | null) {

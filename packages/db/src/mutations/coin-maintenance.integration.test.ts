@@ -29,6 +29,7 @@ import {
   createCoinMaintenanceIdempotently,
   createCoinMaintenanceIdempotentlyWithDatabase,
   releaseCoinMaintenanceCreateWithDatabase,
+  replaceCoinMaintenanceWithDatabase,
   reserveCoinMaintenanceCreateWithDatabase,
   deleteCoinMaintenance,
   updateCoinMaintenance,
@@ -37,6 +38,107 @@ import { getCoinMaintenanceRecord } from "../queries/get-coin-maintenance-record
 
 describe("coin maintenance mutations integration", () => {
   useTestDatabaseIsolation(db)
+
+  it("atomically version-guards complete replacements, including child-only changes", async () => {
+    const issuer = await createIssuer({
+      code: "versioned-coin-issuer",
+      name: "Versioned Coin Issuer",
+    })
+    const firstRuler = await createRuler({
+      code: "versioned-coin-first-ruler",
+      name: "First Ruler",
+    })
+    const secondRuler = await createRuler({
+      code: "versioned-coin-second-ruler",
+      name: "Second Ruler",
+    })
+    const distribution = await createDistribution({
+      code: "versioned-coin-distribution",
+      name: "Versioned Distribution",
+    })
+    const composition = await createComposition({
+      code: "versioned-coin-composition",
+      name: "Versioned Composition",
+    })
+    const currency = await createCurrency({
+      code: "versioned-coin-currency",
+      name: "VC",
+      fullName: "Versioned Currency",
+    })
+    const fields = {
+      comments: null,
+      compositionDescription: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      mintIds: [],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [firstRuler.id],
+      shapeId: null,
+      surfaces: { obverse: null, reverse: null, edge: null },
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      title: "Versioned Coin",
+      weight: null,
+    }
+    const created = await createCoinMaintenance(fields)
+
+    await expect(
+      replaceCoinMaintenanceWithDatabase(db, {
+        id: created.id,
+        expectedVersion: 1,
+        fields: { ...fields, rulerIds: [secondRuler.id] },
+      })
+    ).resolves.toMatchObject({ status: "updated", coin: { version: 2 } })
+    const competing = await Promise.all([
+      replaceCoinMaintenanceWithDatabase(db, {
+        id: created.id,
+        expectedVersion: 2,
+        fields: {
+          ...fields,
+          rulerIds: [secondRuler.id],
+          title: "First competing edit",
+        },
+      }),
+      replaceCoinMaintenanceWithDatabase(db, {
+        id: created.id,
+        expectedVersion: 2,
+        fields: {
+          ...fields,
+          rulerIds: [secondRuler.id],
+          title: "Second competing edit",
+        },
+      }),
+    ])
+    expect(competing.map(({ status }) => status).sort()).toStrictEqual([
+      "stale",
+      "updated",
+    ])
+    await expect(
+      replaceCoinMaintenanceWithDatabase(db, {
+        id: created.id,
+        expectedVersion: 2,
+        fields: { ...fields, title: "Stale overwrite" },
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(getCoinMaintenanceRecord(created.id)).resolves.toMatchObject({
+      title: expect.stringMatching(/competing edit$/),
+      rulerIds: [secondRuler.id],
+      version: 3,
+    })
+  })
 
   it("creates a Coin with the required core fields and optional scalar fields atomically", async () => {
     const issuer = await createIssuer({

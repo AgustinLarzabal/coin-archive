@@ -73,6 +73,17 @@ const createBody = {
   thickness: null,
   weight: "7.2",
 }
+const replaceBody = {
+  ...createBody,
+  surfaces: {
+    obverse: {
+      ...createBody.surfaces.obverse,
+      imageUrl: null,
+    },
+    reverse: null,
+    edge: null,
+  },
+}
 
 function createApp(
   overrides: Partial<Parameters<typeof createApiApp>[0]> = {}
@@ -523,5 +534,245 @@ describe("protected Coin Maintenance create", () => {
 
     expect(response.status).toBe(500)
     expect(JSON.stringify(await response.json())).not.toContain("secret R2")
+  })
+})
+
+describe("protected Coin Maintenance replacement", () => {
+  it("replaces the complete aggregate with If-Match and returns the next ETag", async () => {
+    const replaceMaintenanceCoin = vi.fn().mockResolvedValue({
+      status: "updated",
+      coin: { id, version: 2 },
+    })
+    const app = createApp({
+      replaceMaintenanceCoin,
+      getMaintenanceCoin: vi
+        .fn()
+        .mockResolvedValueOnce(detail)
+        .mockResolvedValueOnce(detail)
+        .mockResolvedValueOnce({
+          ...detail,
+          title: "Updated Coin",
+          version: 2,
+        }),
+    })
+    const loaded = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`
+    )
+    const ifMatch = loaded.headers.get("etag")!
+    const response = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "If-Match": ifMatch },
+        body: JSON.stringify({ ...replaceBody, title: "Updated Coin" }),
+      }
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("etag")).not.toBe(ifMatch)
+    await expect(response.json()).resolves.toMatchObject({
+      data: { id, title: "Updated Coin", version: 2 },
+    })
+    expect(replaceMaintenanceCoin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id,
+        expectedVersion: 1,
+        fields: expect.objectContaining({ title: "Updated Coin" }),
+      })
+    )
+  })
+
+  it("returns a stable 412 problem for a stale replacement", async () => {
+    const response = await createApp({
+      replaceMaintenanceCoin: vi.fn().mockResolvedValue({ status: "stale" }),
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+      body: JSON.stringify(replaceBody),
+    })
+
+    expect(response.status).toBe(412)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "coin_precondition_failed",
+    })
+  })
+
+  it("records failed rollback of a verified image when replacement is stale", async () => {
+    const newImageUrl =
+      "https://images.coinarchive.app/surface-images/published/new.webp"
+    const recordSurfaceImageCleanupFailures = vi.fn()
+    const response = await createApp({
+      replaceMaintenanceCoin: vi.fn().mockResolvedValue({ status: "stale" }),
+      prepareSurfaceImageUpload: vi.fn().mockResolvedValue({
+        imageUrl: newImageUrl,
+      }),
+      deletePublishedSurfaceImage: vi
+        .fn()
+        .mockRejectedValue(new Error("rollback unavailable")),
+      recordSurfaceImageCleanupFailures,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+      body: JSON.stringify({
+        ...replaceBody,
+        surfaces: {
+          ...replaceBody.surfaces,
+          obverse: {
+            ...replaceBody.surfaces.obverse,
+            imageUploadReference: "new-obverse-upload",
+          },
+        },
+      }),
+    })
+
+    expect(response.status).toBe(412)
+    expect(recordSurfaceImageCleanupFailures).toHaveBeenCalledWith({
+      cleanupSubjectId: id,
+      failures: [
+        { imageUrl: newImageUrl, errorMessage: "rollback unavailable" },
+      ],
+    })
+  })
+
+  it("verifies new images before persistence and removes replaced images only afterward", async () => {
+    const oldImageUrl =
+      "https://images.coinarchive.app/surface-images/published/old.webp"
+    const newImageUrl =
+      "https://images.coinarchive.app/surface-images/published/new.webp"
+    const previous = {
+      ...detail,
+      surfaces: {
+        ...detail.surfaces,
+        obverse: {
+          description: "Old portrait",
+          lettering: null,
+          imageUrl: oldImageUrl,
+          engraverIds: [],
+        },
+      },
+    }
+    const next = {
+      ...detail,
+      version: 2,
+      surfaces: {
+        obverse: null,
+        reverse: {
+          description: "New design",
+          lettering: null,
+          imageUrl: newImageUrl,
+          engraverIds: [],
+        },
+        edge: null,
+      },
+    }
+    const prepareSurfaceImageUpload = vi.fn().mockResolvedValue({
+      imageUrl: newImageUrl,
+    })
+    const replaceMaintenanceCoin = vi.fn().mockResolvedValue({
+      status: "updated",
+      coin: { id, version: 2 },
+    })
+    const deletePublishedSurfaceImage = vi.fn()
+    const finalizeSurfaceImageUpload = vi.fn()
+    const response = await createApp({
+      getMaintenanceCoin: vi
+        .fn()
+        .mockResolvedValueOnce(previous)
+        .mockResolvedValueOnce(next),
+      prepareSurfaceImageUpload,
+      replaceMaintenanceCoin,
+      deletePublishedSurfaceImage,
+      finalizeSurfaceImageUpload,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+      body: JSON.stringify({
+        ...replaceBody,
+        surfaces: {
+          obverse: null,
+          reverse: {
+            description: "New design",
+            lettering: null,
+            imageUrl: null,
+            imageUploadReference: "new-reverse-upload",
+            engraverIds: [],
+          },
+          edge: null,
+        },
+      }),
+    })
+
+    expect(response.status).toBe(200)
+    expect(prepareSurfaceImageUpload).toHaveBeenCalledWith(
+      "new-reverse-upload",
+      "reverse"
+    )
+    expect(prepareSurfaceImageUpload.mock.invocationCallOrder[0]).toBeLessThan(
+      replaceMaintenanceCoin.mock.invocationCallOrder[0]
+    )
+    expect(deletePublishedSurfaceImage).toHaveBeenCalledWith(oldImageUrl)
+    expect(
+      deletePublishedSurfaceImage.mock.invocationCallOrder[0]
+    ).toBeGreaterThan(replaceMaintenanceCoin.mock.invocationCallOrder[0])
+    expect(finalizeSurfaceImageUpload).toHaveBeenCalledWith(
+      "new-reverse-upload",
+      "reverse"
+    )
+  })
+
+  it("returns success and durably records old-image cleanup failures", async () => {
+    const oldImageUrl =
+      "https://images.coinarchive.app/surface-images/published/old.webp"
+    const recordSurfaceImageCleanupFailures = vi.fn()
+    const response = await createApp({
+      getMaintenanceCoin: vi
+        .fn()
+        .mockResolvedValueOnce({
+          ...detail,
+          surfaces: {
+            ...detail.surfaces,
+            obverse: {
+              description: null,
+              lettering: null,
+              imageUrl: oldImageUrl,
+              engraverIds: [],
+            },
+          },
+        })
+        .mockResolvedValueOnce({ ...detail, version: 2 }),
+      replaceMaintenanceCoin: vi.fn().mockResolvedValue({
+        status: "updated",
+        coin: { id, version: 2 },
+      }),
+      deletePublishedSurfaceImage: vi
+        .fn()
+        .mockRejectedValue(new Error("R2 unavailable")),
+      recordSurfaceImageCleanupFailures,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+      body: JSON.stringify({
+        ...replaceBody,
+        surfaces: { obverse: null, reverse: null, edge: null },
+      }),
+    })
+
+    expect(response.status).toBe(200)
+    expect(recordSurfaceImageCleanupFailures).toHaveBeenCalledWith({
+      cleanupSubjectId: id,
+      failures: [{ imageUrl: oldImageUrl, errorMessage: "R2 unavailable" }],
+    })
   })
 })

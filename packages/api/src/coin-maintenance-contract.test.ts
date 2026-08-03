@@ -8,6 +8,8 @@ import {
   coinMaintenanceListInputSchema,
   coinMaintenanceListOutputSchema,
   coinMaintenanceOptionsOutputSchema,
+  coinMaintenanceReplaceInputSchema,
+  coinMaintenanceReplaceOutputSchema,
 } from "./contract"
 
 const id = "018f1a11-aaaa-7000-8000-000000000001"
@@ -287,5 +289,92 @@ describe("Coin Maintenance create contract", () => {
         body: data,
       }).body.data.id
     ).toBe(id)
+  })
+})
+
+describe("Coin Maintenance replacement contract", () => {
+  it("requires opaque If-Match and returns 200 with the complete replacement", () => {
+    const createBody = coinMaintenanceCreateInputSchema.shape.body.parse({
+      title: "2 Pesos",
+      comments: null,
+      compositionDescription: null,
+      compositionId: id,
+      currencyId: id,
+      diameter: null,
+      distributionId: id,
+      edgeId: null,
+      faceValueNumericValue: "2",
+      faceValueText: "2 Pesos",
+      isDemonetized: null,
+      issuerId: id,
+      maxYear: null,
+      mintIds: [],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [id],
+      shapeId: null,
+      surfaces: { obverse: null, reverse: null, edge: null },
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      weight: null,
+    })
+    const body = {
+      ...createBody,
+      surfaces: {
+        obverse: {
+          description: "Portrait",
+          lettering: null,
+          imageUrl: "https://images.coinarchive.app/obverse.webp",
+          imageUploadReference: null,
+          engraverIds: [],
+        },
+        reverse: null,
+        edge: null,
+      },
+    }
+    const input = coinMaintenanceReplaceInputSchema.parse({
+      params: { uuid: id },
+      headers: { "if-match": '"opaque-version"' },
+      body,
+    })
+    const detail = coinMaintenanceDetailOutputSchema.parse({
+      data: {
+        id,
+        ...body,
+        surfaces: {
+          obverse: {
+            description: "Portrait",
+            lettering: null,
+            imageUrl: "https://images.coinarchive.app/obverse.webp",
+            engraverIds: [],
+          },
+          reverse: null,
+          edge: null,
+        },
+        version: 2,
+        createdAt: "2026-08-03T10:15:30.000Z",
+        updatedAt: "2026-08-03T10:16:30.000Z",
+        etag: '"next-opaque-version"',
+      },
+    })
+
+    expect(input.headers["if-match"]).toBe('"opaque-version"')
+    expect(
+      coinMaintenanceReplaceOutputSchema.parse({
+        status: 200,
+        headers: { etag: detail.data.etag },
+        body: detail,
+      }).body.data.version
+    ).toBe(2)
+    expect(() =>
+      coinMaintenanceReplaceInputSchema.parse({
+        params: { uuid: id },
+        body,
+      })
+    ).toThrow()
   })
 })

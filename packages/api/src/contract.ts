@@ -2186,12 +2186,45 @@ export const coinMaintenanceCreateInputSchema = z
   })
   .strict()
 
+const coinMaintenanceReplaceSurfaceSchema =
+  coinMaintenanceCreateSurfaceSchema.safeExtend({
+    imageUrl: z.string().url().nullable(),
+  })
+const coinMaintenanceReplaceFaceSurfaceSchema =
+  coinMaintenanceReplaceSurfaceSchema
+    .safeExtend({ engraverIds: z.array(z.uuid()) })
+    .strict()
+export const coinMaintenanceReplaceBodySchema =
+  coinMaintenanceCreateBodySchema.safeExtend({
+    surfaces: z
+      .object({
+        obverse: coinMaintenanceReplaceFaceSurfaceSchema.nullable(),
+        reverse: coinMaintenanceReplaceFaceSurfaceSchema.nullable(),
+        edge: coinMaintenanceReplaceSurfaceSchema.nullable(),
+      })
+      .strict(),
+  })
+
 export const coinMaintenanceCreateOutputSchema = z.object({
   status: z.literal(201),
   headers: z.object({
     location: z.string().startsWith("/api/v1/maintenance/coins/"),
     etag: z.string(),
   }),
+  body: coinMaintenanceDetailOutputSchema,
+})
+
+export const coinMaintenanceReplaceInputSchema = z
+  .object({
+    params: z.object({ uuid: z.uuid() }).strict(),
+    headers: z.object({ "if-match": ifMatchSchema }).strict(),
+    body: coinMaintenanceReplaceBodySchema,
+  })
+  .strict()
+
+export const coinMaintenanceReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
   body: coinMaintenanceDetailOutputSchema,
 })
 
@@ -2308,6 +2341,19 @@ export const maintenanceApiContract = {
         ...maintenanceReadErrors,
         NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
       }),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/coins/{uuid}",
+        summary: "Replace a complete Coin aggregate",
+        tags: ["Coin Maintenance"],
+        successStatus: 200,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(coinMaintenanceReplaceInputSchema)
+      .output(coinMaintenanceReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
     deleteSummary: oc
       .route({
         method: "GET",
@@ -3495,6 +3541,12 @@ export type CoinMaintenanceCreateBody = z.infer<
 >
 export type CoinMaintenanceCreateInput = z.infer<
   typeof coinMaintenanceCreateInputSchema
+>
+export type CoinMaintenanceReplaceInput = z.infer<
+  typeof coinMaintenanceReplaceInputSchema
+>
+export type CoinMaintenanceReplaceBody = z.infer<
+  typeof coinMaintenanceReplaceBodySchema
 >
 export type CoinMaintenanceDeleteSummary = z.infer<
   typeof coinMaintenanceDeleteSummarySchema

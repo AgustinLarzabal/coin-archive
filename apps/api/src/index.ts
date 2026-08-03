@@ -87,6 +87,7 @@ import {
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
   replaceOrientationWithDatabase,
+  replaceCoinMaintenanceWithDatabase,
   authorizeSurfaceImageUploadIdempotentlyWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -210,6 +211,8 @@ async function handleRequest(
       getCoinMaintenanceApiRecordWithDatabase(database.db, coinId),
     getMaintenanceCoinDeleteSummary: (coinId) =>
       getCoinMaintenanceDeleteSummaryWithDatabase(database.db, coinId),
+    replaceMaintenanceCoin: (input) =>
+      replaceCoinMaintenanceWithDatabase(database.db, input),
     getCoinMaintenanceOptions: async () => {
       const all = <T extends MaintenanceCursorRecord>(
         list: MaintenanceCursorList<T>

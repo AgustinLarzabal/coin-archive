@@ -53,7 +53,7 @@ const createCoinAction = createServerFn({ method: "POST" })
   })
 
 const updateCoinAction = createServerFn({ method: "POST" })
-  .inputValidator((data: CoinDraft & { id: string }) => data)
+  .inputValidator((data: CoinDraft & { id: string; etag: string }) => data)
   .handler(async ({ data }) => {
     const session = await getAuthSession()
     return submitUpdateCoin(session?.user ?? null, data)
@@ -159,7 +159,9 @@ export function CoinForm(props: CoinFormProps) {
     },
     onSubmit: async ({ value }) => {
       const result = isEditMode
-        ? await updateCoin({ data: { id: props.coin.id, ...value } })
+        ? await updateCoin({
+            data: { id: props.coin.id, etag: props.coin.etag, ...value },
+          })
         : await createCoin({ data: value })
       const successResult = applyResult(result)
 

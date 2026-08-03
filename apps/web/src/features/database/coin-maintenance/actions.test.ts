@@ -4,6 +4,7 @@ import {
   authorizeSurfaceImageUpload,
   COIN_AUTHORIZATION_ERROR,
   COIN_DELETE_CONFIRMATION_ERROR,
+  COIN_EDIT_CONFLICT_ERROR,
   COIN_MISSING_ERROR,
   hasCoinMaintenanceAccess,
   removeSurfaceImageUpload,
@@ -16,6 +17,7 @@ import type { CoinDraft } from "./actions"
 const VALID_COIN_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const VALID_LOOKUP_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"
 const OTHER_LOOKUP_ID = "de2dcfb7-dc50-4035-8bc8-33cbbacb586b"
+const VALID_ETAG = '"opaque-coin-version"'
 
 const VALID_COIN_DRAFT: CoinDraft = {
   title: "Spanish Test Coin",
@@ -72,6 +74,7 @@ function createDependencies(overrides?: {
   getCoinMaintenanceDeleteSummary?: ReturnType<typeof vi.fn>
   getPersistedSurfaceImageUrls?: ReturnType<typeof vi.fn>
   recordSurfaceImageCleanupFailures?: ReturnType<typeof vi.fn>
+  replaceCoin?: ReturnType<typeof vi.fn>
   updateCoinMaintenance?: ReturnType<typeof vi.fn>
   resolveSurfaceImageUpload?: ReturnType<typeof vi.fn>
 }) {
@@ -94,6 +97,11 @@ function createDependencies(overrides?: {
     updateCoinMaintenance: vi.fn(),
     resolveSurfaceImageUpload: vi.fn(),
     recordSurfaceImageCleanupFailures: vi.fn(),
+    replaceCoin: vi.fn().mockResolvedValue({
+      status: 200,
+      headers: { etag: '"next-coin-version"' },
+      body: { data: { id: VALID_COIN_ID } },
+    }),
     ...overrides,
   }
 }
@@ -538,180 +546,15 @@ describe("removeSurfaceImageUpload", () => {
 })
 
 describe("submitUpdateCoin", () => {
-  it("publishes a replacement before deleting the previous Surface Image", async () => {
-    const events: string[] = []
-    const dependencies = createDependencies({
-      getPersistedSurfaceImageUrls: vi.fn().mockImplementation(async () => {
-        events.push("read")
-        return {
-          obverse: "https://images.example.test/surface-images/old-obverse",
-          reverse: null,
-          edge: null,
-        }
-      }),
-      resolveSurfaceImageUpload: vi.fn().mockImplementation(async () => {
-        events.push("resolve")
-        return {
-          imageUrl: "https://images.example.test/surface-images/new-obverse",
-        }
-      }),
-      updateCoinMaintenance: vi.fn().mockImplementation(async () => {
-        events.push("update")
-        return { id: VALID_COIN_ID }
-      }),
-      deleteSurfaceImage: vi.fn().mockImplementation(async () => {
-        events.push("delete")
-      }),
-    })
-
-    await expect(
-      submitUpdateCoin(
-        { role: "editor" },
-        {
-          id: VALID_COIN_ID,
-          ...VALID_COIN_DRAFT,
-          surfaces: {
-            ...VALID_COIN_DRAFT.surfaces,
-            obverse: {
-              ...VALID_COIN_DRAFT.surfaces.obverse,
-              imageUrl:
-                "https://images.example.test/surface-images/old-obverse",
-              imageUploadReference: "new-upload-reference",
-            },
-          },
-        },
-        dependencies
-      )
-    ).resolves.toMatchObject({ status: "success", coinId: VALID_COIN_ID })
-
-    expect(events).toStrictEqual(["read", "resolve", "update", "delete"])
-    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
-      "https://images.example.test/surface-images/old-obverse"
-    )
-  })
-
-  it("keeps the persisted image and deletes its replacement when the Coin update fails", async () => {
-    const replacementImageUrl =
-      "https://images.example.test/surface-images/new-obverse"
-    const dependencies = createDependencies({
-      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
-        obverse: "https://images.example.test/surface-images/old-obverse",
-        reverse: null,
-        edge: null,
-      }),
-      resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
-        imageUrl: replacementImageUrl,
-      }),
-      updateCoinMaintenance: vi
-        .fn()
-        .mockRejectedValue(new Error("database error")),
-    })
-
-    await expect(
-      submitUpdateCoin(
-        { role: "editor" },
-        {
-          id: VALID_COIN_ID,
-          ...VALID_COIN_DRAFT,
-          surfaces: {
-            ...VALID_COIN_DRAFT.surfaces,
-            obverse: {
-              ...VALID_COIN_DRAFT.surfaces.obverse,
-              imageUploadReference: "new-upload-reference",
-            },
-          },
-        },
-        dependencies
-      )
-    ).resolves.toMatchObject({ status: "error" })
-
-    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
-      replacementImageUrl
-    )
-    expect(dependencies.deleteSurfaceImage).not.toHaveBeenCalledWith(
-      "https://images.example.test/surface-images/old-obverse"
-    )
-  })
-
-  it("deletes a removed persisted Surface Image only after the Coin update", async () => {
-    const events: string[] = []
-    const dependencies = createDependencies({
-      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
-        obverse: null,
-        reverse: null,
-        edge: "https://images.example.test/surface-images/old-edge",
-      }),
-      updateCoinMaintenance: vi.fn().mockImplementation(async () => {
-        events.push("update")
-        return { id: VALID_COIN_ID }
-      }),
-      deleteSurfaceImage: vi.fn().mockImplementation(async () => {
-        events.push("delete")
-      }),
-    })
-
-    await submitUpdateCoin(
-      { role: "admin" },
-      {
-        id: VALID_COIN_ID,
-        ...VALID_COIN_DRAFT,
-      },
-      dependencies
-    )
-
-    expect(events).toStrictEqual(["update", "delete"])
-    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
-      "https://images.example.test/surface-images/old-edge"
-    )
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
-    const replacementImageUrl =
-      "https://images.example.test/surface-images/new-edge"
-    const dependencies = createDependencies({
-      resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
-        imageUrl: replacementImageUrl,
-      }),
-      updateCoinMaintenance: vi.fn().mockResolvedValue(null),
-    })
-    await expect(
-      submitUpdateCoin(
-        { role: "editor" },
-        {
-          id: VALID_COIN_ID,
-          ...VALID_COIN_DRAFT,
-          surfaces: {
-            ...VALID_COIN_DRAFT.surfaces,
-            edge: {
-              ...VALID_COIN_DRAFT.surfaces.edge,
-              imageUploadReference: "new-edge-reference",
-            },
-          },
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: COIN_MISSING_ERROR,
-    })
-    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
-      replacementImageUrl
-    )
-  })
-
-  it("passes normalized edit fields through to the persistence layer and returns the saved Coin id", async () => {
-    const dependencies = createDependencies({
-      updateCoinMaintenance: vi.fn().mockResolvedValue({
-        id: VALID_COIN_ID,
-      }),
-    })
+  it("replaces the aggregate through the typed API with its retained ETag", async () => {
+    const dependencies = createDependencies()
 
     await expect(
       submitUpdateCoin(
         { role: "admin" },
         {
           id: VALID_COIN_ID,
+          etag: VALID_ETAG,
           ...VALID_COIN_DRAFT,
           rulers: [{ rulerId: OTHER_LOOKUP_ID }],
           compositionDescription: "  Revised material detail.  ",
@@ -734,45 +577,29 @@ describe("submitUpdateCoin", () => {
       message: "Saved.",
     })
 
-    expect(dependencies.updateCoinMaintenance).toHaveBeenCalledWith({
-      id: VALID_COIN_ID,
-      title: "Spanish Test Coin",
-      issuerId: VALID_LOOKUP_ID,
-      rulerIds: [OTHER_LOOKUP_ID],
-      distributionId: VALID_LOOKUP_ID,
-      compositionId: VALID_LOOKUP_ID,
-      compositionDescription: "Revised material detail.",
-      faceValueText: "1 Test Unit",
-      faceValueNumericValue: 2.25,
-      currencyId: VALID_LOOKUP_ID,
-      mintIds: [VALID_LOOKUP_ID, OTHER_LOOKUP_ID],
-      orientationId: null,
-      shapeId: null,
-      techniqueId: null,
-      edgeId: null,
-      rimId: null,
-      themeIds: [OTHER_LOOKUP_ID],
-      weight: 7.5,
-      diameter: 24,
-      thickness: 1.9,
-      mintage: 2000,
-      comments: null,
-      minYear: 1999,
-      maxYear: 2001,
-      isDemonetized: false,
-      references: [],
-      surfaces: {
-        obverse: null,
-        reverse: null,
-        edge: null,
-      },
+    expect(dependencies.replaceCoin).toHaveBeenCalledWith({
+      params: { uuid: VALID_COIN_ID },
+      headers: { "if-match": VALID_ETAG },
+      body: expect.objectContaining({
+        title: "Spanish Test Coin",
+        rulerIds: [OTHER_LOOKUP_ID],
+        faceValueNumericValue: "2.25",
+        mintIds: [VALID_LOOKUP_ID, OTHER_LOOKUP_ID],
+        weight: "7.5",
+        diameter: "24",
+        surfaces: { obverse: null, reverse: null, edge: null },
+      }),
     })
+    expect(dependencies.updateCoinMaintenance).not.toHaveBeenCalled()
+    expect(dependencies.resolveSurfaceImageUpload).not.toHaveBeenCalled()
   })
 
-  it("clears Composition Description when an Editor submits blank text", async () => {
+  it("passes retained image URLs and new upload references to the API", async () => {
     const dependencies = createDependencies({
-      updateCoinMaintenance: vi.fn().mockResolvedValue({
-        id: VALID_COIN_ID,
+      replaceCoin: vi.fn().mockResolvedValue({
+        status: 200,
+        headers: { etag: '"next"' },
+        body: { data: { id: VALID_COIN_ID } },
       }),
     })
 
@@ -781,8 +608,18 @@ describe("submitUpdateCoin", () => {
         { role: "editor" },
         {
           id: VALID_COIN_ID,
+          etag: VALID_ETAG,
           ...VALID_COIN_DRAFT,
-          compositionDescription: "   ",
+          surfaces: {
+            ...VALID_COIN_DRAFT.surfaces,
+            obverse: {
+              description: "Portrait",
+              lettering: "UNIT",
+              imageUrl: "https://images.example.test/old.webp",
+              imageUploadReference: "new-upload-reference",
+              engraverIds: [],
+            },
+          },
         },
         dependencies
       )
@@ -791,111 +628,70 @@ describe("submitUpdateCoin", () => {
       coinId: VALID_COIN_ID,
     })
 
-    expect(dependencies.updateCoinMaintenance).toHaveBeenCalledWith(
+    expect(dependencies.replaceCoin).toHaveBeenCalledWith(
       expect.objectContaining({
-        compositionDescription: null,
+        body: expect.objectContaining({
+          surfaces: expect.objectContaining({
+            obverse: {
+              description: "Portrait",
+              lettering: "UNIT",
+              imageUrl: "https://images.example.test/old.webp",
+              imageUploadReference: "new-upload-reference",
+              engraverIds: [],
+            },
+          }),
+        }),
       })
     )
   })
 
-  it("passes structured Catalogue References and Surface Set details through to persistence", async () => {
-    const dependencies = createDependencies({
-      getPersistedSurfaceImageUrls: vi.fn().mockResolvedValue({
-        obverse: "https://example.com/obverse.jpg",
-        reverse: null,
-        edge: "https://example.com/edge.jpg",
-      }),
-      updateCoinMaintenance: vi.fn().mockResolvedValue({
-        id: VALID_COIN_ID,
-      }),
-    })
-
+  it("asks the Collector to reload and reconcile a stale edit", async () => {
     await expect(
       submitUpdateCoin(
         { role: "editor" },
         {
           id: VALID_COIN_ID,
+          etag: VALID_ETAG,
           ...VALID_COIN_DRAFT,
-          references: [
-            {
-              catalogueId: VALID_LOOKUP_ID,
-              number: " KM 25 ",
-            },
-          ],
-          surfaces: {
-            obverse: {
-              description: " Laureate bust ",
-              lettering: " HISPAN ",
-              imageUrl: "https://example.com/obverse.jpg",
-              engraverIds: [VALID_LOOKUP_ID],
-            },
-            reverse: {
-              description: "",
-              lettering: "",
-              imageUrl: "",
-              engraverIds: [],
-            },
-            edge: {
-              description: " Reeded ",
-              lettering: "",
-              imageUrl: "https://example.com/edge.jpg",
-            },
-          },
         },
-        dependencies
+        createDependencies({
+          replaceCoin: vi.fn().mockRejectedValue({
+            data: { body: { code: "coin_precondition_failed" } },
+          }),
+        })
       )
     ).resolves.toStrictEqual({
-      status: "success",
-      coinId: VALID_COIN_ID,
-      message: "Saved.",
+      status: "error",
+      fieldErrors: {},
+      formError: COIN_EDIT_CONFLICT_ERROR,
     })
+  })
 
-    expect(dependencies.updateCoinMaintenance).toHaveBeenCalledWith({
-      id: VALID_COIN_ID,
-      title: "Spanish Test Coin",
-      issuerId: VALID_LOOKUP_ID,
-      rulerIds: [VALID_LOOKUP_ID],
-      distributionId: VALID_LOOKUP_ID,
-      compositionId: VALID_LOOKUP_ID,
-      compositionDescription: null,
-      faceValueText: "1 Test Unit",
-      faceValueNumericValue: 1.5,
-      currencyId: VALID_LOOKUP_ID,
-      mintIds: [],
-      orientationId: null,
-      shapeId: null,
-      techniqueId: null,
-      edgeId: null,
-      rimId: null,
-      themeIds: [],
-      weight: null,
-      diameter: null,
-      thickness: null,
-      mintage: null,
-      comments: null,
-      minYear: null,
-      maxYear: null,
-      isDemonetized: null,
-      references: [
-        {
-          catalogueId: VALID_LOOKUP_ID,
-          number: "KM 25",
-        },
-      ],
-      surfaces: {
-        obverse: {
-          description: "Laureate bust",
-          lettering: "HISPAN",
-          imageUrl: "https://example.com/obverse.jpg",
-          engraverIds: [VALID_LOOKUP_ID],
-        },
-        reverse: null,
-        edge: {
-          description: "Reeded",
-          lettering: null,
-          imageUrl: "https://example.com/edge.jpg",
-        },
-      },
+  it("maps missing, authorization, and validation API problems", async () => {
+    const submitProblem = (code: string, invalidParams?: unknown[]) =>
+      submitUpdateCoin(
+        { role: "editor" },
+        { id: VALID_COIN_ID, etag: VALID_ETAG, ...VALID_COIN_DRAFT },
+        createDependencies({
+          replaceCoin: vi.fn().mockRejectedValue({
+            data: { body: { code, invalidParams } },
+          }),
+        })
+      )
+
+    await expect(submitProblem("coin_not_found")).resolves.toMatchObject({
+      formError: COIN_MISSING_ERROR,
+    })
+    await expect(
+      submitProblem("editor_access_required")
+    ).resolves.toMatchObject({ formError: COIN_AUTHORIZATION_ERROR })
+    await expect(
+      submitProblem("coin_validation_failed", [
+        { name: "/issuerId", reason: "Issuer no longer exists." },
+      ])
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: { issuerId: "Issuer no longer exists." },
     })
   })
 })

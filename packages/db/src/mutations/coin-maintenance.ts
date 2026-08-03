@@ -64,6 +64,10 @@ type UpdateCoinMaintenanceInput = CoinMaintenanceFields & {
   id: string
 }
 
+export type ReplaceCoinMaintenanceResult =
+  | { status: "updated"; coin: Coin }
+  | { status: "missing" | "stale" }
+
 type CoinMaintenanceTransaction = Parameters<
   Parameters<typeof db.transaction>[0]
 >[0]
@@ -547,6 +551,55 @@ export async function updateCoinMaintenance({
     await replaceCoinSurfaces(id, getCoinSurfaces(fields), tx)
 
     return updatedCoin
+  })
+}
+
+export function replaceCoinMaintenance(
+  input: Parameters<typeof replaceCoinMaintenanceWithDatabase>[1]
+) {
+  return replaceCoinMaintenanceWithDatabase(db, input)
+}
+
+export async function replaceCoinMaintenanceWithDatabase(
+  database: typeof databaseClient,
+  {
+    id,
+    expectedVersion,
+    fields,
+  }: {
+    id: string
+    expectedVersion: number
+    fields: CoinMaintenanceFields
+  }
+): Promise<ReplaceCoinMaintenanceResult> {
+  return database.transaction(async (transaction) => {
+    const updatedCoin = (
+      await transaction
+        .update(coin)
+        .set({
+          ...normalizeCoinMaintenanceFields(fields),
+          updatedAt: new Date(),
+          version: sql`${coin.version} + 1`,
+        })
+        .where(and(eq(coin.id, id), eq(coin.version, expectedVersion)))
+        .returning()
+    ).at(0)
+
+    if (updatedCoin === undefined) {
+      const existing = await transaction.query.coin.findFirst({
+        columns: { id: true },
+        where: (record, { eq }) => eq(record.id, id),
+      })
+      return { status: existing === undefined ? "missing" : "stale" }
+    }
+
+    await replaceCoinRulers(id, fields.rulerIds, transaction)
+    await replaceCoinMints(id, fields.mintIds, transaction)
+    await replaceCoinThemes(id, fields.themeIds, transaction)
+    await replaceCoinReferences(id, getCoinReferences(fields), transaction)
+    await replaceCoinSurfaces(id, getCoinSurfaces(fields), transaction)
+
+    return { status: "updated", coin: updatedCoin }
   })
 }
 

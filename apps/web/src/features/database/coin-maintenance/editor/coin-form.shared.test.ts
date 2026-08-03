@@ -8,7 +8,7 @@ import {
   hasRequiredCoinDraftFields,
 } from "./coin-form.shared"
 
-const coin: CoinMaintenanceRecord = {
+const coin: CoinMaintenanceRecord & { etag: string } = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",
@@ -55,6 +55,7 @@ const coin: CoinMaintenanceRecord = {
     },
   },
   version: 1,
+  etag: '"coin-version-1"',
   createdAt: new Date("2026-07-05T00:00:00.000Z"),
   updatedAt: new Date("2026-07-05T00:00:00.000Z"),
 }

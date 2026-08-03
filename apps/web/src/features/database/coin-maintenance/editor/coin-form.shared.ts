@@ -46,7 +46,6 @@ export type EditableCoinRecord = Omit<
   CoinMaintenanceDetail,
   | "createdAt"
   | "updatedAt"
-  | "etag"
   | "version"
   | "diameter"
   | "faceValueNumericValue"

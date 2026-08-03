@@ -120,6 +120,7 @@ export const coin = pgTable(
       onDelete: "restrict",
     }),
     mintage: bigint("mintage", { mode: "number" }),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

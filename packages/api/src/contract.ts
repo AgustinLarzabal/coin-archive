@@ -1959,6 +1959,133 @@ const rulerMaintenanceMutationErrors = {
   },
 } as const
 
+const coinMaintenanceNamedOptionSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+})
+
+export const coinMaintenanceListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  issuer: codeSchema.optional(),
+  ruler: codeSchema.optional(),
+  distribution: codeSchema.optional(),
+  currency: codeSchema.optional(),
+  composition: codeSchema.optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["updatedAt", "title"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+
+export const coinMaintenanceListItemSchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  issuer: coinMaintenanceNamedOptionSchema,
+  minYear: z.number().int().nullable(),
+  maxYear: z.number().int().nullable(),
+  faceValue: z.object({
+    text: z.string(),
+    currency: coinMaintenanceNamedOptionSchema,
+  }),
+  distribution: coinMaintenanceNamedOptionSchema,
+  composition: coinMaintenanceNamedOptionSchema,
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+})
+
+export const coinMaintenanceListOutputSchema = z.object({
+  data: z.array(coinMaintenanceListItemSchema),
+  nextCursor: z.string().nullable(),
+})
+
+const coinMaintenanceSurfaceSchema = z.object({
+  description: z.string().nullable(),
+  lettering: z.string().nullable(),
+  imageUrl: z.string().url().nullable(),
+})
+
+const coinMaintenanceFaceSurfaceSchema = coinMaintenanceSurfaceSchema.extend({
+  engraverIds: z.array(z.uuid()),
+})
+
+export const coinMaintenanceDetailSchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  comments: z.string().nullable(),
+  compositionDescription: z.string().nullable(),
+  compositionId: z.uuid(),
+  currencyId: z.uuid(),
+  diameter: decimalSchema.nullable(),
+  distributionId: z.uuid(),
+  edgeId: z.uuid().nullable(),
+  faceValueNumericValue: decimalSchema,
+  faceValueText: z.string(),
+  isDemonetized: z.boolean().nullable(),
+  issuerId: z.uuid(),
+  maxYear: z.number().int().nullable(),
+  mintIds: z.array(z.uuid()),
+  minYear: z.number().int().nullable(),
+  mintage: decimalSchema.nullable(),
+  orientationId: z.uuid().nullable(),
+  rimId: z.uuid().nullable(),
+  rulerIds: z.array(z.uuid()),
+  shapeId: z.uuid().nullable(),
+  techniqueId: z.uuid().nullable(),
+  themeIds: z.array(z.uuid()),
+  thickness: decimalSchema.nullable(),
+  weight: decimalSchema.nullable(),
+  references: z.array(
+    z.object({ catalogueId: z.uuid(), number: z.string() })
+  ),
+  surfaces: z.object({
+    obverse: coinMaintenanceFaceSurfaceSchema.nullable(),
+    reverse: coinMaintenanceFaceSurfaceSchema.nullable(),
+    edge: coinMaintenanceSurfaceSchema.nullable(),
+  }),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+
+export const coinMaintenanceDetailOutputSchema = z.object({
+  data: coinMaintenanceDetailSchema,
+})
+
+export const coinMaintenanceDeleteSummarySchema = z.object({
+  title: z.string(),
+  rulerAttributions: z.number().int().nonnegative(),
+  mintAttributions: z.number().int().nonnegative(),
+  themeAttributions: z.number().int().nonnegative(),
+  catalogueReferences: z.number().int().nonnegative(),
+  coinSurfaces: z.number().int().nonnegative(),
+  engraverAttributions: z.number().int().nonnegative(),
+})
+
+export const coinMaintenanceDeleteSummaryOutputSchema = z.object({
+  data: coinMaintenanceDeleteSummarySchema,
+})
+
+export const coinMaintenanceOptionsOutputSchema = z.object({
+  data: z.object({
+    catalogues: z.array(catalogueOptionSchema),
+    compositions: z.array(compositionOptionSchema),
+    currencies: z.array(currencyOptionSchema),
+    distributions: z.array(distributionOptionSchema),
+    edges: z.array(edgeOptionSchema),
+    engravers: z.array(engraverOptionSchema),
+    issuers: z.array(issuerOptionSchema),
+    mints: z.array(mintOptionSchema),
+    orientations: z.array(orientationOptionSchema),
+    rims: z.array(rimOptionSchema),
+    rulers: z.array(rulerOptionSchema),
+    shapes: z.array(shapeOptionSchema),
+    mintingTechniques: z.array(mintingTechniqueOptionSchema),
+    themes: z.array(themeOptionSchema),
+  }),
+})
+
 export const publicApiContract = {
   coins: {
     browse: oc
@@ -1992,6 +2119,54 @@ export const publicApiContract = {
 }
 
 export const maintenanceApiContract = {
+  coins: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/coins",
+        summary: "Browse Coins for maintenance",
+        tags: ["Coin Maintenance"],
+      })
+      .input(coinMaintenanceListInputSchema)
+      .output(coinMaintenanceListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/coins/options",
+        summary: "Get compact Coin Maintenance reference choices",
+        tags: ["Coin Maintenance"],
+      })
+      .input(z.object({}))
+      .output(coinMaintenanceOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/coins/{uuid}",
+        summary: "Get editable Coin maintenance detail",
+        tags: ["Coin Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(coinMaintenanceDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    deleteSummary: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/coins/{uuid}/deletion-summary",
+        summary: "Get Coin deletion summary",
+        tags: ["Coin Maintenance"],
+      })
+      .input(z.object({ uuid: z.uuid() }))
+      .output(coinMaintenanceDeleteSummaryOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+  },
   surfaceImageUploads: {
     authorize: oc
       .route({
@@ -3147,6 +3322,30 @@ export type BrowseCoinsInput = z.infer<typeof browseCoinsInputSchema>
 export type BrowseCoinsOutput = z.infer<typeof browseCoinsOutputSchema>
 export type CoinDetail = z.infer<typeof coinDetailSchema>
 export type CoinDetailOutput = z.infer<typeof coinDetailOutputSchema>
+export type CoinMaintenanceListInput = z.infer<
+  typeof coinMaintenanceListInputSchema
+>
+export type CoinMaintenanceListItem = z.infer<
+  typeof coinMaintenanceListItemSchema
+>
+export type CoinMaintenanceListOutput = z.infer<
+  typeof coinMaintenanceListOutputSchema
+>
+export type CoinMaintenanceDetail = z.infer<
+  typeof coinMaintenanceDetailSchema
+>
+export type CoinMaintenanceDetailOutput = z.infer<
+  typeof coinMaintenanceDetailOutputSchema
+>
+export type CoinMaintenanceDeleteSummary = z.infer<
+  typeof coinMaintenanceDeleteSummarySchema
+>
+export type CoinMaintenanceDeleteSummaryOutput = z.infer<
+  typeof coinMaintenanceDeleteSummaryOutputSchema
+>
+export type CoinMaintenanceOptionsOutput = z.infer<
+  typeof coinMaintenanceOptionsOutputSchema
+>
 export type DatabaseMaintenanceOverview = z.infer<
   typeof databaseMaintenanceOverviewSchema
 >

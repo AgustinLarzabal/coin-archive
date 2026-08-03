@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useBlocker, useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CoinMaintenanceRecord } from "@coin-archive/db"
 import { Button } from "@coin-archive/ui/components/button"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
@@ -29,7 +28,7 @@ import {
   getNextEditSuccessMessage,
   hasRequiredCoinDraftFields,
 } from "./coin-form.shared"
-import type { CoinFormOptions } from "./coin-form.shared"
+import type { CoinFormOptions, EditableCoinRecord } from "./coin-form.shared"
 import { CatalogueNotesReferencesSection } from "./sections/catalogue-notes-references-section"
 import { DenominationLegalStatusSection } from "./sections/denomination-legal-status-section"
 import { DesignImagerySection } from "./sections/design-imagery-section"
@@ -44,7 +43,7 @@ const UNSAVED_CHANGES_WARNING =
 
 type CoinFormProps =
   | { mode: "create"; options: CoinFormOptions }
-  | { coin: CoinMaintenanceRecord; mode: "edit"; options: CoinFormOptions }
+  | { coin: EditableCoinRecord; mode: "edit"; options: CoinFormOptions }
 
 const createCoinAction = createServerFn({ method: "POST" })
   .inputValidator((data: CoinDraft) => data)

@@ -32,6 +32,9 @@ import {
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getDatabaseGeneralSummaryCountsWithDatabase,
+  getCoinMaintenanceDeleteSummaryWithDatabase,
+  getCoinMaintenanceApiRecordWithDatabase,
+  getCoinMaintenanceRecordsWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
   getCompositionMaintenanceRecordWithDatabase,
   getCompositionMaintenanceRecordsWithDatabase,
@@ -178,6 +181,127 @@ async function handleRequest(
     getCoin: (coinId) => getPublicCoinWithDatabase(database.db, coinId),
     getDatabaseMaintenanceOverview: () =>
       getDatabaseGeneralSummaryCountsWithDatabase(database.db),
+    listMaintenanceCoins: (input) =>
+      getCoinMaintenanceRecordsWithDatabase(database.db, input),
+    getMaintenanceCoin: (coinId) =>
+      getCoinMaintenanceApiRecordWithDatabase(database.db, coinId),
+    getMaintenanceCoinDeleteSummary: (coinId) =>
+      getCoinMaintenanceDeleteSummaryWithDatabase(database.db, coinId),
+    getCoinMaintenanceOptions: async () => {
+      const all = <T extends MaintenanceCursorRecord>(
+        list: MaintenanceCursorList<T>
+      ) => collectAllMaintenanceRecords(list)
+      const [
+        catalogues,
+        compositions,
+        currencies,
+        distributions,
+        edges,
+        engravers,
+        issuers,
+        mints,
+        orientations,
+        rims,
+        rulers,
+        shapes,
+        mintingTechniques,
+        themes,
+      ] = await Promise.all([
+        all((input) =>
+          getCatalogueMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getCompositionMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getCurrencyMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getDistributionMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getEdgeMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getEngraverMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getIssuerMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getMintMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getOrientationMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getRimMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getRulerMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getShapeMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getTechniqueMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+        all((input) =>
+          getThemeMaintenanceRecordsWithDatabase(database.db, input)
+        ),
+      ])
+      return {
+        catalogues: catalogues.map(({ id, code, title }) => ({
+          id,
+          code,
+          title,
+        })),
+        compositions: compositions.map(({ id, code, name }) => ({
+          id,
+          code,
+          name,
+        })),
+        currencies: currencies.map(({ id, code, name, fullName }) => ({
+          id,
+          code,
+          name,
+          fullName,
+        })),
+        distributions: distributions.map(({ id, code, name }) => ({
+          id,
+          code,
+          name,
+        })),
+        edges: edges.map(({ id, code, name }) => ({ id, code, name })),
+        engravers: engravers.map(({ id, code, name }) => ({ id, code, name })),
+        issuers: issuers.map(({ id, code, isoCode, name }) => ({
+          id,
+          code,
+          isoCode,
+          name,
+        })),
+        mints: mints.map(({ id, code, name }) => ({ id, code, name })),
+        orientations: orientations.map(({ id, code, name }) => ({
+          id,
+          code,
+          name,
+        })),
+        rims: rims.map(({ id, code, name }) => ({ id, code, name })),
+        rulers: rulers.map(({ id, code, name, group }) => ({
+          id,
+          code,
+          name,
+          group,
+        })),
+        shapes: shapes.map(({ id, code, name }) => ({ id, code, name })),
+        mintingTechniques: mintingTechniques.map(({ id, code, name }) => ({
+          id,
+          code,
+          name,
+        })),
+        themes: themes.map(({ id, code, name }) => ({ id, code, name })),
+      }
+    },
     listCatalogues: (input) =>
       getCatalogueMaintenanceRecordsWithDatabase(database.db, input),
     getCatalogue: (catalogueId) =>
@@ -423,4 +547,44 @@ async function handleRequest(
   } finally {
     await database.client.end()
   }
+}
+
+type MaintenanceCursor = {
+  value: string
+  secondaryValue: string
+  id: string
+}
+type MaintenanceCursorRecord = {
+  id: string
+  cursorValue: string
+  cursorSecondaryValue: string
+}
+type MaintenanceCursorList<T extends MaintenanceCursorRecord> = (input: {
+  cursor?: MaintenanceCursor
+  limit: number
+}) => Promise<T[]>
+
+async function collectAllMaintenanceRecords<T extends MaintenanceCursorRecord>(
+  list: MaintenanceCursorList<T>
+) {
+  const records: T[] = []
+  const pageSize = 100
+  let cursor: MaintenanceCursor | undefined
+  do {
+    const page = await list({
+      ...(cursor === undefined ? {} : { cursor }),
+      limit: pageSize,
+    })
+    records.push(...page)
+    const last = page.at(-1)
+    cursor =
+      page.length === pageSize && last !== undefined
+        ? {
+            value: last.cursorValue,
+            secondaryValue: last.cursorSecondaryValue,
+            id: last.id,
+          }
+        : undefined
+  } while (cursor !== undefined)
+  return records
 }

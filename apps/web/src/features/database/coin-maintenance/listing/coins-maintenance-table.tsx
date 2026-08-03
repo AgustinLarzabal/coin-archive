@@ -2,13 +2,13 @@ import type {
   CompositionOption,
   CurrencyOption,
   DistributionOption,
-} from "@coin-archive/api"
-import type {
-  CoinMaintenanceListResult,
   IssuerOption,
   RulerOption,
-} from "@coin-archive/db"
-import type { CoinMaintenanceSearch } from "./coin-maintenance-route-data"
+} from "@coin-archive/api"
+import type {
+  CoinMaintenanceSearch,
+  CoinMaintenanceWebListResult,
+} from "./coin-maintenance-route-data"
 
 type CoinMaintenanceFilterOptions = {
   issuers: IssuerOption[]
@@ -20,7 +20,7 @@ type CoinMaintenanceFilterOptions = {
 
 type CoinsMaintenanceTableProps = {
   search: CoinMaintenanceSearch
-  list: CoinMaintenanceListResult
+  list: CoinMaintenanceWebListResult
   filterOptions: CoinMaintenanceFilterOptions
 }
 

@@ -105,6 +105,7 @@ describe("coin maintenance mutations integration", () => {
     })
 
     expect(createdCoin).toMatchObject({
+      version: 1,
       title: "Coin Maintenance Create Coin",
       comments: "Public note.",
       compositionDescription: "Silver outer ring with a brass core.",
@@ -392,6 +393,7 @@ describe("coin maintenance mutations integration", () => {
 
     expect(updatedCoin).toMatchObject({
       id: createdCoin.id,
+      version: 2,
       title: "Updated Coin Maintenance Coin",
       comments: "Updated public note",
       compositionDescription: "Copper-nickel ring with brass core",
@@ -842,6 +844,9 @@ describe("coin maintenance mutations integration", () => {
         reverse: null,
         edge: null,
       },
+      version: 1,
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
 
     const beforeUpdate = await db.query.coin.findFirst({

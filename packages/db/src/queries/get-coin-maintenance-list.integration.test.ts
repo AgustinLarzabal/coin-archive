@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { db, getCoinMaintenanceList } from "../index"
+import {
+  db,
+  getCoinMaintenanceList,
+  getCoinMaintenanceRecordsWithDatabase,
+} from "../index"
 import {
   createCoin,
   createCoinRuler,
@@ -194,5 +198,98 @@ describe("getCoinMaintenanceList integration", () => {
       hasNextPage: false,
       hasPreviousPage: true,
     })
+
+    const firstCursorPage = await getCoinMaintenanceRecordsWithDatabase(db, {
+      limit: 2,
+      sort: "updatedAt",
+      order: "desc",
+    })
+    expect(firstCursorPage.map(({ id }) => id)).toStrictEqual([
+      latestFrenchCoin.id,
+      olderSpanishCoin.id,
+    ])
+    await expect(
+      getCoinMaintenanceRecordsWithDatabase(db, {
+        cursor: {
+          value: firstCursorPage[1].cursorValue,
+          secondaryValue: firstCursorPage[1].cursorSecondaryValue,
+          id: firstCursorPage[1].id,
+        },
+        limit: 2,
+        sort: "updatedAt",
+        order: "desc",
+      })
+    ).resolves.toMatchObject([{ id: newerSpanishCoin.id }])
+
+    await expect(
+      getCoinMaintenanceRecordsWithDatabase(db, {
+        q: "spanish",
+        issuerCode: "spain",
+        rulerCode: "charles-iii",
+        distributionCode: "standard-circulation",
+        currencyCode: "euro",
+        compositionCode: "silver-900",
+        sort: "title",
+        order: "asc",
+      })
+    ).resolves.toHaveLength(2)
+  })
+
+  it("includes descendant Issuers in the maintenance Issuer Filter", async () => {
+    const parent = await createIssuer({ code: "parent", name: "Parent" })
+    const child = await createIssuer({
+      code: "child",
+      name: "Child",
+      parentIssuerId: parent.id,
+    })
+    const unrelated = await createIssuer({ code: "other", name: "Other" })
+    const distribution = await createDistribution({
+      code: "issuer-filter-distribution",
+      name: "Issuer Filter Distribution",
+    })
+    const currency = await createCurrency({
+      code: "issuer-filter-currency",
+      name: "IFC",
+      fullName: "Issuer Filter Currency",
+    })
+    const composition = await createComposition({
+      code: "issuer-filter-composition",
+      name: "Issuer Filter Composition",
+    })
+    const parentCoin = await createCoin({
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      title: "Parent Coin",
+      issuerId: parent.id,
+      distributionId: distribution.id,
+      currencyId: currency.id,
+      compositionId: composition.id,
+    })
+    const childCoin = await createCoin({
+      createdAt: new Date("2026-01-02T00:00:00.000Z"),
+      title: "Child Coin",
+      issuerId: child.id,
+      distributionId: distribution.id,
+      currencyId: currency.id,
+      compositionId: composition.id,
+    })
+    await createCoin({
+      createdAt: new Date("2026-01-03T00:00:00.000Z"),
+      title: "Unrelated Coin",
+      issuerId: unrelated.id,
+      distributionId: distribution.id,
+      currencyId: currency.id,
+      compositionId: composition.id,
+    })
+
+    await expect(
+      getCoinMaintenanceRecordsWithDatabase(db, {
+        issuerCode: "parent",
+        sort: "title",
+        order: "asc",
+      })
+    ).resolves.toMatchObject([
+      { id: childCoin.id, title: "Child Coin" },
+      { id: parentCoin.id, title: "Parent Coin" },
+    ])
   })
 })

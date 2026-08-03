@@ -257,9 +257,25 @@ export {
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
 } from "./queries/get-catalogue-maintenance"
-export { getCoinMaintenanceList } from "./queries/get-coin-maintenance-list"
-export { getCoinMaintenanceDeleteSummary } from "./queries/get-coin-maintenance-delete-summary"
-export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
+export {
+  getCoinMaintenanceList,
+  getCoinMaintenanceRecordsWithDatabase,
+} from "./queries/get-coin-maintenance-list"
+export type {
+  CoinMaintenanceApiListRecord,
+  CoinMaintenanceCursor,
+  GetCoinMaintenanceRecordsOptions,
+} from "./queries/get-coin-maintenance-list"
+export {
+  getCoinMaintenanceDeleteSummary,
+  getCoinMaintenanceDeleteSummaryWithDatabase,
+} from "./queries/get-coin-maintenance-delete-summary"
+export {
+  getCoinMaintenanceRecord,
+  getCoinMaintenanceApiRecordWithDatabase,
+  getCoinMaintenanceRecordWithDatabase,
+} from "./queries/get-coin-maintenance-record"
+export type { CoinMaintenanceApiRecord } from "./queries/get-coin-maintenance-record"
 export {
   getDatabaseGeneralSummaryCounts,
   getDatabaseGeneralSummaryCountsWithDatabase,

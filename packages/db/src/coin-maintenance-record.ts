@@ -47,4 +47,7 @@ export type CoinMaintenanceRecord = {
   weight: number | null
   references: CoinMaintenanceReference[]
   surfaces: CoinMaintenanceSurfaceSet
+  version: number
+  createdAt: Date
+  updatedAt: Date
 }

@@ -1,10 +1,12 @@
-import { and, asc, eq } from "drizzle-orm"
+import { and, asc, eq, sql } from "drizzle-orm"
 
 import { db } from "../client"
+import type { db as databaseClient } from "../client"
 import type {
   CoinMaintenanceRecord,
   CoinMaintenanceSurfaceSet,
 } from "../coin-maintenance-record"
+import { coin } from "../schema/coin"
 import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 
@@ -68,9 +70,16 @@ function mapCoinMaintenanceSurfaces(
 export async function getCoinMaintenanceRecord(
   coinId: string
 ): Promise<CoinMaintenanceRecord | null> {
+  return getCoinMaintenanceRecordWithDatabase(db, coinId)
+}
+
+export async function getCoinMaintenanceRecordWithDatabase(
+  database: typeof databaseClient,
+  coinId: string
+): Promise<CoinMaintenanceRecord | null> {
   const [coinRow, mintRows, rulerRows, themeRows, referenceRows, surfaceRows] =
     await Promise.all([
-      db.query.coin.findFirst({
+      database.query.coin.findFirst({
         columns: {
           id: true,
           title: true,
@@ -94,31 +103,34 @@ export async function getCoinMaintenanceRecord(
           techniqueId: true,
           thickness: true,
           weight: true,
+          version: true,
+          createdAt: true,
+          updatedAt: true,
         },
         where: (record, { eq }) => eq(record.id, coinId),
       }),
-      db.query.coinMint.findMany({
+      database.query.coinMint.findMany({
         columns: {
           mintId: true,
         },
         where: (record, { eq }) => eq(record.coinId, coinId),
         orderBy: (record, { asc }) => asc(record.mintId),
       }),
-      db.query.coinRuler.findMany({
+      database.query.coinRuler.findMany({
         columns: {
           rulerId: true,
         },
         where: (record, { eq }) => eq(record.coinId, coinId),
         orderBy: (record, { asc }) => asc(record.rulerOrder),
       }),
-      db.query.coinTheme.findMany({
+      database.query.coinTheme.findMany({
         columns: {
           themeId: true,
         },
         where: (record, { eq }) => eq(record.coinId, coinId),
         orderBy: (record, { asc }) => asc(record.themeId),
       }),
-      db.query.coinReference.findMany({
+      database.query.coinReference.findMany({
         columns: {
           catalogueId: true,
           number: true,
@@ -126,7 +138,7 @@ export async function getCoinMaintenanceRecord(
         where: (record, { eq }) => eq(record.coinId, coinId),
         orderBy: (record, { asc }) => asc(record.catalogueId),
       }),
-      db
+      database
         .select({
           kind: coinSurface.kind,
           description: coinSurface.description,
@@ -161,4 +173,37 @@ export async function getCoinMaintenanceRecord(
     })),
     surfaces: mapCoinMaintenanceSurfaces(surfaceRows),
   }
+}
+
+export type CoinMaintenanceApiRecord = Omit<
+  CoinMaintenanceRecord,
+  "diameter" | "faceValueNumericValue" | "mintage" | "thickness" | "weight"
+> & {
+  diameter: string | null
+  faceValueNumericValue: string
+  mintage: string | null
+  thickness: string | null
+  weight: string | null
+}
+
+export async function getCoinMaintenanceApiRecordWithDatabase(
+  database: typeof databaseClient,
+  coinId: string
+): Promise<CoinMaintenanceApiRecord | null> {
+  const record = await getCoinMaintenanceRecordWithDatabase(database, coinId)
+  if (record === null) return null
+
+  const exactDecimals = await database
+    .select({
+      diameter: sql<string | null>`${coin.diameter}::text`,
+      faceValueNumericValue: sql<string>`${coin.faceValueNumericValue}::text`,
+      mintage: sql<string | null>`${coin.mintage}::text`,
+      thickness: sql<string | null>`${coin.thickness}::text`,
+      weight: sql<string | null>`${coin.weight}::text`,
+    })
+    .from(coin)
+    .where(eq(coin.id, coinId))
+    .limit(1)
+
+  return { ...record, ...exactDecimals[0] }
 }

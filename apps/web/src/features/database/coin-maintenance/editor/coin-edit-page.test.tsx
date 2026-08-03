@@ -43,6 +43,9 @@ const coin: CoinMaintenanceRecord = {
     reverse: null,
     edge: null,
   },
+  version: 1,
+  createdAt: new Date("2026-07-05T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-05T00:00:00.000Z"),
 }
 
 const options = {

@@ -54,6 +54,9 @@ const coin: CoinMaintenanceRecord = {
       imageUrl: "https://example.com/edge.jpg",
     },
   },
+  version: 1,
+  createdAt: new Date("2026-07-05T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-05T00:00:00.000Z"),
 }
 
 describe("createCoinDraft", () => {

@@ -1,20 +1,17 @@
 import { createServerFn } from "@tanstack/react-start"
 import type {
+  CoinMaintenanceOptionsOutput,
   CompositionOption,
   CurrencyOption,
   DistributionOption,
-} from "@coin-archive/api"
-import type {
-  CoinMaintenanceListOptions,
-  CoinMaintenanceListResult,
   IssuerOption,
+  MaintenanceApiClient,
   RulerOption,
-} from "@coin-archive/db"
+} from "@coin-archive/api"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import { loadAllMaintenanceOptions } from "@/lib/maintenance-options"
 
 import { toMaintenancePageLoaderData } from "../../maintenance-page"
 import type {
@@ -87,19 +84,36 @@ type CoinMaintenanceFilterOptions = {
 
 type CoinMaintenancePageData = {
   search: CoinMaintenanceSearch
-  list: CoinMaintenanceListResult
+  list: CoinMaintenanceWebListResult
   filterOptions: CoinMaintenanceFilterOptions
 }
 
 type CoinMaintenanceReadDependencies = {
-  getCoinMaintenanceList: (
-    options?: CoinMaintenanceListOptions
-  ) => Promise<CoinMaintenanceListResult>
-  getIssuers: () => Promise<IssuerOption[]>
-  getRulers: () => Promise<RulerOption[]>
-  getDistributions: () => Promise<DistributionOption[]>
-  getCurrencies: () => Promise<CurrencyOption[]>
-  getCompositions: () => Promise<CompositionOption[]>
+  listCoins: MaintenanceApiClient["coins"]["list"]
+  getOptions: () => Promise<CoinMaintenanceOptionsOutput>
+}
+
+type CoinMaintenanceWebListItem = {
+  id: string
+  title: string
+  issuer: { code: string; name: string }
+  minYear: number | null
+  maxYear: number | null
+  faceValue: { text: string; currency: { code: string; name: string } }
+  distribution: { code: string; name: string }
+  composition: { code: string; name: string }
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type CoinMaintenanceWebListResult = {
+  items: CoinMaintenanceWebListItem[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
 }
 
 type LoadCoinMaintenancePageDataResult =
@@ -118,25 +132,13 @@ const COIN_MAINTENANCE_FILTER_KEYS = [
 ] as const
 
 async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintenanceReadDependencies> {
-  const [
-    { getCoinMaintenanceList, getIssuers, getRulers },
-    { getMaintenanceApiClient },
-  ] = await Promise.all([
-    import("@coin-archive/db"),
-    import("@/lib/maintenance-api.server"),
-  ])
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
   const maintenanceClient = await getMaintenanceApiClient()
 
   return {
-    getCoinMaintenanceList,
-    getIssuers,
-    getRulers,
-    getDistributions: () =>
-      loadAllMaintenanceOptions(maintenanceClient.distributions.options),
-    getCurrencies: () =>
-      loadAllMaintenanceOptions(maintenanceClient.currencies.options),
-    getCompositions: () =>
-      loadAllMaintenanceOptions(maintenanceClient.compositions.options),
+    listCoins: maintenanceClient.coins.list,
+    getOptions: () => maintenanceClient.coins.options({}),
   }
 }
 
@@ -192,19 +194,33 @@ export async function loadCoinMaintenancePageData(
   const resolvedDependencies =
     dependencies ?? (await getDefaultCoinMaintenanceReadDependencies())
 
-  const [list, issuers, rulers, distributions, currencies, compositions] =
-    await Promise.all([
-      resolvedDependencies.getCoinMaintenanceList({
-        ...loaderDeps,
-        page: loaderDeps.page ?? 1,
-        pageSize: COIN_MAINTENANCE_PAGE_SIZE,
-      }),
-      resolvedDependencies.getIssuers(),
-      resolvedDependencies.getRulers(),
-      resolvedDependencies.getDistributions(),
-      resolvedDependencies.getCurrencies(),
-      resolvedDependencies.getCompositions(),
-    ])
+  const input = {
+    q: loaderDeps.titleQuery,
+    issuer: loaderDeps.issuerCode,
+    ruler: loaderDeps.rulerCode,
+    distribution: loaderDeps.distributionCode,
+    currency: loaderDeps.currencyCode,
+    composition: loaderDeps.compositionCode,
+  }
+  const [items, options] = await Promise.all([
+    loadAllCoinMaintenanceItems(resolvedDependencies.listCoins, input),
+    resolvedDependencies.getOptions(),
+  ])
+  const page = loaderDeps.page ?? 1
+  const totalItems = items.length
+  const totalPages = Math.ceil(totalItems / COIN_MAINTENANCE_PAGE_SIZE)
+  const pageStart = (page - 1) * COIN_MAINTENANCE_PAGE_SIZE
+  const list: CoinMaintenanceWebListResult = {
+    items: items.slice(pageStart, pageStart + COIN_MAINTENANCE_PAGE_SIZE),
+    page,
+    pageSize: COIN_MAINTENANCE_PAGE_SIZE,
+    totalItems,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1 && totalItems > 0,
+  }
+  const { issuers, rulers, distributions, currencies, compositions } =
+    options.data
 
   return {
     status: "success",
@@ -218,6 +234,44 @@ export async function loadCoinMaintenancePageData(
       compositions,
     },
   }
+}
+
+async function loadAllCoinMaintenanceItems(
+  listCoins: MaintenanceApiClient["coins"]["list"],
+  filters: {
+    q?: string
+    issuer?: string
+    ruler?: string
+    distribution?: string
+    currency?: string
+    composition?: string
+  }
+): Promise<CoinMaintenanceWebListItem[]> {
+  const items: CoinMaintenanceWebListItem[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+  do {
+    const result = await listCoins({
+      ...filters,
+      ...(cursor === undefined ? {} : { cursor }),
+      limit: 100,
+      sort: "updatedAt",
+      order: "desc",
+    })
+    items.push(
+      ...result.data.map((item) => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt),
+      }))
+    )
+    cursor = result.nextCursor ?? undefined
+    if (cursor !== undefined && seenCursors.has(cursor)) {
+      throw new Error("Coin Maintenance API repeated a cursor.")
+    }
+    if (cursor !== undefined) seenCursors.add(cursor)
+  } while (cursor !== undefined)
+  return items
 }
 
 const getCoinMaintenanceLoaderData = createServerFn({

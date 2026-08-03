@@ -1,8 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import type {
-  CoinMaintenanceDeleteSummary,
-  CoinMaintenanceRecord,
-} from "@coin-archive/db"
+import type { CoinMaintenanceDeleteSummary } from "@coin-archive/api"
 import { z } from "zod"
 
 import { getAuthSession } from "@/lib/auth-session"
@@ -15,6 +12,7 @@ import {
 import type {
   CoinFormOptions,
   CoinFormOptionsDependencies,
+  EditableCoinRecord,
 } from "./coin-form.shared"
 import { toMaintenancePageLoaderData } from "../../maintenance-page"
 import type {
@@ -28,7 +26,7 @@ const coinEditLoaderDepsSchema = z.object({
 })
 
 type EditCoinPageData = {
-  coin: CoinMaintenanceRecord | null
+  coin: EditableCoinRecord | null
   deleteSummary: CoinMaintenanceDeleteSummary | null
   options: CoinFormOptions
 }
@@ -43,23 +41,57 @@ type EditCoinReadDependencies = CoinFormOptionsDependencies & {
   ) => Promise<CoinMaintenanceDeleteSummary | null>
   getCoinMaintenanceRecord: (
     coinId: string
-  ) => Promise<CoinMaintenanceRecord | null>
+  ) => Promise<EditableCoinRecord | null>
 }
 
 async function getDefaultDependencies(): Promise<EditCoinReadDependencies> {
-  const [
-    { getCoinMaintenanceDeleteSummary, getCoinMaintenanceRecord },
-    formOptionsDependencies,
-  ] = await Promise.all([
-    import("@coin-archive/db"),
-    getCoinFormOptionsDependencies(),
-  ])
+  const [{ getMaintenanceApiClient }, formOptionsDependencies] =
+    await Promise.all([
+      import("@/lib/maintenance-api.server"),
+      getCoinFormOptionsDependencies(),
+    ])
+  const client = await getMaintenanceApiClient()
 
   return {
-    getCoinMaintenanceDeleteSummary,
-    getCoinMaintenanceRecord,
+    getCoinMaintenanceDeleteSummary: async (coinId) => {
+      try {
+        return (await client.coins.deleteSummary({ uuid: coinId })).data
+      } catch (error) {
+        if (isCoinNotFoundProblem(error)) return null
+        throw error
+      }
+    },
+    getCoinMaintenanceRecord: async (coinId) => {
+      try {
+        return (await client.coins.detail({ uuid: coinId })).data
+      } catch (error) {
+        if (isCoinNotFoundProblem(error)) return null
+        throw error
+      }
+    },
     ...formOptionsDependencies,
   }
+}
+
+function isCoinNotFoundProblem(error: unknown) {
+  if (typeof error !== "object" || error === null) return false
+  if ("code" in error && error.code === "NOT_FOUND") return true
+  if (
+    !("data" in error) ||
+    typeof error.data !== "object" ||
+    error.data === null
+  ) {
+    return false
+  }
+  const data = error.data
+  if ("code" in data && data.code === "coin_not_found") return true
+  return (
+    "body" in data &&
+    typeof data.body === "object" &&
+    data.body !== null &&
+    "code" in data.body &&
+    data.body.code === "coin_not_found"
+  )
 }
 
 export async function loadCoinEditPageData(

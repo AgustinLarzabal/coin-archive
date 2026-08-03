@@ -96,14 +96,23 @@ const filterOptions = {
   ],
 }
 
+const apiItems = list.items.map((item) => ({
+  ...item,
+  issuer: { id: "issuer-1", ...item.issuer },
+  faceValue: {
+    ...item.faceValue,
+    currency: { id: "currency-1", ...item.faceValue.currency },
+  },
+  distribution: { id: "distribution-1", ...item.distribution },
+  composition: { id: "composition-1", ...item.composition },
+  createdAt: item.createdAt.toISOString(),
+  updatedAt: item.updatedAt.toISOString(),
+}))
+
 describe("loadCoinMaintenancePageData", () => {
   it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getCoinMaintenanceList = vi.fn()
-    const getIssuers = vi.fn()
-    const getRulers = vi.fn()
-    const getDistributions = vi.fn()
-    const getCurrencies = vi.fn()
-    const getCompositions = vi.fn()
+    const listCoins = vi.fn()
+    const getOptions = vi.fn()
 
     await expect(
       loadCoinMaintenancePageData(
@@ -112,53 +121,43 @@ describe("loadCoinMaintenancePageData", () => {
           page: 1,
         },
         {
-          getCoinMaintenanceList,
-          getIssuers,
-          getRulers,
-          getDistributions,
-          getCurrencies,
-          getCompositions,
+          listCoins,
+          getOptions,
         }
       )
     ).resolves.toStrictEqual({
       status: "error",
     })
 
-    expect(getCoinMaintenanceList).not.toHaveBeenCalled()
-    expect(getIssuers).not.toHaveBeenCalled()
+    expect(listCoins).not.toHaveBeenCalled()
+    expect(getOptions).not.toHaveBeenCalled()
   })
 
   it("rejects signed-in Collectors without editor access", async () => {
-    const getCoinMaintenanceList = vi.fn()
+    const listCoins = vi.fn()
 
     await expect(
       loadCoinMaintenancePageData(
         { role: "collector" },
         { page: 1 },
         {
-          getCoinMaintenanceList,
-          getIssuers: vi.fn(),
-          getRulers: vi.fn(),
-          getDistributions: vi.fn(),
-          getCurrencies: vi.fn(),
-          getCompositions: vi.fn(),
+          listCoins,
+          getOptions: vi.fn(),
         }
       )
     ).resolves.toStrictEqual({
       status: "error",
     })
 
-    expect(getCoinMaintenanceList).not.toHaveBeenCalled()
+    expect(listCoins).not.toHaveBeenCalled()
   })
 
   it("returns maintenance list data and filter options for Editors and Admins", async () => {
     const dependencies = {
-      getCoinMaintenanceList: vi.fn().mockResolvedValue(list),
-      getIssuers: vi.fn().mockResolvedValue(filterOptions.issuers),
-      getRulers: vi.fn().mockResolvedValue(filterOptions.rulers),
-      getDistributions: vi.fn().mockResolvedValue(filterOptions.distributions),
-      getCurrencies: vi.fn().mockResolvedValue(filterOptions.currencies),
-      getCompositions: vi.fn().mockResolvedValue(filterOptions.compositions),
+      listCoins: vi
+        .fn()
+        .mockResolvedValue({ data: apiItems, nextCursor: null }),
+      getOptions: vi.fn().mockResolvedValue({ data: filterOptions }),
     }
 
     for (const role of ["editor", "admin"] as const) {
@@ -181,16 +180,26 @@ describe("loadCoinMaintenancePageData", () => {
           issuer: "spain",
           page: 2,
         },
-        list,
+        list: {
+          ...list,
+          items: [],
+          page: 2,
+          hasPreviousPage: true,
+        },
         filterOptions,
       })
     }
 
-    expect(dependencies.getCoinMaintenanceList).toHaveBeenCalledWith({
-      titleQuery: "spanish",
-      issuerCode: "spain",
-      page: 2,
-      pageSize: COIN_MAINTENANCE_PAGE_SIZE,
+    expect(dependencies.listCoins).toHaveBeenCalledWith({
+      q: "spanish",
+      issuer: "spain",
+      ruler: undefined,
+      distribution: undefined,
+      currency: undefined,
+      composition: undefined,
+      limit: 100,
+      sort: "updatedAt",
+      order: "desc",
     })
   })
 })

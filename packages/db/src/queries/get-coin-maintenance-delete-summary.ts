@@ -1,6 +1,7 @@
 import { count, eq } from "drizzle-orm"
 
 import { db } from "../client"
+import type { db as databaseClient } from "../client"
 import type { CoinMaintenanceDeleteSummary } from "../coin-maintenance-delete-summary"
 import { coinMint } from "../schema/coin-mint"
 import { coinReference } from "../schema/coin-reference"
@@ -16,7 +17,14 @@ function getCount(result: Array<{ count: number }>) {
 export async function getCoinMaintenanceDeleteSummary(
   coinId: string
 ): Promise<CoinMaintenanceDeleteSummary | null> {
-  const coinRow = await db.query.coin.findFirst({
+  return getCoinMaintenanceDeleteSummaryWithDatabase(db, coinId)
+}
+
+export async function getCoinMaintenanceDeleteSummaryWithDatabase(
+  database: typeof databaseClient,
+  coinId: string
+): Promise<CoinMaintenanceDeleteSummary | null> {
+  const coinRow = await database.query.coin.findFirst({
     columns: {
       id: true,
       title: true,
@@ -36,15 +44,15 @@ export async function getCoinMaintenanceDeleteSummary(
     surfaceResult,
     engraverResult,
   ] = await Promise.all([
-    db.select({ count: count() }).from(coinRuler).where(eq(coinRuler.coinId, coinId)),
-    db.select({ count: count() }).from(coinMint).where(eq(coinMint.coinId, coinId)),
-    db.select({ count: count() }).from(coinTheme).where(eq(coinTheme.coinId, coinId)),
-    db
+    database.select({ count: count() }).from(coinRuler).where(eq(coinRuler.coinId, coinId)),
+    database.select({ count: count() }).from(coinMint).where(eq(coinMint.coinId, coinId)),
+    database.select({ count: count() }).from(coinTheme).where(eq(coinTheme.coinId, coinId)),
+    database
       .select({ count: count() })
       .from(coinReference)
       .where(eq(coinReference.coinId, coinId)),
-    db.select({ count: count() }).from(coinSurface).where(eq(coinSurface.coinId, coinId)),
-    db
+    database.select({ count: count() }).from(coinSurface).where(eq(coinSurface.coinId, coinId)),
+    database
       .select({ count: count() })
       .from(coinSurfaceEngraver)
       .innerJoin(

@@ -1,5 +1,7 @@
 import type {
   CatalogueOption,
+  CoinMaintenanceDetail,
+  CoinMaintenanceOptionsOutput,
   CompositionOption,
   CurrencyOption,
   DistributionOption,
@@ -8,19 +10,12 @@ import type {
   IssuerOption,
   MintOption,
   MintingTechniqueOption,
+  OrientationOption,
   RimOption,
+  RulerOption,
   ShapeOption,
   ThemeOption,
 } from "@coin-archive/api"
-import type {
-  CoinMaintenanceFaceSurface,
-  CoinMaintenanceRecord,
-  CoinMaintenanceSurface,
-  OrientationOption,
-  RulerOption,
-} from "@coin-archive/db"
-
-import { loadAllMaintenanceOptions } from "@/lib/maintenance-options"
 
 import type { CoinDraft } from "../actions"
 
@@ -44,20 +39,26 @@ export type CoinFormOptions = {
 }
 
 export type CoinFormOptionsDependencies = {
-  getCatalogues: () => Promise<CatalogueOption[]>
-  getCompositions: () => Promise<CompositionOption[]>
-  getCurrencies: () => Promise<CurrencyOption[]>
-  getDistributions: () => Promise<DistributionOption[]>
-  getEdges: () => Promise<EdgeOption[]>
-  getEngravers: () => Promise<EngraverOption[]>
-  getIssuers: () => Promise<IssuerOption[]>
-  getMints: () => Promise<MintOption[]>
-  getOrientations: () => Promise<OrientationOption[]>
-  getRims: () => Promise<RimOption[]>
-  getRulers: () => Promise<RulerOption[]>
-  getShapes: () => Promise<ShapeOption[]>
-  getTechniques: () => Promise<MintingTechniqueOption[]>
-  getThemes: () => Promise<ThemeOption[]>
+  getCoinMaintenanceOptions: () => Promise<CoinMaintenanceOptionsOutput["data"]>
+}
+
+export type EditableCoinRecord = Omit<
+  CoinMaintenanceDetail,
+  | "createdAt"
+  | "updatedAt"
+  | "etag"
+  | "version"
+  | "diameter"
+  | "faceValueNumericValue"
+  | "mintage"
+  | "thickness"
+  | "weight"
+> & {
+  diameter: number | string | null
+  faceValueNumericValue: number | string
+  mintage: number | string | null
+  thickness: number | string | null
+  weight: number | string | null
 }
 
 const REQUIRED_LOOKUP_OPTION_KEYS = [
@@ -123,94 +124,29 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
 }
 
 export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
-  const [{ getOrientations, getRulers }, { getMaintenanceApiClient }] =
-    await Promise.all([
-      import("@coin-archive/db"),
-      import("@/lib/maintenance-api.server"),
-    ])
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
   const maintenanceClient = await getMaintenanceApiClient()
 
   return {
-    getCatalogues: () =>
-      loadAllMaintenanceOptions(maintenanceClient.catalogues.options),
-    getCompositions: () =>
-      loadAllMaintenanceOptions(maintenanceClient.compositions.options),
-    getCurrencies: () =>
-      loadAllMaintenanceOptions(maintenanceClient.currencies.options),
-    getDistributions: () =>
-      loadAllMaintenanceOptions(maintenanceClient.distributions.options),
-    getEdges: () => loadAllMaintenanceOptions(maintenanceClient.edges.options),
-    getEngravers: () =>
-      loadAllMaintenanceOptions(maintenanceClient.engravers.options),
-    getIssuers: () =>
-      loadAllMaintenanceOptions(maintenanceClient.issuers.options),
-    getMints: () => loadAllMaintenanceOptions(maintenanceClient.mints.options),
-    getOrientations,
-    getRims: () => loadAllMaintenanceOptions(maintenanceClient.rims.options),
-    getRulers,
-    getShapes: () =>
-      loadAllMaintenanceOptions(maintenanceClient.shapes.options),
-    getTechniques: () =>
-      loadAllMaintenanceOptions(maintenanceClient.mintingTechniques.options),
-    getThemes: () =>
-      loadAllMaintenanceOptions(maintenanceClient.themes.options),
+    getCoinMaintenanceOptions: async () =>
+      (await maintenanceClient.coins.options({})).data,
   }
 }
 
 export async function loadCoinFormOptions(
   dependencies: CoinFormOptionsDependencies
 ): Promise<CoinFormOptions> {
-  const [
-    issuers,
-    rulers,
-    distributions,
-    compositions,
-    currencies,
-    catalogues,
-    engravers,
-    mints,
-    orientations,
-    shapes,
-    techniques,
-    edges,
-    rims,
-    themes,
-  ] = await Promise.all([
-    dependencies.getIssuers(),
-    dependencies.getRulers(),
-    dependencies.getDistributions(),
-    dependencies.getCompositions(),
-    dependencies.getCurrencies(),
-    dependencies.getCatalogues(),
-    dependencies.getEngravers(),
-    dependencies.getMints(),
-    dependencies.getOrientations(),
-    dependencies.getShapes(),
-    dependencies.getTechniques(),
-    dependencies.getEdges(),
-    dependencies.getRims(),
-    dependencies.getThemes(),
-  ])
+  const { mintingTechniques, ...options } =
+    await dependencies.getCoinMaintenanceOptions()
 
   return {
-    issuers,
-    rulers,
-    distributions,
-    compositions,
-    currencies,
-    catalogues,
-    engravers,
-    mints,
-    orientations,
-    shapes,
-    techniques,
-    edges,
-    rims,
-    themes,
+    ...options,
+    techniques: mintingTechniques,
   }
 }
 
-function stringifyOptionalNumber(value: number | null) {
+function stringifyOptionalNumber(value: number | string | null) {
   return value === null ? "" : String(value)
 }
 
@@ -252,7 +188,7 @@ function mapIdsToDraftRows<
 }
 
 function mapFaceSurfaceDraft(
-  surface: CoinMaintenanceFaceSurface | null
+  surface: CoinMaintenanceDetail["surfaces"]["obverse"]
 ): CoinDraft["surfaces"]["obverse"] {
   if (!surface) {
     return {
@@ -271,7 +207,7 @@ function mapFaceSurfaceDraft(
 }
 
 function mapEdgeSurfaceDraft(
-  surface: CoinMaintenanceSurface | null
+  surface: CoinMaintenanceDetail["surfaces"]["edge"]
 ): CoinDraft["surfaces"]["edge"] {
   if (!surface) {
     return { ...EMPTY_EDGE_SURFACE_DRAFT }
@@ -285,7 +221,7 @@ function mapEdgeSurfaceDraft(
   }
 }
 
-export function createCoinDraft(coin: CoinMaintenanceRecord): CoinDraft {
+export function createCoinDraft(coin: EditableCoinRecord): CoinDraft {
   const rulers = mapIdsToDraftRows<"rulers", "rulerId">(
     coin.rulerIds,
     "rulerId"
@@ -334,7 +270,7 @@ export function getInitialCoinDraft(
         mode: "create"
       }
     | {
-        coin: CoinMaintenanceRecord
+        coin: EditableCoinRecord
         mode: "edit"
       }
 ): CoinDraft {

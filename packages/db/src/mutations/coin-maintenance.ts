@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 import { db } from "../client"
 import type {
@@ -327,6 +327,7 @@ export async function updateCoinMaintenance({
       .set({
         ...normalizeCoinMaintenanceFields(fields),
         updatedAt: new Date(),
+        version: sql`${coin.version} + 1`,
       })
       .where(eq(coin.id, id))
       .returning()

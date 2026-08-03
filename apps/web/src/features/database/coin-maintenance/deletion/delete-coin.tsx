@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { CoinMaintenanceDeleteSummary } from "@coin-archive/db"
+import type { CoinMaintenanceDeleteSummary } from "@coin-archive/api"
 import {
   AlertDialog,
   AlertDialogCancel,

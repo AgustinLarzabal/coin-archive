@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm"
 import type { SQL } from "drizzle-orm"
 
 import { db } from "../client"
@@ -28,6 +28,7 @@ export type CoinMaintenanceListRecord = {
   id: string
   title: string
   issuer: {
+    id: string
     code: string
     name: string
   }
@@ -36,15 +37,18 @@ export type CoinMaintenanceListRecord = {
   faceValue: {
     text: string
     currency: {
+      id: string
       code: string
       name: string
     }
   }
   distribution: {
+    id: string
     code: string
     name: string
   }
   composition: {
+    id: string
     code: string
     name: string
   }
@@ -77,15 +81,19 @@ type CoinMaintenanceQueryRow = {
   id: string
   title: string
   issuerCode: string
+  issuerId: string
   issuerName: string
   minYear: number | null
   maxYear: number | null
   faceValueText: string
   currencyCode: string
+  currencyId: string
   currencyName: string
   distributionCode: string
+  distributionId: string
   distributionName: string
   compositionCode: string
+  compositionId: string
   compositionName: string
   createdAt: Date
   updatedAt: Date
@@ -145,9 +153,18 @@ function buildIssuerFilter(issuerCode: string | undefined): SQL | undefined {
 
   return sql`
     ${coin.issuerId} in (
-      select ${issuer.id}
-      from ${issuer}
-      where lower(${issuer.code}) = ${issuerCode}
+      with recursive issuer_tree(id) as (
+        select "issuer"."id"
+        from "issuer"
+        where lower("issuer"."code") = ${issuerCode}
+        union
+        select "child_issuer"."id"
+        from "issuer" as "child_issuer"
+        inner join issuer_tree
+          on "child_issuer"."parent_issuer_id" = issuer_tree.id
+      )
+      select issuer_tree.id
+      from issuer_tree
     )
   `
 }
@@ -168,7 +185,9 @@ function buildDistributionFilter(
   `
 }
 
-function buildCurrencyFilter(currencyCode: string | undefined): SQL | undefined {
+function buildCurrencyFilter(
+  currencyCode: string | undefined
+): SQL | undefined {
   if (!currencyCode) {
     return undefined
   }
@@ -239,6 +258,7 @@ function mapCoinMaintenanceQueryRow(
     id: item.id,
     title: item.title,
     issuer: {
+      id: item.issuerId,
       code: item.issuerCode,
       name: item.issuerName,
     },
@@ -247,15 +267,18 @@ function mapCoinMaintenanceQueryRow(
     faceValue: {
       text: item.faceValueText,
       currency: {
+        id: item.currencyId,
         code: item.currencyCode,
         name: item.currencyName,
       },
     },
     distribution: {
+      id: item.distributionId,
       code: item.distributionCode,
       name: item.distributionName,
     },
     composition: {
+      id: item.compositionId,
       code: item.compositionCode,
       name: item.compositionName,
     },
@@ -277,15 +300,19 @@ export function buildGetCoinMaintenanceListItemsQuery(
       id: coin.id,
       title: coin.title,
       issuerCode: issuer.code,
+      issuerId: issuer.id,
       issuerName: issuer.name,
       minYear: coin.minYear,
       maxYear: coin.maxYear,
       faceValueText: coin.faceValueText,
       currencyCode: currency.code,
+      currencyId: currency.id,
       currencyName: currency.name,
       distributionCode: distribution.code,
+      distributionId: distribution.id,
       distributionName: distribution.name,
       compositionCode: composition.code,
+      compositionId: composition.id,
       compositionName: composition.name,
       createdAt: coin.createdAt,
       updatedAt: coin.updatedAt,
@@ -299,6 +326,119 @@ export function buildGetCoinMaintenanceListItemsQuery(
     .orderBy(desc(coin.updatedAt), desc(coin.id), asc(coin.title))
     .limit(normalizedOptions.pageSize)
     .offset(offset)
+}
+
+export type CoinMaintenanceCursor = {
+  value: string
+  secondaryValue: string
+  id: string
+}
+
+export type GetCoinMaintenanceRecordsOptions = Omit<
+  CoinMaintenanceListOptions,
+  "page" | "pageSize" | "titleQuery"
+> & {
+  q?: string
+  cursor?: CoinMaintenanceCursor
+  limit?: number
+  sort?: "updatedAt" | "title"
+  order?: "asc" | "desc"
+}
+
+export type CoinMaintenanceApiListRecord = CoinMaintenanceListRecord & {
+  cursorValue: string
+  cursorSecondaryValue: string
+}
+
+export async function getCoinMaintenanceRecordsWithDatabase(
+  database: typeof db,
+  options: GetCoinMaintenanceRecordsOptions = {}
+): Promise<CoinMaintenanceApiListRecord[]> {
+  const normalizedOptions = normalizeOptions({
+    ...options,
+    titleQuery: options.q,
+  })
+  const direction = options.order === "asc" ? asc : desc
+  const compare = options.order === "asc" ? gt : lt
+  const titleValue = sql<string>`lower(${coin.title})`
+  const cursor = options.cursor
+  const cursorFilter =
+    cursor === undefined
+      ? undefined
+      : options.sort === "title"
+        ? or(
+            compare(titleValue, cursor.value),
+            and(
+              eq(titleValue, cursor.value),
+              compare(coin.updatedAt, new Date(cursor.secondaryValue))
+            ),
+            and(
+              eq(titleValue, cursor.value),
+              eq(coin.updatedAt, new Date(cursor.secondaryValue)),
+              compare(coin.id, cursor.id)
+            )
+          )
+        : or(
+            compare(coin.updatedAt, new Date(cursor.value)),
+            and(
+              eq(coin.updatedAt, new Date(cursor.value)),
+              compare(titleValue, cursor.secondaryValue)
+            ),
+            and(
+              eq(coin.updatedAt, new Date(cursor.value)),
+              eq(titleValue, cursor.secondaryValue),
+              compare(coin.id, cursor.id)
+            )
+          )
+  const filters = buildCoinMaintenanceFilters(normalizedOptions)
+  if (cursorFilter !== undefined) filters.push(cursorFilter)
+  const rows = await database
+    .select({
+      id: coin.id,
+      title: coin.title,
+      issuerId: issuer.id,
+      issuerCode: issuer.code,
+      issuerName: issuer.name,
+      minYear: coin.minYear,
+      maxYear: coin.maxYear,
+      faceValueText: coin.faceValueText,
+      currencyId: currency.id,
+      currencyCode: currency.code,
+      currencyName: currency.name,
+      distributionId: distribution.id,
+      distributionCode: distribution.code,
+      distributionName: distribution.name,
+      compositionId: composition.id,
+      compositionCode: composition.code,
+      compositionName: composition.name,
+      createdAt: coin.createdAt,
+      updatedAt: coin.updatedAt,
+      cursorTitle: titleValue,
+    })
+    .from(coin)
+    .innerJoin(issuer, eq(coin.issuerId, issuer.id))
+    .innerJoin(distribution, eq(coin.distributionId, distribution.id))
+    .innerJoin(currency, eq(coin.currencyId, currency.id))
+    .innerJoin(composition, eq(coin.compositionId, composition.id))
+    .where(filters.length > 0 ? and(...filters) : undefined)
+    .orderBy(
+      ...(options.sort === "title"
+        ? [direction(titleValue), direction(coin.updatedAt), direction(coin.id)]
+        : [
+            direction(coin.updatedAt),
+            direction(titleValue),
+            direction(coin.id),
+          ])
+    )
+    .limit(options.limit ?? 30)
+
+  return rows.map((row) => ({
+    ...mapCoinMaintenanceQueryRow(row),
+    cursorValue:
+      options.sort === "title" ? row.cursorTitle : row.updatedAt.toISOString(),
+    cursorSecondaryValue:
+      options.sort === "title" ? row.updatedAt.toISOString() : row.cursorTitle,
+  }))
 }
 
 export async function getCoinMaintenanceList(
@@ -316,7 +456,10 @@ export async function getCoinMaintenanceList(
   const totalPages =
     totalItems === 0 ? 0 : Math.ceil(totalItems / normalizedOptions.pageSize)
 
-  const items = await buildGetCoinMaintenanceListItemsQuery(db, normalizedOptions)
+  const items = await buildGetCoinMaintenanceListItemsQuery(
+    db,
+    normalizedOptions
+  )
 
   return {
     items: items.map(mapCoinMaintenanceQueryRow),

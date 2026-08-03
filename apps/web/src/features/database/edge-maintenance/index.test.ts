@@ -29,7 +29,7 @@ describe("edge-maintenance public API", () => {
       new URL("../coin-maintenance/editor/", FEATURE_DIRECTORY_URL),
       "coin-form.shared.ts"
     )
-    expect(coinFormSource).toContain("maintenanceClient.edges.options")
+    expect(coinFormSource).toContain("maintenanceClient.coins.options")
     expect(coinFormSource).not.toMatch(/\n\s+getEdges,/)
   })
 })

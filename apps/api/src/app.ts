@@ -44,6 +44,8 @@ import { registerRulerMaintenanceRoutes } from "./ruler-maintenance"
 import type { RulerMaintenanceDependencies } from "./ruler-maintenance"
 import { registerDatabaseMaintenanceOverviewRoutes } from "./database-maintenance-overview"
 import type { DatabaseMaintenanceOverviewDependencies } from "./database-maintenance-overview"
+import { registerCoinMaintenanceRoutes } from "./coin-maintenance"
+import type { CoinMaintenanceDependencies } from "./coin-maintenance"
 import { registerSurfaceImageUploadMaintenanceRoutes } from "./surface-image-upload-maintenance"
 import type { SurfaceImageUploadMaintenanceDependencies } from "./surface-image-upload-maintenance"
 
@@ -149,6 +151,14 @@ export function createApiApp({
   getDatabaseMaintenanceOverview = async () => {
     throw new Error("Database Maintenance overview is not configured")
   },
+  listMaintenanceCoins = async () => [],
+  getMaintenanceCoin = async () => null,
+  getMaintenanceCoinDeleteSummary = async () => null,
+  getCoinMaintenanceOptions = async () => ({
+    catalogues: [], compositions: [], currencies: [], distributions: [],
+    edges: [], engravers: [], issuers: [], mints: [], orientations: [],
+    rims: [], rulers: [], shapes: [], mintingTechniques: [], themes: [],
+  }),
   listOrientations = async () => [],
   getOrientation = async () => null,
   createOrientation = async () => {
@@ -338,6 +348,10 @@ export function createApiApp({
     clientIp?: string
   ) => Promise<boolean>
   getDatabaseMaintenanceOverview?: DatabaseMaintenanceOverviewDependencies["getDatabaseMaintenanceOverview"]
+  listMaintenanceCoins?: CoinMaintenanceDependencies["listMaintenanceCoins"]
+  getMaintenanceCoin?: CoinMaintenanceDependencies["getMaintenanceCoin"]
+  getMaintenanceCoinDeleteSummary?: CoinMaintenanceDependencies["getMaintenanceCoinDeleteSummary"]
+  getCoinMaintenanceOptions?: CoinMaintenanceDependencies["getCoinMaintenanceOptions"]
   listOrientations?: OrientationMaintenanceDependencies["listOrientations"]
   getOrientation?: OrientationMaintenanceDependencies["getOrientation"]
   createOrientation?: OrientationMaintenanceDependencies["createOrientation"]
@@ -598,6 +612,12 @@ export function createApiApp({
   })
   registerDatabaseMaintenanceOverviewRoutes(app, {
     getDatabaseMaintenanceOverview,
+  })
+  registerCoinMaintenanceRoutes(app, {
+    listMaintenanceCoins,
+    getMaintenanceCoin,
+    getMaintenanceCoinDeleteSummary,
+    getCoinMaintenanceOptions,
   })
   registerCatalogueMaintenanceRoutes(app, {
     listCatalogues,

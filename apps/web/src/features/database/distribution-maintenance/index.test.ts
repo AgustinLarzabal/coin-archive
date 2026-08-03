@@ -32,13 +32,13 @@ describe("distribution-maintenance public API", () => {
       new URL("../coin-maintenance/editor/", FEATURE_DIRECTORY_URL),
       "coin-form.shared.ts"
     )
-    expect(coinFormSource).toContain("maintenanceClient.distributions.options")
+    expect(coinFormSource).toContain("maintenanceClient.coins.options")
     expect(coinFormSource).not.toMatch(/\n\s+getDistributions,/)
 
     const listingSource = readFeatureSource(
       new URL("../coin-maintenance/listing/", FEATURE_DIRECTORY_URL),
       "coin-maintenance-route-data.ts"
     )
-    expect(listingSource).toContain("maintenanceClient.distributions.options")
+    expect(listingSource).toContain("maintenanceClient.coins.options")
   })
 })

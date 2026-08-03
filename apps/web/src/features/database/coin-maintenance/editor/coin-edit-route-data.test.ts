@@ -42,6 +42,9 @@ const coin: CoinMaintenanceRecord = {
     reverse: null,
     edge: null,
   },
+  version: 1,
+  createdAt: new Date("2026-07-05T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-05T00:00:00.000Z"),
 }
 
 const options = {
@@ -99,6 +102,11 @@ const options = {
   themes: [],
 }
 
+const apiOptions = {
+  ...options,
+  mintingTechniques: options.techniques,
+}
+
 const deleteSummary = {
   title: coin.title,
   rulerAttributions: 1,
@@ -120,20 +128,7 @@ describe("loadCoinEditPageData", () => {
         {
           getCoinMaintenanceDeleteSummary: vi.fn(),
           getCoinMaintenanceRecord: vi.fn(),
-          getCatalogues: vi.fn(),
-          getIssuers: vi.fn(),
-          getRulers: vi.fn(),
-          getDistributions: vi.fn(),
-          getCompositions: vi.fn(),
-          getCurrencies: vi.fn(),
-          getEngravers: vi.fn(),
-          getMints: vi.fn(),
-          getOrientations: vi.fn(),
-          getShapes: vi.fn(),
-          getTechniques: vi.fn(),
-          getEdges: vi.fn(),
-          getRims: vi.fn(),
-          getThemes: vi.fn(),
+          getCoinMaintenanceOptions: vi.fn(),
         }
       )
     ).resolves.toStrictEqual({
@@ -145,20 +140,7 @@ describe("loadCoinEditPageData", () => {
     const dependencies = {
       getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue(deleteSummary),
       getCoinMaintenanceRecord: vi.fn().mockResolvedValue(coin),
-      getCatalogues: vi.fn().mockResolvedValue(options.catalogues),
-      getIssuers: vi.fn().mockResolvedValue(options.issuers),
-      getRulers: vi.fn().mockResolvedValue(options.rulers),
-      getDistributions: vi.fn().mockResolvedValue(options.distributions),
-      getCompositions: vi.fn().mockResolvedValue(options.compositions),
-      getCurrencies: vi.fn().mockResolvedValue(options.currencies),
-      getEngravers: vi.fn().mockResolvedValue(options.engravers),
-      getMints: vi.fn().mockResolvedValue(options.mints),
-      getOrientations: vi.fn().mockResolvedValue(options.orientations),
-      getShapes: vi.fn().mockResolvedValue(options.shapes),
-      getTechniques: vi.fn().mockResolvedValue(options.techniques),
-      getEdges: vi.fn().mockResolvedValue(options.edges),
-      getRims: vi.fn().mockResolvedValue(options.rims),
-      getThemes: vi.fn().mockResolvedValue(options.themes),
+      getCoinMaintenanceOptions: vi.fn().mockResolvedValue(apiOptions),
     }
 
     await expect(
@@ -167,6 +149,25 @@ describe("loadCoinEditPageData", () => {
       status: "success",
       coin,
       deleteSummary,
+      options,
+    })
+  })
+
+  it("preserves the missing-Coin state returned by the API adapter", async () => {
+    await expect(
+      loadCoinEditPageData(
+        { role: "editor" },
+        { coinId: coin.id },
+        {
+          getCoinMaintenanceDeleteSummary: vi.fn().mockResolvedValue(null),
+          getCoinMaintenanceRecord: vi.fn().mockResolvedValue(null),
+          getCoinMaintenanceOptions: vi.fn().mockResolvedValue(apiOptions),
+        }
+      )
+    ).resolves.toStrictEqual({
+      status: "success",
+      coin: null,
+      deleteSummary: null,
       options,
     })
   })

@@ -22,6 +22,7 @@ type Configuration = {
   bucket: string
   endpoint: string
   secretAccessKey: string
+  publicBaseUrl: string
 }
 type ReferencePayload = Upload & {
   expiresAt: number
@@ -34,6 +35,15 @@ export type SurfaceImageUploadObjectStorage = {
     objectKey: string
   }) => Promise<string>
   deleteObject: (objectKey: string) => Promise<void>
+  inspectObject: (objectKey: string) => Promise<{
+    contentLength: number | undefined
+    contentType: string | undefined
+    firstBytes: Uint8Array
+  }>
+  moveObject: (
+    sourceObjectKey: string,
+    destinationObjectKey: string
+  ) => Promise<void>
 }
 
 export type SurfaceImageUploadStorage = {
@@ -43,6 +53,11 @@ export type SurfaceImageUploadStorage = {
     expiresAt: Date
   }>
   cancelUpload: (reference: string, surface: Surface) => Promise<void>
+  consumeUpload: (
+    reference: string,
+    surface: Surface
+  ) => Promise<{ imageUrl: string }>
+  deletePublishedImage: (imageUrl: string) => Promise<void>
 }
 
 export class SurfaceImageUploadReferenceError extends Error {
@@ -81,22 +96,120 @@ export function createR2SurfaceImageUploadStorage(
     },
 
     async cancelUpload(reference, surface) {
-      const payload = parseReference(reference, configuration.secretAccessKey)
-      if (payload.expiresAt < now()) {
-        throw new SurfaceImageUploadReferenceError(
-          "expired",
-          "Surface Image upload reference has expired."
-        )
-      }
-      if (payload.surface !== surface) {
-        throw new SurfaceImageUploadReferenceError(
-          "invalid",
-          "Surface Image upload reference is not authorized for this Surface."
-        )
-      }
+      const payload = resolveReference(
+        reference,
+        surface,
+        configuration.secretAccessKey,
+        now()
+      )
       await objectStorage.deleteObject(payload.objectKey)
     },
+
+    async consumeUpload(reference, surface) {
+      const payload = resolveReference(
+        reference,
+        surface,
+        configuration.secretAccessKey,
+        now()
+      )
+      const object = await objectStorage.inspectObject(payload.objectKey)
+      if (
+        object.contentLength !== payload.contentLength ||
+        object.contentType !== payload.contentType
+      ) {
+        throw new SurfaceImageUploadReferenceError(
+          "invalid",
+          "Uploaded Surface Image does not match its authorization."
+        )
+      }
+      if (!hasExpectedImageSignature(payload.contentType, object.firstBytes)) {
+        throw new SurfaceImageUploadReferenceError(
+          "invalid",
+          "Uploaded Surface Image content is invalid."
+        )
+      }
+      const publishedObjectKey = payload.objectKey.replace(
+        "surface-images/temporary/",
+        "surface-images/published/"
+      )
+      await objectStorage.moveObject(payload.objectKey, publishedObjectKey)
+      return {
+        imageUrl: new URL(
+          publishedObjectKey,
+          `${configuration.publicBaseUrl}/`
+        ).toString(),
+      }
+    },
+
+    async deletePublishedImage(imageUrl) {
+      const parsed = new URL(imageUrl)
+      const base = new URL(`${configuration.publicBaseUrl}/`)
+      if (parsed.origin !== base.origin) {
+        throw new Error("Surface Image URL is not managed by this storage.")
+      }
+      const basePath = base.pathname.replace(/^\//, "")
+      const path = decodeURIComponent(parsed.pathname).replace(/^\//, "")
+      const objectKey =
+        basePath && path.startsWith(basePath)
+          ? path.slice(basePath.length)
+          : path
+      if (!objectKey.startsWith("surface-images/published/")) {
+        throw new Error("Surface Image URL is not managed by this storage.")
+      }
+      await objectStorage.deleteObject(objectKey)
+    },
   }
+}
+
+function resolveReference(
+  reference: string,
+  surface: Surface,
+  secret: string,
+  now: number
+) {
+  const payload = parseReference(reference, secret)
+  if (payload.expiresAt < now) {
+    throw new SurfaceImageUploadReferenceError(
+      "expired",
+      "Surface Image upload reference has expired."
+    )
+  }
+  if (payload.surface !== surface) {
+    throw new SurfaceImageUploadReferenceError(
+      "invalid",
+      "Surface Image upload reference is not authorized for this Surface."
+    )
+  }
+  return payload
+}
+
+function hasExpectedImageSignature(contentType: string, bytes: Uint8Array) {
+  if (contentType === "image/jpeg") {
+    return (
+      bytes.length >= 3 &&
+      bytes[0] === 0xff &&
+      bytes[1] === 0xd8 &&
+      bytes[2] === 0xff
+    )
+  }
+  if (contentType === "image/png") {
+    return (
+      bytes.length >= 8 &&
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4e &&
+      bytes[3] === 0x47 &&
+      bytes[4] === 0x0d &&
+      bytes[5] === 0x0a &&
+      bytes[6] === 0x1a &&
+      bytes[7] === 0x0a
+    )
+  }
+  return (
+    bytes.length >= 12 &&
+    String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
+  )
 }
 
 function assertAcceptedUpload(upload: Upload) {
@@ -193,6 +306,14 @@ function createS3ObjectStorage(
       `${configuration.endpoint}/`
     )
 
+  async function assertSuccessfulResponse(response: Response) {
+    if (!response.ok) {
+      throw new Error(
+        `R2 object storage request failed with status ${response.status}.`
+      )
+    }
+  }
+
   return {
     async createPresignedPutUrl({ objectKey, contentType }) {
       const url = objectUrl(objectKey)
@@ -217,6 +338,44 @@ function createS3ObjectStorage(
         throw new Error(
           `R2 object storage request failed with status ${response.status}.`
         )
+      }
+    },
+    async inspectObject(objectKey) {
+      const url = objectUrl(objectKey)
+      const metadata = await client.fetch(new Request(url, { method: "HEAD" }))
+      await assertSuccessfulResponse(metadata)
+      const body = await client.fetch(
+        new Request(url, { headers: { Range: "bytes=0-11" } })
+      )
+      await assertSuccessfulResponse(body)
+      return {
+        contentLength:
+          Number(metadata.headers.get("Content-Length")) || undefined,
+        contentType: metadata.headers.get("Content-Type") ?? undefined,
+        firstBytes: new Uint8Array(await body.arrayBuffer()),
+      }
+    },
+    async moveObject(sourceObjectKey, destinationObjectKey) {
+      const destination = objectUrl(destinationObjectKey)
+      const copy = await client.fetch(
+        new Request(destination, {
+          method: "PUT",
+          headers: {
+            "X-Amz-Copy-Source": `/${configuration.bucket}/${sourceObjectKey}`,
+          },
+        })
+      )
+      await assertSuccessfulResponse(copy)
+      try {
+        const deletion = await client.fetch(
+          new Request(objectUrl(sourceObjectKey), { method: "DELETE" })
+        )
+        await assertSuccessfulResponse(deletion)
+      } catch (error) {
+        try {
+          await client.fetch(new Request(destination, { method: "DELETE" }))
+        } catch {}
+        throw error
       }
     },
   }

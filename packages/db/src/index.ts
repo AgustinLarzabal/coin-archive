@@ -2,8 +2,14 @@ export { db } from "./client"
 export { createDatabase } from "./database"
 export {
   createCoinMaintenance,
+  createCoinMaintenanceIdempotently,
+  createCoinMaintenanceIdempotentlyWithDatabase,
   deleteCoinMaintenance,
   updateCoinMaintenance,
+} from "./mutations/coin-maintenance"
+export type {
+  CoinMaintenanceFields,
+  CreateCoinMaintenanceIdempotentlyResult,
 } from "./mutations/coin-maintenance"
 export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
 export { authorizeSurfaceImageUploadIdempotentlyWithDatabase } from "./mutations/surface-image-upload-idempotency"

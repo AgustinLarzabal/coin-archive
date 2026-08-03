@@ -11,6 +11,7 @@ const configuration = {
   bucket: "coin-images",
   accessKeyId: "test-access-key",
   secretAccessKey: "test-secret-key",
+  publicBaseUrl: "https://images.example.test",
 }
 
 describe("API-owned temporary Surface Image storage", () => {
@@ -20,6 +21,8 @@ describe("API-owned temporary Surface Image storage", () => {
         .fn()
         .mockResolvedValue("https://r2.example.test/direct-put"),
       deleteObject: vi.fn(),
+      inspectObject: vi.fn(),
+      moveObject: vi.fn(),
     }
     const now = new Date("2026-08-03T10:00:00.000Z")
     const storage = createR2SurfaceImageUploadStorage(
@@ -51,6 +54,8 @@ describe("API-owned temporary Surface Image storage", () => {
     const objectStorage: SurfaceImageUploadObjectStorage = {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
+      inspectObject: vi.fn(),
+      moveObject: vi.fn(),
     }
     const storage = createR2SurfaceImageUploadStorage(
       configuration,
@@ -77,6 +82,8 @@ describe("API-owned temporary Surface Image storage", () => {
     const objectStorage: SurfaceImageUploadObjectStorage = {
       createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
       deleteObject: vi.fn(),
+      inspectObject: vi.fn(),
+      moveObject: vi.fn(),
     }
     let currentTime = Date.parse("2026-08-03T10:00:00.000Z")
     const storage = createR2SurfaceImageUploadStorage(
@@ -117,5 +124,84 @@ describe("API-owned temporary Surface Image storage", () => {
     await expect(
       storage.cancelUpload("not-a-reference", "obverse")
     ).rejects.toThrow("reference is invalid")
+  })
+
+  it("verifies and consumes an authorized temporary image before publishing it", async () => {
+    const objectStorage: SurfaceImageUploadObjectStorage = {
+      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
+      deleteObject: vi.fn(),
+      inspectObject: vi.fn().mockResolvedValue({
+        contentLength: 8,
+        contentType: "image/png",
+        firstBytes: Uint8Array.from([
+          0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+        ]),
+      }),
+      moveObject: vi.fn(),
+    }
+    const storage = createR2SurfaceImageUploadStorage(
+      configuration,
+      objectStorage,
+      {
+        createObjectId: () => "opaque-id",
+      }
+    )
+    const authorization = await storage.authorizeUpload({
+      surface: "reverse",
+      contentType: "image/png",
+      contentLength: 8,
+    })
+
+    await expect(
+      storage.consumeUpload(authorization.reference, "reverse")
+    ).resolves.toStrictEqual({
+      imageUrl:
+        "https://images.example.test/surface-images/published/opaque-id",
+    })
+    expect(objectStorage.inspectObject).toHaveBeenCalledWith(
+      "surface-images/temporary/opaque-id"
+    )
+    expect(objectStorage.moveObject).toHaveBeenCalledWith(
+      "surface-images/temporary/opaque-id",
+      "surface-images/published/opaque-id"
+    )
+  })
+
+  it("rejects metadata mismatches and invalid image signatures without publishing", async () => {
+    const inspectObject = vi
+      .fn()
+      .mockResolvedValueOnce({
+        contentLength: 7,
+        contentType: "image/png",
+        firstBytes: new Uint8Array(8),
+      })
+      .mockResolvedValueOnce({
+        contentLength: 8,
+        contentType: "image/png",
+        firstBytes: new Uint8Array(8),
+      })
+    const objectStorage: SurfaceImageUploadObjectStorage = {
+      createPresignedPutUrl: vi.fn().mockResolvedValue("https://r2.test/put"),
+      deleteObject: vi.fn(),
+      inspectObject,
+      moveObject: vi.fn(),
+    }
+    const storage = createR2SurfaceImageUploadStorage(
+      configuration,
+      objectStorage
+    )
+    const authorization = await storage.authorizeUpload({
+      surface: "obverse",
+      contentType: "image/png",
+      contentLength: 8,
+    })
+
+    await expect(
+      storage.consumeUpload(authorization.reference, "obverse")
+    ).rejects.toThrow("does not match its authorization")
+    await expect(
+      storage.consumeUpload(authorization.reference, "obverse")
+    ).rejects.toThrow("content is invalid")
+    expect(objectStorage.moveObject).not.toHaveBeenCalled()
   })
 })

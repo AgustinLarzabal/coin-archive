@@ -1,5 +1,9 @@
-import { coinMaintenanceListInputSchema } from "@coin-archive/api"
+import {
+  coinMaintenanceCreateInputSchema,
+  coinMaintenanceListInputSchema,
+} from "@coin-archive/api"
 import type {
+  CoinMaintenanceCreateBody,
   CoinMaintenanceDeleteSummary,
   CoinMaintenanceDetail,
   CoinMaintenanceListInput,
@@ -55,7 +59,51 @@ export type CoinMaintenanceDependencies = {
     id: string
   ) => Promise<CoinMaintenanceDeleteSummary | null>
   getCoinMaintenanceOptions: () => Promise<CoinMaintenanceOptionsOutput["data"]>
+  createMaintenanceCoin: (
+    input: {
+      collectorId: string
+      idempotencyKey: string
+      requestHash: string
+      expiresAt: Date
+    },
+    prepareFields: () => Promise<CoinCreatePersistenceFields>
+  ) => Promise<
+    | { status: "created" | "replayed"; coin: { id: string } }
+    | { status: "mismatch" }
+  >
+  consumeSurfaceImageUpload: (
+    reference: string,
+    surface: "obverse" | "reverse" | "edge"
+  ) => Promise<{ imageUrl: string }>
+  deletePublishedSurfaceImage: (imageUrl: string) => Promise<void>
 }
+
+type CoinCreatePersistenceFields = Omit<
+  CoinMaintenanceCreateBody,
+  | "diameter"
+  | "faceValueNumericValue"
+  | "mintage"
+  | "surfaces"
+  | "thickness"
+  | "weight"
+> & {
+  diameter: number | null
+  faceValueNumericValue: number
+  mintage: number | null
+  thickness: number | null
+  weight: number | null
+  surfaces: {
+    obverse: CoinCreateFaceSurface | null
+    reverse: CoinCreateFaceSurface | null
+    edge: CoinCreateSurface | null
+  }
+}
+type CoinCreateSurface = {
+  description: string | null
+  lettering: string | null
+  imageUrl: string | null
+}
+type CoinCreateFaceSurface = CoinCreateSurface & { engraverIds: string[] }
 
 type Env = { Variables: { collector: MaintenanceCollector; requestId: string } }
 
@@ -95,8 +143,104 @@ export function registerCoinMaintenanceRoutes(
     })
   })
 
+  app.post("/api/v1/maintenance/coins", async (context) => {
+    const idempotencyKey = context.req.header("idempotency-key")?.trim()
+    if (!idempotencyKey) {
+      return problem(
+        400,
+        "Idempotency-Key required",
+        "Coin create requires an Idempotency-Key header",
+        context.req.path,
+        "idempotency_key_required"
+      )
+    }
+    const parsedHeaders =
+      coinMaintenanceCreateInputSchema.shape.headers.safeParse({
+        "idempotency-key": idempotencyKey,
+      })
+    if (!parsedHeaders.success) {
+      return problem(
+        400,
+        "Invalid Idempotency-Key",
+        "Idempotency-Key must contain at most 255 characters",
+        context.req.path,
+        "invalid_idempotency_key"
+      )
+    }
+    const json = await readJson(context.req.raw)
+    if (json instanceof Response) return json
+    const parsedBody =
+      coinMaintenanceCreateInputSchema.shape.body.safeParse(json)
+    if (!parsedBody.success) {
+      return validationProblem(context.req.path, parsedBody.error.issues)
+    }
+
+    const publishedImageUrls: string[] = []
+    let aggregatePersisted = false
+    try {
+      const result = await dependencies.createMaintenanceCoin(
+        {
+          collectorId: context.get("collector").id,
+          idempotencyKey: parsedHeaders.data["idempotency-key"],
+          requestHash: await digest(JSON.stringify(parsedBody.data)),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+        async () =>
+          toPersistenceFields(
+            parsedBody.data,
+            dependencies.consumeSurfaceImageUpload,
+            publishedImageUrls
+          )
+      )
+      if (result.status === "mismatch") {
+        return problem(
+          409,
+          "Idempotency-Key already used",
+          "This Idempotency-Key was already used with a different payload",
+          context.req.path,
+          "idempotency_key_reused"
+        )
+      }
+      aggregatePersisted = true
+      const record = await dependencies.getMaintenanceCoin(result.coin.id)
+      if (record === null) throw new Error("Created Coin could not be read")
+      const data = serializeDetail(record)
+      return context.json({ data }, 201, {
+        ETag: data.etag,
+        Location: `/api/v1/maintenance/coins/${data.id}`,
+      })
+    } catch (error) {
+      if (!aggregatePersisted) {
+        await Promise.allSettled(
+          publishedImageUrls.map((url) =>
+            dependencies.deletePublishedSurfaceImage(url)
+          )
+        )
+      }
+      if (error instanceof CoinSurfaceImageError) {
+        return problem(
+          422,
+          "Invalid Surface Image upload",
+          "A temporary Surface Image reference could not be verified",
+          context.req.path,
+          "surface_image_upload_invalid"
+        )
+      }
+      if (postgresCode(error) === "23503") {
+        return problem(
+          409,
+          "Coin relationship not found",
+          "A referenced maintenance record does not exist",
+          context.req.path,
+          "coin_relationship_not_found"
+        )
+      }
+      throw error
+    }
+  })
+
   app.all("/api/v1/maintenance/coins", (context) =>
-    methodNotAllowed(context.req.path)
+    methodNotAllowed(context.req.path, "GET, POST")
   )
 
   app.get("/api/v1/maintenance/coins/options", async (context) =>
@@ -135,6 +279,124 @@ export function registerCoinMaintenanceRoutes(
   app.all("/api/v1/maintenance/coins/:uuid", (context) =>
     methodNotAllowed(context.req.path)
   )
+}
+
+class CoinSurfaceImageError extends Error {}
+
+async function toPersistenceFields(
+  body: CoinMaintenanceCreateBody,
+  consume: CoinMaintenanceDependencies["consumeSurfaceImageUpload"],
+  publishedImageUrls: string[]
+): Promise<CoinCreatePersistenceFields> {
+  const consumeImage = async (
+    reference: string | null,
+    surface: "obverse" | "reverse" | "edge"
+  ) => {
+    if (reference === null) return null
+    try {
+      const result = await consume(reference, surface)
+      publishedImageUrls.push(result.imageUrl)
+      return result.imageUrl
+    } catch (error) {
+      throw new CoinSurfaceImageError("Surface Image upload is invalid", {
+        cause: error,
+      })
+    }
+  }
+  const face = async (
+    surface: CoinMaintenanceCreateBody["surfaces"]["obverse"],
+    kind: "obverse" | "reverse"
+  ): Promise<CoinCreateFaceSurface | null> =>
+    surface === null
+      ? null
+      : {
+          description: surface.description,
+          lettering: surface.lettering,
+          imageUrl: await consumeImage(surface.imageUploadReference, kind),
+          engraverIds: surface.engraverIds,
+        }
+  const edge = body.surfaces.edge
+  return {
+    ...body,
+    diameter: numberOrNull(body.diameter),
+    faceValueNumericValue: Number(body.faceValueNumericValue),
+    mintage: numberOrNull(body.mintage),
+    thickness: numberOrNull(body.thickness),
+    weight: numberOrNull(body.weight),
+    surfaces: {
+      obverse: await face(body.surfaces.obverse, "obverse"),
+      reverse: await face(body.surfaces.reverse, "reverse"),
+      edge:
+        edge === null
+          ? null
+          : {
+              description: edge.description,
+              lettering: edge.lettering,
+              imageUrl: await consumeImage(edge.imageUploadReference, "edge"),
+            },
+    },
+  }
+}
+
+function numberOrNull(value: string | null) {
+  return value === null ? null : Number(value)
+}
+
+async function readJson(request: Request): Promise<unknown | Response> {
+  try {
+    return await request.json()
+  } catch {
+    return problem(
+      400,
+      "Invalid JSON",
+      "The Coin request body must be valid JSON",
+      new URL(request.url).pathname,
+      "invalid_json"
+    )
+  }
+}
+
+function validationProblem(
+  instance: string,
+  issues: Array<{ path: PropertyKey[]; message: string }>
+) {
+  return new Response(
+    JSON.stringify({
+      type: "https://api.coinarchive.app/problems/coin-validation-failed",
+      title: "Invalid Coin",
+      status: 422,
+      detail: "The Coin aggregate does not match the maintenance contract",
+      instance,
+      code: "coin_validation_failed",
+      invalidParams: issues.map((issue) => ({
+        name: `/${issue.path.map(String).join("/")}`,
+        code: "coin_field_invalid",
+        reason: issue.message,
+      })),
+    }),
+    {
+      status: 422,
+      headers: {
+        "Content-Type": "application/problem+json",
+        "Cache-Control": "private, no-store",
+      },
+    }
+  )
+}
+
+function postgresCode(error: unknown) {
+  if (typeof error !== "object" || error === null) return undefined
+  const record = error as { code?: unknown; cause?: unknown }
+  if (typeof record.code === "string") return record.code
+  return postgresCode(record.cause)
+}
+
+async function digest(value: string) {
+  const bytes = new TextEncoder().encode(value)
+  const hash = await crypto.subtle.digest("SHA-256", bytes)
+  return Array.from(new Uint8Array(hash), (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("")
 }
 
 type CollectionInput = Omit<CoinMaintenanceListInput, "cursor" | "limit"> & {
@@ -331,14 +593,14 @@ function coinNotFound(instance: string) {
     "coin_not_found"
   )
 }
-function methodNotAllowed(instance: string) {
+function methodNotAllowed(instance: string, allow = "GET") {
   const response = problem(
     405,
     "Method Not Allowed",
-    "Only GET is supported",
+    `Only ${allow} is supported`,
     instance,
     "method_not_allowed"
   )
-  response.headers.set("Allow", "GET")
+  response.headers.set("Allow", allow)
   return response
 }

@@ -155,10 +155,28 @@ export function createApiApp({
   getMaintenanceCoin = async () => null,
   getMaintenanceCoinDeleteSummary = async () => null,
   getCoinMaintenanceOptions = async () => ({
-    catalogues: [], compositions: [], currencies: [], distributions: [],
-    edges: [], engravers: [], issuers: [], mints: [], orientations: [],
-    rims: [], rulers: [], shapes: [], mintingTechniques: [], themes: [],
+    catalogues: [],
+    compositions: [],
+    currencies: [],
+    distributions: [],
+    edges: [],
+    engravers: [],
+    issuers: [],
+    mints: [],
+    orientations: [],
+    rims: [],
+    rulers: [],
+    shapes: [],
+    mintingTechniques: [],
+    themes: [],
   }),
+  createMaintenanceCoin = async () => {
+    throw new Error("Coin create is not configured")
+  },
+  consumeSurfaceImageUpload = async () => {
+    throw new Error("Surface Image consumption is not configured")
+  },
+  deletePublishedSurfaceImage = async () => {},
   listOrientations = async () => [],
   getOrientation = async () => null,
   createOrientation = async () => {
@@ -352,6 +370,9 @@ export function createApiApp({
   getMaintenanceCoin?: CoinMaintenanceDependencies["getMaintenanceCoin"]
   getMaintenanceCoinDeleteSummary?: CoinMaintenanceDependencies["getMaintenanceCoinDeleteSummary"]
   getCoinMaintenanceOptions?: CoinMaintenanceDependencies["getCoinMaintenanceOptions"]
+  createMaintenanceCoin?: CoinMaintenanceDependencies["createMaintenanceCoin"]
+  consumeSurfaceImageUpload?: CoinMaintenanceDependencies["consumeSurfaceImageUpload"]
+  deletePublishedSurfaceImage?: CoinMaintenanceDependencies["deletePublishedSurfaceImage"]
   listOrientations?: OrientationMaintenanceDependencies["listOrientations"]
   getOrientation?: OrientationMaintenanceDependencies["getOrientation"]
   createOrientation?: OrientationMaintenanceDependencies["createOrientation"]
@@ -618,6 +639,9 @@ export function createApiApp({
     getMaintenanceCoin,
     getMaintenanceCoinDeleteSummary,
     getCoinMaintenanceOptions,
+    createMaintenanceCoin,
+    consumeSurfaceImageUpload,
+    deletePublishedSurfaceImage,
   })
   registerCatalogueMaintenanceRoutes(app, {
     listCatalogues,

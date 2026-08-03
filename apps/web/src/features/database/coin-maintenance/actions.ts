@@ -489,9 +489,6 @@ export type CoinDeleteMutationResult =
     }
 
 type CoinMutationDependencies = {
-  createCoinMaintenance: (
-    input: CoinPersistenceInput
-  ) => Promise<{ id: string }>
   updateCoinMaintenance: (
     input: UpdateCoinPersistenceInput
   ) => Promise<{ id: string } | null>
@@ -503,6 +500,11 @@ type CoinMutationDependencies = {
     coinId: string
   ) => Promise<SurfaceImageUrls | null>
   deleteSurfaceImage: (imageUrl: string) => Promise<void>
+}
+
+type CoinCreateDependencies = {
+  createCoin: MaintenanceApiClient["coins"]["create"]
+  createIdempotencyKey: () => string
 }
 
 type SurfaceImageUrls = Record<"obverse" | "reverse" | "edge", string | null>
@@ -531,16 +533,12 @@ type CoinDeleteDependencies = {
 }
 
 async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
-  const {
-    createCoinMaintenance,
-    getCoinMaintenanceRecord,
-    updateCoinMaintenance,
-  } = await import("@coin-archive/db")
+  const { getCoinMaintenanceRecord, updateCoinMaintenance } =
+    await import("@coin-archive/db")
   const { createR2SurfaceImageStorage } =
     await import("./surface-images/surface-image-storage")
 
   return {
-    createCoinMaintenance,
     updateCoinMaintenance,
     resolveSurfaceImageUpload: async (reference, surface) =>
       createR2SurfaceImageStorage().resolveUpload(reference, surface),
@@ -556,6 +554,16 @@ async function getDefaultDependencies(): Promise<CoinMutationDependencies> {
     },
     deleteSurfaceImage: async (imageUrl) =>
       createR2SurfaceImageStorage().deletePublishedImage(imageUrl),
+  }
+}
+
+async function getDefaultCoinCreateDependencies(): Promise<CoinCreateDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return {
+    createCoin: client.coins.create,
+    createIdempotencyKey: () => crypto.randomUUID(),
   }
 }
 
@@ -889,7 +897,7 @@ function getSurfaceImageCleanupFailureMessage(error: unknown) {
 export async function submitCreateCoin(
   collector: CollectorWithRole | null,
   input: CoinDraft,
-  dependencies?: CoinMutationDependencies
+  dependencies?: CoinCreateDependencies
 ): Promise<CoinMutationResult> {
   if (!hasCoinMaintenanceAccess(collector)) {
     return createAuthorizationError()
@@ -901,35 +909,118 @@ export async function submitCreateCoin(
     return validationResult.result
   }
 
-  const publishedImageUrls: string[] = []
-  let resolvedDependencies: CoinMutationDependencies | undefined
-
   try {
-    resolvedDependencies = dependencies ?? (await getDefaultDependencies())
-    const inputWithResolvedImages = await resolveSurfaceImageReferences(
-      validationResult.data,
-      resolvedDependencies.resolveSurfaceImageUpload,
-      undefined,
-      (imageUrl) => publishedImageUrls.push(imageUrl)
-    )
-    const createdCoin = await resolvedDependencies.createCoinMaintenance(
-      mapDraftToPersistenceInput(inputWithResolvedImages)
-    )
+    const resolved = dependencies ?? (await getDefaultCoinCreateDependencies())
+    const created = await resolved.createCoin({
+      headers: { "idempotency-key": resolved.createIdempotencyKey() },
+      body: mapDraftToCreateBody(validationResult.data),
+    })
 
     return {
       status: "success",
-      coinId: createdCoin.id,
+      coinId: created.body.data.id,
       message: "Coin created.",
     }
-  } catch {
-    if (resolvedDependencies !== undefined) {
-      await deleteAbandonedPublishedImages(
-        publishedImageUrls,
-        resolvedDependencies.deleteSurfaceImage
-      )
-    }
-    return createPersistenceError()
+  } catch (error) {
+    return getCoinCreateApiError(error)
   }
+}
+
+function mapDraftToCreateBody(input: CoinDraftData) {
+  const fields = mapDraftToPersistenceInput(input)
+  const surfaceFields = (value: CoinFaceSurfaceData | CoinEdgeSurfaceData) => {
+    const imageUploadReference = value.imageUploadReference.trim() || null
+    return {
+      description: value.description,
+      lettering: value.lettering,
+      imageUploadReference,
+    }
+  }
+  const face = (value: CoinFaceSurfaceData) => {
+    const common = surfaceFields(value)
+    return common.description === null &&
+      common.lettering === null &&
+      common.imageUploadReference === null &&
+      value.engraverIds.length === 0
+      ? null
+      : { ...common, engraverIds: value.engraverIds }
+  }
+  const edge = (value: CoinEdgeSurfaceData) => {
+    const common = surfaceFields(value)
+    return common.description === null &&
+      common.lettering === null &&
+      common.imageUploadReference === null
+      ? null
+      : common
+  }
+  return {
+    ...fields,
+    diameter: fields.diameter === null ? null : String(fields.diameter),
+    faceValueNumericValue: String(fields.faceValueNumericValue),
+    mintage: fields.mintage === null ? null : String(fields.mintage),
+    thickness: fields.thickness === null ? null : String(fields.thickness),
+    weight: fields.weight === null ? null : String(fields.weight),
+    surfaces: {
+      obverse: face(input.surfaces.obverse),
+      reverse: face(input.surfaces.reverse),
+      edge: edge(input.surfaces.edge),
+    },
+  }
+}
+
+function getCoinCreateApiError(error: unknown): CoinMutationErrorResult {
+  const problem = getApiProblem(error)
+  if (problem === null) return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
+  if (
+    problem.code === "authentication_required" ||
+    problem.code === "editor_access_required"
+  ) {
+    return createAuthorizationError()
+  }
+  if (problem.code === "coin_validation_failed" && problem.invalidParams) {
+    return createFieldErrorResult(
+      Object.fromEntries(
+        problem.invalidParams.map(({ name, reason }) => [
+          name.replace(/^\//, "").replaceAll("/", "."),
+          reason,
+        ])
+      )
+    )
+  }
+  return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
+}
+
+function getApiProblem(error: unknown): {
+  code: string
+  invalidParams?: Array<{ name: string; reason: string }>
+} | null {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return null
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data))
+    return null
+  const body = data.body
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("code" in body) ||
+    typeof body.code !== "string"
+  )
+    return null
+  const invalidParams =
+    "invalidParams" in body && Array.isArray(body.invalidParams)
+      ? body.invalidParams.filter(
+          (item): item is { name: string; reason: string } =>
+            typeof item === "object" &&
+            item !== null &&
+            "name" in item &&
+            typeof item.name === "string" &&
+            "reason" in item &&
+            typeof item.reason === "string"
+        )
+      : undefined
+  return { code: body.code, ...(invalidParams ? { invalidParams } : {}) }
 }
 
 export async function submitUpdateCoin(

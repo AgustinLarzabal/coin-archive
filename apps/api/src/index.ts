@@ -1,5 +1,6 @@
 import {
   createCatalogueIdempotentlyWithDatabase,
+  createCoinMaintenanceIdempotentlyWithDatabase,
   createCompositionIdempotentlyWithDatabase,
   createCurrencyIdempotentlyWithDatabase,
   createDistributionIdempotentlyWithDatabase,
@@ -116,6 +117,13 @@ async function handleRequest(
       googleClientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   })
+  const surfaceImageStorage = createR2SurfaceImageUploadStorage({
+    endpoint: env.R2_ENDPOINT,
+    bucket: env.R2_BUCKET,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    publicBaseUrl: env.SURFACE_IMAGE_ORIGIN,
+  })
   const app = createApiApp({
     trustProxyHeaders,
     environment: env.API_ENVIRONMENT,
@@ -124,21 +132,20 @@ async function handleRequest(
       authorizeSurfaceImageUploadIdempotentlyWithDatabase(
         database.db,
         input,
-        () =>
-          createR2SurfaceImageUploadStorage({
-            endpoint: env.R2_ENDPOINT,
-            bucket: env.R2_BUCKET,
-            accessKeyId: env.R2_ACCESS_KEY_ID,
-            secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-          }).authorizeUpload(input.upload)
+        () => surfaceImageStorage.authorizeUpload(input.upload)
       ),
     cancelSurfaceImageUpload: ({ reference, surface }) =>
-      createR2SurfaceImageUploadStorage({
-        endpoint: env.R2_ENDPOINT,
-        bucket: env.R2_BUCKET,
-        accessKeyId: env.R2_ACCESS_KEY_ID,
-        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-      }).cancelUpload(reference, surface),
+      surfaceImageStorage.cancelUpload(reference, surface),
+    consumeSurfaceImageUpload: (reference, surface) =>
+      surfaceImageStorage.consumeUpload(reference, surface),
+    deletePublishedSurfaceImage: (imageUrl) =>
+      surfaceImageStorage.deletePublishedImage(imageUrl),
+    createMaintenanceCoin: (input, prepareFields) =>
+      createCoinMaintenanceIdempotentlyWithDatabase(
+        database.db,
+        input,
+        prepareFields
+      ),
     rateLimit: async (clientIp) =>
       (
         await env.API_RATE_LIMITER.limit({

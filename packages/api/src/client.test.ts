@@ -44,6 +44,70 @@ describe("createPublicApiClient", () => {
 })
 
 describe("createMaintenanceApiClient", () => {
+  it("sends whole-Coin creates with the client-owned idempotency key", async () => {
+    let request: Request | undefined
+    const client = createMaintenanceApiClient({
+      baseUrl: "https://coinarchive.app",
+      fetch: async (input) => {
+        request = input instanceof Request ? input : new Request(input)
+        return Response.json(
+          { data: { id: "018f1a11-aaaa-7000-8000-000000000001" } },
+          {
+            status: 201,
+            headers: {
+              ETag: '"coin-1"',
+              Location:
+                "/api/v1/maintenance/coins/018f1a11-aaaa-7000-8000-000000000001",
+            },
+          }
+        )
+      },
+    })
+    const id = "018f1a11-aaaa-7000-8000-000000000001"
+
+    await client.coins.create({
+      headers: { "idempotency-key": "coin-attempt-1" },
+      body: {
+        title: "Test Coin",
+        comments: null,
+        compositionDescription: null,
+        compositionId: id,
+        currencyId: id,
+        diameter: null,
+        distributionId: id,
+        edgeId: null,
+        faceValueNumericValue: "1",
+        faceValueText: "1 Unit",
+        isDemonetized: null,
+        issuerId: id,
+        maxYear: null,
+        mintIds: [],
+        minYear: null,
+        mintage: null,
+        orientationId: null,
+        references: [],
+        rimId: null,
+        rulerIds: [id],
+        shapeId: null,
+        surfaces: { obverse: null, reverse: null, edge: null },
+        techniqueId: null,
+        themeIds: [],
+        thickness: null,
+        weight: null,
+      },
+    })
+
+    expect(request?.method).toBe("POST")
+    expect(request?.url).toBe(
+      "https://coinarchive.app/api/v1/maintenance/coins"
+    )
+    expect(request?.headers.get("idempotency-key")).toBe("coin-attempt-1")
+    await expect(request?.clone().json()).resolves.toMatchObject({
+      title: "Test Coin",
+      rulerIds: [id],
+    })
+  })
+
   it("uses the protected Surface Image authorization and cancellation routes", async () => {
     const requests: Request[] = []
     const client = createMaintenanceApiClient({

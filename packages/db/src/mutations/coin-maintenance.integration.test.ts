@@ -26,6 +26,8 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import {
   createCoinMaintenance,
+  createCoinMaintenanceIdempotently,
+  createCoinMaintenanceIdempotentlyWithDatabase,
   deleteCoinMaintenance,
   updateCoinMaintenance,
 } from "./coin-maintenance"
@@ -146,6 +148,98 @@ describe("coin maintenance mutations integration", () => {
     ).resolves.toMatchObject({
       compositionDescription: "Silver outer ring with a brass core.",
     })
+  })
+
+  it("persists and replays one complete Coin aggregate for an idempotency key", async () => {
+    const issuer = await createIssuer({
+      code: "idempotent-coin-issuer",
+      name: "Issuer",
+    })
+    const ruler = await createRuler({
+      code: "idempotent-coin-ruler",
+      name: "Ruler",
+    })
+    const distribution = await createDistribution({
+      code: "idempotent-coin-distribution",
+      name: "Distribution",
+    })
+    const composition = await createComposition({
+      code: "idempotent-coin-composition",
+      name: "Composition",
+    })
+    const currency = await createCurrency({
+      code: "idempotent-coin-currency",
+      name: "IC",
+      fullName: "Currency",
+    })
+    const fields = {
+      title: "Idempotent Coin",
+      comments: null,
+      compositionDescription: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: null,
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: 1,
+      faceValueText: "1 Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      mintIds: [],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      surfaces: { obverse: null, reverse: null, edge: null },
+      techniqueId: null,
+      themeIds: [],
+      thickness: null,
+      weight: null,
+    }
+    const request = {
+      collectorId: "collector-1",
+      idempotencyKey: "coin-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+    }
+    let preparations = 0
+    const prepareFields = async () => {
+      preparations += 1
+      return fields
+    }
+
+    const first = await createCoinMaintenanceIdempotentlyWithDatabase(
+      db,
+      request,
+      prepareFields
+    )
+    const retry = await createCoinMaintenanceIdempotentlyWithDatabase(
+      db,
+      request,
+      prepareFields
+    )
+    const mismatch = await createCoinMaintenanceIdempotently({
+      ...request,
+      requestHash: "b".repeat(64),
+      fields: { ...fields, title: "Different Coin" },
+    })
+
+    expect(first).toMatchObject({
+      status: "created",
+      coin: { title: "Idempotent Coin" },
+    })
+    expect(retry).toStrictEqual({
+      status: "replayed",
+      coin: first.status === "created" ? first.coin : expect.anything(),
+    })
+    expect(mismatch).toStrictEqual({ status: "mismatch" })
+    expect(preparations).toBe(1)
+    await expect(db.query.coin.findMany()).resolves.toHaveLength(1)
+    await expect(db.query.coinRuler.findMany()).resolves.toHaveLength(1)
   })
 
   it("stores blank Composition Description as null", async () => {

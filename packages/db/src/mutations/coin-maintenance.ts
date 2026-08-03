@@ -1,6 +1,7 @@
-import { eq, sql } from "drizzle-orm"
+import { and, eq, lte, sql } from "drizzle-orm"
 
 import { db } from "../client"
+import type { db as databaseClient } from "../client"
 import type {
   CoinMaintenanceFaceSurface,
   CoinMaintenanceReference,
@@ -16,8 +17,10 @@ import { coinRuler } from "../schema/coin-ruler"
 import { coinSurface } from "../schema/coin-surface"
 import { coinSurfaceEngraver } from "../schema/coin-surface-engraver"
 import { coinTheme } from "../schema/coin-theme"
+import { maintenanceIdempotency } from "../schema/maintenance-idempotency"
+import type { Coin } from "../schema/coin"
 
-type CoinMaintenanceFields = {
+export type CoinMaintenanceFields = {
   comments: string | null
   compositionDescription: string | null
   compositionId: string
@@ -47,6 +50,10 @@ type CoinMaintenanceFields = {
 }
 
 type CreateCoinMaintenanceInput = CoinMaintenanceFields
+
+export type CreateCoinMaintenanceIdempotentlyResult =
+  | { status: "created" | "replayed"; coin: Coin }
+  | { status: "mismatch" }
 
 type UpdateCoinMaintenanceInput = CoinMaintenanceFields & {
   id: string
@@ -302,19 +309,128 @@ export async function createCoinMaintenance(
   fields: CreateCoinMaintenanceInput
 ) {
   return db.transaction(async (tx) => {
-    const [createdCoin] = await tx
-      .insert(coin)
-      .values(normalizeCoinMaintenanceFields(fields))
-      .returning()
-
-    await replaceCoinRulers(createdCoin.id, fields.rulerIds, tx)
-    await replaceCoinMints(createdCoin.id, fields.mintIds, tx)
-    await replaceCoinThemes(createdCoin.id, fields.themeIds, tx)
-    await replaceCoinReferences(createdCoin.id, getCoinReferences(fields), tx)
-    await replaceCoinSurfaces(createdCoin.id, getCoinSurfaces(fields), tx)
-
-    return createdCoin
+    return createCoinAggregate(fields, tx)
   })
+}
+
+async function createCoinAggregate(
+  fields: CreateCoinMaintenanceInput,
+  transaction: CoinMaintenanceTransaction
+) {
+  const [createdCoin] = await transaction
+    .insert(coin)
+    .values(normalizeCoinMaintenanceFields(fields))
+    .returning()
+
+  await replaceCoinRulers(createdCoin.id, fields.rulerIds, transaction)
+  await replaceCoinMints(createdCoin.id, fields.mintIds, transaction)
+  await replaceCoinThemes(createdCoin.id, fields.themeIds, transaction)
+  await replaceCoinReferences(
+    createdCoin.id,
+    getCoinReferences(fields),
+    transaction
+  )
+  await replaceCoinSurfaces(
+    createdCoin.id,
+    getCoinSurfaces(fields),
+    transaction
+  )
+
+  return createdCoin
+}
+
+export function createCoinMaintenanceIdempotently(
+  input: Parameters<typeof createCoinMaintenanceIdempotentlyWithDatabase>[1]
+) {
+  return createCoinMaintenanceIdempotentlyWithDatabase(db, input)
+}
+
+export async function createCoinMaintenanceIdempotentlyWithDatabase(
+  database: typeof databaseClient,
+  {
+    collectorId,
+    idempotencyKey,
+    requestHash,
+    expiresAt,
+    fields,
+  }: {
+    collectorId: string
+    idempotencyKey: string
+    requestHash: string
+    expiresAt: Date
+    fields?: CreateCoinMaintenanceInput
+  },
+  prepareFields?: () => Promise<CreateCoinMaintenanceInput>
+): Promise<CreateCoinMaintenanceIdempotentlyResult> {
+  return database.transaction(async (transaction) => {
+    await transaction
+      .delete(maintenanceIdempotency)
+      .where(lte(maintenanceIdempotency.expiresAt, new Date()))
+    const inserted = (
+      await transaction
+        .insert(maintenanceIdempotency)
+        .values({
+          collectorId,
+          operation: "coin.create",
+          key: idempotencyKey,
+          requestHash,
+          expiresAt,
+        })
+        .onConflictDoNothing()
+        .returning()
+    ).at(0)
+    const record =
+      inserted ??
+      (await transaction.query.maintenanceIdempotency.findFirst({
+        where: (entry, { and: all, eq: equal }) =>
+          all(
+            equal(entry.collectorId, collectorId),
+            equal(entry.operation, "coin.create"),
+            equal(entry.key, idempotencyKey)
+          ),
+      }))
+    if (record === undefined || record.requestHash !== requestHash) {
+      return { status: "mismatch" }
+    }
+    if (record.response !== null) {
+      return { status: "replayed", coin: deserializeCoin(record.response) }
+    }
+
+    const resolvedFields =
+      prepareFields === undefined ? fields : await prepareFields()
+    if (resolvedFields === undefined) {
+      throw new Error("Coin create fields are required")
+    }
+    const createdCoin = await createCoinAggregate(resolvedFields, transaction)
+    await transaction
+      .update(maintenanceIdempotency)
+      .set({ response: serializeCoin(createdCoin) })
+      .where(
+        and(
+          eq(maintenanceIdempotency.collectorId, collectorId),
+          eq(maintenanceIdempotency.operation, "coin.create"),
+          eq(maintenanceIdempotency.key, idempotencyKey)
+        )
+      )
+    return { status: "created", coin: createdCoin }
+  })
+}
+
+function serializeCoin(record: Coin) {
+  return {
+    ...record,
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+  }
+}
+
+function deserializeCoin(value: unknown): Coin {
+  const record = value as ReturnType<typeof serializeCoin>
+  return {
+    ...record,
+    createdAt: new Date(record.createdAt),
+    updatedAt: new Date(record.updatedAt),
+  }
 }
 
 export async function updateCoinMaintenance({

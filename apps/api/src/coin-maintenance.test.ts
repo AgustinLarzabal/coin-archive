@@ -35,6 +35,43 @@ const detail = {
   createdAt: new Date("2026-08-03T10:15:30.000Z"),
   updatedAt: new Date("2026-08-03T10:15:30.000Z"),
 }
+const createBody = {
+  title: "2 Pesos",
+  comments: null,
+  compositionDescription: null,
+  compositionId: id,
+  currencyId: id,
+  diameter: "23.5",
+  distributionId: id,
+  edgeId: null,
+  faceValueNumericValue: "2",
+  faceValueText: "2 Pesos",
+  isDemonetized: null,
+  issuerId: id,
+  maxYear: 2026,
+  mintIds: [],
+  minYear: 2025,
+  mintage: "1000000",
+  orientationId: null,
+  references: [],
+  rimId: null,
+  rulerIds: [id],
+  shapeId: null,
+  surfaces: {
+    obverse: {
+      description: "Portrait",
+      lettering: null,
+      imageUploadReference: "obverse-upload",
+      engraverIds: [],
+    },
+    reverse: null,
+    edge: null,
+  },
+  techniqueId: null,
+  themeIds: [],
+  thickness: null,
+  weight: "7.2",
+}
 
 function createApp(
   overrides: Partial<Parameters<typeof createApiApp>[0]> = {}
@@ -199,5 +236,137 @@ describe("protected Coin Maintenance reads", () => {
         }).request("https://api.coinarchive.app/api/v1/maintenance/coins")
       ).status
     ).toBe(403)
+  })
+})
+
+describe("protected Coin Maintenance create", () => {
+  it("creates the complete aggregate with a verified upload and returns 201 metadata", async () => {
+    const consumeSurfaceImageUpload = vi.fn().mockResolvedValue({
+      imageUrl:
+        "https://images.coinarchive.app/surface-images/published/obverse",
+    })
+    const createMaintenanceCoin = vi.fn(async (_input, prepareFields) => ({
+      status: "created" as const,
+      coin: { id: (await prepareFields()).issuerId },
+    }))
+    const response = await createApp({
+      consumeSurfaceImageUpload,
+      createMaintenanceCoin,
+    }).request("https://api.coinarchive.app/api/v1/maintenance/coins", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "coin-attempt-1",
+      },
+      body: JSON.stringify(createBody),
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get("location")).toBe(
+      `/api/v1/maintenance/coins/${id}`
+    )
+    expect(response.headers.get("etag")).toMatch(/^"[A-Za-z0-9_-]+"$/)
+    await expect(response.json()).resolves.toMatchObject({
+      data: { id, title: "2 Pesos", surfaces: { obverse: null } },
+    })
+    expect(consumeSurfaceImageUpload).toHaveBeenCalledWith(
+      "obverse-upload",
+      "obverse"
+    )
+    expect(createMaintenanceCoin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collectorId: "collector-id",
+        idempotencyKey: "coin-attempt-1",
+        requestHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+      }),
+      expect.any(Function)
+    )
+  })
+
+  it("rejects invalid input, missing relationships, invalid uploads, and key reuse with stable problems", async () => {
+    const request = (app: ReturnType<typeof createApp>, body = createBody) =>
+      app.request("https://api.coinarchive.app/api/v1/maintenance/coins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "coin-attempt-1",
+        },
+        body: JSON.stringify(body),
+      })
+
+    const invalid = await request(createApp(), {
+      ...createBody,
+      issuerId: "not-a-uuid",
+    })
+    expect(invalid.status).toBe(422)
+    await expect(invalid.json()).resolves.toMatchObject({
+      code: "coin_validation_failed",
+      invalidParams: [{ name: "/issuerId", code: "coin_field_invalid" }],
+    })
+
+    const missing = await request(
+      createApp({
+        createMaintenanceCoin: vi.fn().mockRejectedValue({ code: "23503" }),
+      })
+    )
+    expect(missing.status).toBe(409)
+    await expect(missing.json()).resolves.toMatchObject({
+      code: "coin_relationship_not_found",
+    })
+
+    const badUpload = await request(
+      createApp({
+        consumeSurfaceImageUpload: vi
+          .fn()
+          .mockRejectedValue(new Error("invalid upload")),
+        createMaintenanceCoin: vi.fn(async (_input, prepareFields) => {
+          await prepareFields()
+          throw new Error("unreachable")
+        }),
+      })
+    )
+    expect(badUpload.status).toBe(422)
+    await expect(badUpload.json()).resolves.toMatchObject({
+      code: "surface_image_upload_invalid",
+    })
+
+    const mismatch = await request(
+      createApp({
+        createMaintenanceCoin: vi
+          .fn()
+          .mockResolvedValue({ status: "mismatch" }),
+      })
+    )
+    expect(mismatch.status).toBe(409)
+    await expect(mismatch.json()).resolves.toMatchObject({
+      code: "idempotency_key_reused",
+    })
+  })
+
+  it("sanitizes unexpected persistence failures", async () => {
+    const deletePublishedSurfaceImage = vi.fn()
+    const response = await createApp({
+      consumeSurfaceImageUpload: vi.fn().mockResolvedValue({
+        imageUrl:
+          "https://images.coinarchive.app/surface-images/published/obverse",
+      }),
+      deletePublishedSurfaceImage,
+      createMaintenanceCoin: vi.fn(async (_input, prepareFields) => {
+        await prepareFields()
+        throw new Error("secret SQL")
+      }),
+    }).request("https://api.coinarchive.app/api/v1/maintenance/coins", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "coin-attempt-1",
+      },
+      body: JSON.stringify(createBody),
+    })
+    expect(response.status).toBe(500)
+    expect(JSON.stringify(await response.json())).not.toContain("secret SQL")
+    expect(deletePublishedSurfaceImage).toHaveBeenCalledWith(
+      "https://images.coinarchive.app/surface-images/published/obverse"
+    )
   })
 })

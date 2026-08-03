@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import {
   coinMaintenanceDeleteSummaryOutputSchema,
+  coinMaintenanceCreateInputSchema,
+  coinMaintenanceCreateOutputSchema,
   coinMaintenanceDetailOutputSchema,
   coinMaintenanceListInputSchema,
   coinMaintenanceListOutputSchema,
@@ -131,5 +133,119 @@ describe("Coin Maintenance read contract", () => {
       },
     })
     expect(Object.keys(result.data)).toHaveLength(14)
+  })
+})
+
+describe("Coin Maintenance create contract", () => {
+  it("defines a complete whole-Coin input independently of UI and database types", () => {
+    const body = {
+      title: "2 Pesos",
+      comments: null,
+      compositionDescription: "Silver alloy",
+      compositionId: id,
+      currencyId: id,
+      diameter: "23.50",
+      distributionId: id,
+      edgeId: null,
+      faceValueNumericValue: "2.000000",
+      faceValueText: "2 Pesos",
+      isDemonetized: null,
+      issuerId: id,
+      maxYear: 2026,
+      mintIds: [id],
+      minYear: 2025,
+      mintage: "1000000",
+      orientationId: null,
+      rimId: null,
+      rulerIds: [id],
+      shapeId: null,
+      techniqueId: null,
+      themeIds: [id],
+      thickness: "1.75",
+      weight: "7.20",
+      references: [{ catalogueId: id, number: "KM 123" }],
+      surfaces: {
+        obverse: {
+          description: "Portrait",
+          lettering: "REPUBLICA",
+          imageUploadReference: "opaque-obverse-upload",
+          engraverIds: [id],
+        },
+        reverse: null,
+        edge: {
+          description: "Reeded",
+          lettering: null,
+          imageUploadReference: null,
+        },
+      },
+    }
+
+    const result = coinMaintenanceCreateInputSchema.parse({
+      headers: { "idempotency-key": "coin-attempt-1" },
+      body,
+    })
+
+    expect(result.body).toStrictEqual(body)
+    expect(() =>
+      coinMaintenanceCreateInputSchema.parse({
+        headers: { "idempotency-key": "coin-attempt-1" },
+        body: { ...body, issuerId: "not-a-uuid" },
+      })
+    ).toThrow()
+    expect(() =>
+      coinMaintenanceCreateInputSchema.parse({
+        headers: { "idempotency-key": "coin-attempt-1" },
+        body: { ...body, unexpectedWebField: "redirect" },
+      })
+    ).toThrow()
+  })
+
+  it("defines 201 with the complete representation, Location, and ETag", () => {
+    const data = coinMaintenanceDetailOutputSchema.parse({
+      data: {
+        id,
+        title: "2 Pesos",
+        comments: null,
+        compositionDescription: null,
+        compositionId: id,
+        currencyId: id,
+        diameter: null,
+        distributionId: id,
+        edgeId: null,
+        faceValueNumericValue: "2",
+        faceValueText: "2 Pesos",
+        isDemonetized: null,
+        issuerId: id,
+        maxYear: null,
+        mintIds: [],
+        minYear: null,
+        mintage: null,
+        orientationId: null,
+        rimId: null,
+        rulerIds: [],
+        shapeId: null,
+        techniqueId: null,
+        themeIds: [],
+        thickness: null,
+        weight: null,
+        references: [],
+        surfaces: { obverse: null, reverse: null, edge: null },
+        version: 1,
+        createdAt: "2026-08-03T10:15:30.000Z",
+        updatedAt: "2026-08-03T10:15:30.000Z",
+        etag: '"opaque-version"',
+      },
+    })
+
+    expect(
+      coinMaintenanceCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          location: `/api/v1/maintenance/coins/${id}`,
+          etag: '"opaque-version"',
+        },
+        body: data,
+      }).body.data.id
+    ).toBe(id)
   })
 })

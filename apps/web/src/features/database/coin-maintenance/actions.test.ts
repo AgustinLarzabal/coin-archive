@@ -65,7 +65,7 @@ const VALID_COIN_DRAFT: CoinDraft = {
 }
 
 function createDependencies(overrides?: {
-  createCoinMaintenance?: ReturnType<typeof vi.fn>
+  createCoin?: ReturnType<typeof vi.fn>
   deleteCoinMaintenance?: ReturnType<typeof vi.fn>
   deleteSurfaceImage?: ReturnType<typeof vi.fn>
   getCoinSurfaceImageUrls?: ReturnType<typeof vi.fn>
@@ -76,7 +76,12 @@ function createDependencies(overrides?: {
   resolveSurfaceImageUpload?: ReturnType<typeof vi.fn>
 }) {
   return {
-    createCoinMaintenance: vi.fn(),
+    createCoin: vi.fn().mockResolvedValue({
+      status: 201,
+      headers: {},
+      body: { data: { id: VALID_COIN_ID } },
+    }),
+    createIdempotencyKey: () => "coin-attempt-1",
     deleteCoinMaintenance: vi.fn(),
     deleteSurfaceImage: vi.fn(),
     getCoinSurfaceImageUrls: vi.fn().mockResolvedValue([]),
@@ -152,7 +157,7 @@ describe("submitCreateCoin", () => {
       },
     })
 
-    expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
+    expect(dependencies.createCoin).not.toHaveBeenCalled()
   })
 
   it("blocks duplicate attributions, Catalogue References, invalid surface image URLs, and duplicate face engravers with path-specific errors", async () => {
@@ -202,13 +207,14 @@ describe("submitCreateCoin", () => {
       },
     })
 
-    expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
+    expect(dependencies.createCoin).not.toHaveBeenCalled()
   })
 
   it("normalizes blank optional scalars and maps aggregate child collections before creating a Coin", async () => {
     const dependencies = createDependencies({
-      createCoinMaintenance: vi.fn().mockResolvedValue({
-        id: VALID_COIN_ID,
+      createCoin: vi.fn().mockResolvedValue({
+        status: 201,
+        body: { data: { id: VALID_COIN_ID } },
       }),
     })
 
@@ -234,43 +240,50 @@ describe("submitCreateCoin", () => {
       message: "Coin created.",
     })
 
-    expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith({
-      title: "Spanish Test Coin",
-      issuerId: VALID_LOOKUP_ID,
-      rulerIds: [VALID_LOOKUP_ID],
-      distributionId: VALID_LOOKUP_ID,
-      compositionId: VALID_LOOKUP_ID,
-      compositionDescription: "Outer ring: copper-nickel; core: nickel-brass.",
-      faceValueText: "1 Test Unit",
-      faceValueNumericValue: 1.5,
-      currencyId: VALID_LOOKUP_ID,
-      mintIds: [VALID_LOOKUP_ID],
-      orientationId: null,
-      shapeId: null,
-      techniqueId: null,
-      edgeId: null,
-      rimId: null,
-      themeIds: [OTHER_LOOKUP_ID],
-      weight: null,
-      diameter: null,
-      thickness: null,
-      mintage: null,
-      comments: "Public note.",
-      minYear: null,
-      maxYear: null,
-      isDemonetized: true,
-      references: [],
-      surfaces: {
-        obverse: null,
-        reverse: null,
-        edge: null,
+    expect(dependencies.createCoin).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "coin-attempt-1" },
+      body: {
+        title: "Spanish Test Coin",
+        issuerId: VALID_LOOKUP_ID,
+        rulerIds: [VALID_LOOKUP_ID],
+        distributionId: VALID_LOOKUP_ID,
+        compositionId: VALID_LOOKUP_ID,
+        compositionDescription:
+          "Outer ring: copper-nickel; core: nickel-brass.",
+        faceValueText: "1 Test Unit",
+        faceValueNumericValue: "1.5",
+        currencyId: VALID_LOOKUP_ID,
+        mintIds: [VALID_LOOKUP_ID],
+        orientationId: null,
+        shapeId: null,
+        techniqueId: null,
+        edgeId: null,
+        rimId: null,
+        themeIds: [OTHER_LOOKUP_ID],
+        weight: null,
+        diameter: null,
+        thickness: null,
+        mintage: null,
+        comments: "Public note.",
+        minYear: null,
+        maxYear: null,
+        isDemonetized: true,
+        references: [],
+        surfaces: {
+          obverse: null,
+          reverse: null,
+          edge: null,
+        },
       },
     })
   })
 
-  it("resolves only the authorized Surface Image reference before persisting the Coin aggregate", async () => {
+  it("forwards only the authorized Surface Image reference for API verification", async () => {
     const dependencies = createDependencies({
-      createCoinMaintenance: vi.fn().mockResolvedValue({ id: VALID_COIN_ID }),
+      createCoin: vi.fn().mockResolvedValue({
+        status: 201,
+        body: { data: { id: VALID_COIN_ID } },
+      }),
       resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
         imageUrl: "https://images.example.test/surface-images/opaque-id",
       }),
@@ -293,26 +306,28 @@ describe("submitCreateCoin", () => {
       )
     ).resolves.toMatchObject({ status: "success", coinId: VALID_COIN_ID })
 
-    expect(dependencies.resolveSurfaceImageUpload).toHaveBeenCalledWith(
-      "opaque-upload-reference",
-      "obverse"
-    )
-    expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith(
+    expect(dependencies.resolveSurfaceImageUpload).not.toHaveBeenCalled()
+    expect(dependencies.createCoin).toHaveBeenCalledWith(
       expect.objectContaining({
-        surfaces: {
-          obverse: expect.objectContaining({
-            imageUrl: "https://images.example.test/surface-images/opaque-id",
-          }),
-          reverse: null,
-          edge: null,
-        },
+        body: expect.objectContaining({
+          surfaces: {
+            obverse: expect.objectContaining({
+              imageUploadReference: "opaque-upload-reference",
+            }),
+            reverse: null,
+            edge: null,
+          },
+        }),
       })
     )
   })
 
   it("does not persist a browser-supplied Surface Image URL without an authorized upload reference", async () => {
     const dependencies = createDependencies({
-      createCoinMaintenance: vi.fn().mockResolvedValue({ id: VALID_COIN_ID }),
+      createCoin: vi.fn().mockResolvedValue({
+        status: 201,
+        body: { data: { id: VALID_COIN_ID } },
+      }),
     })
 
     await submitCreateCoin(
@@ -330,18 +345,20 @@ describe("submitCreateCoin", () => {
       dependencies
     )
 
-    expect(dependencies.createCoinMaintenance).toHaveBeenCalledWith(
+    expect(dependencies.createCoin).toHaveBeenCalledWith(
       expect.objectContaining({
-        surfaces: { obverse: null, reverse: null, edge: null },
+        body: expect.objectContaining({
+          surfaces: { obverse: null, reverse: null, edge: null },
+        }),
       })
     )
   })
 
   it("does not persist a Coin when its authorized Surface Image cannot pass server inspection", async () => {
     const dependencies = createDependencies({
-      resolveSurfaceImageUpload: vi
-        .fn()
-        .mockRejectedValue(new Error("invalid object")),
+      createCoin: vi.fn().mockRejectedValue({
+        data: { body: { code: "surface_image_upload_invalid" } },
+      }),
     })
 
     await expect(
@@ -364,19 +381,48 @@ describe("submitCreateCoin", () => {
       fieldErrors: {},
       formError: "Unable to save Coin right now.",
     })
-    expect(dependencies.createCoinMaintenance).not.toHaveBeenCalled()
+    expect(dependencies.createCoin).toHaveBeenCalled()
   })
 
-  it("deletes a newly published Surface Image when Coin persistence fails", async () => {
-    const publishedImageUrl =
-      "https://images.example.test/surface-images/published/new-obverse"
+  it("maps API authorization and validation problems to client-owned feedback", async () => {
+    await expect(
+      submitCreateCoin(
+        { role: "editor" },
+        VALID_COIN_DRAFT,
+        createDependencies({
+          createCoin: vi.fn().mockRejectedValue({
+            data: {
+              body: {
+                code: "coin_validation_failed",
+                invalidParams: [
+                  { name: "/issuerId", reason: "Issuer no longer exists." },
+                ],
+              },
+            },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual({
+      status: "error",
+      fieldErrors: { issuerId: "Issuer no longer exists." },
+    })
+
+    await expect(
+      submitCreateCoin(
+        { role: "editor" },
+        VALID_COIN_DRAFT,
+        createDependencies({
+          createCoin: vi.fn().mockRejectedValue({
+            data: { body: { code: "editor_access_required" } },
+          }),
+        })
+      )
+    ).resolves.toStrictEqual(authorizationErrorResult)
+  })
+
+  it("leaves published-image rollback to the API when Coin creation fails", async () => {
     const dependencies = createDependencies({
-      createCoinMaintenance: vi
-        .fn()
-        .mockRejectedValue(new Error("database error")),
-      resolveSurfaceImageUpload: vi.fn().mockResolvedValue({
-        imageUrl: publishedImageUrl,
-      }),
+      createCoin: vi.fn().mockRejectedValue(new Error("database error")),
     })
 
     await submitCreateCoin(
@@ -394,9 +440,7 @@ describe("submitCreateCoin", () => {
       dependencies
     )
 
-    expect(dependencies.deleteSurfaceImage).toHaveBeenCalledWith(
-      publishedImageUrl
-    )
+    expect(dependencies.deleteSurfaceImage).not.toHaveBeenCalled()
   })
 })
 

@@ -2035,9 +2035,7 @@ export const coinMaintenanceDetailSchema = z.object({
   themeIds: z.array(z.uuid()),
   thickness: decimalSchema.nullable(),
   weight: decimalSchema.nullable(),
-  references: z.array(
-    z.object({ catalogueId: z.uuid(), number: z.string() })
-  ),
+  references: z.array(z.object({ catalogueId: z.uuid(), number: z.string() })),
   surfaces: z.object({
     obverse: coinMaintenanceFaceSurfaceSchema.nullable(),
     reverse: coinMaintenanceFaceSurfaceSchema.nullable(),
@@ -2051,6 +2049,150 @@ export const coinMaintenanceDetailSchema = z.object({
 
 export const coinMaintenanceDetailOutputSchema = z.object({
   data: coinMaintenanceDetailSchema,
+})
+
+const positiveDecimalSchema = (
+  integerDigits: number,
+  fractionalDigits: number
+) =>
+  z
+    .string()
+    .regex(
+      new RegExp(
+        `^(?:0|[1-9]\\d{0,${integerDigits - 1}})(?:\\.\\d{1,${fractionalDigits}})?$`
+      )
+    )
+    .refine((value) => Number(value) > 0)
+const positiveMeasurementSchema = positiveDecimalSchema(8, 2)
+const nullablePositiveMeasurementSchema = positiveMeasurementSchema.nullable()
+const coinMaintenanceCreateSurfaceSchema = z
+  .object({
+    description: z.string().trim().min(1).max(2000).nullable(),
+    lettering: z.string().trim().min(1).max(4000).nullable(),
+    imageUploadReference: z.string().trim().min(1).max(4096).nullable(),
+  })
+  .strict()
+const coinMaintenanceCreateFaceSurfaceSchema =
+  coinMaintenanceCreateSurfaceSchema
+    .extend({ engraverIds: z.array(z.uuid()) })
+    .strict()
+
+export const coinMaintenanceCreateBodySchema = z
+  .object({
+    title: z.string().trim().min(1).max(255),
+    comments: z.string().trim().min(1).nullable(),
+    compositionDescription: z.string().trim().min(1).nullable(),
+    compositionId: z.uuid(),
+    currencyId: z.uuid(),
+    diameter: nullablePositiveMeasurementSchema,
+    distributionId: z.uuid(),
+    edgeId: z.uuid().nullable(),
+    faceValueNumericValue: positiveDecimalSchema(14, 6),
+    faceValueText: z.string().trim().min(1).max(255),
+    isDemonetized: z.boolean().nullable(),
+    issuerId: z.uuid(),
+    maxYear: z.number().int().nullable(),
+    mintIds: z.array(z.uuid()),
+    minYear: z.number().int().nullable(),
+    mintage: z
+      .string()
+      .regex(/^\d+$/)
+      .refine((value) => {
+        const number = Number(value)
+        return Number.isSafeInteger(number) && number > 0
+      })
+      .nullable(),
+    orientationId: z.uuid().nullable(),
+    rimId: z.uuid().nullable(),
+    rulerIds: z.array(z.uuid()).min(1),
+    shapeId: z.uuid().nullable(),
+    techniqueId: z.uuid().nullable(),
+    themeIds: z.array(z.uuid()),
+    thickness: nullablePositiveMeasurementSchema,
+    weight: nullablePositiveMeasurementSchema,
+    references: z.array(
+      z
+        .object({ catalogueId: z.uuid(), number: z.string().trim().min(1) })
+        .strict()
+    ),
+    surfaces: z
+      .object({
+        obverse: coinMaintenanceCreateFaceSurfaceSchema.nullable(),
+        reverse: coinMaintenanceCreateFaceSurfaceSchema.nullable(),
+        edge: coinMaintenanceCreateSurfaceSchema.nullable(),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if ((value.minYear === null) !== (value.maxYear === null)) {
+      context.addIssue({
+        code: "custom",
+        path: ["minYear"],
+        message: "Issue Year Range requires both years or neither year.",
+      })
+    } else if (
+      value.minYear !== null &&
+      value.maxYear !== null &&
+      value.minYear > value.maxYear
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["minYear"],
+        message: "Earliest Issue Year must not exceed Latest Issue Year.",
+      })
+    }
+
+    for (const [field, identifiers] of [
+      ["rulerIds", value.rulerIds],
+      ["mintIds", value.mintIds],
+      ["themeIds", value.themeIds],
+      [
+        "surfaces.obverse.engraverIds",
+        value.surfaces.obverse?.engraverIds ?? [],
+      ],
+      [
+        "surfaces.reverse.engraverIds",
+        value.surfaces.reverse?.engraverIds ?? [],
+      ],
+    ] as const) {
+      if (new Set(identifiers).size !== identifiers.length) {
+        context.addIssue({
+          code: "custom",
+          path: field.split("."),
+          message: "Duplicate relationship identifiers are not allowed.",
+        })
+      }
+    }
+
+    const references = new Set<string>()
+    for (const [index, reference] of value.references.entries()) {
+      const key = `${reference.catalogueId}:${reference.number.trim().replace(/\s+/g, " ").toLowerCase()}`
+      if (references.has(key)) {
+        context.addIssue({
+          code: "custom",
+          path: ["references", index, "number"],
+          message: "Duplicate Catalogue References are not allowed.",
+        })
+      }
+      references.add(key)
+    }
+  })
+
+export const coinMaintenanceCreateInputSchema = z
+  .object({
+    headers: z.object({ "idempotency-key": idempotencyKeySchema }).strict(),
+    body: coinMaintenanceCreateBodySchema,
+  })
+  .strict()
+
+export const coinMaintenanceCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/coins/"),
+    etag: z.string(),
+  }),
+  body: coinMaintenanceDetailOutputSchema,
 })
 
 export const coinMaintenanceDeleteSummarySchema = z.object({
@@ -2130,6 +2272,19 @@ export const maintenanceApiContract = {
       .input(coinMaintenanceListInputSchema)
       .output(coinMaintenanceListOutputSchema)
       .errors(maintenanceReadErrors),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/coins",
+        summary: "Create a complete Coin aggregate",
+        tags: ["Coin Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(coinMaintenanceCreateInputSchema)
+      .output(coinMaintenanceCreateOutputSchema)
+      .errors(maintenanceMutationErrors),
     options: oc
       .route({
         method: "GET",
@@ -3331,11 +3486,15 @@ export type CoinMaintenanceListItem = z.infer<
 export type CoinMaintenanceListOutput = z.infer<
   typeof coinMaintenanceListOutputSchema
 >
-export type CoinMaintenanceDetail = z.infer<
-  typeof coinMaintenanceDetailSchema
->
+export type CoinMaintenanceDetail = z.infer<typeof coinMaintenanceDetailSchema>
 export type CoinMaintenanceDetailOutput = z.infer<
   typeof coinMaintenanceDetailOutputSchema
+>
+export type CoinMaintenanceCreateBody = z.infer<
+  typeof coinMaintenanceCreateBodySchema
+>
+export type CoinMaintenanceCreateInput = z.infer<
+  typeof coinMaintenanceCreateInputSchema
 >
 export type CoinMaintenanceDeleteSummary = z.infer<
   typeof coinMaintenanceDeleteSummarySchema

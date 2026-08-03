@@ -2,424 +2,243 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   ENGRAVER_AUTHORIZATION_ERROR,
-  ENGRAVER_DUPLICATE_CODE_ERROR,
-  ENGRAVER_GENERIC_SAVE_ERROR,
-  ENGRAVER_IN_USE_DELETE_ERROR,
-  ENGRAVER_INVALID_CODE_ERROR,
-  ENGRAVER_MISSING_ERROR,
-  hasEngraverMaintenanceAccess,
   submitCreateEngraver,
   submitDeleteEngraver,
   submitUpdateEngraver,
 } from "./actions"
+import {
+  ENGRAVER_DUPLICATE_CODE_ERROR,
+  ENGRAVER_IN_USE_DELETE_ERROR,
+  ENGRAVER_STALE_ERROR,
+} from "./engraver-mutation-errors"
 
-const VALID_ENGRAVER_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const BARTH_ENGRAVER = {
-  code: "barth",
-  name: "Barth",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const engraver = {
+  id,
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createEngraver?: ReturnType<typeof vi.fn>
-  deleteEngraver?: ReturnType<typeof vi.fn>
-  updateEngraver?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createEngraver: vi.fn(),
-    deleteEngraver: vi.fn(),
-    updateEngraver: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/engravers",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: ENGRAVER_AUTHORIZATION_ERROR,
-}
-
-describe("hasEngraverMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasEngraverMaintenanceAccess(null)).toBe(false)
-    expect(hasEngraverMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasEngraverMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasEngraverMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasEngraverMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasEngraverMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateEngraver", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateEngraver(null, BARTH_ENGRAVER)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateEngraver({ role: "collector" }, BARTH_ENGRAVER)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Engraver web mutation adapter", () => {
+  it("leaves authoritative validation to the typed API", async () => {
+    const createEngraver = vi.fn().mockRejectedValue(
+      problem("engraver_validation_failed", 422, [
+        { name: "/code", code: "engraver_code_required" },
+        { name: "/name", code: "engraver_name_too_long" },
+      ])
+    )
 
     await expect(
       submitCreateEngraver(
-        { role: "editor" },
         {
-          code: "Barth",
-          name: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createEngraver }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: ENGRAVER_INVALID_CODE_ERROR,
-        name: "Engraver Name cannot be blank.",
+        code: "Engraver Code cannot be blank.",
+        name: "Engraver Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createEngraver).not.toHaveBeenCalled()
+    expect(createEngraver).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " ", name: "".padStart(256, "A") },
+    })
   })
 
-  it("trims Engraver fields before creating an Engraver", async () => {
-    const dependencies = createDependencies({
-      createEngraver: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createEngraver = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/engravers/${id}` },
+      body: { data: engraver },
+    }))
 
     await expect(
       submitCreateEngraver(
-        { role: "editor" },
         {
-          code: " barth ",
-          name: " Barth ",
+          code: " reeded ",
+          name: " Reeded ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createEngraver }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Engraver added.",
     })
-
-    expect(dependencies.createEngraver).toHaveBeenCalledWith({
-      code: "barth",
-      name: "Barth",
+    expect(createEngraver).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " reeded ", name: " Reeded " },
     })
   })
 
-  it("maps duplicate Engraver Codes to the Engraver Code field", async () => {
-    await expect(
-      submitCreateEngraver(
-        { role: "admin" },
-        BARTH_ENGRAVER,
-        createDependencies({
-          createEngraver: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "engraver_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ENGRAVER_DUPLICATE_CODE_ERROR,
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createEngraver = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/engravers/${id}` },
+      body: { data: engraver },
+    }))
+    const submission = {
+      code: "reeded",
+      name: "Reeded",
+      idempotencyKey: "stable-attempt",
+    }
+
+    await submitCreateEngraver(submission, { createEngraver })
+    await submitCreateEngraver(submission, { createEngraver })
+
+    expect(createEngraver).toHaveBeenCalledTimes(2)
+    expect(createEngraver).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createEngraver).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+  })
+
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceEngraver = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...engraver, version: 2, etag: '"next-version"' },
       },
-    })
-  })
-
-  it("maps Engraver Code slug check failures to the Engraver Code field", async () => {
-    await expect(
-      submitCreateEngraver(
-        { role: "admin" },
-        BARTH_ENGRAVER,
-        createDependencies({
-          createEngraver: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "engraver_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ENGRAVER_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createEngraver: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
-
-    await expect(
-      submitCreateEngraver({ role: "editor" }, BARTH_ENGRAVER, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Engraver added.",
-    })
-
-    expect(dependencies.createEngraver).toHaveBeenCalledWith(BARTH_ENGRAVER)
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateEngraver(
-        { role: "admin" },
-        BARTH_ENGRAVER,
-        createDependencies({
-          createEngraver: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ENGRAVER_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateEngraver", () => {
-  const updateInput = {
-    id: VALID_ENGRAVER_ID,
-    ...BARTH_ENGRAVER,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(
-      submitUpdateEngraver(null, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitUpdateEngraver({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+    }))
+    const deleteEngraver = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
       submitUpdateEngraver(
-        { role: "editor" },
-        {
-          id: VALID_ENGRAVER_ID,
-          code: "Barth",
-          name: " ",
-        },
-        dependencies
+        { id, etag, code: "plain", name: "Plain" },
+        { replaceEngraver }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ENGRAVER_INVALID_CODE_ERROR,
-        name: "Engraver Name cannot be blank.",
-      },
-    })
-
-    expect(dependencies.updateEngraver).not.toHaveBeenCalled()
-  })
-
-  it("trims Engraver fields before updating an Engraver", async () => {
-    const dependencies = createDependencies({
-      updateEngraver: vi.fn().mockResolvedValue({
-        id: VALID_ENGRAVER_ID,
-      }),
-    })
-
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitUpdateEngraver(
-        { role: "editor" },
-        {
-          id: VALID_ENGRAVER_ID,
-          code: " barth ",
-          name: " Barth ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateEngraver).toHaveBeenCalledWith({
-      id: VALID_ENGRAVER_ID,
-      code: "barth",
-      name: "Barth",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
-    await expect(
-      submitUpdateEngraver(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateEngraver: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ENGRAVER_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Engraver Codes to the Engraver Code field during update", async () => {
-    await expect(
-      submitUpdateEngraver(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateEngraver: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "engraver_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ENGRAVER_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("maps Engraver Code slug check failures to the Engraver Code field during update", async () => {
-    await expect(
-      submitUpdateEngraver(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateEngraver: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "engraver_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ENGRAVER_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateEngraver(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateEngraver: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ENGRAVER_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteEngraver", () => {
-  const deleteInput = {
-    id: VALID_ENGRAVER_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(
-      submitDeleteEngraver(null, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitDeleteEngraver({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitDeleteEngraver(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteEngraver).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
-    await expect(
-      submitDeleteEngraver(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteEngraver: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ENGRAVER_MISSING_ERROR,
-    })
-  })
-
-  it("maps in-use delete failures to the generic Engraver in-use message", async () => {
-    await expect(
-      submitDeleteEngraver(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteEngraver: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_face_engraver_engraver_id_fkey",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ENGRAVER_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns success when deleting an unused Engraver", async () => {
-    const dependencies = createDependencies({
-      deleteEngraver: vi.fn().mockResolvedValue({
-        id: VALID_ENGRAVER_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteEngraver({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteEngraver({ id, etag }, { deleteEngraver })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Engraver deleted.",
     })
 
-    expect(dependencies.deleteEngraver).toHaveBeenCalledWith(deleteInput)
+    expect(replaceEngraver).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "plain", name: "Plain" },
+    })
+    expect(deleteEngraver).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateEngraver(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createEngraver: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ENGRAVER_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateEngraver(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createEngraver: vi
+            .fn()
+            .mockRejectedValue(problem("engraver_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: ENGRAVER_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateEngraver(
+        { id, etag, code: "reeded", name: "Reeded" },
+        {
+          replaceEngraver: vi
+            .fn()
+            .mockRejectedValue(problem("engraver_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ENGRAVER_STALE_ERROR })
+
+    await expect(
+      submitDeleteEngraver(
+        { id, etag },
+        {
+          deleteEngraver: vi
+            .fn()
+            .mockRejectedValue(problem("engraver_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ENGRAVER_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateEngraver(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createEngraver: vi.fn().mockRejectedValue(
+            problem("engraver_validation_failed", 422, [
+              { name: "/code", code: "engraver_code_required" },
+              { name: "/name", code: "engraver_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Engraver Code cannot be blank.",
+        name: "Engraver Name must be 255 characters or fewer.",
+      },
+    })
   })
 })

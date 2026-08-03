@@ -4,6 +4,7 @@ import {
   createCurrencyIdempotentlyWithDatabase,
   createDistributionIdempotentlyWithDatabase,
   createEdgeIdempotentlyWithDatabase,
+  createEngraverIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
   createShapeIdempotentlyWithDatabase,
   createTechniqueIdempotentlyWithDatabase,
@@ -14,6 +15,7 @@ import {
   deleteCurrencyIfVersionWithDatabase,
   deleteDistributionIfVersionWithDatabase,
   deleteEdgeIfVersionWithDatabase,
+  deleteEngraverIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
   deleteShapeIfVersionWithDatabase,
   deleteTechniqueIfVersionWithDatabase,
@@ -28,6 +30,8 @@ import {
   getDistributionMaintenanceRecordsWithDatabase,
   getEdgeMaintenanceRecordWithDatabase,
   getEdgeMaintenanceRecordsWithDatabase,
+  getEngraverMaintenanceRecordWithDatabase,
+  getEngraverMaintenanceRecordsWithDatabase,
   getRimMaintenanceRecordWithDatabase,
   getRimMaintenanceRecordsWithDatabase,
   getShapeMaintenanceRecordWithDatabase,
@@ -43,6 +47,7 @@ import {
   replaceCurrencyWithDatabase,
   replaceDistributionWithDatabase,
   replaceEdgeWithDatabase,
+  replaceEngraverWithDatabase,
   replaceRimWithDatabase,
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
@@ -179,6 +184,20 @@ async function handleRequest(
         ...fields,
       }),
     deleteEdge: (input) => deleteEdgeIfVersionWithDatabase(database.db, input),
+    listEngravers: (input) =>
+      getEngraverMaintenanceRecordsWithDatabase(database.db, input),
+    getEngraver: (engraverId) =>
+      getEngraverMaintenanceRecordWithDatabase(database.db, engraverId),
+    createEngraver: (input) =>
+      createEngraverIdempotentlyWithDatabase(database.db, input),
+    replaceEngraver: ({ id, expectedVersion, fields }) =>
+      replaceEngraverWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteEngraver: (input) =>
+      deleteEngraverIfVersionWithDatabase(database.db, input),
     listRims: (input) =>
       getRimMaintenanceRecordsWithDatabase(database.db, input),
     getRim: (rimId) => getRimMaintenanceRecordWithDatabase(database.db, rimId),

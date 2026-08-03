@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createEngraverColumns } from "./columns"
@@ -7,17 +7,18 @@ import { EngraverMaintenanceSheet } from "../sheet-workflow/engraver-maintenance
 import { EngraversTableToolbar } from "./engravers-table-toolbar"
 
 type EngraversTableProps = {
-  engravers: EngraverOption[]
+  engravers: Engraver[]
 }
 
 export function EngraversTable({ engravers }: EngraversTableProps) {
-  const [selectedEngraver, setSelectedEngraver] =
-    useState<EngraverOption | null>(null)
+  const [selectedEngraver, setSelectedEngraver] = useState<Engraver | null>(
+    null
+  )
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
 
   function openMaintenanceSheet(
-    engraver: EngraverOption | null,
+    engraver: Engraver | null,
     options?: { deleteDialogOpen?: boolean }
   ) {
     setSelectedEngraver(engraver)
@@ -29,11 +30,11 @@ export function EngraversTable({ engravers }: EngraversTableProps) {
     openMaintenanceSheet(null)
   }
 
-  function openEditEngraverSheet(engraver: EngraverOption) {
+  function openEditEngraverSheet(engraver: Engraver) {
     openMaintenanceSheet(engraver)
   }
 
-  function openDeleteEngraverSheet(engraver: EngraverOption) {
+  function openDeleteEngraverSheet(engraver: Engraver) {
     openMaintenanceSheet(engraver, { deleteDialogOpen: true })
   }
 

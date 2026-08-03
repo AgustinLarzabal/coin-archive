@@ -1,19 +1,27 @@
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
 import { EngraversTable } from "./engravers-table"
 
-const engravers: EngraverOption[] = [
+const engravers: Engraver[] = [
   {
-    id: "2816420d-cde4-4984-b5af-2aa4c5d2720d",
-    code: "barth",
-    name: "Barth",
+    id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    etag: '"engraver-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
   {
-    id: "0a0ef926-8e38-4fcc-a62e-4df0b46ebfa2",
-    code: "ortiz",
-    name: "Ortiz",
+    id: "d3ed87e0-ebd9-4bbd-a5de-c9d1823ae3a2",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    etag: '"engraver-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
 ]
 
@@ -23,10 +31,10 @@ describe("EngraversTable", () => {
       <EngraversTable engravers={engravers} />
     )
 
-    expect(markup).toContain("Engraver Name")
     expect(markup).toContain("Engraver Code")
-    expect(markup).toContain("Barth")
-    expect(markup).toContain("Ortiz")
+    expect(markup).toContain("Engraver Name")
+    expect(markup).toContain("Reeded")
+    expect(markup).toContain("Plain")
     expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')
   })

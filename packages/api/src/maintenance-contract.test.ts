@@ -69,6 +69,15 @@ import {
   shapeMaintenanceProblemDocumentSchema,
   shapeOptionsOutputSchema,
   shapeReplaceInputSchema,
+  engraverCreateInputSchema,
+  engraverCreateOutputSchema,
+  engraverDeleteInputSchema,
+  engraverDetailOutputSchema,
+  engraverListInputSchema,
+  engraverListOutputSchema,
+  engraverMaintenanceProblemDocumentSchema,
+  engraverOptionsOutputSchema,
+  engraverReplaceInputSchema,
   mintingTechniqueCreateInputSchema,
   mintingTechniqueCreateOutputSchema,
   mintingTechniqueDeleteInputSchema,
@@ -139,6 +148,16 @@ const shape = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-shape-version"',
+}
+
+const engraver = {
+  id: "018f1a11-aaaa-7000-8000-000000000007",
+  code: "raised-both-sides",
+  name: "Raised on both sides",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-engraver-version"',
 }
 
 const mintingTechnique = {
@@ -996,6 +1015,129 @@ describe("Shape maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: shape.id },
       headers: { "if-match": shape.etag },
+    })
+  })
+})
+
+describe("Engraver maintenance contract", () => {
+  it("declares stable Engraver validation and face-attribution conflict codes", () => {
+    expect(
+      engraverMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/engraver-validation",
+          title: "Engraver validation failed",
+          status: 422,
+          detail: "The Engraver could not be saved",
+          instance: "/api/v1/maintenance/engravers",
+          code: "engraver_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "engraver_code_invalid",
+              reason: "Engraver Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("engraver_code_invalid")
+    expect(
+      engraverMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/engraver-in-use",
+        title: "Engraver is in use",
+        status: 409,
+        detail: "Engraver Attributions still use this Engraver",
+        instance: `/api/v1/maintenance/engravers/${engraver.id}`,
+        code: "engraver_in_use",
+      }).code
+    ).toBe("engraver_in_use")
+  })
+
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      engraverListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "reeded",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "reeded",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => engraverListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      engraverOptionsOutputSchema.parse({
+        data: [{ id: engraver.id, code: engraver.code, name: engraver.name }],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [{ id: engraver.id, code: engraver.code, name: engraver.name }],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      engraverListOutputSchema.parse({ data: [engraver], nextCursor: null })
+    ).toStrictEqual({ data: [engraver], nextCursor: null })
+    expect(engraverDetailOutputSchema.parse({ data: engraver })).toStrictEqual({
+      data: engraver,
+    })
+    expect(() =>
+      engraverDetailOutputSchema.parse({
+        data: { ...engraver, createdAt: new Date(engraver.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      engraverCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " reeded ", name: " Reeded " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
+    })
+    expect(
+      engraverCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: engraver.etag,
+          location: `/api/v1/maintenance/engravers/${engraver.id}`,
+        },
+        body: { data: engraver },
+      })
+    ).toMatchObject({ status: 201, body: { data: engraver } })
+    expect(() =>
+      engraverCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Reeded Engraver", name: "Reeded" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      engraverReplaceInputSchema.parse({
+        params: { uuid: engraver.id },
+        headers: { "if-match": engraver.etag },
+        body: { code: engraver.code, name: engraver.name },
+      })
+    ).toMatchObject({ headers: { "if-match": engraver.etag } })
+    expect(
+      engraverDeleteInputSchema.parse({
+        params: { uuid: engraver.id },
+        headers: { "if-match": engraver.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: engraver.id },
+      headers: { "if-match": engraver.etag },
     })
   })
 })

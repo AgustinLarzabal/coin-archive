@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,35 +27,27 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  ENGRAVER_GENERIC_SAVE_ERROR,
-  ENGRAVER_IN_USE_DELETE_GUIDANCE,
-  submitDeleteEngraver,
-} from "../actions"
+import { submitDeleteEngraver } from "../actions"
+import { ENGRAVER_GENERIC_SAVE_ERROR } from "../engraver-mutation-errors"
+import { ENGRAVER_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { EngraverCreateForm } from "../form-workflow/engraver-create-form"
 import { EngraverEditForm } from "../form-workflow/engraver-edit-form"
 
 type EngraverMaintenanceSheetProps = {
-  engraver: EngraverOption | null
+  engraver: Engraver | null
   initialDeleteDialogOpen?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Engraver. ${ENGRAVER_IN_USE_DELETE_GUIDANCE}`
+export const ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Engraver. ${ENGRAVER_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteEngraverAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteEngraver(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteEngraver(data))
 
 export function EngraverMaintenanceSheet({
   engraver,
@@ -94,6 +86,7 @@ export function EngraverMaintenanceSheet({
       const result = await deleteEngraver({
         data: {
           id: engraver.id,
+          etag: engraver.etag,
         },
       })
 

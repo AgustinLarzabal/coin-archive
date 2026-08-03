@@ -1,10 +1,10 @@
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { ENGRAVER_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { ENGRAVER_IN_USE_DELETE_ERROR } from "../engraver-mutation-errors"
 
 import {
   ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -95,13 +92,17 @@ vi.mock("../form-workflow/engraver-edit-form", () => ({
   EngraverEditForm: () => createElement("div", null, "EngraverEditForm"),
 }))
 
-const engraver: EngraverOption = {
-  id: "84863d38-795b-443c-bd27-1dedb73c0fad",
-  code: "barth",
-  name: "Barth",
+const engraver: Engraver = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"engraver-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderEngraverMaintenanceSheet(engraverOption: EngraverOption | null) {
+function renderEngraverMaintenanceSheet(engraverOption: Engraver | null) {
   return renderToStaticMarkup(
     createElement(EngraverMaintenanceSheet, {
       engraver: engraverOption,
@@ -117,7 +118,10 @@ describe("ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Engraver"
     )
     expect(ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      ENGRAVER_IN_USE_DELETE_GUIDANCE
+      ENGRAVER_IN_USE_DELETE_ERROR.replace(
+        "Engraver cannot be deleted while Engraver Attributions still use it. ",
+        ""
+      )
     )
   })
 })

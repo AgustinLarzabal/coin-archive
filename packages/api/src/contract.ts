@@ -764,6 +764,119 @@ export const shapeMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const engraverSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const engraverOptionSchema = engraverSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const engraverListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const engraverListOutputSchema = z.object({
+  data: z.array(engraverSchema),
+  nextCursor: z.string().nullable(),
+})
+export const engraverOptionsInputSchema = engraverListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const engraverOptionsOutputSchema = z.object({
+  data: z.array(engraverOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const engraverDetailInputSchema = z.object({ uuid: z.uuid() })
+export const engraverDetailOutputSchema = z.object({ data: engraverSchema })
+export const engraverMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const engraverCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: engraverMutationBodySchema,
+})
+export const engraverCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/engravers/"),
+    etag: z.string(),
+  }),
+  body: engraverDetailOutputSchema,
+})
+export const engraverReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: engraverMutationBodySchema,
+})
+export const engraverReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: engraverDetailOutputSchema,
+})
+export const engraverDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const engraverDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const engraverMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "engraver_code_conflict",
+      "engraver_in_use",
+      "engraver_not_found",
+      "engraver_precondition_failed",
+      "engraver_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_engraver_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "engraver_body_invalid",
+            "engraver_code_invalid",
+            "engraver_code_required",
+            "engraver_code_too_long",
+            "engraver_name_invalid",
+            "engraver_name_required",
+            "engraver_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 export const mintingTechniqueSchema = z.object({
   id: z.uuid(),
   code: codeSchema,
@@ -1022,6 +1135,50 @@ const shapeMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: shapeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const engraverMaintenanceReadErrors = {
+  BAD_REQUEST: {
+    status: 400,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  UNAUTHORIZED: {
+    status: 401,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  FORBIDDEN: {
+    status: 403,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  METHOD_NOT_ALLOWED: {
+    status: 405,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  TOO_MANY_REQUESTS: {
+    status: 429,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  INTERNAL_SERVER_ERROR: {
+    status: 500,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const engraverMaintenanceMutationErrors = {
+  ...engraverMaintenanceReadErrors,
+  NOT_FOUND: {
+    status: 404,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  CONFLICT: { status: 409, data: engraverMaintenanceProblemDocumentSchema },
+  PRECONDITION_FAILED: {
+    status: 412,
+    data: engraverMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: engraverMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -1508,6 +1665,82 @@ export const maintenanceApiContract = {
       .output(shapeDeleteOutputSchema)
       .errors(shapeMaintenanceMutationErrors),
   },
+  engravers: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/engravers",
+        summary: "Browse Engravers for maintenance",
+        tags: ["Engraver Maintenance"],
+      })
+      .input(engraverListInputSchema)
+      .output(engraverListOutputSchema)
+      .errors(engraverMaintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/engravers/options",
+        summary: "Search compact Engraver options",
+        tags: ["Engraver Maintenance"],
+      })
+      .input(engraverOptionsInputSchema)
+      .output(engraverOptionsOutputSchema)
+      .errors(engraverMaintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/engravers/{uuid}",
+        summary: "Get Engraver maintenance detail",
+        tags: ["Engraver Maintenance"],
+      })
+      .input(engraverDetailInputSchema)
+      .output(engraverDetailOutputSchema)
+      .errors({
+        ...engraverMaintenanceReadErrors,
+        NOT_FOUND: {
+          status: 404,
+          data: engraverMaintenanceProblemDocumentSchema,
+        },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/engravers",
+        summary: "Create an Engraver",
+        tags: ["Engraver Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(engraverCreateInputSchema)
+      .output(engraverCreateOutputSchema)
+      .errors(engraverMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/engravers/{uuid}",
+        summary: "Replace an Engraver",
+        tags: ["Engraver Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(engraverReplaceInputSchema)
+      .output(engraverReplaceOutputSchema)
+      .errors(engraverMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/engravers/{uuid}",
+        summary: "Permanently delete an Engraver",
+        tags: ["Engraver Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(engraverDeleteInputSchema)
+      .output(engraverDeleteOutputSchema)
+      .errors(engraverMaintenanceMutationErrors),
+  },
   mintingTechniques: {
     list: oc
       .route({
@@ -1822,6 +2055,14 @@ export type ShapeOptionsInput = z.infer<typeof shapeOptionsInputSchema>
 export type ShapeOptionsOutput = z.infer<typeof shapeOptionsOutputSchema>
 export type ShapeDetailOutput = z.infer<typeof shapeDetailOutputSchema>
 export type ShapeMutationBody = z.infer<typeof shapeMutationBodySchema>
+export type Engraver = z.infer<typeof engraverSchema>
+export type EngraverOption = z.infer<typeof engraverOptionSchema>
+export type EngraverListInput = z.infer<typeof engraverListInputSchema>
+export type EngraverListOutput = z.infer<typeof engraverListOutputSchema>
+export type EngraverOptionsInput = z.infer<typeof engraverOptionsInputSchema>
+export type EngraverOptionsOutput = z.infer<typeof engraverOptionsOutputSchema>
+export type EngraverDetailOutput = z.infer<typeof engraverDetailOutputSchema>
+export type EngraverMutationBody = z.infer<typeof engraverMutationBodySchema>
 export type MintingTechnique = z.infer<typeof mintingTechniqueSchema>
 export type MintingTechniqueOption = z.infer<
   typeof mintingTechniqueOptionSchema

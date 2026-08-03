@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,9 +14,9 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createEngraverColumns(
-  onEditEngraver: (engraver: EngraverOption) => void,
-  onDeleteEngraver: (engraver: EngraverOption) => void
-): ColumnDef<EngraverOption>[] {
+  onEditEngraver: (engraver: Engraver) => void,
+  onDeleteEngraver: (engraver: Engraver) => void
+): ColumnDef<Engraver>[] {
   return [
     {
       accessorKey: "name",

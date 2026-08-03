@@ -124,6 +124,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -487,7 +488,7 @@ Known limitations and non-goals:
 
 The `engraver` table models the shared engraver identity used for face-specific engraver attributions:
 
-- an Engraver row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- an Engraver row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `engraver.code` is the stable archive identity for the engraver and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `engraver.name` is display text only; it helps humans read the engraver label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat engraver codes case-insensitively, while the schema also requires lowercase slug-style text on write
@@ -501,6 +502,7 @@ Engraver-specific requirements and constraints:
 - Engraver Codes must satisfy the lowercase slug-style check enforced by `engraver_code_slug_check`
 - Engraver Names do not need to be unique
 - Engraver primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Engraver Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Engraver-specific indexes and query implications:

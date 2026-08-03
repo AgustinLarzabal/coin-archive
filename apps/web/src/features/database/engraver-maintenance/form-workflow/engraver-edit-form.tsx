@@ -2,49 +2,31 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { EngraverOption } from "@coin-archive/db"
+import type { Engraver } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { EngraverFieldErrors, EngraverMutationResult } from "../actions"
-import { createEngraverInputSchema, submitUpdateEngraver } from "../actions"
+import { submitUpdateEngraver } from "../actions"
+import type { EngraverMutationResult } from "../actions"
+import { createEngraverInputSchema } from "../engraver-validation"
+import type { EngraverFieldErrors } from "../engraver-validation"
 
 import {
   createEngraverDraft,
-  normalizeEngraverDraft,
+  hasEngraverEditChanges,
 } from "./engraver-form.shared"
 import { EngraverFormFields, EngraverTextField } from "./engraver-form-fields"
 import type { EngraverDraft } from "./engraver-form.shared"
 
 type EngraverEditFormProps = {
-  engraver: EngraverOption
+  engraver: Engraver
   onSaved?: () => void
 }
 
 const updateEngraverAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: EngraverDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateEngraver(session?.user ?? null, data)
-  })
-
-export function hasEngraverEditChanges(
-  engraver: EngraverOption,
-  draft: EngraverDraft
-) {
-  const normalizedCurrent = normalizeEngraverDraft(
-    createEngraverDraft(engraver)
-  )
-  const normalizedDraft = normalizeEngraverDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .inputValidator((data: EngraverDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateEngraver(data))
 
 export function EngraverEditForm({ engraver, onSaved }: EngraverEditFormProps) {
   const router = useRouter()
@@ -58,7 +40,7 @@ export function EngraverEditForm({ engraver, onSaved }: EngraverEditFormProps) {
     validators: { onSubmit: createEngraverInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateEngraver({
-        data: { id: engraver.id, ...value },
+        data: { id: engraver.id, etag: engraver.etag, ...value },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

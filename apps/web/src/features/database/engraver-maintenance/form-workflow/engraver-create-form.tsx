@@ -4,9 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { EngraverFieldErrors, EngraverMutationResult } from "../actions"
-import { createEngraverInputSchema, submitCreateEngraver } from "../actions"
+import { submitCreateEngraver } from "../actions"
+import type { EngraverMutationResult } from "../actions"
+import { createEngraverInputSchema } from "../engraver-validation"
+import type { EngraverFieldErrors } from "../engraver-validation"
 
 import {
   EMPTY_ENGRAVER_DRAFT,
@@ -22,18 +23,17 @@ type EngraverCreateFormProps = {
 const createEngraverAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: EngraverDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateEngraver(session?.user ?? null, data)
-  })
+  .inputValidator((data: EngraverDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateEngraver(data))
 
 export function EngraverCreateForm({ onCreated }: EngraverCreateFormProps) {
   const router = useRouter()
   const createEngraver = useServerFn(createEngraverAction)
   const [fieldErrors, setFieldErrors] = useState<EngraverFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -57,12 +57,13 @@ export function EngraverCreateForm({ onCreated }: EngraverCreateFormProps) {
     validators: { onSubmit: createEngraverInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createEngraver({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

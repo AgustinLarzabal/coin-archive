@@ -43,7 +43,7 @@ export function EngraverFormFields({
           field,
           id: `${prefix}engraver-${field}`,
           label: `Engraver ${field === "code" ? "Code" : "Name"}`,
-          placeholder: field === "code" ? "barth" : "Barth",
+          placeholder: field === "code" ? "round" : "Round",
         })
       )}
     </FieldGroup>

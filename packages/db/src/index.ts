@@ -98,8 +98,17 @@ export {
 } from "./mutations/ruler-group"
 export {
   createEngraver,
+  createEngraverIdempotently,
+  createEngraverIdempotentlyWithDatabase,
   deleteEngraver,
+  deleteEngraverIfVersionWithDatabase,
+  replaceEngraverWithDatabase,
   updateEngraver,
+} from "./mutations/engraver"
+export type {
+  CreateEngraverIdempotentlyResult,
+  DeleteEngraverIfVersionResult,
+  ReplaceEngraverResult,
 } from "./mutations/engraver"
 export { createIssuer, deleteIssuer, updateIssuer } from "./mutations/issuer"
 export {
@@ -186,6 +195,15 @@ export {
   getEdgeMaintenanceRecordsWithDatabase,
 } from "./queries/get-edge-maintenance"
 export { getEngravers } from "./queries/get-engravers"
+export {
+  getEngraverMaintenanceRecordWithDatabase,
+  getEngraverMaintenanceRecordsWithDatabase,
+} from "./queries/get-engraver-maintenance"
+export type {
+  EngraverMaintenanceCursor,
+  EngraverMaintenanceListRecord,
+  GetEngraverMaintenanceRecordsOptions,
+} from "./queries/get-engraver-maintenance"
 export { getIssuerMaintenanceRecords } from "./queries/get-issuer-maintenance-records"
 export { getMints } from "./queries/get-mints"
 export { getOrientations } from "./queries/get-orientations"

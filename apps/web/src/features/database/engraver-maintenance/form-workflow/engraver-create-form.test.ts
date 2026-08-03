@@ -34,8 +34,8 @@ describe("EngraverCreateForm", () => {
   it("renders explicit Engraver field labels and disables Create until the draft is complete", () => {
     const markup = renderEngraverCreateForm()
     const expectedFields = [
-      ["Engraver Code", 'placeholder="barth"'],
-      ["Engraver Name", 'placeholder="Barth"'],
+      ["Engraver Code", 'placeholder="round"'],
+      ["Engraver Name", 'placeholder="Round"'],
     ] as const
 
     for (const [label, placeholder] of expectedFields) {

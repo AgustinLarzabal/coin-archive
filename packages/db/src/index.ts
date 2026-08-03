@@ -103,6 +103,7 @@ export type {
   CreateRulerIdempotentlyResult,
   DeleteRulerIfVersionResult,
   ReplaceRulerResult,
+  RulerMutationRecord,
 } from "./mutations/ruler"
 export {
   createRulerGroup,

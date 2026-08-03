@@ -18,6 +18,7 @@ import {
   replaceRulerWithDatabase,
   updateRuler,
 } from "./ruler"
+import { updateRulerGroup } from "./ruler-group"
 
 describe("ruler mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -89,21 +90,41 @@ describe("ruler mutations integration", () => {
   })
 
   it("replays identical idempotent Ruler creation and rejects changed payloads", async () => {
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon-replay",
+      name: "House of Bourbon",
+    })
     const input = {
       collectorId: "collector-1",
       idempotencyKey: "ruler-create-1",
       requestHash: "a".repeat(64),
       expiresAt: new Date("2030-08-03T00:00:00.000Z"),
-      fields: { code: " felipe-v ", name: " Felipe V ", rulerGroupId: null },
+      fields: {
+        code: " felipe-v ",
+        name: " Felipe V ",
+        rulerGroupId: bourbon.id,
+      },
     }
     const first = await createRulerIdempotently(input)
+    await updateRulerGroup({
+      id: bourbon.id,
+      code: bourbon.code,
+      name: "House of Bourbon Updated",
+    })
     const retry = await createRulerIdempotently(input)
 
     expect(first).toMatchObject({
       status: "created",
-      ruler: { code: "felipe-v", version: 1 },
+      ruler: {
+        code: "felipe-v",
+        version: 1,
+        group: { id: bourbon.id, name: "House of Bourbon" },
+      },
     })
-    expect(retry).toMatchObject({ status: "replayed" })
+    expect(retry).toMatchObject({
+      status: "replayed",
+      ruler: { group: { id: bourbon.id, name: "House of Bourbon" } },
+    })
     await expect(
       createRulerIdempotently({
         ...input,

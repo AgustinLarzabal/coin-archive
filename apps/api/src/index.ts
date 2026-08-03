@@ -324,33 +324,14 @@ async function handleRequest(
       getRulerMaintenanceRecordsWithDatabase(database.db, input),
     getRuler: (rulerId) =>
       getRulerMaintenanceRecordWithDatabase(database.db, rulerId),
-    createRuler: async (input) => {
-      const result = await createRulerIdempotentlyWithDatabase(
-        database.db,
-        input
-      )
-      if (result.status === "mismatch") return result
-      const enriched = await getRulerMaintenanceRecordWithDatabase(
-        database.db,
-        result.ruler.id
-      )
-      if (enriched === null) throw new Error("Created Ruler was not readable")
-      return { ...result, ruler: enriched }
-    },
-    replaceRuler: async ({ id, expectedVersion, fields }) => {
-      const result = await replaceRulerWithDatabase(database.db, {
+    createRuler: (input) =>
+      createRulerIdempotentlyWithDatabase(database.db, input),
+    replaceRuler: ({ id, expectedVersion, fields }) =>
+      replaceRulerWithDatabase(database.db, {
         id,
         expectedVersion,
         ...fields,
-      })
-      if (result.status !== "updated") return result
-      const enriched = await getRulerMaintenanceRecordWithDatabase(
-        database.db,
-        result.ruler.id
-      )
-      if (enriched === null) throw new Error("Replaced Ruler was not readable")
-      return { ...result, ruler: enriched }
-    },
+      }),
     deleteRuler: (input) =>
       deleteRulerIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>

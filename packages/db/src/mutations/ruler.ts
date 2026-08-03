@@ -22,14 +22,24 @@ type DeleteRulerInput = {
 
 type VersionedRulerInput = { id: string; expectedVersion: number }
 
+type RulerGroupReference = {
+  id: string
+  code: string
+  name: string
+}
+
+export type RulerMutationRecord = Ruler & {
+  group: RulerGroupReference | null
+}
+
 export type ReplaceRulerResult =
-  | { status: "updated"; ruler: Ruler }
+  | { status: "updated"; ruler: RulerMutationRecord }
   | { status: "missing" | "stale" }
 export type DeleteRulerIfVersionResult =
   | { status: "deleted"; ruler: Ruler }
   | { status: "missing" | "stale" }
 export type CreateRulerIdempotentlyResult =
-  | { status: "created" | "replayed"; ruler: Ruler }
+  | { status: "created" | "replayed"; ruler: RulerMutationRecord }
   | { status: "mismatch" }
 
 function normalizeRulerGroupId(rulerGroupId: string | null | undefined) {
@@ -140,15 +150,26 @@ export async function createRulerIdempotentlyWithDatabase(
       return { status: "mismatch" }
     }
     if (record.response !== null) {
-      return { status: "replayed", ruler: deserializeRuler(record.response) }
+      return {
+        status: "replayed",
+        ruler: deserializeRulerMutationRecord(record.response),
+      }
     }
     const [created] = await transaction
       .insert(ruler)
       .values(normalizeRulerFields(fields))
       .returning()
+    const group =
+      created.rulerGroupId === null
+        ? null
+        : ((await transaction.query.rulerGroup.findFirst({
+            columns: { id: true, code: true, name: true },
+            where: (record, { eq }) => eq(record.id, created.rulerGroupId!),
+          })) ?? null)
+    const createdRecord: RulerMutationRecord = { ...created, group }
     await transaction
       .update(maintenanceIdempotency)
-      .set({ response: serializeRuler(created) })
+      .set({ response: serializeRulerMutationRecord(createdRecord) })
       .where(
         and(
           eq(maintenanceIdempotency.collectorId, collectorId),
@@ -156,7 +177,7 @@ export async function createRulerIdempotentlyWithDatabase(
           eq(maintenanceIdempotency.key, idempotencyKey)
         )
       )
-    return { status: "created", ruler: created }
+    return { status: "created", ruler: createdRecord }
   })
 }
 
@@ -164,19 +185,37 @@ export async function replaceRulerWithDatabase(
   database: typeof databaseClient,
   { id, expectedVersion, ...fields }: VersionedRulerInput & RulerFields
 ): Promise<ReplaceRulerResult> {
-  const updated = (
-    await database
-      .update(ruler)
-      .set({
-        ...normalizeRulerFields(fields),
-        updatedAt: new Date(),
-        version: sql`${ruler.version} + 1`,
+  return database.transaction(async (transaction) => {
+    const updated = (
+      await transaction
+        .update(ruler)
+        .set({
+          ...normalizeRulerFields(fields),
+          updatedAt: new Date(),
+          version: sql`${ruler.version} + 1`,
+        })
+        .where(and(eq(ruler.id, id), eq(ruler.version, expectedVersion)))
+        .returning()
+    ).at(0)
+    if (updated === undefined) {
+      const exists = await transaction.query.ruler.findFirst({
+        columns: { id: true },
+        where: (record, { eq }) => eq(record.id, id),
       })
-      .where(and(eq(ruler.id, id), eq(ruler.version, expectedVersion)))
-      .returning()
-  ).at(0)
-  if (updated !== undefined) return { status: "updated", ruler: updated }
-  return classifyFailedVersionMutation(database, id)
+      return { status: exists === undefined ? "missing" : "stale" }
+    }
+    const group =
+      updated.rulerGroupId === null
+        ? null
+        : ((await transaction.query.rulerGroup.findFirst({
+            columns: { id: true, code: true, name: true },
+            where: (record, { eq }) => eq(record.id, updated.rulerGroupId!),
+          })) ?? null)
+    return {
+      status: "updated",
+      ruler: { ...updated, group },
+    }
+  })
 }
 
 export async function deleteRulerIfVersionWithDatabase(
@@ -204,12 +243,17 @@ async function classifyFailedVersionMutation(
   return { status: exists === undefined ? "missing" : "stale" }
 }
 
-type StoredRuler = Omit<Ruler, "createdAt" | "updatedAt"> & {
+type StoredRulerMutationRecord = Omit<
+  RulerMutationRecord,
+  "createdAt" | "updatedAt"
+> & {
   createdAt: string
   updatedAt: string
 }
 
-function serializeRuler(record: Ruler): StoredRuler {
+function serializeRulerMutationRecord(
+  record: RulerMutationRecord
+): StoredRulerMutationRecord {
   return {
     ...record,
     createdAt: record.createdAt.toISOString(),
@@ -217,8 +261,8 @@ function serializeRuler(record: Ruler): StoredRuler {
   }
 }
 
-function deserializeRuler(value: unknown): Ruler {
-  const record = value as StoredRuler
+function deserializeRulerMutationRecord(value: unknown): RulerMutationRecord {
+  const record = value as StoredRulerMutationRecord
   return {
     ...record,
     createdAt: new Date(record.createdAt),

@@ -23,8 +23,8 @@ describe("MintMaintenanceRouteComponent", () => {
           mints: [
             {
               id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
-              code: "reeded",
-              name: "Reeded",
+              code: "madrid",
+              name: "Madrid",
               version: 1,
               etag: '"mint-version-1"',
               createdAt: "2026-06-24T12:00:00.000Z",
@@ -37,6 +37,6 @@ describe("MintMaintenanceRouteComponent", () => {
 
     expect(markup).toContain("Mint Code")
     expect(markup).toContain("Mint Name")
-    expect(markup).toContain("Reeded")
+    expect(markup).toContain("Madrid")
   })
 })

@@ -16,8 +16,8 @@ const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
 const etag = '"opaque-version"'
 const mint = {
   id,
-  code: "reeded",
-  name: "Reeded",
+  code: "madrid",
+  name: "Madrid",
   version: 1,
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
@@ -84,8 +84,8 @@ describe("Mint web mutation adapter", () => {
     await expect(
       submitCreateMint(
         {
-          code: " reeded ",
-          name: " Reeded ",
+          code: " madrid ",
+          name: " Madrid ",
           idempotencyKey: "attempt-1",
         },
         { createMint }
@@ -96,7 +96,7 @@ describe("Mint web mutation adapter", () => {
     })
     expect(createMint).toHaveBeenCalledWith({
       headers: { "idempotency-key": "attempt-1" },
-      body: { code: " reeded ", name: " Reeded " },
+      body: { code: " madrid ", name: " Madrid " },
     })
   })
 
@@ -110,8 +110,8 @@ describe("Mint web mutation adapter", () => {
       body: { data: mint },
     }))
     const submission = {
-      code: "reeded",
-      name: "Reeded",
+      code: "madrid",
+      name: "Madrid",
       idempotencyKey: "stable-attempt",
     }
 
@@ -145,7 +145,7 @@ describe("Mint web mutation adapter", () => {
 
     await expect(
       submitUpdateMint(
-        { id, etag, code: "plain", name: "Plain" },
+        { id, etag, code: "london", name: "London" },
         { replaceMint }
       )
     ).resolves.toMatchObject({ status: "success", message: "Saved." })
@@ -159,7 +159,7 @@ describe("Mint web mutation adapter", () => {
     expect(replaceMint).toHaveBeenCalledWith({
       params: { uuid: id },
       headers: { "if-match": etag },
-      body: { code: "plain", name: "Plain" },
+      body: { code: "london", name: "London" },
     })
     expect(deleteMint).toHaveBeenCalledWith({
       params: { uuid: id },
@@ -171,8 +171,8 @@ describe("Mint web mutation adapter", () => {
     await expect(
       submitCreateMint(
         {
-          code: "reeded",
-          name: "Reeded",
+          code: "madrid",
+          name: "Madrid",
           idempotencyKey: "attempt-1",
         },
         {
@@ -188,8 +188,8 @@ describe("Mint web mutation adapter", () => {
     await expect(
       submitCreateMint(
         {
-          code: "reeded",
-          name: "Reeded",
+          code: "madrid",
+          name: "Madrid",
           idempotencyKey: "attempt-1",
         },
         {
@@ -204,7 +204,7 @@ describe("Mint web mutation adapter", () => {
 
     await expect(
       submitUpdateMint(
-        { id, etag, code: "reeded", name: "Reeded" },
+        { id, etag, code: "madrid", name: "Madrid" },
         {
           replaceMint: vi
             .fn()
@@ -229,8 +229,8 @@ describe("Mint web mutation adapter", () => {
     await expect(
       submitCreateMint(
         {
-          code: "reeded",
-          name: "Reeded",
+          code: "madrid",
+          name: "Madrid",
           idempotencyKey: "attempt-1",
         },
         {

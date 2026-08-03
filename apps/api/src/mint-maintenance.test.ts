@@ -13,8 +13,8 @@ const mints = [
   },
   {
     id: "018f1a11-aaaa-7000-8000-000000000002",
-    code: "plain",
-    name: "Plain",
+    code: "london",
+    name: "London",
     version: 2,
     createdAt: new Date("2026-08-02T10:16:30.000Z"),
     updatedAt: new Date("2026-08-02T10:17:30.000Z"),
@@ -100,7 +100,7 @@ describe("protected Mint maintenance reads", () => {
     )
     const app = createApp({ listMints })
     const list = await app.request(
-      "https://api.coinarchive.app/api/v1/maintenance/mints?limit=1&q=reeded&sort=name&order=asc"
+      "https://api.coinarchive.app/api/v1/maintenance/mints?limit=1&q=madrid&sort=name&order=asc"
     )
 
     expect(list.status).toBe(200)
@@ -117,14 +117,14 @@ describe("protected Mint maintenance reads", () => {
       nextCursor: expect.any(String),
     })
     expect(listMints).toHaveBeenCalledWith({
-      q: "reeded",
+      q: "madrid",
       limit: 2,
       sort: "name",
       order: "asc",
     })
 
     const options = await app.request(
-      "https://api.coinarchive.app/api/v1/maintenance/mints/options?q=reeded"
+      "https://api.coinarchive.app/api/v1/maintenance/mints/options?q=madrid"
     )
     await expect(options.json()).resolves.toStrictEqual({
       data: mints.map(({ id, code, name }) => ({ id, code, name })),
@@ -243,7 +243,7 @@ describe("protected Mint maintenance mutations", () => {
           "Content-Type": "application/json",
           "Idempotency-Key": "attempt-1",
         },
-        body: JSON.stringify({ code: " reeded ", name: " Reeded " }),
+        body: JSON.stringify({ code: " madrid ", name: " Madrid " }),
       }
     )
 
@@ -258,7 +258,7 @@ describe("protected Mint maintenance mutations", () => {
         collectorId: "collector-id",
         idempotencyKey: "attempt-1",
         requestHash: expect.stringMatching(/^[a-f0-9]{64}$/),
-        fields: { code: "reeded", name: "Reeded" },
+        fields: { code: "madrid", name: "Madrid" },
       })
     )
   })
@@ -362,7 +362,7 @@ describe("protected Mint maintenance mutations", () => {
         "Content-Type": "application/json",
         "Idempotency-Key": "attempt-1",
       },
-      body: JSON.stringify({ code: "plain", name: "Plain" }),
+      body: JSON.stringify({ code: "london", name: "London" }),
     })
     expect(mismatch.status).toBe(409)
     await expect(mismatch.json()).resolves.toMatchObject({
@@ -386,7 +386,7 @@ describe("protected Mint maintenance mutations", () => {
       {
         method: "PUT",
         headers: { "Content-Type": "application/json", "If-Match": ifMatch },
-        body: JSON.stringify({ code: "plain", name: "Plain" }),
+        body: JSON.stringify({ code: "london", name: "London" }),
       }
     )
     expect(replace.status).toBe(200)
@@ -394,7 +394,7 @@ describe("protected Mint maintenance mutations", () => {
     expect(replaceMint).toHaveBeenCalledWith({
       id: mints[0].id,
       expectedVersion: 1,
-      fields: { code: "plain", name: "Plain" },
+      fields: { code: "london", name: "London" },
     })
 
     const deleted = await app.request(

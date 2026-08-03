@@ -7,8 +7,8 @@ import { loadMintMaintenancePageData } from "./mint-maintenance-route-data"
 const mints: Mint[] = [
   {
     id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
-    code: "reeded",
-    name: "Reeded",
+    code: "madrid",
+    name: "Madrid",
     version: 1,
     createdAt: "2026-08-02T10:15:30.000Z",
     updatedAt: "2026-08-02T10:15:30.000Z",
@@ -16,8 +16,8 @@ const mints: Mint[] = [
   },
   {
     id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
-    code: "plain",
-    name: "Plain",
+    code: "london",
+    name: "London",
     version: 1,
     createdAt: "2026-08-02T10:15:30.000Z",
     updatedAt: "2026-08-02T10:15:30.000Z",

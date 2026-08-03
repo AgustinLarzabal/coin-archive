@@ -94,8 +94,8 @@ vi.mock("../form-workflow/mint-edit-form", () => ({
 
 const mint: Mint = {
   id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
-  code: "reeded",
-  name: "Reeded",
+  code: "madrid",
+  name: "Madrid",
   version: 1,
   etag: '"mint-version-1"',
   createdAt: "2026-06-24T12:00:00.000Z",
@@ -113,7 +113,7 @@ function renderMintMaintenanceSheet(mintOption: Mint | null) {
 }
 
 describe("MINT_DELETE_CONFIRMATION_DESCRIPTION", () => {
-  it("explains the deletion is permanent and reuses the shared in-use guidance", () => {
+  it("exlondons the deletion is permanent and reuses the shared in-use guidance", () => {
     expect(MINT_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       "permanently deletes the Mint"
     )

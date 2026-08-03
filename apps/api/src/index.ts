@@ -7,6 +7,7 @@ import {
   createEngraverIdempotentlyWithDatabase,
   createIssuerIdempotentlyWithDatabase,
   createThemeIdempotentlyWithDatabase,
+  createRulerGroupIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
   createShapeIdempotentlyWithDatabase,
   createTechniqueIdempotentlyWithDatabase,
@@ -20,6 +21,7 @@ import {
   deleteEngraverIfVersionWithDatabase,
   deleteIssuerIfVersionWithDatabase,
   deleteThemeIfVersionWithDatabase,
+  deleteRulerGroupIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
   deleteShapeIfVersionWithDatabase,
   deleteTechniqueIfVersionWithDatabase,
@@ -40,6 +42,8 @@ import {
   getIssuerMaintenanceRecordsWithDatabase,
   getThemeMaintenanceRecordWithDatabase,
   getThemeMaintenanceRecordsWithDatabase,
+  getRulerGroupMaintenanceRecordWithDatabase,
+  getRulerGroupMaintenanceRecordsWithDatabase,
   getRimMaintenanceRecordWithDatabase,
   getRimMaintenanceRecordsWithDatabase,
   getShapeMaintenanceRecordWithDatabase,
@@ -58,6 +62,7 @@ import {
   replaceEngraverWithDatabase,
   replaceIssuerWithDatabase,
   replaceThemeWithDatabase,
+  replaceRulerGroupWithDatabase,
   replaceRimWithDatabase,
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
@@ -296,6 +301,20 @@ async function handleRequest(
         ? { status: result.status, mintingTechnique: result.technique }
         : result
     },
+    listRulerGroups: (input) =>
+      getRulerGroupMaintenanceRecordsWithDatabase(database.db, input),
+    getRulerGroup: (rulerGroupId) =>
+      getRulerGroupMaintenanceRecordWithDatabase(database.db, rulerGroupId),
+    createRulerGroup: (input) =>
+      createRulerGroupIdempotentlyWithDatabase(database.db, input),
+    replaceRulerGroup: ({ id, expectedVersion, fields }) =>
+      replaceRulerGroupWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteRulerGroup: (input) =>
+      deleteRulerGroupIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

@@ -2,19 +2,17 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/db"
+import type { RulerGroup } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type {
-  RulerGroupFieldErrors,
-  RulerGroupMutationResult,
-} from "../actions"
-import { createRulerGroupInputSchema, submitUpdateRulerGroup } from "../actions"
+import { submitUpdateRulerGroup } from "../actions"
+import type { RulerGroupMutationResult } from "../actions"
+import { createRulerGroupInputSchema } from "../ruler-group-validation"
+import type { RulerGroupFieldErrors } from "../ruler-group-validation"
 
 import {
   createRulerGroupDraft,
-  normalizeRulerGroupDraft,
+  hasRulerGroupEditChanges,
 } from "./ruler-group-form.shared"
 import {
   RulerGroupFormFields,
@@ -23,34 +21,17 @@ import {
 import type { RulerGroupDraft } from "./ruler-group-form.shared"
 
 type RulerGroupEditFormProps = {
-  rulerGroup: RulerGroupOption
+  rulerGroup: RulerGroup
   onSaved?: () => void
 }
 
 const updateRulerGroupAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: RulerGroupDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateRulerGroup(session?.user ?? null, data)
-  })
-
-export function hasRulerGroupEditChanges(
-  rulerGroup: RulerGroupOption,
-  draft: RulerGroupDraft
-) {
-  const normalizedCurrent = normalizeRulerGroupDraft(
-    createRulerGroupDraft(rulerGroup)
+  .inputValidator(
+    (data: RulerGroupDraft & { id: string; etag: string }) => data
   )
-  const normalizedDraft = normalizeRulerGroupDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .handler(async ({ data }) => submitUpdateRulerGroup(data))
 
 export function RulerGroupEditForm({
   rulerGroup,
@@ -67,7 +48,11 @@ export function RulerGroupEditForm({
     validators: { onSubmit: createRulerGroupInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateRulerGroup({
-        data: { id: rulerGroup.id, ...value },
+        data: {
+          id: rulerGroup.id,
+          etag: rulerGroup.etag,
+          ...value,
+        },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

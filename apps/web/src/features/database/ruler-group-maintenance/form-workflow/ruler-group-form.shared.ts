@@ -1,4 +1,4 @@
-import type { RulerGroupOption } from "@coin-archive/db"
+import type { RulerGroup } from "@coin-archive/api"
 
 export type RulerGroupDraft = {
   code: string
@@ -11,7 +11,7 @@ export const EMPTY_RULER_GROUP_DRAFT: RulerGroupDraft = {
 }
 
 export function createRulerGroupDraft(
-  rulerGroup: RulerGroupOption
+  rulerGroup: Pick<RulerGroup, "code" | "name">
 ): RulerGroupDraft {
   return {
     code: rulerGroup.code,
@@ -32,4 +32,18 @@ export function isRulerGroupDraftComplete(draft: RulerGroupDraft) {
   const normalizedDraft = normalizeRulerGroupDraft(draft)
 
   return normalizedDraft.code.length > 0 && normalizedDraft.name.length > 0
+}
+
+export function hasRulerGroupEditChanges(
+  rulerGroup: Pick<RulerGroup, "code" | "name">,
+  draft: RulerGroupDraft
+) {
+  const normalizedCurrent = normalizeRulerGroupDraft(
+    createRulerGroupDraft(rulerGroup)
+  )
+  const normalizedDraft = normalizeRulerGroupDraft(draft)
+  return (
+    normalizedDraft.code !== normalizedCurrent.code ||
+    normalizedDraft.name !== normalizedCurrent.name
+  )
 }

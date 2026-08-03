@@ -1,9 +1,10 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { RulerGroupOption } from "@coin-archive/db"
+import type { RulerGroup } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@coin-archive/ui/components/dropdown-menu"
@@ -13,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createRulerGroupColumns(
-  openEditRulerGroupSheet: (rulerGroup: RulerGroupOption) => void
-): ColumnDef<RulerGroupOption>[] {
+  onEditRulerGroup: (rulerGroup: RulerGroup) => void
+): ColumnDef<RulerGroup>[] {
   return [
     {
       accessorKey: "code",
@@ -47,11 +48,11 @@ export function createRulerGroupColumns(
               }
             />
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => openEditRulerGroupSheet(rulerGroup)}
-              >
-                Edit
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => onEditRulerGroup(rulerGroup)}>
+                  Edit
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )

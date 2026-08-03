@@ -1,4 +1,5 @@
-import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption } from "@coin-archive/api"
+import type { RulerOption } from "@coin-archive/db"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -97,8 +98,6 @@ const rulerGroups: RulerGroupOption[] = [
     id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
     code: "house-of-bourbon",
     name: "House of Bourbon",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
   },
 ]
 

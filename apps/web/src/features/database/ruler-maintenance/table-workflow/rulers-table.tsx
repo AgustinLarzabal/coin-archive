@@ -1,5 +1,6 @@
 import { useState } from "react"
-import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption } from "@coin-archive/api"
+import type { RulerOption } from "@coin-archive/db"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createRulerColumns } from "./columns"

@@ -105,6 +105,13 @@ import {
   mintingTechniqueMaintenanceProblemDocumentSchema,
   mintingTechniqueOptionsOutputSchema,
   mintingTechniqueReplaceInputSchema,
+  rulerGroupCreateInputSchema,
+  rulerGroupDeleteInputSchema,
+  rulerGroupDetailOutputSchema,
+  rulerGroupListInputSchema,
+  rulerGroupListOutputSchema,
+  rulerGroupOptionsOutputSchema,
+  rulerGroupReplaceInputSchema,
 } from "./contract"
 
 const currency = {
@@ -208,6 +215,16 @@ const mintingTechnique = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-minting-technique-version"',
+}
+
+const rulerGroup = {
+  id: "018f1a11-aaaa-7000-8000-000000000010",
+  code: "house-of-bourbon",
+  name: "House of Bourbon",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-ruler-group-version"',
 }
 
 const catalogue = {
@@ -1447,6 +1464,48 @@ describe("Minting Technique maintenance contract", () => {
       params: { uuid: mintingTechnique.id },
       headers: { "if-match": mintingTechnique.etag },
     })
+  })
+})
+
+describe("Ruler Group maintenance contract", () => {
+  it("defines paginated reads, compact options, and guarded mutations", () => {
+    expect(
+      rulerGroupListInputSchema.parse({ limit: 100, sort: "name", order: "asc" })
+    ).toStrictEqual({ limit: 100, sort: "name", order: "asc" })
+    expect(() => rulerGroupListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      rulerGroupOptionsOutputSchema.parse({
+        data: [{ id: rulerGroup.id, code: rulerGroup.code, name: rulerGroup.name }],
+        nextCursor: null,
+      })
+    ).toMatchObject({ data: [{ id: rulerGroup.id }] })
+    expect(
+      rulerGroupListOutputSchema.parse({ data: [rulerGroup], nextCursor: null })
+    ).toStrictEqual({ data: [rulerGroup], nextCursor: null })
+    expect(rulerGroupDetailOutputSchema.parse({ data: rulerGroup })).toStrictEqual({
+      data: rulerGroup,
+    })
+    expect(
+      rulerGroupCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-ruler-group-1" },
+        body: { code: " house-of-bourbon ", name: " House of Bourbon " },
+      })
+    ).toMatchObject({
+      body: { code: "house-of-bourbon", name: "House of Bourbon" },
+    })
+    expect(
+      rulerGroupReplaceInputSchema.parse({
+        params: { uuid: rulerGroup.id },
+        headers: { "if-match": rulerGroup.etag },
+        body: { code: rulerGroup.code, name: rulerGroup.name },
+      })
+    ).toMatchObject({ headers: { "if-match": rulerGroup.etag } })
+    expect(
+      rulerGroupDeleteInputSchema.parse({
+        params: { uuid: rulerGroup.id },
+        headers: { "if-match": rulerGroup.etag },
+      })
+    ).toMatchObject({ headers: { "if-match": rulerGroup.etag } })
   })
 })
 

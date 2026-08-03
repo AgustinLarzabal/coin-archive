@@ -1,416 +1,189 @@
-import { hasEditorAccess } from "@coin-archive/auth/client"
-import { z } from "zod"
+import type { MaintenanceApiClient } from "@coin-archive/api"
 
-import { getCollectorRole } from "@/lib/collector-role"
-import type { CollectorWithRole } from "@/lib/collector-role"
+import {
+  RULER_GROUP_DUPLICATE_CODE_ERROR,
+  RULER_GROUP_GENERIC_SAVE_ERROR,
+  RULER_GROUP_IN_USE_DELETE_ERROR,
+  RULER_GROUP_MISSING_ERROR,
+  RULER_GROUP_STALE_ERROR,
+  createRulerGroupFieldErrorResult,
+  createRulerGroupFormErrorResult,
+} from "./ruler-group-mutation-errors"
+import type { RulerGroupMutationResult } from "./ruler-group-mutation-errors"
+import {
+  RULER_GROUP_AUTHORIZATION_ERROR,
+  RULER_GROUP_CREATED_MESSAGE,
+  RULER_GROUP_DELETED_MESSAGE,
+  RULER_GROUP_UPDATED_MESSAGE,
+} from "./messages"
+import type {
+  CreateRulerGroupInput,
+  DeleteRulerGroupInput,
+  UpdateRulerGroupInput,
+} from "./ruler-group-validation"
 
-export const RULER_GROUP_AUTHORIZATION_ERROR =
-  "Only Editors and Admins can maintain Ruler Groups."
-export const RULER_GROUP_DUPLICATE_CODE_ERROR =
-  "A Ruler Group with this code already exists."
-export const RULER_GROUP_GENERIC_SAVE_ERROR =
-  "Unable to save Ruler Group right now."
-export const RULER_GROUP_MISSING_ERROR = "Ruler Group no longer exists."
-export const RULER_GROUP_IN_USE_DELETE_GUIDANCE =
-  "Remove or reassign those Rulers before deleting it."
-export const RULER_GROUP_IN_USE_DELETE_ERROR =
-  `Ruler Group cannot be deleted while Rulers still belong to it. ${RULER_GROUP_IN_USE_DELETE_GUIDANCE}`
-export const RULER_GROUP_INVALID_CODE_ERROR =
-  "Ruler Group Code must use lowercase letters, numbers, and hyphens only."
-
-const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
-const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
-const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
-const DUPLICATE_RULER_GROUP_CODE_CONSTRAINT = "ruler_group_code_unique_idx"
-const INVALID_RULER_GROUP_CODE_CONSTRAINT = "ruler_group_code_slug_check"
-const RULER_GROUP_IN_USE_DELETE_CONSTRAINT =
-  "ruler_ruler_group_id_ruler_group_id_fk"
-const RULER_GROUP_FIELD_NAMES = ["code", "name"] as const
-
-const rulerGroupCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Ruler Group Code cannot be blank.")
-  .max(255, "Ruler Group Code must be 255 characters or fewer.")
-  .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    RULER_GROUP_INVALID_CODE_ERROR
-  )
-
-const rulerGroupNameSchema = z
-  .string()
-  .trim()
-  .min(1, "Ruler Group Name cannot be blank.")
-  .max(255, "Ruler Group Name must be 255 characters or fewer.")
-
-export const createRulerGroupInputSchema = z.object({
-  code: rulerGroupCodeSchema,
-  name: rulerGroupNameSchema,
-})
-
-export const updateRulerGroupInputSchema = createRulerGroupInputSchema.extend({
-  id: z.uuid(),
-})
-
-export const deleteRulerGroupInputSchema = z.object({
-  id: z.uuid(),
-})
-
-type RulerGroupFieldName = (typeof RULER_GROUP_FIELD_NAMES)[number]
-
-export type RulerGroupFieldErrors = Partial<
-  Record<RulerGroupFieldName, string>
->
-
-export type RulerGroupMutationResult =
-  | {
-      status: "error"
-      fieldErrors: RulerGroupFieldErrors
-      formError?: string
-    }
-  | {
-      status: "success"
-      message: string
-    }
+export { RULER_GROUP_AUTHORIZATION_ERROR } from "./messages"
+export type { RulerGroupMutationResult } from "./ruler-group-mutation-errors"
 
 export type RulerGroupAuthorizationErrorResult = {
   status: "error"
   formError: typeof RULER_GROUP_AUTHORIZATION_ERROR
 }
 
-type CreateRulerGroupInput = z.input<typeof createRulerGroupInputSchema>
-type CreateRulerGroupData = z.output<typeof createRulerGroupInputSchema>
-type UpdateRulerGroupInput = z.input<typeof updateRulerGroupInputSchema>
-type UpdateRulerGroupData = z.output<typeof updateRulerGroupInputSchema>
-type DeleteRulerGroupInput = z.input<typeof deleteRulerGroupInputSchema>
-type DeleteRulerGroupData = z.output<typeof deleteRulerGroupInputSchema>
-type ValidationResult<TData> =
-  | { success: true; data: TData }
-  | { success: false; result: RulerGroupMutationResult }
-type RulerGroupMutationExecutor<TData> = (
-  dependencies: RulerGroupMutationDependencies,
-  data: TData
-) => Promise<unknown | null>
-type SubmitRulerGroupMutationOptions<TInput, TData> = {
-  collector: CollectorWithRole | null
-  input: TInput
-  dependencies?: RulerGroupMutationDependencies
-  validate: (input: TInput) => ValidationResult<TData>
-  runMutation: RulerGroupMutationExecutor<TData>
-  createSuccessResult: () => RulerGroupMutationResult
-  createMissingResult?: () => RulerGroupMutationResult
+type CreateDependencies = {
+  createRulerGroup: MaintenanceApiClient["rulerGroups"]["create"]
 }
 
-type RulerGroupMutationDependencies = {
-  createRulerGroup: (input: CreateRulerGroupData) => Promise<unknown>
-  deleteRulerGroup: (
-    input: DeleteRulerGroupData
-  ) => Promise<unknown | null>
-  updateRulerGroup: (
-    input: UpdateRulerGroupData
-  ) => Promise<unknown | null>
+type ReplaceDependencies = {
+  replaceRulerGroup: MaintenanceApiClient["rulerGroups"]["replace"]
 }
 
-async function getDefaultRulerGroupMutationDependencies(): Promise<RulerGroupMutationDependencies> {
-  const { createRulerGroup, deleteRulerGroup, updateRulerGroup } =
-    await import("@coin-archive/db")
-
-  return {
-    createRulerGroup,
-    deleteRulerGroup,
-    updateRulerGroup,
-  }
-}
-
-async function resolveRulerGroupMutationDependencies(
-  dependencies?: RulerGroupMutationDependencies
-): Promise<RulerGroupMutationDependencies> {
-  return dependencies ?? getDefaultRulerGroupMutationDependencies()
+type DeleteDependencies = {
+  deleteRulerGroup: MaintenanceApiClient["rulerGroups"]["delete"]
 }
 
 export function createRulerGroupAuthorizationError(): RulerGroupAuthorizationErrorResult {
+  return { status: "error", formError: RULER_GROUP_AUTHORIZATION_ERROR }
+}
+
+async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
   return {
-    status: "error",
-    formError: RULER_GROUP_AUTHORIZATION_ERROR,
+    createRulerGroup: client.rulerGroups.create,
   }
 }
 
-function createAuthorizationError(): RulerGroupMutationResult {
-  return {
-    ...createRulerGroupAuthorizationError(),
-    fieldErrors: {},
-  }
+async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { replaceRulerGroup: client.rulerGroups.replace }
 }
 
-function createFieldErrorResult(
-  fieldErrors: RulerGroupFieldErrors
-): RulerGroupMutationResult {
-  return {
-    status: "error",
-    fieldErrors,
-  }
-}
-
-function createFormErrorResult(formError: string): RulerGroupMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError,
-  }
-}
-
-export function hasRulerGroupMaintenanceAccess(
-  collector: CollectorWithRole | null
-): boolean {
-  const role = getCollectorRole(collector)
-
-  return role !== null && hasEditorAccess(role)
-}
-
-function isRulerGroupFieldName(field: unknown): field is RulerGroupFieldName {
-  return (
-    typeof field === "string" &&
-    RULER_GROUP_FIELD_NAMES.includes(field as RulerGroupFieldName)
-  )
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
-
-export function getRulerGroupFieldErrors(
-  issues: z.ZodIssue[]
-): RulerGroupFieldErrors {
-  const fieldErrors: RulerGroupFieldErrors = {}
-
-  for (const issue of issues) {
-    const field = issue.path.at(0)
-
-    if (isRulerGroupFieldName(field)) {
-      fieldErrors[field] = issue.message
-    }
-  }
-
-  return fieldErrors
-}
-
-function createValidationError(issues: z.ZodIssue[]): RulerGroupMutationResult {
-  return createFieldErrorResult(getRulerGroupFieldErrors(issues))
-}
-
-function getPostgresError(error: unknown) {
-  if (!isObjectRecord(error)) {
-    return null
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (!isObjectRecord(postgresError)) {
-    return null
-  }
-
-  return postgresError
-}
-
-type PostgresConstraintError = {
-  code: string
-  constraint_name: string
-}
-
-function isPostgresConstraintError(
-  value: unknown
-): value is PostgresConstraintError {
-  return (
-    isObjectRecord(value) &&
-    typeof value.code === "string" &&
-    typeof value.constraint_name === "string"
-  )
-}
-
-function matchesPostgresConstraint(
-  error: unknown,
-  code: string,
-  constraintName: string
-) {
-  const postgresError = getPostgresError(error)
-
-  return (
-    isPostgresConstraintError(postgresError) &&
-    postgresError.code === code &&
-    postgresError.constraint_name === constraintName
-  )
-}
-
-function createPersistenceError(error: unknown): RulerGroupMutationResult {
-  if (
-    matchesPostgresConstraint(
-      error,
-      DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-      DUPLICATE_RULER_GROUP_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: RULER_GROUP_DUPLICATE_CODE_ERROR,
-    })
-  }
-
-  if (
-    matchesPostgresConstraint(
-      error,
-      FK_VIOLATION_POSTGRES_ERROR_CODE,
-      RULER_GROUP_IN_USE_DELETE_CONSTRAINT
-    )
-  ) {
-    return createFormErrorResult(RULER_GROUP_IN_USE_DELETE_ERROR)
-  }
-
-  if (
-    matchesPostgresConstraint(
-      error,
-      CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-      INVALID_RULER_GROUP_CODE_CONSTRAINT
-    )
-  ) {
-    return createFieldErrorResult({
-      code: RULER_GROUP_INVALID_CODE_ERROR,
-    })
-  }
-
-  return createFormErrorResult(RULER_GROUP_GENERIC_SAVE_ERROR)
-}
-
-function validateRulerGroupInput<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: z.input<TSchema>
-): ValidationResult<z.output<TSchema>> {
-  const parsedInput = schema.safeParse(input)
-
-  if (!parsedInput.success) {
-    return {
-      success: false,
-      result: createValidationError(parsedInput.error.issues),
-    }
-  }
-
-  return {
-    success: true,
-    data: parsedInput.data,
-  }
-}
-
-function validateCreateRulerGroupInput(
-  input: CreateRulerGroupInput
-): ValidationResult<CreateRulerGroupData> {
-  return validateRulerGroupInput(createRulerGroupInputSchema, input)
-}
-
-function validateUpdateRulerGroupInput(
-  input: UpdateRulerGroupInput
-): ValidationResult<UpdateRulerGroupData> {
-  return validateRulerGroupInput(updateRulerGroupInputSchema, input)
-}
-
-function validateDeleteRulerGroupInput(
-  input: DeleteRulerGroupInput
-): ValidationResult<DeleteRulerGroupData> {
-  return validateRulerGroupInput(deleteRulerGroupInputSchema, input)
-}
-
-async function submitRulerGroupMutation<TInput, TData>({
-  collector,
-  input,
-  dependencies,
-  validate,
-  runMutation,
-  createSuccessResult,
-  createMissingResult,
-}: SubmitRulerGroupMutationOptions<TInput, TData>): Promise<RulerGroupMutationResult> {
-  if (!hasRulerGroupMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validate(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const resolvedDependencies =
-    await resolveRulerGroupMutationDependencies(dependencies)
-
-  try {
-    const mutationResult = await runMutation(
-      resolvedDependencies,
-      validationResult.data
-    )
-
-    if (mutationResult === null) {
-      return (
-        createMissingResult?.() ?? createFormErrorResult(RULER_GROUP_MISSING_ERROR)
-      )
-    }
-
-    return createSuccessResult()
-  } catch (error) {
-    return createPersistenceError(error)
-  }
+async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { deleteRulerGroup: client.rulerGroups.delete }
 }
 
 export async function submitCreateRulerGroup(
-  collector: CollectorWithRole | null,
-  input: CreateRulerGroupInput,
-  dependencies?: RulerGroupMutationDependencies
+  input: CreateRulerGroupInput & { idempotencyKey: string },
+  dependencies?: CreateDependencies
 ): Promise<RulerGroupMutationResult> {
-  return submitRulerGroupMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateCreateRulerGroupInput,
-    runMutation: (resolvedDependencies, data) =>
-      resolvedDependencies.createRulerGroup(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Ruler Group added.",
-    }),
-  })
+  const { idempotencyKey, ...fields } = input
+  const resolved = dependencies ?? (await getDefaultCreateDependencies())
+
+  try {
+    await resolved.createRulerGroup({
+      headers: { "idempotency-key": idempotencyKey },
+      body: fields,
+    })
+    return { status: "success", message: RULER_GROUP_CREATED_MESSAGE }
+  } catch (error) {
+    return mapRulerGroupApiProblem(error)
+  }
 }
 
 export async function submitUpdateRulerGroup(
-  collector: CollectorWithRole | null,
   input: UpdateRulerGroupInput,
-  dependencies?: RulerGroupMutationDependencies
+  dependencies?: ReplaceDependencies
 ): Promise<RulerGroupMutationResult> {
-  return submitRulerGroupMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateUpdateRulerGroupInput,
-    runMutation: (resolvedDependencies, data) =>
-      resolvedDependencies.updateRulerGroup(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Saved.",
-    }),
-    createMissingResult: () => createFormErrorResult(RULER_GROUP_MISSING_ERROR),
-  })
+  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
+  const { id, etag, ...body } = input
+
+  try {
+    await resolved.replaceRulerGroup({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body,
+    })
+    return { status: "success", message: RULER_GROUP_UPDATED_MESSAGE }
+  } catch (error) {
+    return mapRulerGroupApiProblem(error)
+  }
 }
 
 export async function submitDeleteRulerGroup(
-  collector: CollectorWithRole | null,
   input: DeleteRulerGroupInput,
-  dependencies?: RulerGroupMutationDependencies
+  dependencies?: DeleteDependencies
 ): Promise<RulerGroupMutationResult> {
-  return submitRulerGroupMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateDeleteRulerGroupInput,
-    runMutation: (resolvedDependencies, data) =>
-      resolvedDependencies.deleteRulerGroup(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: "Ruler Group deleted.",
-    }),
-    createMissingResult: () => createFormErrorResult(RULER_GROUP_MISSING_ERROR),
-  })
+  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
+
+  try {
+    await resolved.deleteRulerGroup({
+      params: { uuid: input.id },
+      headers: { "if-match": input.etag },
+    })
+    return { status: "success", message: RULER_GROUP_DELETED_MESSAGE }
+  } catch (error) {
+    return mapRulerGroupApiProblem(error)
+  }
+}
+
+function mapRulerGroupApiProblem(error: unknown): RulerGroupMutationResult {
+  const body = getProblemBody(error)
+  switch (body?.code) {
+    case "authentication_required":
+    case "editor_access_required":
+      return createRulerGroupFormErrorResult(RULER_GROUP_AUTHORIZATION_ERROR)
+    case "ruler_group_code_conflict":
+      return createRulerGroupFieldErrorResult({
+        code: RULER_GROUP_DUPLICATE_CODE_ERROR,
+      })
+    case "ruler_group_validation_failed":
+      return mapValidationProblem(body)
+    case "ruler_group_in_use":
+      return createRulerGroupFormErrorResult(RULER_GROUP_IN_USE_DELETE_ERROR)
+    case "ruler_group_not_found":
+      return createRulerGroupFormErrorResult(RULER_GROUP_MISSING_ERROR)
+    case "ruler_group_precondition_failed":
+      return createRulerGroupFormErrorResult(RULER_GROUP_STALE_ERROR)
+    default:
+      return createRulerGroupFormErrorResult(RULER_GROUP_GENERIC_SAVE_ERROR)
+  }
+}
+
+function mapValidationProblem(
+  body: Record<string, unknown>
+): RulerGroupMutationResult {
+  const invalidParams = Array.isArray(body.invalidParams)
+    ? body.invalidParams
+    : []
+  const fieldErrors: { code?: string; name?: string } = {}
+
+  for (const parameter of invalidParams) {
+    if (typeof parameter !== "object" || parameter === null) continue
+    if (!("name" in parameter) || !("code" in parameter)) continue
+    if (parameter.name === "/code") {
+      fieldErrors.code =
+        parameter.code === "ruler_group_code_too_long"
+          ? "Ruler Group Code must be 255 characters or fewer."
+          : parameter.code === "ruler_group_code_invalid"
+            ? "Ruler Group Code must use lowercase letters, numbers, and hyphens only."
+            : "Ruler Group Code cannot be blank."
+    }
+    if (parameter.name === "/name") {
+      fieldErrors.name =
+        parameter.code === "ruler_group_name_too_long"
+          ? "Ruler Group Name must be 255 characters or fewer."
+          : "Ruler Group Name cannot be blank."
+    }
+  }
+  return createRulerGroupFieldErrorResult(fieldErrors)
+}
+
+function getProblemBody(error: unknown): Record<string, unknown> | undefined {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return undefined
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return undefined
+  }
+  return typeof data.body === "object" && data.body !== null
+    ? (data.body as Record<string, unknown>)
+    : undefined
 }

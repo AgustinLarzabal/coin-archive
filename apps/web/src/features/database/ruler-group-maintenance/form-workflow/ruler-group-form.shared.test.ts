@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { RulerGroupOption } from "@coin-archive/db"
+import type { RulerGroup } from "@coin-archive/api"
 
 import {
   createRulerGroupDraft,
@@ -8,33 +8,35 @@ import {
   normalizeRulerGroupDraft,
 } from "./ruler-group-form.shared"
 
-const rulerGroup: RulerGroupOption = {
-  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-  code: "house-of-bourbon",
-  name: "House of Bourbon",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const rulerGroup: RulerGroup = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"ruler-group-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("createRulerGroupDraft", () => {
-  it("copies the editable Ruler Group fields from a selected Ruler Group", () => {
+  it("copies the editable RulerGroup fields from a selected RulerGroup", () => {
     expect(createRulerGroupDraft(rulerGroup)).toStrictEqual({
-      code: "house-of-bourbon",
-      name: "House of Bourbon",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
 
 describe("normalizeRulerGroupDraft", () => {
-  it("trims editable Ruler Group fields", () => {
+  it("trims editable RulerGroup fields", () => {
     expect(
       normalizeRulerGroupDraft({
-        code: " house-of-bourbon ",
-        name: " House of Bourbon ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toStrictEqual({
-      code: "house-of-bourbon",
-      name: "House of Bourbon",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
@@ -43,7 +45,7 @@ describe("isRulerGroupDraftComplete", () => {
   it("requires non-blank Ruler Group Code and Ruler Group Name", () => {
     expect(
       isRulerGroupDraftComplete({
-        code: "house-of-bourbon",
+        code: "reeded",
         name: " ",
       })
     ).toBe(false)
@@ -51,7 +53,7 @@ describe("isRulerGroupDraftComplete", () => {
     expect(
       isRulerGroupDraftComplete({
         code: " ",
-        name: "House of Bourbon",
+        name: "Reeded",
       })
     ).toBe(false)
   })
@@ -59,8 +61,8 @@ describe("isRulerGroupDraftComplete", () => {
   it("treats trimmed Ruler Group Code and Ruler Group Name as a complete create draft", () => {
     expect(
       isRulerGroupDraftComplete({
-        code: " house-of-bourbon ",
-        name: " House of Bourbon ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(true)
   })

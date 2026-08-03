@@ -51,7 +51,7 @@ The current core relationships map to these tables:
 - `orientation`: shared Orientation record with stable `code`, display `name`, explicit `version`, and timestamps
 - `rim`: shared coin-level Rim controlled classification with stable `code`, display `name`, and timestamps
 - `ruler`: Ruler record with optional `ruler_group_id`
-- `ruler_group`: optional flat grouping attached to a Ruler
+- `ruler_group`: optional flat grouping attached to a Ruler, with an explicit maintenance `version`
 - `coin_ruler`: join table from Coin to Ruler plus per-Coin `ruler_order`
 - `theme`: shared Theme record with stable `code`, display `name`, explicit `version`, and timestamps
 - `coin_theme`: unordered join table from Coin to Theme
@@ -83,6 +83,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -212,6 +213,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -774,7 +776,7 @@ Known limitations and non-goals:
 
 The `ruler_group` table models the shared flat grouping label that may be attached to a Ruler:
 
-- a Ruler Group row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- a Ruler Group row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `ruler_group.code` is the stable archive identity for the ruler group and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `ruler_group.name` is display text only; it helps humans read the ruler group label but is not treated as identity and is allowed to repeat across rows
 - ruler group codes are required lowercase slug-style text and are unique as stored
@@ -788,12 +790,14 @@ Ruler Group-specific requirements and constraints:
 - Ruler Group Codes must satisfy the lowercase slug-style check enforced by `ruler_group_code_slug_check`
 - Ruler Group Names do not need to be unique
 - Ruler Group primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Ruler Group Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Ruler Group-specific indexes and query implications:
 
 - `ruler_group_code_unique_idx` protects ruler group identity by code
-- Ruler Groups are currently exposed through `getRulers` as nested optional group data rather than through a standalone query
+- `getRulerGroupMaintenanceRecordsWithDatabase` supplies searchable cursor pagination, while `getRulerGroupMaintenanceRecordWithDatabase` supplies current versioned detail
+- Ruler Groups remain exposed through `getRulers` as nested optional group data for Ruler display
 
 Relationship and lifecycle notes:
 

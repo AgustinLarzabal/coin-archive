@@ -1,7 +1,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/db"
+import type { RulerGroup } from "@coin-archive/api"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@coin-archive/ui/components/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@coin-archive/ui/components/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,48 +25,27 @@ import {
   AlertDialogTitle,
 } from "@coin-archive/ui/components/alert-dialog"
 import { Button } from "@coin-archive/ui/components/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@coin-archive/ui/components/dropdown-menu"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@coin-archive/ui/components/sheet"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  RULER_GROUP_GENERIC_SAVE_ERROR,
-  RULER_GROUP_IN_USE_DELETE_GUIDANCE,
-  submitDeleteRulerGroup,
-} from "../actions"
+import { submitDeleteRulerGroup } from "../actions"
+import { RULER_GROUP_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { RulerGroupCreateForm } from "../form-workflow/ruler-group-create-form"
 import { RulerGroupEditForm } from "../form-workflow/ruler-group-edit-form"
 
 type RulerGroupMaintenanceSheetProps = {
-  rulerGroup: RulerGroupOption | null
+  rulerGroup: RulerGroup | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Ruler Group. ${RULER_GROUP_IN_USE_DELETE_GUIDANCE}`
+export const RULER_GROUP_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Ruler Group. ${RULER_GROUP_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteRulerGroupAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteRulerGroup(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteRulerGroup(data))
 
 export function RulerGroupMaintenanceSheet({
   rulerGroup,
@@ -66,23 +57,11 @@ export function RulerGroupMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingRulerGroup = rulerGroup !== null
-  const sheetTitle = isEditingRulerGroup
-    ? "Edit Ruler Group"
-    : "Create Ruler Group"
 
-  function closeSheet() {
-    onOpenChange(false)
-  }
-
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [rulerGroup?.id, open])
 
   async function handleDeleteRulerGroup() {
@@ -97,16 +76,19 @@ export function RulerGroupMaintenanceSheet({
       const result = await deleteRulerGroup({
         data: {
           id: rulerGroup.id,
+          etag: rulerGroup.etag,
         },
       })
 
       if (result.status === "success") {
         await router.invalidate()
-        closeSheet()
+        onOpenChange(false)
         return
       }
 
-      setDeleteError(result.formError ?? RULER_GROUP_GENERIC_SAVE_ERROR)
+      setDeleteError(
+        result.formError ?? "Unable to delete Ruler Group right now."
+      )
     } finally {
       setIsDeletePending(false)
     }
@@ -116,9 +98,11 @@ export function RulerGroupMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>
+            {rulerGroup ? "Edit Ruler Group" : "Create Ruler Group"}
+          </SheetTitle>
 
-          {isEditingRulerGroup ? (
+          {rulerGroup !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -178,13 +162,13 @@ export function RulerGroupMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingRulerGroup ? (
+        {rulerGroup ? (
           <RulerGroupEditForm
             rulerGroup={rulerGroup}
-            onSaved={closeSheet}
+            onSaved={() => onOpenChange(false)}
           />
         ) : (
-          <RulerGroupCreateForm onCreated={closeSheet} />
+          <RulerGroupCreateForm onCreated={() => onOpenChange(false)} />
         )}
       </SheetContent>
     </Sheet>

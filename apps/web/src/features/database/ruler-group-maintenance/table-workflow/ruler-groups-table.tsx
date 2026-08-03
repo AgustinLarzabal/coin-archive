@@ -1,5 +1,5 @@
-import { useState } from "react"
-import type { RulerGroupOption } from "@coin-archive/db"
+import { useMemo, useState } from "react"
+import type { RulerGroup } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createRulerGroupColumns } from "./columns"
@@ -7,55 +7,63 @@ import { RulerGroupMaintenanceSheet } from "../sheet-workflow/ruler-group-mainte
 import { RulerGroupsTableToolbar } from "./ruler-groups-table-toolbar"
 
 type RulerGroupsTableProps = {
-  rulerGroups: RulerGroupOption[]
+  rulerGroups: RulerGroup[]
 }
 
 export function filterRulerGroups(
-  rulerGroups: RulerGroupOption[],
+  rulerGroups: RulerGroup[],
   filterValue: string
-): RulerGroupOption[] {
+): RulerGroup[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
     return rulerGroups
   }
 
-  return rulerGroups.filter(
-    ({ code, name }) =>
-      code.toLocaleLowerCase().includes(normalizedFilterValue) ||
-      name.toLocaleLowerCase().includes(normalizedFilterValue)
+  return rulerGroups.filter((rulerGroup) =>
+    [rulerGroup.code, rulerGroup.name].some((value) =>
+      value.toLocaleLowerCase().includes(normalizedFilterValue)
+    )
   )
 }
 
 export function RulerGroupsTable({ rulerGroups }: RulerGroupsTableProps) {
-  const [filterValue, setFilterValue] = useState("")
   const [selectedRulerGroup, setSelectedRulerGroup] =
-    useState<RulerGroupOption | null>(null)
+    useState<RulerGroup | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState("")
+  const columns = useMemo(
+    () =>
+      createRulerGroupColumns((rulerGroup) => {
+        setSelectedRulerGroup(rulerGroup)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
   const filteredRulerGroups = filterRulerGroups(rulerGroups, filterValue)
 
-  function openMaintenanceSheet(rulerGroup: RulerGroupOption | null) {
-    setSelectedRulerGroup(rulerGroup)
+  function handleMaintenanceSheetOpenChange(open: boolean) {
+    setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedRulerGroup(null)
+    }
+  }
+
+  function handleCreateRulerGroup() {
+    setSelectedRulerGroup(null)
     setIsMaintenanceSheetOpen(true)
-  }
-
-  function openCreateRulerGroupSheet() {
-    openMaintenanceSheet(null)
-  }
-
-  function openEditRulerGroupSheet(rulerGroup: RulerGroupOption) {
-    openMaintenanceSheet(rulerGroup)
   }
 
   return (
     <>
       <DataTable
-        columns={createRulerGroupColumns(openEditRulerGroupSheet)}
+        columns={columns}
         data={filteredRulerGroups}
         toolbar={() => (
           <RulerGroupsTableToolbar
             filterValue={filterValue}
-            onCreateRulerGroup={openCreateRulerGroupSheet}
+            onCreateRulerGroup={handleCreateRulerGroup}
             onFilterValueChange={setFilterValue}
           />
         )}
@@ -63,7 +71,7 @@ export function RulerGroupsTable({ rulerGroups }: RulerGroupsTableProps) {
       <RulerGroupMaintenanceSheet
         rulerGroup={selectedRulerGroup}
         open={isMaintenanceSheetOpen}
-        onOpenChange={setIsMaintenanceSheetOpen}
+        onOpenChange={handleMaintenanceSheetOpenChange}
       />
     </>
   )

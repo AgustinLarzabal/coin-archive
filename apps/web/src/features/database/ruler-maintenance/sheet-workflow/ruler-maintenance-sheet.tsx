@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption } from "@coin-archive/api"
+import type { RulerOption } from "@coin-archive/db"
 import {
   AlertDialog,
   AlertDialogAction,

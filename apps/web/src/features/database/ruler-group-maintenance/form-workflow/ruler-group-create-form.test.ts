@@ -31,11 +31,11 @@ vi.mock("@tanstack/react-start", () => ({
 }))
 
 describe("RulerGroupCreateForm", () => {
-  it("renders explicit Ruler Group field labels and disables Create until the draft is complete", () => {
+  it("renders explicit RulerGroup field labels and disables Create until the draft is complete", () => {
     const markup = renderRulerGroupCreateForm()
     const expectedFields = [
-      ["Ruler Group Code", 'placeholder="house-of-bourbon"'],
-      ["Ruler Group Name", 'placeholder="House of Bourbon"'],
+      ["Ruler Group Code", 'placeholder="hammered"'],
+      ["Ruler Group Name", 'placeholder="Hammered"'],
     ] as const
 
     for (const [label, placeholder] of expectedFields) {

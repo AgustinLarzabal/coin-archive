@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption } from "@coin-archive/api"
+import type { RulerOption } from "@coin-archive/db"
 
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
+import { loadAllMaintenanceOptions } from "@/lib/maintenance-options.server"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
@@ -33,10 +35,15 @@ type RulerReadDependencies = {
 }
 
 async function getDefaultRulerReadDependencies(): Promise<RulerReadDependencies> {
-  const { getRulerGroups, getRulers } = await import("@coin-archive/db")
+  const [{ getRulers }, { getMaintenanceApiClient }] = await Promise.all([
+    import("@coin-archive/db"),
+    import("@/lib/maintenance-api.server"),
+  ])
+  const maintenanceClient = await getMaintenanceApiClient()
 
   return {
-    getRulerGroups,
+    getRulerGroups: () =>
+      loadAllMaintenanceOptions(maintenanceClient.rulerGroups.options),
     getRulers,
   }
 }

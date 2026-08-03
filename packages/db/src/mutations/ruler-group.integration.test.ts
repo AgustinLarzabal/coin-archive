@@ -8,7 +8,11 @@ import {
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import {
   createRulerGroup,
+  createRulerGroupIdempotently,
+  createRulerGroupIdempotentlyWithDatabase,
   deleteRulerGroup,
+  deleteRulerGroupIfVersionWithDatabase,
+  replaceRulerGroupWithDatabase,
   updateRulerGroup,
 } from "./ruler-group"
 
@@ -72,6 +76,99 @@ describe("ruler group mutations integration", () => {
 
     expect(firstRulerGroup.name).toBe(secondRulerGroup.name)
     expect(firstRulerGroup.id).not.toBe(secondRulerGroup.id)
+  })
+
+  it("replays identical idempotent Ruler Group creation and rejects changed payloads", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "ruler-group-create-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: " house-of-bourbon ", name: " House of Bourbon " },
+    }
+    const first = await createRulerGroupIdempotently(input)
+    const retry = await createRulerGroupIdempotently(input)
+
+    expect(first).toMatchObject({
+      status: "created",
+      rulerGroup: { code: "house-of-bourbon", version: 1 },
+    })
+    expect(retry).toMatchObject({ status: "replayed" })
+    await expect(
+      createRulerGroupIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "house-of-capet", name: "House of Capet" },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.rulerGroup.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("atomically enforces Ruler Group versions for replacement and deletion", async () => {
+    const created = await createRulerGroupIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "versioned-ruler-group-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "house-of-bourbon", name: "House of Bourbon" },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+
+    await expect(
+      replaceRulerGroupWithDatabase(db, {
+        id: created.rulerGroup.id,
+        expectedVersion: 1,
+        code: " house-of-capet ",
+        name: " House of Capet ",
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      rulerGroup: { code: "house-of-capet", name: "House of Capet", version: 2 },
+    })
+    await expect(
+      replaceRulerGroupWithDatabase(db, {
+        id: created.rulerGroup.id,
+        expectedVersion: 1,
+        code: "house-of-bourbon",
+        name: "House of Bourbon",
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteRulerGroupIfVersionWithDatabase(db, {
+        id: created.rulerGroup.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteRulerGroupIfVersionWithDatabase(db, {
+        id: created.rulerGroup.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
+  })
+
+  it("preserves the dependent-Ruler conflict for versioned deletion", async () => {
+    const existingRulerGroup = await createRulerGroupFixture({
+      code: "in-use-house",
+      name: "In Use House",
+    })
+    await createRuler({
+      code: "in-use-ruler",
+      name: "In Use Ruler",
+      rulerGroupId: existingRulerGroup.id,
+    })
+
+    await expect(
+      deleteRulerGroupIfVersionWithDatabase(db, {
+        id: existingRulerGroup.id,
+        expectedVersion: 1,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "ruler_ruler_group_id_ruler_group_id_fk",
+      }),
+    })
   })
 
   it("trims Ruler Group Code and Ruler Group Name before updating a Ruler Group", async () => {

@@ -43,8 +43,7 @@ export function RulerGroupFormFields({
           field,
           id: `${prefix}ruler-group-${field}`,
           label: `Ruler Group ${field === "code" ? "Code" : "Name"}`,
-          placeholder:
-            field === "code" ? "house-of-bourbon" : "House of Bourbon",
+          placeholder: field === "code" ? "hammered" : "Hammered",
         })
       )}
     </FieldGroup>

@@ -65,8 +65,6 @@ describe("loadRulerMaintenancePageData", () => {
         id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
         code: "house-of-bourbon",
         name: "House of Bourbon",
-        createdAt: new Date("2026-07-01T00:00:00.000Z"),
-        updatedAt: new Date("2026-07-01T00:00:00.000Z"),
       },
     ]
     const getRulerGroups = vi.fn().mockResolvedValue(rulerGroups)

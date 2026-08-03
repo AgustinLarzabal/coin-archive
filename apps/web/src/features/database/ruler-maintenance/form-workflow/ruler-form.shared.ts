@@ -1,4 +1,5 @@
-import type { RulerGroupOption, RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption } from "@coin-archive/api"
+import type { RulerOption } from "@coin-archive/db"
 import type { z } from "zod"
 
 import type { RulerMutationResult } from "../ruler-mutation-errors"

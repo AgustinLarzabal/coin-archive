@@ -36,6 +36,8 @@ import { registerIssuerMaintenanceRoutes } from "./issuer-maintenance"
 import type { IssuerMaintenanceDependencies } from "./issuer-maintenance"
 import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-maintenance"
 import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
+import { registerRulerGroupMaintenanceRoutes } from "./ruler-group-maintenance"
+import type { RulerGroupMaintenanceDependencies } from "./ruler-group-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -257,6 +259,17 @@ export function createApiApp({
   deleteMintingTechnique = async () => {
     throw new Error("Minting Technique deletion is not configured")
   },
+  listRulerGroups = async () => [],
+  getRulerGroup = async () => null,
+  createRulerGroup = async () => {
+    throw new Error("Ruler Group create is not configured")
+  },
+  replaceRulerGroup = async () => {
+    throw new Error("Ruler Group replacement is not configured")
+  },
+  deleteRulerGroup = async () => {
+    throw new Error("Ruler Group deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -340,6 +353,11 @@ export function createApiApp({
   createMintingTechnique?: MintingTechniqueMaintenanceDependencies["createMintingTechnique"]
   replaceMintingTechnique?: MintingTechniqueMaintenanceDependencies["replaceMintingTechnique"]
   deleteMintingTechnique?: MintingTechniqueMaintenanceDependencies["deleteMintingTechnique"]
+  listRulerGroups?: RulerGroupMaintenanceDependencies["listRulerGroups"]
+  getRulerGroup?: RulerGroupMaintenanceDependencies["getRulerGroup"]
+  createRulerGroup?: RulerGroupMaintenanceDependencies["createRulerGroup"]
+  replaceRulerGroup?: RulerGroupMaintenanceDependencies["replaceRulerGroup"]
+  deleteRulerGroup?: RulerGroupMaintenanceDependencies["deleteRulerGroup"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -591,6 +609,13 @@ export function createApiApp({
     createMintingTechnique,
     replaceMintingTechnique,
     deleteMintingTechnique,
+  })
+  registerRulerGroupMaintenanceRoutes(app, {
+    listRulerGroups,
+    getRulerGroup,
+    createRulerGroup,
+    replaceRulerGroup,
+    deleteRulerGroup,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

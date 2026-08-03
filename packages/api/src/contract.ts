@@ -1240,6 +1240,124 @@ export const mintingTechniqueMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const rulerGroupSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const rulerGroupOptionSchema = rulerGroupSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const rulerGroupListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const rulerGroupListOutputSchema = z.object({
+  data: z.array(rulerGroupSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rulerGroupOptionsInputSchema =
+  rulerGroupListInputSchema.pick({
+    q: true,
+    cursor: true,
+    limit: true,
+  })
+export const rulerGroupOptionsOutputSchema = z.object({
+  data: z.array(rulerGroupOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rulerGroupDetailInputSchema = z.object({ uuid: z.uuid() })
+export const rulerGroupDetailOutputSchema = z.object({
+  data: rulerGroupSchema,
+})
+export const rulerGroupMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const rulerGroupCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: rulerGroupMutationBodySchema,
+})
+export const rulerGroupCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/ruler-groups/"),
+    etag: z.string(),
+  }),
+  body: rulerGroupDetailOutputSchema,
+})
+export const rulerGroupReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: rulerGroupMutationBodySchema,
+})
+export const rulerGroupReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: rulerGroupDetailOutputSchema,
+})
+export const rulerGroupDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const rulerGroupDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+export const rulerGroupMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "ruler_group_code_conflict",
+      "ruler_group_in_use",
+      "ruler_group_not_found",
+      "ruler_group_precondition_failed",
+      "ruler_group_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_ruler_group_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "ruler_group_body_invalid",
+            "ruler_group_code_invalid",
+            "ruler_group_code_required",
+            "ruler_group_code_too_long",
+            "ruler_group_name_invalid",
+            "ruler_group_name_required",
+            "ruler_group_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 const currencyCodeSchema = z
   .string()
   .trim()
@@ -1512,6 +1630,18 @@ const mintingTechniqueMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: mintingTechniqueMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const rulerGroupMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: {
+    status: 409,
+    data: rulerGroupMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: rulerGroupMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -2287,6 +2417,79 @@ export const maintenanceApiContract = {
       .output(mintingTechniqueDeleteOutputSchema)
       .errors(mintingTechniqueMaintenanceMutationErrors),
   },
+  rulerGroups: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/ruler-groups",
+        summary: "Browse Ruler Groups for maintenance",
+        tags: ["Ruler Group Maintenance"],
+      })
+      .input(rulerGroupListInputSchema)
+      .output(rulerGroupListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/ruler-groups/options",
+        summary: "Search compact Ruler Group options",
+        tags: ["Ruler Group Maintenance"],
+      })
+      .input(rulerGroupOptionsInputSchema)
+      .output(rulerGroupOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/ruler-groups/{uuid}",
+        summary: "Get Ruler Group maintenance detail",
+        tags: ["Ruler Group Maintenance"],
+      })
+      .input(rulerGroupDetailInputSchema)
+      .output(rulerGroupDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/ruler-groups",
+        summary: "Create a Ruler Group",
+        tags: ["Ruler Group Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerGroupCreateInputSchema)
+      .output(rulerGroupCreateOutputSchema)
+      .errors(rulerGroupMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/ruler-groups/{uuid}",
+        summary: "Replace a Ruler Group",
+        tags: ["Ruler Group Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerGroupReplaceInputSchema)
+      .output(rulerGroupReplaceOutputSchema)
+      .errors(rulerGroupMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/ruler-groups/{uuid}",
+        summary: "Permanently delete a Ruler Group",
+        tags: ["Ruler Group Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerGroupDeleteInputSchema)
+      .output(rulerGroupDeleteOutputSchema)
+      .errors(rulerGroupMaintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -2573,6 +2776,28 @@ export type MintingTechniqueDetailOutput = z.infer<
 >
 export type MintingTechniqueMutationBody = z.infer<
   typeof mintingTechniqueMutationBodySchema
+>
+export type RulerGroup = z.infer<typeof rulerGroupSchema>
+export type RulerGroupOption = z.infer<
+  typeof rulerGroupOptionSchema
+>
+export type RulerGroupListInput = z.infer<
+  typeof rulerGroupListInputSchema
+>
+export type RulerGroupListOutput = z.infer<
+  typeof rulerGroupListOutputSchema
+>
+export type RulerGroupOptionsInput = z.infer<
+  typeof rulerGroupOptionsInputSchema
+>
+export type RulerGroupOptionsOutput = z.infer<
+  typeof rulerGroupOptionsOutputSchema
+>
+export type RulerGroupDetailOutput = z.infer<
+  typeof rulerGroupDetailOutputSchema
+>
+export type RulerGroupMutationBody = z.infer<
+  typeof rulerGroupMutationBodySchema
 >
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>

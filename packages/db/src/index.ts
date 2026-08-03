@@ -171,6 +171,17 @@ export type {
   ReplaceThemeResult,
 } from "./mutations/theme"
 export {
+  createRulerGroupIdempotently,
+  createRulerGroupIdempotentlyWithDatabase,
+  deleteRulerGroupIfVersionWithDatabase,
+  replaceRulerGroupWithDatabase,
+} from "./mutations/ruler-group"
+export type {
+  CreateRulerGroupIdempotentlyResult,
+  DeleteRulerGroupIfVersionResult,
+  ReplaceRulerGroupResult,
+} from "./mutations/ruler-group"
+export {
   createIssuerIdempotently,
   createIssuerIdempotentlyWithDatabase,
   deleteIssuerIfVersionWithDatabase,
@@ -186,6 +197,15 @@ export {
   getThemeMaintenanceRecordWithDatabase,
   getThemeMaintenanceRecordsWithDatabase,
 } from "./queries/get-theme-maintenance"
+export {
+  getRulerGroupMaintenanceRecordWithDatabase,
+  getRulerGroupMaintenanceRecordsWithDatabase,
+} from "./queries/get-ruler-group-maintenance"
+export type {
+  GetRulerGroupMaintenanceRecordsOptions,
+  RulerGroupMaintenanceCursor,
+  RulerGroupMaintenanceListRecord,
+} from "./queries/get-ruler-group-maintenance"
 export {
   getIssuerMaintenanceRecordWithDatabase,
   getIssuerMaintenanceRecordsWithDatabase,

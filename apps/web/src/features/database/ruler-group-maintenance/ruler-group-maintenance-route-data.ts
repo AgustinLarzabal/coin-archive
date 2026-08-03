@@ -1,68 +1,89 @@
+import type { RulerGroup, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createRulerGroupAuthorizationError,
-  hasRulerGroupMaintenanceAccess,
-} from "./actions"
+import { createRulerGroupAuthorizationError } from "./actions"
 
-type LoadRulerGroupMaintenancePageDataResult = MaintenancePageLoadResult<
-  {
-    rulerGroups: RulerGroupOption[]
-  },
+type LoadResult = MaintenancePageLoadResult<
+  { rulerGroups: RulerGroup[] },
   ReturnType<typeof createRulerGroupAuthorizationError>
 >
 
 export type RulerGroupMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  rulerGroups: RulerGroupOption[]
+  rulerGroups: RulerGroup[]
 }>
 
-type RulerGroupReadDependencies = {
-  getRulerGroups: () => Promise<RulerGroupOption[]>
+type ReadDependencies = {
+  listRulerGroups: MaintenanceApiClient["rulerGroups"]["list"]
 }
 
-async function getDefaultRulerGroupReadDependencies(): Promise<RulerGroupReadDependencies> {
-  const { getRulerGroups } = await import("@coin-archive/db")
-
-  return {
-    getRulerGroups,
-  }
+async function getDefaultReadDependencies(): Promise<ReadDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listRulerGroups: client.rulerGroups.list }
 }
 
 export async function loadRulerGroupMaintenancePageData(
-  collector: CollectorWithRole | null,
-  dependencies?: RulerGroupReadDependencies
-): Promise<LoadRulerGroupMaintenancePageDataResult> {
-  if (!hasRulerGroupMaintenanceAccess(collector)) {
-    return createRulerGroupAuthorizationError()
+  dependencies?: ReadDependencies
+): Promise<Awaited<LoadResult>> {
+  const { listRulerGroups } =
+    dependencies ?? (await getDefaultReadDependencies())
+  const rulerGroups: RulerGroup[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listRulerGroups({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      rulerGroups.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Ruler Group maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createRulerGroupAuthorizationError()
+    }
+    throw error
   }
 
-  const { getRulerGroups } =
-    dependencies ?? (await getDefaultRulerGroupReadDependencies())
-
-  return {
-    status: "success",
-    rulerGroups: await getRulerGroups(),
-  }
+  return { status: "success", rulerGroups }
 }
 
-const getRulerGroupMaintenanceLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadRulerGroupMaintenancePageData(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadRulerGroupMaintenancePageData())
+)
 
 export function loadRulerGroupMaintenanceRouteData() {
-  return getRulerGroupMaintenanceLoaderData()
+  return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return false
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return false
+  }
+  const body = data.body
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
+  )
 }

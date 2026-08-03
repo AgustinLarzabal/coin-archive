@@ -4,12 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type {
-  RulerGroupFieldErrors,
-  RulerGroupMutationResult,
-} from "../actions"
-import { createRulerGroupInputSchema, submitCreateRulerGroup } from "../actions"
+import { submitCreateRulerGroup } from "../actions"
+import type { RulerGroupMutationResult } from "../actions"
+import { createRulerGroupInputSchema } from "../ruler-group-validation"
+import type { RulerGroupFieldErrors } from "../ruler-group-validation"
 
 import {
   EMPTY_RULER_GROUP_DRAFT,
@@ -28,18 +26,17 @@ type RulerGroupCreateFormProps = {
 const createRulerGroupAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: RulerGroupDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateRulerGroup(session?.user ?? null, data)
-  })
+  .inputValidator((data: RulerGroupDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateRulerGroup(data))
 
 export function RulerGroupCreateForm({ onCreated }: RulerGroupCreateFormProps) {
   const router = useRouter()
   const createRulerGroup = useServerFn(createRulerGroupAction)
   const [fieldErrors, setFieldErrors] = useState<RulerGroupFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -63,12 +60,13 @@ export function RulerGroupCreateForm({ onCreated }: RulerGroupCreateFormProps) {
     validators: { onSubmit: createRulerGroupInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createRulerGroup({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

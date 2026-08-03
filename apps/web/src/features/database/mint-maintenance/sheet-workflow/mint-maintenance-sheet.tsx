@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,38 +27,28 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteMint } from "../actions"
-import {
-  MINT_GENERIC_SAVE_ERROR,
-  MINT_IN_USE_DELETE_GUIDANCE,
-} from "../mint-mutation-errors"
+import { MINT_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { MintCreateForm } from "../form-workflow/mint-create-form"
 import { MintEditForm } from "../form-workflow/mint-edit-form"
 
 type MintMaintenanceSheetProps = {
-  mint: MintOption | null
-  initialDeleteDialogOpen?: boolean
+  mint: Mint | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const MINT_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Mint. ${MINT_IN_USE_DELETE_GUIDANCE}`
+export const MINT_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Mint. ${MINT_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteMintAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteMint(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteMint(data))
 
 export function MintMaintenanceSheet({
   mint,
-  initialDeleteDialogOpen = false,
   open,
   onOpenChange,
 }: MintMaintenanceSheetProps) {
@@ -67,20 +57,12 @@ export function MintMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingMint = mint !== null
-  const sheetTitle = isEditingMint ? "Edit Mint" : "Create Mint"
-
-  function closeSheet() {
-    onOpenChange(false)
-  }
 
   useEffect(() => {
     setDeleteError(null)
-    setIsDeleteDialogOpen(
-      open && isEditingMint ? initialDeleteDialogOpen : false
-    )
+    setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }, [initialDeleteDialogOpen, isEditingMint, mint?.id, open])
+  }, [mint?.id, open])
 
   async function handleDeleteMint() {
     if (!mint) {
@@ -94,16 +76,17 @@ export function MintMaintenanceSheet({
       const result = await deleteMint({
         data: {
           id: mint.id,
+          etag: mint.etag,
         },
       })
 
       if (result.status === "success") {
         await router.invalidate()
-        closeSheet()
+        onOpenChange(false)
         return
       }
 
-      setDeleteError(result.formError ?? MINT_GENERIC_SAVE_ERROR)
+      setDeleteError(result.formError ?? "Unable to delete Mint right now.")
     } finally {
       setIsDeletePending(false)
     }
@@ -113,9 +96,9 @@ export function MintMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>{mint ? "Edit Mint" : "Create Mint"}</SheetTitle>
 
-          {isEditingMint ? (
+          {mint !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -135,7 +118,7 @@ export function MintMaintenanceSheet({
                     variant="destructive"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
-                    Delete Mint
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -175,10 +158,10 @@ export function MintMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingMint ? (
-          <MintEditForm mint={mint} onSaved={closeSheet} />
+        {mint ? (
+          <MintEditForm mint={mint} onSaved={() => onOpenChange(false)} />
         ) : (
-          <MintCreateForm onCreated={closeSheet} />
+          <MintCreateForm onCreated={() => onOpenChange(false)} />
         )}
       </SheetContent>
     </Sheet>

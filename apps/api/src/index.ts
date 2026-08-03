@@ -6,6 +6,7 @@ import {
   createEdgeIdempotentlyWithDatabase,
   createEngraverIdempotentlyWithDatabase,
   createIssuerIdempotentlyWithDatabase,
+  createMintIdempotentlyWithDatabase,
   createThemeIdempotentlyWithDatabase,
   createRulerGroupIdempotentlyWithDatabase,
   createRulerIdempotentlyWithDatabase,
@@ -21,6 +22,7 @@ import {
   deleteEdgeIfVersionWithDatabase,
   deleteEngraverIfVersionWithDatabase,
   deleteIssuerIfVersionWithDatabase,
+  deleteMintIfVersionWithDatabase,
   deleteThemeIfVersionWithDatabase,
   deleteRulerGroupIfVersionWithDatabase,
   deleteRulerIfVersionWithDatabase,
@@ -42,6 +44,8 @@ import {
   getEngraverMaintenanceRecordsWithDatabase,
   getIssuerMaintenanceRecordWithDatabase,
   getIssuerMaintenanceRecordsWithDatabase,
+  getMintMaintenanceRecordWithDatabase,
+  getMintMaintenanceRecordsWithDatabase,
   getThemeMaintenanceRecordWithDatabase,
   getThemeMaintenanceRecordsWithDatabase,
   getRulerGroupMaintenanceRecordWithDatabase,
@@ -65,6 +69,7 @@ import {
   replaceEdgeWithDatabase,
   replaceEngraverWithDatabase,
   replaceIssuerWithDatabase,
+  replaceMintWithDatabase,
   replaceThemeWithDatabase,
   replaceRulerGroupWithDatabase,
   replaceRulerWithDatabase,
@@ -306,6 +311,19 @@ async function handleRequest(
         ? { status: result.status, mintingTechnique: result.technique }
         : result
     },
+    listMints: (input) =>
+      getMintMaintenanceRecordsWithDatabase(database.db, input),
+    getMint: (mintId) =>
+      getMintMaintenanceRecordWithDatabase(database.db, mintId),
+    createMint: (input) =>
+      createMintIdempotentlyWithDatabase(database.db, input),
+    replaceMint: ({ id, expectedVersion, fields }) =>
+      replaceMintWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteMint: (input) => deleteMintIfVersionWithDatabase(database.db, input),
     listRulerGroups: (input) =>
       getRulerGroupMaintenanceRecordsWithDatabase(database.db, input),
     getRulerGroup: (rulerGroupId) =>

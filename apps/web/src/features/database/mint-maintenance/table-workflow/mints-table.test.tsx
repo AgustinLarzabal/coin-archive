@@ -1,27 +1,27 @@
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { MintsTable, filterMints } from "./mints-table"
 
-vi.mock("../sheet-workflow/mint-maintenance-sheet", () => ({
-  MintMaintenanceSheet: () => null,
-}))
-
-const mints: MintOption[] = [
+const mints: Mint[] = [
   {
-    id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
-    code: "buenos-aires-mint",
-    name: "Buenos Aires Mint",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    etag: '"mint-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
   {
-    id: "2f7265fc-0ddf-49bc-b90a-71b3466ee3bd",
-    code: "royal-mint-of-madrid",
-    name: "Royal Mint of Madrid",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    id: "d3ed87e0-ebd9-4bbd-a5de-c9d1823ae3a2",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    etag: '"mint-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
 ]
 
@@ -30,22 +30,22 @@ describe("filterMints", () => {
     expect(filterMints(mints, "")).toStrictEqual(mints)
   })
 
-  it("filters by Mint Code and Mint Name case-insensitively while trimming whitespace", () => {
-    expect(filterMints(mints, " buenos-aires ")).toStrictEqual([mints[0]])
-    expect(filterMints(mints, "MADRID")).toStrictEqual([mints[1]])
+  it("filters by code and name case-insensitively while trimming whitespace", () => {
+    expect(filterMints(mints, "reed")).toStrictEqual([mints[0]])
+    expect(filterMints(mints, " PLAIN ")).toStrictEqual([mints[1]])
   })
 })
 
 describe("MintsTable", () => {
-  it("renders Mint Code and Mint Name columns with maintenance actions", () => {
+  it("renders Mint Code and Mint Name columns with filter and maintenance actions", () => {
     const markup = renderToStaticMarkup(<MintsTable mints={mints} />)
 
     expect(markup).toContain("Mint Code")
     expect(markup).toContain("Mint Name")
-    expect(markup).toContain("Buenos Aires Mint")
-    expect(markup).toContain("Royal Mint of Madrid")
+    expect(markup).toContain("Reeded")
+    expect(markup).toContain("Plain")
     expect(markup).toContain("Filter mints by code or name...")
-    expect(markup).toContain("Create")
+    expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')
   })
 })

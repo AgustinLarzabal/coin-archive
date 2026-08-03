@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   check,
   index,
+  integer,
   pgTable,
   timestamp,
   uniqueIndex,
@@ -28,6 +29,7 @@ export const mint = pgTable(
       .default(sql`uuidv7()`),
     code: varchar("code", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),
@@ -37,7 +39,9 @@ export const mint = pgTable(
   },
   (mint) => [
     // Enforces case-insensitive uniqueness for stable mint codes.
-    uniqueIndex(mintSchemaNames.codeLowerUniqueIndex).on(sql`lower(${mint.code})`),
+    uniqueIndex(mintSchemaNames.codeLowerUniqueIndex).on(
+      sql`lower(${mint.code})`
+    ),
     // Supports case-insensitive lookups by mint code in shared queries.
     index(mintSchemaNames.codeLookupIndex).on(sql`lower(${mint.code})`),
     check(

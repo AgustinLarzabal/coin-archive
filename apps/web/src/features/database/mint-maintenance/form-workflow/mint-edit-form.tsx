@@ -2,33 +2,28 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateMint } from "../actions"
-import type { MintMutationResult } from "../mint-mutation-errors"
+import type { MintMutationResult } from "../actions"
 import { createMintInputSchema } from "../mint-validation"
 import type { MintFieldErrors } from "../mint-validation"
 
-import { MintFormFields, MintTextField } from "./mint-form-fields"
 import { createMintDraft, hasMintEditChanges } from "./mint-form.shared"
+import { MintFormFields, MintTextField } from "./mint-form-fields"
 import type { MintDraft } from "./mint-form.shared"
 
 type MintEditFormProps = {
-  mint: MintOption
+  mint: Mint
   onSaved?: () => void
 }
 
 const updateMintAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: MintDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateMint(session?.user ?? null, data)
-  })
+  .inputValidator((data: MintDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateMint(data))
 
 export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
   const router = useRouter()
@@ -41,7 +36,13 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
     defaultValues: createMintDraft(mint),
     validators: { onSubmit: createMintInputSchema },
     onSubmit: async ({ value }) => {
-      const result = await updateMint({ data: { id: mint.id, ...value } })
+      const result = await updateMint({
+        data: {
+          id: mint.id,
+          etag: mint.etag,
+          ...value,
+        },
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()
@@ -55,7 +56,7 @@ export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
     setFieldErrors({})
     setFormError(null)
     setSuccessMessage(null)
-  }, [mint, form])
+  }, [form, mint])
 
   function clearFeedback() {
     setFieldErrors({})

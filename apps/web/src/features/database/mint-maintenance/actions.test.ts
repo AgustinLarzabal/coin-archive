@@ -2,461 +2,251 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   MINT_AUTHORIZATION_ERROR,
-  hasMintMaintenanceAccess,
   submitCreateMint,
   submitDeleteMint,
   submitUpdateMint,
 } from "./actions"
 import {
   MINT_DUPLICATE_CODE_ERROR,
-  MINT_GENERIC_SAVE_ERROR,
   MINT_IN_USE_DELETE_ERROR,
-  MINT_INVALID_CODE_ERROR,
-  MINT_MISSING_ERROR,
+  MINT_STALE_ERROR,
 } from "./mint-mutation-errors"
 
-const VALID_MINT_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const BUENOS_AIRES_MINT = {
-  code: "buenos-aires-mint",
-  name: "Buenos Aires Mint",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const mint = {
+  id,
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createMint?: ReturnType<typeof vi.fn>
-  deleteMint?: ReturnType<typeof vi.fn>
-  updateMint?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createMint: vi.fn(),
-    deleteMint: vi.fn(),
-    updateMint: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/mints",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: MINT_AUTHORIZATION_ERROR,
-}
-
-describe("hasMintMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasMintMaintenanceAccess(null)).toBe(false)
-    expect(hasMintMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasMintMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasMintMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasMintMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasMintMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateMint", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateMint(null, BUENOS_AIRES_MINT)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateMint({ role: "collector" }, BUENOS_AIRES_MINT)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Mint web mutation adapter", () => {
+  it("leaves authoritative validation to the typed API", async () => {
+    const createMint = vi.fn().mockRejectedValue(
+      problem("mint_validation_failed", 422, [
+        { name: "/code", code: "mint_code_required" },
+        { name: "/name", code: "mint_name_too_long" },
+      ])
+    )
 
     await expect(
       submitCreateMint(
-        { role: "editor" },
         {
-          code: "Buenos-Aires-Mint",
-          name: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createMint }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: MINT_INVALID_CODE_ERROR,
-        name: "Mint Name cannot be blank.",
+        code: "Mint Code cannot be blank.",
+        name: "Mint Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createMint).not.toHaveBeenCalled()
+    expect(createMint).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " ", name: "".padStart(256, "A") },
+    })
   })
 
-  it("trims Mint fields before creating a Mint", async () => {
-    const dependencies = createDependencies({
-      createMint: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createMint = vi.fn(async () => ({
+      status: 201 as const,
+      headers: {
+        etag,
+        location: `/api/v1/maintenance/mints/${id}`,
+      },
+      body: { data: mint },
+    }))
 
     await expect(
       submitCreateMint(
-        { role: "editor" },
         {
-          code: " buenos-aires-mint ",
-          name: " Buenos Aires Mint ",
+          code: " reeded ",
+          name: " Reeded ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createMint }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Mint added.",
     })
-
-    expect(dependencies.createMint).toHaveBeenCalledWith({
-      code: "buenos-aires-mint",
-      name: "Buenos Aires Mint",
+    expect(createMint).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " reeded ", name: " Reeded " },
     })
   })
 
-  it("maps duplicate Mint Codes to the Mint Code field", async () => {
-    await expect(
-      submitCreateMint(
-        { role: "admin" },
-        BUENOS_AIRES_MINT,
-        createDependencies({
-          createMint: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "mint_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: MINT_DUPLICATE_CODE_ERROR,
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createMint = vi.fn(async () => ({
+      status: 201 as const,
+      headers: {
+        etag,
+        location: `/api/v1/maintenance/mints/${id}`,
       },
-    })
-  })
+      body: { data: mint },
+    }))
+    const submission = {
+      code: "reeded",
+      name: "Reeded",
+      idempotencyKey: "stable-attempt",
+    }
 
-  it("maps Mint Code slug check failures to the Mint Code field", async () => {
-    await expect(
-      submitCreateMint(
-        { role: "admin" },
-        BUENOS_AIRES_MINT,
-        createDependencies({
-          createMint: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "mint_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: MINT_INVALID_CODE_ERROR,
-      },
-    })
-  })
+    await submitCreateMint(submission, { createMint })
+    await submitCreateMint(submission, { createMint })
 
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createMint: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
-
-    await expect(
-      submitCreateMint({ role: "editor" }, BUENOS_AIRES_MINT, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Mint added.",
-    })
-
-    expect(dependencies.createMint).toHaveBeenCalledWith(BUENOS_AIRES_MINT)
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateMint(
-        { role: "admin" },
-        BUENOS_AIRES_MINT,
-        createDependencies({
-          createMint: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateMint", () => {
-  const updateInput = {
-    id: VALID_MINT_ID,
-    ...BUENOS_AIRES_MINT,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(submitUpdateMint(null, updateInput)).resolves.toStrictEqual(
-      authorizationErrorResult
+    expect(createMint).toHaveBeenCalledTimes(2)
+    expect(createMint).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
-
-    await expect(
-      submitUpdateMint({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitUpdateMint(
-        { role: "editor" },
-        {
-          id: VALID_MINT_ID,
-          code: "Buenos-Aires-Mint",
-          name: " ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: MINT_INVALID_CODE_ERROR,
-        name: "Mint Name cannot be blank.",
-      },
-    })
-
-    expect(dependencies.updateMint).not.toHaveBeenCalled()
-  })
-
-  it("trims Mint fields before updating a Mint", async () => {
-    const dependencies = createDependencies({
-      updateMint: vi.fn().mockResolvedValue({
-        id: VALID_MINT_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateMint(
-        { role: "editor" },
-        {
-          id: VALID_MINT_ID,
-          code: " buenos-aires-mint ",
-          name: " Buenos Aires Mint ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateMint).toHaveBeenCalledWith({
-      id: VALID_MINT_ID,
-      code: "buenos-aires-mint",
-      name: "Buenos Aires Mint",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
-    await expect(
-      submitUpdateMint(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateMint: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Mint Codes to the Mint Code field during update", async () => {
-    await expect(
-      submitUpdateMint(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateMint: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "mint_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: MINT_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("maps Mint Code slug check failures to the Mint Code field during update", async () => {
-    await expect(
-      submitUpdateMint(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateMint: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "mint_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: MINT_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected update persistence failures", async () => {
-    await expect(
-      submitUpdateMint(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateMint: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_GENERIC_SAVE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid update submissions", async () => {
-    const dependencies = createDependencies({
-      updateMint: vi.fn().mockResolvedValue({
-        id: VALID_MINT_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateMint({ role: "admin" }, updateInput, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateMint).toHaveBeenCalledWith(updateInput)
-  })
-})
-
-describe("submitDeleteMint", () => {
-  const deleteInput = {
-    id: VALID_MINT_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(submitDeleteMint(null, deleteInput)).resolves.toStrictEqual(
-      authorizationErrorResult
+    expect(createMint).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
-
-    await expect(
-      submitDeleteMint({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
   })
 
-  it("rejects invalid delete payloads before hitting persistence", async () => {
-    const dependencies = createDependencies()
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceMint = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...mint, version: 2, etag: '"next-version"' },
+      },
+    }))
+    const deleteMint = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
-      submitDeleteMint(
-        { role: "editor" },
-        {
-          id: "not-a-uuid",
-        },
-        dependencies
+      submitUpdateMint(
+        { id, etag, code: "plain", name: "Plain" },
+        { replaceMint }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteMint).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitDeleteMint(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteMint: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_MISSING_ERROR,
-    })
-  })
-
-  it("maps referenced-Mint delete failures to the Mint-specific form error", async () => {
-    await expect(
-      submitDeleteMint(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteMint: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_mint_mint_id_mint_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a generic form error for unexpected delete persistence failures", async () => {
-    await expect(
-      submitDeleteMint(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteMint: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: MINT_GENERIC_SAVE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = createDependencies({
-      deleteMint: vi.fn().mockResolvedValue({
-        id: VALID_MINT_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteMint({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteMint({ id, etag }, { deleteMint })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Mint deleted.",
     })
 
-    expect(dependencies.deleteMint).toHaveBeenCalledWith(deleteInput)
+    expect(replaceMint).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "plain", name: "Plain" },
+    })
+    expect(deleteMint).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateMint(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createMint: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({
+      formError: MINT_AUTHORIZATION_ERROR,
+    })
+
+    await expect(
+      submitCreateMint(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createMint: vi
+            .fn()
+            .mockRejectedValue(problem("mint_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: MINT_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateMint(
+        { id, etag, code: "reeded", name: "Reeded" },
+        {
+          replaceMint: vi
+            .fn()
+            .mockRejectedValue(problem("mint_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: MINT_STALE_ERROR })
+
+    await expect(
+      submitDeleteMint(
+        { id, etag },
+        {
+          deleteMint: vi.fn().mockRejectedValue(problem("mint_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      formError: MINT_IN_USE_DELETE_ERROR,
+    })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateMint(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createMint: vi.fn().mockRejectedValue(
+            problem("mint_validation_failed", 422, [
+              { name: "/code", code: "mint_code_required" },
+              { name: "/name", code: "mint_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Mint Code cannot be blank.",
+        name: "Mint Name must be 255 characters or fewer.",
+      },
+    })
   })
 })

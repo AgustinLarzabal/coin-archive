@@ -1,10 +1,10 @@
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MINT_IN_USE_DELETE_GUIDANCE } from "../mint-mutation-errors"
+import { MINT_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import {
   MINT_DELETE_CONFIRMATION_DESCRIPTION,
@@ -92,15 +92,17 @@ vi.mock("../form-workflow/mint-edit-form", () => ({
   MintEditForm: () => createElement("div", null, "MintEditForm"),
 }))
 
-const mint: MintOption = {
-  id: "84863d38-795b-443c-bd27-1dedb73c0fad",
-  code: "buenos-aires-mint",
-  name: "Buenos Aires Mint",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const mint: Mint = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"mint-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderMintMaintenanceSheet(mintOption: MintOption | null) {
+function renderMintMaintenanceSheet(mintOption: Mint | null) {
   return renderToStaticMarkup(
     createElement(MintMaintenanceSheet, {
       mint: mintOption,
@@ -116,7 +118,7 @@ describe("MINT_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Mint"
     )
     expect(MINT_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      MINT_IN_USE_DELETE_GUIDANCE
+      MINT_DELETE_REASSIGN_REQUIRED_MESSAGE
     )
   })
 })
@@ -135,7 +137,7 @@ describe("MintMaintenanceSheet", () => {
 
     expect(markup).toContain("Edit Mint")
     expect(markup).toContain("MintEditForm")
-    expect(markup).toContain(">Delete Mint<")
+    expect(markup).toContain(">Delete<")
     expect(markup).toContain("Delete Mint?")
     expect(markup).toContain(MINT_DELETE_CONFIRMATION_DESCRIPTION)
     expect(markup).toContain(">Cancel<")

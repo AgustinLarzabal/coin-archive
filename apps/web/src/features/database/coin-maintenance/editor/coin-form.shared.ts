@@ -6,6 +6,7 @@ import type {
   EdgeOption,
   EngraverOption,
   IssuerOption,
+  MintOption,
   MintingTechniqueOption,
   RimOption,
   ShapeOption,
@@ -15,7 +16,6 @@ import type {
   CoinMaintenanceFaceSurface,
   CoinMaintenanceRecord,
   CoinMaintenanceSurface,
-  MintOption,
   OrientationOption,
   RulerOption,
 } from "@coin-archive/db"
@@ -123,13 +123,11 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
 }
 
 export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
-  const [
-    { getMints, getOrientations, getRulers },
-    { getMaintenanceApiClient },
-  ] = await Promise.all([
-    import("@coin-archive/db"),
-    import("@/lib/maintenance-api.server"),
-  ])
+  const [{ getOrientations, getRulers }, { getMaintenanceApiClient }] =
+    await Promise.all([
+      import("@coin-archive/db"),
+      import("@/lib/maintenance-api.server"),
+    ])
   const maintenanceClient = await getMaintenanceApiClient()
 
   return {
@@ -146,7 +144,7 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
       loadAllMaintenanceOptions(maintenanceClient.engravers.options),
     getIssuers: () =>
       loadAllMaintenanceOptions(maintenanceClient.issuers.options),
-    getMints,
+    getMints: () => loadAllMaintenanceOptions(maintenanceClient.mints.options),
     getOrientations,
     getRims: () => loadAllMaintenanceOptions(maintenanceClient.rims.options),
     getRulers,

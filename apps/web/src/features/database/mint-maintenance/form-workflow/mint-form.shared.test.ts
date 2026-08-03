@@ -1,12 +1,51 @@
 import { describe, expect, it } from "vitest"
 
-import { isMintDraftComplete } from "./mint-form.shared"
+import type { Mint } from "@coin-archive/api"
+
+import {
+  createMintDraft,
+  isMintDraftComplete,
+  normalizeMintDraft,
+} from "./mint-form.shared"
+
+const mint: Mint = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"mint-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
+}
+
+describe("createMintDraft", () => {
+  it("copies the editable Mint fields from a selected Mint", () => {
+    expect(createMintDraft(mint)).toStrictEqual({
+      code: "reeded",
+      name: "Reeded",
+    })
+  })
+})
+
+describe("normalizeMintDraft", () => {
+  it("trims editable Mint fields", () => {
+    expect(
+      normalizeMintDraft({
+        code: " reeded ",
+        name: " Reeded ",
+      })
+    ).toStrictEqual({
+      code: "reeded",
+      name: "Reeded",
+    })
+  })
+})
 
 describe("isMintDraftComplete", () => {
   it("requires non-blank Mint Code and Mint Name", () => {
     expect(
       isMintDraftComplete({
-        code: "buenos-aires-mint",
+        code: "reeded",
         name: " ",
       })
     ).toBe(false)
@@ -14,7 +53,7 @@ describe("isMintDraftComplete", () => {
     expect(
       isMintDraftComplete({
         code: " ",
-        name: "Buenos Aires Mint",
+        name: "Reeded",
       })
     ).toBe(false)
   })
@@ -22,8 +61,8 @@ describe("isMintDraftComplete", () => {
   it("treats trimmed Mint Code and Mint Name as a complete create draft", () => {
     expect(
       isMintDraftComplete({
-        code: " buenos-aires-mint ",
-        name: " Buenos Aires Mint ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(true)
   })

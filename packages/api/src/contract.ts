@@ -1122,6 +1122,123 @@ export const issuerMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const mintSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const mintOptionSchema = mintSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const mintListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const mintListOutputSchema = z.object({
+  data: z.array(mintSchema),
+  nextCursor: z.string().nullable(),
+})
+export const mintOptionsInputSchema = mintListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const mintOptionsOutputSchema = z.object({
+  data: z.array(mintOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const mintDetailInputSchema = z.object({ uuid: z.uuid() })
+export const mintDetailOutputSchema = z.object({
+  data: mintSchema,
+})
+export const mintMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const mintCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: mintMutationBodySchema,
+})
+export const mintCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/mints/"),
+    etag: z.string(),
+  }),
+  body: mintDetailOutputSchema,
+})
+export const mintReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: mintMutationBodySchema,
+})
+export const mintReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: mintDetailOutputSchema,
+})
+export const mintDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const mintDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+export const mintMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "mint_code_conflict",
+      "mint_in_use",
+      "mint_not_found",
+      "mint_precondition_failed",
+      "mint_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_mint_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "mint_body_invalid",
+            "mint_code_invalid",
+            "mint_code_required",
+            "mint_code_too_long",
+            "mint_name_invalid",
+            "mint_name_required",
+            "mint_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 export const mintingTechniqueSchema = z.object({
   id: z.uuid(),
   code: codeSchema,
@@ -1735,6 +1852,18 @@ const issuerMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: issuerMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const mintMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: {
+    status: 409,
+    data: mintMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: mintMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -2543,6 +2672,79 @@ export const maintenanceApiContract = {
       .output(mintingTechniqueDeleteOutputSchema)
       .errors(mintingTechniqueMaintenanceMutationErrors),
   },
+  mints: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/mints",
+        summary: "Browse Mints for maintenance",
+        tags: ["Mint Maintenance"],
+      })
+      .input(mintListInputSchema)
+      .output(mintListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/mints/options",
+        summary: "Search compact Mint options",
+        tags: ["Mint Maintenance"],
+      })
+      .input(mintOptionsInputSchema)
+      .output(mintOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/mints/{uuid}",
+        summary: "Get Mint maintenance detail",
+        tags: ["Mint Maintenance"],
+      })
+      .input(mintDetailInputSchema)
+      .output(mintDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/mints",
+        summary: "Create a Mint",
+        tags: ["Mint Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintCreateInputSchema)
+      .output(mintCreateOutputSchema)
+      .errors(mintMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/mints/{uuid}",
+        summary: "Replace a Mint",
+        tags: ["Mint Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintReplaceInputSchema)
+      .output(mintReplaceOutputSchema)
+      .errors(mintMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/mints/{uuid}",
+        summary: "Permanently delete a Mint",
+        tags: ["Mint Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintDeleteInputSchema)
+      .output(mintDeleteOutputSchema)
+      .errors(mintMaintenanceMutationErrors),
+  },
   rulerGroups: {
     list: oc
       .route({
@@ -2954,6 +3156,14 @@ export type IssuerOptionsInput = z.infer<typeof issuerOptionsInputSchema>
 export type IssuerOptionsOutput = z.infer<typeof issuerOptionsOutputSchema>
 export type IssuerDetailOutput = z.infer<typeof issuerDetailOutputSchema>
 export type IssuerMutationBody = z.infer<typeof issuerMutationBodySchema>
+export type Mint = z.infer<typeof mintSchema>
+export type MintOption = z.infer<typeof mintOptionSchema>
+export type MintListInput = z.infer<typeof mintListInputSchema>
+export type MintListOutput = z.infer<typeof mintListOutputSchema>
+export type MintOptionsInput = z.infer<typeof mintOptionsInputSchema>
+export type MintOptionsOutput = z.infer<typeof mintOptionsOutputSchema>
+export type MintDetailOutput = z.infer<typeof mintDetailOutputSchema>
+export type MintMutationBody = z.infer<typeof mintMutationBodySchema>
 export type MintingTechnique = z.infer<typeof mintingTechniqueSchema>
 export type MintingTechniqueOption = z.infer<
   typeof mintingTechniqueOptionSchema

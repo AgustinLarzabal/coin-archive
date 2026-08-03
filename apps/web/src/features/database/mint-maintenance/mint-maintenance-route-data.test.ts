@@ -1,76 +1,79 @@
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
+
 import { MINT_AUTHORIZATION_ERROR } from "./actions"
 import { loadMintMaintenancePageData } from "./mint-maintenance-route-data"
 
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
-
-vi.mock("./table-workflow/mints-table", () => ({
-  MintsTable: ({ mints }: { mints: MintOption[] }) =>
-    `Mints table: ${mints.map((mint) => mint.name).join(", ")}`,
-}))
-
-const mintTimestamps = {
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-} as const
-
-function createMint(
-  overrides: Pick<MintOption, "id" | "code" | "name">
-): MintOption {
-  return {
-    ...mintTimestamps,
-    ...overrides,
-  }
-}
+const mints: Mint[] = [
+  {
+    id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"mint-version-1"',
+  },
+  {
+    id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"mint-version-1"',
+  },
+]
 
 describe("loadMintMaintenancePageData", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getMints = vi.fn()
+  it.each(["authentication_required", "editor_access_required"])(
+    "maps API %s problems to the current access-denied presentation",
+    async (code) => {
+      const listMints = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
-    await expect(
-      loadMintMaintenancePageData(null, { getMints })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: MINT_AUTHORIZATION_ERROR,
-    })
-
-    expect(getMints).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getMints = vi.fn()
-
-    await expect(
-      loadMintMaintenancePageData({ role: "collector" }, { getMints })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: MINT_AUTHORIZATION_ERROR,
-    })
-
-    expect(getMints).not.toHaveBeenCalled()
-  })
-
-  it("returns Mint maintenance data for Editors and Admins", async () => {
-    const mints = [
-      createMint({
-        id: "d2661fdc-5fd4-4d89-8bd6-1ca8d9b17b97",
-        code: "buenos-aires-mint",
-        name: "Buenos Aires Mint",
-      }),
-    ]
-    const getMints = vi.fn().mockResolvedValue(mints)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
       await expect(
-        loadMintMaintenancePageData({ role }, { getMints })
+        loadMintMaintenancePageData({ listMints })
       ).resolves.toStrictEqual({
-        status: "success",
-        mints,
+        status: "error",
+        formError: MINT_AUTHORIZATION_ERROR,
       })
     }
+  )
+
+  it("loads every cursor page through the typed maintenance client", async () => {
+    const listMints = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: [mints[0]],
+        nextCursor: "next",
+      })
+      .mockResolvedValueOnce({ data: [mints[1]], nextCursor: null })
+
+    await expect(
+      loadMintMaintenancePageData({ listMints })
+    ).resolves.toStrictEqual({ status: "success", mints })
+    expect(listMints).toHaveBeenNthCalledWith(1, {
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+    expect(listMints).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+  })
+
+  it("does not hide unexpected API failures as authorization failures", async () => {
+    const failure = new Error("API unavailable")
+
+    await expect(
+      loadMintMaintenancePageData({
+        listMints: vi.fn().mockRejectedValue(failure),
+      })
+    ).rejects.toBe(failure)
   })
 })

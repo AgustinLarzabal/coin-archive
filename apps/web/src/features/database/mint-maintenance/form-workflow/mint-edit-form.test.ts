@@ -1,51 +1,27 @@
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { MintEditForm } from "./mint-edit-form"
 import { hasMintEditChanges } from "./mint-form.shared"
 
-function createServerFnMock() {
-  return {
-    inputValidator() {
-      return this
-    },
-    handler() {
-      return {}
-    },
-  }
-}
-
-function renderMintEditForm(mintOption: MintOption) {
-  return renderToStaticMarkup(createElement(MintEditForm, { mint: mintOption }))
-}
-
-vi.mock("@tanstack/react-router", () => ({
-  useRouter: () => ({
-    invalidate: vi.fn(),
-  }),
-}))
-
-vi.mock("@tanstack/react-start", () => ({
-  createServerFn: createServerFnMock,
-  useServerFn: () => vi.fn(),
-}))
-
-const mint: MintOption = {
-  id: "0933c940-842f-42a6-bd41-e3a0d3d27e39",
-  code: "buenos-aires-mint",
-  name: "Buenos Aires Mint",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const mint: Mint = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"mint-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasMintEditChanges", () => {
   it("returns false when trimmed editable values match the current Mint", () => {
     expect(
       hasMintEditChanges(mint, {
-        code: " buenos-aires-mint ",
-        name: " Buenos Aires Mint ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(false)
   })
@@ -53,8 +29,8 @@ describe("hasMintEditChanges", () => {
   it("returns true when any normalized editable field changed", () => {
     expect(
       hasMintEditChanges(mint, {
-        code: "royal-mint-of-madrid",
-        name: "Royal Mint of Madrid",
+        code: "plain",
+        name: "Plain",
       })
     ).toBe(true)
   })
@@ -62,10 +38,10 @@ describe("hasMintEditChanges", () => {
 
 describe("MintEditForm", () => {
   it("renders explicit Mint field labels with the current values and disables Save until something changed", () => {
-    const markup = renderMintEditForm(mint)
+    const markup = renderToStaticMarkup(createElement(MintEditForm, { mint }))
     const expectedFields = [
-      ["Mint Code", 'value="buenos-aires-mint"'],
-      ["Mint Name", 'value="Buenos Aires Mint"'],
+      ["Mint Code", 'value="reeded"'],
+      ["Mint Name", 'value="Reeded"'],
     ] as const
 
     for (const [label, value] of expectedFields) {
@@ -73,7 +49,6 @@ describe("MintEditForm", () => {
       expect(markup).toContain(value)
     }
 
-    expect(markup).toContain('id="database-mint-edit-form"')
     expect(markup).toContain(">Save<")
     expect(markup).toContain('type="submit"')
     expect(markup).toContain('disabled=""')

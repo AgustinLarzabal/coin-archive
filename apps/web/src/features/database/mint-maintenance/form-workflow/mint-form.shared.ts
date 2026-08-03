@@ -1,12 +1,4 @@
-import type { MintOption } from "@coin-archive/db"
-
-import { createMintFieldErrorResult } from "../mint-mutation-errors"
-import type { MintMutationResult } from "../mint-mutation-errors"
-import {
-  createMintInputSchema,
-  updateMintInputSchema,
-  validateMintInput,
-} from "../mint-validation"
+import type { Mint } from "@coin-archive/api"
 
 export type MintDraft = {
   code: string
@@ -18,7 +10,7 @@ export const EMPTY_MINT_DRAFT: MintDraft = {
   name: "",
 }
 
-export function createMintDraft(mint: MintOption): MintDraft {
+export function createMintDraft(mint: Pick<Mint, "code" | "name">): MintDraft {
   return {
     code: mint.code,
     name: mint.name,
@@ -38,30 +30,14 @@ export function isMintDraftComplete(draft: MintDraft) {
   return normalizedDraft.code.length > 0 && normalizedDraft.name.length > 0
 }
 
-export function hasMintEditChanges(mint: MintOption, draft: MintDraft) {
+export function hasMintEditChanges(
+  mint: Pick<Mint, "code" | "name">,
+  draft: MintDraft
+) {
   const normalizedCurrent = normalizeMintDraft(createMintDraft(mint))
   const normalizedDraft = normalizeMintDraft(draft)
-
   return (
     normalizedDraft.code !== normalizedCurrent.code ||
     normalizedDraft.name !== normalizedCurrent.name
   )
-}
-
-export function validateMintCreateDraft(
-  draft: MintDraft
-): MintMutationResult | null {
-  const result = validateMintInput(createMintInputSchema, draft)
-  return result.success ? null : createMintFieldErrorResult(result.fieldErrors)
-}
-
-export function validateMintUpdateDraft(
-  mintId: string,
-  draft: MintDraft
-): MintMutationResult | null {
-  const result = validateMintInput(updateMintInputSchema, {
-    id: mintId,
-    ...draft,
-  })
-  return result.success ? null : createMintFieldErrorResult(result.fieldErrors)
 }

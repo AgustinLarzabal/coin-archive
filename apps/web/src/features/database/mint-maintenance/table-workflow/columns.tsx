@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { MintOption } from "@coin-archive/db"
+import type { Mint } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,9 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createMintColumns(
-  onEditMint: (mint: MintOption) => void,
-  onDeleteMint: (mint: MintOption) => void
-): ColumnDef<MintOption>[] {
+  onEditMint: (mint: Mint) => void
+): ColumnDef<Mint>[] {
   return [
     {
       accessorKey: "code",
@@ -47,13 +46,7 @@ export function createMintColumns(
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => onEditMint(mint)}>
-                  Edit Mint
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onDeleteMint(mint)}
-                >
-                  Delete Mint
+                  Edit
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

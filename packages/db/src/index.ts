@@ -139,7 +139,20 @@ export type {
   DeleteCurrencyIfVersionResult,
   ReplaceCurrencyResult,
 } from "./mutations/currency"
-export { createMint, deleteMint, updateMint } from "./mutations/mint"
+export {
+  createMint,
+  createMintIdempotently,
+  createMintIdempotentlyWithDatabase,
+  deleteMint,
+  deleteMintIfVersionWithDatabase,
+  replaceMintWithDatabase,
+  updateMint,
+} from "./mutations/mint"
+export type {
+  CreateMintIdempotentlyResult,
+  DeleteMintIfVersionResult,
+  ReplaceMintResult,
+} from "./mutations/mint"
 export {
   createOrientation,
   createOrientationIdempotently,
@@ -314,6 +327,15 @@ export type {
   ShapeMaintenanceListRecord,
 } from "./queries/get-shape-maintenance"
 export { getTechniques } from "./queries/get-techniques"
+export {
+  getMintMaintenanceRecordWithDatabase,
+  getMintMaintenanceRecordsWithDatabase,
+} from "./queries/get-mint-maintenance"
+export type {
+  GetMintMaintenanceRecordsOptions,
+  MintMaintenanceCursor,
+  MintMaintenanceListRecord,
+} from "./queries/get-mint-maintenance"
 export {
   getTechniqueMaintenanceRecordWithDatabase,
   getTechniqueMaintenanceRecordsWithDatabase,

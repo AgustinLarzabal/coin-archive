@@ -36,6 +36,8 @@ import { registerIssuerMaintenanceRoutes } from "./issuer-maintenance"
 import type { IssuerMaintenanceDependencies } from "./issuer-maintenance"
 import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-maintenance"
 import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
+import { registerMintMaintenanceRoutes } from "./mint-maintenance"
+import type { MintMaintenanceDependencies } from "./mint-maintenance"
 import { registerRulerGroupMaintenanceRoutes } from "./ruler-group-maintenance"
 import type { RulerGroupMaintenanceDependencies } from "./ruler-group-maintenance"
 import { registerRulerMaintenanceRoutes } from "./ruler-maintenance"
@@ -261,6 +263,17 @@ export function createApiApp({
   deleteMintingTechnique = async () => {
     throw new Error("Minting Technique deletion is not configured")
   },
+  listMints = async () => [],
+  getMint = async () => null,
+  createMint = async () => {
+    throw new Error("Mint create is not configured")
+  },
+  replaceMint = async () => {
+    throw new Error("Mint replacement is not configured")
+  },
+  deleteMint = async () => {
+    throw new Error("Mint deletion is not configured")
+  },
   listRulerGroups = async () => [],
   getRulerGroup = async () => null,
   createRulerGroup = async () => {
@@ -366,6 +379,11 @@ export function createApiApp({
   createMintingTechnique?: MintingTechniqueMaintenanceDependencies["createMintingTechnique"]
   replaceMintingTechnique?: MintingTechniqueMaintenanceDependencies["replaceMintingTechnique"]
   deleteMintingTechnique?: MintingTechniqueMaintenanceDependencies["deleteMintingTechnique"]
+  listMints?: MintMaintenanceDependencies["listMints"]
+  getMint?: MintMaintenanceDependencies["getMint"]
+  createMint?: MintMaintenanceDependencies["createMint"]
+  replaceMint?: MintMaintenanceDependencies["replaceMint"]
+  deleteMint?: MintMaintenanceDependencies["deleteMint"]
   listRulerGroups?: RulerGroupMaintenanceDependencies["listRulerGroups"]
   getRulerGroup?: RulerGroupMaintenanceDependencies["getRulerGroup"]
   createRulerGroup?: RulerGroupMaintenanceDependencies["createRulerGroup"]
@@ -627,6 +645,13 @@ export function createApiApp({
     createMintingTechnique,
     replaceMintingTechnique,
     deleteMintingTechnique,
+  })
+  registerMintMaintenanceRoutes(app, {
+    listMints,
+    getMint,
+    createMint,
+    replaceMint,
+    deleteMint,
   })
   registerRulerGroupMaintenanceRoutes(app, {
     listRulerGroups,

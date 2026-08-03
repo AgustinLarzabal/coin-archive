@@ -4,14 +4,13 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateMint } from "../actions"
-import type { MintMutationResult } from "../mint-mutation-errors"
+import type { MintMutationResult } from "../actions"
 import { createMintInputSchema } from "../mint-validation"
 import type { MintFieldErrors } from "../mint-validation"
 
-import { MintFormFields, MintTextField } from "./mint-form-fields"
 import { EMPTY_MINT_DRAFT, isMintDraftComplete } from "./mint-form.shared"
+import { MintFormFields, MintTextField } from "./mint-form-fields"
 import type { MintDraft } from "./mint-form.shared"
 
 type MintCreateFormProps = {
@@ -21,18 +20,17 @@ type MintCreateFormProps = {
 const createMintAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: MintDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateMint(session?.user ?? null, data)
-  })
+  .inputValidator((data: MintDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateMint(data))
 
 export function MintCreateForm({ onCreated }: MintCreateFormProps) {
   const router = useRouter()
   const createMint = useServerFn(createMintAction)
   const [fieldErrors, setFieldErrors] = useState<MintFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -56,12 +54,13 @@ export function MintCreateForm({ onCreated }: MintCreateFormProps) {
     validators: { onSubmit: createMintInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createMint({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

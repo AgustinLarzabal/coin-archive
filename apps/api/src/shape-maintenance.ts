@@ -545,17 +545,23 @@ function decodeCursor(
   return undefined
 }
 function to64(value: string) {
-  return btoa(value)
+  const bytes = new TextEncoder().encode(value)
+  let binary = ""
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replace(/=+$/, "")
 }
 function from64(value: string) {
-  return atob(
+  const binary = atob(
     value
       .replaceAll("-", "+")
       .replaceAll("_", "/")
       .padEnd(Math.ceil(value.length / 4) * 4, "=")
+  )
+  return new TextDecoder().decode(
+    Uint8Array.from(binary, (character) => character.charCodeAt(0))
   )
 }
 async function digest(value: string) {

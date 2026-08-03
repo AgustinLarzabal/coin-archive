@@ -133,6 +133,49 @@ describe("protected Shape maintenance reads", () => {
     })
   })
 
+  it("round-trips Unicode Shape names through opaque cursors", async () => {
+    const unicodeShape = { ...shapes[0], name: "円形" }
+    const listShapes = vi
+      .fn()
+      .mockResolvedValueOnce([
+        {
+          ...unicodeShape,
+          cursorValue: unicodeShape.name,
+          cursorSecondaryValue: unicodeShape.code,
+        },
+        {
+          ...shapes[1],
+          cursorValue: shapes[1].name.toLowerCase(),
+          cursorSecondaryValue: shapes[1].code,
+        },
+      ])
+      .mockResolvedValueOnce([])
+    const app = createApp({ listShapes })
+    const firstResponse = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/shapes?limit=1"
+    )
+    const firstPage = await firstResponse.json<{ nextCursor: string }>()
+
+    expect(firstResponse.status).toBe(200)
+    expect(firstPage.nextCursor).toEqual(expect.any(String))
+
+    const secondResponse = await app.request(
+      `https://api.coinarchive.app/api/v1/maintenance/shapes?limit=1&cursor=${firstPage.nextCursor}`
+    )
+
+    expect(secondResponse.status).toBe(200)
+    expect(listShapes).toHaveBeenLastCalledWith({
+      cursor: {
+        value: unicodeShape.name,
+        secondaryValue: unicodeShape.code,
+        id: unicodeShape.id,
+      },
+      limit: 2,
+      sort: "name",
+      order: "asc",
+    })
+  })
+
   it("returns mutable detail with an opaque ETag", async () => {
     const app = createApp()
     const response = await app.request(

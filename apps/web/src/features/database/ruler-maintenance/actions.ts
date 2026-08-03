@@ -1,137 +1,201 @@
-import { hasEditorAccess } from "@coin-archive/auth/client"
-import type { z } from "zod"
-
-import { getCollectorRole } from "@/lib/collector-role"
-import type { CollectorWithRole } from "@/lib/collector-role"
+import type { MaintenanceApiClient } from "@coin-archive/api"
 
 import {
+  RULER_DUPLICATE_CODE_ERROR,
+  RULER_GENERIC_SAVE_ERROR,
+  RULER_IN_USE_DELETE_ERROR,
   RULER_MISSING_ERROR,
+  RULER_MISSING_RULER_GROUP_ERROR,
+  RULER_STALE_ERROR,
   createRulerFieldErrorResult,
   createRulerFormErrorResult,
-  createRulerPersistenceError,
 } from "./ruler-mutation-errors"
 import type { RulerMutationResult } from "./ruler-mutation-errors"
 import {
-  createRulerInputSchema,
-  deleteRulerInputSchema,
-  updateRulerInputSchema,
-  validateRulerInput,
-} from "./ruler-validation"
+  RULER_AUTHORIZATION_ERROR,
+  RULER_CREATED_MESSAGE,
+  RULER_DELETED_MESSAGE,
+  RULER_UPDATED_MESSAGE,
+} from "./messages"
 import type {
-  CreateRulerData,
   CreateRulerInput,
-  DeleteRulerData,
   DeleteRulerInput,
-  UpdateRulerData,
   UpdateRulerInput,
 } from "./ruler-validation"
 
-export const RULER_AUTHORIZATION_ERROR =
-  "Only Editors and Admins can maintain Rulers."
+export { RULER_AUTHORIZATION_ERROR } from "./messages"
+export type { RulerMutationResult } from "./ruler-mutation-errors"
+
 export type RulerAuthorizationErrorResult = {
   status: "error"
   formError: typeof RULER_AUTHORIZATION_ERROR
 }
-type RulerMutationDependencies = {
-  createRuler: (input: CreateRulerData) => Promise<unknown>
-  deleteRuler: (input: DeleteRulerData) => Promise<unknown | null>
-  updateRuler: (input: UpdateRulerData) => Promise<unknown | null>
+
+type CreateDependencies = {
+  createRuler: MaintenanceApiClient["rulers"]["create"]
 }
 
-async function getDefaultRulerMutationDependencies(): Promise<RulerMutationDependencies> {
-  const { createRuler, deleteRuler, updateRuler } =
-    await import("@coin-archive/db")
-  return { createRuler, deleteRuler, updateRuler }
+type ReplaceDependencies = {
+  replaceRuler: MaintenanceApiClient["rulers"]["replace"]
 }
+
+type DeleteDependencies = {
+  deleteRuler: MaintenanceApiClient["rulers"]["delete"]
+}
+
 export function createRulerAuthorizationError(): RulerAuthorizationErrorResult {
   return { status: "error", formError: RULER_AUTHORIZATION_ERROR }
 }
-export function hasRulerMaintenanceAccess(
-  collector: CollectorWithRole | null
-): boolean {
-  const role = getCollectorRole(collector)
-  return role !== null && hasEditorAccess(role)
+
+async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return {
+    createRuler: client.rulers.create,
+  }
 }
 
-async function submitRulerMutation<TSchema extends z.ZodType>({
-  collector,
-  input,
-  dependencies,
-  schema,
-  execute,
-  successMessage,
-}: {
-  collector: CollectorWithRole | null
-  input: z.input<TSchema>
-  dependencies?: RulerMutationDependencies
-  schema: TSchema
-  execute: (
-    dependencies: RulerMutationDependencies,
-    data: z.output<TSchema>
-  ) => Promise<unknown | null>
-  successMessage: string
-}): Promise<RulerMutationResult> {
-  if (!hasRulerMaintenanceAccess(collector)) {
-    return { ...createRulerAuthorizationError(), fieldErrors: {} }
-  }
-  const validationResult = validateRulerInput(schema, input)
-  if (!validationResult.success) {
-    return createRulerFieldErrorResult(validationResult.fieldErrors)
-  }
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultRulerMutationDependencies())
-  try {
-    const result = await execute(resolvedDependencies, validationResult.data)
-    return result === null
-      ? createRulerFormErrorResult(RULER_MISSING_ERROR)
-      : { status: "success", message: successMessage }
-  } catch (error) {
-    return createRulerPersistenceError(error)
-  }
+async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { replaceRuler: client.rulers.replace }
+}
+
+async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { deleteRuler: client.rulers.delete }
 }
 
 export async function submitCreateRuler(
-  collector: CollectorWithRole | null,
-  input: CreateRulerInput,
-  dependencies?: RulerMutationDependencies
+  input: CreateRulerInput & { idempotencyKey: string },
+  dependencies?: CreateDependencies
 ): Promise<RulerMutationResult> {
-  return submitRulerMutation({
-    collector,
-    input,
-    dependencies,
-    schema: createRulerInputSchema,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.createRuler(data),
-    successMessage: "Ruler added.",
-  })
+  const { idempotencyKey, ...fields } = input
+  const resolved = dependencies ?? (await getDefaultCreateDependencies())
+
+  try {
+    await resolved.createRuler({
+      headers: { "idempotency-key": idempotencyKey },
+      body: fields,
+    })
+    return { status: "success", message: RULER_CREATED_MESSAGE }
+  } catch (error) {
+    return mapRulerApiProblem(error)
+  }
 }
+
 export async function submitUpdateRuler(
-  collector: CollectorWithRole | null,
   input: UpdateRulerInput,
-  dependencies?: RulerMutationDependencies
+  dependencies?: ReplaceDependencies
 ): Promise<RulerMutationResult> {
-  return submitRulerMutation({
-    collector,
-    input,
-    dependencies,
-    schema: updateRulerInputSchema,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.updateRuler(data),
-    successMessage: "Saved.",
-  })
+  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
+  const { id, etag, ...body } = input
+
+  try {
+    await resolved.replaceRuler({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body,
+    })
+    return { status: "success", message: RULER_UPDATED_MESSAGE }
+  } catch (error) {
+    return mapRulerApiProblem(error)
+  }
 }
+
 export async function submitDeleteRuler(
-  collector: CollectorWithRole | null,
   input: DeleteRulerInput,
-  dependencies?: RulerMutationDependencies
+  dependencies?: DeleteDependencies
 ): Promise<RulerMutationResult> {
-  return submitRulerMutation({
-    collector,
-    input,
-    dependencies,
-    schema: deleteRulerInputSchema,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.deleteRuler(data),
-    successMessage: "Ruler deleted.",
-  })
+  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
+
+  try {
+    await resolved.deleteRuler({
+      params: { uuid: input.id },
+      headers: { "if-match": input.etag },
+    })
+    return { status: "success", message: RULER_DELETED_MESSAGE }
+  } catch (error) {
+    return mapRulerApiProblem(error)
+  }
+}
+
+function mapRulerApiProblem(error: unknown): RulerMutationResult {
+  const body = getProblemBody(error)
+  switch (body?.code) {
+    case "authentication_required":
+    case "editor_access_required":
+      return createRulerFormErrorResult(RULER_AUTHORIZATION_ERROR)
+    case "ruler_code_conflict":
+      return createRulerFieldErrorResult({
+        code: RULER_DUPLICATE_CODE_ERROR,
+      })
+    case "ruler_validation_failed":
+      return mapValidationProblem(body)
+    case "ruler_group_not_found":
+      return createRulerFieldErrorResult({
+        rulerGroupId: RULER_MISSING_RULER_GROUP_ERROR,
+      })
+    case "ruler_in_use":
+      return createRulerFormErrorResult(RULER_IN_USE_DELETE_ERROR)
+    case "ruler_not_found":
+      return createRulerFormErrorResult(RULER_MISSING_ERROR)
+    case "ruler_precondition_failed":
+      return createRulerFormErrorResult(RULER_STALE_ERROR)
+    default:
+      return createRulerFormErrorResult(RULER_GENERIC_SAVE_ERROR)
+  }
+}
+
+function mapValidationProblem(
+  body: Record<string, unknown>
+): RulerMutationResult {
+  const invalidParams = Array.isArray(body.invalidParams)
+    ? body.invalidParams
+    : []
+  const fieldErrors: {
+    code?: string
+    name?: string
+    rulerGroupId?: string
+  } = {}
+
+  for (const parameter of invalidParams) {
+    if (typeof parameter !== "object" || parameter === null) continue
+    if (!("name" in parameter) || !("code" in parameter)) continue
+    if (parameter.name === "/code") {
+      fieldErrors.code =
+        parameter.code === "ruler_code_too_long"
+          ? "Ruler Code must be 255 characters or fewer."
+          : parameter.code === "ruler_code_invalid"
+            ? "Ruler Code must use lowercase letters, numbers, and hyphens only."
+            : "Ruler Code cannot be blank."
+    }
+    if (parameter.name === "/name") {
+      fieldErrors.name =
+        parameter.code === "ruler_name_too_long"
+          ? "Ruler Name must be 255 characters or fewer."
+          : "Ruler Name cannot be blank."
+    }
+    if (parameter.name === "/rulerGroupId") {
+      fieldErrors.rulerGroupId = RULER_MISSING_RULER_GROUP_ERROR
+    }
+  }
+  return createRulerFieldErrorResult(fieldErrors)
+}
+
+function getProblemBody(error: unknown): Record<string, unknown> | undefined {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return undefined
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return undefined
+  }
+  return typeof data.body === "object" && data.body !== null
+    ? (data.body as Record<string, unknown>)
+    : undefined
 }

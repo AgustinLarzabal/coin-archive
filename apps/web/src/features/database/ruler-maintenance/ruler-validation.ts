@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { RULER_INVALID_CODE_ERROR } from "./ruler-mutation-errors"
+import { RULER_INVALID_CODE_ERROR } from "./messages"
 
 const RULER_FIELD_NAMES = ["code", "name", "rulerGroupId"] as const
 
@@ -27,8 +27,12 @@ export const createRulerInputSchema = z.object({
 })
 export const updateRulerInputSchema = createRulerInputSchema.extend({
   id: z.uuid(),
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
 })
-export const deleteRulerInputSchema = z.object({ id: z.uuid() })
+export const deleteRulerInputSchema = z.object({
+  id: z.uuid(),
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
 
 type RulerFieldName = (typeof RULER_FIELD_NAMES)[number]
 export type RulerFieldErrors = Partial<Record<RulerFieldName, string>>

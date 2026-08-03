@@ -112,6 +112,13 @@ import {
   rulerGroupListOutputSchema,
   rulerGroupOptionsOutputSchema,
   rulerGroupReplaceInputSchema,
+  rulerCreateInputSchema,
+  rulerDeleteInputSchema,
+  rulerDetailOutputSchema,
+  rulerListInputSchema,
+  rulerListOutputSchema,
+  rulerOptionsOutputSchema,
+  rulerReplaceInputSchema,
 } from "./contract"
 
 const currency = {
@@ -225,6 +232,21 @@ const rulerGroup = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-ruler-group-version"',
+}
+
+const ruler = {
+  id: "018f1a11-aaaa-7000-8000-000000000012",
+  code: "felipe-v",
+  name: "Felipe V",
+  group: {
+    id: rulerGroup.id,
+    code: rulerGroup.code,
+    name: rulerGroup.name,
+  },
+  version: 1,
+  createdAt: "2026-08-03T10:15:30.000Z",
+  updatedAt: "2026-08-03T10:15:30.000Z",
+  etag: '"opaque-ruler-version"',
 }
 
 const catalogue = {
@@ -1470,19 +1492,27 @@ describe("Minting Technique maintenance contract", () => {
 describe("Ruler Group maintenance contract", () => {
   it("defines paginated reads, compact options, and guarded mutations", () => {
     expect(
-      rulerGroupListInputSchema.parse({ limit: 100, sort: "name", order: "asc" })
+      rulerGroupListInputSchema.parse({
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
     ).toStrictEqual({ limit: 100, sort: "name", order: "asc" })
     expect(() => rulerGroupListInputSchema.parse({ limit: 101 })).toThrow()
     expect(
       rulerGroupOptionsOutputSchema.parse({
-        data: [{ id: rulerGroup.id, code: rulerGroup.code, name: rulerGroup.name }],
+        data: [
+          { id: rulerGroup.id, code: rulerGroup.code, name: rulerGroup.name },
+        ],
         nextCursor: null,
       })
     ).toMatchObject({ data: [{ id: rulerGroup.id }] })
     expect(
       rulerGroupListOutputSchema.parse({ data: [rulerGroup], nextCursor: null })
     ).toStrictEqual({ data: [rulerGroup], nextCursor: null })
-    expect(rulerGroupDetailOutputSchema.parse({ data: rulerGroup })).toStrictEqual({
+    expect(
+      rulerGroupDetailOutputSchema.parse({ data: rulerGroup })
+    ).toStrictEqual({
       data: rulerGroup,
     })
     expect(
@@ -1506,6 +1536,63 @@ describe("Ruler Group maintenance contract", () => {
         headers: { "if-match": rulerGroup.etag },
       })
     ).toMatchObject({ headers: { "if-match": rulerGroup.etag } })
+  })
+})
+
+describe("Ruler maintenance contract", () => {
+  it("defines group-aware paginated reads, compact options, and guarded mutations", () => {
+    expect(
+      rulerListInputSchema.parse({ limit: 100, sort: "name", order: "asc" })
+    ).toStrictEqual({ limit: 100, sort: "name", order: "asc" })
+    expect(() => rulerListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      rulerOptionsOutputSchema.parse({
+        data: [
+          {
+            id: ruler.id,
+            code: ruler.code,
+            name: ruler.name,
+            group: ruler.group,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toMatchObject({ data: [{ id: ruler.id, group: ruler.group }] })
+    expect(
+      rulerListOutputSchema.parse({ data: [ruler], nextCursor: null })
+    ).toStrictEqual({ data: [ruler], nextCursor: null })
+    expect(rulerDetailOutputSchema.parse({ data: ruler })).toStrictEqual({
+      data: ruler,
+    })
+    expect(
+      rulerCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-ruler-1" },
+        body: {
+          code: " felipe-v ",
+          name: " Felipe V ",
+          rulerGroupId: rulerGroup.id,
+        },
+      })
+    ).toMatchObject({
+      body: {
+        code: "felipe-v",
+        name: "Felipe V",
+        rulerGroupId: rulerGroup.id,
+      },
+    })
+    expect(
+      rulerReplaceInputSchema.parse({
+        params: { uuid: ruler.id },
+        headers: { "if-match": ruler.etag },
+        body: { code: ruler.code, name: ruler.name, rulerGroupId: null },
+      })
+    ).toMatchObject({ headers: { "if-match": ruler.etag } })
+    expect(
+      rulerDeleteInputSchema.parse({
+        params: { uuid: ruler.id },
+        headers: { "if-match": ruler.etag },
+      })
+    ).toMatchObject({ headers: { "if-match": ruler.etag } })
   })
 })
 

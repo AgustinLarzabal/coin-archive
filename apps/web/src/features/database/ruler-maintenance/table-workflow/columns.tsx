@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { RulerOption } from "@coin-archive/db"
+import type { Ruler } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { buildRulerGroupOptionLabel } from "../form-workflow/ruler-form.shared"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createRulerColumns(
-  openEditRulerSheet: (ruler: RulerOption) => void
-): ColumnDef<RulerOption>[] {
+  openEditRulerSheet: (ruler: Ruler) => void
+): ColumnDef<Ruler>[] {
   return [
     {
       accessorKey: "code",

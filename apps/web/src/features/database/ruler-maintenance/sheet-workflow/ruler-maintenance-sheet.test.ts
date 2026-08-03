@@ -1,5 +1,4 @@
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -101,7 +100,7 @@ const rulerGroups: RulerGroupOption[] = [
   },
 ]
 
-const ruler: RulerOption = {
+const ruler: Ruler = {
   id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
   code: "felipe-v",
   name: "Felipe V",
@@ -110,9 +109,13 @@ const ruler: RulerOption = {
     code: rulerGroups[0].code,
     name: rulerGroups[0].name,
   },
+  version: 1,
+  createdAt: "2026-08-03T00:00:00.000Z",
+  updatedAt: "2026-08-03T00:00:00.000Z",
+  etag: '"ruler-etag"',
 }
 
-function renderRulerMaintenanceSheet(rulerOption: RulerOption | null) {
+function renderRulerMaintenanceSheet(rulerOption: Ruler | null) {
   return renderToStaticMarkup(
     createElement(RulerMaintenanceSheet, {
       ruler: rulerOption,

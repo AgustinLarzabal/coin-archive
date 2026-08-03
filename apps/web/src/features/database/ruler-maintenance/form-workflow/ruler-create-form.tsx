@@ -1,10 +1,10 @@
+import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import type { RulerGroupOption } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitCreateRuler } from "../actions"
 
 import { RulerFormFields, RulerTextField } from "./ruler-form-fields"
@@ -25,13 +25,14 @@ const createRulerAction = createServerFn({
   method: "POST",
 })
   .inputValidator(
-    (data: { code: string; name: string; rulerGroupId: string | null }) => data
+    (data: {
+      code: string
+      name: string
+      rulerGroupId: string | null
+      idempotencyKey: string
+    }) => data
   )
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateRuler(session?.user ?? null, data)
-  })
+  .handler(async ({ data }) => submitCreateRuler(data))
 
 export function RulerCreateForm({
   rulerGroups,
@@ -41,6 +42,9 @@ export function RulerCreateForm({
   const createRuler = useServerFn(createRulerAction)
   const { fieldErrors, formError, clearFeedback, applyResult } =
     useRulerFormFeedback()
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)
 
   const form = useForm({
@@ -54,12 +58,13 @@ export function RulerCreateForm({
       }
 
       const result = await createRuler({
-        data: submission.data,
+        data: { ...submission.data, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

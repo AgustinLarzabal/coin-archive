@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   check,
   index,
+  integer,
   timestamp,
   uniqueIndex,
   uuid,
@@ -32,6 +33,7 @@ export const ruler = pgTable(
     rulerGroupId: uuid("ruler_group_id").references(() => rulerGroup.id, {
       onDelete: "restrict",
     }),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

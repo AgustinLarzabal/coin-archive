@@ -1,6 +1,5 @@
 import { useState } from "react"
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createRulerColumns } from "./columns"
@@ -8,14 +7,11 @@ import { RulerMaintenanceSheet } from "../sheet-workflow/ruler-maintenance-sheet
 import { RulersTableToolbar } from "./rulers-table-toolbar"
 
 type RulersTableProps = {
-  rulers: RulerOption[]
+  rulers: Ruler[]
   rulerGroups: RulerGroupOption[]
 }
 
-export function filterRulers(
-  rulers: RulerOption[],
-  filterValue: string
-): RulerOption[] {
+export function filterRulers(rulers: Ruler[], filterValue: string): Ruler[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
@@ -37,11 +33,11 @@ export function filterRulers(
 
 export function RulersTable({ rulers, rulerGroups }: RulersTableProps) {
   const [filterValue, setFilterValue] = useState("")
-  const [selectedRuler, setSelectedRuler] = useState<RulerOption | null>(null)
+  const [selectedRuler, setSelectedRuler] = useState<Ruler | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
   const filteredRulers = filterRulers(rulers, filterValue)
 
-  function openMaintenanceSheet(ruler: RulerOption | null) {
+  function openMaintenanceSheet(ruler: Ruler | null) {
     setSelectedRuler(ruler)
     setIsMaintenanceSheetOpen(true)
   }
@@ -50,7 +46,7 @@ export function RulersTable({ rulers, rulerGroups }: RulersTableProps) {
     openMaintenanceSheet(null)
   }
 
-  function openEditRulerSheet(ruler: RulerOption) {
+  function openEditRulerSheet(ruler: Ruler) {
     openMaintenanceSheet(ruler)
   }
 

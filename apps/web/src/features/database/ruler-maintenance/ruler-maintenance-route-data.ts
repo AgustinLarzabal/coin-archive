@@ -1,9 +1,10 @@
+import type {
+  MaintenanceApiClient,
+  Ruler,
+  RulerGroupOption,
+} from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 import { loadAllMaintenanceOptions } from "@/lib/maintenance-options.server"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
@@ -11,75 +12,90 @@ import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createRulerAuthorizationError,
-  hasRulerMaintenanceAccess,
-} from "./actions"
+import { createRulerAuthorizationError } from "./actions"
 
-type LoadRulerMaintenancePageDataResult = MaintenancePageLoadResult<
-  {
-    rulers: RulerOption[]
-    rulerGroups: RulerGroupOption[]
-  },
+type LoadResult = MaintenancePageLoadResult<
+  { rulers: Ruler[]; rulerGroups: RulerGroupOption[] },
   ReturnType<typeof createRulerAuthorizationError>
 >
 
 export type RulerMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  rulers: RulerOption[]
+  rulers: Ruler[]
   rulerGroups: RulerGroupOption[]
 }>
 
-type RulerReadDependencies = {
-  getRulerGroups: () => Promise<RulerGroupOption[]>
-  getRulers: () => Promise<RulerOption[]>
+type ReadDependencies = {
+  listRulers: MaintenanceApiClient["rulers"]["list"]
+  listRulerGroups: MaintenanceApiClient["rulerGroups"]["options"]
 }
 
-async function getDefaultRulerReadDependencies(): Promise<RulerReadDependencies> {
-  const [{ getRulers }, { getMaintenanceApiClient }] = await Promise.all([
-    import("@coin-archive/db"),
-    import("@/lib/maintenance-api.server"),
-  ])
-  const maintenanceClient = await getMaintenanceApiClient()
-
+async function getDefaultReadDependencies(): Promise<ReadDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
   return {
-    getRulerGroups: () =>
-      loadAllMaintenanceOptions(maintenanceClient.rulerGroups.options),
-    getRulers,
+    listRulers: client.rulers.list,
+    listRulerGroups: client.rulerGroups.options,
   }
 }
 
 export async function loadRulerMaintenancePageData(
-  collector: CollectorWithRole | null,
-  dependencies?: RulerReadDependencies
-): Promise<LoadRulerMaintenancePageDataResult> {
-  if (!hasRulerMaintenanceAccess(collector)) {
-    return createRulerAuthorizationError()
-  }
+  dependencies?: ReadDependencies
+): Promise<Awaited<LoadResult>> {
+  const { listRulers, listRulerGroups } =
+    dependencies ?? (await getDefaultReadDependencies())
+  const rulers: Ruler[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
 
-  const { getRulerGroups, getRulers } =
-    dependencies ?? (await getDefaultRulerReadDependencies())
+  try {
+    do {
+      const page = await listRulers({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      rulers.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Ruler maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
 
-  const [rulers, rulerGroups] = await Promise.all([
-    getRulers(),
-    getRulerGroups(),
-  ])
-
-  return {
-    status: "success",
-    rulers,
-    rulerGroups,
+    const rulerGroups = await loadAllMaintenanceOptions(listRulerGroups)
+    return { status: "success", rulers, rulerGroups }
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createRulerAuthorizationError()
+    }
+    throw error
   }
 }
 
-const getRulerMaintenanceLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadRulerMaintenancePageData(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadRulerMaintenancePageData())
+)
 
 export function loadRulerMaintenanceRouteData() {
-  return getRulerMaintenanceLoaderData()
+  return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return false
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return false
+  }
+  const body = data.body
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
+  )
 }

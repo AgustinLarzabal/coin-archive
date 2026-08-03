@@ -1265,12 +1265,11 @@ export const rulerGroupListOutputSchema = z.object({
   data: z.array(rulerGroupSchema),
   nextCursor: z.string().nullable(),
 })
-export const rulerGroupOptionsInputSchema =
-  rulerGroupListInputSchema.pick({
-    q: true,
-    cursor: true,
-    limit: true,
-  })
+export const rulerGroupOptionsInputSchema = rulerGroupListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
 export const rulerGroupOptionsOutputSchema = z.object({
   data: z.array(rulerGroupOptionSchema),
   nextCursor: z.string().nullable(),
@@ -1351,6 +1350,124 @@ export const rulerGroupMaintenanceProblemDocumentSchema =
             "ruler_group_name_invalid",
             "ruler_group_name_required",
             "ruler_group_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
+export const rulerSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  group: rulerGroupOptionSchema.nullable(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const rulerOptionSchema = rulerSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+  group: true,
+})
+export const rulerListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const rulerListOutputSchema = z.object({
+  data: z.array(rulerSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rulerOptionsInputSchema = rulerListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const rulerOptionsOutputSchema = z.object({
+  data: z.array(rulerOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rulerDetailInputSchema = z.object({ uuid: z.uuid() })
+export const rulerDetailOutputSchema = z.object({ data: rulerSchema })
+export const rulerMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+  rulerGroupId: z.uuid().nullable(),
+})
+export const rulerCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: rulerMutationBodySchema,
+})
+export const rulerCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/rulers/"),
+    etag: z.string(),
+  }),
+  body: rulerDetailOutputSchema,
+})
+export const rulerReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: rulerMutationBodySchema,
+})
+export const rulerReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: rulerDetailOutputSchema,
+})
+export const rulerDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const rulerDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const rulerMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "ruler_code_conflict",
+      "ruler_group_not_found",
+      "ruler_in_use",
+      "ruler_not_found",
+      "ruler_precondition_failed",
+      "ruler_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_ruler_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name", "/rulerGroupId"]),
+          code: z.enum([
+            "ruler_body_invalid",
+            "ruler_code_invalid",
+            "ruler_code_required",
+            "ruler_code_too_long",
+            "ruler_name_invalid",
+            "ruler_name_required",
+            "ruler_name_too_long",
+            "ruler_ruler_group_id_invalid",
           ]),
           reason: z.string(),
         })
@@ -1642,6 +1759,15 @@ const rulerGroupMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: rulerGroupMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const rulerMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: { status: 409, data: rulerMaintenanceProblemDocumentSchema },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: rulerMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -2490,6 +2616,79 @@ export const maintenanceApiContract = {
       .output(rulerGroupDeleteOutputSchema)
       .errors(rulerGroupMaintenanceMutationErrors),
   },
+  rulers: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rulers",
+        summary: "Browse Rulers for maintenance",
+        tags: ["Ruler Maintenance"],
+      })
+      .input(rulerListInputSchema)
+      .output(rulerListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rulers/options",
+        summary: "Search compact Ruler options",
+        tags: ["Ruler Maintenance"],
+      })
+      .input(rulerOptionsInputSchema)
+      .output(rulerOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rulers/{uuid}",
+        summary: "Get Ruler maintenance detail",
+        tags: ["Ruler Maintenance"],
+      })
+      .input(rulerDetailInputSchema)
+      .output(rulerDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/rulers",
+        summary: "Create a Ruler",
+        tags: ["Ruler Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerCreateInputSchema)
+      .output(rulerCreateOutputSchema)
+      .errors(rulerMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/rulers/{uuid}",
+        summary: "Replace a Ruler",
+        tags: ["Ruler Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerReplaceInputSchema)
+      .output(rulerReplaceOutputSchema)
+      .errors(rulerMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/rulers/{uuid}",
+        summary: "Permanently delete a Ruler",
+        tags: ["Ruler Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(rulerDeleteInputSchema)
+      .output(rulerDeleteOutputSchema)
+      .errors(rulerMaintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -2778,15 +2977,9 @@ export type MintingTechniqueMutationBody = z.infer<
   typeof mintingTechniqueMutationBodySchema
 >
 export type RulerGroup = z.infer<typeof rulerGroupSchema>
-export type RulerGroupOption = z.infer<
-  typeof rulerGroupOptionSchema
->
-export type RulerGroupListInput = z.infer<
-  typeof rulerGroupListInputSchema
->
-export type RulerGroupListOutput = z.infer<
-  typeof rulerGroupListOutputSchema
->
+export type RulerGroupOption = z.infer<typeof rulerGroupOptionSchema>
+export type RulerGroupListInput = z.infer<typeof rulerGroupListInputSchema>
+export type RulerGroupListOutput = z.infer<typeof rulerGroupListOutputSchema>
 export type RulerGroupOptionsInput = z.infer<
   typeof rulerGroupOptionsInputSchema
 >
@@ -2799,6 +2992,14 @@ export type RulerGroupDetailOutput = z.infer<
 export type RulerGroupMutationBody = z.infer<
   typeof rulerGroupMutationBodySchema
 >
+export type Ruler = z.infer<typeof rulerSchema>
+export type RulerOption = z.infer<typeof rulerOptionSchema>
+export type RulerListInput = z.infer<typeof rulerListInputSchema>
+export type RulerListOutput = z.infer<typeof rulerListOutputSchema>
+export type RulerOptionsInput = z.infer<typeof rulerOptionsInputSchema>
+export type RulerOptionsOutput = z.infer<typeof rulerOptionsOutputSchema>
+export type RulerDetailOutput = z.infer<typeof rulerDetailOutputSchema>
+export type RulerMutationBody = z.infer<typeof rulerMutationBodySchema>
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>
 export type CurrencyListInput = z.infer<typeof currencyListInputSchema>

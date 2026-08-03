@@ -38,6 +38,8 @@ import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-m
 import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
 import { registerRulerGroupMaintenanceRoutes } from "./ruler-group-maintenance"
 import type { RulerGroupMaintenanceDependencies } from "./ruler-group-maintenance"
+import { registerRulerMaintenanceRoutes } from "./ruler-maintenance"
+import type { RulerMaintenanceDependencies } from "./ruler-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -270,6 +272,17 @@ export function createApiApp({
   deleteRulerGroup = async () => {
     throw new Error("Ruler Group deletion is not configured")
   },
+  listRulers = async () => [],
+  getRuler = async () => null,
+  createRuler = async () => {
+    throw new Error("Ruler create is not configured")
+  },
+  replaceRuler = async () => {
+    throw new Error("Ruler replacement is not configured")
+  },
+  deleteRuler = async () => {
+    throw new Error("Ruler deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -358,6 +371,11 @@ export function createApiApp({
   createRulerGroup?: RulerGroupMaintenanceDependencies["createRulerGroup"]
   replaceRulerGroup?: RulerGroupMaintenanceDependencies["replaceRulerGroup"]
   deleteRulerGroup?: RulerGroupMaintenanceDependencies["deleteRulerGroup"]
+  listRulers?: RulerMaintenanceDependencies["listRulers"]
+  getRuler?: RulerMaintenanceDependencies["getRuler"]
+  createRuler?: RulerMaintenanceDependencies["createRuler"]
+  replaceRuler?: RulerMaintenanceDependencies["replaceRuler"]
+  deleteRuler?: RulerMaintenanceDependencies["deleteRuler"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -616,6 +634,13 @@ export function createApiApp({
     createRulerGroup,
     replaceRulerGroup,
     deleteRulerGroup,
+  })
+  registerRulerMaintenanceRoutes(app, {
+    listRulers,
+    getRuler,
+    createRuler,
+    replaceRuler,
+    deleteRuler,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

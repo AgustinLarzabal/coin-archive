@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +27,6 @@ import {
 } from "@coin-archive/ui/components/sheet"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
 import { submitDeleteRuler } from "../actions"
 import {
   RULER_GENERIC_SAVE_ERROR,
@@ -39,7 +37,7 @@ import { RulerCreateForm } from "../form-workflow/ruler-create-form"
 import { RulerEditForm } from "../form-workflow/ruler-edit-form"
 
 type RulerMaintenanceSheetProps = {
-  ruler: RulerOption | null
+  ruler: Ruler | null
   rulerGroups: RulerGroupOption[]
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -50,12 +48,8 @@ export const RULER_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes t
 const deleteRulerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteRuler(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteRuler(data))
 
 export function RulerMaintenanceSheet({
   ruler,
@@ -97,6 +91,7 @@ export function RulerMaintenanceSheet({
       const result = await deleteRuler({
         data: {
           id: ruler.id,
+          etag: ruler.etag,
         },
       })
 

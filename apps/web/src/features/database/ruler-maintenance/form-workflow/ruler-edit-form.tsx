@@ -2,11 +2,9 @@ import { useEffect } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import { submitUpdateRuler } from "../actions"
 
 import { RulerFormFields, RulerTextField } from "./ruler-form-fields"
@@ -20,7 +18,7 @@ import type { RulerDraft } from "./ruler-form.shared"
 import { useRulerFormFeedback } from "./use-ruler-form-feedback"
 
 type RulerEditFormProps = {
-  ruler: RulerOption
+  ruler: Ruler
   rulerGroups: RulerGroupOption[]
   onSaved?: () => void
 }
@@ -34,15 +32,12 @@ const updateRulerAction = createServerFn({
       code: string
       name: string
       rulerGroupId: string | null
+      etag: string
     }) => data
   )
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
+  .handler(async ({ data }) => submitUpdateRuler(data))
 
-    return submitUpdateRuler(session?.user ?? null, data)
-  })
-
-export function hasRulerEditChanges(ruler: RulerOption, draft: RulerDraft) {
+export function hasRulerEditChanges(ruler: Ruler, draft: RulerDraft) {
   const normalizedCurrent = normalizeRulerDraft(createRulerDraft(ruler))
   const normalizedDraft = normalizeRulerDraft(draft)
 
@@ -67,12 +62,19 @@ export function RulerEditForm({
   const form = useForm({
     defaultValues: createRulerDraft(ruler),
     onSubmit: async ({ value }) => {
-      const submission = getUpdateRulerSubmission(ruler.id, value, rulerGroups)
+      const submission = getUpdateRulerSubmission(
+        ruler.id,
+        ruler.etag,
+        value,
+        rulerGroups
+      )
       if (submission.status === "invalid") {
         applyResult(submission.result)
         return
       }
-      const result = await updateRuler({ data: submission.data })
+      const result = await updateRuler({
+        data: submission.data,
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()

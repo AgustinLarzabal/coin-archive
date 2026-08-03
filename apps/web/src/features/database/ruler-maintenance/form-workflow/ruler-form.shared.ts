@@ -1,5 +1,4 @@
-import type { RulerGroupOption } from "@coin-archive/api"
-import type { RulerOption } from "@coin-archive/db"
+import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
 import type { z } from "zod"
 
 import type { RulerMutationResult } from "../ruler-mutation-errors"
@@ -54,7 +53,7 @@ export function buildRulerGroupOptionLabel(
   return `${rulerGroup.name} (${rulerGroup.code})`
 }
 
-export function createRulerDraft(ruler: RulerOption): RulerDraft {
+export function createRulerDraft(ruler: Ruler): RulerDraft {
   return {
     code: ruler.code,
     name: ruler.name,
@@ -116,6 +115,7 @@ export function getCreateRulerSubmission(
 
 export function getUpdateRulerSubmission(
   rulerId: string,
+  etag: string,
   draft: RulerDraft,
   rulerGroups: RulerGroupOption[]
 ): RulerSubmissionResult<UpdateRulerSubmissionData> {
@@ -125,6 +125,7 @@ export function getUpdateRulerSubmission(
     updateRulerInputSchema,
     (normalizedDraft, rulerGroupId) => ({
       id: rulerId,
+      etag,
       ...buildRulerSubmissionInput(normalizedDraft, rulerGroupId),
     })
   )

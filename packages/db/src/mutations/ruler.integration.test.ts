@@ -9,7 +9,15 @@ import {
   createRulerGroup,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createRuler, deleteRuler, updateRuler } from "./ruler"
+import {
+  createRuler,
+  createRulerIdempotently,
+  createRulerIdempotentlyWithDatabase,
+  deleteRuler,
+  deleteRulerIfVersionWithDatabase,
+  replaceRulerWithDatabase,
+  updateRuler,
+} from "./ruler"
 
 describe("ruler mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -78,6 +86,118 @@ describe("ruler mutations integration", () => {
 
     expect(firstRuler.name).toBe(secondRuler.name)
     expect(firstRuler.id).not.toBe(secondRuler.id)
+  })
+
+  it("replays identical idempotent Ruler creation and rejects changed payloads", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "ruler-create-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: " felipe-v ", name: " Felipe V ", rulerGroupId: null },
+    }
+    const first = await createRulerIdempotently(input)
+    const retry = await createRulerIdempotently(input)
+
+    expect(first).toMatchObject({
+      status: "created",
+      ruler: { code: "felipe-v", version: 1 },
+    })
+    expect(retry).toMatchObject({ status: "replayed" })
+    await expect(
+      createRulerIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: { code: "carlos-ii", name: "Carlos II", rulerGroupId: null },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.ruler.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("atomically enforces Ruler versions and optional Ruler Group replacement", async () => {
+    const bourbon = await createRulerGroup({
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
+    })
+    const created = await createRulerIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "versioned-ruler-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: { code: "felipe-v", name: "Felipe V", rulerGroupId: null },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+
+    await expect(
+      replaceRulerWithDatabase(db, {
+        id: created.ruler.id,
+        expectedVersion: 1,
+        code: " felipe-v-bourbon ",
+        name: " Felipe V ",
+        rulerGroupId: bourbon.id,
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      ruler: {
+        code: "felipe-v-bourbon",
+        rulerGroupId: bourbon.id,
+        version: 2,
+      },
+    })
+    await expect(
+      replaceRulerWithDatabase(db, {
+        id: created.ruler.id,
+        expectedVersion: 1,
+        code: "felipe-v",
+        name: "Felipe V",
+        rulerGroupId: null,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteRulerIfVersionWithDatabase(db, {
+        id: created.ruler.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteRulerIfVersionWithDatabase(db, {
+        id: created.ruler.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
+  })
+
+  it("preserves the Coin Ruler Attribution conflict for versioned deletion", async () => {
+    const issuer = await createIssuer({
+      code: "issuer-conflict",
+      name: "Issuer",
+    })
+    const existingRuler = await createRulerFixture({
+      code: "in-use-ruler-versioned",
+      name: "In Use Ruler",
+    })
+    const createdCoin = await createCoin({
+      issuerId: issuer.id,
+      title: "Versioned delete conflict",
+      createdAt: new Date("2026-08-03T00:00:00.000Z"),
+    })
+    await createCoinRuler({
+      coinId: createdCoin.id,
+      rulerId: existingRuler.id,
+      rulerOrder: 1,
+    })
+
+    await expect(
+      deleteRulerIfVersionWithDatabase(db, {
+        id: existingRuler.id,
+        expectedVersion: 1,
+      })
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        code: "23001",
+        constraint_name: "coin_ruler_ruler_id_ruler_id_fk",
+      }),
+    })
   })
 
   it("trims Ruler fields and can change the optional Ruler Group assignment during update", async () => {

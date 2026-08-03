@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { RulerOption } from "@coin-archive/db"
+import type { Ruler } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 import { RulerMaintenanceRouteComponent } from "./ruler-maintenance-page"
 
@@ -8,9 +8,15 @@ vi.mock("@/components/access-denied", () => ({
 }))
 
 function createRuler(
-  overrides: Pick<RulerOption, "id" | "code" | "name" | "group">
-): RulerOption {
-  return overrides
+  overrides: Pick<Ruler, "id" | "code" | "name" | "group">
+): Ruler {
+  return {
+    ...overrides,
+    version: 1,
+    createdAt: "2026-08-03T00:00:00.000Z",
+    updatedAt: "2026-08-03T00:00:00.000Z",
+    etag: '"ruler-etag"',
+  }
 }
 
 describe("RulerMaintenanceRouteComponent", () => {

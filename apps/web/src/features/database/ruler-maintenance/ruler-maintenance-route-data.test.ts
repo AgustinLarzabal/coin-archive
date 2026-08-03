@@ -1,84 +1,79 @@
-import type { RulerOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
+
 import { RULER_AUTHORIZATION_ERROR } from "./actions"
 import { loadRulerMaintenancePageData } from "./ruler-maintenance-route-data"
 
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
-
-function createRuler(
-  overrides: Pick<RulerOption, "id" | "code" | "name" | "group">
-): RulerOption {
-  return overrides
+const ruler = {
+  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
+  code: "felipe-v",
+  name: "Felipe V",
+  group: null,
+  version: 1,
+  createdAt: "2026-08-03T00:00:00.000Z",
+  updatedAt: "2026-08-03T00:00:00.000Z",
+  etag: '"ruler-etag"',
 }
 
 describe("loadRulerMaintenancePageData", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getRulers = vi.fn()
-    const getRulerGroups = vi.fn()
-
-    await expect(
-      loadRulerMaintenancePageData(null, { getRulerGroups, getRulers })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: RULER_AUTHORIZATION_ERROR,
-    })
-
-    expect(getRulers).not.toHaveBeenCalled()
-    expect(getRulerGroups).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getRulers = vi.fn()
-    const getRulerGroups = vi.fn()
-
-    await expect(
-      loadRulerMaintenancePageData(
-        { role: "collector" },
-        { getRulerGroups, getRulers }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: RULER_AUTHORIZATION_ERROR,
-    })
-
-    expect(getRulers).not.toHaveBeenCalled()
-    expect(getRulerGroups).not.toHaveBeenCalled()
-  })
-
-  it("returns Ruler records for Editors and Admins", async () => {
-    const rulers = [
-      createRuler({
-        id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-        code: "felipe-v",
-        name: "Felipe V",
-        group: {
-          id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-          code: "house-of-bourbon",
-          name: "House of Bourbon",
-        },
-      }),
-    ]
-    const rulerGroups = [
-      {
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-        code: "house-of-bourbon",
-        name: "House of Bourbon",
-      },
-    ]
-    const getRulerGroups = vi.fn().mockResolvedValue(rulerGroups)
-    const getRulers = vi.fn().mockResolvedValue(rulers)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
-      await expect(
-        loadRulerMaintenancePageData({ role }, { getRulerGroups, getRulers })
-      ).resolves.toStrictEqual({
-        status: "success",
-        rulers,
-        rulerGroups,
+  it("loads all Ruler pages and Ruler Group options through the typed API", async () => {
+    const listRulers = vi
+      .fn()
+      .mockResolvedValueOnce({ data: [ruler], nextCursor: "next" })
+      .mockResolvedValueOnce({
+        data: [{ ...ruler, id: "3f0b5ff0-f4a9-4333-8f6d-dad19cd8510c" }],
+        nextCursor: null,
       })
+    const group = {
+      id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+      code: "house-of-bourbon",
+      name: "House of Bourbon",
     }
+    const listRulerGroups = vi.fn().mockResolvedValue({
+      data: [group],
+      nextCursor: null,
+    })
+
+    await expect(
+      loadRulerMaintenancePageData({ listRulers, listRulerGroups })
+    ).resolves.toStrictEqual({
+      status: "success",
+      rulers: [ruler, { ...ruler, id: "3f0b5ff0-f4a9-4333-8f6d-dad19cd8510c" }],
+      rulerGroups: [group],
+    })
+    expect(listRulers).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+  })
+
+  it("maps protected API authorization failures to the page result", async () => {
+    const error = {
+      data: { body: { code: "editor_access_required" } },
+    }
+
+    await expect(
+      loadRulerMaintenancePageData({
+        listRulers: vi.fn().mockRejectedValue(error),
+        listRulerGroups: vi.fn(),
+      })
+    ).resolves.toStrictEqual({
+      status: "error",
+      formError: RULER_AUTHORIZATION_ERROR,
+    })
+  })
+
+  it("rejects a repeated pagination cursor", async () => {
+    const listRulers = vi
+      .fn()
+      .mockResolvedValue({ data: [ruler], nextCursor: "same" })
+
+    await expect(
+      loadRulerMaintenancePageData({
+        listRulers,
+        listRulerGroups: vi.fn(),
+      })
+    ).rejects.toThrow("Ruler maintenance API repeated a cursor.")
   })
 })

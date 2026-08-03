@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  hasRulerMaintenanceAccess,
   RULER_AUTHORIZATION_ERROR,
   submitCreateRuler,
   submitDeleteRuler,
@@ -9,293 +8,271 @@ import {
 } from "./actions"
 import {
   RULER_DUPLICATE_CODE_ERROR,
-  RULER_GENERIC_SAVE_ERROR,
   RULER_IN_USE_DELETE_ERROR,
-  RULER_INVALID_CODE_ERROR,
-  RULER_MISSING_ERROR,
   RULER_MISSING_RULER_GROUP_ERROR,
+  RULER_STALE_ERROR,
 } from "./ruler-mutation-errors"
 
-const VALID_RULER_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const VALID_RULER_GROUP_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"
-const FELIPE_V_RULER = {
-  code: "felipe-v",
-  name: "Felipe V",
-  rulerGroupId: VALID_RULER_GROUP_ID,
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const ruler = {
+  id,
+  code: "reeded",
+  name: "Reeded",
+  group: null,
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createRuler?: ReturnType<typeof vi.fn>
-  deleteRuler?: ReturnType<typeof vi.fn>
-  updateRuler?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createRuler: vi.fn(),
-    deleteRuler: vi.fn(),
-    updateRuler: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/rulers",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: RULER_AUTHORIZATION_ERROR,
-}
-
-describe("hasRulerMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasRulerMaintenanceAccess(null)).toBe(false)
-    expect(hasRulerMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasRulerMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasRulerMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasRulerMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasRulerMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateRuler", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateRuler(null, FELIPE_V_RULER)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateRuler({ role: "collector" }, FELIPE_V_RULER)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Ruler web mutation adapter", () => {
+  it("leaves authoritative validation to the typed API", async () => {
+    const createRuler = vi.fn().mockRejectedValue(
+      problem("ruler_validation_failed", 422, [
+        { name: "/code", code: "ruler_code_required" },
+        { name: "/name", code: "ruler_name_too_long" },
+      ])
+    )
 
     await expect(
       submitCreateRuler(
-        { role: "editor" },
         {
-          code: "Felipe-V",
-          name: " ",
-          rulerGroupId: VALID_RULER_GROUP_ID,
+          code: " ",
+          name: "".padStart(256, "A"),
+          rulerGroupId: null,
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createRuler }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: RULER_INVALID_CODE_ERROR,
-        name: "Ruler Name cannot be blank.",
+        code: "Ruler Code cannot be blank.",
+        name: "Ruler Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createRuler).not.toHaveBeenCalled()
+    expect(createRuler).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " ", name: "".padStart(256, "A"), rulerGroupId: null },
+    })
   })
 
-  it("trims Ruler fields before creating a Ruler", async () => {
-    const dependencies = createDependencies({
-      createRuler: vi.fn().mockResolvedValue({
-        id: VALID_RULER_ID,
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createRuler = vi.fn(async () => ({
+      status: 201 as const,
+      headers: {
+        etag,
+        location: `/api/v1/maintenance/rulers/${id}`,
+      },
+      body: { data: ruler },
+    }))
 
     await expect(
       submitCreateRuler(
-        { role: "editor" },
         {
-          code: " felipe-v ",
-          name: " Felipe V ",
-          rulerGroupId: VALID_RULER_GROUP_ID,
+          code: " reeded ",
+          name: " Reeded ",
+          rulerGroupId: null,
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createRuler }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Ruler added.",
     })
-
-    expect(dependencies.createRuler).toHaveBeenCalledWith({
-      code: "felipe-v",
-      name: "Felipe V",
-      rulerGroupId: VALID_RULER_GROUP_ID,
+    expect(createRuler).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " reeded ", name: " Reeded ", rulerGroupId: null },
     })
   })
 
-  it("maps duplicate Ruler Codes to the Ruler Code field", async () => {
-    await expect(
-      submitCreateRuler(
-        { role: "admin" },
-        FELIPE_V_RULER,
-        createDependencies({
-          createRuler: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "ruler_code_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: RULER_DUPLICATE_CODE_ERROR,
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createRuler = vi.fn(async () => ({
+      status: 201 as const,
+      headers: {
+        etag,
+        location: `/api/v1/maintenance/rulers/${id}`,
       },
-    })
-  })
-
-  it("maps missing Ruler Group references to the Ruler Group field", async () => {
-    await expect(
-      submitCreateRuler(
-        { role: "admin" },
-        FELIPE_V_RULER,
-        createDependencies({
-          createRuler: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23503",
-              constraint_name: "ruler_ruler_group_id_ruler_group_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        rulerGroupId: RULER_MISSING_RULER_GROUP_ERROR,
-      },
-    })
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateRuler(
-        { role: "admin" },
-        FELIPE_V_RULER,
-        createDependencies({
-          createRuler: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: RULER_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateRuler", () => {
-  const updateInput = {
-    id: VALID_RULER_ID,
-    ...FELIPE_V_RULER,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(submitUpdateRuler(null, updateInput)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
-
-    await expect(
-      submitUpdateRuler({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("trims Ruler fields before updating a Ruler", async () => {
-    const dependencies = createDependencies({
-      updateRuler: vi.fn().mockResolvedValue({
-        id: VALID_RULER_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateRuler(
-        { role: "editor" },
-        {
-          id: VALID_RULER_ID,
-          code: " felipe-v ",
-          name: " Felipe V ",
-          rulerGroupId: null,
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateRuler).toHaveBeenCalledWith({
-      id: VALID_RULER_ID,
-      code: "felipe-v",
-      name: "Felipe V",
+      body: { data: ruler },
+    }))
+    const submission = {
+      code: "reeded",
+      name: "Reeded",
       rulerGroupId: null,
-    })
+      idempotencyKey: "stable-attempt",
+    }
+
+    await submitCreateRuler(submission, { createRuler })
+    await submitCreateRuler(submission, { createRuler })
+
+    expect(createRuler).toHaveBeenCalledTimes(2)
+    expect(createRuler).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createRuler).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
   })
 
-  it("returns a stale-row form error when the Ruler no longer exists", async () => {
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceRuler = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...ruler, version: 2, etag: '"next-version"' },
+      },
+    }))
+    const deleteRuler = vi.fn(async () => ({ status: 204 as const }))
+
     await expect(
       submitUpdateRuler(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateRuler: vi.fn().mockResolvedValue(null),
-        })
+        { id, etag, code: "plain", name: "Plain", rulerGroupId: null },
+        { replaceRuler }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: RULER_MISSING_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteRuler", () => {
-  it("maps in-use deletes to a clear form error", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitDeleteRuler(
-        { role: "editor" },
-        { id: VALID_RULER_ID },
-        createDependencies({
-          deleteRuler: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_ruler_ruler_id_ruler_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: RULER_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a stale-row form error when deleting a missing Ruler", async () => {
-    await expect(
-      submitDeleteRuler(
-        { role: "editor" },
-        { id: VALID_RULER_ID },
-        createDependencies({
-          deleteRuler: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: RULER_MISSING_ERROR,
-    })
-  })
-
-  it("returns a success result for a valid delete submission", async () => {
-    const dependencies = createDependencies({
-      deleteRuler: vi.fn().mockResolvedValue({
-        id: VALID_RULER_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteRuler({ role: "admin" }, { id: VALID_RULER_ID }, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteRuler({ id, etag }, { deleteRuler })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Ruler deleted.",
+    })
+
+    expect(replaceRuler).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "plain", name: "Plain", rulerGroupId: null },
+    })
+    expect(deleteRuler).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateRuler(
+        {
+          code: "reeded",
+          name: "Reeded",
+          rulerGroupId: null,
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createRuler: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({
+      formError: RULER_AUTHORIZATION_ERROR,
+    })
+
+    await expect(
+      submitCreateRuler(
+        {
+          code: "reeded",
+          name: "Reeded",
+          rulerGroupId: null,
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createRuler: vi
+            .fn()
+            .mockRejectedValue(problem("ruler_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: RULER_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateRuler(
+        { id, etag, code: "reeded", name: "Reeded", rulerGroupId: null },
+        {
+          replaceRuler: vi
+            .fn()
+            .mockRejectedValue(problem("ruler_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: RULER_STALE_ERROR })
+
+    await expect(
+      submitDeleteRuler(
+        { id, etag },
+        {
+          deleteRuler: vi.fn().mockRejectedValue(problem("ruler_in_use", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      formError: RULER_IN_USE_DELETE_ERROR,
+    })
+
+    await expect(
+      submitCreateRuler(
+        {
+          code: "felipe-v",
+          name: "Felipe V",
+          rulerGroupId: "6f18a1db-9096-433b-b3f1-906c772f7a29",
+          idempotencyKey: "attempt-missing-group",
+        },
+        {
+          createRuler: vi
+            .fn()
+            .mockRejectedValue(problem("ruler_group_not_found", 422)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { rulerGroupId: RULER_MISSING_RULER_GROUP_ERROR },
+    })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateRuler(
+        {
+          code: "reeded",
+          name: "Reeded",
+          rulerGroupId: null,
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createRuler: vi.fn().mockRejectedValue(
+            problem("ruler_validation_failed", 422, [
+              { name: "/code", code: "ruler_code_required" },
+              { name: "/name", code: "ruler_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Ruler Code cannot be blank.",
+        name: "Ruler Name must be 255 characters or fewer.",
+      },
     })
   })
 })

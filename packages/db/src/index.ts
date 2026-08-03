@@ -90,7 +90,20 @@ export type {
   DeleteShapeIfVersionResult,
   ReplaceShapeResult,
 } from "./mutations/shape"
-export { createRuler, deleteRuler, updateRuler } from "./mutations/ruler"
+export {
+  createRuler,
+  createRulerIdempotently,
+  createRulerIdempotentlyWithDatabase,
+  deleteRuler,
+  deleteRulerIfVersionWithDatabase,
+  replaceRulerWithDatabase,
+  updateRuler,
+} from "./mutations/ruler"
+export type {
+  CreateRulerIdempotentlyResult,
+  DeleteRulerIfVersionResult,
+  ReplaceRulerResult,
+} from "./mutations/ruler"
 export {
   createRulerGroup,
   deleteRulerGroup,
@@ -206,6 +219,16 @@ export type {
   RulerGroupMaintenanceCursor,
   RulerGroupMaintenanceListRecord,
 } from "./queries/get-ruler-group-maintenance"
+export {
+  getRulerMaintenanceRecordWithDatabase,
+  getRulerMaintenanceRecordsWithDatabase,
+} from "./queries/get-ruler-maintenance"
+export type {
+  GetRulerMaintenanceRecordsOptions,
+  RulerMaintenanceCursor,
+  RulerMaintenanceListRecord,
+  RulerMaintenanceRecord,
+} from "./queries/get-ruler-maintenance"
 export {
   getIssuerMaintenanceRecordWithDatabase,
   getIssuerMaintenanceRecordsWithDatabase,

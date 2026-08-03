@@ -8,6 +8,7 @@ import {
   createIssuerIdempotentlyWithDatabase,
   createThemeIdempotentlyWithDatabase,
   createRulerGroupIdempotentlyWithDatabase,
+  createRulerIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
   createShapeIdempotentlyWithDatabase,
   createTechniqueIdempotentlyWithDatabase,
@@ -22,6 +23,7 @@ import {
   deleteIssuerIfVersionWithDatabase,
   deleteThemeIfVersionWithDatabase,
   deleteRulerGroupIfVersionWithDatabase,
+  deleteRulerIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
   deleteShapeIfVersionWithDatabase,
   deleteTechniqueIfVersionWithDatabase,
@@ -44,6 +46,8 @@ import {
   getThemeMaintenanceRecordsWithDatabase,
   getRulerGroupMaintenanceRecordWithDatabase,
   getRulerGroupMaintenanceRecordsWithDatabase,
+  getRulerMaintenanceRecordWithDatabase,
+  getRulerMaintenanceRecordsWithDatabase,
   getRimMaintenanceRecordWithDatabase,
   getRimMaintenanceRecordsWithDatabase,
   getShapeMaintenanceRecordWithDatabase,
@@ -63,6 +67,7 @@ import {
   replaceIssuerWithDatabase,
   replaceThemeWithDatabase,
   replaceRulerGroupWithDatabase,
+  replaceRulerWithDatabase,
   replaceRimWithDatabase,
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
@@ -315,6 +320,39 @@ async function handleRequest(
       }),
     deleteRulerGroup: (input) =>
       deleteRulerGroupIfVersionWithDatabase(database.db, input),
+    listRulers: (input) =>
+      getRulerMaintenanceRecordsWithDatabase(database.db, input),
+    getRuler: (rulerId) =>
+      getRulerMaintenanceRecordWithDatabase(database.db, rulerId),
+    createRuler: async (input) => {
+      const result = await createRulerIdempotentlyWithDatabase(
+        database.db,
+        input
+      )
+      if (result.status === "mismatch") return result
+      const enriched = await getRulerMaintenanceRecordWithDatabase(
+        database.db,
+        result.ruler.id
+      )
+      if (enriched === null) throw new Error("Created Ruler was not readable")
+      return { ...result, ruler: enriched }
+    },
+    replaceRuler: async ({ id, expectedVersion, fields }) => {
+      const result = await replaceRulerWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      })
+      if (result.status !== "updated") return result
+      const enriched = await getRulerMaintenanceRecordWithDatabase(
+        database.db,
+        result.ruler.id
+      )
+      if (enriched === null) throw new Error("Replaced Ruler was not readable")
+      return { ...result, ruler: enriched }
+    },
+    deleteRuler: (input) =>
+      deleteRulerIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

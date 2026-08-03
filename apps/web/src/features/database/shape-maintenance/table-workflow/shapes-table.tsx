@@ -1,5 +1,5 @@
-import { useState } from "react"
-import type { ShapeOption } from "@coin-archive/db"
+import { useMemo, useState } from "react"
+import type { Shape } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createShapeColumns } from "./columns"
@@ -7,13 +7,10 @@ import { ShapeMaintenanceSheet } from "../sheet-workflow/shape-maintenance-sheet
 import { ShapesTableToolbar } from "./shapes-table-toolbar"
 
 type ShapesTableProps = {
-  shapes: ShapeOption[]
+  shapes: Shape[]
 }
 
-export function filterShapes(
-  shapes: ShapeOption[],
-  filterValue: string
-): ShapeOption[] {
+export function filterShapes(shapes: Shape[], filterValue: string): Shape[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
@@ -21,48 +18,48 @@ export function filterShapes(
   }
 
   return shapes.filter((shape) =>
-    getShapeFilterValues(shape).some((value) =>
+    [shape.code, shape.name].some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
   )
 }
 
-function getShapeFilterValues(shape: ShapeOption): string[] {
-  return [shape.code, shape.name]
-}
-
 export function ShapesTable({ shapes }: ShapesTableProps) {
-  const [filterValue, setFilterValue] = useState("")
-  const [selectedShape, setSelectedShape] = useState<ShapeOption | null>(null)
+  const [selectedShape, setSelectedShape] = useState<Shape | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState("")
+  const columns = useMemo(
+    () =>
+      createShapeColumns((shape) => {
+        setSelectedShape(shape)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
   const filteredShapes = filterShapes(shapes, filterValue)
-
-  function openMaintenanceSheet(shape: ShapeOption | null) {
-    setSelectedShape(shape)
-    setIsMaintenanceSheetOpen(true)
-  }
-
-  function openCreateShapeSheet() {
-    openMaintenanceSheet(null)
-  }
-
-  function openEditShapeSheet(shape: ShapeOption) {
-    openMaintenanceSheet(shape)
-  }
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedShape(null)
+    }
+  }
+
+  function handleCreateShape() {
+    setSelectedShape(null)
+    setIsMaintenanceSheetOpen(true)
   }
 
   return (
     <>
       <DataTable
-        columns={createShapeColumns(openEditShapeSheet)}
+        columns={columns}
         data={filteredShapes}
         toolbar={() => (
           <ShapesTableToolbar
             filterValue={filterValue}
-            onCreateShape={openCreateShapeSheet}
+            onCreateShape={handleCreateShape}
             onFilterValueChange={setFilterValue}
           />
         )}

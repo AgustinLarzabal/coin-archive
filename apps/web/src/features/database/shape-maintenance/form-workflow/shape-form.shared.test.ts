@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 
 import {
   createShapeDraft,
@@ -8,19 +8,21 @@ import {
   normalizeShapeDraft,
 } from "./shape-form.shared"
 
-const shape: ShapeOption = {
-  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-  code: "round",
-  name: "Round",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const shape: Shape = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"shape-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("createShapeDraft", () => {
   it("copies the editable Shape fields from a selected Shape", () => {
     expect(createShapeDraft(shape)).toStrictEqual({
-      code: "round",
-      name: "Round",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
@@ -29,12 +31,12 @@ describe("normalizeShapeDraft", () => {
   it("trims editable Shape fields", () => {
     expect(
       normalizeShapeDraft({
-        code: " round ",
-        name: " Round ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toStrictEqual({
-      code: "round",
-      name: "Round",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
@@ -43,7 +45,7 @@ describe("isShapeDraftComplete", () => {
   it("requires non-blank Shape Code and Shape Name", () => {
     expect(
       isShapeDraftComplete({
-        code: "round",
+        code: "reeded",
         name: " ",
       })
     ).toBe(false)
@@ -51,7 +53,7 @@ describe("isShapeDraftComplete", () => {
     expect(
       isShapeDraftComplete({
         code: " ",
-        name: "Round",
+        name: "Reeded",
       })
     ).toBe(false)
   })
@@ -59,8 +61,8 @@ describe("isShapeDraftComplete", () => {
   it("treats trimmed Shape Code and Shape Name as a complete create draft", () => {
     expect(
       isShapeDraftComplete({
-        code: " round ",
-        name: " Round ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(true)
   })

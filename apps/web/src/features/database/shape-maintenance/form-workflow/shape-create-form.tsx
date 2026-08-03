@@ -4,9 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { ShapeFieldErrors, ShapeMutationResult } from "../actions"
-import { createShapeInputSchema, submitCreateShape } from "../actions"
+import { submitCreateShape } from "../actions"
+import type { ShapeMutationResult } from "../actions"
+import { createShapeInputSchema } from "../shape-validation"
+import type { ShapeFieldErrors } from "../shape-validation"
 
 import { EMPTY_SHAPE_DRAFT, isShapeDraftComplete } from "./shape-form.shared"
 import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
@@ -19,18 +20,17 @@ type ShapeCreateFormProps = {
 const createShapeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: ShapeDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateShape(session?.user ?? null, data)
-  })
+  .inputValidator((data: ShapeDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateShape(data))
 
 export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
   const router = useRouter()
   const createShape = useServerFn(createShapeAction)
   const [fieldErrors, setFieldErrors] = useState<ShapeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -54,12 +54,13 @@ export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
     validators: { onSubmit: createShapeInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createShape({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

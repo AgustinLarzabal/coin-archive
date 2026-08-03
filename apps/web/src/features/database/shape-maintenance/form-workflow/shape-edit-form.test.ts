@@ -1,24 +1,27 @@
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { hasShapeEditChanges, ShapeEditForm } from "./shape-edit-form"
+import { ShapeEditForm } from "./shape-edit-form"
+import { hasShapeEditChanges } from "./shape-form.shared"
 
-const shape: ShapeOption = {
-  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-  code: "round",
-  name: "Round",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const shape: Shape = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"shape-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasShapeEditChanges", () => {
   it("returns false when trimmed editable values match the current Shape", () => {
     expect(
       hasShapeEditChanges(shape, {
-        code: " round ",
-        name: " Round ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(false)
   })
@@ -26,8 +29,8 @@ describe("hasShapeEditChanges", () => {
   it("returns true when any normalized editable field changed", () => {
     expect(
       hasShapeEditChanges(shape, {
-        code: "scalloped",
-        name: "Scalloped",
+        code: "plain",
+        name: "Plain",
       })
     ).toBe(true)
   })
@@ -37,8 +40,8 @@ describe("ShapeEditForm", () => {
   it("renders explicit Shape field labels with the current values and disables Save until something changed", () => {
     const markup = renderToStaticMarkup(createElement(ShapeEditForm, { shape }))
     const expectedFields = [
-      ["Shape Code", 'value="round"'],
-      ["Shape Name", 'value="Round"'],
+      ["Shape Code", 'value="reeded"'],
+      ["Shape Name", 'value="Reeded"'],
     ] as const
 
     for (const [label, value] of expectedFields) {

@@ -642,6 +642,110 @@ export const rimMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const shapeSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const shapeOptionSchema = shapeSchema.pick({ id: true, code: true, name: true })
+export const shapeListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const shapeListOutputSchema = z.object({
+  data: z.array(shapeSchema),
+  nextCursor: z.string().nullable(),
+})
+export const shapeOptionsInputSchema = shapeListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const shapeOptionsOutputSchema = z.object({
+  data: z.array(shapeOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const shapeDetailInputSchema = z.object({ uuid: z.uuid() })
+export const shapeDetailOutputSchema = z.object({ data: shapeSchema })
+export const shapeMutationBodySchema = z.object({
+  code: z.string().trim().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const shapeCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: shapeMutationBodySchema,
+})
+export const shapeCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/shapes/"),
+    etag: z.string(),
+  }),
+  body: shapeDetailOutputSchema,
+})
+export const shapeReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: shapeMutationBodySchema,
+})
+export const shapeReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: shapeDetailOutputSchema,
+})
+export const shapeDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const shapeDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const shapeMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "shape_code_conflict",
+      "shape_in_use",
+      "shape_not_found",
+      "shape_precondition_failed",
+      "shape_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_shape_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "shape_body_invalid",
+            "shape_code_invalid",
+            "shape_code_required",
+            "shape_code_too_long",
+            "shape_name_invalid",
+            "shape_name_required",
+            "shape_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 const currencyCodeSchema = z
   .string()
   .trim()
@@ -773,6 +877,15 @@ const rimMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: rimMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const shapeMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: { status: 409, data: shapeMaintenanceProblemDocumentSchema },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: shapeMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -1133,6 +1246,38 @@ export const maintenanceApiContract = {
       .output(rimDeleteOutputSchema)
       .errors(rimMaintenanceMutationErrors),
   },
+  shapes: {
+    list: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/shapes", summary: "Browse Shapes for maintenance", tags: ["Shape Maintenance"] })
+      .input(shapeListInputSchema)
+      .output(shapeListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/shapes/options", summary: "Search compact Shape options", tags: ["Shape Maintenance"] })
+      .input(shapeOptionsInputSchema)
+      .output(shapeOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Get Shape maintenance detail", tags: ["Shape Maintenance"] })
+      .input(shapeDetailInputSchema)
+      .output(shapeDetailOutputSchema)
+      .errors({ ...maintenanceReadErrors, NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema } }),
+    create: oc
+      .route({ method: "POST", path: "/api/v1/maintenance/shapes", summary: "Create a Shape", tags: ["Shape Maintenance"], successStatus: 201, inputStructure: "detailed", outputStructure: "detailed" })
+      .input(shapeCreateInputSchema)
+      .output(shapeCreateOutputSchema)
+      .errors(shapeMaintenanceMutationErrors),
+    replace: oc
+      .route({ method: "PUT", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Replace a Shape", tags: ["Shape Maintenance"], inputStructure: "detailed", outputStructure: "detailed" })
+      .input(shapeReplaceInputSchema)
+      .output(shapeReplaceOutputSchema)
+      .errors(shapeMaintenanceMutationErrors),
+    delete: oc
+      .route({ method: "DELETE", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Permanently delete a Shape", tags: ["Shape Maintenance"], successStatus: 204, inputStructure: "detailed", outputStructure: "detailed" })
+      .input(shapeDeleteInputSchema)
+      .output(shapeDeleteOutputSchema)
+      .errors(shapeMaintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -1366,6 +1511,14 @@ export type RimOptionsInput = z.infer<typeof rimOptionsInputSchema>
 export type RimOptionsOutput = z.infer<typeof rimOptionsOutputSchema>
 export type RimDetailOutput = z.infer<typeof rimDetailOutputSchema>
 export type RimMutationBody = z.infer<typeof rimMutationBodySchema>
+export type Shape = z.infer<typeof shapeSchema>
+export type ShapeOption = z.infer<typeof shapeOptionSchema>
+export type ShapeListInput = z.infer<typeof shapeListInputSchema>
+export type ShapeListOutput = z.infer<typeof shapeListOutputSchema>
+export type ShapeOptionsInput = z.infer<typeof shapeOptionsInputSchema>
+export type ShapeOptionsOutput = z.infer<typeof shapeOptionsOutputSchema>
+export type ShapeDetailOutput = z.infer<typeof shapeDetailOutputSchema>
+export type ShapeMutationBody = z.infer<typeof shapeMutationBodySchema>
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>
 export type CurrencyListInput = z.infer<typeof currencyListInputSchema>

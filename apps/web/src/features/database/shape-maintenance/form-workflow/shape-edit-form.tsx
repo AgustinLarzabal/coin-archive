@@ -2,41 +2,28 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { ShapeFieldErrors, ShapeMutationResult } from "../actions"
-import { createShapeInputSchema, submitUpdateShape } from "../actions"
+import { submitUpdateShape } from "../actions"
+import type { ShapeMutationResult } from "../actions"
+import { createShapeInputSchema } from "../shape-validation"
+import type { ShapeFieldErrors } from "../shape-validation"
 
-import { createShapeDraft, normalizeShapeDraft } from "./shape-form.shared"
+import { createShapeDraft, hasShapeEditChanges } from "./shape-form.shared"
 import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
 import type { ShapeDraft } from "./shape-form.shared"
 
 type ShapeEditFormProps = {
-  shape: ShapeOption
+  shape: Shape
   onSaved?: () => void
 }
 
 const updateShapeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: ShapeDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateShape(session?.user ?? null, data)
-  })
-
-export function hasShapeEditChanges(shape: ShapeOption, draft: ShapeDraft) {
-  const normalizedCurrent = normalizeShapeDraft(createShapeDraft(shape))
-  const normalizedDraft = normalizeShapeDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .inputValidator((data: ShapeDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateShape(data))
 
 export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
   const router = useRouter()
@@ -49,7 +36,9 @@ export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
     defaultValues: createShapeDraft(shape),
     validators: { onSubmit: createShapeInputSchema },
     onSubmit: async ({ value }) => {
-      const result = await updateShape({ data: { id: shape.id, ...value } })
+      const result = await updateShape({
+        data: { id: shape.id, etag: shape.etag, ...value },
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()

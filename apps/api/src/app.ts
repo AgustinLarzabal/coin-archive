@@ -26,6 +26,8 @@ import { registerEdgeMaintenanceRoutes } from "./edge-maintenance"
 import type { EdgeMaintenanceDependencies } from "./edge-maintenance"
 import { registerRimMaintenanceRoutes } from "./rim-maintenance"
 import type { RimMaintenanceDependencies } from "./rim-maintenance"
+import { registerShapeMaintenanceRoutes } from "./shape-maintenance"
+import type { ShapeMaintenanceDependencies } from "./shape-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -192,6 +194,17 @@ export function createApiApp({
   deleteRim = async () => {
     throw new Error("Rim deletion is not configured")
   },
+  listShapes = async () => [],
+  getShape = async () => null,
+  createShape = async () => {
+    throw new Error("Shape create is not configured")
+  },
+  replaceShape = async () => {
+    throw new Error("Shape replacement is not configured")
+  },
+  deleteShape = async () => {
+    throw new Error("Shape deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -250,6 +263,11 @@ export function createApiApp({
   createRim?: RimMaintenanceDependencies["createRim"]
   replaceRim?: RimMaintenanceDependencies["replaceRim"]
   deleteRim?: RimMaintenanceDependencies["deleteRim"]
+  listShapes?: ShapeMaintenanceDependencies["listShapes"]
+  getShape?: ShapeMaintenanceDependencies["getShape"]
+  createShape?: ShapeMaintenanceDependencies["createShape"]
+  replaceShape?: ShapeMaintenanceDependencies["replaceShape"]
+  deleteShape?: ShapeMaintenanceDependencies["deleteShape"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -466,6 +484,13 @@ export function createApiApp({
     createRim,
     replaceRim,
     deleteRim,
+  })
+  registerShapeMaintenanceRoutes(app, {
+    listShapes,
+    getShape,
+    createShape,
+    replaceShape,
+    deleteShape,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

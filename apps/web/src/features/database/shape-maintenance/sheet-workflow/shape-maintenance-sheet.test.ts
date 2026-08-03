@@ -1,10 +1,10 @@
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { SHAPE_IN_USE_DELETE_ERROR } from "../actions"
+import { SHAPE_IN_USE_DELETE_ERROR } from "../shape-mutation-errors"
 
 import {
   SHAPE_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -95,15 +92,17 @@ vi.mock("../form-workflow/shape-edit-form", () => ({
   ShapeEditForm: () => createElement("div", null, "ShapeEditForm"),
 }))
 
-const shape: ShapeOption = {
-  id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-  code: "round",
-  name: "Round",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const shape: Shape = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"shape-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderShapeMaintenanceSheet(shapeOption: ShapeOption | null) {
+function renderShapeMaintenanceSheet(shapeOption: Shape | null) {
   return renderToStaticMarkup(
     createElement(ShapeMaintenanceSheet, {
       shape: shapeOption,

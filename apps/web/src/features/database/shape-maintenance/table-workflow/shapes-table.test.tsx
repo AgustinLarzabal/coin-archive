@@ -1,23 +1,27 @@
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { filterShapes, ShapesTable } from "./shapes-table"
+import { ShapesTable, filterShapes } from "./shapes-table"
 
-const shapes: ShapeOption[] = [
+const shapes: Shape[] = [
   {
-    id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",
-    code: "round",
-    name: "Round",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    etag: '"shape-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
   {
-    id: "0a6c3f74-230d-48ff-a2bd-986f9645d6f3",
-    code: "scalloped",
-    name: "Scalloped",
-    createdAt: new Date("2026-07-01T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+    id: "d3ed87e0-ebd9-4bbd-a5de-c9d1823ae3a2",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    etag: '"shape-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
 ]
 
@@ -26,9 +30,9 @@ describe("filterShapes", () => {
     expect(filterShapes(shapes, "")).toStrictEqual(shapes)
   })
 
-  it("filters by Shape Code and Shape Name case-insensitively while trimming whitespace", () => {
-    expect(filterShapes(shapes, " round ")).toStrictEqual([shapes[0]])
-    expect(filterShapes(shapes, "SCALLOPED")).toStrictEqual([shapes[1]])
+  it("filters by code and name case-insensitively while trimming whitespace", () => {
+    expect(filterShapes(shapes, "reed")).toStrictEqual([shapes[0]])
+    expect(filterShapes(shapes, " PLAIN ")).toStrictEqual([shapes[1]])
   })
 })
 
@@ -38,8 +42,8 @@ describe("ShapesTable", () => {
 
     expect(markup).toContain("Shape Code")
     expect(markup).toContain("Shape Name")
-    expect(markup).toContain("Round")
-    expect(markup).toContain("Scalloped")
+    expect(markup).toContain("Reeded")
+    expect(markup).toContain("Plain")
     expect(markup).toContain("Filter shapes by code or name...")
     expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')

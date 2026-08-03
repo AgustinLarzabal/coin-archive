@@ -178,6 +178,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -648,7 +649,7 @@ Known limitations and non-goals:
 
 The `shape` table models the shared outline-form classification that may be attached to a Coin:
 
-- a Shape row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- a Shape row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `shape.code` is the stable archive identity for the shape and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `shape.name` is display text only; it helps humans read the shape label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat shape codes case-insensitively, while the schema also requires lowercase slug-style text on write
@@ -662,6 +663,7 @@ Shape-specific requirements and constraints:
 - Shape Codes must satisfy the lowercase slug-style check enforced by `shape_code_slug_check`
 - Shape Names do not need to be unique
 - Shape primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Shape Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Shape-specific indexes and query implications:

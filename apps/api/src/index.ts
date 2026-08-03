@@ -5,6 +5,7 @@ import {
   createDistributionIdempotentlyWithDatabase,
   createEdgeIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
+  createShapeIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
@@ -13,6 +14,7 @@ import {
   deleteDistributionIfVersionWithDatabase,
   deleteEdgeIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
+  deleteShapeIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
@@ -26,6 +28,8 @@ import {
   getEdgeMaintenanceRecordsWithDatabase,
   getRimMaintenanceRecordWithDatabase,
   getRimMaintenanceRecordsWithDatabase,
+  getShapeMaintenanceRecordWithDatabase,
+  getShapeMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
@@ -36,6 +40,7 @@ import {
   replaceDistributionWithDatabase,
   replaceEdgeWithDatabase,
   replaceRimWithDatabase,
+  replaceShapeWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -184,6 +189,20 @@ async function handleRequest(
       }),
     deleteRim: (input) =>
       deleteRimIfVersionWithDatabase(database.db, input),
+    listShapes: (input) =>
+      getShapeMaintenanceRecordsWithDatabase(database.db, input),
+    getShape: (shapeId) =>
+      getShapeMaintenanceRecordWithDatabase(database.db, shapeId),
+    createShape: (input) =>
+      createShapeIdempotentlyWithDatabase(database.db, input),
+    replaceShape: ({ id, expectedVersion, fields }) =>
+      replaceShapeWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteShape: (input) =>
+      deleteShapeIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

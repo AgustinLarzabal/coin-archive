@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createShapeColumns(
-  openEditShapeSheet: (shape: ShapeOption) => void
-): ColumnDef<ShapeOption>[] {
+  onEditShape: (shape: Shape) => void
+): ColumnDef<Shape>[] {
   return [
     {
       accessorKey: "code",
@@ -45,7 +45,7 @@ export function createShapeColumns(
             />
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => openEditShapeSheet(shape)}>
+                <DropdownMenuItem onClick={() => onEditShape(shape)}>
                   Edit
                 </DropdownMenuItem>
               </DropdownMenuGroup>

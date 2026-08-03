@@ -60,6 +60,15 @@ import {
   rimMaintenanceProblemDocumentSchema,
   rimOptionsOutputSchema,
   rimReplaceInputSchema,
+  shapeCreateInputSchema,
+  shapeCreateOutputSchema,
+  shapeDeleteInputSchema,
+  shapeDetailOutputSchema,
+  shapeListInputSchema,
+  shapeListOutputSchema,
+  shapeMaintenanceProblemDocumentSchema,
+  shapeOptionsOutputSchema,
+  shapeReplaceInputSchema,
 } from "./contract"
 
 const currency = {
@@ -111,6 +120,16 @@ const rim = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-rim-version"',
+}
+
+const shape = {
+  id: "018f1a11-aaaa-7000-8000-000000000007",
+  code: "raised-both-sides",
+  name: "Raised on both sides",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-shape-version"',
 }
 
 const catalogue = {
@@ -835,6 +854,129 @@ describe("Rim maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: rim.id },
       headers: { "if-match": rim.etag },
+    })
+  })
+})
+
+describe("Shape maintenance contract", () => {
+  it("declares stable Shape validation and dependent-Coin conflict codes", () => {
+    expect(
+      shapeMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/shape-validation",
+          title: "Shape validation failed",
+          status: 422,
+          detail: "The Shape could not be saved",
+          instance: "/api/v1/maintenance/shapes",
+          code: "shape_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "shape_code_invalid",
+              reason: "Shape Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("shape_code_invalid")
+    expect(
+      shapeMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/shape-in-use",
+        title: "Shape is in use",
+        status: 409,
+        detail: "Coins still use this Shape",
+        instance: `/api/v1/maintenance/shapes/${shape.id}`,
+        code: "shape_in_use",
+      }).code
+    ).toBe("shape_in_use")
+  })
+
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      shapeListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "reeded",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "reeded",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => shapeListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      shapeOptionsOutputSchema.parse({
+        data: [{ id: shape.id, code: shape.code, name: shape.name }],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [{ id: shape.id, code: shape.code, name: shape.name }],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      shapeListOutputSchema.parse({ data: [shape], nextCursor: null })
+    ).toStrictEqual({ data: [shape], nextCursor: null })
+    expect(shapeDetailOutputSchema.parse({ data: shape })).toStrictEqual({
+      data: shape,
+    })
+    expect(() =>
+      shapeDetailOutputSchema.parse({
+        data: { ...shape, createdAt: new Date(shape.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      shapeCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " reeded ", name: " Reeded " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
+    })
+    expect(
+      shapeCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: shape.etag,
+          location: `/api/v1/maintenance/shapes/${shape.id}`,
+        },
+        body: { data: shape },
+      })
+    ).toMatchObject({ status: 201, body: { data: shape } })
+    expect(() =>
+      shapeCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Reeded Shape", name: "Reeded" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      shapeReplaceInputSchema.parse({
+        params: { uuid: shape.id },
+        headers: { "if-match": shape.etag },
+        body: { code: shape.code, name: shape.name },
+      })
+    ).toMatchObject({ headers: { "if-match": shape.etag } })
+    expect(
+      shapeDeleteInputSchema.parse({
+        params: { uuid: shape.id },
+        headers: { "if-match": shape.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: shape.id },
+      headers: { "if-match": shape.etag },
     })
   })
 })

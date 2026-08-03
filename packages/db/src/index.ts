@@ -76,13 +76,26 @@ export type {
   DeleteRimIfVersionResult,
   ReplaceRimResult,
 } from "./mutations/rim"
+export {
+  createShape,
+  createShapeIdempotently,
+  createShapeIdempotentlyWithDatabase,
+  deleteShape,
+  deleteShapeIfVersionWithDatabase,
+  replaceShapeWithDatabase,
+  updateShape,
+} from "./mutations/shape"
+export type {
+  CreateShapeIdempotentlyResult,
+  DeleteShapeIfVersionResult,
+  ReplaceShapeResult,
+} from "./mutations/shape"
 export { createRuler, deleteRuler, updateRuler } from "./mutations/ruler"
 export {
   createRulerGroup,
   deleteRulerGroup,
   updateRulerGroup,
 } from "./mutations/ruler-group"
-export { createShape, deleteShape, updateShape } from "./mutations/shape"
 export {
   createEngraver,
   deleteEngraver,
@@ -183,6 +196,15 @@ export type {
 } from "./queries/get-rim-maintenance"
 export { getRulerGroups } from "./queries/get-ruler-groups"
 export { getShapes } from "./queries/get-shapes"
+export {
+  getShapeMaintenanceRecordWithDatabase,
+  getShapeMaintenanceRecordsWithDatabase,
+} from "./queries/get-shape-maintenance"
+export type {
+  GetShapeMaintenanceRecordsOptions,
+  ShapeMaintenanceCursor,
+  ShapeMaintenanceListRecord,
+} from "./queries/get-shape-maintenance"
 export { getTechniques } from "./queries/get-techniques"
 export { getThemes } from "./queries/get-themes"
 export {

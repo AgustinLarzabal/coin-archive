@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { ShapeOption } from "@coin-archive/db"
+import type { Shape } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,40 +27,25 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  SHAPE_GENERIC_SAVE_ERROR,
-  SHAPE_IN_USE_DELETE_ERROR,
-  submitDeleteShape,
-} from "../actions"
+import { submitDeleteShape } from "../actions"
+import { SHAPE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { ShapeCreateForm } from "../form-workflow/shape-create-form"
 import { ShapeEditForm } from "../form-workflow/shape-edit-form"
 
 type ShapeMaintenanceSheetProps = {
-  shape: ShapeOption | null
+  shape: Shape | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const SHAPE_DELETE_CONFIRMATION_IN_USE_GUIDANCE =
-  SHAPE_IN_USE_DELETE_ERROR.replace(
-    "Shape cannot be deleted while Coins still use it. ",
-    ""
-  )
-
-export const SHAPE_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Shape. ${SHAPE_DELETE_CONFIRMATION_IN_USE_GUIDANCE}`
+export const SHAPE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Shape. ${SHAPE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteShapeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteShape(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteShape(data))
 
 export function ShapeMaintenanceSheet({
   shape,
@@ -72,17 +57,11 @@ export function ShapeMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingShape = shape !== null
-  const sheetTitle = isEditingShape ? "Edit Shape" : "Create Shape"
 
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [shape?.id, open])
 
   async function handleDeleteShape() {
@@ -97,6 +76,7 @@ export function ShapeMaintenanceSheet({
       const result = await deleteShape({
         data: {
           id: shape.id,
+          etag: shape.etag,
         },
       })
 
@@ -106,7 +86,7 @@ export function ShapeMaintenanceSheet({
         return
       }
 
-      setDeleteError(result.formError ?? SHAPE_GENERIC_SAVE_ERROR)
+      setDeleteError(result.formError ?? "Unable to delete Shape right now.")
     } finally {
       setIsDeletePending(false)
     }
@@ -116,9 +96,9 @@ export function ShapeMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>{shape ? "Edit Shape" : "Create Shape"}</SheetTitle>
 
-          {isEditingShape ? (
+          {shape !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -178,7 +158,7 @@ export function ShapeMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingShape ? (
+        {shape ? (
           <ShapeEditForm shape={shape} onSaved={() => onOpenChange(false)} />
         ) : (
           <ShapeCreateForm onCreated={() => onOpenChange(false)} />

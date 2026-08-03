@@ -30,6 +30,8 @@ import { registerShapeMaintenanceRoutes } from "./shape-maintenance"
 import type { ShapeMaintenanceDependencies } from "./shape-maintenance"
 import { registerEngraverMaintenanceRoutes } from "./engraver-maintenance"
 import type { EngraverMaintenanceDependencies } from "./engraver-maintenance"
+import { registerThemeMaintenanceRoutes } from "./theme-maintenance"
+import type { ThemeMaintenanceDependencies } from "./theme-maintenance"
 import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-maintenance"
 import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
 
@@ -220,6 +222,17 @@ export function createApiApp({
   deleteEngraver = async () => {
     throw new Error("Engraver deletion is not configured")
   },
+  listThemes = async () => [],
+  getTheme = async () => null,
+  createTheme = async () => {
+    throw new Error("Theme create is not configured")
+  },
+  replaceTheme = async () => {
+    throw new Error("Theme replacement is not configured")
+  },
+  deleteTheme = async () => {
+    throw new Error("Theme deletion is not configured")
+  },
   listMintingTechniques = async () => [],
   getMintingTechnique = async () => null,
   createMintingTechnique = async () => {
@@ -299,6 +312,11 @@ export function createApiApp({
   createEngraver?: EngraverMaintenanceDependencies["createEngraver"]
   replaceEngraver?: EngraverMaintenanceDependencies["replaceEngraver"]
   deleteEngraver?: EngraverMaintenanceDependencies["deleteEngraver"]
+  listThemes?: ThemeMaintenanceDependencies["listThemes"]
+  getTheme?: ThemeMaintenanceDependencies["getTheme"]
+  createTheme?: ThemeMaintenanceDependencies["createTheme"]
+  replaceTheme?: ThemeMaintenanceDependencies["replaceTheme"]
+  deleteTheme?: ThemeMaintenanceDependencies["deleteTheme"]
   listMintingTechniques?: MintingTechniqueMaintenanceDependencies["listMintingTechniques"]
   getMintingTechnique?: MintingTechniqueMaintenanceDependencies["getMintingTechnique"]
   createMintingTechnique?: MintingTechniqueMaintenanceDependencies["createMintingTechnique"]
@@ -534,6 +552,13 @@ export function createApiApp({
     createEngraver,
     replaceEngraver,
     deleteEngraver,
+  })
+  registerThemeMaintenanceRoutes(app, {
+    listThemes,
+    getTheme,
+    createTheme,
+    replaceTheme,
+    deleteTheme,
   })
   registerMintingTechniqueMaintenanceRoutes(app, {
     listMintingTechniques,

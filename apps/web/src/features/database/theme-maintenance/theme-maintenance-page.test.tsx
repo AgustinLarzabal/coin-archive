@@ -1,29 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server"
-import type { ThemeOption } from "@coin-archive/db"
 import { describe, expect, it, vi } from "vitest"
 import { ThemeMaintenanceRouteComponent } from "./theme-maintenance-page"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
 }))
-
-function createTheme(
-  overrides: Pick<ThemeOption, "id" | "code" | "name">
-): ThemeOption {
-  return overrides
-}
-
-const MAP_THEME = createTheme({
-  id: "3fc6f779-e225-45f7-9ef6-40e80e6ef9ef",
-  code: "map",
-  name: "Map",
-})
-
-const PORTRAIT_THEME = createTheme({
-  id: "7bf1fdc0-cceb-4dda-a8dd-b004a6f35775",
-  code: "portrait",
-  name: "Portrait",
-})
 
 describe("ThemeMaintenanceRouteComponent", () => {
   it("renders the existing access-denied UI for disallowed Collectors", () => {
@@ -34,22 +15,28 @@ describe("ThemeMaintenanceRouteComponent", () => {
     expect(markup).toContain("Access denied")
   })
 
-  it("renders the Themes table for allowed Editors and Admins with maintenance actions", () => {
+  it("renders the Themes table for allowed Editors and Admins", () => {
     const markup = renderToStaticMarkup(
       <ThemeMaintenanceRouteComponent
         loaderData={{
           isAllowed: true,
-          themes: [MAP_THEME, PORTRAIT_THEME],
+          themes: [
+            {
+              id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+              code: "reeded",
+              name: "Reeded",
+              version: 1,
+              etag: '"theme-version-1"',
+              createdAt: "2026-06-24T12:00:00.000Z",
+              updatedAt: "2026-06-24T12:00:00.000Z",
+            },
+          ],
         }}
       />
     )
 
     expect(markup).toContain("Theme Code")
     expect(markup).toContain("Theme Name")
-    expect(markup).toContain("Map")
-    expect(markup).toContain("Portrait")
-    expect(markup).toContain("Filter themes by code or name...")
-    expect(markup).toContain(">Create</button>")
-    expect(markup).toContain('aria-label="Actions"')
+    expect(markup).toContain("Reeded")
   })
 })

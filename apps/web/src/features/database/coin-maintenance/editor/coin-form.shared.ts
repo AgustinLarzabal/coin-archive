@@ -8,6 +8,7 @@ import type {
   MintingTechniqueOption,
   RimOption,
   ShapeOption,
+  ThemeOption,
 } from "@coin-archive/api"
 import type {
   CoinMaintenanceFaceSurface,
@@ -17,7 +18,6 @@ import type {
   MintOption,
   OrientationOption,
   RulerOption,
-  ThemeOption,
 } from "@coin-archive/db"
 
 import { loadAllMaintenanceOptions } from "@/lib/maintenance-options.server"
@@ -124,7 +124,7 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
 
 export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
   const [
-    { getIssuers, getMints, getOrientations, getRulers, getThemes },
+    { getIssuers, getMints, getOrientations, getRulers },
     { getMaintenanceApiClient },
   ] = await Promise.all([
     import("@coin-archive/db"),
@@ -153,7 +153,8 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
       loadAllMaintenanceOptions(maintenanceClient.shapes.options),
     getTechniques: () =>
       loadAllMaintenanceOptions(maintenanceClient.mintingTechniques.options),
-    getThemes,
+    getThemes: () =>
+      loadAllMaintenanceOptions(maintenanceClient.themes.options),
   }
 }
 

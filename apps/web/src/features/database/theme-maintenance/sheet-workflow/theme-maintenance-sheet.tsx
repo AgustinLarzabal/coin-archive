@@ -1,7 +1,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { ThemeOption } from "@coin-archive/db"
+import type { Theme } from "@coin-archive/api"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@coin-archive/ui/components/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@coin-archive/ui/components/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,52 +25,34 @@ import {
   AlertDialogTitle,
 } from "@coin-archive/ui/components/alert-dialog"
 import { Button } from "@coin-archive/ui/components/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@coin-archive/ui/components/dropdown-menu"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@coin-archive/ui/components/sheet"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  submitDeleteTheme,
-  THEME_GENERIC_SAVE_ERROR,
-  THEME_IN_USE_DELETE_GUIDANCE,
-} from "../actions"
+import { submitDeleteTheme } from "../actions"
+import { THEME_GENERIC_SAVE_ERROR } from "../theme-mutation-errors"
+import { THEME_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { ThemeCreateForm } from "../form-workflow/theme-create-form"
 import { ThemeEditForm } from "../form-workflow/theme-edit-form"
 
 type ThemeMaintenanceSheetProps = {
-  theme: ThemeOption | null
+  theme: Theme | null
+  initialDeleteDialogOpen?: boolean
   open: boolean
   onCompleted?: (message: string) => void
   onOpenChange: (open: boolean) => void
 }
 
-export const THEME_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Theme. ${THEME_IN_USE_DELETE_GUIDANCE}`
+export const THEME_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Theme. ${THEME_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteThemeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteTheme(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteTheme(data))
 
 export function ThemeMaintenanceSheet({
   theme,
+  initialDeleteDialogOpen = false,
   open,
   onCompleted,
   onOpenChange,
@@ -68,17 +62,7 @@ export function ThemeMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const hasSelectedTheme = theme !== null
-
-  function resetDeleteState() {
-    setDeleteError(null)
-    setIsDeleteDialogOpen(false)
-    setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
-  }, [theme?.id, open])
+  const isEditingTheme = theme !== null
 
   function closeSheet() {
     onOpenChange(false)
@@ -88,6 +72,14 @@ export function ThemeMaintenanceSheet({
     onCompleted?.(message)
     closeSheet()
   }
+
+  useEffect(() => {
+    setDeleteError(null)
+    setIsDeleteDialogOpen(
+      open && isEditingTheme ? initialDeleteDialogOpen : false
+    )
+    setIsDeletePending(false)
+  }, [theme?.id, initialDeleteDialogOpen, isEditingTheme, open])
 
   async function handleDeleteTheme() {
     if (!theme) {
@@ -101,6 +93,7 @@ export function ThemeMaintenanceSheet({
       const result = await deleteTheme({
         data: {
           id: theme.id,
+          etag: theme.etag,
         },
       })
 
@@ -121,10 +114,10 @@ export function ThemeMaintenanceSheet({
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
           <SheetTitle>
-            {hasSelectedTheme ? "Edit Theme" : "Create Theme"}
+            {isEditingTheme ? "Edit Theme" : "Create Theme"}
           </SheetTitle>
 
-          {hasSelectedTheme ? (
+          {isEditingTheme ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -144,7 +137,7 @@ export function ThemeMaintenanceSheet({
                     variant="destructive"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
-                    Delete
+                    Delete Theme
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -184,7 +177,7 @@ export function ThemeMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {hasSelectedTheme ? (
+        {theme !== null ? (
           <ThemeEditForm theme={theme} onSaved={handleMutationSuccess} />
         ) : (
           <ThemeCreateForm onCreated={handleMutationSuccess} />

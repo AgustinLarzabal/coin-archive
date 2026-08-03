@@ -1,14 +1,14 @@
-import type { ThemeOption } from "@coin-archive/db"
+import type { Theme } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { THEME_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { THEME_IN_USE_DELETE_ERROR } from "../theme-mutation-errors"
 
 import {
-  ThemeMaintenanceSheet,
   THEME_DELETE_CONFIRMATION_DESCRIPTION,
+  ThemeMaintenanceSheet,
 } from "./theme-maintenance-sheet"
 
 type MockComponentProps = {
@@ -26,20 +26,10 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
-
-vi.mock("@coin-archive/ui/components/sheet", () => ({
-  Sheet: createOpenMockElement("div"),
-  SheetContent: createMockElement("div"),
-  SheetHeader: createMockElement("div"),
-  SheetTitle: createMockElement("h1"),
-}))
 
 vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({
@@ -57,6 +47,13 @@ vi.mock("@tanstack/react-start", () => ({
     },
   }),
   useServerFn: () => vi.fn(),
+}))
+
+vi.mock("@coin-archive/ui/components/sheet", () => ({
+  Sheet: createOpenMockElement("div"),
+  SheetContent: createMockElement("div"),
+  SheetHeader: createMockElement("div"),
+  SheetTitle: createMockElement("h1"),
 }))
 
 vi.mock("@coin-archive/ui/components/dropdown-menu", () => ({
@@ -88,38 +85,24 @@ vi.mock("@/components/icons", () => ({
 }))
 
 vi.mock("../form-workflow/theme-create-form", () => ({
-  ThemeCreateForm: ({
-    onCreated,
-  }: {
-    onCreated?: (message: string) => void
-  }) =>
-    createElement(
-      "div",
-      null,
-      onCreated ? "ThemeCreateForm:onCreated" : "ThemeCreateForm"
-    ),
+  ThemeCreateForm: () => createElement("div", null, "ThemeCreateForm"),
 }))
 
 vi.mock("../form-workflow/theme-edit-form", () => ({
-  ThemeEditForm: ({
-    onSaved,
-  }: {
-    onSaved?: (message: string) => void
-  }) =>
-    createElement(
-      "div",
-      null,
-      onSaved ? "ThemeEditForm:onSaved" : "ThemeEditForm"
-    ),
+  ThemeEditForm: () => createElement("div", null, "ThemeEditForm"),
 }))
 
-const theme: ThemeOption = {
-  id: "8bfd8928-cd58-4a23-b13c-969be89f4d88",
-  code: "map",
-  name: "Map",
+const theme: Theme = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"theme-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderThemeMaintenanceSheet(themeOption: ThemeOption | null) {
+function renderThemeMaintenanceSheet(themeOption: Theme | null) {
   return renderToStaticMarkup(
     createElement(ThemeMaintenanceSheet, {
       theme: themeOption,
@@ -135,7 +118,10 @@ describe("THEME_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Theme"
     )
     expect(THEME_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      THEME_IN_USE_DELETE_GUIDANCE
+      THEME_IN_USE_DELETE_ERROR.replace(
+        "Theme cannot be deleted while Theme Attributions still use it. ",
+        ""
+      )
     )
   })
 })
@@ -145,7 +131,7 @@ describe("ThemeMaintenanceSheet", () => {
     const markup = renderThemeMaintenanceSheet(null)
 
     expect(markup).toContain("Create Theme")
-    expect(markup).toContain("ThemeCreateForm:onCreated")
+    expect(markup).toContain("ThemeCreateForm")
     expect(markup).not.toContain("Delete Theme?")
   })
 
@@ -153,8 +139,8 @@ describe("ThemeMaintenanceSheet", () => {
     const markup = renderThemeMaintenanceSheet(theme)
 
     expect(markup).toContain("Edit Theme")
-    expect(markup).toContain("ThemeEditForm:onSaved")
-    expect(markup).toContain(">Delete<")
+    expect(markup).toContain("ThemeEditForm")
+    expect(markup).toContain(">Delete Theme<")
     expect(markup).toContain("Delete Theme?")
     expect(markup).toContain(THEME_DELETE_CONFIRMATION_DESCRIPTION)
     expect(markup).toContain(">Cancel<")

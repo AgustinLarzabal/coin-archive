@@ -197,6 +197,13 @@
       "when": 1785752149641,
       "tag": "0027_orange_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1785753644750,
+      "tag": "0028_faithful_true_believers",
+      "breakpoints": true
     }
   ]
 }

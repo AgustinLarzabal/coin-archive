@@ -1,5 +1,5 @@
-import { Input } from "@coin-archive/ui/components/input"
 import { Button } from "@coin-archive/ui/components/button"
+import { Input } from "@coin-archive/ui/components/input"
 
 type ThemesTableToolbarProps = {
   filterValue: string

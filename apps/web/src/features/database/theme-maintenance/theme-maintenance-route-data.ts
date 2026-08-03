@@ -1,67 +1,88 @@
+import type { Theme, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { ThemeOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import {
-  createThemeAuthorizationError,
-  hasThemeMaintenanceAccess,
-} from "./actions"
+import { createThemeAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
-  {
-    themes: ThemeOption[]
-  },
+  { themes: Theme[] },
   ReturnType<typeof createThemeAuthorizationError>
 >
 
 export type ThemeMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  themes: ThemeOption[]
+  themes: Theme[]
 }>
 
 type ReadDependencies = {
-  getThemes: () => Promise<ThemeOption[]>
+  listThemes: MaintenanceApiClient["themes"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getThemes } = await import("@coin-archive/db")
-
-  return {
-    getThemes,
-  }
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listThemes: client.themes.list }
 }
 
-export async function loadThemeMaintenanceThemes(
-  collector: CollectorWithRole | null,
+export async function loadThemeMaintenancePageData(
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasThemeMaintenanceAccess(collector)) {
-    return createThemeAuthorizationError()
+  const { listThemes } = dependencies ?? (await getDefaultReadDependencies())
+  const themes: Theme[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listThemes({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      themes.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Theme maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createThemeAuthorizationError()
+    }
+    throw error
   }
 
-  const { getThemes } = dependencies ?? (await getDefaultReadDependencies())
-
-  return {
-    status: "success",
-    themes: await getThemes(),
-  }
+  return { status: "success", themes }
 }
 
-const getLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadThemeMaintenanceThemes(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadThemeMaintenancePageData())
+)
 
 export function loadThemeMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return false
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return false
+  }
+  const body = data.body
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
+  )
 }

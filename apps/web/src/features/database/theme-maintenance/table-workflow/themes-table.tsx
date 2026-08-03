@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { ThemeOption } from "@coin-archive/db"
+import type { Theme } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createThemeColumns } from "./columns"
@@ -8,19 +8,12 @@ import { ThemesTableToolbar } from "./themes-table-toolbar"
 
 type ThemesTableProps = {
   initialSuccessMessage?: string | null
-  themes: ThemeOption[]
+  themes: Theme[]
 }
 
-export function filterThemes(
-  themes: ThemeOption[],
-  filterValue: string
-): ThemeOption[] {
+export function filterThemes(themes: Theme[], filterValue: string): Theme[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
-
-  if (normalizedFilterValue === "") {
-    return themes
-  }
-
+  if (normalizedFilterValue === "") return themes
   return themes.filter((theme) =>
     [theme.code, theme.name].some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
@@ -33,21 +26,45 @@ export function ThemesTable({
   initialSuccessMessage = null,
 }: ThemesTableProps) {
   const [filterValue, setFilterValue] = useState("")
-  const [selectedTheme, setSelectedTheme] = useState<ThemeOption | null>(null)
+  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
+  const [shouldOpenDeleteDialog, setShouldOpenDeleteDialog] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(
     initialSuccessMessage
   )
   const filteredThemes = filterThemes(themes, filterValue)
 
-  function openThemeMaintenanceSheet(theme: ThemeOption | null) {
+  function openMaintenanceSheet(
+    theme: Theme | null,
+    options?: { deleteDialogOpen?: boolean }
+  ) {
     setSuccessMessage(null)
     setSelectedTheme(theme)
+    setShouldOpenDeleteDialog(options?.deleteDialogOpen ?? false)
     setIsMaintenanceSheetOpen(true)
   }
 
+  function openCreateThemeSheet() {
+    openMaintenanceSheet(null)
+  }
+
+  function openEditThemeSheet(theme: Theme) {
+    openMaintenanceSheet(theme)
+  }
+
+  function openDeleteThemeSheet(theme: Theme) {
+    openMaintenanceSheet(theme, { deleteDialogOpen: true })
+  }
+
+  const columns = createThemeColumns(openEditThemeSheet, openDeleteThemeSheet)
+
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
+
+    if (!open) {
+      setSelectedTheme(null)
+      setShouldOpenDeleteDialog(false)
+    }
   }
 
   return (
@@ -58,12 +75,12 @@ export function ThemesTable({
         </p>
       ) : null}
       <DataTable
-        columns={createThemeColumns(openThemeMaintenanceSheet)}
+        columns={columns}
         data={filteredThemes}
         toolbar={() => (
           <ThemesTableToolbar
             filterValue={filterValue}
-            onCreateTheme={() => openThemeMaintenanceSheet(null)}
+            onCreateTheme={openCreateThemeSheet}
             onFilterValueChange={setFilterValue}
           />
         )}
@@ -71,6 +88,7 @@ export function ThemesTable({
       <ThemeMaintenanceSheet
         theme={selectedTheme}
         open={isMaintenanceSheetOpen}
+        initialDeleteDialogOpen={shouldOpenDeleteDialog}
         onCompleted={setSuccessMessage}
         onOpenChange={handleMaintenanceSheetOpenChange}
       />

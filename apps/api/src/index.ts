@@ -5,6 +5,7 @@ import {
   createDistributionIdempotentlyWithDatabase,
   createEdgeIdempotentlyWithDatabase,
   createEngraverIdempotentlyWithDatabase,
+  createThemeIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
   createShapeIdempotentlyWithDatabase,
   createTechniqueIdempotentlyWithDatabase,
@@ -16,6 +17,7 @@ import {
   deleteDistributionIfVersionWithDatabase,
   deleteEdgeIfVersionWithDatabase,
   deleteEngraverIfVersionWithDatabase,
+  deleteThemeIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
   deleteShapeIfVersionWithDatabase,
   deleteTechniqueIfVersionWithDatabase,
@@ -32,6 +34,8 @@ import {
   getEdgeMaintenanceRecordsWithDatabase,
   getEngraverMaintenanceRecordWithDatabase,
   getEngraverMaintenanceRecordsWithDatabase,
+  getThemeMaintenanceRecordWithDatabase,
+  getThemeMaintenanceRecordsWithDatabase,
   getRimMaintenanceRecordWithDatabase,
   getRimMaintenanceRecordsWithDatabase,
   getShapeMaintenanceRecordWithDatabase,
@@ -48,6 +52,7 @@ import {
   replaceDistributionWithDatabase,
   replaceEdgeWithDatabase,
   replaceEngraverWithDatabase,
+  replaceThemeWithDatabase,
   replaceRimWithDatabase,
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
@@ -198,6 +203,20 @@ async function handleRequest(
       }),
     deleteEngraver: (input) =>
       deleteEngraverIfVersionWithDatabase(database.db, input),
+    listThemes: (input) =>
+      getThemeMaintenanceRecordsWithDatabase(database.db, input),
+    getTheme: (themeId) =>
+      getThemeMaintenanceRecordWithDatabase(database.db, themeId),
+    createTheme: (input) =>
+      createThemeIdempotentlyWithDatabase(database.db, input),
+    replaceTheme: ({ id, expectedVersion, fields }) =>
+      replaceThemeWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteTheme: (input) =>
+      deleteThemeIfVersionWithDatabase(database.db, input),
     listRims: (input) =>
       getRimMaintenanceRecordsWithDatabase(database.db, input),
     getRim: (rimId) => getRimMaintenanceRecordWithDatabase(database.db, rimId),

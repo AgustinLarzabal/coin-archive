@@ -53,7 +53,7 @@ The current core relationships map to these tables:
 - `ruler`: Ruler record with optional `ruler_group_id`
 - `ruler_group`: optional flat grouping attached to a Ruler
 - `coin_ruler`: join table from Coin to Ruler plus per-Coin `ruler_order`
-- `theme`: shared Theme record with stable `code`, display `name`, and timestamps
+- `theme`: shared Theme record with stable `code`, display `name`, explicit `version`, and timestamps
 - `coin_theme`: unordered join table from Coin to Theme
 - `catalogue`: external catalogue definition with display `title` and unique `code`
 - `coin_reference`: Catalogue Reference attached to a Coin with `catalogue_id` and opaque `number`
@@ -201,6 +201,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -850,7 +851,7 @@ Known limitations and non-goals:
 
 The `theme` table models the shared subject or commemorative concept that may be attributed to a Coin:
 
-- a Theme row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- a Theme row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `theme.code` is the stable archive identity for the theme and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `theme.name` is display text only; it helps humans read the theme label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat theme codes case-insensitively, while the schema also requires lowercase slug-style text on write
@@ -864,6 +865,7 @@ Theme-specific requirements and constraints:
 - Theme Codes must satisfy the lowercase slug-style check enforced by `theme_code_slug_check`
 - Theme Names do not need to be unique
 - Theme primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Theme Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Theme-specific indexes and query implications:

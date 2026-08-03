@@ -2,41 +2,28 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { ThemeOption } from "@coin-archive/db"
+import type { Theme } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { ThemeFieldErrors, ThemeMutationResult } from "../actions"
-import { createThemeInputSchema, submitUpdateTheme } from "../actions"
+import { submitUpdateTheme } from "../actions"
+import type { ThemeMutationResult } from "../actions"
+import { createThemeInputSchema } from "../theme-validation"
+import type { ThemeFieldErrors } from "../theme-validation"
 
-import { createThemeDraft, normalizeThemeDraft } from "./theme-form.shared"
+import { createThemeDraft, hasThemeEditChanges } from "./theme-form.shared"
 import { ThemeFormFields, ThemeTextField } from "./theme-form-fields"
 import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeEditFormProps = {
-  theme: ThemeOption
+  theme: Theme
   onSaved?: (message: string) => void
 }
 
 const updateThemeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: ThemeDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateTheme(session?.user ?? null, data)
-  })
-
-export function hasThemeEditChanges(theme: ThemeOption, draft: ThemeDraft) {
-  const normalizedCurrent = normalizeThemeDraft(createThemeDraft(theme))
-  const normalizedDraft = normalizeThemeDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .inputValidator((data: ThemeDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateTheme(data))
 
 export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
   const router = useRouter()
@@ -49,7 +36,9 @@ export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
     defaultValues: createThemeDraft(theme),
     validators: { onSubmit: createThemeInputSchema },
     onSubmit: async ({ value }) => {
-      const result = await updateTheme({ data: { id: theme.id, ...value } })
+      const result = await updateTheme({
+        data: { id: theme.id, etag: theme.etag, ...value },
+      })
       const savedMessage = applyResult(result)
       if (savedMessage !== null) {
         await router.invalidate()

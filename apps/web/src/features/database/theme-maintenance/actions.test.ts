@@ -1,456 +1,242 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  hasThemeMaintenanceAccess,
+  THEME_AUTHORIZATION_ERROR,
   submitCreateTheme,
   submitDeleteTheme,
   submitUpdateTheme,
-  THEME_AUTHORIZATION_ERROR,
-  THEME_DUPLICATE_CODE_ERROR,
-  THEME_GENERIC_SAVE_ERROR,
-  THEME_IN_USE_DELETE_ERROR,
-  THEME_INVALID_CODE_ERROR,
-  THEME_MISSING_ERROR,
 } from "./actions"
+import {
+  THEME_DUPLICATE_CODE_ERROR,
+  THEME_IN_USE_DELETE_ERROR,
+  THEME_STALE_ERROR,
+} from "./theme-mutation-errors"
 
-const VALID_THEME_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const MAP_THEME = {
-  code: "map",
-  name: "Map",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const theme = {
+  id,
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createTheme?: ReturnType<typeof vi.fn>
-  deleteTheme?: ReturnType<typeof vi.fn>
-  updateTheme?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createTheme: vi.fn(),
-    deleteTheme: vi.fn(),
-    updateTheme: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/themes",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: THEME_AUTHORIZATION_ERROR,
-}
-
-describe("hasThemeMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasThemeMaintenanceAccess(null)).toBe(false)
-    expect(hasThemeMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasThemeMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasThemeMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasThemeMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasThemeMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateTheme", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(submitCreateTheme(null, MAP_THEME)).resolves.toStrictEqual(
-      authorizationErrorResult
+describe("Theme web mutation adapter", () => {
+  it("leaves authoritative validation to the typed API", async () => {
+    const createTheme = vi.fn().mockRejectedValue(
+      problem("theme_validation_failed", 422, [
+        { name: "/code", code: "theme_code_required" },
+        { name: "/name", code: "theme_name_too_long" },
+      ])
     )
 
     await expect(
-      submitCreateTheme({ role: "collector" }, MAP_THEME)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
       submitCreateTheme(
-        { role: "editor" },
         {
-          code: "Map",
-          name: " ",
+          code: " ",
+          name: "".padStart(256, "A"),
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createTheme }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: THEME_INVALID_CODE_ERROR,
-        name: "Theme Name cannot be blank.",
+        code: "Theme Code cannot be blank.",
+        name: "Theme Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createTheme).not.toHaveBeenCalled()
+    expect(createTheme).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " ", name: "".padStart(256, "A") },
+    })
   })
 
-  it("trims Theme fields before creating a Theme", async () => {
-    const dependencies = createDependencies({
-      createTheme: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createTheme = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/themes/${id}` },
+      body: { data: theme },
+    }))
 
     await expect(
       submitCreateTheme(
-        { role: "editor" },
         {
-          code: " map ",
-          name: " Map ",
+          code: " reeded ",
+          name: " Reeded ",
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createTheme }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Theme added.",
     })
-
-    expect(dependencies.createTheme).toHaveBeenCalledWith({
-      code: "map",
-      name: "Map",
+    expect(createTheme).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " reeded ", name: " Reeded " },
     })
   })
 
-  it("maps duplicate Theme Codes to the Theme Code field", async () => {
-    await expect(
-      submitCreateTheme(
-        { role: "admin" },
-        MAP_THEME,
-        createDependencies({
-          createTheme: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "theme_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: THEME_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createTheme = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/themes/${id}` },
+      body: { data: theme },
+    }))
+    const submission = {
+      code: "reeded",
+      name: "Reeded",
+      idempotencyKey: "stable-attempt",
+    }
 
-  it("maps Theme Code slug check failures to the Theme Code field", async () => {
-    await expect(
-      submitCreateTheme(
-        { role: "admin" },
-        MAP_THEME,
-        createDependencies({
-          createTheme: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "theme_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: THEME_INVALID_CODE_ERROR,
-      },
-    })
-  })
+    await submitCreateTheme(submission, { createTheme })
+    await submitCreateTheme(submission, { createTheme })
 
-  it("returns a success result for valid create submissions", async () => {
-    const dependencies = createDependencies({
-      createTheme: vi.fn().mockResolvedValue({
-        id: "6f18a1db-9096-433b-b3f1-906c772f7a29",
-      }),
-    })
-
-    await expect(
-      submitCreateTheme({ role: "editor" }, MAP_THEME, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Theme added.",
-    })
-
-    expect(dependencies.createTheme).toHaveBeenCalledWith(MAP_THEME)
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateTheme(
-        { role: "admin" },
-        MAP_THEME,
-        createDependencies({
-          createTheme: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateTheme", () => {
-  const updateInput = {
-    id: VALID_THEME_ID,
-    ...MAP_THEME,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(submitUpdateTheme(null, updateInput)).resolves.toStrictEqual(
-      authorizationErrorResult
+    expect(createTheme).toHaveBeenCalledTimes(2)
+    expect(createTheme).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
-
-    await expect(
-      submitUpdateTheme({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod update validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
-
-    await expect(
-      submitUpdateTheme(
-        { role: "editor" },
-        {
-          id: VALID_THEME_ID,
-          code: "Map",
-          name: " ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: THEME_INVALID_CODE_ERROR,
-        name: "Theme Name cannot be blank.",
-      },
-    })
-
-    expect(dependencies.updateTheme).not.toHaveBeenCalled()
-  })
-
-  it("trims Theme fields before updating a Theme", async () => {
-    const dependencies = createDependencies({
-      updateTheme: vi.fn().mockResolvedValue({
-        id: VALID_THEME_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateTheme(
-        { role: "editor" },
-        {
-          id: VALID_THEME_ID,
-          code: " map ",
-          name: " Map ",
-        },
-        dependencies
-      )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-
-    expect(dependencies.updateTheme).toHaveBeenCalledWith({
-      id: VALID_THEME_ID,
-      code: "map",
-      name: "Map",
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
-    await expect(
-      submitUpdateTheme(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateTheme: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_MISSING_ERROR,
-    })
-  })
-
-  it("maps duplicate Theme Codes to the Theme Code field during update", async () => {
-    await expect(
-      submitUpdateTheme(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateTheme: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "theme_code_lower_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: THEME_DUPLICATE_CODE_ERROR,
-      },
-    })
-  })
-
-  it("maps Theme Code slug check failures to the Theme Code field during update", async () => {
-    await expect(
-      submitUpdateTheme(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateTheme: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "theme_code_slug_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: THEME_INVALID_CODE_ERROR,
-      },
-    })
-  })
-
-  it("returns a success result for valid update submissions", async () => {
-    const dependencies = createDependencies({
-      updateTheme: vi.fn().mockResolvedValue({
-        id: VALID_THEME_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateTheme({ role: "editor" }, updateInput, dependencies)
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
-    })
-  })
-
-  it("returns a generic form error for unexpected update failures", async () => {
-    await expect(
-      submitUpdateTheme(
-        { role: "admin" },
-        updateInput,
-        createDependencies({
-          updateTheme: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitDeleteTheme", () => {
-  const deleteInput = {
-    id: VALID_THEME_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(submitDeleteTheme(null, deleteInput)).resolves.toStrictEqual(
-      authorizationErrorResult
+    expect(createTheme).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
     )
-
-    await expect(
-      submitDeleteTheme({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
   })
 
-  it("maps invalid Theme ids to typed field errors before deleting", async () => {
-    const dependencies = createDependencies()
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceTheme = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...theme, version: 2, etag: '"next-version"' },
+      },
+    }))
+    const deleteTheme = vi.fn(async () => ({ status: 204 as const }))
 
     await expect(
-      submitDeleteTheme(
-        { role: "editor" },
-        { id: "not-a-uuid" },
-        dependencies
+      submitUpdateTheme(
+        { id, etag, code: "plain", name: "Plain" },
+        { replaceTheme }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-    })
-
-    expect(dependencies.deleteTheme).not.toHaveBeenCalled()
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
     await expect(
-      submitDeleteTheme(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteTheme: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_MISSING_ERROR,
-    })
-  })
-
-  it("maps in-use Theme deletes to a friendly form error", async () => {
-    await expect(
-      submitDeleteTheme(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteTheme: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23001",
-              constraint_name: "coin_theme_theme_id_theme_id_fk",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_IN_USE_DELETE_ERROR,
-    })
-  })
-
-  it("returns a success result for valid delete submissions", async () => {
-    const dependencies = createDependencies({
-      deleteTheme: vi.fn().mockResolvedValue({
-        id: VALID_THEME_ID,
-      }),
-    })
-
-    await expect(
-      submitDeleteTheme({ role: "editor" }, deleteInput, dependencies)
-    ).resolves.toStrictEqual({
+      submitDeleteTheme({ id, etag }, { deleteTheme })
+    ).resolves.toMatchObject({
       status: "success",
       message: "Theme deleted.",
     })
 
-    expect(dependencies.deleteTheme).toHaveBeenCalledWith(deleteInput)
+    expect(replaceTheme).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: { code: "plain", name: "Plain" },
+    })
+    expect(deleteTheme).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
   })
 
-  it("returns a generic form error for unexpected delete failures", async () => {
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
+    await expect(
+      submitCreateTheme(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createTheme: vi
+            .fn()
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: THEME_AUTHORIZATION_ERROR })
+
+    await expect(
+      submitCreateTheme(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createTheme: vi
+            .fn()
+            .mockRejectedValue(problem("theme_code_conflict", 409)),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: { code: THEME_DUPLICATE_CODE_ERROR },
+    })
+
+    await expect(
+      submitUpdateTheme(
+        { id, etag, code: "reeded", name: "Reeded" },
+        {
+          replaceTheme: vi
+            .fn()
+            .mockRejectedValue(problem("theme_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: THEME_STALE_ERROR })
+
     await expect(
       submitDeleteTheme(
-        { role: "admin" },
-        deleteInput,
-        createDependencies({
-          deleteTheme: vi.fn().mockRejectedValue(new Error("boom")),
-        })
+        { id, etag },
+        {
+          deleteTheme: vi.fn().mockRejectedValue(problem("theme_in_use", 409)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: THEME_GENERIC_SAVE_ERROR,
+    ).resolves.toMatchObject({ formError: THEME_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateTheme(
+        {
+          code: "reeded",
+          name: "Reeded",
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createTheme: vi.fn().mockRejectedValue(
+            problem("theme_validation_failed", 422, [
+              { name: "/code", code: "theme_code_required" },
+              { name: "/name", code: "theme_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Theme Code cannot be blank.",
+        name: "Theme Name must be 255 characters or fewer.",
+      },
     })
   })
 })

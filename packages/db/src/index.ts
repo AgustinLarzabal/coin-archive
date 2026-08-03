@@ -156,8 +156,25 @@ export type {
   DeleteTechniqueIfVersionResult,
   ReplaceTechniqueResult,
 } from "./mutations/technique"
-export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
+export {
+  createTheme,
+  createThemeIdempotently,
+  createThemeIdempotentlyWithDatabase,
+  deleteTheme,
+  deleteThemeIfVersionWithDatabase,
+  replaceThemeWithDatabase,
+  updateTheme,
+} from "./mutations/theme"
+export type {
+  CreateThemeIdempotentlyResult,
+  DeleteThemeIfVersionResult,
+  ReplaceThemeResult,
+} from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
+export {
+  getThemeMaintenanceRecordWithDatabase,
+  getThemeMaintenanceRecordsWithDatabase,
+} from "./queries/get-theme-maintenance"
 export {
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,

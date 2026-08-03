@@ -34,8 +34,8 @@ describe("ThemeCreateForm", () => {
   it("renders explicit Theme field labels and disables Create until the draft is complete", () => {
     const markup = renderThemeCreateForm()
     const expectedFields = [
-      ["Theme Code", 'placeholder="map"'],
-      ["Theme Name", 'placeholder="Map"'],
+      ["Theme Code", 'placeholder="round"'],
+      ["Theme Name", 'placeholder="Round"'],
     ] as const
 
     for (const [label, placeholder] of expectedFields) {

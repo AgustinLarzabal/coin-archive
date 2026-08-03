@@ -877,6 +877,119 @@ export const engraverMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const themeSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const themeOptionSchema = themeSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const themeListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const themeListOutputSchema = z.object({
+  data: z.array(themeSchema),
+  nextCursor: z.string().nullable(),
+})
+export const themeOptionsInputSchema = themeListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const themeOptionsOutputSchema = z.object({
+  data: z.array(themeOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const themeDetailInputSchema = z.object({ uuid: z.uuid() })
+export const themeDetailOutputSchema = z.object({ data: themeSchema })
+export const themeMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const themeCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: themeMutationBodySchema,
+})
+export const themeCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/themes/"),
+    etag: z.string(),
+  }),
+  body: themeDetailOutputSchema,
+})
+export const themeReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: themeMutationBodySchema,
+})
+export const themeReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: themeDetailOutputSchema,
+})
+export const themeDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const themeDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const themeMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "theme_code_conflict",
+      "theme_in_use",
+      "theme_not_found",
+      "theme_precondition_failed",
+      "theme_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_theme_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "theme_body_invalid",
+            "theme_code_invalid",
+            "theme_code_required",
+            "theme_code_too_long",
+            "theme_name_invalid",
+            "theme_name_required",
+            "theme_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 export const mintingTechniqueSchema = z.object({
   id: z.uuid(),
   code: codeSchema,
@@ -1179,6 +1292,50 @@ const engraverMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: engraverMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const themeMaintenanceReadErrors = {
+  BAD_REQUEST: {
+    status: 400,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  UNAUTHORIZED: {
+    status: 401,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  FORBIDDEN: {
+    status: 403,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  METHOD_NOT_ALLOWED: {
+    status: 405,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  TOO_MANY_REQUESTS: {
+    status: 429,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  INTERNAL_SERVER_ERROR: {
+    status: 500,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const themeMaintenanceMutationErrors = {
+  ...themeMaintenanceReadErrors,
+  NOT_FOUND: {
+    status: 404,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  CONFLICT: { status: 409, data: themeMaintenanceProblemDocumentSchema },
+  PRECONDITION_FAILED: {
+    status: 412,
+    data: themeMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: themeMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -1741,6 +1898,82 @@ export const maintenanceApiContract = {
       .output(engraverDeleteOutputSchema)
       .errors(engraverMaintenanceMutationErrors),
   },
+  themes: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/themes",
+        summary: "Browse Themes for maintenance",
+        tags: ["Theme Maintenance"],
+      })
+      .input(themeListInputSchema)
+      .output(themeListOutputSchema)
+      .errors(themeMaintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/themes/options",
+        summary: "Search compact Theme options",
+        tags: ["Theme Maintenance"],
+      })
+      .input(themeOptionsInputSchema)
+      .output(themeOptionsOutputSchema)
+      .errors(themeMaintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/themes/{uuid}",
+        summary: "Get Theme maintenance detail",
+        tags: ["Theme Maintenance"],
+      })
+      .input(themeDetailInputSchema)
+      .output(themeDetailOutputSchema)
+      .errors({
+        ...themeMaintenanceReadErrors,
+        NOT_FOUND: {
+          status: 404,
+          data: themeMaintenanceProblemDocumentSchema,
+        },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/themes",
+        summary: "Create a Theme",
+        tags: ["Theme Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(themeCreateInputSchema)
+      .output(themeCreateOutputSchema)
+      .errors(themeMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/themes/{uuid}",
+        summary: "Replace a Theme",
+        tags: ["Theme Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(themeReplaceInputSchema)
+      .output(themeReplaceOutputSchema)
+      .errors(themeMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/themes/{uuid}",
+        summary: "Permanently delete a Theme",
+        tags: ["Theme Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(themeDeleteInputSchema)
+      .output(themeDeleteOutputSchema)
+      .errors(themeMaintenanceMutationErrors),
+  },
   mintingTechniques: {
     list: oc
       .route({
@@ -2063,6 +2296,14 @@ export type EngraverOptionsInput = z.infer<typeof engraverOptionsInputSchema>
 export type EngraverOptionsOutput = z.infer<typeof engraverOptionsOutputSchema>
 export type EngraverDetailOutput = z.infer<typeof engraverDetailOutputSchema>
 export type EngraverMutationBody = z.infer<typeof engraverMutationBodySchema>
+export type Theme = z.infer<typeof themeSchema>
+export type ThemeOption = z.infer<typeof themeOptionSchema>
+export type ThemeListInput = z.infer<typeof themeListInputSchema>
+export type ThemeListOutput = z.infer<typeof themeListOutputSchema>
+export type ThemeOptionsInput = z.infer<typeof themeOptionsInputSchema>
+export type ThemeOptionsOutput = z.infer<typeof themeOptionsOutputSchema>
+export type ThemeDetailOutput = z.infer<typeof themeDetailOutputSchema>
+export type ThemeMutationBody = z.infer<typeof themeMutationBodySchema>
 export type MintingTechnique = z.infer<typeof mintingTechniqueSchema>
 export type MintingTechniqueOption = z.infer<
   typeof mintingTechniqueOptionSchema

@@ -4,9 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { ThemeFieldErrors, ThemeMutationResult } from "../actions"
-import { createThemeInputSchema, submitCreateTheme } from "../actions"
+import { submitCreateTheme } from "../actions"
+import type { ThemeMutationResult } from "../actions"
+import { createThemeInputSchema } from "../theme-validation"
+import type { ThemeFieldErrors } from "../theme-validation"
 
 import { EMPTY_THEME_DRAFT, isThemeDraftComplete } from "./theme-form.shared"
 import { ThemeFormFields, ThemeTextField } from "./theme-form-fields"
@@ -19,18 +20,17 @@ type ThemeCreateFormProps = {
 const createThemeAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: ThemeDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateTheme(session?.user ?? null, data)
-  })
+  .inputValidator((data: ThemeDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateTheme(data))
 
 export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
   const router = useRouter()
   const createTheme = useServerFn(createThemeAction)
   const [fieldErrors, setFieldErrors] = useState<ThemeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -54,12 +54,13 @@ export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
     validators: { onSubmit: createThemeInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createTheme({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const successMessage = applyResult(result)
 
       if (successMessage !== null) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.(successMessage)
       }

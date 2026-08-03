@@ -40,7 +40,7 @@ export function ThemeFormFields({ children, variant }: ThemeFormFieldsProps) {
           field,
           id: `${prefix}theme-${field}`,
           label: `Theme ${field === "code" ? "Code" : "Name"}`,
-          placeholder: field === "code" ? "map" : "Map",
+          placeholder: field === "code" ? "round" : "Round",
         })
       )}
     </FieldGroup>

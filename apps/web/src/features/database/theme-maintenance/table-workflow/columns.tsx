@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { ThemeOption } from "@coin-archive/db"
+import type { Theme } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,19 +14,20 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createThemeColumns(
-  openEditThemeSheet: (theme: ThemeOption) => void
-): ColumnDef<ThemeOption>[] {
+  onEditTheme: (theme: Theme) => void,
+  onDeleteTheme: (theme: Theme) => void
+): ColumnDef<Theme>[] {
   return [
-    {
-      accessorKey: "code",
-      header: ({ column }) => (
-        <SortableColumnHeader column={column}>Theme Code</SortableColumnHeader>
-      ),
-    },
     {
       accessorKey: "name",
       header: ({ column }) => (
         <SortableColumnHeader column={column}>Theme Name</SortableColumnHeader>
+      ),
+    },
+    {
+      accessorKey: "code",
+      header: ({ column }) => (
+        <SortableColumnHeader column={column}>Theme Code</SortableColumnHeader>
       ),
     },
     {
@@ -45,8 +46,14 @@ export function createThemeColumns(
             />
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => openEditThemeSheet(theme)}>
-                  Edit
+                <DropdownMenuItem onClick={() => onEditTheme(theme)}>
+                  Edit Theme
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDeleteTheme(theme)}
+                >
+                  Delete Theme
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

@@ -78,6 +78,15 @@ import {
   engraverMaintenanceProblemDocumentSchema,
   engraverOptionsOutputSchema,
   engraverReplaceInputSchema,
+  themeCreateInputSchema,
+  themeCreateOutputSchema,
+  themeDeleteInputSchema,
+  themeDetailOutputSchema,
+  themeListInputSchema,
+  themeListOutputSchema,
+  themeMaintenanceProblemDocumentSchema,
+  themeOptionsOutputSchema,
+  themeReplaceInputSchema,
   mintingTechniqueCreateInputSchema,
   mintingTechniqueCreateOutputSchema,
   mintingTechniqueDeleteInputSchema,
@@ -158,6 +167,16 @@ const engraver = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-engraver-version"',
+}
+
+const theme = {
+  id: "018f1a11-aaaa-7000-8000-000000000007",
+  code: "raised-both-sides",
+  name: "Raised on both sides",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-theme-version"',
 }
 
 const mintingTechnique = {
@@ -1138,6 +1157,129 @@ describe("Engraver maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: engraver.id },
       headers: { "if-match": engraver.etag },
+    })
+  })
+})
+
+describe("Theme maintenance contract", () => {
+  it("declares stable Theme validation and face-attribution conflict codes", () => {
+    expect(
+      themeMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/theme-validation",
+          title: "Theme validation failed",
+          status: 422,
+          detail: "The Theme could not be saved",
+          instance: "/api/v1/maintenance/themes",
+          code: "theme_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "theme_code_invalid",
+              reason: "Theme Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("theme_code_invalid")
+    expect(
+      themeMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/theme-in-use",
+        title: "Theme is in use",
+        status: 409,
+        detail: "Theme Attributions still use this Theme",
+        instance: `/api/v1/maintenance/themes/${theme.id}`,
+        code: "theme_in_use",
+      }).code
+    ).toBe("theme_in_use")
+  })
+
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      themeListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "reeded",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "reeded",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => themeListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      themeOptionsOutputSchema.parse({
+        data: [{ id: theme.id, code: theme.code, name: theme.name }],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [{ id: theme.id, code: theme.code, name: theme.name }],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      themeListOutputSchema.parse({ data: [theme], nextCursor: null })
+    ).toStrictEqual({ data: [theme], nextCursor: null })
+    expect(themeDetailOutputSchema.parse({ data: theme })).toStrictEqual({
+      data: theme,
+    })
+    expect(() =>
+      themeDetailOutputSchema.parse({
+        data: { ...theme, createdAt: new Date(theme.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      themeCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " reeded ", name: " Reeded " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
+    })
+    expect(
+      themeCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: theme.etag,
+          location: `/api/v1/maintenance/themes/${theme.id}`,
+        },
+        body: { data: theme },
+      })
+    ).toMatchObject({ status: 201, body: { data: theme } })
+    expect(() =>
+      themeCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Reeded Theme", name: "Reeded" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      themeReplaceInputSchema.parse({
+        params: { uuid: theme.id },
+        headers: { "if-match": theme.etag },
+        body: { code: theme.code, name: theme.name },
+      })
+    ).toMatchObject({ headers: { "if-match": theme.etag } })
+    expect(
+      themeDeleteInputSchema.parse({
+        params: { uuid: theme.id },
+        headers: { "if-match": theme.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: theme.id },
+      headers: { "if-match": theme.etag },
     })
   })
 })

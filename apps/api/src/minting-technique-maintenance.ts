@@ -520,7 +520,7 @@ function notFound(instance: string) {
 function stale(instance: string) {
   return problem(
     412,
-    "minting-technique-precondition-failed",
+    "stale-minting-technique",
     "minting_technique_precondition_failed",
     "Minting Technique changed",
     "The Minting Technique changed after it was loaded; reload before retrying",

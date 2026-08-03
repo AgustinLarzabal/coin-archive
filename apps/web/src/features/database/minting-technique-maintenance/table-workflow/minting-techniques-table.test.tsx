@@ -55,7 +55,7 @@ describe("MintingTechniquesTable", () => {
     expect(markup).toContain("Minting Technique Name")
     expect(markup).toContain("Reeded")
     expect(markup).toContain("Plain")
-    expect(markup).toContain("Filter mintingTechniques by code or name...")
+    expect(markup).toContain("Filter minting techniques by code or name...")
     expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')
   })

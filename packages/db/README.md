@@ -189,6 +189,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -729,7 +730,7 @@ Known limitations and non-goals:
 
 The `technique` table models the shared minting-technique classification that may be attached to a Coin:
 
-- a Technique row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- a Technique row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `technique.code` is the stable archive identity for the minting technique and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `technique.name` is display text only; it helps humans read the minting-technique label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat technique codes case-insensitively, while the schema also requires lowercase slug-style text on write
@@ -743,6 +744,7 @@ Technique-specific requirements and constraints:
 - Technique Codes must satisfy the lowercase slug-style check enforced by `technique_code_slug_check`
 - Technique Names do not need to be unique
 - Technique primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Minting Technique Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Technique-specific indexes and query implications:

@@ -1,64 +1,111 @@
+import type { Issuer, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
-import { getEditorRouteAuthorization } from "@/lib/route-authorization"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
+import { createIssuerAuthorizationError } from "./actions"
+import { getIssuerProblemBody } from "./issuer-api-problem"
 
-type LoadIssuerMaintenancePageDataResult = MaintenancePageLoadResult<{
-  issuers: IssuerMaintenanceRecord[]
-}>
+type LoadResult = MaintenancePageLoadResult<
+  { issuers: IssuerMaintenanceRecord[] },
+  ReturnType<typeof createIssuerAuthorizationError>
+>
 
 export type IssuerMaintenancePageLoaderData = MaintenancePageLoaderData<{
   issuers: IssuerMaintenanceRecord[]
 }>
 
-type IssuerMaintenanceReadDependencies = {
-  getIssuerMaintenanceRecords: () => Promise<IssuerMaintenanceRecord[]>
+export type IssuerMaintenanceRecord = Pick<
+  Issuer,
+  "id" | "code" | "isoCode" | "name" | "etag"
+> & {
+  parent: Pick<Issuer, "id" | "code" | "name"> | null
 }
 
-async function getDefaultIssuerReadDependencies(): Promise<IssuerMaintenanceReadDependencies> {
-  const { getIssuerMaintenanceRecords } = await import("@coin-archive/db")
+type ReadDependencies = {
+  listIssuers: MaintenanceApiClient["issuers"]["list"]
+}
 
-  return {
-    getIssuerMaintenanceRecords,
-  }
+async function getDefaultReadDependencies(): Promise<ReadDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listIssuers: client.issuers.list }
 }
 
 export async function loadIssuerMaintenancePageData(
-  collector: CollectorWithRole | null,
-  dependencies?: IssuerMaintenanceReadDependencies
-): Promise<LoadIssuerMaintenancePageDataResult> {
-  if (!getEditorRouteAuthorization(collector).isAllowed) {
-    return {
-      status: "error",
+  dependencies?: ReadDependencies
+): Promise<Awaited<LoadResult>> {
+  const { listIssuers } = dependencies ?? (await getDefaultReadDependencies())
+  const issuers: Issuer[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listIssuers({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      issuers.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Issuer maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createIssuerAuthorizationError()
     }
+    throw error
   }
 
-  const { getIssuerMaintenanceRecords } =
-    dependencies ?? (await getDefaultIssuerReadDependencies())
-
-  return {
-    status: "success",
-    issuers: await getIssuerMaintenanceRecords(),
-  }
+  return { status: "success", issuers: toIssuerMaintenanceRecords(issuers) }
 }
 
-const getIssuerMaintenanceLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadIssuerMaintenancePageData(session?.user ?? null)
+function toIssuerMaintenanceRecords(
+  issuers: Issuer[]
+): IssuerMaintenanceRecord[] {
+  const issuersById = new Map(issuers.map((issuer) => [issuer.id, issuer]))
 
-  return toMaintenancePageLoaderData(result)
-})
+  return issuers.map((issuer) => {
+    const parent =
+      issuer.parentIssuerId === null
+        ? undefined
+        : issuersById.get(issuer.parentIssuerId)
+
+    return {
+      id: issuer.id,
+      code: issuer.code,
+      isoCode: issuer.isoCode,
+      name: issuer.name,
+      etag: issuer.etag,
+      parent: parent
+        ? { id: parent.id, code: parent.code, name: parent.name }
+        : null,
+    }
+  })
+}
+
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadIssuerMaintenancePageData())
+)
 
 export function loadIssuerMaintenanceRouteData() {
-  return getIssuerMaintenanceLoaderData()
+  return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  const body = getIssuerProblemBody(error)
+  return (
+    body !== undefined &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
+  )
 }

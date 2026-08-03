@@ -6,7 +6,15 @@ import {
   createIssuer as createIssuerFixture,
 } from "../testing/fixtures"
 import { useTestDatabaseIsolation } from "../testing/test-database"
-import { createIssuer, deleteIssuer, updateIssuer } from "./issuer"
+import {
+  createIssuer,
+  createIssuerIdempotently,
+  createIssuerIdempotentlyWithDatabase,
+  deleteIssuer,
+  deleteIssuerIfVersionWithDatabase,
+  replaceIssuerWithDatabase,
+  updateIssuer,
+} from "./issuer"
 
 describe("issuer mutations integration", () => {
   useTestDatabaseIsolation(db)
@@ -97,6 +105,125 @@ describe("issuer mutations integration", () => {
 
     expect(firstIssuer.name).toBe(secondIssuer.name)
     expect(firstIssuer.id).not.toBe(secondIssuer.id)
+  })
+
+  it("persists and replays an identical idempotent Issuer create", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "issuer-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: {
+        code: " argentine-republic ",
+        isoCode: " ar ",
+        name: " Argentine Republic ",
+        parentIssuerId: null,
+      },
+    }
+    const first = await createIssuerIdempotently(input)
+    const retry = await createIssuerIdempotently(input)
+
+    expect(first).toMatchObject({
+      status: "created",
+      issuer: {
+        code: "argentine-republic",
+        isoCode: "AR",
+        name: "Argentine Republic",
+        version: 1,
+      },
+    })
+    expect(retry).toStrictEqual({
+      status: "replayed",
+      issuer: first.status === "created" ? first.issuer : expect.anything(),
+    })
+    await expect(db.query.issuer.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("rejects payload-mismatched reuse of an Issuer create key", async () => {
+    const input = {
+      collectorId: "collector-1",
+      idempotencyKey: "issuer-attempt-1",
+      requestHash: "a".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: {
+        code: "argentine-republic",
+        isoCode: "AR",
+        name: "Argentine Republic",
+        parentIssuerId: null,
+      },
+    }
+    await createIssuerIdempotently(input)
+
+    await expect(
+      createIssuerIdempotently({
+        ...input,
+        requestHash: "b".repeat(64),
+        fields: {
+          code: "roman-empire",
+          isoCode: "IT",
+          name: "Roman Empire",
+          parentIssuerId: null,
+        },
+      })
+    ).resolves.toStrictEqual({ status: "mismatch" })
+    await expect(db.query.issuer.findMany()).resolves.toHaveLength(1)
+  })
+
+  it("atomically enforces Issuer versions for replacement and deletion", async () => {
+    const created = await createIssuerIdempotentlyWithDatabase(db, {
+      collectorId: "collector-1",
+      idempotencyKey: "issuer-request-scoped-create",
+      requestHash: "f".repeat(64),
+      expiresAt: new Date("2030-08-03T00:00:00.000Z"),
+      fields: {
+        code: "argentine-republic",
+        isoCode: "AR",
+        name: "Argentine Republic",
+        parentIssuerId: null,
+      },
+    })
+    if (created.status !== "created") throw new Error("Expected create")
+
+    await expect(
+      replaceIssuerWithDatabase(db, {
+        id: created.issuer.id,
+        expectedVersion: 1,
+        code: " roman-empire ",
+        isoCode: " it ",
+        name: " Roman Empire ",
+        parentIssuerId: null,
+      })
+    ).resolves.toMatchObject({
+      status: "updated",
+      issuer: {
+        version: 2,
+        code: "roman-empire",
+        isoCode: "IT",
+        name: "Roman Empire",
+      },
+    })
+    await expect(
+      replaceIssuerWithDatabase(db, {
+        id: created.issuer.id,
+        expectedVersion: 1,
+        code: "argentine-republic",
+        isoCode: "AR",
+        name: "Argentine Republic",
+        parentIssuerId: null,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteIssuerIfVersionWithDatabase(db, {
+        id: created.issuer.id,
+        expectedVersion: 1,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+    await expect(
+      deleteIssuerIfVersionWithDatabase(db, {
+        id: created.issuer.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toMatchObject({ status: "deleted" })
   })
 
   it("trims fields, uppercases ISO code, and updates the parent issuer", async () => {

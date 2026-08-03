@@ -1,443 +1,288 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  hasIssuerMaintenanceAccess,
+  ISSUER_AUTHORIZATION_ERROR,
   submitCreateIssuer,
   submitDeleteIssuer,
   submitUpdateIssuer,
 } from "./actions"
 import {
-  ISSUER_AUTHORIZATION_ERROR,
-  ISSUER_CHILDREN_DELETE_ERROR,
-  ISSUER_COINS_DELETE_ERROR,
-  ISSUER_CYCLIC_PARENT_ERROR,
   ISSUER_DUPLICATE_CODE_ERROR,
-  ISSUER_GENERIC_SAVE_ERROR,
-  ISSUER_INVALID_CODE_ERROR,
-  ISSUER_INVALID_ISO_CODE_ERROR,
-  ISSUER_MISSING_ERROR,
-  ISSUER_MISSING_PARENT_ERROR,
-  ISSUER_SELF_PARENT_ERROR,
-} from "./messages"
+  ISSUER_COINS_DELETE_ERROR,
+  ISSUER_STALE_ERROR,
+} from "./issuer-mutation-errors"
 
-const VALID_ISSUER_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
-const VALID_PARENT_ISSUER_ID = "6f18a1db-9096-433b-b3f1-906c772f7a29"
-
-const ARGENTINE_REPUBLIC = {
-  code: "argentine-republic",
+const id = "2c717ddb-95a2-4dad-a280-f58a4779aee8"
+const etag = '"opaque-version"'
+const issuer = {
+  id,
+  code: "reeded",
   isoCode: "AR",
-  name: "Argentine Republic",
+  name: "Reeded",
   parentIssuerId: null,
+  parent: null,
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag,
 }
 
-function createDependencies(overrides?: {
-  createIssuer?: ReturnType<typeof vi.fn>
-  deleteIssuer?: ReturnType<typeof vi.fn>
-  updateIssuer?: ReturnType<typeof vi.fn>
-}) {
+function problem(code: string, status: number, invalidParams?: unknown[]) {
   return {
-    createIssuer: vi.fn(),
-    deleteIssuer: vi.fn(),
-    updateIssuer: vi.fn(),
-    ...overrides,
+    data: {
+      body: {
+        type: `https://api.coinarchive.app/problems/${code}`,
+        title: code,
+        status,
+        detail: code,
+        instance: "/api/v1/maintenance/issuers",
+        code,
+        ...(invalidParams === undefined ? {} : { invalidParams }),
+      },
+    },
   }
 }
 
-const authorizationErrorResult = {
-  status: "error" as const,
-  fieldErrors: {},
-  formError: ISSUER_AUTHORIZATION_ERROR,
-}
-
-describe("hasIssuerMaintenanceAccess", () => {
-  it("rejects signed-out and non-editor Collectors", () => {
-    expect(hasIssuerMaintenanceAccess(null)).toBe(false)
-    expect(hasIssuerMaintenanceAccess({ role: "collector" })).toBe(false)
-    expect(hasIssuerMaintenanceAccess({ role: null })).toBe(false)
-    expect(hasIssuerMaintenanceAccess({ role: "owner" })).toBe(false)
-  })
-
-  it("allows Editors and Admins", () => {
-    expect(hasIssuerMaintenanceAccess({ role: "editor" })).toBe(true)
-    expect(hasIssuerMaintenanceAccess({ role: "admin" })).toBe(true)
-  })
-})
-
-describe("submitCreateIssuer", () => {
-  it("returns an inline authorization error for signed-out or non-editor Collectors", async () => {
-    await expect(
-      submitCreateIssuer(null, ARGENTINE_REPUBLIC)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-
-    await expect(
-      submitCreateIssuer({ role: "collector" }, ARGENTINE_REPUBLIC)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("maps Zod validation issues into typed field errors", async () => {
-    const dependencies = createDependencies()
+describe("Issuer web mutation adapter", () => {
+  it("leaves authoritative validation to the typed API", async () => {
+    const createIssuer = vi.fn().mockRejectedValue(
+      problem("issuer_validation_failed", 422, [
+        { name: "/code", code: "issuer_code_required" },
+        { name: "/name", code: "issuer_name_too_long" },
+      ])
+    )
 
     await expect(
       submitCreateIssuer(
-        { role: "editor" },
         {
-          code: "Argentine-Republic",
-          isoCode: " ",
-          name: " ",
+          code: " ",
+          isoCode: "AR",
+          name: "".padStart(256, "A"),
           parentIssuerId: null,
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createIssuer }
       )
     ).resolves.toStrictEqual({
       status: "error",
       fieldErrors: {
-        code: ISSUER_INVALID_CODE_ERROR,
-        isoCode: "Issuer ISO Code cannot be blank.",
-        name: "Issuer Name cannot be blank.",
+        code: "Issuer Code cannot be blank.",
+        name: "Issuer Name must be 255 characters or fewer.",
       },
     })
-
-    expect(dependencies.createIssuer).not.toHaveBeenCalled()
+    expect(createIssuer).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: {
+        code: " ",
+        isoCode: "AR",
+        name: "".padStart(256, "A"),
+        parentIssuerId: null,
+      },
+    })
   })
 
-  it("trims Issuer fields and uppercases the ISO code before creating an Issuer", async () => {
-    const dependencies = createDependencies({
-      createIssuer: vi.fn().mockResolvedValue({
-        id: VALID_ISSUER_ID,
-      }),
-    })
+  it("creates through the typed API with a client-owned idempotency key", async () => {
+    const createIssuer = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/issuers/${id}` },
+      body: { data: issuer },
+    }))
 
     await expect(
       submitCreateIssuer(
-        { role: "editor" },
         {
-          code: " argentine-republic ",
+          code: " reeded ",
           isoCode: " ar ",
-          name: " Argentine Republic ",
+          name: " Reeded ",
           parentIssuerId: null,
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        { createIssuer }
       )
     ).resolves.toStrictEqual({
       status: "success",
       message: "Issuer added.",
     })
-
-    expect(dependencies.createIssuer).toHaveBeenCalledWith({
-      code: "argentine-republic",
-      isoCode: "AR",
-      name: "Argentine Republic",
-      parentIssuerId: null,
-    })
-  })
-
-  it("maps duplicate Issuer Codes to the Issuer Code field", async () => {
-    await expect(
-      submitCreateIssuer(
-        { role: "admin" },
-        ARGENTINE_REPUBLIC,
-        createDependencies({
-          createIssuer: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23505",
-              constraint_name: "issuer_code_unique_idx",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ISSUER_DUPLICATE_CODE_ERROR,
+    expect(createIssuer).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: {
+        code: " reeded ",
+        isoCode: " ar ",
+        name: " Reeded ",
+        parentIssuerId: null,
       },
     })
   })
 
-  it("maps invalid Issuer Code and ISO Code constraints to their fields", async () => {
+  it("reuses the caller-owned idempotency key when a create is retried", async () => {
+    const createIssuer = vi.fn(async () => ({
+      status: 201 as const,
+      headers: { etag, location: `/api/v1/maintenance/issuers/${id}` },
+      body: { data: issuer },
+    }))
+    const submission = {
+      code: "reeded",
+      isoCode: "AR",
+      name: "Reeded",
+      parentIssuerId: null,
+      idempotencyKey: "stable-attempt",
+    }
+
+    await submitCreateIssuer(submission, { createIssuer })
+    await submitCreateIssuer(submission, { createIssuer })
+
+    expect(createIssuer).toHaveBeenCalledTimes(2)
+    expect(createIssuer).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+    expect(createIssuer).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: { "idempotency-key": "stable-attempt" },
+      })
+    )
+  })
+
+  it("submits the retained opaque ETag for replacement and deletion", async () => {
+    const replaceIssuer = vi.fn(async () => ({
+      status: 200 as const,
+      headers: { etag: '"next-version"' },
+      body: {
+        data: { ...issuer, version: 2, etag: '"next-version"' },
+      },
+    }))
+    const deleteIssuer = vi.fn(async () => ({ status: 204 as const }))
+
+    await expect(
+      submitUpdateIssuer(
+        {
+          id,
+          etag,
+          code: "plain",
+          isoCode: "IT",
+          name: "Plain",
+          parentIssuerId: null,
+        },
+        { replaceIssuer }
+      )
+    ).resolves.toMatchObject({ status: "success", message: "Saved." })
+    await expect(
+      submitDeleteIssuer({ id, etag }, { deleteIssuer })
+    ).resolves.toMatchObject({
+      status: "success",
+      message: "Issuer deleted.",
+    })
+
+    expect(replaceIssuer).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body: {
+        code: "plain",
+        isoCode: "IT",
+        name: "Plain",
+        parentIssuerId: null,
+      },
+    })
+    expect(deleteIssuer).toHaveBeenCalledWith({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+    })
+  })
+
+  it("maps API authorization, duplicate, stale, and dependency problems", async () => {
     await expect(
       submitCreateIssuer(
-        { role: "admin" },
-        ARGENTINE_REPUBLIC,
-        createDependencies({
+        {
+          code: "reeded",
+          isoCode: "AR",
+          name: "Reeded",
+          parentIssuerId: null,
+          idempotencyKey: "attempt-1",
+        },
+        {
           createIssuer: vi
             .fn()
-            .mockRejectedValueOnce({
-              cause: {
-                code: "23514",
-                constraint_name: "issuer_code_slug_check",
-              },
-            })
-            .mockRejectedValueOnce({
-              cause: {
-                code: "23514",
-                constraint_name: "issuer_iso_code_format_check",
-              },
-            }),
-        })
+            .mockRejectedValue(problem("editor_access_required", 403)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        code: ISSUER_INVALID_CODE_ERROR,
-      },
-    })
+    ).resolves.toMatchObject({ formError: ISSUER_AUTHORIZATION_ERROR })
 
     await expect(
       submitCreateIssuer(
-        { role: "admin" },
-        ARGENTINE_REPUBLIC,
-        createDependencies({
-          createIssuer: vi.fn().mockRejectedValue({
-            cause: {
-              code: "23514",
-              constraint_name: "issuer_iso_code_format_check",
-            },
-          }),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {
-        isoCode: ISSUER_INVALID_ISO_CODE_ERROR,
-      },
-    })
-  })
-
-  it("maps missing, self, and cyclic Parent Issuer errors to the Parent Issuer field", async () => {
-    const expectations = [
-      {
-        constraintName: "issuer_parent_issuer_id_issuer_id_fk",
-        expectedError: ISSUER_MISSING_PARENT_ERROR,
-        code: "23503",
-      },
-      {
-        constraintName: "issuer_parent_issuer_id_self_check",
-        expectedError: ISSUER_SELF_PARENT_ERROR,
-        code: "23514",
-      },
-      {
-        constraintName: "issuer_parent_issuer_id_cycle_check",
-        expectedError: ISSUER_CYCLIC_PARENT_ERROR,
-        code: "23514",
-      },
-    ] as const
-
-    for (const expectation of expectations) {
-      await expect(
-        submitCreateIssuer(
-          { role: "admin" },
-          {
-            ...ARGENTINE_REPUBLIC,
-            parentIssuerId: VALID_PARENT_ISSUER_ID,
-          },
-          createDependencies({
-            createIssuer: vi.fn().mockRejectedValue({
-              cause: {
-                code: expectation.code,
-                constraint_name: expectation.constraintName,
-              },
-            }),
-          })
-        )
-      ).resolves.toStrictEqual({
-        status: "error",
-        fieldErrors: {
-          parentIssuerId: expectation.expectedError,
-        },
-      })
-    }
-  })
-
-  it("returns a generic form error for unexpected persistence failures", async () => {
-    await expect(
-      submitCreateIssuer(
-        { role: "admin" },
-        ARGENTINE_REPUBLIC,
-        createDependencies({
-          createIssuer: vi.fn().mockRejectedValue(new Error("boom")),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ISSUER_GENERIC_SAVE_ERROR,
-    })
-  })
-})
-
-describe("submitUpdateIssuer", () => {
-  const updateInput = {
-    id: VALID_ISSUER_ID,
-    ...ARGENTINE_REPUBLIC,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor update attempts", async () => {
-    await expect(submitUpdateIssuer(null, updateInput)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
-
-    await expect(
-      submitUpdateIssuer({ role: "collector" }, updateInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("trims fields and uppercases the ISO code before updating an Issuer", async () => {
-    const dependencies = createDependencies({
-      updateIssuer: vi.fn().mockResolvedValue({
-        id: VALID_ISSUER_ID,
-      }),
-    })
-
-    await expect(
-      submitUpdateIssuer(
-        { role: "editor" },
         {
-          id: VALID_ISSUER_ID,
-          code: " argentine-republic ",
-          isoCode: " ar ",
-          name: " Argentine Republic ",
-          parentIssuerId: VALID_PARENT_ISSUER_ID,
+          code: "reeded",
+          isoCode: "AR",
+          name: "Reeded",
+          parentIssuerId: null,
+          idempotencyKey: "attempt-1",
         },
-        dependencies
+        {
+          createIssuer: vi
+            .fn()
+            .mockRejectedValue(problem("issuer_code_conflict", 409)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "success",
-      message: "Saved.",
+    ).resolves.toMatchObject({
+      fieldErrors: { code: ISSUER_DUPLICATE_CODE_ERROR },
     })
 
-    expect(dependencies.updateIssuer).toHaveBeenCalledWith({
-      id: VALID_ISSUER_ID,
-      code: "argentine-republic",
-      isoCode: "AR",
-      name: "Argentine Republic",
-      parentIssuerId: VALID_PARENT_ISSUER_ID,
-    })
-  })
-
-  it("returns a missing-row form error when the update target no longer exists", async () => {
     await expect(
       submitUpdateIssuer(
-        { role: "editor" },
-        updateInput,
-        createDependencies({
-          updateIssuer: vi.fn().mockResolvedValue(null),
-        })
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ISSUER_MISSING_ERROR,
-    })
-  })
-
-  it("maps Parent Issuer constraint errors during update", async () => {
-    const expectations = [
-      {
-        constraintName: "issuer_parent_issuer_id_issuer_id_fk",
-        expectedError: ISSUER_MISSING_PARENT_ERROR,
-        code: "23503",
-      },
-      {
-        constraintName: "issuer_parent_issuer_id_self_check",
-        expectedError: ISSUER_SELF_PARENT_ERROR,
-        code: "23514",
-      },
-      {
-        constraintName: "issuer_parent_issuer_id_cycle_check",
-        expectedError: ISSUER_CYCLIC_PARENT_ERROR,
-        code: "23514",
-      },
-    ] as const
-
-    for (const expectation of expectations) {
-      await expect(
-        submitUpdateIssuer(
-          { role: "admin" },
-          {
-            ...updateInput,
-            parentIssuerId: VALID_PARENT_ISSUER_ID,
-          },
-          createDependencies({
-            updateIssuer: vi.fn().mockRejectedValue({
-              cause: {
-                code: expectation.code,
-                constraint_name: expectation.constraintName,
-              },
-            }),
-          })
-        )
-      ).resolves.toStrictEqual({
-        status: "error",
-        fieldErrors: {
-          parentIssuerId: expectation.expectedError,
+        {
+          id,
+          etag,
+          code: "reeded",
+          isoCode: "AR",
+          name: "Reeded",
+          parentIssuerId: null,
         },
-      })
-    }
-  })
-})
+        {
+          replaceIssuer: vi
+            .fn()
+            .mockRejectedValue(problem("issuer_precondition_failed", 412)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: ISSUER_STALE_ERROR })
 
-describe("submitDeleteIssuer", () => {
-  const deleteInput = {
-    id: VALID_ISSUER_ID,
-  }
-
-  it("returns an inline authorization error for signed-out or non-editor delete attempts", async () => {
-    await expect(submitDeleteIssuer(null, deleteInput)).resolves.toStrictEqual(
-      authorizationErrorResult
-    )
-
-    await expect(
-      submitDeleteIssuer({ role: "collector" }, deleteInput)
-    ).resolves.toStrictEqual(authorizationErrorResult)
-  })
-
-  it("returns a missing-row form error when the delete target no longer exists", async () => {
     await expect(
       submitDeleteIssuer(
-        { role: "editor" },
-        deleteInput,
-        createDependencies({
-          deleteIssuer: vi.fn().mockResolvedValue(null),
-        })
+        { id, etag },
+        {
+          deleteIssuer: vi
+            .fn()
+            .mockRejectedValue(problem("issuer_in_use", 409)),
+        }
       )
-    ).resolves.toStrictEqual({
-      status: "error",
-      fieldErrors: {},
-      formError: ISSUER_MISSING_ERROR,
-    })
+    ).resolves.toMatchObject({ formError: ISSUER_COINS_DELETE_ERROR })
   })
 
-  it("maps direct Coin usage and child Issuer usage delete restrictions to distinct messages", async () => {
-    const expectations = [
-      {
-        constraintName: "coin_issuer_id_issuer_id_fk",
-        expectedError: ISSUER_COINS_DELETE_ERROR,
+  it("maps authoritative validation pointers back to current controls", async () => {
+    await expect(
+      submitCreateIssuer(
+        {
+          code: "reeded",
+          isoCode: "AR",
+          name: "Reeded",
+          parentIssuerId: null,
+          idempotencyKey: "attempt-1",
+        },
+        {
+          createIssuer: vi.fn().mockRejectedValue(
+            problem("issuer_validation_failed", 422, [
+              { name: "/code", code: "issuer_code_required" },
+              { name: "/name", code: "issuer_name_too_long" },
+            ])
+          ),
+        }
+      )
+    ).resolves.toMatchObject({
+      fieldErrors: {
+        code: "Issuer Code cannot be blank.",
+        name: "Issuer Name must be 255 characters or fewer.",
       },
-      {
-        constraintName: "issuer_parent_issuer_id_issuer_id_fk",
-        expectedError: ISSUER_CHILDREN_DELETE_ERROR,
-      },
-    ] as const
-
-    for (const expectation of expectations) {
-      await expect(
-        submitDeleteIssuer(
-          { role: "admin" },
-          deleteInput,
-          createDependencies({
-            deleteIssuer: vi.fn().mockRejectedValue({
-              cause: {
-                code: "23001",
-                constraint_name: expectation.constraintName,
-              },
-            }),
-          })
-        )
-      ).resolves.toStrictEqual({
-        status: "error",
-        fieldErrors: {},
-        formError: expectation.expectedError,
-      })
-    }
+    })
   })
 })

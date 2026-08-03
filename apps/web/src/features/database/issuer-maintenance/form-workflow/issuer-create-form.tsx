@@ -2,10 +2,8 @@ import { useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
-
-import { getAuthSession } from "@/lib/auth-session"
 
 import { submitCreateIssuer } from "../actions"
 import type { IssuerMutationResult } from "../actions"
@@ -32,13 +30,10 @@ const createIssuerAction = createServerFn({
       isoCode: string
       name: string
       parentIssuerId: string | null
+      idempotencyKey: string
     }) => data
   )
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateIssuer(session?.user ?? null, data)
-  })
+  .handler(async ({ data }) => submitCreateIssuer(data))
 
 export function IssuerCreateForm({
   issuers,
@@ -48,6 +43,9 @@ export function IssuerCreateForm({
   const createIssuer = useServerFn(createIssuerAction)
   const [fieldErrors, setFieldErrors] = useState<IssuerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
   const parentIssuerOptions = useMemo(
     () => getParentIssuerOptions(issuers),
     [issuers]
@@ -81,12 +79,13 @@ export function IssuerCreateForm({
       }
 
       const result = await createIssuer({
-        data: submission.data,
+        data: { ...submission.data, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

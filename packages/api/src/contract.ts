@@ -990,6 +990,138 @@ export const themeMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const issuerSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  isoCode: z.string().regex(/^[A-Z]{2}$/),
+  name: z.string(),
+  parentIssuerId: z.uuid().nullable(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const issuerOptionSchema = issuerSchema.pick({
+  id: true,
+  code: true,
+  isoCode: true,
+  name: true,
+})
+export const issuerListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code", "isoCode"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const issuerListOutputSchema = z.object({
+  data: z.array(issuerSchema),
+  nextCursor: z.string().nullable(),
+})
+export const issuerOptionsInputSchema = issuerListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const issuerOptionsOutputSchema = z.object({
+  data: z.array(issuerOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const issuerDetailInputSchema = z.object({ uuid: z.uuid() })
+export const issuerDetailOutputSchema = z.object({ data: issuerSchema })
+export const issuerMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  isoCode: z
+    .string()
+    .trim()
+    .transform((value) => value.toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{2}$/)),
+  name: z.string().trim().min(1).max(255),
+  parentIssuerId: z.uuid().nullable(),
+})
+export const issuerCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: issuerMutationBodySchema,
+})
+export const issuerCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/issuers/"),
+    etag: z.string(),
+  }),
+  body: issuerDetailOutputSchema,
+})
+export const issuerReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: issuerMutationBodySchema,
+})
+export const issuerReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: issuerDetailOutputSchema,
+})
+export const issuerDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const issuerDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const issuerMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "issuer_code_conflict",
+      "issuer_has_children",
+      "issuer_in_use",
+      "issuer_not_found",
+      "issuer_parent_cycle",
+      "issuer_parent_not_found",
+      "issuer_precondition_failed",
+      "issuer_self_parent",
+      "issuer_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_issuer_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/isoCode", "/name", "/parentIssuerId"]),
+          code: z.enum([
+            "issuer_body_invalid",
+            "issuer_code_invalid",
+            "issuer_code_required",
+            "issuer_code_too_long",
+            "issuer_iso_code_invalid",
+            "issuer_iso_code_required",
+            "issuer_name_invalid",
+            "issuer_name_required",
+            "issuer_name_too_long",
+            "issuer_parent_cycle",
+            "issuer_parent_invalid",
+            "issuer_parent_not_found",
+            "issuer_self_parent",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 export const mintingTechniqueSchema = z.object({
   id: z.uuid(),
   code: codeSchema,
@@ -1336,6 +1468,38 @@ const themeMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: themeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const issuerMaintenanceReadErrors = {
+  BAD_REQUEST: { status: 400, data: issuerMaintenanceProblemDocumentSchema },
+  UNAUTHORIZED: { status: 401, data: issuerMaintenanceProblemDocumentSchema },
+  FORBIDDEN: { status: 403, data: issuerMaintenanceProblemDocumentSchema },
+  METHOD_NOT_ALLOWED: {
+    status: 405,
+    data: issuerMaintenanceProblemDocumentSchema,
+  },
+  TOO_MANY_REQUESTS: {
+    status: 429,
+    data: issuerMaintenanceProblemDocumentSchema,
+  },
+  INTERNAL_SERVER_ERROR: {
+    status: 500,
+    data: issuerMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const issuerMaintenanceMutationErrors = {
+  ...issuerMaintenanceReadErrors,
+  NOT_FOUND: { status: 404, data: issuerMaintenanceProblemDocumentSchema },
+  CONFLICT: { status: 409, data: issuerMaintenanceProblemDocumentSchema },
+  PRECONDITION_FAILED: {
+    status: 412,
+    data: issuerMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: issuerMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -1974,6 +2138,82 @@ export const maintenanceApiContract = {
       .output(themeDeleteOutputSchema)
       .errors(themeMaintenanceMutationErrors),
   },
+  issuers: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/issuers",
+        summary: "Browse Issuers for maintenance",
+        tags: ["Issuer Maintenance"],
+      })
+      .input(issuerListInputSchema)
+      .output(issuerListOutputSchema)
+      .errors(issuerMaintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/issuers/options",
+        summary: "Search compact Issuer options",
+        tags: ["Issuer Maintenance"],
+      })
+      .input(issuerOptionsInputSchema)
+      .output(issuerOptionsOutputSchema)
+      .errors(issuerMaintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/issuers/{uuid}",
+        summary: "Get Issuer maintenance detail",
+        tags: ["Issuer Maintenance"],
+      })
+      .input(issuerDetailInputSchema)
+      .output(issuerDetailOutputSchema)
+      .errors({
+        ...issuerMaintenanceReadErrors,
+        NOT_FOUND: {
+          status: 404,
+          data: issuerMaintenanceProblemDocumentSchema,
+        },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/issuers",
+        summary: "Create an Issuer",
+        tags: ["Issuer Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(issuerCreateInputSchema)
+      .output(issuerCreateOutputSchema)
+      .errors(issuerMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/issuers/{uuid}",
+        summary: "Replace an Issuer",
+        tags: ["Issuer Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(issuerReplaceInputSchema)
+      .output(issuerReplaceOutputSchema)
+      .errors(issuerMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/issuers/{uuid}",
+        summary: "Permanently delete an Issuer",
+        tags: ["Issuer Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(issuerDeleteInputSchema)
+      .output(issuerDeleteOutputSchema)
+      .errors(issuerMaintenanceMutationErrors),
+  },
   mintingTechniques: {
     list: oc
       .route({
@@ -2304,6 +2544,14 @@ export type ThemeOptionsInput = z.infer<typeof themeOptionsInputSchema>
 export type ThemeOptionsOutput = z.infer<typeof themeOptionsOutputSchema>
 export type ThemeDetailOutput = z.infer<typeof themeDetailOutputSchema>
 export type ThemeMutationBody = z.infer<typeof themeMutationBodySchema>
+export type Issuer = z.infer<typeof issuerSchema>
+export type IssuerOption = z.infer<typeof issuerOptionSchema>
+export type IssuerListInput = z.infer<typeof issuerListInputSchema>
+export type IssuerListOutput = z.infer<typeof issuerListOutputSchema>
+export type IssuerOptionsInput = z.infer<typeof issuerOptionsInputSchema>
+export type IssuerOptionsOutput = z.infer<typeof issuerOptionsOutputSchema>
+export type IssuerDetailOutput = z.infer<typeof issuerDetailOutputSchema>
+export type IssuerMutationBody = z.infer<typeof issuerMutationBodySchema>
 export type MintingTechnique = z.infer<typeof mintingTechniqueSchema>
 export type MintingTechniqueOption = z.infer<
   typeof mintingTechniqueOptionSchema

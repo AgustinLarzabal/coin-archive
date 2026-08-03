@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import type { Row } from "@tanstack/react-table"
@@ -36,6 +36,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "argentine-republic",
     isoCode: "AR",
     name: "Argentine Republic",
+    etag: '"issuer-version"',
     parent: null,
   },
   {
@@ -43,6 +44,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "provincia-de-la-rioja",
     isoCode: "AR",
     name: "Provincia de La Rioja",
+    etag: '"issuer-version"',
     parent: {
       id: "dc2f4da3-cfd0-43fa-8900-7a384fc6977a",
       code: "argentine-republic",
@@ -54,6 +56,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "united-states-of-america",
     isoCode: "US",
     name: "United States of America",
+    etag: '"issuer-version"',
     parent: null,
   },
 ]

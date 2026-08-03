@@ -87,6 +87,15 @@ import {
   themeMaintenanceProblemDocumentSchema,
   themeOptionsOutputSchema,
   themeReplaceInputSchema,
+  issuerCreateInputSchema,
+  issuerCreateOutputSchema,
+  issuerDeleteInputSchema,
+  issuerDetailOutputSchema,
+  issuerListInputSchema,
+  issuerListOutputSchema,
+  issuerMaintenanceProblemDocumentSchema,
+  issuerOptionsOutputSchema,
+  issuerReplaceInputSchema,
   mintingTechniqueCreateInputSchema,
   mintingTechniqueCreateOutputSchema,
   mintingTechniqueDeleteInputSchema,
@@ -177,6 +186,18 @@ const theme = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-theme-version"',
+}
+
+const issuer = {
+  id: "018f1a11-aaaa-7000-8000-000000000009",
+  code: "argentine-republic",
+  isoCode: "AR",
+  name: "Argentine Republic",
+  parentIssuerId: null,
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-issuer-version"',
 }
 
 const mintingTechnique = {
@@ -1522,5 +1543,114 @@ describe("Currency maintenance contract", () => {
       params: { uuid: currency.id },
       headers: { "if-match": currency.etag },
     })
+  })
+})
+
+describe("Issuer maintenance contract", () => {
+  it("defines paginated Issuer reads and compact options", () => {
+    expect(
+      issuerListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "argentina",
+        sort: "isoCode",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "argentina",
+      sort: "isoCode",
+      order: "desc",
+    })
+    expect(() => issuerListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      issuerOptionsOutputSchema.parse({
+        data: [
+          {
+            id: issuer.id,
+            code: issuer.code,
+            isoCode: issuer.isoCode,
+            name: issuer.name,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toMatchObject({ data: [{ id: issuer.id, isoCode: "AR" }] })
+  })
+
+  it("uses canonical mutable Issuer representations", () => {
+    expect(
+      issuerListOutputSchema.parse({ data: [issuer], nextCursor: null })
+    ).toStrictEqual({ data: [issuer], nextCursor: null })
+    expect(issuerDetailOutputSchema.parse({ data: issuer })).toStrictEqual({
+      data: issuer,
+    })
+    expect(
+      issuerCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: {
+          code: " argentine-republic ",
+          isoCode: " ar ",
+          name: " Argentine Republic ",
+          parentIssuerId: null,
+        },
+      })
+    ).toMatchObject({
+      body: {
+        code: "argentine-republic",
+        isoCode: "AR",
+        name: "Argentine Republic",
+        parentIssuerId: null,
+      },
+    })
+    expect(
+      issuerCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: issuer.etag,
+          location: `/api/v1/maintenance/issuers/${issuer.id}`,
+        },
+        body: { data: issuer },
+      })
+    ).toMatchObject({ status: 201, body: { data: issuer } })
+  })
+
+  it("requires opaque preconditions and exposes Issuer-specific problems", () => {
+    expect(
+      issuerReplaceInputSchema.parse({
+        params: { uuid: issuer.id },
+        headers: { "if-match": issuer.etag },
+        body: {
+          code: issuer.code,
+          isoCode: issuer.isoCode,
+          name: issuer.name,
+          parentIssuerId: issuer.parentIssuerId,
+        },
+      })
+    ).toMatchObject({ headers: { "if-match": issuer.etag } })
+    expect(
+      issuerDeleteInputSchema.parse({
+        params: { uuid: issuer.id },
+        headers: { "if-match": issuer.etag },
+      })
+    ).toMatchObject({ headers: { "if-match": issuer.etag } })
+    expect(
+      issuerMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/issuer-parent-cycle",
+        title: "Issuer hierarchy conflict",
+        status: 422,
+        detail: "Parent Issuer cannot be a descendant of this Issuer.",
+        instance: `/api/v1/maintenance/issuers/${issuer.id}`,
+        code: "issuer_parent_cycle",
+        invalidParams: [
+          {
+            name: "/parentIssuerId",
+            code: "issuer_parent_cycle",
+            reason: "Parent Issuer cannot be a descendant of this Issuer.",
+          },
+        ],
+      }).code
+    ).toBe("issuer_parent_cycle")
   })
 })

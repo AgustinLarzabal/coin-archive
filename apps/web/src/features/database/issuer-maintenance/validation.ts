@@ -47,11 +47,17 @@ export const createIssuerInputSchema = z.object({
 
 export const updateIssuerInputSchema = createIssuerInputSchema.extend({
   id: z.uuid(),
+  etag: z.string().min(1),
 })
 
 export const deleteIssuerInputSchema = z.object({
   id: z.uuid(),
+  etag: z.string().min(1),
 })
+
+export type CreateIssuerInput = z.input<typeof createIssuerInputSchema>
+export type UpdateIssuerInput = z.input<typeof updateIssuerInputSchema>
+export type DeleteIssuerInput = z.input<typeof deleteIssuerInputSchema>
 
 type IssuerFieldName = (typeof ISSUER_FIELD_NAMES)[number]
 

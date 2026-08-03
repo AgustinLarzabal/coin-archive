@@ -21,6 +21,7 @@ const issuers = [
     code: "argentine-republic",
     isoCode: "AR",
     name: "Argentine Republic",
+    etag: '"issuer-version"',
     parent: null,
   },
 ]

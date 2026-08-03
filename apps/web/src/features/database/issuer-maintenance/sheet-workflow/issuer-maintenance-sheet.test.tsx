@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -96,6 +96,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "argentine-republic",
     isoCode: "AR",
     name: "Argentine Republic",
+    etag: '"issuer-version"',
     parent: null,
   },
 ]

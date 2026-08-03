@@ -1,378 +1,214 @@
-import { hasEditorAccess } from "@coin-archive/auth/client"
-import type { z } from "zod"
-
-import { getCollectorRole } from "@/lib/collector-role"
-import type { CollectorWithRole } from "@/lib/collector-role"
+import type { MaintenanceApiClient } from "@coin-archive/api"
 
 import {
-  ISSUER_AUTHORIZATION_ERROR,
-  ISSUER_CHILDREN_DELETE_ERROR,
-  ISSUER_COINS_DELETE_ERROR,
-  ISSUER_CREATED_MESSAGE,
-  ISSUER_CYCLIC_PARENT_ERROR,
-  ISSUER_DELETED_MESSAGE,
   ISSUER_DUPLICATE_CODE_ERROR,
   ISSUER_GENERIC_SAVE_ERROR,
-  ISSUER_INVALID_CODE_ERROR,
-  ISSUER_INVALID_ISO_CODE_ERROR,
+  ISSUER_COINS_DELETE_ERROR,
+  ISSUER_CHILDREN_DELETE_ERROR,
   ISSUER_MISSING_ERROR,
+  ISSUER_STALE_ERROR,
+  createIssuerFieldErrorResult,
+  createIssuerFormErrorResult,
+} from "./issuer-mutation-errors"
+import type { IssuerMutationResult } from "./issuer-mutation-errors"
+import {
+  ISSUER_AUTHORIZATION_ERROR,
+  ISSUER_CREATED_MESSAGE,
+  ISSUER_DELETED_MESSAGE,
+  ISSUER_UPDATED_MESSAGE,
+  ISSUER_CYCLIC_PARENT_ERROR,
+  ISSUER_INVALID_ISO_CODE_ERROR,
   ISSUER_MISSING_PARENT_ERROR,
   ISSUER_SELF_PARENT_ERROR,
-  ISSUER_UPDATED_MESSAGE,
 } from "./messages"
-import {
-  createIssuerInputSchema,
-  deleteIssuerInputSchema,
-  getIssuerFieldErrors,
-  updateIssuerInputSchema,
+import type {
+  CreateIssuerInput,
+  DeleteIssuerInput,
+  UpdateIssuerInput,
 } from "./validation"
-import type { IssuerFieldErrors } from "./validation"
+import { getIssuerProblemBody } from "./issuer-api-problem"
 
-const DUPLICATE_KEY_POSTGRES_ERROR_CODE = "23505"
-const FK_VIOLATION_POSTGRES_ERROR_CODE = "23001"
-const FK_REFERENCE_POSTGRES_ERROR_CODE = "23503"
-const CHECK_VIOLATION_POSTGRES_ERROR_CODE = "23514"
-const DUPLICATE_ISSUER_CODE_CONSTRAINT = "issuer_code_unique_idx"
-const INVALID_ISSUER_CODE_CONSTRAINT = "issuer_code_slug_check"
-const INVALID_ISSUER_ISO_CODE_CONSTRAINT = "issuer_iso_code_format_check"
-const MISSING_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_issuer_id_fk"
-const SELF_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_self_check"
-const CYCLIC_PARENT_ISSUER_CONSTRAINT = "issuer_parent_issuer_id_cycle_check"
-const COIN_ISSUER_DELETE_CONSTRAINT = "coin_issuer_id_issuer_id_fk"
-const CHILD_ISSUER_DELETE_CONSTRAINT = "issuer_parent_issuer_id_issuer_id_fk"
+export { ISSUER_AUTHORIZATION_ERROR } from "./messages"
+export type { IssuerMutationResult } from "./issuer-mutation-errors"
 
-export type IssuerMutationResult =
-  | {
-      status: "error"
-      fieldErrors: IssuerFieldErrors
-      formError?: string
-    }
-  | {
-      status: "success"
-      message: string
-    }
-
-type CreateIssuerInput = z.input<typeof createIssuerInputSchema>
-type CreateIssuerData = z.output<typeof createIssuerInputSchema>
-type UpdateIssuerInput = z.input<typeof updateIssuerInputSchema>
-type UpdateIssuerData = z.output<typeof updateIssuerInputSchema>
-type DeleteIssuerInput = z.input<typeof deleteIssuerInputSchema>
-type DeleteIssuerData = z.output<typeof deleteIssuerInputSchema>
-type ValidationResult<TData> =
-  | { success: true; data: TData }
-  | { success: false; result: IssuerMutationResult }
-type PostgresConstraintResult = {
-  code: string
-  constraintName: string
-  result: IssuerMutationResult
-}
-type PostgresError = {
-  code: unknown
-  constraint_name: unknown
+export type IssuerAuthorizationErrorResult = {
+  status: "error"
+  formError: typeof ISSUER_AUTHORIZATION_ERROR
 }
 
-type SubmitIssuerMutationOptions<TInput, TData> = {
-  collector: CollectorWithRole | null
-  input: TInput
-  dependencies?: IssuerMutationDependencies
-  validate: (input: TInput) => ValidationResult<TData>
-  execute: (
-    dependencies: IssuerMutationDependencies,
-    data: TData
-  ) => Promise<unknown | null>
-  createSuccessResult: () => IssuerMutationResult
-  createNullResult?: () => IssuerMutationResult
+type CreateDependencies = {
+  createIssuer: MaintenanceApiClient["issuers"]["create"]
 }
 
-type IssuerMutationDependencies = {
-  createIssuer: (input: CreateIssuerData) => Promise<unknown>
-  deleteIssuer: (input: DeleteIssuerData) => Promise<unknown | null>
-  updateIssuer: (input: UpdateIssuerData) => Promise<unknown | null>
+type ReplaceDependencies = {
+  replaceIssuer: MaintenanceApiClient["issuers"]["replace"]
 }
 
-const POSTGRES_CONSTRAINT_RESULTS: PostgresConstraintResult[] = [
-  {
-    code: DUPLICATE_KEY_POSTGRES_ERROR_CODE,
-    constraintName: DUPLICATE_ISSUER_CODE_CONSTRAINT,
-    result: createFieldErrorResult({
-      code: ISSUER_DUPLICATE_CODE_ERROR,
-    }),
-  },
-  {
-    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: COIN_ISSUER_DELETE_CONSTRAINT,
-    result: createFormErrorResult(ISSUER_COINS_DELETE_ERROR),
-  },
-  {
-    code: FK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: CHILD_ISSUER_DELETE_CONSTRAINT,
-    result: createFormErrorResult(ISSUER_CHILDREN_DELETE_ERROR),
-  },
-  {
-    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: INVALID_ISSUER_CODE_CONSTRAINT,
-    result: createFieldErrorResult({
-      code: ISSUER_INVALID_CODE_ERROR,
-    }),
-  },
-  {
-    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: INVALID_ISSUER_ISO_CODE_CONSTRAINT,
-    result: createFieldErrorResult({
-      isoCode: ISSUER_INVALID_ISO_CODE_ERROR,
-    }),
-  },
-  {
-    code: FK_REFERENCE_POSTGRES_ERROR_CODE,
-    constraintName: MISSING_PARENT_ISSUER_CONSTRAINT,
-    result: createFieldErrorResult({
-      parentIssuerId: ISSUER_MISSING_PARENT_ERROR,
-    }),
-  },
-  {
-    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: SELF_PARENT_ISSUER_CONSTRAINT,
-    result: createFieldErrorResult({
-      parentIssuerId: ISSUER_SELF_PARENT_ERROR,
-    }),
-  },
-  {
-    code: CHECK_VIOLATION_POSTGRES_ERROR_CODE,
-    constraintName: CYCLIC_PARENT_ISSUER_CONSTRAINT,
-    result: createFieldErrorResult({
-      parentIssuerId: ISSUER_CYCLIC_PARENT_ERROR,
-    }),
-  },
-]
+type DeleteDependencies = {
+  deleteIssuer: MaintenanceApiClient["issuers"]["delete"]
+}
 
-async function getDefaultIssuerMutationDependencies(): Promise<IssuerMutationDependencies> {
-  const { createIssuer, deleteIssuer, updateIssuer } =
-    await import("@coin-archive/db")
+export function createIssuerAuthorizationError(): IssuerAuthorizationErrorResult {
+  return { status: "error", formError: ISSUER_AUTHORIZATION_ERROR }
+}
 
+async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
   return {
-    createIssuer,
-    deleteIssuer,
-    updateIssuer,
+    createIssuer: client.issuers.create,
   }
 }
 
-async function resolveIssuerMutationDependencies(
-  dependencies?: IssuerMutationDependencies
-): Promise<IssuerMutationDependencies> {
-  return dependencies ?? getDefaultIssuerMutationDependencies()
+async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { replaceIssuer: client.issuers.replace }
 }
 
-function createAuthorizationError(): IssuerMutationResult {
-  return createFormErrorResult(ISSUER_AUTHORIZATION_ERROR)
+async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { deleteIssuer: client.issuers.delete }
 }
 
-function createFieldErrorResult(
-  fieldErrors: IssuerFieldErrors
-): IssuerMutationResult {
-  return {
-    status: "error",
-    fieldErrors,
-  }
-}
-
-function createFormErrorResult(formError: string): IssuerMutationResult {
-  return {
-    status: "error",
-    fieldErrors: {},
-    formError,
-  }
-}
-
-export function hasIssuerMaintenanceAccess(
-  collector: CollectorWithRole | null
-): boolean {
-  const role = getCollectorRole(collector)
-
-  return role !== null && hasEditorAccess(role)
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
-
-function isPostgresError(value: unknown): value is PostgresError {
-  return isObjectRecord(value) && "code" in value && "constraint_name" in value
-}
-
-function createValidationError(issues: z.ZodIssue[]): IssuerMutationResult {
-  return createFieldErrorResult(getIssuerFieldErrors(issues))
-}
-
-function getPostgresError(error: unknown): PostgresError | null {
-  if (!isObjectRecord(error)) {
-    return null
-  }
-
-  const postgresError = "cause" in error ? error.cause : error
-
-  if (!isPostgresError(postgresError)) {
-    return null
-  }
-
-  return postgresError
-}
-
-function matchesPostgresConstraint(
-  postgresError: PostgresError,
-  code: string,
-  constraintName: string
-): boolean {
-  return (
-    postgresError.code === code &&
-    postgresError.constraint_name === constraintName
-  )
-}
-
-function createPersistenceError(error: unknown): IssuerMutationResult {
-  const postgresError = getPostgresError(error)
-
-  if (postgresError === null) {
-    return createFormErrorResult(ISSUER_GENERIC_SAVE_ERROR)
-  }
-
-  for (const entry of POSTGRES_CONSTRAINT_RESULTS) {
-    if (
-      matchesPostgresConstraint(postgresError, entry.code, entry.constraintName)
-    ) {
-      return entry.result
-    }
-  }
-
-  return createFormErrorResult(ISSUER_GENERIC_SAVE_ERROR)
-}
-
-function validateIssuerInput<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: z.input<TSchema>
-): ValidationResult<z.output<TSchema>> {
-  const parsedInput = schema.safeParse(input)
-
-  if (!parsedInput.success) {
-    return {
-      success: false,
-      result: createValidationError(parsedInput.error.issues),
-    }
-  }
-
-  return {
-    success: true,
-    data: parsedInput.data,
-  }
-}
-
-function validateCreateIssuerInput(
-  input: CreateIssuerInput
-): ValidationResult<CreateIssuerData> {
-  return validateIssuerInput(createIssuerInputSchema, input)
-}
-
-function validateUpdateIssuerInput(
-  input: UpdateIssuerInput
-): ValidationResult<UpdateIssuerData> {
-  return validateIssuerInput(updateIssuerInputSchema, input)
-}
-
-function validateDeleteIssuerInput(
-  input: DeleteIssuerInput
-): ValidationResult<DeleteIssuerData> {
-  return validateIssuerInput(deleteIssuerInputSchema, input)
-}
-
-async function submitIssuerMutation<TInput, TData>({
-  collector,
-  input,
-  dependencies,
-  validate,
-  execute,
-  createSuccessResult,
-  createNullResult,
-}: SubmitIssuerMutationOptions<TInput, TData>): Promise<IssuerMutationResult> {
-  if (!hasIssuerMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validate(input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const resolvedDependencies =
-    await resolveIssuerMutationDependencies(dependencies)
+export async function submitCreateIssuer(
+  input: CreateIssuerInput & { idempotencyKey: string },
+  dependencies?: CreateDependencies
+): Promise<IssuerMutationResult> {
+  const { idempotencyKey, ...fields } = input
+  const resolved = dependencies ?? (await getDefaultCreateDependencies())
 
   try {
-    const result = await execute(resolvedDependencies, validationResult.data)
-
-    if (result === null && createNullResult) {
-      return createNullResult()
-    }
-
-    return createSuccessResult()
+    await resolved.createIssuer({
+      headers: { "idempotency-key": idempotencyKey },
+      body: fields,
+    })
+    return { status: "success", message: ISSUER_CREATED_MESSAGE }
   } catch (error) {
-    return createPersistenceError(error)
+    return mapIssuerApiProblem(error)
   }
 }
 
-export function submitCreateIssuer(
-  collector: CollectorWithRole | null,
-  input: CreateIssuerInput,
-  dependencies?: IssuerMutationDependencies
-) {
-  return submitIssuerMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateCreateIssuerInput,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.createIssuer(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: ISSUER_CREATED_MESSAGE,
-    }),
-  })
-}
-
-export function submitUpdateIssuer(
-  collector: CollectorWithRole | null,
+export async function submitUpdateIssuer(
   input: UpdateIssuerInput,
-  dependencies?: IssuerMutationDependencies
-) {
-  return submitIssuerMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateUpdateIssuerInput,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.updateIssuer(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: ISSUER_UPDATED_MESSAGE,
-    }),
-    createNullResult: () => createFormErrorResult(ISSUER_MISSING_ERROR),
-  })
+  dependencies?: ReplaceDependencies
+): Promise<IssuerMutationResult> {
+  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
+  const { id, etag, ...body } = input
+
+  try {
+    await resolved.replaceIssuer({
+      params: { uuid: id },
+      headers: { "if-match": etag },
+      body,
+    })
+    return { status: "success", message: ISSUER_UPDATED_MESSAGE }
+  } catch (error) {
+    return mapIssuerApiProblem(error)
+  }
 }
 
-export function submitDeleteIssuer(
-  collector: CollectorWithRole | null,
+export async function submitDeleteIssuer(
   input: DeleteIssuerInput,
-  dependencies?: IssuerMutationDependencies
-) {
-  return submitIssuerMutation({
-    collector,
-    input,
-    dependencies,
-    validate: validateDeleteIssuerInput,
-    execute: (resolvedDependencies, data) =>
-      resolvedDependencies.deleteIssuer(data),
-    createSuccessResult: () => ({
-      status: "success",
-      message: ISSUER_DELETED_MESSAGE,
-    }),
-    createNullResult: () => createFormErrorResult(ISSUER_MISSING_ERROR),
-  })
+  dependencies?: DeleteDependencies
+): Promise<IssuerMutationResult> {
+  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
+
+  try {
+    await resolved.deleteIssuer({
+      params: { uuid: input.id },
+      headers: { "if-match": input.etag },
+    })
+    return { status: "success", message: ISSUER_DELETED_MESSAGE }
+  } catch (error) {
+    return mapIssuerApiProblem(error)
+  }
+}
+
+function mapIssuerApiProblem(error: unknown): IssuerMutationResult {
+  const body = getIssuerProblemBody(error)
+  switch (body?.code) {
+    case "authentication_required":
+    case "editor_access_required":
+      return createIssuerFormErrorResult(ISSUER_AUTHORIZATION_ERROR)
+    case "issuer_code_conflict":
+      return createIssuerFieldErrorResult({
+        code: ISSUER_DUPLICATE_CODE_ERROR,
+      })
+    case "issuer_validation_failed":
+      return mapValidationProblem(body)
+    case "issuer_parent_not_found":
+      return createIssuerFieldErrorResult({
+        parentIssuerId: ISSUER_MISSING_PARENT_ERROR,
+      })
+    case "issuer_self_parent":
+      return createIssuerFieldErrorResult({
+        parentIssuerId: ISSUER_SELF_PARENT_ERROR,
+      })
+    case "issuer_parent_cycle":
+      return createIssuerFieldErrorResult({
+        parentIssuerId: ISSUER_CYCLIC_PARENT_ERROR,
+      })
+    case "issuer_in_use":
+      return createIssuerFormErrorResult(ISSUER_COINS_DELETE_ERROR)
+    case "issuer_has_children":
+      return createIssuerFormErrorResult(ISSUER_CHILDREN_DELETE_ERROR)
+    case "issuer_not_found":
+      return createIssuerFormErrorResult(ISSUER_MISSING_ERROR)
+    case "issuer_precondition_failed":
+      return createIssuerFormErrorResult(ISSUER_STALE_ERROR)
+    default:
+      return createIssuerFormErrorResult(ISSUER_GENERIC_SAVE_ERROR)
+  }
+}
+
+function mapValidationProblem(
+  body: Record<string, unknown>
+): IssuerMutationResult {
+  const invalidParams = Array.isArray(body.invalidParams)
+    ? body.invalidParams
+    : []
+  const fieldErrors: {
+    code?: string
+    isoCode?: string
+    name?: string
+    parentIssuerId?: string
+  } = {}
+
+  for (const parameter of invalidParams) {
+    if (typeof parameter !== "object" || parameter === null) continue
+    if (!("name" in parameter) || !("code" in parameter)) continue
+    if (parameter.name === "/code") {
+      fieldErrors.code =
+        parameter.code === "issuer_code_too_long"
+          ? "Issuer Code must be 255 characters or fewer."
+          : parameter.code === "issuer_code_invalid"
+            ? "Issuer Code must use lowercase letters, numbers, and single hyphens only."
+            : "Issuer Code cannot be blank."
+    }
+    if (parameter.name === "/name") {
+      fieldErrors.name =
+        parameter.code === "issuer_name_too_long"
+          ? "Issuer Name must be 255 characters or fewer."
+          : "Issuer Name cannot be blank."
+    }
+    if (parameter.name === "/isoCode") {
+      fieldErrors.isoCode = ISSUER_INVALID_ISO_CODE_ERROR
+    }
+    if (parameter.name === "/parentIssuerId") {
+      fieldErrors.parentIssuerId =
+        parameter.code === "issuer_parent_not_found"
+          ? ISSUER_MISSING_PARENT_ERROR
+          : parameter.code === "issuer_self_parent"
+            ? ISSUER_SELF_PARENT_ERROR
+            : parameter.code === "issuer_parent_cycle"
+              ? ISSUER_CYCLIC_PARENT_ERROR
+              : "Parent Issuer must be a valid record."
+    }
+  }
+  return createIssuerFieldErrorResult(fieldErrors)
 }

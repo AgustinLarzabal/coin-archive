@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
@@ -33,6 +33,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "argentine-republic",
     isoCode: "AR",
     name: "Argentine Republic",
+    etag: '"issuer-version"',
     parent: null,
   },
   {
@@ -40,6 +41,7 @@ const issuers: IssuerMaintenanceRecord[] = [
     code: "provincia-de-la-rioja",
     isoCode: "AR",
     name: "Provincia de La Rioja",
+    etag: '"issuer-version"',
     parent: {
       id: "dc2f4da3-cfd0-43fa-8900-7a384fc6977a",
       code: "argentine-republic",

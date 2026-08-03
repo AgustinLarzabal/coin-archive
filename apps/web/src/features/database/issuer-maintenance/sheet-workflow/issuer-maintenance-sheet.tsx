@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import {
   Sheet,
   SheetContent,
@@ -27,10 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  submitDeleteIssuer,
-} from "../actions"
+import { submitDeleteIssuer } from "../actions"
 import {
   ISSUER_DELETE_CONFIRMATION_DESCRIPTION,
   ISSUER_GENERIC_SAVE_ERROR,
@@ -52,12 +49,8 @@ type IssuerMaintenanceSheetProps = {
 const deleteIssuerAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteIssuer(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteIssuer(data))
 
 export function IssuerMaintenanceSheet({
   issuer,
@@ -98,6 +91,7 @@ export function IssuerMaintenanceSheet({
       const result = await deleteIssuer({
         data: {
           id: issuer.id,
+          etag: issuer.etag,
         },
       })
 

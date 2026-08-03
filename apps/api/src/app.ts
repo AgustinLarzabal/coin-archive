@@ -32,6 +32,8 @@ import { registerEngraverMaintenanceRoutes } from "./engraver-maintenance"
 import type { EngraverMaintenanceDependencies } from "./engraver-maintenance"
 import { registerThemeMaintenanceRoutes } from "./theme-maintenance"
 import type { ThemeMaintenanceDependencies } from "./theme-maintenance"
+import { registerIssuerMaintenanceRoutes } from "./issuer-maintenance"
+import type { IssuerMaintenanceDependencies } from "./issuer-maintenance"
 import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-maintenance"
 import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
 
@@ -233,6 +235,17 @@ export function createApiApp({
   deleteTheme = async () => {
     throw new Error("Theme deletion is not configured")
   },
+  listIssuers = async () => [],
+  getIssuer = async () => null,
+  createIssuer = async () => {
+    throw new Error("Issuer create is not configured")
+  },
+  replaceIssuer = async () => {
+    throw new Error("Issuer replacement is not configured")
+  },
+  deleteIssuer = async () => {
+    throw new Error("Issuer deletion is not configured")
+  },
   listMintingTechniques = async () => [],
   getMintingTechnique = async () => null,
   createMintingTechnique = async () => {
@@ -317,6 +330,11 @@ export function createApiApp({
   createTheme?: ThemeMaintenanceDependencies["createTheme"]
   replaceTheme?: ThemeMaintenanceDependencies["replaceTheme"]
   deleteTheme?: ThemeMaintenanceDependencies["deleteTheme"]
+  listIssuers?: IssuerMaintenanceDependencies["listIssuers"]
+  getIssuer?: IssuerMaintenanceDependencies["getIssuer"]
+  createIssuer?: IssuerMaintenanceDependencies["createIssuer"]
+  replaceIssuer?: IssuerMaintenanceDependencies["replaceIssuer"]
+  deleteIssuer?: IssuerMaintenanceDependencies["deleteIssuer"]
   listMintingTechniques?: MintingTechniqueMaintenanceDependencies["listMintingTechniques"]
   getMintingTechnique?: MintingTechniqueMaintenanceDependencies["getMintingTechnique"]
   createMintingTechnique?: MintingTechniqueMaintenanceDependencies["createMintingTechnique"]
@@ -559,6 +577,13 @@ export function createApiApp({
     createTheme,
     replaceTheme,
     deleteTheme,
+  })
+  registerIssuerMaintenanceRoutes(app, {
+    listIssuers,
+    getIssuer,
+    createIssuer,
+    replaceIssuer,
+    deleteIssuer,
   })
   registerMintingTechniqueMaintenanceRoutes(app, {
     listMintingTechniques,

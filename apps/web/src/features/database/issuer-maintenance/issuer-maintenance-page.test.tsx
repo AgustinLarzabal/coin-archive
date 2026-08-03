@@ -28,6 +28,7 @@ const issuerMaintenanceRecords = [
     code: "argentine-republic",
     isoCode: "AR",
     name: "Argentine Republic",
+    etag: '"issuer-version"',
     parent: null,
   },
   {
@@ -35,6 +36,7 @@ const issuerMaintenanceRecords = [
     code: "provincia-de-la-rioja",
     isoCode: "AR",
     name: "Provincia de La Rioja",
+    etag: '"issuer-version"',
     parent: {
       id: "dc2f4da3-cfd0-43fa-8900-7a384fc6977a",
       code: "argentine-republic",

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   check,
   index,
+  integer,
   pgTable,
   timestamp,
   uniqueIndex,
@@ -39,6 +40,7 @@ export const issuer = pgTable(
         onDelete: "restrict",
       }
     ),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

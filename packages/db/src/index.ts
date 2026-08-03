@@ -170,11 +170,31 @@ export type {
   DeleteThemeIfVersionResult,
   ReplaceThemeResult,
 } from "./mutations/theme"
+export {
+  createIssuerIdempotently,
+  createIssuerIdempotentlyWithDatabase,
+  deleteIssuerIfVersionWithDatabase,
+  replaceIssuerWithDatabase,
+} from "./mutations/issuer"
+export type {
+  CreateIssuerIdempotentlyResult,
+  DeleteIssuerIfVersionResult,
+  ReplaceIssuerResult,
+} from "./mutations/issuer"
 export { getCatalogues } from "./queries/get-catalogues"
 export {
   getThemeMaintenanceRecordWithDatabase,
   getThemeMaintenanceRecordsWithDatabase,
 } from "./queries/get-theme-maintenance"
+export {
+  getIssuerMaintenanceRecordWithDatabase,
+  getIssuerMaintenanceRecordsWithDatabase,
+} from "./queries/get-issuer-maintenance"
+export type {
+  GetIssuerMaintenanceRecordsOptions,
+  IssuerMaintenanceCursor,
+  IssuerMaintenanceListRecord,
+} from "./queries/get-issuer-maintenance"
 export {
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,

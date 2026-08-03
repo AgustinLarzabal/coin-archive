@@ -2,10 +2,8 @@ import { useEffect, useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
-
-import { getAuthSession } from "@/lib/auth-session"
 
 import { submitUpdateIssuer } from "../actions"
 import type { IssuerMutationResult } from "../actions"
@@ -35,13 +33,10 @@ const updateIssuerAction = createServerFn({
       isoCode: string
       name: string
       parentIssuerId: string | null
+      etag: string
     }) => data
   )
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateIssuer(session?.user ?? null, data)
-  })
+  .handler(async ({ data }) => submitUpdateIssuer(data))
 
 export function hasIssuerEditChanges(
   issuer: IssuerMaintenanceRecord,
@@ -84,7 +79,9 @@ export function IssuerEditForm({
         applyResult(submission.result)
         return
       }
-      const result = await updateIssuer({ data: submission.data })
+      const result = await updateIssuer({
+        data: { ...submission.data, etag: issuer.etag },
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()

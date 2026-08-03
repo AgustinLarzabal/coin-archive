@@ -1,4 +1,4 @@
-import type { IssuerMaintenanceRecord } from "@coin-archive/db"
+import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import type { z } from "zod"
 
 import {
@@ -55,7 +55,10 @@ type IssuerSubmissionResult<TData> =
   | InvalidIssuerSubmission
 
 type CreateIssuerSubmissionData = z.output<typeof createIssuerInputSchema>
-type UpdateIssuerSubmissionData = z.output<typeof updateIssuerInputSchema>
+const updateIssuerSubmissionSchema = updateIssuerInputSchema.omit({
+  etag: true,
+})
+type UpdateIssuerSubmissionData = z.output<typeof updateIssuerSubmissionSchema>
 
 export function createIssuerDraft(
   issuer: IssuerMaintenanceRecord,
@@ -148,7 +151,7 @@ export function getUpdateIssuerSubmission(
   return resolveIssuerSubmission(
     draft,
     getParentIssuerOptions(issuers, issuerId),
-    updateIssuerInputSchema,
+    updateIssuerSubmissionSchema,
     (normalizedDraft, parentIssuerId) => ({
       id: issuerId,
       ...buildIssuerSubmissionInput(normalizedDraft, parentIssuerId),
@@ -286,8 +289,7 @@ function getDescendantIssuerIds(
 
   const queue = [...(parentToChildren.get(issuerId) ?? [])]
 
-  for (let index = 0; index < queue.length; index += 1) {
-    const childIssuerId = queue[index]
+  for (const childIssuerId of queue) {
     descendantIssuerIds.push(childIssuerId)
     queue.push(...(parentToChildren.get(childIssuerId) ?? []))
   }

@@ -529,7 +529,7 @@ Known limitations and non-goals:
 
 The `issuer` table models the historical or legal authority under which a Coin was issued, plus the archive's optional Issuer Grouping hierarchy:
 
-- an Issuer row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, required `iso_code`, optional `parent_issuer_id`, and timestamps
+- an Issuer row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, required `iso_code`, optional `parent_issuer_id`, explicit integer `version`, and timestamps
 - `issuer.code` is the stable archive identity for the issuer and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `issuer.name` is display text only; it helps humans read the issuer label but is not treated as identity and is allowed to repeat across rows
 - `issuer.iso_code` is the required uppercase ISO 3166-1 alpha-2 code associated with the issuer and is not treated as the issuer's archive identity
@@ -548,6 +548,7 @@ Issuer-specific requirements and constraints:
 - `parent_issuer_id` is optional, but an Issuer cannot be its own direct parent because of `issuer_parent_issuer_id_self_check`
 - Issuer Names do not need to be unique
 - Issuer primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Issuer Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Issuer-specific indexes and query implications:

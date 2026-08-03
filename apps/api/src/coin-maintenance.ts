@@ -1,7 +1,7 @@
 import {
   coinMaintenanceCreateInputSchema,
   coinMaintenanceListInputSchema,
-  coinMaintenanceReplaceBodySchema,
+  coinMaintenanceReplaceInputSchema,
 } from "@coin-archive/api"
 import type {
   CoinMaintenanceCreateBody,
@@ -75,12 +75,12 @@ export type CoinMaintenanceDependencies = {
     collectorId: string
     idempotencyKey: string
     requestHash: string
-    fields: CoinCreatePersistenceFields
+    fields: CoinPersistenceFields
   }) => Promise<{ status: "created"; coin: { id: string } }>
   replaceMaintenanceCoin: (input: {
     id: string
     expectedVersion: number
-    fields: CoinCreatePersistenceFields
+    fields: CoinPersistenceFields
   }) => Promise<
     | { status: "updated"; coin: { id: string; version: number } }
     | { status: "missing" | "stale" }
@@ -115,7 +115,7 @@ export type CoinMaintenanceDependencies = {
   }) => Promise<void>
 }
 
-type CoinCreatePersistenceFields = Omit<
+type CoinPersistenceFields = Omit<
   CoinMaintenanceCreateBody,
   | "diameter"
   | "faceValueNumericValue"
@@ -259,21 +259,9 @@ export function registerCoinMaintenanceRoutes(
               ),
             })
       aggregatePersisted = true
-      const finalization = await Promise.allSettled(
-        preparedImages.map(({ reference, surface }) =>
-          dependencies.finalizeSurfaceImageUpload(reference, surface)
-        )
-      )
-      const finalizationFailures = finalization.flatMap(
-        (finalizationResult, index) =>
-          finalizationResult.status === "rejected"
-            ? [
-                {
-                  imageUrl: `temporary-upload-reference:${preparedImages[index].reference}`,
-                  errorMessage: `Temporary upload finalization failed: ${cleanupErrorMessage(finalizationResult.reason)}`,
-                },
-              ]
-            : []
+      const finalizationFailures = await finalizePreparedImages(
+        dependencies,
+        preparedImages
       )
       if (finalizationFailures.length > 0) {
         await dependencies.recordSurfaceImageCleanupFailures({
@@ -392,18 +380,35 @@ export function registerCoinMaintenanceRoutes(
   app.put("/api/v1/maintenance/coins/:uuid", async (context) => {
     const id = context.req.param("uuid")
     if (!isUuid(id)) return invalidUuid(context.req.path)
+    const ifMatch = context.req.header("if-match")
+    if (ifMatch === undefined) return missingCoinPrecondition(context.req.path)
+    const json = await readJson(context.req.raw)
+    if (json instanceof Response) return json
+    const parsedInput = coinMaintenanceReplaceInputSchema.safeParse({
+      params: { uuid: id },
+      headers: { "if-match": ifMatch },
+      body: json,
+    })
+    if (!parsedInput.success) {
+      return parsedInput.error.issues.some(
+        (issue) => issue.path.at(0) === "headers"
+      )
+        ? invalidCoinPrecondition(context.req.path)
+        : validationProblem(
+            context.req.path,
+            parsedInput.error.issues.map((issue) => ({
+              ...issue,
+              path:
+                issue.path.at(0) === "body" ? issue.path.slice(1) : issue.path,
+            }))
+          )
+    }
     const expectedVersion = parseCoinPrecondition(
-      context.req.header("if-match"),
+      parsedInput.data.headers["if-match"],
       id,
       context.req.path
     )
     if (expectedVersion instanceof Response) return expectedVersion
-    const json = await readJson(context.req.raw)
-    if (json instanceof Response) return json
-    const parsedBody = coinMaintenanceReplaceBodySchema.safeParse(json)
-    if (!parsedBody.success) {
-      return validationProblem(context.req.path, parsedBody.error.issues)
-    }
     const previous = await dependencies.getMaintenanceCoin(id)
     if (previous === null) return coinNotFound(context.req.path)
 
@@ -412,7 +417,7 @@ export function registerCoinMaintenanceRoutes(
     let aggregatePersisted = false
     try {
       const fields = await toPersistenceFields(
-        parsedBody.data,
+        parsedInput.data.body,
         dependencies,
         claimedImages,
         preparedImages,
@@ -503,6 +508,7 @@ type CoinCreateRequest = {
 type ClaimedImage = { claimToken: string; referenceHash: string }
 
 type PreparedImage = {
+  claim: ClaimedImage
   imageUrl: string
   reference: string
   surface: "obverse" | "reverse" | "edge"
@@ -514,7 +520,7 @@ async function toPersistenceFields(
   claimedImages: ClaimedImage[],
   preparedImages: PreparedImage[],
   existing?: DetailSource
-): Promise<CoinCreatePersistenceFields> {
+): Promise<CoinPersistenceFields> {
   const consumeImage = async (
     reference: string | null,
     surface: "obverse" | "reverse" | "edge",
@@ -550,7 +556,7 @@ async function toPersistenceFields(
         reference,
         surface
       )
-      preparedImages.push({ ...result, reference, surface })
+      preparedImages.push({ ...result, claim, reference, surface })
       return result.imageUrl
     } catch (error) {
       if (!(error instanceof SurfaceImageUploadReferenceError)) throw error
@@ -613,17 +619,12 @@ async function releaseReplacementImages(
   claimedImages: ClaimedImage[],
   preparedImages: PreparedImage[]
 ) {
-  await Promise.all(
-    claimedImages.map((claim) =>
-      dependencies.releaseSurfaceImageUploadClaim(claim)
-    )
-  )
   const cleanup = await Promise.allSettled(
     preparedImages.map(({ imageUrl }) =>
       dependencies.deletePublishedSurfaceImage(imageUrl)
     )
   )
-  return cleanup.flatMap((result, index) =>
+  const cleanupFailures = cleanup.flatMap((result, index) =>
     result.status === "rejected"
       ? [
           {
@@ -633,6 +634,32 @@ async function releaseReplacementImages(
         ]
       : []
   )
+  const retainedClaimTokens = new Set(
+    cleanup.flatMap((result, index) =>
+      result.status === "rejected"
+        ? [preparedImages[index].claim.claimToken]
+        : []
+    )
+  )
+  const releasableClaims = claimedImages.filter(
+    ({ claimToken }) => !retainedClaimTokens.has(claimToken)
+  )
+  const releases = await Promise.allSettled(
+    releasableClaims.map((claim) =>
+      dependencies.releaseSurfaceImageUploadClaim(claim)
+    )
+  )
+  const releaseFailures = releases.flatMap((result, index) =>
+    result.status === "rejected"
+      ? [
+          {
+            imageUrl: `temporary-upload-claim:${releasableClaims[index].referenceHash}`,
+            errorMessage: `Temporary upload claim release failed: ${cleanupErrorMessage(result.reason)}`,
+          },
+        ]
+      : []
+  )
+  return [...cleanupFailures, ...releaseFailures]
 }
 
 async function recordImageFailures(
@@ -671,7 +698,7 @@ async function finalizePreparedImages(
 async function removeReplacedImages(
   dependencies: CoinMaintenanceDependencies,
   previous: DetailSource,
-  fields: CoinCreatePersistenceFields
+  fields: CoinPersistenceFields
 ) {
   const obsoleteUrls = (["obverse", "reverse", "edge"] as const).flatMap(
     (surface) => {
@@ -952,19 +979,10 @@ function invalidUuid(instance: string) {
   )
 }
 function parseCoinPrecondition(
-  value: string | undefined,
+  value: string,
   coinId: string,
   instance: string
 ): number | Response {
-  if (value === undefined) {
-    return problem(
-      400,
-      "If-Match required",
-      "Coin replacement requires an If-Match header",
-      instance,
-      "if_match_required"
-    )
-  }
   try {
     if (!/^"[A-Za-z0-9_-]+"$/.test(value)) throw new Error("invalid")
     const decoded = decodeBase64Url(value.slice(1, -1))
@@ -984,6 +1002,24 @@ function parseCoinPrecondition(
       "invalid_if_match"
     )
   }
+}
+function missingCoinPrecondition(instance: string) {
+  return problem(
+    400,
+    "If-Match required",
+    "Coin replacement requires an If-Match header",
+    instance,
+    "if_match_required"
+  )
+}
+function invalidCoinPrecondition(instance: string) {
+  return problem(
+    400,
+    "Invalid If-Match",
+    "If-Match must be an opaque Coin version token",
+    instance,
+    "invalid_if_match"
+  )
 }
 function staleCoin(instance: string) {
   return problem(

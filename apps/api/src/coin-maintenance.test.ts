@@ -538,6 +538,50 @@ describe("protected Coin Maintenance create", () => {
 })
 
 describe("protected Coin Maintenance replacement", () => {
+  it("requires a contract-valid If-Match and validates the complete input", async () => {
+    const missing = await createApp().request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(replaceBody),
+      }
+    )
+    const invalidHeader = await createApp().request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "If-Match": "bad" },
+        body: JSON.stringify(replaceBody),
+      }
+    )
+    const invalidBody = await createApp().request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+        body: JSON.stringify({ ...replaceBody, issuerId: "not-a-uuid" }),
+      }
+    )
+
+    expect(missing.status).toBe(400)
+    await expect(missing.json()).resolves.toMatchObject({
+      code: "if_match_required",
+    })
+    expect(invalidHeader.status).toBe(400)
+    await expect(invalidHeader.json()).resolves.toMatchObject({
+      code: "invalid_if_match",
+    })
+    expect(invalidBody.status).toBe(422)
+    await expect(invalidBody.json()).resolves.toMatchObject({
+      code: "coin_validation_failed",
+      invalidParams: [{ name: "/issuerId", code: "coin_field_invalid" }],
+    })
+  })
+
   it("replaces the complete aggregate with If-Match and returns the next ETag", async () => {
     const replaceMaintenanceCoin = vi.fn().mockResolvedValue({
       status: "updated",
@@ -604,6 +648,7 @@ describe("protected Coin Maintenance replacement", () => {
     const newImageUrl =
       "https://images.coinarchive.app/surface-images/published/new.webp"
     const recordSurfaceImageCleanupFailures = vi.fn()
+    const releaseSurfaceImageUploadClaim = vi.fn()
     const response = await createApp({
       replaceMaintenanceCoin: vi.fn().mockResolvedValue({ status: "stale" }),
       prepareSurfaceImageUpload: vi.fn().mockResolvedValue({
@@ -613,6 +658,7 @@ describe("protected Coin Maintenance replacement", () => {
         .fn()
         .mockRejectedValue(new Error("rollback unavailable")),
       recordSurfaceImageCleanupFailures,
+      releaseSurfaceImageUploadClaim,
     }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
       method: "PUT",
       headers: {
@@ -636,6 +682,57 @@ describe("protected Coin Maintenance replacement", () => {
       cleanupSubjectId: id,
       failures: [
         { imageUrl: newImageUrl, errorMessage: "rollback unavailable" },
+      ],
+    })
+    expect(releaseSurfaceImageUploadClaim).not.toHaveBeenCalled()
+  })
+
+  it("cleans prepared images and records upload-claim release failures", async () => {
+    const recordSurfaceImageCleanupFailures = vi.fn()
+    const deletePublishedSurfaceImage = vi.fn()
+    const releaseSurfaceImageUploadClaim = vi
+      .fn()
+      .mockRejectedValue(new Error("claim database unavailable"))
+    const response = await createApp({
+      replaceMaintenanceCoin: vi.fn().mockResolvedValue({ status: "stale" }),
+      prepareSurfaceImageUpload: vi.fn().mockResolvedValue({
+        imageUrl:
+          "https://images.coinarchive.app/surface-images/published/new.webp",
+      }),
+      deletePublishedSurfaceImage,
+      releaseSurfaceImageUploadClaim,
+      recordSurfaceImageCleanupFailures,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+      body: JSON.stringify({
+        ...replaceBody,
+        surfaces: {
+          ...replaceBody.surfaces,
+          obverse: {
+            ...replaceBody.surfaces.obverse,
+            imageUploadReference: "new-obverse-upload",
+          },
+        },
+      }),
+    })
+
+    expect(response.status).toBe(412)
+    expect(deletePublishedSurfaceImage).toHaveBeenCalled()
+    expect(
+      deletePublishedSurfaceImage.mock.invocationCallOrder[0]
+    ).toBeLessThan(releaseSurfaceImageUploadClaim.mock.invocationCallOrder[0])
+    expect(recordSurfaceImageCleanupFailures).toHaveBeenCalledWith({
+      cleanupSubjectId: id,
+      failures: [
+        {
+          imageUrl: expect.stringMatching(/^temporary-upload-claim:/),
+          errorMessage:
+            "Temporary upload claim release failed: claim database unavailable",
+        },
       ],
     })
   })

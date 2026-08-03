@@ -193,7 +193,10 @@ export const orientationMutationBodySchema = z.object({
 })
 
 const idempotencyKeySchema = z.string().trim().min(1).max(255)
-const ifMatchSchema = z.string().trim().min(1)
+const ifMatchSchema = z
+  .string()
+  .trim()
+  .regex(/^"[A-Za-z0-9_-]+"$/)
 
 export const coinSurfaceSchema = z.enum(["obverse", "reverse", "edge"])
 export const surfaceImageContentTypeSchema = z.enum([

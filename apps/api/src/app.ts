@@ -24,6 +24,8 @@ import { registerDistributionMaintenanceRoutes } from "./distribution-maintenanc
 import type { DistributionMaintenanceDependencies } from "./distribution-maintenance"
 import { registerEdgeMaintenanceRoutes } from "./edge-maintenance"
 import type { EdgeMaintenanceDependencies } from "./edge-maintenance"
+import { registerRimMaintenanceRoutes } from "./rim-maintenance"
+import type { RimMaintenanceDependencies } from "./rim-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -179,6 +181,17 @@ export function createApiApp({
   deleteEdge = async () => {
     throw new Error("Edge deletion is not configured")
   },
+  listRims = async () => [],
+  getRim = async () => null,
+  createRim = async () => {
+    throw new Error("Rim create is not configured")
+  },
+  replaceRim = async () => {
+    throw new Error("Rim replacement is not configured")
+  },
+  deleteRim = async () => {
+    throw new Error("Rim deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -232,6 +245,11 @@ export function createApiApp({
   createEdge?: EdgeMaintenanceDependencies["createEdge"]
   replaceEdge?: EdgeMaintenanceDependencies["replaceEdge"]
   deleteEdge?: EdgeMaintenanceDependencies["deleteEdge"]
+  listRims?: RimMaintenanceDependencies["listRims"]
+  getRim?: RimMaintenanceDependencies["getRim"]
+  createRim?: RimMaintenanceDependencies["createRim"]
+  replaceRim?: RimMaintenanceDependencies["replaceRim"]
+  deleteRim?: RimMaintenanceDependencies["deleteRim"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -441,6 +459,13 @@ export function createApiApp({
     createEdge,
     replaceEdge,
     deleteEdge,
+  })
+  registerRimMaintenanceRoutes(app, {
+    listRims,
+    getRim,
+    createRim,
+    replaceRim,
+    deleteRim,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

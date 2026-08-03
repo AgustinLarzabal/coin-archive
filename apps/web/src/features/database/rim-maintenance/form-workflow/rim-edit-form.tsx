@@ -2,41 +2,28 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { RimFieldErrors, RimMutationResult } from "../actions"
-import { createRimInputSchema, submitUpdateRim } from "../actions"
+import { submitUpdateRim } from "../actions"
+import type { RimMutationResult } from "../actions"
+import { createRimInputSchema } from "../rim-validation"
+import type { RimFieldErrors } from "../rim-validation"
 
-import { createRimDraft, normalizeRimDraft } from "./rim-form.shared"
+import { createRimDraft, hasRimEditChanges } from "./rim-form.shared"
 import { RimFormFields, RimTextField } from "./rim-form-fields"
 import type { RimDraft } from "./rim-form.shared"
 
 type RimEditFormProps = {
-  rim: RimOption
+  rim: Rim
   onSaved?: () => void
 }
 
 const updateRimAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: RimDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateRim(session?.user ?? null, data)
-  })
-
-export function hasRimEditChanges(rim: RimOption, draft: RimDraft) {
-  const normalizedCurrent = normalizeRimDraft(createRimDraft(rim))
-  const normalizedDraft = normalizeRimDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .inputValidator((data: RimDraft & { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitUpdateRim(data))
 
 export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
   const router = useRouter()
@@ -49,7 +36,9 @@ export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
     defaultValues: createRimDraft(rim),
     validators: { onSubmit: createRimInputSchema },
     onSubmit: async ({ value }) => {
-      const result = await updateRim({ data: { id: rim.id, ...value } })
+      const result = await updateRim({
+        data: { id: rim.id, etag: rim.etag, ...value },
+      })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {
         await router.invalidate()

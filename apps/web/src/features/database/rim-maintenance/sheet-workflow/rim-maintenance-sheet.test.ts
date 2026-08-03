@@ -1,10 +1,10 @@
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE } from "../actions"
+import { RIM_IN_USE_DELETE_ERROR } from "../rim-mutation-errors"
 
 import {
   RIM_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,10 +26,7 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
@@ -95,15 +92,17 @@ vi.mock("../form-workflow/rim-edit-form", () => ({
   RimEditForm: () => createElement("div", null, "RimEditForm"),
 }))
 
-const rim: RimOption = {
-  id: "dff33645-e973-4fd5-a84d-bf5a773855ef",
-  code: "raised",
-  name: "Raised rim",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const rim: Rim = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"rim-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
-function renderRimMaintenanceSheet(rimOption: RimOption | null) {
+function renderRimMaintenanceSheet(rimOption: Rim | null) {
   return renderToStaticMarkup(
     createElement(RimMaintenanceSheet, {
       rim: rimOption,
@@ -114,12 +113,15 @@ function renderRimMaintenanceSheet(rimOption: RimOption | null) {
 }
 
 describe("RIM_DELETE_CONFIRMATION_DESCRIPTION", () => {
-  it("explains the deletion is permanent and reuses the shared reassignment guidance", () => {
+  it("explains the deletion is permanent and reuses the shared in-use guidance", () => {
     expect(RIM_DELETE_CONFIRMATION_DESCRIPTION).toContain(
       "permanently deletes the Rim"
     )
     expect(RIM_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE
+      RIM_IN_USE_DELETE_ERROR.replace(
+        "Rim cannot be deleted while Coins still use it. ",
+        ""
+      )
     )
   })
 })

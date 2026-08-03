@@ -62,7 +62,20 @@ export type {
   DeleteEdgeIfVersionResult,
   ReplaceEdgeResult,
 } from "./mutations/edge"
-export { createRim, deleteRim, updateRim } from "./mutations/rim"
+export {
+  createRim,
+  createRimIdempotently,
+  createRimIdempotentlyWithDatabase,
+  deleteRim,
+  deleteRimIfVersionWithDatabase,
+  replaceRimWithDatabase,
+  updateRim,
+} from "./mutations/rim"
+export type {
+  CreateRimIdempotentlyResult,
+  DeleteRimIfVersionResult,
+  ReplaceRimResult,
+} from "./mutations/rim"
 export { createRuler, deleteRuler, updateRuler } from "./mutations/ruler"
 export {
   createRulerGroup,
@@ -159,6 +172,15 @@ export {
   getOrientationMaintenanceRecordsWithDatabase,
 } from "./queries/get-orientation-maintenance"
 export { getRims } from "./queries/get-rims"
+export {
+  getRimMaintenanceRecordWithDatabase,
+  getRimMaintenanceRecordsWithDatabase,
+} from "./queries/get-rim-maintenance"
+export type {
+  GetRimMaintenanceRecordsOptions,
+  RimMaintenanceCursor,
+  RimMaintenanceListRecord,
+} from "./queries/get-rim-maintenance"
 export { getRulerGroups } from "./queries/get-ruler-groups"
 export { getShapes } from "./queries/get-shapes"
 export { getTechniques } from "./queries/get-techniques"

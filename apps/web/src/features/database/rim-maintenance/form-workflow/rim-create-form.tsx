@@ -4,9 +4,10 @@ import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { RimFieldErrors, RimMutationResult } from "../actions"
-import { createRimInputSchema, submitCreateRim } from "../actions"
+import { submitCreateRim } from "../actions"
+import type { RimMutationResult } from "../actions"
+import { createRimInputSchema } from "../rim-validation"
+import type { RimFieldErrors } from "../rim-validation"
 
 import { EMPTY_RIM_DRAFT, isRimDraftComplete } from "./rim-form.shared"
 import { RimFormFields, RimTextField } from "./rim-form-fields"
@@ -19,18 +20,17 @@ type RimCreateFormProps = {
 const createRimAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: RimDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitCreateRim(session?.user ?? null, data)
-  })
+  .inputValidator((data: RimDraft & { idempotencyKey: string }) => data)
+  .handler(async ({ data }) => submitCreateRim(data))
 
 export function RimCreateForm({ onCreated }: RimCreateFormProps) {
   const router = useRouter()
   const createRim = useServerFn(createRimAction)
   const [fieldErrors, setFieldErrors] = useState<RimFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -54,12 +54,13 @@ export function RimCreateForm({ onCreated }: RimCreateFormProps) {
     validators: { onSubmit: createRimInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createRim({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

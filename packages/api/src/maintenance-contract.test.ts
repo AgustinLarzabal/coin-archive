@@ -51,6 +51,15 @@ import {
   orientationListOutputSchema,
   orientationOptionsOutputSchema,
   orientationReplaceInputSchema,
+  rimCreateInputSchema,
+  rimCreateOutputSchema,
+  rimDeleteInputSchema,
+  rimDetailOutputSchema,
+  rimListInputSchema,
+  rimListOutputSchema,
+  rimMaintenanceProblemDocumentSchema,
+  rimOptionsOutputSchema,
+  rimReplaceInputSchema,
 } from "./contract"
 
 const currency = {
@@ -92,6 +101,16 @@ const edge = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-edge-version"',
+}
+
+const rim = {
+  id: "018f1a11-aaaa-7000-8000-000000000007",
+  code: "raised-both-sides",
+  name: "Raised on both sides",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-rim-version"',
 }
 
 const catalogue = {
@@ -693,6 +712,129 @@ describe("Edge maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: edge.id },
       headers: { "if-match": edge.etag },
+    })
+  })
+})
+
+describe("Rim maintenance contract", () => {
+  it("declares stable Rim validation and dependent-Coin conflict codes", () => {
+    expect(
+      rimMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/rim-validation",
+          title: "Rim validation failed",
+          status: 422,
+          detail: "The Rim could not be saved",
+          instance: "/api/v1/maintenance/rims",
+          code: "rim_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "rim_code_invalid",
+              reason: "Rim Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("rim_code_invalid")
+    expect(
+      rimMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/rim-in-use",
+        title: "Rim is in use",
+        status: 409,
+        detail: "Coins still use this Rim",
+        instance: `/api/v1/maintenance/rims/${rim.id}`,
+        code: "rim_in_use",
+      }).code
+    ).toBe("rim_in_use")
+  })
+
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      rimListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "reeded",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "reeded",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() => rimListInputSchema.parse({ limit: 101 })).toThrow()
+    expect(
+      rimOptionsOutputSchema.parse({
+        data: [{ id: rim.id, code: rim.code, name: rim.name }],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [{ id: rim.id, code: rim.code, name: rim.name }],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      rimListOutputSchema.parse({ data: [rim], nextCursor: null })
+    ).toStrictEqual({ data: [rim], nextCursor: null })
+    expect(rimDetailOutputSchema.parse({ data: rim })).toStrictEqual({
+      data: rim,
+    })
+    expect(() =>
+      rimDetailOutputSchema.parse({
+        data: { ...rim, createdAt: new Date(rim.createdAt) },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      rimCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " reeded ", name: " Reeded " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "reeded", name: "Reeded" },
+    })
+    expect(
+      rimCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: rim.etag,
+          location: `/api/v1/maintenance/rims/${rim.id}`,
+        },
+        body: { data: rim },
+      })
+    ).toMatchObject({ status: 201, body: { data: rim } })
+    expect(() =>
+      rimCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Reeded Rim", name: "Reeded" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      rimReplaceInputSchema.parse({
+        params: { uuid: rim.id },
+        headers: { "if-match": rim.etag },
+        body: { code: rim.code, name: rim.name },
+      })
+    ).toMatchObject({ headers: { "if-match": rim.etag } })
+    expect(
+      rimDeleteInputSchema.parse({
+        params: { uuid: rim.id },
+        headers: { "if-match": rim.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: rim.id },
+      headers: { "if-match": rim.etag },
     })
   })
 })

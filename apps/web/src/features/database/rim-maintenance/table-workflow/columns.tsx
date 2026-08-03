@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
@@ -14,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createRimColumns(
-  onEditRim: (rim: RimOption) => void
-): ColumnDef<RimOption>[] {
+  onEditRim: (rim: Rim) => void
+): ColumnDef<Rim>[] {
   return [
     {
       accessorKey: "code",

@@ -1,4 +1,4 @@
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 
 export type RimDraft = {
   code: string
@@ -10,7 +10,7 @@ export const EMPTY_RIM_DRAFT: RimDraft = {
   name: "",
 }
 
-export function createRimDraft(rim: RimOption): RimDraft {
+export function createRimDraft(rim: Pick<Rim, "code" | "name">): RimDraft {
   return {
     code: rim.code,
     name: rim.name,
@@ -28,4 +28,16 @@ export function isRimDraftComplete(draft: RimDraft) {
   const normalizedDraft = normalizeRimDraft(draft)
 
   return normalizedDraft.code.length > 0 && normalizedDraft.name.length > 0
+}
+
+export function hasRimEditChanges(
+  rim: Pick<Rim, "code" | "name">,
+  draft: RimDraft
+) {
+  const normalizedCurrent = normalizeRimDraft(createRimDraft(rim))
+  const normalizedDraft = normalizeRimDraft(draft)
+  return (
+    normalizedDraft.code !== normalizedCurrent.code ||
+    normalizedDraft.name !== normalizedCurrent.name
+  )
 }

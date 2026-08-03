@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import {
   Sheet,
   SheetContent,
@@ -27,34 +27,25 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE,
-  RIM_GENERIC_SAVE_ERROR,
-  submitDeleteRim,
-} from "../actions"
+import { submitDeleteRim } from "../actions"
+import { RIM_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { RimCreateForm } from "../form-workflow/rim-create-form"
 import { RimEditForm } from "../form-workflow/rim-edit-form"
 
 type RimMaintenanceSheetProps = {
-  rim: RimOption | null
+  rim: Rim | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const RIM_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Rim. ${RIM_DELETE_EXISTING_COINS_REASSIGN_REQUIRED_MESSAGE}`
+export const RIM_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Rim. ${RIM_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteRimAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteRim(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteRim(data))
 
 export function RimMaintenanceSheet({
   rim,
@@ -66,25 +57,11 @@ export function RimMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingRim = rim !== null
 
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  function handleDeleteDialogOpenChange(nextOpen: boolean) {
-    if (!nextOpen) {
-      resetDeleteState()
-      return
-    }
-
-    setIsDeleteDialogOpen(true)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [rim?.id, open])
 
   async function handleDeleteRim() {
@@ -99,6 +76,7 @@ export function RimMaintenanceSheet({
       const result = await deleteRim({
         data: {
           id: rim.id,
+          etag: rim.etag,
         },
       })
 
@@ -108,7 +86,7 @@ export function RimMaintenanceSheet({
         return
       }
 
-      setDeleteError(result.formError ?? RIM_GENERIC_SAVE_ERROR)
+      setDeleteError(result.formError ?? "Unable to delete Rim right now.")
     } finally {
       setIsDeletePending(false)
     }
@@ -120,7 +98,7 @@ export function RimMaintenanceSheet({
         <SheetHeader className="flex-row items-center justify-between">
           <SheetTitle>{rim ? "Edit Rim" : "Create Rim"}</SheetTitle>
 
-          {isEditingRim ? (
+          {rim !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -147,7 +125,7 @@ export function RimMaintenanceSheet({
 
               <AlertDialog
                 open={isDeleteDialogOpen}
-                onOpenChange={handleDeleteDialogOpenChange}
+                onOpenChange={setIsDeleteDialogOpen}
               >
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -180,7 +158,7 @@ export function RimMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingRim ? (
+        {rim ? (
           <RimEditForm rim={rim} onSaved={() => onOpenChange(false)} />
         ) : (
           <RimCreateForm onCreated={() => onOpenChange(false)} />

@@ -686,7 +686,7 @@ Known limitations and non-goals:
 
 The `rim` table models the shared face-border treatment classification that may be attached to a Coin:
 
-- a Rim row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, and timestamps
+- a Rim row defines shared identity and display metadata: UUID primary key, required `code`, required `name`, explicit integer `version`, and timestamps
 - `rim.code` is the stable archive identity for the rim and is the value consumers should use in imports, lookups, filters, and URL-facing query inputs
 - `rim.name` is display text only; it helps humans read the rim label but is not treated as identity and is allowed to repeat across rows
 - uniqueness and filter matching treat rim codes case-insensitively, while the schema also requires lowercase slug-style text on write

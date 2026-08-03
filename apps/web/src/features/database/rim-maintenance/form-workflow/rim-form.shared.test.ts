@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 
 import {
   createRimDraft,
@@ -8,19 +8,21 @@ import {
   normalizeRimDraft,
 } from "./rim-form.shared"
 
-const rim: RimOption = {
-  id: "dff33645-e973-4fd5-a84d-bf5a773855ef",
-  code: "raised",
-  name: "Raised rim",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const rim: Rim = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"rim-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("createRimDraft", () => {
   it("copies the editable Rim fields from a selected Rim", () => {
     expect(createRimDraft(rim)).toStrictEqual({
-      code: "raised",
-      name: "Raised rim",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
@@ -29,12 +31,12 @@ describe("normalizeRimDraft", () => {
   it("trims editable Rim fields", () => {
     expect(
       normalizeRimDraft({
-        code: " raised ",
-        name: " Raised rim ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toStrictEqual({
-      code: "raised",
-      name: "Raised rim",
+      code: "reeded",
+      name: "Reeded",
     })
   })
 })
@@ -43,7 +45,7 @@ describe("isRimDraftComplete", () => {
   it("requires non-blank Rim Code and Rim Name", () => {
     expect(
       isRimDraftComplete({
-        code: "raised",
+        code: "reeded",
         name: " ",
       })
     ).toBe(false)
@@ -51,7 +53,7 @@ describe("isRimDraftComplete", () => {
     expect(
       isRimDraftComplete({
         code: " ",
-        name: "Raised rim",
+        name: "Reeded",
       })
     ).toBe(false)
   })
@@ -59,8 +61,8 @@ describe("isRimDraftComplete", () => {
   it("treats trimmed Rim Code and Rim Name as a complete create draft", () => {
     expect(
       isRimDraftComplete({
-        code: " raised ",
-        name: " Raised rim ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(true)
   })

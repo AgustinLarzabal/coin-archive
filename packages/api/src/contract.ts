@@ -538,6 +538,110 @@ export const edgeMaintenanceProblemDocumentSchema =
       .optional(),
   })
 
+export const rimSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const rimOptionSchema = rimSchema.pick({ id: true, code: true, name: true })
+export const rimListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const rimListOutputSchema = z.object({
+  data: z.array(rimSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rimOptionsInputSchema = rimListInputSchema.pick({
+  q: true,
+  cursor: true,
+  limit: true,
+})
+export const rimOptionsOutputSchema = z.object({
+  data: z.array(rimOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const rimDetailInputSchema = z.object({ uuid: z.uuid() })
+export const rimDetailOutputSchema = z.object({ data: rimSchema })
+export const rimMutationBodySchema = z.object({
+  code: z.string().trim().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const rimCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: rimMutationBodySchema,
+})
+export const rimCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/rims/"),
+    etag: z.string(),
+  }),
+  body: rimDetailOutputSchema,
+})
+export const rimReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: rimMutationBodySchema,
+})
+export const rimReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: rimDetailOutputSchema,
+})
+export const rimDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const rimDeleteOutputSchema = z.object({ status: z.literal(204) })
+export const rimMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "rim_code_conflict",
+      "rim_in_use",
+      "rim_not_found",
+      "rim_precondition_failed",
+      "rim_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_rim_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "rim_body_invalid",
+            "rim_code_invalid",
+            "rim_code_required",
+            "rim_code_too_long",
+            "rim_name_invalid",
+            "rim_name_required",
+            "rim_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
 const currencyCodeSchema = z
   .string()
   .trim()
@@ -660,6 +764,15 @@ const edgeMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: edgeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const rimMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: { status: 409, data: rimMaintenanceProblemDocumentSchema },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: rimMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -988,6 +1101,38 @@ export const maintenanceApiContract = {
       .output(edgeDeleteOutputSchema)
       .errors(edgeMaintenanceMutationErrors),
   },
+  rims: {
+    list: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/rims", summary: "Browse Rims for maintenance", tags: ["Rim Maintenance"] })
+      .input(rimListInputSchema)
+      .output(rimListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/rims/options", summary: "Search compact Rim options", tags: ["Rim Maintenance"] })
+      .input(rimOptionsInputSchema)
+      .output(rimOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({ method: "GET", path: "/api/v1/maintenance/rims/{uuid}", summary: "Get Rim maintenance detail", tags: ["Rim Maintenance"] })
+      .input(rimDetailInputSchema)
+      .output(rimDetailOutputSchema)
+      .errors({ ...maintenanceReadErrors, NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema } }),
+    create: oc
+      .route({ method: "POST", path: "/api/v1/maintenance/rims", summary: "Create a Rim", tags: ["Rim Maintenance"], successStatus: 201, inputStructure: "detailed", outputStructure: "detailed" })
+      .input(rimCreateInputSchema)
+      .output(rimCreateOutputSchema)
+      .errors(rimMaintenanceMutationErrors),
+    replace: oc
+      .route({ method: "PUT", path: "/api/v1/maintenance/rims/{uuid}", summary: "Replace a Rim", tags: ["Rim Maintenance"], inputStructure: "detailed", outputStructure: "detailed" })
+      .input(rimReplaceInputSchema)
+      .output(rimReplaceOutputSchema)
+      .errors(rimMaintenanceMutationErrors),
+    delete: oc
+      .route({ method: "DELETE", path: "/api/v1/maintenance/rims/{uuid}", summary: "Permanently delete a Rim", tags: ["Rim Maintenance"], successStatus: 204, inputStructure: "detailed", outputStructure: "detailed" })
+      .input(rimDeleteInputSchema)
+      .output(rimDeleteOutputSchema)
+      .errors(rimMaintenanceMutationErrors),
+  },
   currencies: {
     list: oc
       .route({
@@ -1213,6 +1358,14 @@ export type EdgeOptionsInput = z.infer<typeof edgeOptionsInputSchema>
 export type EdgeOptionsOutput = z.infer<typeof edgeOptionsOutputSchema>
 export type EdgeDetailOutput = z.infer<typeof edgeDetailOutputSchema>
 export type EdgeMutationBody = z.infer<typeof edgeMutationBodySchema>
+export type Rim = z.infer<typeof rimSchema>
+export type RimOption = z.infer<typeof rimOptionSchema>
+export type RimListInput = z.infer<typeof rimListInputSchema>
+export type RimListOutput = z.infer<typeof rimListOutputSchema>
+export type RimOptionsInput = z.infer<typeof rimOptionsInputSchema>
+export type RimOptionsOutput = z.infer<typeof rimOptionsOutputSchema>
+export type RimDetailOutput = z.infer<typeof rimDetailOutputSchema>
+export type RimMutationBody = z.infer<typeof rimMutationBodySchema>
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>
 export type CurrencyListInput = z.infer<typeof currencyListInputSchema>

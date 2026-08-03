@@ -1,24 +1,27 @@
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { hasRimEditChanges, RimEditForm } from "./rim-edit-form"
+import { RimEditForm } from "./rim-edit-form"
+import { hasRimEditChanges } from "./rim-form.shared"
 
-const rim: RimOption = {
-  id: "dff33645-e973-4fd5-a84d-bf5a773855ef",
-  code: "raised",
-  name: "Raised rim",
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+const rim: Rim = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"rim-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 describe("hasRimEditChanges", () => {
   it("returns false when trimmed editable values match the current Rim", () => {
     expect(
       hasRimEditChanges(rim, {
-        code: " raised ",
-        name: " Raised rim ",
+        code: " reeded ",
+        name: " Reeded ",
       })
     ).toBe(false)
   })
@@ -26,8 +29,8 @@ describe("hasRimEditChanges", () => {
   it("returns true when any normalized editable field changed", () => {
     expect(
       hasRimEditChanges(rim, {
-        code: "barred",
-        name: "Barred rim",
+        code: "plain",
+        name: "Plain",
       })
     ).toBe(true)
   })
@@ -37,8 +40,8 @@ describe("RimEditForm", () => {
   it("renders explicit Rim field labels with the current values and disables Save until something changed", () => {
     const markup = renderToStaticMarkup(createElement(RimEditForm, { rim }))
     const expectedFields = [
-      ["Rim Code", 'value="raised"'],
-      ["Rim Name", 'value="Raised rim"'],
+      ["Rim Code", 'value="reeded"'],
+      ["Rim Name", 'value="Reeded"'],
     ] as const
 
     for (const [label, value] of expectedFields) {

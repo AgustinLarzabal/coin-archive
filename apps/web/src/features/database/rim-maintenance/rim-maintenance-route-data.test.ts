@@ -1,68 +1,74 @@
-import type { RimOption } from "@coin-archive/db"
+import type { Rim } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { RIM_AUTHORIZATION_ERROR } from "./actions"
-import { loadRimMaintenanceRims } from "./rim-maintenance-route-data"
+import { loadRimMaintenancePageData } from "./rim-maintenance-route-data"
 
-const rimTimestamps = {
-  createdAt: new Date("2026-07-01T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-01T00:00:00.000Z"),
-} as const
+const rims: Rim[] = [
+  {
+    id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"rim-version-1"',
+  },
+  {
+    id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"rim-version-1"',
+  },
+]
 
-function createRim(
-  overrides: Pick<RimOption, "id" | "code" | "name">
-): RimOption {
-  return {
-    ...rimTimestamps,
-    ...overrides,
-  }
-}
+describe("loadRimMaintenancePageData", () => {
+  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+    "maps API %s problems to the current access-denied presentation",
+    async (code) => {
+      const listRims = vi.fn().mockRejectedValue({ code })
 
-describe("loadRimMaintenanceRims", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getRims = vi.fn()
-
-    await expect(
-      loadRimMaintenanceRims(null, { getRims })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: RIM_AUTHORIZATION_ERROR,
-    })
-
-    expect(getRims).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getRims = vi.fn()
-
-    await expect(
-      loadRimMaintenanceRims({ role: "collector" }, { getRims })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: RIM_AUTHORIZATION_ERROR,
-    })
-
-    expect(getRims).not.toHaveBeenCalled()
-  })
-
-  it("returns Rim maintenance data for Editors and Admins", async () => {
-    const rims = [
-      createRim({
-        id: "dff33645-e973-4fd5-a84d-bf5a773855ef",
-        code: "raised",
-        name: "Raised rim",
-      }),
-    ]
-    const getRims = vi.fn().mockResolvedValue(rims)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
       await expect(
-        loadRimMaintenanceRims({ role }, { getRims })
+        loadRimMaintenancePageData({ listRims })
       ).resolves.toStrictEqual({
-        status: "success",
-        rims,
+        status: "error",
+        formError: RIM_AUTHORIZATION_ERROR,
       })
     }
+  )
+
+  it("loads every cursor page through the typed maintenance client", async () => {
+    const listRims = vi
+      .fn()
+      .mockResolvedValueOnce({ data: [rims[0]], nextCursor: "next" })
+      .mockResolvedValueOnce({ data: [rims[1]], nextCursor: null })
+
+    await expect(
+      loadRimMaintenancePageData({ listRims })
+    ).resolves.toStrictEqual({ status: "success", rims })
+    expect(listRims).toHaveBeenNthCalledWith(1, {
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+    expect(listRims).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+  })
+
+  it("does not hide unexpected API failures as authorization failures", async () => {
+    const failure = new Error("API unavailable")
+
+    await expect(
+      loadRimMaintenancePageData({
+        listRims: vi.fn().mockRejectedValue(failure),
+      })
+    ).rejects.toBe(failure)
   })
 })

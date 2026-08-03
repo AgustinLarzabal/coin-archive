@@ -1,64 +1,79 @@
+import type { Rim, MaintenanceApiClient } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
-import type { RimOption } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {
   MaintenancePageLoaderData,
   MaintenancePageLoadResult,
 } from "../maintenance-page"
-import { createRimAuthorizationError, hasRimMaintenanceAccess } from "./actions"
+import { createRimAuthorizationError } from "./actions"
 
 type LoadResult = MaintenancePageLoadResult<
-  {
-    rims: RimOption[]
-  },
+  { rims: Rim[] },
   ReturnType<typeof createRimAuthorizationError>
 >
 
 export type RimMaintenancePageLoaderData = MaintenancePageLoaderData<{
-  rims: RimOption[]
+  rims: Rim[]
 }>
 
 type ReadDependencies = {
-  getRims: () => Promise<RimOption[]>
+  listRims: MaintenanceApiClient["rims"]["list"]
 }
 
 async function getDefaultReadDependencies(): Promise<ReadDependencies> {
-  const { getRims } = await import("@coin-archive/db")
-
-  return {
-    getRims,
-  }
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
+  return { listRims: client.rims.list }
 }
 
-export async function loadRimMaintenanceRims(
-  collector: CollectorWithRole | null,
+export async function loadRimMaintenancePageData(
   dependencies?: ReadDependencies
 ): Promise<Awaited<LoadResult>> {
-  if (!hasRimMaintenanceAccess(collector)) {
-    return createRimAuthorizationError()
+  const { listRims } = dependencies ?? (await getDefaultReadDependencies())
+  const rims: Rim[] = []
+  const seenCursors = new Set<string>()
+  let cursor: string | undefined
+
+  try {
+    do {
+      const page = await listRims({
+        ...(cursor === undefined ? {} : { cursor }),
+        limit: 100,
+        sort: "name",
+        order: "asc",
+      })
+      rims.push(...page.data)
+      cursor = page.nextCursor ?? undefined
+      if (cursor !== undefined && seenCursors.has(cursor)) {
+        throw new Error("Rim maintenance API repeated a cursor.")
+      }
+      if (cursor !== undefined) seenCursors.add(cursor)
+    } while (cursor !== undefined)
+  } catch (error) {
+    if (isAuthorizationProblem(error)) {
+      return createRimAuthorizationError()
+    }
+    throw error
   }
 
-  const { getRims } = dependencies ?? (await getDefaultReadDependencies())
-
-  return {
-    status: "success",
-    rims: await getRims(),
-  }
+  return { status: "success", rims }
 }
 
-const getLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  const session = await getAuthSession()
-  const result = await loadRimMaintenanceRims(session?.user ?? null)
-
-  return toMaintenancePageLoaderData(result)
-})
+const getLoaderData = createServerFn({ method: "GET" }).handler(async () =>
+  toMaintenancePageLoaderData(await loadRimMaintenancePageData())
+)
 
 export function loadRimMaintenanceRouteData() {
   return getLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+  )
 }

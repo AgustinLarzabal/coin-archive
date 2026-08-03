@@ -4,6 +4,7 @@ import {
   createCurrencyIdempotentlyWithDatabase,
   createDistributionIdempotentlyWithDatabase,
   createEdgeIdempotentlyWithDatabase,
+  createRimIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
@@ -11,6 +12,7 @@ import {
   deleteCurrencyIfVersionWithDatabase,
   deleteDistributionIfVersionWithDatabase,
   deleteEdgeIfVersionWithDatabase,
+  deleteRimIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
@@ -22,6 +24,8 @@ import {
   getDistributionMaintenanceRecordsWithDatabase,
   getEdgeMaintenanceRecordWithDatabase,
   getEdgeMaintenanceRecordsWithDatabase,
+  getRimMaintenanceRecordWithDatabase,
+  getRimMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
@@ -31,6 +35,7 @@ import {
   replaceCurrencyWithDatabase,
   replaceDistributionWithDatabase,
   replaceEdgeWithDatabase,
+  replaceRimWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -165,6 +170,20 @@ async function handleRequest(
       }),
     deleteEdge: (input) =>
       deleteEdgeIfVersionWithDatabase(database.db, input),
+    listRims: (input) =>
+      getRimMaintenanceRecordsWithDatabase(database.db, input),
+    getRim: (rimId) =>
+      getRimMaintenanceRecordWithDatabase(database.db, rimId),
+    createRim: (input) =>
+      createRimIdempotentlyWithDatabase(database.db, input),
+    replaceRim: ({ id, expectedVersion, fields }) =>
+      replaceRimWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      }),
+    deleteRim: (input) =>
+      deleteRimIfVersionWithDatabase(database.db, input),
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

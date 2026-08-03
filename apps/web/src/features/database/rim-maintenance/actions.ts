@@ -16,12 +16,6 @@ import {
   RIM_DELETED_MESSAGE,
   RIM_UPDATED_MESSAGE,
 } from "./messages"
-import {
-  createRimInputSchema,
-  deleteRimInputSchema,
-  updateRimInputSchema,
-  validateRimInput,
-} from "./rim-validation"
 import type {
   CreateRimInput,
   DeleteRimInput,
@@ -80,16 +74,12 @@ export async function submitCreateRim(
   dependencies?: CreateDependencies
 ): Promise<RimMutationResult> {
   const { idempotencyKey, ...fields } = input
-  const validation = validateRimInput(createRimInputSchema, fields)
-  if (!validation.success) {
-    return createRimFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultCreateDependencies())
 
   try {
     await resolved.createRim({
       headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
+      body: fields,
     })
     return { status: "success", message: RIM_CREATED_MESSAGE }
   } catch (error) {
@@ -101,12 +91,8 @@ export async function submitUpdateRim(
   input: UpdateRimInput,
   dependencies?: ReplaceDependencies
 ): Promise<RimMutationResult> {
-  const validation = validateRimInput(updateRimInputSchema, input)
-  if (!validation.success) {
-    return createRimFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
+  const { id, etag, ...body } = input
 
   try {
     await resolved.replaceRim({
@@ -124,16 +110,12 @@ export async function submitDeleteRim(
   input: DeleteRimInput,
   dependencies?: DeleteDependencies
 ): Promise<RimMutationResult> {
-  const validation = validateRimInput(deleteRimInputSchema, input)
-  if (!validation.success) {
-    return createRimFieldErrorResult(validation.fieldErrors)
-  }
   const resolved = dependencies ?? (await getDefaultDeleteDependencies())
 
   try {
     await resolved.deleteRim({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
+      params: { uuid: input.id },
+      headers: { "if-match": input.etag },
     })
     return { status: "success", message: RIM_DELETED_MESSAGE }
   } catch (error) {

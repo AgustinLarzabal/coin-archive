@@ -41,8 +41,13 @@ function problem(code: string, status: number, invalidParams?: unknown[]) {
 }
 
 describe("Rim web mutation adapter", () => {
-  it("retains client validation before calling the typed create operation", async () => {
-    const createRim = vi.fn()
+  it("leaves authoritative validation to the typed API", async () => {
+    const createRim = vi.fn().mockRejectedValue(
+      problem("rim_validation_failed", 422, [
+        { name: "/code", code: "rim_code_required" },
+        { name: "/name", code: "rim_name_too_long" },
+      ])
+    )
 
     await expect(
       submitCreateRim(
@@ -60,7 +65,10 @@ describe("Rim web mutation adapter", () => {
         name: "Rim Name must be 255 characters or fewer.",
       },
     })
-    expect(createRim).not.toHaveBeenCalled()
+    expect(createRim).toHaveBeenCalledWith({
+      headers: { "idempotency-key": "attempt-1" },
+      body: { code: " ", name: "".padStart(256, "A") },
+    })
   })
 
   it("creates through the typed API with a client-owned idempotency key", async () => {
@@ -85,7 +93,7 @@ describe("Rim web mutation adapter", () => {
     })
     expect(createRim).toHaveBeenCalledWith({
       headers: { "idempotency-key": "attempt-1" },
-      body: { code: "reeded", name: "Reeded" },
+      body: { code: " reeded ", name: " Reeded " },
     })
   })
 

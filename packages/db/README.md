@@ -167,6 +167,7 @@ Legend:
 | `id` | defaulted |
 | `code` | required |
 | `name` | required |
+| `version` | defaulted |
 | `createdAt` | defaulted |
 | `updatedAt` | defaulted |
 
@@ -700,6 +701,7 @@ Rim-specific requirements and constraints:
 - Rim Codes must satisfy the lowercase slug-style check enforced by `rim_code_slug_check`
 - Rim Names do not need to be unique
 - Rim primary keys are database-generated UUIDv7 values
+- `version` defaults to one and supplies the optimistic-concurrency token for Rim Maintenance
 - `created_at` and `updated_at` default at insert time; the current schema does not add an automatic trigger to bump `updated_at` on later updates
 
 Rim-specific indexes and query implications:

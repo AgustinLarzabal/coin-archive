@@ -70,10 +70,19 @@ export function loadRimMaintenanceRouteData() {
 }
 
 function isAuthorizationProblem(error: unknown) {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return false
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return false
+  }
+  const body = data.body
   return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN")
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
   )
 }

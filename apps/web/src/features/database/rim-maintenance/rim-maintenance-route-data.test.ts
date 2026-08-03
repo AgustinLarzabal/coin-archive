@@ -26,10 +26,12 @@ const rims: Rim[] = [
 ]
 
 describe("loadRimMaintenancePageData", () => {
-  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+  it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
-      const listRims = vi.fn().mockRejectedValue({ code })
+      const listRims = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
       await expect(
         loadRimMaintenancePageData({ listRims })

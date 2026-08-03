@@ -42,6 +42,8 @@ import { registerRulerGroupMaintenanceRoutes } from "./ruler-group-maintenance"
 import type { RulerGroupMaintenanceDependencies } from "./ruler-group-maintenance"
 import { registerRulerMaintenanceRoutes } from "./ruler-maintenance"
 import type { RulerMaintenanceDependencies } from "./ruler-maintenance"
+import { registerDatabaseMaintenanceOverviewRoutes } from "./database-maintenance-overview"
+import type { DatabaseMaintenanceOverviewDependencies } from "./database-maintenance-overview"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -142,6 +144,9 @@ export function createApiApp({
   handleAuthRequest,
   getCollector = async () => null,
   maintenanceRateLimit = async () => true,
+  getDatabaseMaintenanceOverview = async () => {
+    throw new Error("Database Maintenance overview is not configured")
+  },
   listOrientations = async () => [],
   getOrientation = async () => null,
   createOrientation = async () => {
@@ -324,6 +329,7 @@ export function createApiApp({
     kind: "mutation" | "read",
     clientIp?: string
   ) => Promise<boolean>
+  getDatabaseMaintenanceOverview?: DatabaseMaintenanceOverviewDependencies["getDatabaseMaintenanceOverview"]
   listOrientations?: OrientationMaintenanceDependencies["listOrientations"]
   getOrientation?: OrientationMaintenanceDependencies["getOrientation"]
   createOrientation?: OrientationMaintenanceDependencies["createOrientation"]
@@ -575,6 +581,9 @@ export function createApiApp({
     createOrientation,
     replaceOrientation,
     deleteOrientation,
+  })
+  registerDatabaseMaintenanceOverviewRoutes(app, {
+    getDatabaseMaintenanceOverview,
   })
   registerCatalogueMaintenanceRoutes(app, {
     listCatalogues,

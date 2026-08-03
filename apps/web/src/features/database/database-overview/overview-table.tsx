@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
+import type { DatabaseMaintenanceOverview } from "@coin-archive/api"
 
 import { databaseMaintenanceSections } from "../navigation"
 import {
@@ -12,7 +12,7 @@ import {
 } from "@coin-archive/ui/components/table"
 
 type DatabaseOverviewTableProps = {
-  counts: DatabaseGeneralSummaryCounts
+  counts: DatabaseMaintenanceOverview
 }
 
 export function DatabaseOverviewTable({ counts }: DatabaseOverviewTableProps) {

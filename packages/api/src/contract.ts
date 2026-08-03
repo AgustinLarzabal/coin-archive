@@ -30,6 +30,29 @@ export const maintenanceProblemDocumentSchema = problemDocumentSchema.extend({
     .optional(),
 })
 
+export const databaseMaintenanceOverviewSchema = z.object({
+  coins: z.number().int().nonnegative(),
+  catalogues: z.number().int().nonnegative(),
+  compositions: z.number().int().nonnegative(),
+  currencies: z.number().int().nonnegative(),
+  distributions: z.number().int().nonnegative(),
+  edges: z.number().int().nonnegative(),
+  rims: z.number().int().nonnegative(),
+  shapes: z.number().int().nonnegative(),
+  mintingTechniques: z.number().int().nonnegative(),
+  engravers: z.number().int().nonnegative(),
+  themes: z.number().int().nonnegative(),
+  issuers: z.number().int().nonnegative(),
+  rulers: z.number().int().nonnegative(),
+  rulerGroups: z.number().int().nonnegative(),
+  orientations: z.number().int().nonnegative(),
+  mints: z.number().int().nonnegative(),
+})
+
+export const databaseMaintenanceOverviewOutputSchema = z.object({
+  data: databaseMaintenanceOverviewSchema,
+})
+
 export const coinSummarySchema = z.object({
   id: z.uuid(),
   title: z.string(),
@@ -1933,6 +1956,18 @@ export const publicApiContract = {
 }
 
 export const maintenanceApiContract = {
+  overview: {
+    get: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/overview",
+        summary: "Get the Database Maintenance overview",
+        tags: ["Database Maintenance"],
+      })
+      .input(z.object({}))
+      .output(databaseMaintenanceOverviewOutputSchema)
+      .errors(maintenanceReadErrors),
+  },
   catalogues: {
     list: oc
       .route({
@@ -3048,6 +3083,12 @@ export type BrowseCoinsInput = z.infer<typeof browseCoinsInputSchema>
 export type BrowseCoinsOutput = z.infer<typeof browseCoinsOutputSchema>
 export type CoinDetail = z.infer<typeof coinDetailSchema>
 export type CoinDetailOutput = z.infer<typeof coinDetailOutputSchema>
+export type DatabaseMaintenanceOverview = z.infer<
+  typeof databaseMaintenanceOverviewSchema
+>
+export type DatabaseMaintenanceOverviewOutput = z.infer<
+  typeof databaseMaintenanceOverviewOutputSchema
+>
 export type Orientation = z.infer<typeof orientationSchema>
 export type OrientationOption = z.infer<typeof orientationOptionSchema>
 export type OrientationListInput = z.infer<typeof orientationListInputSchema>

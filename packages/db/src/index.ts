@@ -259,7 +259,10 @@ export {
 export { getCoinMaintenanceList } from "./queries/get-coin-maintenance-list"
 export { getCoinMaintenanceDeleteSummary } from "./queries/get-coin-maintenance-delete-summary"
 export { getCoinMaintenanceRecord } from "./queries/get-coin-maintenance-record"
-export { getDatabaseGeneralSummaryCounts } from "./queries/get-database-general-summary-counts"
+export {
+  getDatabaseGeneralSummaryCounts,
+  getDatabaseGeneralSummaryCountsWithDatabase,
+} from "./queries/get-database-general-summary-counts"
 export { deleteCollectorIdentity } from "./mutations/delete-collector-identity"
 export { bootstrapInitialAdmin } from "./mutations/bootstrap-initial-admin"
 export {

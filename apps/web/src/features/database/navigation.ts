@@ -1,9 +1,9 @@
-import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
+import type { DatabaseMaintenanceOverview } from "@coin-archive/api"
 
 type DatabaseMaintenanceSection = {
   to: string
   label: string
-  countKey: keyof DatabaseGeneralSummaryCounts
+  countKey: keyof DatabaseMaintenanceOverview
 }
 
 type DatabaseSecondaryMenuItem = Pick<

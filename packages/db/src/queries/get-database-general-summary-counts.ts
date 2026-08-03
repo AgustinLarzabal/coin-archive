@@ -37,27 +37,30 @@ export type DatabaseGeneralSummaryCounts = {
   mints: number
 }
 
-const DATABASE_GENERAL_SUMMARY_COUNT_QUERIES = {
-  coins: () => db.select({ count: count() }).from(coin),
-  catalogues: () => db.select({ count: count() }).from(catalogue),
-  compositions: () => db.select({ count: count() }).from(composition),
-  currencies: () => db.select({ count: count() }).from(currency),
-  distributions: () => db.select({ count: count() }).from(distribution),
-  edges: () => db.select({ count: count() }).from(edge),
-  rims: () => db.select({ count: count() }).from(rim),
-  shapes: () => db.select({ count: count() }).from(shape),
-  mintingTechniques: () => db.select({ count: count() }).from(technique),
-  engravers: () => db.select({ count: count() }).from(engraver),
-  themes: () => db.select({ count: count() }).from(theme),
-  issuers: () => db.select({ count: count() }).from(issuer),
-  rulers: () => db.select({ count: count() }).from(ruler),
-  rulerGroups: () => db.select({ count: count() }).from(rulerGroup),
-  orientations: () => db.select({ count: count() }).from(orientation),
-  mints: () => db.select({ count: count() }).from(mint),
-} satisfies Record<
-  keyof DatabaseGeneralSummaryCounts,
-  () => Promise<Array<{ count: number }>>
->
+function createDatabaseGeneralSummaryCountQueries(database: typeof db) {
+  return {
+    coins: () => database.select({ count: count() }).from(coin),
+    catalogues: () => database.select({ count: count() }).from(catalogue),
+    compositions: () => database.select({ count: count() }).from(composition),
+    currencies: () => database.select({ count: count() }).from(currency),
+    distributions: () => database.select({ count: count() }).from(distribution),
+    edges: () => database.select({ count: count() }).from(edge),
+    rims: () => database.select({ count: count() }).from(rim),
+    shapes: () => database.select({ count: count() }).from(shape),
+    mintingTechniques: () =>
+      database.select({ count: count() }).from(technique),
+    engravers: () => database.select({ count: count() }).from(engraver),
+    themes: () => database.select({ count: count() }).from(theme),
+    issuers: () => database.select({ count: count() }).from(issuer),
+    rulers: () => database.select({ count: count() }).from(ruler),
+    rulerGroups: () => database.select({ count: count() }).from(rulerGroup),
+    orientations: () => database.select({ count: count() }).from(orientation),
+    mints: () => database.select({ count: count() }).from(mint),
+  } satisfies Record<
+    keyof DatabaseGeneralSummaryCounts,
+    () => Promise<Array<{ count: number }>>
+  >
+}
 
 async function getCount(
   query: Promise<Array<{ count: number }>>
@@ -66,10 +69,18 @@ async function getCount(
 }
 
 export async function getDatabaseGeneralSummaryCounts(): Promise<DatabaseGeneralSummaryCounts> {
+  return getDatabaseGeneralSummaryCountsWithDatabase(db)
+}
+
+export async function getDatabaseGeneralSummaryCountsWithDatabase(
+  database: typeof db
+): Promise<DatabaseGeneralSummaryCounts> {
+  const queries = createDatabaseGeneralSummaryCountQueries(database)
   return Object.fromEntries(
     await Promise.all(
-      Object.entries(DATABASE_GENERAL_SUMMARY_COUNT_QUERIES).map(
-        async ([key, createQuery]) => [key, await getCount(createQuery())] as const
+      Object.entries(queries).map(
+        async ([key, createQuery]) =>
+          [key, await getCount(createQuery())] as const
       )
     )
   ) as DatabaseGeneralSummaryCounts

@@ -1,15 +1,9 @@
+import type { DatabaseMaintenanceOverview } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
+
 import { loadDatabaseOverviewPageData } from "./database-overview-route-data"
 
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
-
-vi.mock("./overview-table", () => ({
-  DatabaseOverviewTable: () => "Database overview table",
-}))
-
-const counts = {
+const counts: DatabaseMaintenanceOverview = {
   coins: 14,
   catalogues: 3,
   compositions: 5,
@@ -26,52 +20,38 @@ const counts = {
   rulerGroups: 4,
   orientations: 10,
   mints: 9,
-} as const
+}
 
 describe("loadDatabaseOverviewPageData", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn()
-
-    await expect(
-      loadDatabaseOverviewPageData(null, {
-        getDatabaseGeneralSummaryCounts,
+  it.each(["authentication_required", "editor_access_required"])(
+    "maps the API %s problem to the current access-denied presentation",
+    async (code) => {
+      const getOverview = vi.fn().mockRejectedValue({
+        data: { body: { code } },
       })
-    ).resolves.toStrictEqual({
-      isAllowed: false,
-    })
 
-    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn()
-
-    await expect(
-      loadDatabaseOverviewPageData(
-        { role: "collector" },
-        { getDatabaseGeneralSummaryCounts }
-      )
-    ).resolves.toStrictEqual({
-      isAllowed: false,
-    })
-
-    expect(getDatabaseGeneralSummaryCounts).not.toHaveBeenCalled()
-  })
-
-  it("returns summary counts for Editors and Admins", async () => {
-    const getDatabaseGeneralSummaryCounts = vi.fn().mockResolvedValue(counts)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
       await expect(
-        loadDatabaseOverviewPageData(
-          { role },
-          { getDatabaseGeneralSummaryCounts }
-        )
-      ).resolves.toStrictEqual({
-        isAllowed: true,
-        counts,
-      })
+        loadDatabaseOverviewPageData({ getOverview })
+      ).resolves.toStrictEqual({ isAllowed: false })
     }
+  )
+
+  it("loads counts through the typed maintenance API client", async () => {
+    const getOverview = vi.fn().mockResolvedValue({ data: counts })
+
+    await expect(
+      loadDatabaseOverviewPageData({ getOverview })
+    ).resolves.toStrictEqual({ isAllowed: true, counts })
+    expect(getOverview).toHaveBeenCalledWith({})
+  })
+
+  it("does not hide unexpected API failures as authorization failures", async () => {
+    const failure = new Error("API unavailable")
+
+    await expect(
+      loadDatabaseOverviewPageData({
+        getOverview: vi.fn().mockRejectedValue(failure),
+      })
+    ).rejects.toBe(failure)
   })
 })

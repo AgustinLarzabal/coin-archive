@@ -31,6 +31,7 @@ import {
   deleteTechniqueIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
+  getDatabaseGeneralSummaryCountsWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
   getCompositionMaintenanceRecordWithDatabase,
   getCompositionMaintenanceRecordsWithDatabase,
@@ -154,6 +155,8 @@ async function handleRequest(
           coin.createdAt !== undefined
       ),
     getCoin: (coinId) => getPublicCoinWithDatabase(database.db, coinId),
+    getDatabaseMaintenanceOverview: () =>
+      getDatabaseGeneralSummaryCountsWithDatabase(database.db),
     listCatalogues: (input) =>
       getCatalogueMaintenanceRecordsWithDatabase(database.db, input),
     getCatalogue: (catalogueId) =>

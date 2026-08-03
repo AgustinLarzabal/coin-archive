@@ -1,9 +1,8 @@
 import { createServerFn } from "@tanstack/react-start"
-import type { DatabaseGeneralSummaryCounts } from "@coin-archive/db"
-
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
-import { getEditorRouteAuthorization } from "@/lib/route-authorization"
+import type {
+  DatabaseMaintenanceOverview,
+  MaintenanceApiClient,
+} from "@coin-archive/api"
 
 export type DatabaseOverviewPageLoaderData =
   | {
@@ -11,47 +10,62 @@ export type DatabaseOverviewPageLoaderData =
     }
   | {
       isAllowed: true
-      counts: DatabaseGeneralSummaryCounts
+      counts: DatabaseMaintenanceOverview
     }
 
 type DatabaseOverviewDependencies = {
-  getDatabaseGeneralSummaryCounts: () => Promise<DatabaseGeneralSummaryCounts>
+  getOverview: MaintenanceApiClient["overview"]["get"]
 }
 
 async function getDefaultDatabaseOverviewDependencies(): Promise<DatabaseOverviewDependencies> {
-  const { getDatabaseGeneralSummaryCounts } = await import("@coin-archive/db")
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
 
   return {
-    getDatabaseGeneralSummaryCounts,
+    getOverview: client.overview.get,
   }
 }
 
 export async function loadDatabaseOverviewPageData(
-  collector: CollectorWithRole | null,
   dependencies?: DatabaseOverviewDependencies
 ): Promise<DatabaseOverviewPageLoaderData> {
-  if (!getEditorRouteAuthorization(collector).isAllowed) {
-    return {
-      isAllowed: false,
-    }
-  }
-
-  const { getDatabaseGeneralSummaryCounts } =
+  const { getOverview } =
     dependencies ?? (await getDefaultDatabaseOverviewDependencies())
 
-  return {
-    isAllowed: true,
-    counts: await getDatabaseGeneralSummaryCounts(),
+  try {
+    const { data: counts } = await getOverview({})
+    return { isAllowed: true, counts }
+  } catch (error) {
+    if (isAuthorizationProblem(error)) return { isAllowed: false }
+    throw error
   }
 }
 
 const getDatabaseOverviewLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
-  const session = await getAuthSession()
-  return loadDatabaseOverviewPageData(session?.user ?? null)
+  return loadDatabaseOverviewPageData()
 })
 
 export function loadDatabaseOverviewRouteData() {
   return getDatabaseOverviewLoaderData()
+}
+
+function isAuthorizationProblem(error: unknown) {
+  if (typeof error !== "object" || error === null || !("data" in error)) {
+    return false
+  }
+  const data = error.data
+  if (typeof data !== "object" || data === null || !("body" in data)) {
+    return false
+  }
+  const body = data.body
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "code" in body &&
+    (body.code === "authentication_required" ||
+      body.code === "editor_access_required")
+  )
 }

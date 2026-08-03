@@ -15,7 +15,7 @@ export function MintingTechniquesTableToolbar({
   return (
     <div className="flex grow items-center justify-between">
       <Input
-        placeholder="Filter minting techniques by code or name..."
+        placeholder="Filter mintingTechniques by code or name..."
         value={filterValue}
         onChange={(event) => onFilterValueChange(event.target.value)}
         className="max-w-sm"

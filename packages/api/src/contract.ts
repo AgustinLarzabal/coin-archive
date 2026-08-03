@@ -547,7 +547,11 @@ export const rimSchema = z.object({
   updatedAt: utcTimestampSchema,
   etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
 })
-export const rimOptionSchema = rimSchema.pick({ id: true, code: true, name: true })
+export const rimOptionSchema = rimSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
 export const rimListInputSchema = z.object({
   q: z.string().trim().min(1).optional(),
   cursor: z.string().min(1).optional(),
@@ -571,7 +575,12 @@ export const rimOptionsOutputSchema = z.object({
 export const rimDetailInputSchema = z.object({ uuid: z.uuid() })
 export const rimDetailOutputSchema = z.object({ data: rimSchema })
 export const rimMutationBodySchema = z.object({
-  code: z.string().trim().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   name: z.string().trim().min(1).max(255),
 })
 export const rimCreateInputSchema = z.object({
@@ -651,7 +660,11 @@ export const shapeSchema = z.object({
   updatedAt: utcTimestampSchema,
   etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
 })
-export const shapeOptionSchema = shapeSchema.pick({ id: true, code: true, name: true })
+export const shapeOptionSchema = shapeSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
 export const shapeListInputSchema = z.object({
   q: z.string().trim().min(1).optional(),
   cursor: z.string().min(1).optional(),
@@ -675,7 +688,12 @@ export const shapeOptionsOutputSchema = z.object({
 export const shapeDetailInputSchema = z.object({ uuid: z.uuid() })
 export const shapeDetailOutputSchema = z.object({ data: shapeSchema })
 export const shapeMutationBodySchema = z.object({
-  code: z.string().trim().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   name: z.string().trim().min(1).max(255),
 })
 export const shapeCreateInputSchema = z.object({
@@ -739,6 +757,124 @@ export const shapeMaintenanceProblemDocumentSchema =
             "shape_name_invalid",
             "shape_name_required",
             "shape_name_too_long",
+          ]),
+          reason: z.string(),
+        })
+      )
+      .optional(),
+  })
+
+export const mintingTechniqueSchema = z.object({
+  id: z.uuid(),
+  code: codeSchema,
+  name: z.string(),
+  version: z.number().int().min(1),
+  createdAt: utcTimestampSchema,
+  updatedAt: utcTimestampSchema,
+  etag: z.string().regex(/^"[A-Za-z0-9_-]+"$/),
+})
+export const mintingTechniqueOptionSchema = mintingTechniqueSchema.pick({
+  id: true,
+  code: true,
+  name: true,
+})
+export const mintingTechniqueListInputSchema = z.object({
+  q: z.string().trim().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z.enum(["name", "code"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+})
+export const mintingTechniqueListOutputSchema = z.object({
+  data: z.array(mintingTechniqueSchema),
+  nextCursor: z.string().nullable(),
+})
+export const mintingTechniqueOptionsInputSchema =
+  mintingTechniqueListInputSchema.pick({
+    q: true,
+    cursor: true,
+    limit: true,
+  })
+export const mintingTechniqueOptionsOutputSchema = z.object({
+  data: z.array(mintingTechniqueOptionSchema),
+  nextCursor: z.string().nullable(),
+})
+export const mintingTechniqueDetailInputSchema = z.object({ uuid: z.uuid() })
+export const mintingTechniqueDetailOutputSchema = z.object({
+  data: mintingTechniqueSchema,
+})
+export const mintingTechniqueMutationBodySchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(255),
+})
+export const mintingTechniqueCreateInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: mintingTechniqueMutationBodySchema,
+})
+export const mintingTechniqueCreateOutputSchema = z.object({
+  status: z.literal(201),
+  headers: z.object({
+    location: z.string().startsWith("/api/v1/maintenance/minting-techniques/"),
+    etag: z.string(),
+  }),
+  body: mintingTechniqueDetailOutputSchema,
+})
+export const mintingTechniqueReplaceInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+  body: mintingTechniqueMutationBodySchema,
+})
+export const mintingTechniqueReplaceOutputSchema = z.object({
+  status: z.literal(200),
+  headers: z.object({ etag: z.string() }),
+  body: mintingTechniqueDetailOutputSchema,
+})
+export const mintingTechniqueDeleteInputSchema = z.object({
+  params: z.object({ uuid: z.uuid() }),
+  headers: z.object({ "if-match": ifMatchSchema }),
+})
+export const mintingTechniqueDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+export const mintingTechniqueMaintenanceProblemDocumentSchema =
+  maintenanceProblemDocumentSchema.extend({
+    code: z.enum([
+      "authentication_required",
+      "minting_technique_code_conflict",
+      "minting_technique_in_use",
+      "minting_technique_not_found",
+      "minting_technique_precondition_failed",
+      "minting_technique_validation_failed",
+      "editor_access_required",
+      "idempotency_key_required",
+      "idempotency_key_reused",
+      "if_match_required",
+      "internal_error",
+      "invalid_minting_technique_uuid",
+      "invalid_idempotency_key",
+      "invalid_if_match",
+      "invalid_json",
+      "invalid_request",
+      "method_not_allowed",
+      "rate_limit_exceeded",
+    ]),
+    invalidParams: z
+      .array(
+        z.object({
+          name: z.enum(["/", "/code", "/name"]),
+          code: z.enum([
+            "minting_technique_body_invalid",
+            "minting_technique_code_invalid",
+            "minting_technique_code_required",
+            "minting_technique_code_too_long",
+            "minting_technique_name_invalid",
+            "minting_technique_name_required",
+            "minting_technique_name_too_long",
           ]),
           reason: z.string(),
         })
@@ -886,6 +1022,18 @@ const shapeMaintenanceMutationErrors = {
   UNPROCESSABLE_CONTENT: {
     status: 422,
     data: shapeMaintenanceProblemDocumentSchema,
+  },
+} as const
+
+const mintingTechniqueMaintenanceMutationErrors = {
+  ...maintenanceMutationErrors,
+  CONFLICT: {
+    status: 409,
+    data: mintingTechniqueMaintenanceProblemDocumentSchema,
+  },
+  UNPROCESSABLE_CONTENT: {
+    status: 422,
+    data: mintingTechniqueMaintenanceProblemDocumentSchema,
   },
 } as const
 
@@ -1216,67 +1364,222 @@ export const maintenanceApiContract = {
   },
   rims: {
     list: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/rims", summary: "Browse Rims for maintenance", tags: ["Rim Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rims",
+        summary: "Browse Rims for maintenance",
+        tags: ["Rim Maintenance"],
+      })
       .input(rimListInputSchema)
       .output(rimListOutputSchema)
       .errors(maintenanceReadErrors),
     options: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/rims/options", summary: "Search compact Rim options", tags: ["Rim Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rims/options",
+        summary: "Search compact Rim options",
+        tags: ["Rim Maintenance"],
+      })
       .input(rimOptionsInputSchema)
       .output(rimOptionsOutputSchema)
       .errors(maintenanceReadErrors),
     detail: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/rims/{uuid}", summary: "Get Rim maintenance detail", tags: ["Rim Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/rims/{uuid}",
+        summary: "Get Rim maintenance detail",
+        tags: ["Rim Maintenance"],
+      })
       .input(rimDetailInputSchema)
       .output(rimDetailOutputSchema)
-      .errors({ ...maintenanceReadErrors, NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema } }),
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
     create: oc
-      .route({ method: "POST", path: "/api/v1/maintenance/rims", summary: "Create a Rim", tags: ["Rim Maintenance"], successStatus: 201, inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/rims",
+        summary: "Create a Rim",
+        tags: ["Rim Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(rimCreateInputSchema)
       .output(rimCreateOutputSchema)
       .errors(rimMaintenanceMutationErrors),
     replace: oc
-      .route({ method: "PUT", path: "/api/v1/maintenance/rims/{uuid}", summary: "Replace a Rim", tags: ["Rim Maintenance"], inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/rims/{uuid}",
+        summary: "Replace a Rim",
+        tags: ["Rim Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(rimReplaceInputSchema)
       .output(rimReplaceOutputSchema)
       .errors(rimMaintenanceMutationErrors),
     delete: oc
-      .route({ method: "DELETE", path: "/api/v1/maintenance/rims/{uuid}", summary: "Permanently delete a Rim", tags: ["Rim Maintenance"], successStatus: 204, inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/rims/{uuid}",
+        summary: "Permanently delete a Rim",
+        tags: ["Rim Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(rimDeleteInputSchema)
       .output(rimDeleteOutputSchema)
       .errors(rimMaintenanceMutationErrors),
   },
   shapes: {
     list: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/shapes", summary: "Browse Shapes for maintenance", tags: ["Shape Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/shapes",
+        summary: "Browse Shapes for maintenance",
+        tags: ["Shape Maintenance"],
+      })
       .input(shapeListInputSchema)
       .output(shapeListOutputSchema)
       .errors(maintenanceReadErrors),
     options: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/shapes/options", summary: "Search compact Shape options", tags: ["Shape Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/shapes/options",
+        summary: "Search compact Shape options",
+        tags: ["Shape Maintenance"],
+      })
       .input(shapeOptionsInputSchema)
       .output(shapeOptionsOutputSchema)
       .errors(maintenanceReadErrors),
     detail: oc
-      .route({ method: "GET", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Get Shape maintenance detail", tags: ["Shape Maintenance"] })
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/shapes/{uuid}",
+        summary: "Get Shape maintenance detail",
+        tags: ["Shape Maintenance"],
+      })
       .input(shapeDetailInputSchema)
       .output(shapeDetailOutputSchema)
-      .errors({ ...maintenanceReadErrors, NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema } }),
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
     create: oc
-      .route({ method: "POST", path: "/api/v1/maintenance/shapes", summary: "Create a Shape", tags: ["Shape Maintenance"], successStatus: 201, inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/shapes",
+        summary: "Create a Shape",
+        tags: ["Shape Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(shapeCreateInputSchema)
       .output(shapeCreateOutputSchema)
       .errors(shapeMaintenanceMutationErrors),
     replace: oc
-      .route({ method: "PUT", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Replace a Shape", tags: ["Shape Maintenance"], inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/shapes/{uuid}",
+        summary: "Replace a Shape",
+        tags: ["Shape Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(shapeReplaceInputSchema)
       .output(shapeReplaceOutputSchema)
       .errors(shapeMaintenanceMutationErrors),
     delete: oc
-      .route({ method: "DELETE", path: "/api/v1/maintenance/shapes/{uuid}", summary: "Permanently delete a Shape", tags: ["Shape Maintenance"], successStatus: 204, inputStructure: "detailed", outputStructure: "detailed" })
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/shapes/{uuid}",
+        summary: "Permanently delete a Shape",
+        tags: ["Shape Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
       .input(shapeDeleteInputSchema)
       .output(shapeDeleteOutputSchema)
       .errors(shapeMaintenanceMutationErrors),
+  },
+  mintingTechniques: {
+    list: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/minting-techniques",
+        summary: "Browse Minting Techniques for maintenance",
+        tags: ["Minting Technique Maintenance"],
+      })
+      .input(mintingTechniqueListInputSchema)
+      .output(mintingTechniqueListOutputSchema)
+      .errors(maintenanceReadErrors),
+    options: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/minting-techniques/options",
+        summary: "Search compact Minting Technique options",
+        tags: ["Minting Technique Maintenance"],
+      })
+      .input(mintingTechniqueOptionsInputSchema)
+      .output(mintingTechniqueOptionsOutputSchema)
+      .errors(maintenanceReadErrors),
+    detail: oc
+      .route({
+        method: "GET",
+        path: "/api/v1/maintenance/minting-techniques/{uuid}",
+        summary: "Get Minting Technique maintenance detail",
+        tags: ["Minting Technique Maintenance"],
+      })
+      .input(mintingTechniqueDetailInputSchema)
+      .output(mintingTechniqueDetailOutputSchema)
+      .errors({
+        ...maintenanceReadErrors,
+        NOT_FOUND: { status: 404, data: maintenanceProblemDocumentSchema },
+      }),
+    create: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/minting-techniques",
+        summary: "Create a Minting Technique",
+        tags: ["Minting Technique Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintingTechniqueCreateInputSchema)
+      .output(mintingTechniqueCreateOutputSchema)
+      .errors(mintingTechniqueMaintenanceMutationErrors),
+    replace: oc
+      .route({
+        method: "PUT",
+        path: "/api/v1/maintenance/minting-techniques/{uuid}",
+        summary: "Replace a Minting Technique",
+        tags: ["Minting Technique Maintenance"],
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintingTechniqueReplaceInputSchema)
+      .output(mintingTechniqueReplaceOutputSchema)
+      .errors(mintingTechniqueMaintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/minting-techniques/{uuid}",
+        summary: "Permanently delete a Minting Technique",
+        tags: ["Minting Technique Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(mintingTechniqueDeleteInputSchema)
+      .output(mintingTechniqueDeleteOutputSchema)
+      .errors(mintingTechniqueMaintenanceMutationErrors),
   },
   currencies: {
     list: oc
@@ -1519,6 +1822,28 @@ export type ShapeOptionsInput = z.infer<typeof shapeOptionsInputSchema>
 export type ShapeOptionsOutput = z.infer<typeof shapeOptionsOutputSchema>
 export type ShapeDetailOutput = z.infer<typeof shapeDetailOutputSchema>
 export type ShapeMutationBody = z.infer<typeof shapeMutationBodySchema>
+export type MintingTechnique = z.infer<typeof mintingTechniqueSchema>
+export type MintingTechniqueOption = z.infer<
+  typeof mintingTechniqueOptionSchema
+>
+export type MintingTechniqueListInput = z.infer<
+  typeof mintingTechniqueListInputSchema
+>
+export type MintingTechniqueListOutput = z.infer<
+  typeof mintingTechniqueListOutputSchema
+>
+export type MintingTechniqueOptionsInput = z.infer<
+  typeof mintingTechniqueOptionsInputSchema
+>
+export type MintingTechniqueOptionsOutput = z.infer<
+  typeof mintingTechniqueOptionsOutputSchema
+>
+export type MintingTechniqueDetailOutput = z.infer<
+  typeof mintingTechniqueDetailOutputSchema
+>
+export type MintingTechniqueMutationBody = z.infer<
+  typeof mintingTechniqueMutationBodySchema
+>
 export type Currency = z.infer<typeof currencySchema>
 export type CurrencyOption = z.infer<typeof currencyOptionSchema>
 export type CurrencyListInput = z.infer<typeof currencyListInputSchema>

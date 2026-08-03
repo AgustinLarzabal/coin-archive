@@ -2,22 +2,17 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type {
-  MintingTechniqueFieldErrors,
-  MintingTechniqueMutationResult,
-} from "../actions"
-import {
-  createMintingTechniqueInputSchema,
-  submitUpdateMintingTechnique,
-} from "../actions"
+import { submitUpdateMintingTechnique } from "../actions"
+import type { MintingTechniqueMutationResult } from "../actions"
+import { createMintingTechniqueInputSchema } from "../minting-technique-validation"
+import type { MintingTechniqueFieldErrors } from "../minting-technique-validation"
 
 import {
   createMintingTechniqueDraft,
-  normalizeMintingTechniqueDraft,
+  hasMintingTechniqueEditChanges,
 } from "./minting-technique-form.shared"
 import {
   MintingTechniqueFormFields,
@@ -26,34 +21,17 @@ import {
 import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
 
 type MintingTechniqueEditFormProps = {
-  mintingTechnique: TechniqueOption
+  mintingTechnique: MintingTechnique
   onSaved?: () => void
 }
 
 const updateMintingTechniqueAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: MintingTechniqueDraft & { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitUpdateMintingTechnique(session?.user ?? null, data)
-  })
-
-export function hasMintingTechniqueEditChanges(
-  mintingTechnique: TechniqueOption,
-  draft: MintingTechniqueDraft
-) {
-  const normalizedCurrent = normalizeMintingTechniqueDraft(
-    createMintingTechniqueDraft(mintingTechnique)
+  .inputValidator(
+    (data: MintingTechniqueDraft & { id: string; etag: string }) => data
   )
-  const normalizedDraft = normalizeMintingTechniqueDraft(draft)
-
-  return (
-    normalizedDraft.code !== normalizedCurrent.code ||
-    normalizedDraft.name !== normalizedCurrent.name
-  )
-}
+  .handler(async ({ data }) => submitUpdateMintingTechnique(data))
 
 export function MintingTechniqueEditForm({
   mintingTechnique,
@@ -72,7 +50,11 @@ export function MintingTechniqueEditForm({
     validators: { onSubmit: createMintingTechniqueInputSchema },
     onSubmit: async ({ value }) => {
       const result = await updateMintingTechnique({
-        data: { id: mintingTechnique.id, ...value },
+        data: {
+          id: mintingTechnique.id,
+          etag: mintingTechnique.etag,
+          ...value,
+        },
       })
       const shouldRefresh = applyResult(result)
       if (shouldRefresh) {

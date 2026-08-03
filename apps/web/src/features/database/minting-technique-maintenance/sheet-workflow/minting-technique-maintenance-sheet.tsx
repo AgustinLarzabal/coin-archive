@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { createServerFn, useServerFn } from "@tanstack/react-start"
+import type { MintingTechnique } from "@coin-archive/api"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@coin-archive/ui/components/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@coin-archive/ui/components/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,49 +25,27 @@ import {
   AlertDialogTitle,
 } from "@coin-archive/ui/components/alert-dialog"
 import { Button } from "@coin-archive/ui/components/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@coin-archive/ui/components/dropdown-menu"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@coin-archive/ui/components/sheet"
-import type { TechniqueOption } from "@coin-archive/db"
 
 import { Icons } from "@/components/icons"
-import { getAuthSession } from "@/lib/auth-session"
-import {
-  MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
-  MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE,
-  submitDeleteMintingTechnique,
-} from "../actions"
+import { submitDeleteMintingTechnique } from "../actions"
+import { MINTING_TECHNIQUE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { MintingTechniqueCreateForm } from "../form-workflow/minting-technique-create-form"
 import { MintingTechniqueEditForm } from "../form-workflow/minting-technique-edit-form"
 
 type MintingTechniqueMaintenanceSheetProps = {
-  mintingTechnique: TechniqueOption | null
+  mintingTechnique: MintingTechnique | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION =
-  `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE}`
+export const MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
 const deleteMintingTechniqueAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { id: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-
-    return submitDeleteMintingTechnique(session?.user ?? null, data)
-  })
+  .inputValidator((data: { id: string; etag: string }) => data)
+  .handler(async ({ data }) => submitDeleteMintingTechnique(data))
 
 export function MintingTechniqueMaintenanceSheet({
   mintingTechnique,
@@ -66,24 +57,12 @@ export function MintingTechniqueMaintenanceSheet({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)
-  const isEditingMintingTechnique = mintingTechnique !== null
-  const sheetTitle = isEditingMintingTechnique
-    ? "Edit Minting Technique"
-    : "Create Minting Technique"
 
-  function resetDeleteState() {
+  useEffect(() => {
     setDeleteError(null)
     setIsDeleteDialogOpen(false)
     setIsDeletePending(false)
-  }
-
-  useEffect(() => {
-    resetDeleteState()
   }, [mintingTechnique?.id, open])
-
-  function closeSheet() {
-    onOpenChange(false)
-  }
 
   async function handleDeleteMintingTechnique() {
     if (!mintingTechnique) {
@@ -97,6 +76,7 @@ export function MintingTechniqueMaintenanceSheet({
       const result = await deleteMintingTechnique({
         data: {
           id: mintingTechnique.id,
+          etag: mintingTechnique.etag,
         },
       })
 
@@ -107,7 +87,7 @@ export function MintingTechniqueMaintenanceSheet({
       }
 
       setDeleteError(
-        result.formError ?? MINTING_TECHNIQUE_GENERIC_SAVE_ERROR
+        result.formError ?? "Unable to delete Minting Technique right now."
       )
     } finally {
       setIsDeletePending(false)
@@ -118,9 +98,13 @@ export function MintingTechniqueMaintenanceSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between">
-          <SheetTitle>{sheetTitle}</SheetTitle>
+          <SheetTitle>
+            {mintingTechnique
+              ? "Edit Minting Technique"
+              : "Create Minting Technique"}
+          </SheetTitle>
 
-          {isEditingMintingTechnique ? (
+          {mintingTechnique !== null ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -182,13 +166,13 @@ export function MintingTechniqueMaintenanceSheet({
           ) : null}
         </SheetHeader>
 
-        {isEditingMintingTechnique ? (
+        {mintingTechnique ? (
           <MintingTechniqueEditForm
             mintingTechnique={mintingTechnique}
-            onSaved={closeSheet}
+            onSaved={() => onOpenChange(false)}
           />
         ) : (
-          <MintingTechniqueCreateForm onCreated={closeSheet} />
+          <MintingTechniqueCreateForm onCreated={() => onOpenChange(false)} />
         )}
       </SheetContent>
     </Sheet>

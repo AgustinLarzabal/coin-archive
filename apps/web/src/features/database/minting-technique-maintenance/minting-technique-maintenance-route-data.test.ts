@@ -1,81 +1,79 @@
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
+
 import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./actions"
-import { loadMintingTechniqueMaintenanceMintingTechniques } from "./minting-technique-maintenance-route-data"
+import { loadMintingTechniqueMaintenancePageData } from "./minting-technique-maintenance-route-data"
 
-vi.mock("@/components/access-denied", () => ({
-  AccessDenied: () => "Access denied",
-}))
+const mintingTechniques: MintingTechnique[] = [
+  {
+    id: "2c717ddb-95a2-4dad-a280-f58a4779aee8",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"minting-technique-version-1"',
+  },
+  {
+    id: "98474ec9-cb4c-44c3-b876-6b1790190dd5",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    createdAt: "2026-08-02T10:15:30.000Z",
+    updatedAt: "2026-08-02T10:15:30.000Z",
+    etag: '"minting-technique-version-1"',
+  },
+]
 
-vi.mock("./sheet-workflow/minting-technique-maintenance-sheet", () => ({
-  MintingTechniqueMaintenanceSheet: () => null,
-}))
+describe("loadMintingTechniqueMaintenancePageData", () => {
+  it.each(["authentication_required", "editor_access_required"])(
+    "maps API %s problems to the current access-denied presentation",
+    async (code) => {
+      const listMintingTechniques = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
-const mintingTechniqueTimestamps = {
-  createdAt: new Date("2026-07-02T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-02T00:00:00.000Z"),
-} as const
-
-function createMintingTechnique(
-  overrides: Pick<TechniqueOption, "id" | "code" | "name">
-): TechniqueOption {
-  return {
-    ...mintingTechniqueTimestamps,
-    ...overrides,
-  }
-}
-
-describe("loadMintingTechniqueMaintenanceMintingTechniques", () => {
-  it("rejects unauthenticated access at the child-route boundary", async () => {
-    const getTechniques = vi.fn()
-
-    await expect(
-      loadMintingTechniqueMaintenanceMintingTechniques(null, { getTechniques })
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
-    })
-
-    expect(getTechniques).not.toHaveBeenCalled()
-  })
-
-  it("rejects signed-in Collectors without editor access", async () => {
-    const getTechniques = vi.fn()
-
-    await expect(
-      loadMintingTechniqueMaintenanceMintingTechniques(
-        { role: "collector" },
-        { getTechniques }
-      )
-    ).resolves.toStrictEqual({
-      status: "error",
-      formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
-    })
-
-    expect(getTechniques).not.toHaveBeenCalled()
-  })
-
-  it("returns Minting Techniques for Editors and Admins", async () => {
-    const mintingTechniques = [
-      createMintingTechnique({
-        id: "f45b35fd-a6df-4255-adc5-005d7eb06251",
-        code: "hammered",
-        name: "Hammered",
-      }),
-    ]
-    const getTechniques = vi.fn().mockResolvedValue(mintingTechniques)
-    const allowedRoles = ["editor", "admin"] as const
-
-    for (const role of allowedRoles) {
       await expect(
-        loadMintingTechniqueMaintenanceMintingTechniques(
-          { role },
-          { getTechniques }
-        )
+        loadMintingTechniqueMaintenancePageData({ listMintingTechniques })
       ).resolves.toStrictEqual({
-        status: "success",
-        mintingTechniques,
+        status: "error",
+        formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
       })
     }
+  )
+
+  it("loads every cursor page through the typed maintenance client", async () => {
+    const listMintingTechniques = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: [mintingTechniques[0]],
+        nextCursor: "next",
+      })
+      .mockResolvedValueOnce({ data: [mintingTechniques[1]], nextCursor: null })
+
+    await expect(
+      loadMintingTechniqueMaintenancePageData({ listMintingTechniques })
+    ).resolves.toStrictEqual({ status: "success", mintingTechniques })
+    expect(listMintingTechniques).toHaveBeenNthCalledWith(1, {
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+    expect(listMintingTechniques).toHaveBeenNthCalledWith(2, {
+      cursor: "next",
+      limit: 100,
+      sort: "name",
+      order: "asc",
+    })
+  })
+
+  it("does not hide unexpected API failures as authorization failures", async () => {
+    const failure = new Error("API unavailable")
+
+    await expect(
+      loadMintingTechniqueMaintenancePageData({
+        listMintingTechniques: vi.fn().mockRejectedValue(failure),
+      })
+    ).rejects.toBe(failure)
   })
 })

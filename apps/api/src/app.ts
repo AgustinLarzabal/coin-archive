@@ -28,6 +28,8 @@ import { registerRimMaintenanceRoutes } from "./rim-maintenance"
 import type { RimMaintenanceDependencies } from "./rim-maintenance"
 import { registerShapeMaintenanceRoutes } from "./shape-maintenance"
 import type { ShapeMaintenanceDependencies } from "./shape-maintenance"
+import { registerMintingTechniqueMaintenanceRoutes } from "./minting-technique-maintenance"
+import type { MintingTechniqueMaintenanceDependencies } from "./minting-technique-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -205,6 +207,17 @@ export function createApiApp({
   deleteShape = async () => {
     throw new Error("Shape deletion is not configured")
   },
+  listMintingTechniques = async () => [],
+  getMintingTechnique = async () => null,
+  createMintingTechnique = async () => {
+    throw new Error("Minting Technique create is not configured")
+  },
+  replaceMintingTechnique = async () => {
+    throw new Error("Minting Technique replacement is not configured")
+  },
+  deleteMintingTechnique = async () => {
+    throw new Error("Minting Technique deletion is not configured")
+  },
   listCurrencies = async () => [],
   getCurrency = async () => null,
   createCurrency = async () => {
@@ -268,6 +281,11 @@ export function createApiApp({
   createShape?: ShapeMaintenanceDependencies["createShape"]
   replaceShape?: ShapeMaintenanceDependencies["replaceShape"]
   deleteShape?: ShapeMaintenanceDependencies["deleteShape"]
+  listMintingTechniques?: MintingTechniqueMaintenanceDependencies["listMintingTechniques"]
+  getMintingTechnique?: MintingTechniqueMaintenanceDependencies["getMintingTechnique"]
+  createMintingTechnique?: MintingTechniqueMaintenanceDependencies["createMintingTechnique"]
+  replaceMintingTechnique?: MintingTechniqueMaintenanceDependencies["replaceMintingTechnique"]
+  deleteMintingTechnique?: MintingTechniqueMaintenanceDependencies["deleteMintingTechnique"]
   listCurrencies?: CurrencyMaintenanceDependencies["listCurrencies"]
   getCurrency?: CurrencyMaintenanceDependencies["getCurrency"]
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
@@ -491,6 +509,13 @@ export function createApiApp({
     createShape,
     replaceShape,
     deleteShape,
+  })
+  registerMintingTechniqueMaintenanceRoutes(app, {
+    listMintingTechniques,
+    getMintingTechnique,
+    createMintingTechnique,
+    replaceMintingTechnique,
+    deleteMintingTechnique,
   })
   registerCurrencyMaintenanceRoutes(app, {
     listCurrencies,

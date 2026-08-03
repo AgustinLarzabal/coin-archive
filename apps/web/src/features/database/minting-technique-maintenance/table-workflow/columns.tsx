@@ -1,9 +1,10 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 import { Button } from "@coin-archive/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@coin-archive/ui/components/dropdown-menu"
@@ -13,8 +14,8 @@ import { Icons } from "@/components/icons"
 import { SortableColumnHeader } from "../../sortable-column-header"
 
 export function createMintingTechniqueColumns(
-  openEditMintingTechniqueSheet: (mintingTechnique: TechniqueOption) => void
-): ColumnDef<TechniqueOption>[] {
+  onEditMintingTechnique: (mintingTechnique: MintingTechnique) => void
+): ColumnDef<MintingTechnique>[] {
   return [
     {
       accessorKey: "code",
@@ -47,11 +48,13 @@ export function createMintingTechniqueColumns(
               }
             />
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => openEditMintingTechniqueSheet(mintingTechnique)}
-              >
-                Edit
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => onEditMintingTechnique(mintingTechnique)}
+                >
+                  Edit
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )

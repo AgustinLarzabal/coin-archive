@@ -135,8 +135,17 @@ export type {
 } from "./mutations/orientation"
 export {
   createTechnique,
+  createTechniqueIdempotently,
+  createTechniqueIdempotentlyWithDatabase,
   deleteTechnique,
+  deleteTechniqueIfVersionWithDatabase,
+  replaceTechniqueWithDatabase,
   updateTechnique,
+} from "./mutations/technique"
+export type {
+  CreateTechniqueIdempotentlyResult,
+  DeleteTechniqueIfVersionResult,
+  ReplaceTechniqueResult,
 } from "./mutations/technique"
 export { createTheme, deleteTheme, updateTheme } from "./mutations/theme"
 export { getCatalogues } from "./queries/get-catalogues"
@@ -206,6 +215,15 @@ export type {
   ShapeMaintenanceListRecord,
 } from "./queries/get-shape-maintenance"
 export { getTechniques } from "./queries/get-techniques"
+export {
+  getTechniqueMaintenanceRecordWithDatabase,
+  getTechniqueMaintenanceRecordsWithDatabase,
+} from "./queries/get-technique-maintenance"
+export type {
+  GetTechniqueMaintenanceRecordsOptions,
+  TechniqueMaintenanceCursor,
+  TechniqueMaintenanceListRecord,
+} from "./queries/get-technique-maintenance"
 export { getThemes } from "./queries/get-themes"
 export {
   buildGetCoinsQuery,

@@ -4,6 +4,7 @@ import type {
   CurrencyOption,
   DistributionOption,
   EdgeOption,
+  MintingTechniqueOption,
   RimOption,
   ShapeOption,
 } from "@coin-archive/api"
@@ -16,7 +17,6 @@ import type {
   MintOption,
   OrientationOption,
   RulerOption,
-  TechniqueOption,
   ThemeOption,
 } from "@coin-archive/db"
 
@@ -39,7 +39,7 @@ export type CoinFormOptions = {
   rims: RimOption[]
   rulers: RulerOption[]
   shapes: ShapeOption[]
-  techniques: TechniqueOption[]
+  techniques: MintingTechniqueOption[]
   themes: ThemeOption[]
 }
 
@@ -56,7 +56,7 @@ export type CoinFormOptionsDependencies = {
   getRims: () => Promise<RimOption[]>
   getRulers: () => Promise<RulerOption[]>
   getShapes: () => Promise<ShapeOption[]>
-  getTechniques: () => Promise<TechniqueOption[]>
+  getTechniques: () => Promise<MintingTechniqueOption[]>
   getThemes: () => Promise<ThemeOption[]>
 }
 
@@ -130,7 +130,6 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
       getMints,
       getOrientations,
       getRulers,
-      getTechniques,
       getThemes,
     },
     { getMaintenanceApiClient },
@@ -158,7 +157,8 @@ export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsD
     getRulers,
     getShapes: () =>
       loadAllMaintenanceOptions(maintenanceClient.shapes.options),
-    getTechniques,
+    getTechniques: () =>
+      loadAllMaintenanceOptions(maintenanceClient.mintingTechniques.options),
     getThemes,
   }
 }

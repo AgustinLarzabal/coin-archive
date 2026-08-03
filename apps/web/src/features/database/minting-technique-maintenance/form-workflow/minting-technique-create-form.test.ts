@@ -31,7 +31,7 @@ vi.mock("@tanstack/react-start", () => ({
 }))
 
 describe("MintingTechniqueCreateForm", () => {
-  it("renders explicit Minting Technique field labels and disables Create until the draft is complete", () => {
+  it("renders explicit MintingTechnique field labels and disables Create until the draft is complete", () => {
     const markup = renderMintingTechniqueCreateForm()
     const expectedFields = [
       ["Minting Technique Code", 'placeholder="hammered"'],

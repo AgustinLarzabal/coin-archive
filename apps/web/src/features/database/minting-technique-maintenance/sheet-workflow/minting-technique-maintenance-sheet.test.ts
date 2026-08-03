@@ -1,10 +1,10 @@
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 import { createElement } from "react"
 import type { ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 
-import { MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE } from "../actions"
+import { MINTING_TECHNIQUE_IN_USE_DELETE_ERROR } from "../minting-technique-mutation-errors"
 
 import {
   MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION,
@@ -26,20 +26,10 @@ function createMockElement(tagName: string) {
 }
 
 function createOpenMockElement(tagName: string) {
-  return function MockOpenElement({
-    children,
-    open,
-  }: MockOpenComponentProps) {
+  return function MockOpenElement({ children, open }: MockOpenComponentProps) {
     return open ? createElement(tagName, null, children) : null
   }
 }
-
-vi.mock("@coin-archive/ui/components/sheet", () => ({
-  Sheet: createOpenMockElement("div"),
-  SheetContent: createMockElement("div"),
-  SheetHeader: createMockElement("div"),
-  SheetTitle: createMockElement("h1"),
-}))
 
 vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({
@@ -57,6 +47,13 @@ vi.mock("@tanstack/react-start", () => ({
     },
   }),
   useServerFn: () => vi.fn(),
+}))
+
+vi.mock("@coin-archive/ui/components/sheet", () => ({
+  Sheet: createOpenMockElement("div"),
+  SheetContent: createMockElement("div"),
+  SheetHeader: createMockElement("div"),
+  SheetTitle: createMockElement("h1"),
 }))
 
 vi.mock("@coin-archive/ui/components/dropdown-menu", () => ({
@@ -97,16 +94,18 @@ vi.mock("../form-workflow/minting-technique-edit-form", () => ({
     createElement("div", null, "MintingTechniqueEditForm"),
 }))
 
-const mintingTechnique: TechniqueOption = {
-  id: "8bfd8928-cd58-4a23-b13c-969be89f4d88",
-  code: "hammered",
-  name: "Hammered",
-  createdAt: new Date("2026-07-02T00:00:00.000Z"),
-  updatedAt: new Date("2026-07-02T00:00:00.000Z"),
+const mintingTechnique: MintingTechnique = {
+  id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+  code: "reeded",
+  name: "Reeded",
+  version: 1,
+  etag: '"minting-technique-version-1"',
+  createdAt: "2026-06-24T12:00:00.000Z",
+  updatedAt: "2026-06-24T12:00:00.000Z",
 }
 
 function renderMintingTechniqueMaintenanceSheet(
-  mintingTechniqueOption: TechniqueOption | null
+  mintingTechniqueOption: MintingTechnique | null
 ) {
   return renderToStaticMarkup(
     createElement(MintingTechniqueMaintenanceSheet, {
@@ -123,7 +122,10 @@ describe("MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION", () => {
       "permanently deletes the Minting Technique"
     )
     expect(MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION).toContain(
-      MINTING_TECHNIQUE_IN_USE_DELETE_GUIDANCE
+      MINTING_TECHNIQUE_IN_USE_DELETE_ERROR.replace(
+        "Minting Technique cannot be deleted while Coins still use it. ",
+        ""
+      )
     )
   })
 })
@@ -137,7 +139,7 @@ describe("MintingTechniqueMaintenanceSheet", () => {
     expect(markup).not.toContain("Delete Minting Technique?")
   })
 
-  it("renders the edit-sheet delete action and confirmation copy for an existing Minting Technique", () => {
+  it("renders the edit-sheet delete action and confirmation copy for an existing MintingTechnique", () => {
     const markup = renderMintingTechniqueMaintenanceSheet(mintingTechnique)
 
     expect(markup).toContain("Edit Minting Technique")

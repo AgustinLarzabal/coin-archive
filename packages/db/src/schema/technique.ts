@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   check,
   index,
+  integer,
   pgTable,
   timestamp,
   uniqueIndex,
@@ -28,6 +29,7 @@ export const technique = pgTable(
       .default(sql`uuidv7()`),
     code: varchar("code", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", timestamptzDateColumn)
       .notNull()
       .defaultNow(),

@@ -1,4 +1,4 @@
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 
 export type MintingTechniqueDraft = {
   code: string
@@ -11,7 +11,7 @@ export const EMPTY_MINTING_TECHNIQUE_DRAFT: MintingTechniqueDraft = {
 }
 
 export function createMintingTechniqueDraft(
-  mintingTechnique: TechniqueOption
+  mintingTechnique: Pick<MintingTechnique, "code" | "name">
 ): MintingTechniqueDraft {
   return {
     code: mintingTechnique.code,
@@ -28,10 +28,22 @@ export function normalizeMintingTechniqueDraft(
   }
 }
 
-export function isMintingTechniqueDraftComplete(
-  draft: MintingTechniqueDraft
-) {
+export function isMintingTechniqueDraftComplete(draft: MintingTechniqueDraft) {
   const normalizedDraft = normalizeMintingTechniqueDraft(draft)
 
   return normalizedDraft.code.length > 0 && normalizedDraft.name.length > 0
+}
+
+export function hasMintingTechniqueEditChanges(
+  mintingTechnique: Pick<MintingTechnique, "code" | "name">,
+  draft: MintingTechniqueDraft
+) {
+  const normalizedCurrent = normalizeMintingTechniqueDraft(
+    createMintingTechniqueDraft(mintingTechnique)
+  )
+  const normalizedDraft = normalizeMintingTechniqueDraft(draft)
+  return (
+    normalizedDraft.code !== normalizedCurrent.code ||
+    normalizedDraft.name !== normalizedCurrent.name
+  )
 }

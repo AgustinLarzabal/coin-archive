@@ -6,6 +6,7 @@ import {
   createEdgeIdempotentlyWithDatabase,
   createRimIdempotentlyWithDatabase,
   createShapeIdempotentlyWithDatabase,
+  createTechniqueIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
   deleteCatalogueIfVersionWithDatabase,
@@ -15,6 +16,7 @@ import {
   deleteEdgeIfVersionWithDatabase,
   deleteRimIfVersionWithDatabase,
   deleteShapeIfVersionWithDatabase,
+  deleteTechniqueIfVersionWithDatabase,
   deleteOrientationIfVersionWithDatabase,
   getCatalogueMaintenanceRecordWithDatabase,
   getCatalogueMaintenanceRecordsWithDatabase,
@@ -30,6 +32,8 @@ import {
   getRimMaintenanceRecordsWithDatabase,
   getShapeMaintenanceRecordWithDatabase,
   getShapeMaintenanceRecordsWithDatabase,
+  getTechniqueMaintenanceRecordWithDatabase,
+  getTechniqueMaintenanceRecordsWithDatabase,
   getOrientationMaintenanceRecordWithDatabase,
   getOrientationMaintenanceRecordsWithDatabase,
   getPublicCoinWithDatabase,
@@ -41,6 +45,7 @@ import {
   replaceEdgeWithDatabase,
   replaceRimWithDatabase,
   replaceShapeWithDatabase,
+  replaceTechniqueWithDatabase,
   replaceOrientationWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
@@ -173,22 +178,18 @@ async function handleRequest(
         expectedVersion,
         ...fields,
       }),
-    deleteEdge: (input) =>
-      deleteEdgeIfVersionWithDatabase(database.db, input),
+    deleteEdge: (input) => deleteEdgeIfVersionWithDatabase(database.db, input),
     listRims: (input) =>
       getRimMaintenanceRecordsWithDatabase(database.db, input),
-    getRim: (rimId) =>
-      getRimMaintenanceRecordWithDatabase(database.db, rimId),
-    createRim: (input) =>
-      createRimIdempotentlyWithDatabase(database.db, input),
+    getRim: (rimId) => getRimMaintenanceRecordWithDatabase(database.db, rimId),
+    createRim: (input) => createRimIdempotentlyWithDatabase(database.db, input),
     replaceRim: ({ id, expectedVersion, fields }) =>
       replaceRimWithDatabase(database.db, {
         id,
         expectedVersion,
         ...fields,
       }),
-    deleteRim: (input) =>
-      deleteRimIfVersionWithDatabase(database.db, input),
+    deleteRim: (input) => deleteRimIfVersionWithDatabase(database.db, input),
     listShapes: (input) =>
       getShapeMaintenanceRecordsWithDatabase(database.db, input),
     getShape: (shapeId) =>
@@ -203,6 +204,41 @@ async function handleRequest(
       }),
     deleteShape: (input) =>
       deleteShapeIfVersionWithDatabase(database.db, input),
+    listMintingTechniques: (input) =>
+      getTechniqueMaintenanceRecordsWithDatabase(database.db, input),
+    getMintingTechnique: (mintingTechniqueId) =>
+      getTechniqueMaintenanceRecordWithDatabase(
+        database.db,
+        mintingTechniqueId
+      ),
+    createMintingTechnique: async (input) => {
+      const result = await createTechniqueIdempotentlyWithDatabase(
+        database.db,
+        input
+      )
+      return result.status === "mismatch"
+        ? result
+        : { status: result.status, mintingTechnique: result.technique }
+    },
+    replaceMintingTechnique: async ({ id, expectedVersion, fields }) => {
+      const result = await replaceTechniqueWithDatabase(database.db, {
+        id,
+        expectedVersion,
+        ...fields,
+      })
+      return result.status === "updated"
+        ? { status: result.status, mintingTechnique: result.technique }
+        : result
+    },
+    deleteMintingTechnique: async (input) => {
+      const result = await deleteTechniqueIfVersionWithDatabase(
+        database.db,
+        input
+      )
+      return result.status === "deleted"
+        ? { status: result.status, mintingTechnique: result.technique }
+        : result
+    },
     listCurrencies: (input) =>
       getCurrencyMaintenanceRecordsWithDatabase(database.db, input),
     getCurrency: (currencyId) =>

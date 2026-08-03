@@ -1,5 +1,5 @@
-import { useState } from "react"
-import type { TechniqueOption } from "@coin-archive/db"
+import { useMemo, useState } from "react"
+import type { MintingTechnique } from "@coin-archive/api"
 import { DataTable } from "@coin-archive/ui/components/data-table"
 
 import { createMintingTechniqueColumns } from "./columns"
@@ -7,13 +7,13 @@ import { MintingTechniqueMaintenanceSheet } from "../sheet-workflow/minting-tech
 import { MintingTechniquesTableToolbar } from "./minting-techniques-table-toolbar"
 
 type MintingTechniquesTableProps = {
-  mintingTechniques: TechniqueOption[]
+  mintingTechniques: MintingTechnique[]
 }
 
 export function filterMintingTechniques(
-  mintingTechniques: TechniqueOption[],
+  mintingTechniques: MintingTechnique[],
   filterValue: string
-): TechniqueOption[] {
+): MintingTechnique[] {
   const normalizedFilterValue = filterValue.trim().toLocaleLowerCase()
 
   if (normalizedFilterValue === "") {
@@ -21,43 +21,31 @@ export function filterMintingTechniques(
   }
 
   return mintingTechniques.filter((mintingTechnique) =>
-    getMintingTechniqueFilterValues(mintingTechnique).some((value) =>
+    [mintingTechnique.code, mintingTechnique.name].some((value) =>
       value.toLocaleLowerCase().includes(normalizedFilterValue)
     )
   )
 }
 
-function getMintingTechniqueFilterValues(
-  mintingTechnique: TechniqueOption
-): string[] {
-  return [mintingTechnique.code, mintingTechnique.name]
-}
-
 export function MintingTechniquesTable({
   mintingTechniques,
 }: MintingTechniquesTableProps) {
-  const [filterValue, setFilterValue] = useState("")
   const [selectedMintingTechnique, setSelectedMintingTechnique] =
-    useState<TechniqueOption | null>(null)
+    useState<MintingTechnique | null>(null)
   const [isMaintenanceSheetOpen, setIsMaintenanceSheetOpen] = useState(false)
-  const columns = createMintingTechniqueColumns(openEditMintingTechniqueSheet)
+  const [filterValue, setFilterValue] = useState("")
+  const columns = useMemo(
+    () =>
+      createMintingTechniqueColumns((mintingTechnique) => {
+        setSelectedMintingTechnique(mintingTechnique)
+        setIsMaintenanceSheetOpen(true)
+      }),
+    []
+  )
   const filteredMintingTechniques = filterMintingTechniques(
     mintingTechniques,
     filterValue
   )
-
-  function openMaintenanceSheet(mintingTechnique: TechniqueOption | null) {
-    setSelectedMintingTechnique(mintingTechnique)
-    setIsMaintenanceSheetOpen(true)
-  }
-
-  function openCreateMintingTechniqueSheet() {
-    openMaintenanceSheet(null)
-  }
-
-  function openEditMintingTechniqueSheet(mintingTechnique: TechniqueOption) {
-    openMaintenanceSheet(mintingTechnique)
-  }
 
   function handleMaintenanceSheetOpenChange(open: boolean) {
     setIsMaintenanceSheetOpen(open)
@@ -65,6 +53,11 @@ export function MintingTechniquesTable({
     if (!open) {
       setSelectedMintingTechnique(null)
     }
+  }
+
+  function handleCreateMintingTechnique() {
+    setSelectedMintingTechnique(null)
+    setIsMaintenanceSheetOpen(true)
   }
 
   return (
@@ -75,7 +68,7 @@ export function MintingTechniquesTable({
         toolbar={() => (
           <MintingTechniquesTableToolbar
             filterValue={filterValue}
-            onCreateMintingTechnique={openCreateMintingTechniqueSheet}
+            onCreateMintingTechnique={handleCreateMintingTechnique}
             onFilterValueChange={setFilterValue}
           />
         )}

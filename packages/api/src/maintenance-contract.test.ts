@@ -69,6 +69,15 @@ import {
   shapeMaintenanceProblemDocumentSchema,
   shapeOptionsOutputSchema,
   shapeReplaceInputSchema,
+  mintingTechniqueCreateInputSchema,
+  mintingTechniqueCreateOutputSchema,
+  mintingTechniqueDeleteInputSchema,
+  mintingTechniqueDetailOutputSchema,
+  mintingTechniqueListInputSchema,
+  mintingTechniqueListOutputSchema,
+  mintingTechniqueMaintenanceProblemDocumentSchema,
+  mintingTechniqueOptionsOutputSchema,
+  mintingTechniqueReplaceInputSchema,
 } from "./contract"
 
 const currency = {
@@ -130,6 +139,16 @@ const shape = {
   createdAt: "2026-08-02T10:15:30.000Z",
   updatedAt: "2026-08-02T10:15:30.000Z",
   etag: '"opaque-shape-version"',
+}
+
+const mintingTechnique = {
+  id: "018f1a11-aaaa-7000-8000-000000000008",
+  code: "hammered",
+  name: "Hammered",
+  version: 1,
+  createdAt: "2026-08-02T10:15:30.000Z",
+  updatedAt: "2026-08-02T10:15:30.000Z",
+  etag: '"opaque-minting-technique-version"',
 }
 
 const catalogue = {
@@ -977,6 +996,151 @@ describe("Shape maintenance contract", () => {
     ).toStrictEqual({
       params: { uuid: shape.id },
       headers: { "if-match": shape.etag },
+    })
+  })
+})
+
+describe("Minting Technique maintenance contract", () => {
+  it("declares stable Minting Technique validation and dependent-Coin conflict codes", () => {
+    expect(
+      mintingTechniqueMaintenanceProblemDocumentSchema
+        .parse({
+          type: "https://api.coinarchive.app/problems/minting-technique-validation",
+          title: "Minting Technique validation failed",
+          status: 422,
+          detail: "The Minting Technique could not be saved",
+          instance: "/api/v1/maintenance/minting-techniques",
+          code: "minting_technique_validation_failed",
+          invalidParams: [
+            {
+              name: "/code",
+              code: "minting_technique_code_invalid",
+              reason: "Minting Technique Code is invalid.",
+            },
+          ],
+        })
+        .invalidParams?.at(0)?.code
+    ).toBe("minting_technique_code_invalid")
+    expect(
+      mintingTechniqueMaintenanceProblemDocumentSchema.parse({
+        type: "https://api.coinarchive.app/problems/minting-technique-in-use",
+        title: "Minting Technique is in use",
+        status: 409,
+        detail: "Coins still use this Minting Technique",
+        instance: `/api/v1/maintenance/minting-techniques/${mintingTechnique.id}`,
+        code: "minting_technique_in_use",
+      }).code
+    ).toBe("minting_technique_in_use")
+  })
+
+  it("defines bounded cursor pagination and compact options", () => {
+    expect(
+      mintingTechniqueListInputSchema.parse({
+        cursor: "opaque-cursor",
+        limit: 100,
+        q: "hammered",
+        sort: "name",
+        order: "desc",
+      })
+    ).toStrictEqual({
+      cursor: "opaque-cursor",
+      limit: 100,
+      q: "hammered",
+      sort: "name",
+      order: "desc",
+    })
+    expect(() =>
+      mintingTechniqueListInputSchema.parse({ limit: 101 })
+    ).toThrow()
+    expect(
+      mintingTechniqueOptionsOutputSchema.parse({
+        data: [
+          {
+            id: mintingTechnique.id,
+            code: mintingTechnique.code,
+            name: mintingTechnique.name,
+          },
+        ],
+        nextCursor: null,
+      })
+    ).toStrictEqual({
+      data: [
+        {
+          id: mintingTechnique.id,
+          code: mintingTechnique.code,
+          name: mintingTechnique.name,
+        },
+      ],
+      nextCursor: null,
+    })
+  })
+
+  it("uses canonical mutable representations for lists and detail", () => {
+    expect(
+      mintingTechniqueListOutputSchema.parse({
+        data: [mintingTechnique],
+        nextCursor: null,
+      })
+    ).toStrictEqual({ data: [mintingTechnique], nextCursor: null })
+    expect(
+      mintingTechniqueDetailOutputSchema.parse({ data: mintingTechnique })
+    ).toStrictEqual({
+      data: mintingTechnique,
+    })
+    expect(() =>
+      mintingTechniqueDetailOutputSchema.parse({
+        data: {
+          ...mintingTechnique,
+          createdAt: new Date(mintingTechnique.createdAt),
+        },
+      })
+    ).toThrow()
+  })
+
+  it("normalizes slug-style mutation input and preserves success headers", () => {
+    expect(
+      mintingTechniqueCreateInputSchema.parse({
+        headers: { "idempotency-key": "create-attempt-1" },
+        body: { code: " hammered ", name: " Hammered " },
+      })
+    ).toStrictEqual({
+      headers: { "idempotency-key": "create-attempt-1" },
+      body: { code: "hammered", name: "Hammered" },
+    })
+    expect(
+      mintingTechniqueCreateOutputSchema.parse({
+        status: 201,
+        headers: {
+          etag: mintingTechnique.etag,
+          location: `/api/v1/maintenance/minting-techniques/${mintingTechnique.id}`,
+        },
+        body: { data: mintingTechnique },
+      })
+    ).toMatchObject({ status: 201, body: { data: mintingTechnique } })
+    expect(() =>
+      mintingTechniqueCreateInputSchema.parse({
+        headers: { "idempotency-key": "attempt" },
+        body: { code: "Hammered Technique", name: "Hammered" },
+      })
+    ).toThrow()
+  })
+
+  it("requires opaque preconditions for replacement and deletion", () => {
+    expect(
+      mintingTechniqueReplaceInputSchema.parse({
+        params: { uuid: mintingTechnique.id },
+        headers: { "if-match": mintingTechnique.etag },
+        body: { code: mintingTechnique.code, name: mintingTechnique.name },
+      })
+    ).toMatchObject({ headers: { "if-match": mintingTechnique.etag } })
+    expect(
+      mintingTechniqueDeleteInputSchema.parse({
+        params: { uuid: mintingTechnique.id },
+        headers: { "if-match": mintingTechnique.etag },
+      })
+    ).toStrictEqual({
+      params: { uuid: mintingTechnique.id },
+      headers: { "if-match": mintingTechnique.etag },
     })
   })
 })

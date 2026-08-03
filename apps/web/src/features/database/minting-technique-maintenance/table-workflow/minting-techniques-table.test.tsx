@@ -1,45 +1,45 @@
-import type { TechniqueOption } from "@coin-archive/db"
+import type { MintingTechnique } from "@coin-archive/api"
 import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  filterMintingTechniques,
   MintingTechniquesTable,
+  filterMintingTechniques,
 } from "./minting-techniques-table"
 
-vi.mock("../sheet-workflow/minting-technique-maintenance-sheet", () => ({
-  MintingTechniqueMaintenanceSheet: () => null,
-}))
-
-const mintingTechniques: TechniqueOption[] = [
+const mintingTechniques: MintingTechnique[] = [
   {
-    id: "8bfd8928-cd58-4a23-b13c-969be89f4d88",
-    code: "hammered",
-    name: "Hammered",
-    createdAt: new Date("2026-07-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-02T00:00:00.000Z"),
+    id: "eb80363e-d0dc-4a28-8a43-297fbd5d67fc",
+    code: "reeded",
+    name: "Reeded",
+    version: 1,
+    etag: '"minting-technique-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
   {
-    id: "6cb490db-79b4-40ca-88db-30d49473ec30",
-    code: "machine-struck",
-    name: "Machine struck",
-    createdAt: new Date("2026-07-02T00:00:00.000Z"),
-    updatedAt: new Date("2026-07-02T00:00:00.000Z"),
+    id: "d3ed87e0-ebd9-4bbd-a5de-c9d1823ae3a2",
+    code: "plain",
+    name: "Plain",
+    version: 1,
+    etag: '"minting-technique-version-1"',
+    createdAt: "2026-06-24T12:00:00.000Z",
+    updatedAt: "2026-06-24T12:00:00.000Z",
   },
 ]
 
 describe("filterMintingTechniques", () => {
-  it("returns all Minting Techniques when the filter is blank", () => {
+  it("returns all MintingTechniques when the filter is blank", () => {
     expect(filterMintingTechniques(mintingTechniques, "")).toStrictEqual(
       mintingTechniques
     )
   })
 
-  it("filters by Minting Technique Code and Minting Technique Name case-insensitively while trimming whitespace", () => {
-    expect(
-      filterMintingTechniques(mintingTechniques, " hammered ")
-    ).toStrictEqual([mintingTechniques[0]])
-    expect(filterMintingTechniques(mintingTechniques, "MACHINE")).toStrictEqual(
+  it("filters by code and name case-insensitively while trimming whitespace", () => {
+    expect(filterMintingTechniques(mintingTechniques, "reed")).toStrictEqual([
+      mintingTechniques[0],
+    ])
+    expect(filterMintingTechniques(mintingTechniques, " PLAIN ")).toStrictEqual(
       [mintingTechniques[1]]
     )
   })
@@ -53,9 +53,9 @@ describe("MintingTechniquesTable", () => {
 
     expect(markup).toContain("Minting Technique Code")
     expect(markup).toContain("Minting Technique Name")
-    expect(markup).toContain("Hammered")
-    expect(markup).toContain("Machine struck")
-    expect(markup).toContain("Filter minting techniques by code or name...")
+    expect(markup).toContain("Reeded")
+    expect(markup).toContain("Plain")
+    expect(markup).toContain("Filter mintingTechniques by code or name...")
     expect(markup).toContain(">Create</button>")
     expect(markup).toContain('aria-label="Actions"')
   })

@@ -69,8 +69,7 @@ const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
     }) => data
   )
   .handler(async ({ data }) => {
-    const session = await getAuthSession()
-    return authorizeSurfaceImageUpload(session?.user ?? null, data)
+    return authorizeSurfaceImageUpload(data)
   })
 
 const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
@@ -79,8 +78,7 @@ const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
       data
   )
   .handler(async ({ data }) => {
-    const session = await getAuthSession()
-    return removeSurfaceImageUpload(session?.user ?? null, data)
+    return removeSurfaceImageUpload(data)
   })
 
 function getCoinDraftValidationErrors(draft: CoinDraft): CoinFieldErrors {

@@ -20,7 +20,7 @@ import type {
   RulerOption,
 } from "@coin-archive/db"
 
-import { loadAllMaintenanceOptions } from "@/lib/maintenance-options.server"
+import { loadAllMaintenanceOptions } from "@/lib/maintenance-options"
 
 import type { CoinDraft } from "../actions"
 

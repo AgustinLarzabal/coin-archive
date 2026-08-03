@@ -56,6 +56,10 @@ export type SurfaceImageObjectStorage = {
     objectKey: string
   }) => Promise<string>
   deleteObject: (objectKey: string) => Promise<void>
+  moveObject: (
+    sourceObjectKey: string,
+    destinationObjectKey: string
+  ) => Promise<void>
 }
 
 type R2Configuration = {
@@ -289,6 +293,57 @@ function createS3ObjectStorage(
       )
       await assertSuccessfulResponse(response)
     },
+    async moveObject(sourceObjectKey, destinationObjectKey) {
+      await moveSurfaceImageObjectWithRollback({
+        async copyObject() {
+          const response = await client.fetch(
+            new Request(getObjectUrl(destinationObjectKey), {
+              method: "PUT",
+              headers: {
+                "X-Amz-Copy-Source": `/${configuration.bucket}/${sourceObjectKey}`,
+              },
+            })
+          )
+          await assertSuccessfulResponse(response)
+        },
+        async deleteSource() {
+          const response = await client.fetch(
+            new Request(getObjectUrl(sourceObjectKey), { method: "DELETE" })
+          )
+          await assertSuccessfulResponse(response)
+        },
+        async deleteDestination() {
+          const response = await client.fetch(
+            new Request(getObjectUrl(destinationObjectKey), {
+              method: "DELETE",
+            })
+          )
+          await assertSuccessfulResponse(response)
+        },
+      })
+    },
+  }
+}
+
+export async function moveSurfaceImageObjectWithRollback({
+  copyObject,
+  deleteSource,
+  deleteDestination,
+}: {
+  copyObject: () => Promise<void>
+  deleteSource: () => Promise<void>
+  deleteDestination: () => Promise<void>
+}) {
+  await copyObject()
+  try {
+    await deleteSource()
+  } catch (error) {
+    try {
+      await deleteDestination()
+    } catch {
+      // Preserve the source-deletion failure that made the move incomplete.
+    }
+    throw error
   }
 }
 
@@ -313,7 +368,10 @@ function getObjectKeyFromPublishedImageUrl(
       ? imagePath.slice(publicPathPrefix.length)
       : ""
     : imagePath
-  if (!objectKey.startsWith("surface-images/")) {
+  if (
+    !objectKey.startsWith("surface-images/") ||
+    objectKey.startsWith("surface-images/temporary/")
+  ) {
     throw new Error("Surface Image URL is not managed by this R2 storage.")
   }
 
@@ -328,7 +386,7 @@ export function createR2SurfaceImageStorage(
     async authorizeUpload(input) {
       assertAcceptedUploadRequest(input)
 
-      const objectKey = `surface-images/${randomUUID()}`
+      const objectKey = `surface-images/temporary/${randomUUID()}`
       const expiresAt =
         Date.now() + SURFACE_IMAGE_UPLOAD_EXPIRES_IN_SECONDS * 1000
       const reference = createUploadReference(
@@ -381,9 +439,18 @@ export function createR2SurfaceImageStorage(
         throw new Error("Uploaded Surface Image content is invalid.")
       }
 
+      const publishedObjectKey = payload.objectKey.replace(
+        "surface-images/temporary/",
+        "surface-images/published/"
+      )
+      if (publishedObjectKey === payload.objectKey) {
+        throw new Error("Surface Image upload reference is invalid.")
+      }
+      await objectStorage.moveObject(payload.objectKey, publishedObjectKey)
+
       return {
         imageUrl: new URL(
-          payload.objectKey,
+          publishedObjectKey,
           `${configuration.publicBaseUrl}/`
         ).toString(),
       }

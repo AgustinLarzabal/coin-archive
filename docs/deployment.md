@@ -47,7 +47,7 @@ The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the
 | Worker name            | `coin-archive-staging`                   | `coin-archive`                           |
 | R2 bucket              | `coin-archive-staging-surface-images`    | `coin-archive-production-surface-images` |
 
-Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth and Google OAuth secrets belong only to the API Worker; R2 credentials remain on the web Worker until Surface Image maintenance moves to the API. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
+Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth and Google OAuth secrets belong only to the API Worker. R2 credentials are available to the API for temporary-upload authorization and cancellation and remain available to the web Worker while Coin publication and cleanup complete their incremental API migration. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
 
 - `DATABASE_URL`: the environment's direct pooled Neon PostgreSQL connection URL. Do not configure Cloudflare Hyperdrive.
 - `BETTER_AUTH_SECRET` (API only)
@@ -63,6 +63,8 @@ The Workers also require these non-secret runtime settings, which are supplied b
 - `R2_ENDPOINT`
 - `R2_BUCKET`
 - `R2_PUBLIC_BASE_URL`
+
+Each release also applies [`infrastructure/r2-surface-image-lifecycle.json`](/infrastructure/r2-surface-image-lifecycle.json) to its environment's bucket. The rule expires only `surface-images/temporary/` objects after one day. Published objects use `surface-images/published/` and are outside the lifecycle prefix.
 
 `VITE_AUTH_GOOGLE_ENABLED=true` is a build-time setting for the browser bundle; set it in the environment that runs the Worker build. It is not a Worker secret.
 

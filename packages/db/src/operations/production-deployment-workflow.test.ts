@@ -35,7 +35,10 @@ describe("production deployment workflow", () => {
       "pnpm --filter api run deploy:production"
     )
     expect(productionDeploymentWorkflow).toContain(
-      "wrangler secret put DATABASE_URL --env production"
+      "wrangler secret bulk --env production"
+    )
+    expect(productionDeploymentWorkflow).toContain(
+      "pnpm --filter api run configure:r2-lifecycle:production"
     )
     expect(productionDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)
     expect(productionDeploymentWorkflow).not.toMatch(/environment: staging/)
@@ -44,21 +47,30 @@ describe("production deployment workflow", () => {
       productionDeploymentWorkflow.indexOf("pnpm db:migrate")
     ).toBeLessThan(
       productionDeploymentWorkflow.indexOf(
-        "pnpm --filter api run deploy:production"
+        "wrangler secret bulk --env production"
       )
     )
     expect(
       productionDeploymentWorkflow.indexOf(
-        "pnpm --filter api run deploy:production"
+        "wrangler secret bulk --env production"
       )
     ).toBeLessThan(
       productionDeploymentWorkflow.indexOf(
-        "wrangler secret put DATABASE_URL --env production"
+        "pnpm --filter api run configure:r2-lifecycle:production"
       )
     )
     expect(
       productionDeploymentWorkflow.indexOf(
-        "wrangler secret put DATABASE_URL --env production"
+        "pnpm --filter api run configure:r2-lifecycle:production"
+      )
+    ).toBeLessThan(
+      productionDeploymentWorkflow.indexOf(
+        "pnpm --filter api run deploy:production"
+      )
+    )
+    expect(
+      productionDeploymentWorkflow.indexOf(
+        "pnpm --filter api run deploy:production"
       )
     ).toBeLessThan(
       productionDeploymentWorkflow.indexOf(

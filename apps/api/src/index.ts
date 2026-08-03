@@ -78,10 +78,12 @@ import {
   replaceShapeWithDatabase,
   replaceTechniqueWithDatabase,
   replaceOrientationWithDatabase,
+  authorizeSurfaceImageUploadIdempotentlyWithDatabase,
 } from "@coin-archive/db"
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
 import { WorkerEntrypoint } from "cloudflare:workers"
 import { createApiApp } from "./app"
+import { createR2SurfaceImageUploadStorage } from "./surface-image-storage"
 
 export default {
   async fetch(request: Request, env: Env) {
@@ -115,6 +117,25 @@ async function handleRequest(
     trustProxyHeaders,
     environment: env.API_ENVIRONMENT,
     surfaceImageOrigin: env.SURFACE_IMAGE_ORIGIN,
+    authorizeSurfaceImageUpload: (input) =>
+      authorizeSurfaceImageUploadIdempotentlyWithDatabase(
+        database.db,
+        input,
+        () =>
+          createR2SurfaceImageUploadStorage({
+            endpoint: env.R2_ENDPOINT,
+            bucket: env.R2_BUCKET,
+            accessKeyId: env.R2_ACCESS_KEY_ID,
+            secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+          }).authorizeUpload(input.upload)
+      ),
+    cancelSurfaceImageUpload: ({ reference, surface }) =>
+      createR2SurfaceImageUploadStorage({
+        endpoint: env.R2_ENDPOINT,
+        bucket: env.R2_BUCKET,
+        accessKeyId: env.R2_ACCESS_KEY_ID,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+      }).cancelUpload(reference, surface),
     rateLimit: async (clientIp) =>
       (
         await env.API_RATE_LIMITER.limit({

@@ -11,6 +11,8 @@
     "build": "wrangler deploy --dry-run",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",
+    "configure:r2-lifecycle:staging": "wrangler r2 bucket lifecycle set coin-archive-staging-surface-images --file ../../infrastructure/r2-surface-image-lifecycle.json --env staging --force",
+    "configure:r2-lifecycle:production": "wrangler r2 bucket lifecycle set coin-archive-production-surface-images --file ../../infrastructure/r2-surface-image-lifecycle.json --env production --force",
     "validate:deployment:staging": "wrangler deploy --dry-run --env staging",
     "validate:deployment:production": "wrangler deploy --dry-run --env production",
     "lint": "eslint",
@@ -24,6 +26,7 @@
     "@orpc/openapi": "^1.10.0",
     "@orpc/server": "^1.10.0",
     "@orpc/zod": "^1.10.0",
+    "aws4fetch": "^1.0.20",
     "hono": "^4.12.25",
     "zod": "catalog:"
   },

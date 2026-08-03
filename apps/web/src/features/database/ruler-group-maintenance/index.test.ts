@@ -32,9 +32,7 @@ describe("ruler-group-maintenance public API", () => {
       new URL("../ruler-maintenance/", FEATURE_DIRECTORY_URL),
       "ruler-maintenance-route-data.ts"
     )
-    expect(rulerRouteDataSource).toContain(
-      "maintenanceClient.rulerGroups.options"
-    )
+    expect(rulerRouteDataSource).toContain("client.rulerGroups.options")
     expect(rulerRouteDataSource).not.toContain(
       'import("@coin-archive/db").then(({ getRulerGroups })'
     )

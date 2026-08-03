@@ -35,24 +35,32 @@ describe("staging deployment workflow", () => {
       "pnpm --filter api run deploy:staging"
     )
     expect(stagingDeploymentWorkflow).toContain(
-      "wrangler secret put DATABASE_URL --env staging"
+      "wrangler secret bulk --env staging"
+    )
+    expect(stagingDeploymentWorkflow).toContain(
+      "pnpm --filter api run configure:r2-lifecycle:staging"
     )
     expect(stagingDeploymentWorkflow).not.toMatch(/\b(?:reset|seed)\b/i)
 
     expect(stagingDeploymentWorkflow.indexOf("pnpm db:migrate")).toBeLessThan(
-      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
+      stagingDeploymentWorkflow.indexOf("wrangler secret bulk --env staging")
     )
     expect(
-      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
+      stagingDeploymentWorkflow.indexOf("wrangler secret bulk --env staging")
     ).toBeLessThan(
       stagingDeploymentWorkflow.indexOf(
-        "wrangler secret put DATABASE_URL --env staging"
+        "pnpm --filter api run configure:r2-lifecycle:staging"
       )
     )
     expect(
       stagingDeploymentWorkflow.indexOf(
-        "wrangler secret put DATABASE_URL --env staging"
+        "pnpm --filter api run configure:r2-lifecycle:staging"
       )
+    ).toBeLessThan(
+      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
+    )
+    expect(
+      stagingDeploymentWorkflow.indexOf("pnpm --filter api run deploy:staging")
     ).toBeLessThan(
       stagingDeploymentWorkflow.indexOf("pnpm --filter web run deploy:staging")
     )

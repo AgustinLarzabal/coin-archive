@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { loadAllMaintenanceOptions } from "./maintenance-options.server"
+import { loadAllMaintenanceOptions } from "./maintenance-options"
 
 describe("loadAllMaintenanceOptions", () => {
   it("loads every compact maintenance option page", async () => {

@@ -6,6 +6,7 @@ export {
   updateCoinMaintenance,
 } from "./mutations/coin-maintenance"
 export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
+export { authorizeSurfaceImageUploadIdempotentlyWithDatabase } from "./mutations/surface-image-upload-idempotency"
 export {
   createCatalogue,
   createCatalogueIdempotently,

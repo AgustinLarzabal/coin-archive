@@ -87,7 +87,7 @@ describe("orientation mutations integration", () => {
       collectorId: "collector-1",
       idempotencyKey: "orientation-attempt-1",
       requestHash: "a".repeat(64),
-      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
       fields: { code: "coin-alignment", name: "Coin alignment" },
     }
 
@@ -134,7 +134,7 @@ describe("orientation mutations integration", () => {
       collectorId: "collector-1",
       idempotencyKey: "orientation-attempt-1",
       requestHash: "a".repeat(64),
-      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
       fields: { code: "coin-alignment", name: "Coin alignment" },
     }
     await createOrientationIdempotently(input)
@@ -154,7 +154,7 @@ describe("orientation mutations integration", () => {
       collectorId: "collector-1",
       idempotencyKey: "concurrent-orientation-attempt",
       requestHash: "c".repeat(64),
-      expiresAt: new Date("2026-08-03T00:00:00.000Z"),
+      expiresAt: new Date("2030-01-01T00:00:00.000Z"),
       fields: { code: "coin-alignment", name: "Coin alignment" },
     }
 

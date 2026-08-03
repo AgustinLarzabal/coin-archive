@@ -44,6 +44,54 @@ describe("createPublicApiClient", () => {
 })
 
 describe("createMaintenanceApiClient", () => {
+  it("uses the protected Surface Image authorization and cancellation routes", async () => {
+    const requests: Request[] = []
+    const client = createMaintenanceApiClient({
+      baseUrl: "https://coinarchive.app",
+      fetch: async (input, init) => {
+        const request =
+          input instanceof Request
+            ? new Request(input, init)
+            : new Request(input, init)
+        requests.push(request)
+        return request.method === "POST"
+          ? Response.json(
+              {
+                reference: "opaque-upload-reference",
+                uploadUrl: "https://r2.example.test/presigned",
+                expiresAt: "2026-08-03T10:05:00.000Z",
+              },
+              { status: 201 }
+            )
+          : new Response(null, { status: 204 })
+      },
+    })
+
+    await client.surfaceImageUploads.authorize({
+      headers: { "idempotency-key": "upload-attempt-1" },
+      body: {
+        surface: "edge",
+        contentType: "image/png",
+        contentLength: 1024,
+      },
+    })
+    await client.surfaceImageUploads.cancel({
+      body: { surface: "edge", reference: "opaque-upload-reference" },
+    })
+
+    expect(requests.map(({ method, url }) => ({ method, url }))).toStrictEqual([
+      {
+        method: "POST",
+        url: "https://coinarchive.app/api/v1/maintenance/surface-image-uploads",
+      },
+      {
+        method: "DELETE",
+        url: "https://coinarchive.app/api/v1/maintenance/surface-image-uploads",
+      },
+    ])
+    expect(requests[0].headers.get("idempotency-key")).toBe("upload-attempt-1")
+  })
+
   it("uses the protected Orientation collection and detail routes", async () => {
     const requestedUrls: string[] = []
     const client = createMaintenanceApiClient({

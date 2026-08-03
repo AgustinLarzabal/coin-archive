@@ -44,6 +44,8 @@ import { registerRulerMaintenanceRoutes } from "./ruler-maintenance"
 import type { RulerMaintenanceDependencies } from "./ruler-maintenance"
 import { registerDatabaseMaintenanceOverviewRoutes } from "./database-maintenance-overview"
 import type { DatabaseMaintenanceOverviewDependencies } from "./database-maintenance-overview"
+import { registerSurfaceImageUploadMaintenanceRoutes } from "./surface-image-upload-maintenance"
+import type { SurfaceImageUploadMaintenanceDependencies } from "./surface-image-upload-maintenance"
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
@@ -312,6 +314,12 @@ export function createApiApp({
   deleteCurrency = async () => {
     throw new Error("Currency deletion is not configured")
   },
+  authorizeSurfaceImageUpload = async () => {
+    throw new Error("Surface Image upload authorization is not configured")
+  },
+  cancelSurfaceImageUpload = async () => {
+    throw new Error("Surface Image upload cancellation is not configured")
+  },
   trustProxyHeaders = false,
   createRequestId = () => crypto.randomUUID(),
   now = () => Date.now(),
@@ -405,6 +413,8 @@ export function createApiApp({
   createCurrency?: CurrencyMaintenanceDependencies["createCurrency"]
   replaceCurrency?: CurrencyMaintenanceDependencies["replaceCurrency"]
   deleteCurrency?: CurrencyMaintenanceDependencies["deleteCurrency"]
+  authorizeSurfaceImageUpload?: SurfaceImageUploadMaintenanceDependencies["authorizeSurfaceImageUpload"]
+  cancelSurfaceImageUpload?: SurfaceImageUploadMaintenanceDependencies["cancelSurfaceImageUpload"]
   trustProxyHeaders?: boolean
   createRequestId?: () => string
   now?: () => number
@@ -581,6 +591,10 @@ export function createApiApp({
     createOrientation,
     replaceOrientation,
     deleteOrientation,
+  })
+  registerSurfaceImageUploadMaintenanceRoutes(app, {
+    authorizeSurfaceImageUpload,
+    cancelSurfaceImageUpload,
   })
   registerDatabaseMaintenanceOverviewRoutes(app, {
     getDatabaseMaintenanceOverview,

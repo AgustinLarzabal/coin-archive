@@ -195,6 +195,42 @@ export const orientationMutationBodySchema = z.object({
 const idempotencyKeySchema = z.string().trim().min(1).max(255)
 const ifMatchSchema = z.string().trim().min(1)
 
+export const coinSurfaceSchema = z.enum(["obverse", "reverse", "edge"])
+export const surfaceImageContentTypeSchema = z.enum([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+])
+export const surfaceImageUploadAuthorizationInputSchema = z.object({
+  headers: z.object({ "idempotency-key": idempotencyKeySchema }),
+  body: z.object({
+    surface: coinSurfaceSchema,
+    contentType: surfaceImageContentTypeSchema,
+    contentLength: z
+      .number()
+      .int()
+      .min(1)
+      .max(10 * 1024 * 1024),
+  }),
+})
+export const surfaceImageUploadAuthorizationOutputSchema = z.object({
+  status: z.literal(201),
+  body: z.object({
+    reference: z.string().min(1),
+    uploadUrl: z.string().url(),
+    expiresAt: utcTimestampSchema,
+  }),
+})
+export const surfaceImageUploadCancellationInputSchema = z.object({
+  body: z.object({
+    surface: coinSurfaceSchema,
+    reference: z.string().min(1),
+  }),
+})
+export const surfaceImageUploadCancellationOutputSchema = z.object({
+  status: z.literal(204),
+})
+
 export const orientationCreateInputSchema = z.object({
   headers: z.object({ "idempotency-key": idempotencyKeySchema }),
   body: orientationMutationBodySchema,
@@ -1956,6 +1992,34 @@ export const publicApiContract = {
 }
 
 export const maintenanceApiContract = {
+  surfaceImageUploads: {
+    authorize: oc
+      .route({
+        method: "POST",
+        path: "/api/v1/maintenance/surface-image-uploads",
+        summary: "Authorize a temporary Surface Image upload",
+        tags: ["Surface Image Maintenance"],
+        successStatus: 201,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(surfaceImageUploadAuthorizationInputSchema)
+      .output(surfaceImageUploadAuthorizationOutputSchema)
+      .errors(maintenanceMutationErrors),
+    cancel: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/surface-image-uploads",
+        summary: "Cancel a temporary Surface Image upload",
+        tags: ["Surface Image Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(surfaceImageUploadCancellationInputSchema)
+      .output(surfaceImageUploadCancellationOutputSchema)
+      .errors(maintenanceMutationErrors),
+  },
   overview: {
     get: oc
       .route({

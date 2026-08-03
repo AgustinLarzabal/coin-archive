@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "id": "expire-abandoned-temporary-surface-images",
+      "enabled": true,
+      "conditions": {
+        "prefix": "surface-images/temporary/"
+      },
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 86400
+        }
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import type {
 } from "@coin-archive/api"
 import { createServerFn } from "@tanstack/react-start"
 
-import { loadAllMaintenanceOptions } from "@/lib/maintenance-options.server"
+import { loadAllMaintenanceOptions } from "@/lib/maintenance-options"
 
 import { toMaintenancePageLoaderData } from "../maintenance-page"
 import type {

@@ -92,6 +92,9 @@ importers:
       '@orpc/zod':
         specifier: ^1.10.0
         version: 1.14.13(@orpc/contract@1.14.13)(@orpc/server@1.14.13(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0))(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0)(zod@4.4.3)
+      aws4fetch:
+        specifier: ^1.0.20
+        version: 1.0.20
       hono:
         specifier: ^4.12.25
         version: 4.12.26

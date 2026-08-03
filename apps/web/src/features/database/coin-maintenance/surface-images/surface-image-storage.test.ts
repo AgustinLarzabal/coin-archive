@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   SURFACE_IMAGE_MAX_BYTES,
   createR2SurfaceImageStorage,
+  moveSurfaceImageObjectWithRollback,
 } from "./surface-image-storage"
 import type { SurfaceImageObjectStorage } from "./surface-image-storage"
 
@@ -64,6 +65,7 @@ describe("R2 Surface Image storage", () => {
         firstBytes: new Uint8Array([0xff, 0xd8, 0xff]),
       }),
       deleteObject: vi.fn(),
+      moveObject: vi.fn(),
     }
     const storage = createR2SurfaceImageStorage(configuration, objectStorage)
     const authorization = await storage.authorizeUpload({
@@ -82,12 +84,34 @@ describe("R2 Surface Image storage", () => {
       storage.resolveUpload(authorization.reference, "obverse")
     ).resolves.toEqual({
       imageUrl: expect.stringContaining(
-        "https://images.example.test/surface-images/"
+        "https://images.example.test/surface-images/published/"
       ),
     })
+    expect(objectStorage.moveObject).toHaveBeenCalledWith(
+      expect.stringMatching(/^surface-images\/temporary\//),
+      expect.stringMatching(/^surface-images\/published\//)
+    )
     expect(objectStorage.createPresignedPutUrl).toHaveBeenCalledWith(
       expect.objectContaining({ contentType: "image/jpeg", contentLength: 3 })
     )
+  })
+
+  it("removes the published copy when deleting the temporary source fails", async () => {
+    const copyObject = vi.fn().mockResolvedValue(undefined)
+    const deleteSource = vi.fn().mockRejectedValue(new Error("R2 unavailable"))
+    const deleteDestination = vi.fn().mockResolvedValue(undefined)
+
+    await expect(
+      moveSurfaceImageObjectWithRollback({
+        copyObject,
+        deleteSource,
+        deleteDestination,
+      })
+    ).rejects.toThrow("R2 unavailable")
+
+    expect(copyObject).toHaveBeenCalledOnce()
+    expect(deleteSource).toHaveBeenCalledOnce()
+    expect(deleteDestination).toHaveBeenCalledOnce()
   })
 
   it("rejects objects whose bytes do not match their authorized image type", async () => {
@@ -101,6 +125,7 @@ describe("R2 Surface Image storage", () => {
         firstBytes: new Uint8Array([0x47, 0x49, 0x46]),
       }),
       deleteObject: vi.fn(),
+      moveObject: vi.fn(),
     })
     const authorization = await storage.authorizeUpload({
       surface: "reverse",
@@ -120,6 +145,7 @@ describe("R2 Surface Image storage", () => {
         .mockResolvedValue("https://r2.example.test/put"),
       inspectObject: vi.fn(),
       deleteObject: vi.fn(),
+      moveObject: vi.fn(),
     })
     const authorization = await storage.authorizeUpload({
       surface: "edge",
@@ -139,6 +165,7 @@ describe("R2 Surface Image storage", () => {
         .mockResolvedValue("https://r2.example.test/put"),
       inspectObject: vi.fn(),
       deleteObject: vi.fn(),
+      moveObject: vi.fn(),
     }
     const storage = createR2SurfaceImageStorage(configuration, objectStorage)
     const authorization = await storage.authorizeUpload({

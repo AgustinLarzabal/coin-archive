@@ -10,6 +10,8 @@
       "DATABASE_URL",
       "GOOGLE_CLIENT_ID",
       "GOOGLE_CLIENT_SECRET",
+      "R2_ACCESS_KEY_ID",
+      "R2_SECRET_ACCESS_KEY",
     ],
   },
   "vars": {
@@ -17,6 +19,8 @@
     "BETTER_AUTH_TRUSTED_ORIGINS": "http://localhost:3000",
     "BETTER_AUTH_URL": "http://127.0.0.1:8787",
     "SURFACE_IMAGE_ORIGIN": "http://localhost:3000",
+    "R2_BUCKET": "coin-archive-staging-surface-images",
+    "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
   },
   "ratelimits": [
     {
@@ -68,6 +72,8 @@
           "DATABASE_URL",
           "GOOGLE_CLIENT_ID",
           "GOOGLE_CLIENT_SECRET",
+          "R2_ACCESS_KEY_ID",
+          "R2_SECRET_ACCESS_KEY",
         ],
       },
       "vars": {
@@ -75,6 +81,8 @@
         "BETTER_AUTH_TRUSTED_ORIGINS": "https://staging.coinarchive.app",
         "BETTER_AUTH_URL": "https://api.staging.coinarchive.app",
         "SURFACE_IMAGE_ORIGIN": "https://images.staging.coinarchive.app",
+        "R2_BUCKET": "coin-archive-staging-surface-images",
+        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
       },
     },
     "production": {
@@ -103,6 +111,8 @@
           "DATABASE_URL",
           "GOOGLE_CLIENT_ID",
           "GOOGLE_CLIENT_SECRET",
+          "R2_ACCESS_KEY_ID",
+          "R2_SECRET_ACCESS_KEY",
         ],
       },
       "vars": {
@@ -110,6 +120,8 @@
         "BETTER_AUTH_TRUSTED_ORIGINS": "https://coinarchive.app",
         "BETTER_AUTH_URL": "https://api.coinarchive.app",
         "SURFACE_IMAGE_ORIGIN": "https://images.coinarchive.app",
+        "R2_BUCKET": "coin-archive-production-surface-images",
+        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
       },
     },
   },

@@ -242,6 +242,12 @@ export {
   orientationReplaceOutputSchema,
   orientationSchema,
   publicApiContract,
+  coinSurfaceSchema,
+  surfaceImageContentTypeSchema,
+  surfaceImageUploadAuthorizationInputSchema,
+  surfaceImageUploadAuthorizationOutputSchema,
+  surfaceImageUploadCancellationInputSchema,
+  surfaceImageUploadCancellationOutputSchema,
 } from "./contract"
 export type {
   BrowseCoinsInput,

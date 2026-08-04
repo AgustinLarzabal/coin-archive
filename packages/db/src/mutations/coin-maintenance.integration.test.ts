@@ -34,10 +34,74 @@ import {
   deleteCoinMaintenanceIfVersionWithDatabase,
   updateCoinMaintenance,
 } from "./coin-maintenance"
-import { getCoinMaintenanceRecord } from "../queries/get-coin-maintenance-record"
+import {
+  getCoinMaintenanceApiRecordWithDatabase,
+  getCoinMaintenanceRecord,
+} from "../queries/get-coin-maintenance-record"
 
 describe("coin maintenance mutations integration", () => {
   useTestDatabaseIsolation(db)
+
+  it("round-trips decimal strings without binary floating-point loss", async () => {
+    const issuer = await createIssuer({
+      code: "precise-decimal-issuer",
+      name: "Precise Decimal Issuer",
+    })
+    const ruler = await createRuler({
+      code: "precise-decimal-ruler",
+      name: "Precise Decimal Ruler",
+    })
+    const distribution = await createDistribution({
+      code: "precise-decimal-distribution",
+      name: "Precise Decimal Distribution",
+    })
+    const composition = await createComposition({
+      code: "precise-decimal-composition",
+      name: "Precise Decimal Composition",
+    })
+    const currency = await createCurrency({
+      code: "precise-decimal-currency",
+      name: "PDC",
+      fullName: "Precise Decimal Currency",
+    })
+    const created = await createCoinMaintenance({
+      comments: null,
+      compositionDescription: null,
+      compositionId: composition.id,
+      currencyId: currency.id,
+      diameter: "23.45",
+      distributionId: distribution.id,
+      edgeId: null,
+      faceValueNumericValue: "99999999999999.999999",
+      faceValueText: "Precise Unit",
+      isDemonetized: null,
+      issuerId: issuer.id,
+      maxYear: null,
+      mintIds: [],
+      minYear: null,
+      mintage: null,
+      orientationId: null,
+      references: [],
+      rimId: null,
+      rulerIds: [ruler.id],
+      shapeId: null,
+      surfaces: { obverse: null, reverse: null, edge: null },
+      techniqueId: null,
+      themeIds: [],
+      thickness: "1.23",
+      title: "Precise Decimal Coin",
+      weight: "7.89",
+    })
+
+    await expect(
+      getCoinMaintenanceApiRecordWithDatabase(db, created.id)
+    ).resolves.toMatchObject({
+      diameter: "23.45",
+      faceValueNumericValue: "99999999999999.999999",
+      thickness: "1.23",
+      weight: "7.89",
+    })
+  })
 
   it("atomically version-guards complete replacements, including child-only changes", async () => {
     const issuer = await createIssuer({
@@ -227,9 +291,9 @@ describe("coin maintenance mutations integration", () => {
       rimId: rim.id,
       minYear: 1999,
       maxYear: 2001,
-      weight: 7.5,
-      diameter: 22.5,
-      thickness: 1.8,
+      weight: "7.50",
+      diameter: "22.50",
+      thickness: "1.80",
       mintage: 1500,
       isDemonetized: null,
     })
@@ -611,7 +675,7 @@ describe("coin maintenance mutations integration", () => {
       diameter: 24,
       distributionId: distribution.id,
       edgeId: null,
-      faceValueNumericValue: 5,
+      faceValueNumericValue: "5.000000",
       faceValueText: "5 Units",
       isDemonetized: true,
       issuerId: issuer.id,
@@ -642,14 +706,14 @@ describe("coin maintenance mutations integration", () => {
       compositionDescription: "Copper-nickel ring with brass core",
       compositionId: replacementComposition.id,
       faceValueText: "5 Units",
-      faceValueNumericValue: 5,
+      faceValueNumericValue: "5.000000",
       minYear: 2024,
       maxYear: 2025,
       mintage: 2000,
       isDemonetized: true,
-      diameter: 24,
-      thickness: 2.1,
-      weight: 8.2,
+      diameter: "24.00",
+      thickness: "2.10",
+      weight: "8.20",
     })
 
     const persistedRulers = await db.query.coinRuler.findMany({
@@ -755,7 +819,7 @@ describe("coin maintenance mutations integration", () => {
       diameter: null,
       distributionId: distribution.id,
       edgeId: null,
-      faceValueNumericValue: 1,
+      faceValueNumericValue: "1.000000",
       faceValueText: "1 Unit",
       isDemonetized: null,
       issuerId: issuer.id,
@@ -1055,7 +1119,7 @@ describe("coin maintenance mutations integration", () => {
       diameter: null,
       distributionId: distribution.id,
       edgeId: null,
-      faceValueNumericValue: 1,
+      faceValueNumericValue: "1.000000",
       faceValueText: "1 Unit",
       isDemonetized: null,
       issuerId: issuer.id,

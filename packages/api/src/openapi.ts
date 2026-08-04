@@ -1,7 +1,7 @@
 import { OpenAPIGenerator } from "@orpc/openapi"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 
-import { apiContract } from "./contract"
+import { apiContract } from "./api-contract"
 
 export async function generateApiOpenApiDocument() {
   const document = await new OpenAPIGenerator({

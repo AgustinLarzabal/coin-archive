@@ -1,7 +1,8 @@
 import { createORPCClient } from "@orpc/client"
 import type { ContractRouterClient } from "@orpc/contract"
 import { OpenAPILink } from "@orpc/openapi-client/fetch"
-import { maintenanceApiContract, publicApiContract } from "./contract"
+import { maintenanceApiContract } from "./maintenance-contract"
+import { publicApiContract } from "./public-contract"
 
 export type PublicApiClient = ContractRouterClient<typeof publicApiContract>
 export type MaintenanceApiClient = ContractRouterClient<

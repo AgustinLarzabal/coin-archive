@@ -467,7 +467,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       compositionCode: composition.code,
       compositionDescription: coin.compositionDescription,
       compositionName: composition.name,
-      diameter: coin.diameter,
+      diameter: sql<number | null>`${coin.diameter}::double precision`,
       distributionCode: distribution.code,
       distributionName: distribution.name,
       edgeCode: edge.code,
@@ -475,7 +475,7 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       faceValueCurrencyCode: currency.code,
       faceValueCurrencyFullName: currency.fullName,
       faceValueCurrencyName: currency.name,
-      faceValueNumericValue: coin.faceValueNumericValue,
+      faceValueNumericValue: sql<number>`${coin.faceValueNumericValue}::double precision`,
       faceValueText: coin.faceValueText,
       isDemonetized: coin.isDemonetized,
       issuerCode: issuer.code,
@@ -492,8 +492,8 @@ export function buildGetCoinQuery(database: typeof db, coinId: string) {
       shapeName: shape.name,
       techniqueCode: technique.code,
       techniqueName: technique.name,
-      thickness: coin.thickness,
-      weight: coin.weight,
+      thickness: sql<number | null>`${coin.thickness}::double precision`,
+      weight: sql<number | null>`${coin.weight}::double precision`,
     })
     .from(coin)
     .innerJoin(composition, eq(coin.compositionId, composition.id))

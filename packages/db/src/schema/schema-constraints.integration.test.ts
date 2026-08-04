@@ -1068,21 +1068,21 @@ describe("coin schema constraints", () => {
       ...dependencies,
       title: "Known demonetized",
       faceValueText: "1 Test Unit",
-      faceValueNumericValue: 1,
+      faceValueNumericValue: "1",
       isDemonetized: true,
     })
     await db.insert(coin).values({
       ...dependencies,
       title: "Known not demonetized",
       faceValueText: "1 Test Unit",
-      faceValueNumericValue: 1,
+      faceValueNumericValue: "1",
       isDemonetized: false,
     })
     await db.insert(coin).values({
       ...dependencies,
       title: "Explicitly unknown",
       faceValueText: "1 Test Unit",
-      faceValueNumericValue: 1,
+      faceValueNumericValue: "1",
       isDemonetized: null,
     })
 

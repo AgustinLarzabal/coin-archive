@@ -120,7 +120,7 @@ export async function createCoin({
       currencyId: resolvedCurrencyId,
       distributionId: resolvedDistributionId,
       edgeId,
-      faceValueNumericValue,
+      faceValueNumericValue: String(faceValueNumericValue),
       faceValueText,
       isDemonetized,
       issuerId,
@@ -131,11 +131,11 @@ export async function createCoin({
       rimId,
       shapeId,
       techniqueId,
-      diameter,
-      thickness,
+      diameter: diameter === undefined ? undefined : String(diameter),
+      thickness: thickness === undefined ? undefined : String(thickness),
       title,
       updatedAt,
-      weight,
+      weight: weight === undefined ? undefined : String(weight),
     })
     .returning()
 

@@ -80,33 +80,47 @@ const optionalTrimmedStringSchema = z.preprocess((value) => {
   return normalizedValue === "" ? null : normalizedValue
 }, z.string().nullable())
 
-const requiredPositiveNumberSchema = z.preprocess((value) => {
-  if (typeof value === "number") {
-    return value
-  }
+const requiredPositiveNumberSchema = z.preprocess(
+  (value) => {
+    if (typeof value === "number") {
+      return String(value)
+    }
 
-  if (typeof value !== "string") {
-    return value
-  }
+    if (typeof value !== "string") {
+      return value
+    }
 
-  return Number(value.trim())
-}, z.number().positive("Face Value numeric value must be greater than 0."))
+    return value.trim()
+  },
+  z
+    .string()
+    .refine(
+      (value) => Number(value) > 0,
+      "Face Value numeric value must be greater than 0."
+    )
+)
 
-const optionalPositiveNumberSchema = z.preprocess((value) => {
-  if (value === "" || value === undefined || value === null) {
-    return null
-  }
+const optionalPositiveNumberSchema = z.preprocess(
+  (value) => {
+    if (value === "" || value === undefined || value === null) {
+      return null
+    }
 
-  if (typeof value === "number") {
-    return value
-  }
+    if (typeof value === "number") {
+      return String(value)
+    }
 
-  if (typeof value !== "string") {
-    return value
-  }
+    if (typeof value !== "string") {
+      return value
+    }
 
-  return Number(value.trim())
-}, z.number().positive("Value must be greater than 0.").nullable())
+    return value.trim()
+  },
+  z
+    .string()
+    .refine((value) => Number(value) > 0, "Value must be greater than 0.")
+    .nullable()
+)
 
 const optionalPositiveIntegerSchema = z.preprocess((value) => {
   if (value === "" || value === undefined || value === null) {

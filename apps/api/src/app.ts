@@ -771,6 +771,18 @@ export function createApiApp({
     deleteCurrency,
   })
 
+  app.all("/api/v1/maintenance/*", (context) =>
+    maintenanceProblemResponse(
+      404,
+      "Maintenance route not found",
+      "No maintenance operation matches this path",
+      context.req.path,
+      {},
+      "maintenance_route_not_found",
+      "maintenance-route-not-found"
+    )
+  )
+
   app.on(["GET", "HEAD"], "/api/v1/coins", async (context) => {
     const input = parseBrowseInput(context.req.url)
     if (input instanceof Response) {
@@ -891,7 +903,9 @@ function maintenanceProblemResponse(
   title: string,
   detail: string,
   instance: string,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
+  code = maintenanceProblemCode(status),
+  type = String(status)
 ) {
   const response = problemResponse(
     status,
@@ -900,7 +914,8 @@ function maintenanceProblemResponse(
     instance,
     undefined,
     headers,
-    maintenanceProblemCode(status)
+    code,
+    type
   )
   response.headers.set("Cache-Control", "private, no-store")
   return response

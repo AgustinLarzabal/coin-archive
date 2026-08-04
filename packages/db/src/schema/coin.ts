@@ -55,13 +55,11 @@ const timestamptzDateColumn = {
 const measurementColumn = {
   precision: 10,
   scale: 2,
-  mode: "number",
 } as const
 
 const faceValueNumericColumn = {
   precision: 20,
   scale: 6,
-  mode: "number",
 } as const
 
 export const coin = pgTable(

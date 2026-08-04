@@ -26,10 +26,10 @@ export type CoinMaintenanceRecord = {
   compositionDescription: string | null
   compositionId: string
   currencyId: string
-  diameter: number | null
+  diameter: string | null
   distributionId: string
   edgeId: string | null
-  faceValueNumericValue: number
+  faceValueNumericValue: string
   faceValueText: string
   isDemonetized: boolean | null
   issuerId: string
@@ -43,8 +43,8 @@ export type CoinMaintenanceRecord = {
   shapeId: string | null
   techniqueId: string | null
   themeIds: string[]
-  thickness: number | null
-  weight: number | null
+  thickness: string | null
+  weight: string | null
   references: CoinMaintenanceReference[]
   surfaces: CoinMaintenanceSurfaceSet
   version: number

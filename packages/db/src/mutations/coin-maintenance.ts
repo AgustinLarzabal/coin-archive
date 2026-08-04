@@ -25,10 +25,10 @@ export type CoinMaintenanceFields = {
   compositionDescription: string | null
   compositionId: string
   currencyId: string
-  diameter: number | null
+  diameter: number | string | null
   distributionId: string
   edgeId: string | null
-  faceValueNumericValue: number
+  faceValueNumericValue: number | string
   faceValueText: string
   isDemonetized: boolean | null
   issuerId: string
@@ -44,9 +44,9 @@ export type CoinMaintenanceFields = {
   surfaces?: CoinMaintenanceSurfaceSet
   techniqueId: string | null
   themeIds: string[]
-  thickness: number | null
+  thickness: number | string | null
   title: string
-  weight: number | null
+  weight: number | string | null
 }
 
 type CreateCoinMaintenanceInput = CoinMaintenanceFields
@@ -160,10 +160,10 @@ function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
     ),
     compositionId: fields.compositionId,
     currencyId: fields.currencyId,
-    diameter: fields.diameter,
+    diameter: fields.diameter === null ? null : String(fields.diameter),
     distributionId: fields.distributionId,
     edgeId: fields.edgeId,
-    faceValueNumericValue: fields.faceValueNumericValue,
+    faceValueNumericValue: String(fields.faceValueNumericValue),
     faceValueText: fields.faceValueText.trim(),
     isDemonetized: fields.isDemonetized,
     issuerId: fields.issuerId,
@@ -174,9 +174,9 @@ function normalizeCoinMaintenanceFields(fields: CoinMaintenanceFields) {
     rimId: fields.rimId,
     shapeId: fields.shapeId,
     techniqueId: fields.techniqueId,
-    thickness: fields.thickness,
+    thickness: fields.thickness === null ? null : String(fields.thickness),
     title: fields.title.trim(),
-    weight: fields.weight,
+    weight: fields.weight === null ? null : String(fields.weight),
   }
 }
 

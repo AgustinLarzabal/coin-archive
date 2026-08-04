@@ -136,11 +136,11 @@ type CoinPersistenceFields = Omit<
   | "thickness"
   | "weight"
 > & {
-  diameter: number | null
-  faceValueNumericValue: number
+  diameter: string | null
+  faceValueNumericValue: string
   mintage: number | null
-  thickness: number | null
-  weight: number | null
+  thickness: string | null
+  weight: string | null
   surfaces: {
     obverse: CoinCreateFaceSurface | null
     reverse: CoinCreateFaceSurface | null
@@ -641,11 +641,11 @@ async function toPersistenceFields(
   const edge = body.surfaces.edge
   return {
     ...body,
-    diameter: numberOrNull(body.diameter),
-    faceValueNumericValue: Number(body.faceValueNumericValue),
+    diameter: body.diameter,
+    faceValueNumericValue: body.faceValueNumericValue,
     mintage: numberOrNull(body.mintage),
-    thickness: numberOrNull(body.thickness),
-    weight: numberOrNull(body.weight),
+    thickness: body.thickness,
+    weight: body.weight,
     surfaces: {
       obverse: await face(body.surfaces.obverse, "obverse"),
       reverse: await face(body.surfaces.reverse, "reverse"),

@@ -12,7 +12,7 @@ import {
   coinMaintenanceOptionsOutputSchema,
   coinMaintenanceReplaceInputSchema,
   coinMaintenanceReplaceOutputSchema,
-} from "./contract"
+} from "./maintenance-contract"
 
 const id = "018f1a11-aaaa-7000-8000-000000000001"
 

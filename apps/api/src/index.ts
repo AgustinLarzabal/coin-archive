@@ -217,7 +217,7 @@ async function handleRequest(
     replaceMaintenanceCoin: (input) =>
       replaceCoinMaintenanceWithDatabase(database.db, input),
     getCoinMaintenanceOptions: async () => {
-      const all = <T extends MaintenanceCursorRecord>(
+      const collectAllPages = <T extends MaintenanceCursorRecord>(
         list: MaintenanceCursorList<T>
       ) => collectAllMaintenanceRecords(list)
       const [
@@ -236,46 +236,46 @@ async function handleRequest(
         mintingTechniques,
         themes,
       ] = await Promise.all([
-        all((input) =>
+        collectAllPages((input) =>
           getCatalogueMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getCompositionMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getCurrencyMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getDistributionMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getEdgeMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getEngraverMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getIssuerMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getMintMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getOrientationMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getRimMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getRulerMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getShapeMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getTechniqueMaintenanceRecordsWithDatabase(database.db, input)
         ),
-        all((input) =>
+        collectAllPages((input) =>
           getThemeMaintenanceRecordsWithDatabase(database.db, input)
         ),
       ])

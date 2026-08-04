@@ -257,6 +257,32 @@ describe("GET /api/v1/coins", () => {
   })
 })
 
+describe("protected maintenance fallback", () => {
+  it("returns a stable RFC 9457 problem for an unknown authenticated route", async () => {
+    const app = createApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      getCollector: async () => ({ id: "collector-id", role: "editor" }),
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/maintenance/unknown"
+    )
+
+    expect(response.status).toBe(404)
+    expect(response.headers.get("Content-Type")).toContain(
+      "application/problem+json"
+    )
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    await expect(response.json()).resolves.toMatchObject({
+      type: "https://api.coinarchive.app/problems/maintenance-route-not-found",
+      code: "maintenance_route_not_found",
+      instance: "/api/v1/maintenance/unknown",
+    })
+  })
+})
+
 describe("GET /api/v1/coins/:id", () => {
   it("returns a complete public Coin detail document and supports conditional requests", async () => {
     const app = createApiApp({

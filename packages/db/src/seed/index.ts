@@ -777,6 +777,17 @@ function mapSeededCoinToInsertValues(
 
   return {
     ...coinValues,
+    diameter:
+      coinValues.diameter === undefined
+        ? undefined
+        : String(coinValues.diameter),
+    faceValueNumericValue: String(coinValues.faceValueNumericValue),
+    thickness:
+      coinValues.thickness === undefined
+        ? undefined
+        : String(coinValues.thickness),
+    weight:
+      coinValues.weight === undefined ? undefined : String(coinValues.weight),
     comments: normalizeCoinComments(coinValues.comments),
     compositionId: getRequiredSeededId(
       compositionIdsByCode,

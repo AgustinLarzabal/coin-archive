@@ -305,6 +305,35 @@ describe("protected Coin Maintenance create", () => {
     )
   })
 
+  it("keeps decimal strings exact when creating a Coin", async () => {
+    const completeMaintenanceCoinCreate = vi.fn(async (input) => ({
+      status: "created" as const,
+      coin: { id: input.fields.issuerId },
+    }))
+    const response = await createApp({
+      completeMaintenanceCoinCreate,
+    }).request("https://api.coinarchive.app/api/v1/maintenance/coins", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": "precise-coin-attempt",
+      },
+      body: JSON.stringify({
+        ...createBody,
+        faceValueNumericValue: "99999999999999.999999",
+      }),
+    })
+
+    expect(response.status).toBe(201)
+    expect(completeMaintenanceCoinCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fields: expect.objectContaining({
+          faceValueNumericValue: "99999999999999.999999",
+        }),
+      })
+    )
+  })
+
   it("replays a completed create without touching the temporary upload", async () => {
     const prepareSurfaceImageUpload = vi.fn()
     const completeMaintenanceCoinCreate = vi.fn()

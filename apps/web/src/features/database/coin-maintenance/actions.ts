@@ -4,7 +4,6 @@ import type { MaintenanceApiClient } from "@coin-archive/api"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import type { CoinMaintenanceDeleteSummary } from "@coin-archive/db"
 import type {
   SurfaceImageUploadAuthorization,
   SurfaceImageUploadRequest,
@@ -415,6 +414,7 @@ export const updateCoinInputSchema = coinDraftSchema.extend({
 })
 export const deleteCoinInputSchema = z.object({
   id: z.uuid(),
+  etag: z.string().min(1),
   confirmationTitle: z.string(),
 })
 
@@ -493,18 +493,8 @@ type SurfaceImageUploadRemovalDependencies = {
 }
 
 type CoinDeleteDependencies = {
-  deleteCoinMaintenance: (input: {
-    id: string
-  }) => Promise<{ id: string } | null>
-  deleteSurfaceImage: (imageUrl: string) => Promise<void>
-  getCoinMaintenanceDeleteSummary: (
-    coinId: string
-  ) => Promise<CoinMaintenanceDeleteSummary | null>
-  getCoinSurfaceImageUrls: (coinId: string) => Promise<string[] | null>
-  recordSurfaceImageCleanupFailures: (input: {
-    deletedCoinId: string
-    failures: Array<{ errorMessage: string; imageUrl: string }>
-  }) => Promise<void>
+  deleteCoin: MaintenanceApiClient["coins"]["delete"]
+  getCoinMaintenanceDeleteSummary: MaintenanceApiClient["coins"]["deleteSummary"]
 }
 
 async function getDefaultCoinReplaceDependencies(): Promise<CoinReplaceDependencies> {
@@ -537,33 +527,13 @@ async function getDefaultSurfaceImageUploadDependencies(): Promise<
 }
 
 async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
-  const {
-    deleteCoinMaintenance,
-    getCoinMaintenanceDeleteSummary,
-    getCoinMaintenanceRecord,
-    recordSurfaceImageCleanupFailures,
-  } = await import("@coin-archive/db")
-  const { createR2SurfaceImageStorage } =
-    await import("./surface-images/surface-image-storage")
+  const { getMaintenanceApiClient } =
+    await import("@/lib/maintenance-api.server")
+  const client = await getMaintenanceApiClient()
 
   return {
-    deleteCoinMaintenance,
-    getCoinMaintenanceDeleteSummary,
-    async getCoinSurfaceImageUrls(coinId) {
-      const coin = await getCoinMaintenanceRecord(coinId)
-
-      if (coin === null) {
-        return null
-      }
-
-      return (["obverse", "reverse", "edge"] as const).flatMap((surface) => {
-        const imageUrl = coin.surfaces[surface]?.imageUrl
-        return imageUrl === null || imageUrl === undefined ? [] : [imageUrl]
-      })
-    },
-    deleteSurfaceImage: async (imageUrl) =>
-      createR2SurfaceImageStorage().deletePublishedImage(imageUrl),
-    recordSurfaceImageCleanupFailures,
+    deleteCoin: client.coins.delete,
+    getCoinMaintenanceDeleteSummary: client.coins.deleteSummary,
   }
 }
 
@@ -770,17 +740,6 @@ function getSurfaceImageApiError(error: unknown) {
     : problem.code === "surface_image_upload_validation_failed"
       ? "Surface Images must be JPEG, PNG, or WebP files up to 10 MB."
       : SURFACE_IMAGE_UPLOAD_ERROR
-}
-
-function createDeletePersistenceError(): CoinDeleteMutationResult {
-  return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
-}
-
-function getSurfaceImageCleanupFailureMessage(error: unknown) {
-  const message =
-    error instanceof Error ? error.message : "Unknown storage cleanup error."
-
-  return message.slice(0, 2000)
 }
 
 export async function submitCreateCoin(
@@ -1013,14 +972,11 @@ export async function submitDeleteCoin(
     dependencies ?? (await getDefaultDeleteDependencies())
 
   try {
-    const deleteSummary =
-      await resolvedDependencies.getCoinMaintenanceDeleteSummary(
-        validationResult.data.id
-      )
-
-    if (deleteSummary === null) {
-      return createFormErrorResult(COIN_MISSING_ERROR)
-    }
+    const deleteSummary = (
+      await resolvedDependencies.getCoinMaintenanceDeleteSummary({
+        uuid: validationResult.data.id,
+      })
+    ).data
 
     if (validationResult.data.confirmationTitle !== deleteSummary.title) {
       return createFieldErrorResult({
@@ -1028,60 +984,17 @@ export async function submitDeleteCoin(
       })
     }
 
-    const surfaceImageUrls = await resolvedDependencies.getCoinSurfaceImageUrls(
-      validationResult.data.id
-    )
-
-    if (surfaceImageUrls === null) {
-      return createFormErrorResult(COIN_MISSING_ERROR)
-    }
-
-    const deletedCoin = await resolvedDependencies.deleteCoinMaintenance({
-      id: validationResult.data.id,
+    await resolvedDependencies.deleteCoin({
+      params: { uuid: validationResult.data.id },
+      headers: { "if-match": validationResult.data.etag },
     })
-
-    if (deletedCoin === null) {
-      return createFormErrorResult(COIN_MISSING_ERROR)
-    }
-
-    const cleanupResults = await Promise.all(
-      surfaceImageUrls.map(async (imageUrl) => {
-        try {
-          await resolvedDependencies.deleteSurfaceImage(imageUrl)
-          return { imageUrl, error: null }
-        } catch (error) {
-          return { imageUrl, error }
-        }
-      })
-    )
-    const failedCleanupResults = cleanupResults.filter(
-      (result): result is { imageUrl: string; error: unknown } =>
-        result.error !== null
-    )
-
-    if (failedCleanupResults.length > 0) {
-      try {
-        await resolvedDependencies.recordSurfaceImageCleanupFailures({
-          deletedCoinId: deletedCoin.id,
-          failures: failedCleanupResults.map((result) => ({
-            imageUrl: result.imageUrl,
-            errorMessage: getSurfaceImageCleanupFailureMessage(result.error),
-          })),
-        })
-      } catch (error) {
-        console.error(
-          "Failed to retain Surface Image cleanup failures after Coin deletion.",
-          { error, failedCleanupResults }
-        )
-      }
-    }
 
     return {
       status: "success",
       message: "Coin deleted.",
       redirectTo: "/database/coins",
     }
-  } catch {
-    return createDeletePersistenceError()
+  } catch (error) {
+    return getCoinReplaceApiError(error)
   }
 }

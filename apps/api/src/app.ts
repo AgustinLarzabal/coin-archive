@@ -176,6 +176,9 @@ export function createApiApp({
   replaceMaintenanceCoin = async () => {
     throw new Error("Coin replacement is not configured")
   },
+  deleteMaintenanceCoin = async () => {
+    throw new Error("Coin deletion is not configured")
+  },
   reserveMaintenanceCoinCreate = async () => ({ status: "reserved" }),
   releaseCoinCreateResources = async () => true,
   claimSurfaceImageUpload = async () => true,
@@ -382,6 +385,7 @@ export function createApiApp({
   reserveMaintenanceCoinCreate?: CoinMaintenanceDependencies["reserveMaintenanceCoinCreate"]
   completeMaintenanceCoinCreate?: CoinMaintenanceDependencies["completeMaintenanceCoinCreate"]
   replaceMaintenanceCoin?: CoinMaintenanceDependencies["replaceMaintenanceCoin"]
+  deleteMaintenanceCoin?: CoinMaintenanceDependencies["deleteMaintenanceCoin"]
   releaseCoinCreateResources?: CoinMaintenanceDependencies["releaseCoinCreateResources"]
   claimSurfaceImageUpload?: CoinMaintenanceDependencies["claimSurfaceImageUpload"]
   releaseSurfaceImageUploadClaim?: CoinMaintenanceDependencies["releaseSurfaceImageUploadClaim"]
@@ -658,6 +662,7 @@ export function createApiApp({
     reserveMaintenanceCoinCreate,
     completeMaintenanceCoinCreate,
     replaceMaintenanceCoin,
+    deleteMaintenanceCoin,
     releaseCoinCreateResources,
     claimSurfaceImageUpload,
     releaseSurfaceImageUploadClaim,

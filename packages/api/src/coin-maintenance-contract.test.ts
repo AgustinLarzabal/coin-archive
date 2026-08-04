@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  coinMaintenanceDeleteInputSchema,
+  coinMaintenanceDeleteOutputSchema,
   coinMaintenanceDeleteSummaryOutputSchema,
   coinMaintenanceCreateInputSchema,
   coinMaintenanceCreateOutputSchema,
@@ -375,6 +377,23 @@ describe("Coin Maintenance replacement contract", () => {
         params: { uuid: id },
         body,
       })
+    ).toThrow()
+  })
+})
+
+describe("Coin Maintenance deletion contract", () => {
+  it("requires opaque If-Match and returns 204 without a body", () => {
+    expect(
+      coinMaintenanceDeleteInputSchema.parse({
+        params: { uuid: id },
+        headers: { "if-match": '"opaque-version"' },
+      }).headers["if-match"]
+    ).toBe('"opaque-version"')
+    expect(
+      coinMaintenanceDeleteOutputSchema.parse({ status: 204 })
+    ).toStrictEqual({ status: 204 })
+    expect(() =>
+      coinMaintenanceDeleteInputSchema.parse({ params: { uuid: id } })
     ).toThrow()
   })
 })

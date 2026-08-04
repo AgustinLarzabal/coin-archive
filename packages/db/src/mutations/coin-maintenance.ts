@@ -68,6 +68,10 @@ export type ReplaceCoinMaintenanceResult =
   | { status: "updated"; coin: Coin }
   | { status: "missing" | "stale" }
 
+export type DeleteCoinMaintenanceResult =
+  | { status: "deleted"; coin: Coin; surfaceImageUrls: string[] }
+  | { status: "missing" | "stale" }
+
 type CoinMaintenanceTransaction = Parameters<
   Parameters<typeof db.transaction>[0]
 >[0]
@@ -603,13 +607,32 @@ export async function replaceCoinMaintenanceWithDatabase(
   })
 }
 
-export async function deleteCoinMaintenance({ id }: { id: string }) {
-  return db.transaction(async (tx) => {
-    const deletedCoins = await tx
-      .delete(coin)
-      .where(eq(coin.id, id))
-      .returning()
+export async function deleteCoinMaintenanceIfVersionWithDatabase(
+  database: typeof databaseClient,
+  { id, expectedVersion }: { id: string; expectedVersion: number }
+): Promise<DeleteCoinMaintenanceResult> {
+  return database.transaction(async (transaction) => {
+    const surfaceImageUrls = (
+      await transaction
+        .select({ imageUrl: coinSurface.imageUrl })
+        .from(coinSurface)
+        .where(eq(coinSurface.coinId, id))
+    ).flatMap(({ imageUrl }) => (imageUrl === null ? [] : [imageUrl]))
+    const deletedCoin = (
+      await transaction
+        .delete(coin)
+        .where(and(eq(coin.id, id), eq(coin.version, expectedVersion)))
+        .returning()
+    ).at(0)
 
-    return deletedCoins.at(0) ?? null
+    if (deletedCoin !== undefined) {
+      return { status: "deleted", coin: deletedCoin, surfaceImageUrls }
+    }
+
+    const existing = await transaction.query.coin.findFirst({
+      columns: { id: true },
+      where: (record, { eq }) => eq(record.id, id),
+    })
+    return { status: existing === undefined ? "missing" : "stale" }
   })
 }

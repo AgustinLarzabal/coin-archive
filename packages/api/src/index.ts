@@ -8,6 +8,8 @@ export {
   coinSummarySchema,
   coinMaintenanceDeleteSummaryOutputSchema,
   coinMaintenanceDeleteSummarySchema,
+  coinMaintenanceDeleteInputSchema,
+  coinMaintenanceDeleteOutputSchema,
   coinMaintenanceCreateBodySchema,
   coinMaintenanceCreateInputSchema,
   coinMaintenanceCreateOutputSchema,

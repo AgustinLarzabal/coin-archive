@@ -20,6 +20,7 @@ import {
   createTechniqueIdempotentlyWithDatabase,
   createOrientationIdempotentlyWithDatabase,
   createDatabase,
+  deleteCoinMaintenanceIfVersionWithDatabase,
   deleteCatalogueIfVersionWithDatabase,
   deleteCompositionIfVersionWithDatabase,
   deleteCurrencyIfVersionWithDatabase,
@@ -157,6 +158,8 @@ async function handleRequest(
       reserveCoinMaintenanceCreateWithDatabase(database.db, input),
     completeMaintenanceCoinCreate: (input) =>
       completeCoinMaintenanceCreateWithDatabase(database.db, input),
+    deleteMaintenanceCoin: (input) =>
+      deleteCoinMaintenanceIfVersionWithDatabase(database.db, input),
     releaseCoinCreateResources: (input) =>
       releaseCoinCreateResourcesWithDatabase(database.db, input),
     claimSurfaceImageUpload: (input) =>

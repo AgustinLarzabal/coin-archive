@@ -30,7 +30,11 @@ export function CoinEditRouteComponent({
           <>
             <CoinForm mode="edit" coin={coin} options={options} />
             {deleteSummary ? (
-              <DeleteCoin coinId={coin.id} deleteSummary={deleteSummary} />
+              <DeleteCoin
+                coinId={coin.id}
+                etag={coin.etag}
+                deleteSummary={deleteSummary}
+              />
             ) : null}
           </>
         ) : (

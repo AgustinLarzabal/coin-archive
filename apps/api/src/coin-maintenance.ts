@@ -1,5 +1,6 @@
 import {
   coinMaintenanceCreateInputSchema,
+  coinMaintenanceDeleteInputSchema,
   coinMaintenanceListInputSchema,
   coinMaintenanceReplaceInputSchema,
 } from "@coin-archive/api"
@@ -83,6 +84,17 @@ export type CoinMaintenanceDependencies = {
     fields: CoinPersistenceFields
   }) => Promise<
     | { status: "updated"; coin: { id: string; version: number } }
+    | { status: "missing" | "stale" }
+  >
+  deleteMaintenanceCoin: (input: {
+    id: string
+    expectedVersion: number
+  }) => Promise<
+    | {
+        status: "deleted"
+        coin: { id: string }
+        surfaceImageUrls: string[]
+      }
     | { status: "missing" | "stale" }
   >
   releaseCoinCreateResources: (input: {
@@ -493,8 +505,49 @@ export function registerCoinMaintenanceRoutes(
     }
   })
 
+  app.delete("/api/v1/maintenance/coins/:uuid", async (context) => {
+    const id = context.req.param("uuid")
+    if (!isUuid(id)) return invalidUuid(context.req.path)
+    const ifMatch = context.req.header("if-match")
+    if (ifMatch === undefined) return missingCoinPrecondition(context.req.path)
+    const parsedInput = coinMaintenanceDeleteInputSchema.safeParse({
+      params: { uuid: id },
+      headers: { "if-match": ifMatch },
+    })
+    if (!parsedInput.success) return invalidCoinPrecondition(context.req.path)
+    const expectedVersion = parseCoinPrecondition(
+      parsedInput.data.headers["if-match"],
+      id,
+      context.req.path
+    )
+    if (expectedVersion instanceof Response) return expectedVersion
+
+    const result = await dependencies.deleteMaintenanceCoin({
+      id,
+      expectedVersion,
+    })
+    if (result.status !== "deleted") {
+      return result.status === "missing"
+        ? coinNotFound(context.req.path)
+        : staleCoin(context.req.path)
+    }
+
+    const failures = await removePublishedImages(
+      dependencies,
+      result.surfaceImageUrls
+    )
+    try {
+      await recordImageFailures(dependencies, result.coin.id, failures)
+    } catch {
+      console.error(
+        "Failed to retain Surface Image cleanup failures after Coin deletion."
+      )
+    }
+    return context.body(null, 204)
+  })
+
   app.all("/api/v1/maintenance/coins/:uuid", (context) =>
-    methodNotAllowed(context.req.path, "GET, PUT")
+    methodNotAllowed(context.req.path, "GET, PUT, DELETE")
   )
 }
 
@@ -709,8 +762,15 @@ async function removeReplacedImages(
         : []
     }
   )
+  return removePublishedImages(dependencies, obsoleteUrls)
+}
+
+async function removePublishedImages(
+  dependencies: CoinMaintenanceDependencies,
+  imageUrls: string[]
+) {
   const cleanup = await Promise.allSettled(
-    obsoleteUrls.map((imageUrl) =>
+    imageUrls.map((imageUrl) =>
       dependencies.deletePublishedSurfaceImage(imageUrl)
     )
   )
@@ -718,7 +778,7 @@ async function removeReplacedImages(
     result.status === "rejected"
       ? [
           {
-            imageUrl: obsoleteUrls[index],
+            imageUrl: imageUrls[index],
             errorMessage: cleanupErrorMessage(result.reason),
           },
         ]
@@ -1007,7 +1067,7 @@ function missingCoinPrecondition(instance: string) {
   return problem(
     400,
     "If-Match required",
-    "Coin replacement requires an If-Match header",
+    "Coin mutation requires an If-Match header",
     instance,
     "if_match_required"
   )

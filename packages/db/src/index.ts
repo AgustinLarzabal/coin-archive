@@ -9,7 +9,7 @@ export {
   replaceCoinMaintenance,
   replaceCoinMaintenanceWithDatabase,
   reserveCoinMaintenanceCreateWithDatabase,
-  deleteCoinMaintenance,
+  deleteCoinMaintenanceIfVersionWithDatabase,
   updateCoinMaintenance,
 } from "./mutations/coin-maintenance"
 export type {
@@ -17,6 +17,7 @@ export type {
   CreateCoinMaintenanceIdempotentlyResult,
   CoinMaintenanceCreateIdempotencyStatus,
   ReplaceCoinMaintenanceResult,
+  DeleteCoinMaintenanceResult,
 } from "./mutations/coin-maintenance"
 export { recordSurfaceImageCleanupFailures } from "./mutations/record-surface-image-cleanup-failures"
 export { authorizeSurfaceImageUploadIdempotentlyWithDatabase } from "./mutations/surface-image-upload-idempotency"

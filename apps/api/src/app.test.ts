@@ -421,6 +421,16 @@ describe("GET /api/v1/openapi.json", () => {
             },
           },
         },
+        "/api/v1/maintenance/coins/{uuid}": {
+          delete: {
+            responses: {
+              "204": expect.any(Object),
+              "401": expect.any(Object),
+              "403": expect.any(Object),
+              "412": expect.any(Object),
+            },
+          },
+        },
       },
     })
   })

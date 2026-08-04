@@ -31,7 +31,9 @@ import type { CoinDeleteMutationResult } from "../actions"
 const deleteCoinAction = createServerFn({
   method: "POST",
 })
-  .inputValidator((data: { confirmationTitle: string; id: string }) => data)
+  .inputValidator(
+    (data: { confirmationTitle: string; etag: string; id: string }) => data
+  )
   .handler(async ({ data }) => {
     const session = await getAuthSession()
 
@@ -40,6 +42,7 @@ const deleteCoinAction = createServerFn({
 
 type DeleteCoinProps = {
   coinId: string
+  etag: string
   deleteSummary: CoinMaintenanceDeleteSummary
 }
 
@@ -98,7 +101,7 @@ function applyDeleteResult(
   return null
 }
 
-export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
+export function DeleteCoin({ coinId, etag, deleteSummary }: DeleteCoinProps) {
   const deleteCoin = useServerFn(deleteCoinAction)
   const [confirmationTitle, setConfirmationTitle] = useState("")
   const [confirmationError, setConfirmationError] = useState<string | null>(
@@ -124,6 +127,7 @@ export function DeleteCoin({ coinId, deleteSummary }: DeleteCoinProps) {
       const result = await deleteCoin({
         data: {
           id: coinId,
+          etag,
           confirmationTitle,
         },
       })

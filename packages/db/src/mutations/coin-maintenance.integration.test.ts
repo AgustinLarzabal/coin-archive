@@ -31,7 +31,7 @@ import {
   releaseCoinMaintenanceCreateWithDatabase,
   replaceCoinMaintenanceWithDatabase,
   reserveCoinMaintenanceCreateWithDatabase,
-  deleteCoinMaintenance,
+  deleteCoinMaintenanceIfVersionWithDatabase,
   updateCoinMaintenance,
 } from "./coin-maintenance"
 import { getCoinMaintenanceRecord } from "../queries/get-coin-maintenance-record"
@@ -1444,7 +1444,8 @@ describe("coin maintenance mutations integration", () => {
         obverse: {
           description: "Obverse",
           lettering: null,
-          imageUrl: null,
+          imageUrl:
+            "https://images.coinarchive.app/surface-images/delete-obverse",
           engraverIds: [engraver.id],
         },
         reverse: null,
@@ -1458,10 +1459,23 @@ describe("coin maintenance mutations integration", () => {
     })
 
     await expect(
-      deleteCoinMaintenance({ id: createdCoin.id })
+      deleteCoinMaintenanceIfVersionWithDatabase(db, {
+        id: createdCoin.id,
+        expectedVersion: 2,
+      })
+    ).resolves.toStrictEqual({ status: "stale" })
+
+    await expect(
+      deleteCoinMaintenanceIfVersionWithDatabase(db, {
+        id: createdCoin.id,
+        expectedVersion: 1,
+      })
     ).resolves.toMatchObject({
-      id: createdCoin.id,
-      title: "Coin Maintenance Delete Coin",
+      status: "deleted",
+      coin: { id: createdCoin.id, title: "Coin Maintenance Delete Coin" },
+      surfaceImageUrls: [
+        "https://images.coinarchive.app/surface-images/delete-obverse",
+      ],
     })
 
     await expect(

@@ -873,3 +873,140 @@ describe("protected Coin Maintenance replacement", () => {
     })
   })
 })
+
+describe("protected Coin Maintenance deletion", () => {
+  it("hard-deletes with If-Match before removing published Surface Images", async () => {
+    const events: string[] = []
+    const imageUrl =
+      "https://images.coinarchive.app/surface-images/published/obverse"
+    const deleteMaintenanceCoin = vi.fn().mockImplementation(async () => {
+      events.push("delete-aggregate")
+      return { status: "deleted", coin: { id }, surfaceImageUrls: [imageUrl] }
+    })
+    const deletePublishedSurfaceImage = vi.fn().mockImplementation(async () => {
+      events.push("delete-image")
+    })
+    const response = await createApp({
+      deleteMaintenanceCoin,
+      deletePublishedSurfaceImage,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "DELETE",
+      headers: {
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+    })
+
+    expect(response.status).toBe(204)
+    expect(await response.text()).toBe("")
+    expect(deleteMaintenanceCoin).toHaveBeenCalledWith({
+      id,
+      expectedVersion: 1,
+    })
+    expect(events).toStrictEqual(["delete-aggregate", "delete-image"])
+  })
+
+  it("requires If-Match and rejects a stale deletion with 412", async () => {
+    const missingPrecondition = await createApp().request(
+      `https://api.coinarchive.app/api/v1/maintenance/coins/${id}`,
+      { method: "DELETE" }
+    )
+    const stale = await createApp({
+      deleteMaintenanceCoin: vi.fn().mockResolvedValue({ status: "stale" }),
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "DELETE",
+      headers: {
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+    })
+
+    expect(missingPrecondition.status).toBe(400)
+    await expect(missingPrecondition.json()).resolves.toMatchObject({
+      code: "if_match_required",
+    })
+    expect(stale.status).toBe(412)
+    await expect(stale.json()).resolves.toMatchObject({
+      code: "coin_precondition_failed",
+    })
+  })
+
+  it("retains failed post-delete image cleanup for retry and still returns 204", async () => {
+    const imageUrl =
+      "https://images.coinarchive.app/surface-images/published/obverse"
+    const recordSurfaceImageCleanupFailures = vi.fn()
+    const response = await createApp({
+      deleteMaintenanceCoin: vi.fn().mockResolvedValue({
+        status: "deleted",
+        coin: { id },
+        surfaceImageUrls: [imageUrl],
+      }),
+      deletePublishedSurfaceImage: vi
+        .fn()
+        .mockRejectedValue(new Error("R2 unavailable")),
+      recordSurfaceImageCleanupFailures,
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "DELETE",
+      headers: {
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+    })
+
+    expect(response.status).toBe(204)
+    expect(recordSurfaceImageCleanupFailures).toHaveBeenCalledWith({
+      cleanupSubjectId: id,
+      failures: [{ imageUrl, errorMessage: "R2 unavailable" }],
+    })
+  })
+
+  it("does not reverse a successful deletion when retry retention is unavailable", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+    const response = await createApp({
+      deleteMaintenanceCoin: vi.fn().mockResolvedValue({
+        status: "deleted",
+        coin: { id },
+        surfaceImageUrls: [
+          "https://images.coinarchive.app/surface-images/published/obverse",
+        ],
+      }),
+      deletePublishedSurfaceImage: vi
+        .fn()
+        .mockRejectedValue(new Error("R2 unavailable")),
+      recordSurfaceImageCleanupFailures: vi
+        .fn()
+        .mockRejectedValue(new Error("database unavailable")),
+    }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+      method: "DELETE",
+      headers: {
+        "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+      },
+    })
+
+    expect(response.status).toBe(204)
+    expect(consoleError).toHaveBeenCalledWith(
+      "Failed to retain Surface Image cleanup failures after Coin deletion."
+    )
+    consoleError.mockRestore()
+  })
+
+  it("authorizes Editors and Admins but rejects other Collectors", async () => {
+    const request = (role: "admin" | "editor" | "collector" | null) =>
+      createApp({
+        getCollector: async () =>
+          role === null ? null : { id: "collector-id", role },
+        deleteMaintenanceCoin: vi.fn().mockResolvedValue({
+          status: "deleted",
+          coin: { id },
+          surfaceImageUrls: [],
+        }),
+      }).request(`https://api.coinarchive.app/api/v1/maintenance/coins/${id}`, {
+        method: "DELETE",
+        headers: {
+          "If-Match": '"MDE4ZjFhMTEtYWFhYS03MDAwLTgwMDAtMDAwMDAwMDAwMDAxOjE"',
+        },
+      })
+
+    expect((await request(null)).status).toBe(401)
+    expect((await request("collector")).status).toBe(403)
+    expect((await request("editor")).status).toBe(204)
+    expect((await request("admin")).status).toBe(204)
+  })
+})

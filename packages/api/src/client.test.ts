@@ -44,6 +44,30 @@ describe("createPublicApiClient", () => {
 })
 
 describe("createMaintenanceApiClient", () => {
+  it("sends version-guarded Coin deletion through the typed client", async () => {
+    let request: Request | undefined
+    const client = createMaintenanceApiClient({
+      baseUrl: "https://coinarchive.app",
+      fetch: async (input) => {
+        request = input instanceof Request ? input : new Request(input)
+        return new Response(null, { status: 204 })
+      },
+    })
+    const uuid = "018f1a11-aaaa-7000-8000-000000000001"
+
+    const result = await client.coins.delete({
+      params: { uuid },
+      headers: { "if-match": '"coin-version-1"' },
+    })
+
+    expect(result.status).toBe(204)
+    expect(request?.method).toBe("DELETE")
+    expect(request?.url).toBe(
+      `https://coinarchive.app/api/v1/maintenance/coins/${uuid}`
+    )
+    expect(request?.headers.get("if-match")).toBe('"coin-version-1"')
+  })
+
   it("sends whole-Coin creates with the client-owned idempotency key", async () => {
     let request: Request | undefined
     const client = createMaintenanceApiClient({

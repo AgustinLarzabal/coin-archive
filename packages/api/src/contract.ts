@@ -2231,6 +2231,17 @@ export const coinMaintenanceReplaceOutputSchema = z.object({
   body: coinMaintenanceDetailOutputSchema,
 })
 
+export const coinMaintenanceDeleteInputSchema = z
+  .object({
+    params: z.object({ uuid: z.uuid() }).strict(),
+    headers: z.object({ "if-match": ifMatchSchema }).strict(),
+  })
+  .strict()
+
+export const coinMaintenanceDeleteOutputSchema = z.object({
+  status: z.literal(204),
+})
+
 export const coinMaintenanceDeleteSummarySchema = z.object({
   title: z.string(),
   rulerAttributions: z.number().int().nonnegative(),
@@ -2356,6 +2367,19 @@ export const maintenanceApiContract = {
       })
       .input(coinMaintenanceReplaceInputSchema)
       .output(coinMaintenanceReplaceOutputSchema)
+      .errors(maintenanceMutationErrors),
+    delete: oc
+      .route({
+        method: "DELETE",
+        path: "/api/v1/maintenance/coins/{uuid}",
+        summary: "Permanently delete a Coin aggregate",
+        tags: ["Coin Maintenance"],
+        successStatus: 204,
+        inputStructure: "detailed",
+        outputStructure: "detailed",
+      })
+      .input(coinMaintenanceDeleteInputSchema)
+      .output(coinMaintenanceDeleteOutputSchema)
       .errors(maintenanceMutationErrors),
     deleteSummary: oc
       .route({

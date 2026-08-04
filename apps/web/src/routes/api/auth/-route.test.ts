@@ -1,6 +1,32 @@
 import { describe, expect, it, vi } from "vitest"
 
 describe("handleAuthRequest", () => {
+  it("preserves the Web Crypto receiver when creating a request id", async () => {
+    const randomUUID = vi
+      .spyOn(crypto, "randomUUID")
+      .mockImplementation(function (this: Crypto) {
+        expect(this).toBe(crypto)
+
+        return "00000000-0000-4000-8000-000000000000"
+      })
+    const { proxyAuthRequest } = await import("./$")
+
+    const response = await proxyAuthRequest(
+      new Request("https://archive.example.test/api/auth/get-session"),
+      {
+        apiBaseUrl: "https://api.example.test",
+        allowSignInAttempt: async () => true,
+        fetchApi: async () => Response.json(null),
+      }
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("x-request-id")).toBe(
+      "00000000-0000-4000-8000-000000000000"
+    )
+    expect(randomUUID).toHaveBeenCalledOnce()
+  })
+
   it("forwards auth transport and credentials to the shared API", async () => {
     const fetchApi = vi.fn(async (request: Request) => {
       expect(request.url).toBe(

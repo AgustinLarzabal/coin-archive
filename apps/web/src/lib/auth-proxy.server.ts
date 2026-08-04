@@ -14,7 +14,7 @@ export async function proxyAuthRequest(
   {
     apiBaseUrl,
     allowSignInAttempt,
-    createRequestId = crypto.randomUUID,
+    createRequestId = () => crypto.randomUUID(),
     fetchApi,
   }: AuthProxyOptions
 ) {

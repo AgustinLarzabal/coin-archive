@@ -7,6 +7,7 @@ export default {
     const stagingUrl = new URL(request.url)
     stagingUrl.protocol = "https:"
     stagingUrl.host = "staging.coinarchive.app"
+    stagingUrl.port = ""
 
     return environment.STAGING_WEB.fetch(new Request(stagingUrl, request))
   },

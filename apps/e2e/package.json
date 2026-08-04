@@ -6,6 +6,7 @@
   "scripts": {
     "dev:staging-proxy": "wrangler dev --port 8790",
     "lint": "eslint",
+    "test": "vitest run",
     "test:staging": "node --import tsx src/staging-orientation.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -19,6 +20,7 @@
     "eslint": "catalog:",
     "tsx": "^4.21.0",
     "typescript": "catalog:",
+    "vitest": "catalog:",
     "wrangler": "^4.114.0"
   }
 }

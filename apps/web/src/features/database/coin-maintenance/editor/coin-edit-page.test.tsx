@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-import type { CoinMaintenanceRecord } from "@coin-archive/db"
 import { CoinEditRouteComponent } from "./coin-edit-page"
+import type { EditableCoinRecord } from "./coin-form.shared"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -11,7 +11,11 @@ vi.mock("./coin-form", () => ({
   CoinForm: () => "Coin form",
 }))
 
-const coin: CoinMaintenanceRecord & { etag: string } = {
+const coin: EditableCoinRecord & {
+  createdAt: Date
+  updatedAt: Date
+  version: number
+} = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",

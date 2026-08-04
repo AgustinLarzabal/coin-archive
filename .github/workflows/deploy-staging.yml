@@ -71,3 +71,23 @@ jobs:
       - run: pnpm --filter api run configure:r2-lifecycle:staging
       - run: pnpm --filter api run deploy:staging
       - run: pnpm --filter web run deploy:staging
+      - name: Verify deployed staging maintenance path
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+        run: |
+          pnpm --filter @coin-archive/e2e run dev:staging-proxy > "$RUNNER_TEMP/staging-e2e-proxy.log" 2>&1 &
+          proxy_pid=$!
+          trap 'kill "$proxy_pid"' EXIT
+          proxy_ready=false
+          for attempt in {1..30}; do
+            if curl --silent --output /dev/null http://127.0.0.1:8790/api/v1/maintenance/orientations; then
+              proxy_ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$proxy_ready" != true ]; then
+            cat "$RUNNER_TEMP/staging-e2e-proxy.log"
+            exit 1
+          fi
+          pnpm test:e2e:staging

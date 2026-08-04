@@ -1,6 +1,7 @@
-import { OpenAPIGenerator } from "@orpc/openapi"
-import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
-import { apiContract, browseCoinsInputSchema } from "@coin-archive/api"
+import {
+  browseCoinsInputSchema,
+  generateApiOpenApiDocument,
+} from "@coin-archive/api"
 import type {
   BrowseCoinsInput,
   BrowseCoinsOutput,
@@ -878,12 +879,7 @@ export function createApiApp({
   )
 
   app.get("/api/v1/openapi.json", async (context) => {
-    const document = await new OpenAPIGenerator({
-      schemaConverters: [new ZodToJsonSchemaConverter()],
-    }).generate(apiContract, {
-      info: { title: "Coin Archive API", version: "1.0.0" },
-    })
-    applyOperationSecurity(document)
+    const document = await generateApiOpenApiDocument()
     return context.json(document, 200, { "Cache-Control": cacheControl })
   })
 
@@ -926,35 +922,6 @@ function maintenanceProblemCode(status: number) {
       return "rate_limit_exceeded"
     default:
       return "internal_error"
-  }
-}
-
-function applyOperationSecurity(document: unknown) {
-  const mutableDocument = document as {
-    components?: { securitySchemes?: Record<string, unknown> }
-    paths?: Record<
-      string,
-      Record<
-        string,
-        { security?: Array<Record<string, never[]>> } | null | undefined
-      >
-    >
-  }
-  mutableDocument.components ??= {}
-  mutableDocument.components.securitySchemes ??= {}
-  mutableDocument.components.securitySchemes.collectorSession = {
-    type: "apiKey",
-    in: "cookie",
-    name: "better-auth.session_token",
-  }
-
-  for (const [path, pathItem] of Object.entries(mutableDocument.paths ?? {})) {
-    for (const operation of Object.values(pathItem)) {
-      if (operation === null || operation === undefined) continue
-      operation.security = path.startsWith("/api/v1/maintenance/")
-        ? [{ collectorSession: [] }]
-        : []
-    }
   }
 }
 

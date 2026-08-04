@@ -4,10 +4,17 @@ import type { MaintenanceApiClient } from "@coin-archive/api"
 
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
-import type {
-  SurfaceImageUploadAuthorization,
-  SurfaceImageUploadRequest,
-} from "./surface-images/surface-image-storage"
+
+type SurfaceImageUploadRequest = {
+  contentLength: number
+  contentType: string
+  surface: "obverse" | "reverse" | "edge"
+}
+
+type SurfaceImageUploadAuthorization = {
+  reference: string
+  uploadUrl: string
+}
 
 export const COIN_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Coins."

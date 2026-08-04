@@ -83,15 +83,9 @@ importers:
       '@coin-archive/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@orpc/openapi':
-        specifier: ^1.10.0
-        version: 1.14.13(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0)
       '@orpc/server':
         specifier: ^1.10.0
         version: 1.14.13(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0)
-      '@orpc/zod':
-        specifier: ^1.10.0
-        version: 1.14.13(@orpc/contract@1.14.13)(@orpc/server@1.14.13(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0))(crossws@0.4.5(srvx@0.11.22))(ws@8.21.0)(zod@4.4.3)
       aws4fetch:
         specifier: ^1.0.20
         version: 1.0.20
@@ -119,6 +113,34 @@ importers:
         version: 3.2.6(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(msw@2.14.6(@types/node@22.19.19)(typescript@6.0.3))(tsx@4.21.0)
       wrangler:
         specifier: ^4.115.0
+        version: 4.115.0(@cloudflare/workers-types@5.20260730.1)
+
+  apps/e2e:
+    dependencies:
+      '@coin-archive/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@cloudflare/workers-types@5.20260730.1)(kysely@0.29.2)(postgres@3.4.9)
+    devDependencies:
+      '@tanstack/eslint-config':
+        specifier: 'catalog:'
+        version: 0.4.0(@typescript-eslint/utils@8.60.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      wrangler:
+        specifier: ^4.114.0
         version: 4.115.0(@cloudflare/workers-types@5.20260730.1)
 
   apps/web:
@@ -162,9 +184,6 @@ importers:
       '@tanstack/router-plugin':
         specifier: ^1.168.13
         version: 1.168.13(@tanstack/react-router@1.170.10(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.0.16(@types/node@22.19.19)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.21.0))
-      aws4fetch:
-        specifier: ^1.0.20
-        version: 1.0.20
       lucide-react:
         specifier: 'catalog:'
         version: 1.17.0(react@19.2.6)

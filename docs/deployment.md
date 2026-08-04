@@ -47,7 +47,7 @@ The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the
 | Worker name            | `coin-archive-staging`                   | `coin-archive`                           |
 | R2 bucket              | `coin-archive-staging-surface-images`    | `coin-archive-production-surface-images` |
 
-Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth and Google OAuth secrets belong only to the API Worker. R2 credentials are available to the API for temporary-upload authorization and cancellation and remain available to the web Worker while Coin publication and cleanup complete their incremental API migration. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
+Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth, Google OAuth, and R2 credentials belong only to the API Worker. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
 
 - `DATABASE_URL`: the environment's direct pooled Neon PostgreSQL connection URL. Do not configure Cloudflare Hyperdrive.
 - `BETTER_AUTH_SECRET` (API only)
@@ -98,6 +98,12 @@ Cloudflare Access protects two staging applications before traffic can reach the
 Each application uses the same allow policy: Google identity email equals `agustinlarzabal@gmail.com`. Do not add a bypass policy, service token, or production hostname to either application. Production hosts remain outside these policies: `coinarchive.app` stays public and `images.coinarchive.app` serves the separate production bucket.
 
 After a staging deployment, or after manually resetting staging, perform this smoke check:
+
+The deployment workflow also runs an automated Orientation Maintenance check
+after both Workers deploy. A local Wrangler harness reaches the deployed web
+Worker through a remote service binding, bypassing the Access ingress without
+changing its policy. The check uses a short-lived Better Auth session, crosses
+the web proxy and API, verifies staging PostgreSQL, and removes its records.
 
 1. In a private browser session, visit each staging hostname. Both must redirect to Cloudflare Access before returning application or image-host content. A header-only check is also useful:
 

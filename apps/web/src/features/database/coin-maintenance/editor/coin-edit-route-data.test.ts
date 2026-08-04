@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import type { CoinMaintenanceRecord } from "@coin-archive/db"
 import { loadCoinEditPageData } from "./coin-edit-route-data"
+import type { EditableCoinRecord } from "./coin-form.shared"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",
@@ -10,7 +10,11 @@ vi.mock("./coin-form", () => ({
   CoinForm: () => "Coin form",
 }))
 
-const coin: CoinMaintenanceRecord = {
+const coin: EditableCoinRecord & {
+  createdAt: Date
+  updatedAt: Date
+  version: number
+} = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",
@@ -20,6 +24,7 @@ const coin: CoinMaintenanceRecord = {
   diameter: 24,
   distributionId: "distribution-1",
   edgeId: null,
+  etag: '"coin-version-1"',
   faceValueNumericValue: 1,
   faceValueText: "1 Euro",
   isDemonetized: null,

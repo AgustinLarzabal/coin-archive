@@ -17,15 +17,13 @@
     "validate:deployment:production": "wrangler deploy --dry-run --env production",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --exclude '**/*.integration.test.ts'"
   },
   "dependencies": {
     "@coin-archive/api": "workspace:*",
     "@coin-archive/auth": "workspace:*",
     "@coin-archive/db": "workspace:*",
-    "@orpc/openapi": "^1.10.0",
     "@orpc/server": "^1.10.0",
-    "@orpc/zod": "^1.10.0",
     "aws4fetch": "^1.0.20",
     "hono": "^4.12.25",
     "zod": "catalog:"

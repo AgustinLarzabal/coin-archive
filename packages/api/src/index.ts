@@ -265,6 +265,7 @@ export {
   surfaceImageUploadCancellationInputSchema,
   surfaceImageUploadCancellationOutputSchema,
 } from "./contract"
+export { generateApiOpenApiDocument } from "./openapi"
 export type {
   BrowseCoinsInput,
   BrowseCoinsOutput,

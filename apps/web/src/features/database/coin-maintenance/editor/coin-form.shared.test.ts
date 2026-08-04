@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import type { CoinMaintenanceRecord } from "@coin-archive/db"
 
 import {
   areCoinDraftsEqual,
@@ -7,8 +6,13 @@ import {
   getNextEditSuccessMessage,
   hasRequiredCoinDraftFields,
 } from "./coin-form.shared"
+import type { EditableCoinRecord } from "./coin-form.shared"
 
-const coin: CoinMaintenanceRecord & { etag: string } = {
+const coin: EditableCoinRecord & {
+  createdAt: Date
+  updatedAt: Date
+  version: number
+} = {
   id: "coin-1",
   title: "Spanish Test Coin",
   comments: "Public note",

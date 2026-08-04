@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "coin-archive-staging-e2e",
+  "main": "./src/staging-proxy.ts",
+  "compatibility_date": "2026-07-29",
+  "services": [
+    {
+      "binding": "STAGING_WEB",
+      "service": "coin-archive-staging",
+      "remote": true,
+    },
+  ],
+}

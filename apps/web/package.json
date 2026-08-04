@@ -33,7 +33,6 @@
     "@coin-archive/db": "workspace:*",
     "@coin-archive/feature-flags": "workspace:*",
     "@coin-archive/ui": "workspace:*",
-    "aws4fetch": "^1.0.20",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

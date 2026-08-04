@@ -4,9 +4,7 @@
   "main": "./src/server.ts",
   "compatibility_date": "2026-07-26",
   "compatibility_flags": ["nodejs_compat"],
-  "secrets": {
-    "required": ["DATABASE_URL", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"],
-  },
+  "secrets": { "required": ["DATABASE_URL"] },
   "ratelimits": [
     {
       "name": "AUTH_RATE_LIMITER",
@@ -48,19 +46,8 @@
           "entrypoint": "AuthProxy",
         },
       ],
-      "secrets": {
-        "required": [
-          "DATABASE_URL",
-          "R2_ACCESS_KEY_ID",
-          "R2_SECRET_ACCESS_KEY",
-        ],
-      },
-      "vars": {
-        "CLOUDFLARE_ENV": "staging",
-        "R2_BUCKET": "coin-archive-staging-surface-images",
-        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
-        "R2_PUBLIC_BASE_URL": "https://images.staging.coinarchive.app",
-      },
+      "secrets": { "required": ["DATABASE_URL"] },
+      "vars": { "CLOUDFLARE_ENV": "staging" },
     },
     "production": {
       "name": "coin-archive",
@@ -79,19 +66,8 @@
           "entrypoint": "AuthProxy",
         },
       ],
-      "secrets": {
-        "required": [
-          "DATABASE_URL",
-          "R2_ACCESS_KEY_ID",
-          "R2_SECRET_ACCESS_KEY",
-        ],
-      },
-      "vars": {
-        "CLOUDFLARE_ENV": "production",
-        "R2_BUCKET": "coin-archive-production-surface-images",
-        "R2_ENDPOINT": "https://51b6c859d0c0db14fc10e144dd033d2b.r2.cloudflarestorage.com",
-        "R2_PUBLIC_BASE_URL": "https://images.coinarchive.app",
-      },
+      "secrets": { "required": ["DATABASE_URL"] },
+      "vars": { "CLOUDFLARE_ENV": "production" },
     },
   },
 }

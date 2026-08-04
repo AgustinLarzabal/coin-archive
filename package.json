@@ -10,6 +10,7 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "test": "turbo test",
+    "test:e2e:staging": "pnpm --filter @coin-archive/e2e run test:staging",
     "typecheck": "turbo typecheck",
     "validate:deployment:staging": "pnpm --filter api run validate:deployment:staging && pnpm --filter web run validate:deployment:staging",
     "validate:deployment:production": "pnpm --filter api run validate:deployment:production && pnpm --filter web run validate:deployment:production",

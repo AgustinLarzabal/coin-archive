@@ -19,6 +19,18 @@
     "test": {
       "dependsOn": ["^test"]
     },
+    "@coin-archive/db#test": {
+      "dependsOn": ["^test"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.github/workflows/deploy-production.yml",
+        "$TURBO_ROOT$/.github/workflows/deploy-staging.yml"
+      ]
+    },
+    "@coin-archive/staging-verification#test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/package.json"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

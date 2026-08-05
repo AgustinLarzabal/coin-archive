@@ -8,6 +8,7 @@ import type {
   CoinDetail,
   CoinDetailOutput,
 } from "@coin-archive/api"
+import { Scalar } from "@scalar/hono-api-reference"
 import { Hono } from "hono"
 
 import { registerOrientationMaintenanceRoutes } from "./orientation-maintenance"
@@ -52,6 +53,8 @@ import type { SurfaceImageUploadMaintenanceDependencies } from "./surface-image-
 
 const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
+const scalarCdnUrl =
+  "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js"
 const queryNames = [
   "q",
   "issuer",
@@ -894,6 +897,50 @@ export function createApiApp({
     const document = await generateApiOpenApiDocument()
     return context.json(document, 200, { "Cache-Control": cacheControl })
   })
+
+  app.get(
+    "/api/v1/reference",
+    Scalar((context) => {
+      const nonce = crypto.randomUUID()
+      context.header("Cache-Control", cacheControl)
+      context.header(
+        "Content-Security-Policy",
+        [
+          "default-src 'none'",
+          `script-src 'nonce-${nonce}' ${scalarCdnUrl}`,
+          "style-src 'unsafe-inline'",
+          "connect-src 'self'",
+          "img-src data:",
+          "font-src 'none'",
+          "base-uri 'none'",
+          "form-action 'none'",
+          "frame-ancestors 'none'",
+        ].join("; ")
+      )
+      context.header("X-Frame-Options", "DENY")
+      context.header("X-Content-Type-Options", "nosniff")
+      context.header("Referrer-Policy", "no-referrer")
+
+      return {
+        pageTitle: "Coin Archive API Reference",
+        cdn: scalarCdnUrl,
+        nonce,
+        url: "/api/v1/openapi.json",
+        theme: "default",
+        hideClientButton: true,
+        hideTestRequestButton: true,
+        hideSearch: false,
+        hideModels: false,
+        documentDownloadType: "direct",
+        hideDarkModeToggle: false,
+        showDeveloperTools: "never",
+        telemetry: false,
+        withDefaultFonts: false,
+        agent: { disabled: true },
+        mcp: { disabled: true },
+      }
+    })
+  )
 
   return app
 }

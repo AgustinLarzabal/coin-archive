@@ -461,3 +461,101 @@ describe("GET /api/v1/openapi.json", () => {
     })
   })
 })
+
+describe("GET /api/v1/reference", () => {
+  it("serves a passive Scalar reference for the canonical OpenAPI document", async () => {
+    const rateLimit = vi.fn(async () => true)
+    const app = createApiApp({
+      environment: "production",
+      surfaceImageOrigin: "https://images.coinarchive.app",
+      browseCoins: async () => coins,
+      rateLimit,
+    })
+
+    const response = await app.request(
+      "https://api.coinarchive.app/api/v1/reference",
+      { headers: { Origin: "https://coinarchive.app" } }
+    )
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("Content-Type")).toContain("text/html")
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
+    )
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+      "https://coinarchive.app"
+    )
+    expect(response.headers.get("X-Request-ID")).toHaveLength(36)
+    expect(rateLimit).toHaveBeenCalledWith("unknown")
+    expect(html).toContain("<title>Coin Archive API Reference</title>")
+    expect(html).toContain(
+      'src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js"'
+    )
+
+    const serializedConfig = html.match(
+      /Scalar\.createApiReference\('#app', (\{[\s\S]*?\n[ ]{6}\})\)/
+    )?.[1]
+    expect(serializedConfig).toBeDefined()
+    const config: unknown = JSON.parse(serializedConfig!)
+    expect(config).toMatchObject({
+      url: "/api/v1/openapi.json",
+      theme: "default",
+      hideClientButton: true,
+      hideTestRequestButton: true,
+      hideSearch: false,
+      hideModels: false,
+      documentDownloadType: "direct",
+      hideDarkModeToggle: false,
+      showDeveloperTools: "never",
+      telemetry: false,
+      withDefaultFonts: false,
+      agent: { disabled: true },
+      mcp: { disabled: true },
+    })
+    expect(config).not.toHaveProperty("authentication")
+    expect(config).not.toHaveProperty("customCss")
+    expect(config).not.toHaveProperty("proxyUrl")
+    expect(html).not.toContain("/* Custom")
+  })
+
+  it("applies a nonce-based policy only to the API Reference", async () => {
+    const app = createApiApp({
+      environment: "staging",
+      surfaceImageOrigin: "https://images.staging.coinarchive.app",
+      browseCoins: async () => coins,
+    })
+
+    const reference = await app.request(
+      "https://api.staging.coinarchive.app/api/v1/reference"
+    )
+    const html = await reference.text()
+    const nonce = html.match(
+      /<meta property="csp-nonce" content="([^"]+)" \/>/
+    )?.[1]
+
+    expect(nonce).toBeDefined()
+    expect(reference.headers.get("Content-Security-Policy")).toBe(
+      [
+        "default-src 'none'",
+        `script-src 'nonce-${nonce}' https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js`,
+        "style-src 'unsafe-inline'",
+        "connect-src 'self'",
+        "img-src data:",
+        "font-src 'none'",
+        "base-uri 'none'",
+        "form-action 'none'",
+        "frame-ancestors 'none'",
+      ].join("; ")
+    )
+    expect(reference.headers.get("X-Frame-Options")).toBe("DENY")
+    expect(reference.headers.get("X-Content-Type-Options")).toBe("nosniff")
+    expect(reference.headers.get("Referrer-Policy")).toBe("no-referrer")
+
+    const openApi = await app.request(
+      "https://api.staging.coinarchive.app/api/v1/openapi.json"
+    )
+    expect(openApi.headers.get("Content-Security-Policy")).toBeNull()
+    expect(openApi.headers.get("X-Frame-Options")).toBeNull()
+  })
+})

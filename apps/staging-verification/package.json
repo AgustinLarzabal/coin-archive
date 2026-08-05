@@ -4,10 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev:staging-proxy": "wrangler dev --port 8790",
+    "dev:verification-proxy": "wrangler dev --port 8790",
     "lint": "eslint",
     "test": "vitest run",
-    "verify:staging": "node --import tsx src/staging-orientation.ts",
+    "verify:staging": "node --import tsx src/staging-verification.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

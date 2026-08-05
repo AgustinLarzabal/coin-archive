@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import stagingProxy from "./staging-proxy"
+import stagingVerificationProxy from "./staging-verification-proxy"
 
-describe("staging verification proxy", () => {
+describe("deployed staging verification proxy", () => {
   it("forwards local requests under the canonical staging origin", async () => {
     const forwardedRequests: Array<Request> = []
     const request = new Request(
@@ -13,11 +13,14 @@ describe("staging verification proxy", () => {
           "Content-Type": "application/json",
           Origin: "https://staging.coinarchive.app",
         },
-        body: JSON.stringify({ code: "staging-e2e", name: "Staging E2E" }),
+        body: JSON.stringify({
+          code: "staging-verification",
+          name: "Staging verification",
+        }),
       }
     )
 
-    const response = await stagingProxy.fetch(request, {
+    const response = await stagingVerificationProxy.fetch(request, {
       STAGING_WEB: {
         fetch(forwardedRequest) {
           forwardedRequests.push(forwardedRequest)
@@ -36,8 +39,8 @@ describe("staging verification proxy", () => {
       "https://staging.coinarchive.app"
     )
     await expect(forwardedRequests[0]?.json()).resolves.toStrictEqual({
-      code: "staging-e2e",
-      name: "Staging E2E",
+      code: "staging-verification",
+      name: "Staging verification",
     })
   })
 })

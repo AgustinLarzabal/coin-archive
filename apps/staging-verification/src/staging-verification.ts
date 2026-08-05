@@ -9,25 +9,25 @@ import {
 import { eq } from "drizzle-orm"
 
 const STAGING_WEB_ORIGIN = "https://staging.coinarchive.app"
-const STAGING_PROXY_ORIGIN = "http://127.0.0.1:8790"
+const VERIFICATION_PROXY_ORIGIN = "http://127.0.0.1:8790"
 
 const databaseUrl = requiredEnvironmentVariable("DATABASE_URL")
 const authSecret = requiredEnvironmentVariable("BETTER_AUTH_SECRET")
 
 const database = createDatabase(databaseUrl)
 const suffix = randomUUID().replaceAll("-", "")
-const collectorId = `staging-e2e-${suffix}`
-const sessionToken = `staging-e2e-session-${suffix}`
-const idempotencyKey = `staging-e2e-${suffix}`
-const code = `staging-e2e-${suffix}`
-const collectionUrl = `${STAGING_PROXY_ORIGIN}/api/v1/maintenance/orientations`
+const collectorId = `staging-verification-${suffix}`
+const sessionToken = `staging-verification-session-${suffix}`
+const idempotencyKey = `staging-verification-${suffix}`
+const code = `staging-verification-${suffix}`
+const collectionUrl = `${VERIFICATION_PROXY_ORIGIN}/api/v1/maintenance/orientations`
 let createdOrientationId: string | undefined
 
 try {
   const now = new Date()
   await database.db.insert(user).values({
     id: collectorId,
-    name: "Staging maintenance E2E",
+    name: "Staging maintenance verification",
     email: `${collectorId}@example.test`,
     emailVerified: true,
     role: "collector",
@@ -69,7 +69,7 @@ try {
       "Idempotency-Key": idempotencyKey,
       Origin: STAGING_WEB_ORIGIN,
     },
-    body: JSON.stringify({ code, name: "Staging maintenance E2E" }),
+    body: JSON.stringify({ code, name: "Staging maintenance verification" }),
   })
   await assertStatus(created, 201, "Editor Orientation creation")
   assert(created.headers.get("x-request-id"), "response has X-Request-ID")
@@ -148,7 +148,7 @@ function assert(condition: unknown, description: string): asserts condition {
 function requiredEnvironmentVariable(name: string) {
   const value = process.env[name]
   if (value === undefined || value.length === 0) {
-    throw new Error(`${name} is required for the deployed staging E2E check`)
+    throw new Error(`${name} is required for deployed staging verification`)
   }
   return value
 }

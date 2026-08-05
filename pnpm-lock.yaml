@@ -115,7 +115,7 @@ importers:
         specifier: ^4.115.0
         version: 4.115.0(@cloudflare/workers-types@5.20260730.1)
 
-  apps/e2e:
+  apps/staging-verification:
     dependencies:
       '@coin-archive/db':
         specifier: workspace:*

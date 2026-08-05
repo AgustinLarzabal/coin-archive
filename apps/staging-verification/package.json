@@ -1,5 +1,5 @@
 {
-  "name": "@coin-archive/e2e",
+  "name": "@coin-archive/staging-verification",
   "version": "0.0.0",
   "type": "module",
   "private": true,

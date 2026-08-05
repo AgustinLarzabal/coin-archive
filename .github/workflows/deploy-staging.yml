@@ -75,7 +75,7 @@ jobs:
         env:
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
         run: |
-          pnpm --filter @coin-archive/e2e run dev:staging-proxy > "$RUNNER_TEMP/staging-e2e-proxy.log" 2>&1 &
+          pnpm --filter @coin-archive/staging-verification run dev:staging-proxy > "$RUNNER_TEMP/staging-e2e-proxy.log" 2>&1 &
           proxy_pid=$!
           trap 'kill "$proxy_pid"' EXIT
           proxy_ready=false

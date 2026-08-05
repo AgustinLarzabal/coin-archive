@@ -508,7 +508,7 @@ describe("GET /api/v1/reference", () => {
     )
 
     const serializedConfig = html.match(
-      /Scalar\.createApiReference\('#app', (\{[\s\S]*?\n[ ]{6}\})\)/
+      /Scalar\.createApiReference\('#app', (\{[\s\S]*?\})\)\s*<\/script>/
     )?.[1]
     expect(serializedConfig).toBeDefined()
     const config: unknown = JSON.parse(serializedConfig!)
@@ -533,7 +533,7 @@ describe("GET /api/v1/reference", () => {
     expect(html).not.toContain("/* Custom")
   })
 
-  it("applies a nonce-based policy only to the API Reference", async () => {
+  it("applies a bootstrap-hash policy only to the API Reference", async () => {
     const app = createApiApp({
       environment: "staging",
       surfaceImageOrigin: "https://images.staging.coinarchive.app",
@@ -544,15 +544,22 @@ describe("GET /api/v1/reference", () => {
       "https://api.staging.coinarchive.app/api/v1/reference"
     )
     const html = await reference.text()
-    const nonce = html.match(
-      /<meta property="csp-nonce" content="([^"]+)" \/>/
+    const bootstrap = html.match(
+      /<script type="text\/javascript">([\s\S]*?)<\/script>/
     )?.[1]
 
-    expect(nonce).toBeDefined()
+    expect(bootstrap).toBeDefined()
+    const bootstrapDigest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(bootstrap)
+    )
+    const bootstrapHash = btoa(
+      String.fromCharCode(...new Uint8Array(bootstrapDigest))
+    )
     expect(reference.headers.get("Content-Security-Policy")).toBe(
       [
         "default-src 'none'",
-        `script-src 'nonce-${nonce}' https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js`,
+        `script-src 'sha256-${bootstrapHash}' https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js`,
         "style-src 'unsafe-inline'",
         "connect-src 'self'",
         "img-src data:",

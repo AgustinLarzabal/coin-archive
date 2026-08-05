@@ -24,7 +24,7 @@
     "@coin-archive/auth": "workspace:*",
     "@coin-archive/db": "workspace:*",
     "@orpc/server": "^1.10.0",
-    "@scalar/hono-api-reference": "0.11.12",
+    "@scalar/hono-api-reference": "0.9.48",
     "aws4fetch": "^1.0.20",
     "hono": "^4.12.25",
     "zod": "catalog:"

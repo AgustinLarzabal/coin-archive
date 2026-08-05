@@ -55,6 +55,8 @@ const cacheControl =
   "public, max-age=60, s-maxage=300, stale-while-revalidate=86400"
 const scalarCdnUrl =
   "https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.64.0/dist/browser/standalone.js"
+const scalarBootstrapHash =
+  "sha256-BCdqsDm+2nd/d/rHszWD7lceaFhsdRNuitIOmuC3kgo="
 const queryNames = [
   "q",
   "issuer",
@@ -901,13 +903,12 @@ export function createApiApp({
   app.get(
     "/api/v1/reference",
     Scalar((context) => {
-      const nonce = crypto.randomUUID()
       context.header("Cache-Control", cacheControl)
       context.header(
         "Content-Security-Policy",
         [
           "default-src 'none'",
-          `script-src 'nonce-${nonce}' ${scalarCdnUrl}`,
+          `script-src '${scalarBootstrapHash}' ${scalarCdnUrl}`,
           "style-src 'unsafe-inline'",
           "connect-src 'self'",
           "img-src data:",
@@ -924,7 +925,6 @@ export function createApiApp({
       return {
         pageTitle: "Coin Archive API Reference",
         cdn: scalarCdnUrl,
-        nonce,
         url: "/api/v1/openapi.json",
         theme: "default",
         hideClientButton: true,

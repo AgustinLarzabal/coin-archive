@@ -14,8 +14,13 @@ describe("getRuntimeEnvironment", () => {
   })
 
   it("lists every missing required setting without exposing values", () => {
-    expect(() => getRuntimeEnvironment({ DATABASE_URL: " " })).toThrow(
+    const invalidDatabaseUrl = " \t "
+    const readEnvironment = () =>
+      getRuntimeEnvironment({ DATABASE_URL: invalidDatabaseUrl })
+
+    expect(readEnvironment).toThrow(
       "Missing required runtime configuration: DATABASE_URL."
     )
+    expect(readEnvironment).not.toThrow(invalidDatabaseUrl)
   })
 })

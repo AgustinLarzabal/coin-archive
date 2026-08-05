@@ -10,13 +10,17 @@ describe("Cloudflare Worker entry point", () => {
 
   it("rejects requests with a clear error when Worker configuration is missing", async () => {
     for (const name of requiredSettingNames) {
-      vi.stubEnv(name, "")
+      vi.stubEnv(name, " \t ")
     }
 
     const { default: worker } = await import("./server")
 
-    await expect(
+    const fetchRequest = () =>
       worker.fetch(new Request("https://coinarchive.app/"))
-    ).rejects.toThrow("Missing required runtime configuration: DATABASE_URL.")
+
+    await expect(fetchRequest()).rejects.toThrow(
+      "Missing required runtime configuration: DATABASE_URL."
+    )
+    await expect(fetchRequest()).rejects.not.toThrow(" \t ")
   })
 })

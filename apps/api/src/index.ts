@@ -94,6 +94,7 @@ import {
 import { createAuth, parseTrustedOrigins } from "@coin-archive/auth/server"
 import { WorkerEntrypoint } from "cloudflare:workers"
 import { createApiApp } from "./app"
+import { parseRuntimeEnvironment } from "./runtime-environment"
 import { createR2SurfaceImageUploadStorage } from "./surface-image-storage"
 
 export default {
@@ -113,28 +114,31 @@ async function handleRequest(
   env: Env,
   trustProxyHeaders: boolean
 ) {
-  const database = createDatabase(env.DATABASE_URL)
+  const runtimeEnvironment = parseRuntimeEnvironment(env)
+  const database = createDatabase(runtimeEnvironment.databaseUrl)
   const auth = createAuth({
     database: database.db,
     environment: {
-      betterAuthSecret: env.BETTER_AUTH_SECRET,
-      betterAuthUrl: env.BETTER_AUTH_URL,
-      trustedOrigins: parseTrustedOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS),
-      googleClientId: env.GOOGLE_CLIENT_ID,
-      googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+      betterAuthSecret: runtimeEnvironment.betterAuthSecret,
+      betterAuthUrl: runtimeEnvironment.betterAuthUrl,
+      trustedOrigins: parseTrustedOrigins(
+        runtimeEnvironment.betterAuthTrustedOrigins
+      ),
+      googleClientId: runtimeEnvironment.googleClientId,
+      googleClientSecret: runtimeEnvironment.googleClientSecret,
     },
   })
   const surfaceImageStorage = createR2SurfaceImageUploadStorage({
-    endpoint: env.R2_ENDPOINT,
-    bucket: env.R2_BUCKET,
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-    publicBaseUrl: env.SURFACE_IMAGE_ORIGIN,
+    endpoint: runtimeEnvironment.r2Endpoint,
+    bucket: runtimeEnvironment.r2Bucket,
+    accessKeyId: runtimeEnvironment.r2AccessKeyId,
+    secretAccessKey: runtimeEnvironment.r2SecretAccessKey,
+    publicBaseUrl: runtimeEnvironment.surfaceImageOrigin,
   })
   const app = createApiApp({
     trustProxyHeaders,
-    environment: env.API_ENVIRONMENT,
-    surfaceImageOrigin: env.SURFACE_IMAGE_ORIGIN,
+    environment: runtimeEnvironment.apiEnvironment,
+    surfaceImageOrigin: runtimeEnvironment.surfaceImageOrigin,
     authorizeSurfaceImageUpload: (input) =>
       authorizeSurfaceImageUploadIdempotentlyWithDatabase(
         database.db,
@@ -169,7 +173,7 @@ async function handleRequest(
     rateLimit: async (clientIp) =>
       (
         await env.API_RATE_LIMITER.limit({
-          key: `${env.API_ENVIRONMENT}:${clientIp}`,
+          key: `${runtimeEnvironment.apiEnvironment}:${clientIp}`,
         })
       ).success,
     maintenanceRateLimit: async (collectorId, kind, clientIp) => {
@@ -178,14 +182,14 @@ async function handleRequest(
           ? env.MAINTENANCE_READ_RATE_LIMITER
           : env.MAINTENANCE_MUTATION_RATE_LIMITER
       const collectorResult = await limiter.limit({
-        key: `${env.API_ENVIRONMENT}:collector:${collectorId}`,
+        key: `${runtimeEnvironment.apiEnvironment}:collector:${collectorId}`,
       })
       if (!collectorResult.success || clientIp === undefined) {
         return collectorResult.success
       }
       return (
         await limiter.limit({
-          key: `${env.API_ENVIRONMENT}:ip:${clientIp}`,
+          key: `${runtimeEnvironment.apiEnvironment}:ip:${clientIp}`,
         })
       ).success
     },

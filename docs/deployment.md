@@ -1,8 +1,10 @@
 # Cloudflare Workers deployment
 
-Coin Archive is deployed as a TanStack Start Cloudflare Worker. The Worker uses Node.js compatibility because Better Auth, `postgres`, and the AWS S3-compatible R2 client rely on Node.js APIs.
+Coin Archive is deployed as a TanStack Start Cloudflare Worker and a separate API Worker. The Workers use Node.js compatibility because Better Auth, `postgres`, and the AWS S3-compatible R2 client rely on Node.js APIs.
 
-Deploy both Workers from their app directories. Each command selects its named Wrangler environment, so the environment-specific Worker configuration is included in the deployment:
+The supported release entry points are the **Deploy staging** and **Promote verified staging commit to production** GitHub Actions workflows. They validate release configuration, migrate the database, synchronize Worker secrets, and only then publish both Workers.
+
+These package scripts are low-level Worker publication commands. They select the named Wrangler environment, but they do not run the release preflight, migrate the database, or synchronize secrets:
 
 - `pnpm --filter api run deploy:staging`, then `pnpm --filter web run deploy:staging`
 - `pnpm --filter api run deploy:production`, then `pnpm --filter web run deploy:production`
@@ -47,14 +49,14 @@ The versioned [`apps/web/wrangler.jsonc`](/apps/web/wrangler.jsonc) declares the
 | Worker name            | `coin-archive-staging`                   | `coin-archive`                           |
 | R2 bucket              | `coin-archive-staging-surface-images`    | `coin-archive-production-surface-images` |
 
-Set `DATABASE_URL` separately for both the API and web Workers in each environment. Better Auth, Google OAuth, and R2 credentials belong only to the API Worker. The release workflows synchronize the API Worker secrets from the corresponding protected GitHub environment. They must never be committed:
+`DATABASE_URL` is required by both the API and web Workers in each environment. Better Auth, Google OAuth, and R2 credentials belong only to the API Worker. The release workflows synchronize all of these secrets from the corresponding protected GitHub environment before either Worker is published. They must never be committed:
 
 - `DATABASE_URL`: the environment's direct pooled Neon PostgreSQL connection URL. Do not configure Cloudflare Hyperdrive.
 - `BETTER_AUTH_SECRET` (API only)
 - `GOOGLE_CLIENT_ID` (API only)
 - `GOOGLE_CLIENT_SECRET` (API only)
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
+- `R2_ACCESS_KEY_ID` (API only)
+- `R2_SECRET_ACCESS_KEY` (API only)
 
 The Workers also require these non-secret runtime settings, which are supplied by their `wrangler.jsonc` files:
 
@@ -62,13 +64,19 @@ The Workers also require these non-secret runtime settings, which are supplied b
 - `BETTER_AUTH_TRUSTED_ORIGINS` (matching web origin)
 - `R2_ENDPOINT`
 - `R2_BUCKET`
-- `R2_PUBLIC_BASE_URL`
+- `SURFACE_IMAGE_ORIGIN`
 
 Each release also applies [`infrastructure/r2-surface-image-lifecycle.json`](/infrastructure/r2-surface-image-lifecycle.json) to its environment's bucket. The rule expires only `surface-images/temporary/` objects after one day. Published objects use `surface-images/published/` and are outside the lifecycle prefix.
 
-`VITE_AUTH_GOOGLE_ENABLED=true` is a build-time setting for the browser bundle; set it in the environment that runs the Worker build. It is not a Worker secret.
+`VITE_AUTH_GOOGLE_ENABLED` and `VITE_SHOW_SIGN_IN_BUTTON` are build-time settings for the browser bundle; set them in the environment that runs the Worker build. They are not Worker secrets, and either setting may intentionally be `false`.
 
-Before deployment, the application validates this complete runtime contract and returns a clear missing-setting error rather than attempting a partial connection. In a CI deployment, set secrets through the matching GitHub environment, then use `wrangler secret put <name> --env staging` or `--env production` if provisioning Workers directly.
+Before migration or deployment, each release workflow runs a preflight that rejects blank required secrets and build variables. A failed preflight reports all missing setting names in one error without printing or serializing their values, so incomplete configuration stops the release before it can change the database.
+
+After a successful migration, the workflow writes restricted, runner-temporary JSON documents and bulk-synchronizes the API Worker secrets and the web Worker's `DATABASE_URL`. It publishes neither Worker until both secret uploads succeed.
+
+Both Workers also retain request-time runtime validation as defense in depth. This check produces a clear missing-setting error without exposing values, but it is not a pre-deployment check and does not replace the supported release workflow.
+
+If provisioning a Worker directly for recovery work, set secrets through the matching protected source and use `wrangler secret put <name> --env staging` or `--env production`. A direct Wrangler or `deploy:*` invocation remains a low-level operation and does not provide the migration-aware release guarantees above.
 
 ## Direct database connection check
 

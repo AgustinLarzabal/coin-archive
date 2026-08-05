@@ -7,7 +7,7 @@
     "dev:staging-proxy": "wrangler dev --port 8790",
     "lint": "eslint",
     "test": "vitest run",
-    "test:staging": "node --import tsx src/staging-orientation.ts",
+    "verify:staging": "node --import tsx src/staging-orientation.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

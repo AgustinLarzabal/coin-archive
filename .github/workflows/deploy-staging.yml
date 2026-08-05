@@ -90,4 +90,4 @@ jobs:
             cat "$RUNNER_TEMP/staging-e2e-proxy.log"
             exit 1
           fi
-          pnpm test:e2e:staging
+          pnpm verify:staging

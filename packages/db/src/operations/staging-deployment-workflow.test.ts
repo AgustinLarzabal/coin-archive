@@ -24,7 +24,8 @@ describe("staging deployment workflow", () => {
     expect(stagingDeploymentWorkflow).toContain("pnpm test")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:start")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:test")
-    expect(stagingDeploymentWorkflow).toContain("pnpm test:e2e:staging")
+    expect(stagingDeploymentWorkflow).toContain("pnpm verify:staging")
+    expect(stagingDeploymentWorkflow).not.toContain("pnpm test:e2e:staging")
     expect(stagingDeploymentWorkflow).toContain("pnpm db:migrate")
     expect(stagingDeploymentWorkflow).toContain(
       "VITE_SHOW_SIGN_IN_BUTTON: ${{ vars.VITE_SHOW_SIGN_IN_BUTTON }}"
@@ -67,7 +68,7 @@ describe("staging deployment workflow", () => {
     )
     expect(
       stagingDeploymentWorkflow.indexOf("pnpm --filter web run deploy:staging")
-    ).toBeLessThan(stagingDeploymentWorkflow.indexOf("pnpm test:e2e:staging"))
+    ).toBeLessThan(stagingDeploymentWorkflow.indexOf("pnpm verify:staging"))
     expect(stagingDeploymentWorkflow.indexOf("pnpm db:start")).toBeLessThan(
       stagingDeploymentWorkflow.indexOf("pnpm db:test")
     )

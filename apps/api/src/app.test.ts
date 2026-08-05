@@ -463,6 +463,20 @@ describe("GET /api/v1/openapi.json", () => {
 })
 
 describe("GET /api/v1/reference", () => {
+  it("serves the reference from the local Worker configuration", async () => {
+    const app = createApiApp({
+      environment: "staging",
+      surfaceImageOrigin: "http://localhost:3000",
+      browseCoins: async () => coins,
+    })
+
+    const response = await app.request("http://127.0.0.1:8787/api/v1/reference")
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("Content-Type")).toContain("text/html")
+    expect(await response.text()).toContain('"url": "/api/v1/openapi.json"')
+  })
+
   it("serves a passive Scalar reference for the canonical OpenAPI document", async () => {
     const rateLimit = vi.fn(async () => true)
     const app = createApiApp({

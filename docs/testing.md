@@ -8,6 +8,14 @@ Coin Archive tests are organized around package and application ownership bounda
 
 `apps/web` will use Vitest for route, loader, and component behavior where fast feedback is useful. Browser end-to-end tests should use Playwright for a small number of critical catalogue journeys once the web app has workflows worth protecting.
 
+`apps/staging-verification` is an application workspace for the automated
+deployed staging release smoke test. Its Vitest proxy unit test is fast and
+participates in the ordinary root test graph. The deployed verification is a
+separate, environment-dependent release step: a local Cloudflare Worker proxy
+uses a remote service binding to reach the private staging web Worker, then the
+harness verifies one Orientation Maintenance path through the web
+backend-for-frontend, API Worker, and staging PostgreSQL.
+
 `packages/ui` tests are deferred until reusable UI components contain meaningful behavior beyond styling and composition.
 
 ## Not yet
@@ -80,8 +88,14 @@ Test commands should remain split by feedback loop:
 - `pnpm test` for fast package and application tests
 - `pnpm test:db` for PostgreSQL-backed database integration tests
 - `pnpm test:e2e` for future Playwright browser tests
+- `pnpm verify:staging` for the deployed staging release smoke test after both Workers deploy
 
 Fast tests should not require Docker. Database integration tests may require Docker Compose. Root scripts should delegate to package-level scripts so developers can run either the whole workspace or a focused package.
+
+The deployed staging verification is intentionally not part of `pnpm test`.
+It needs protected staging credentials and deployed services, so the staging
+release workflow is its authoritative execution environment. Do not copy those
+credentials into a local substitute.
 
 `pnpm test:db` should prepare isolated test database state and apply migrations before running database tests, but starting Docker should remain explicit through `pnpm db:start`. If PostgreSQL is unavailable, the command should fail with a clear message rather than silently starting or resetting infrastructure.
 
@@ -105,6 +119,7 @@ Linting and type checking are part of the verification workflow, but they are no
 - `pnpm typecheck` checks TypeScript contracts.
 - `pnpm test` checks fast runtime behavior.
 - `pnpm test:db` checks PostgreSQL-backed database behavior.
+- `pnpm verify:staging` checks the deployed Orientation Maintenance path as a post-deployment release step.
 
 ## First Milestone
 

@@ -9,7 +9,9 @@ Use this README as the repository entry point. It explains the workspace at a us
 ```text
 .
 |-- apps/
-|   `-- web/          TanStack Start app for browsing the catalogue
+|   |-- api/                  Shared API Worker
+|   |-- staging-verification/ Deployed staging release smoke-test harness
+|   `-- web/                  TanStack Start web application
 |-- packages/
 |   |-- db/           PostgreSQL + Drizzle schema, migrations, seed logic, queries, and DB tests
 |   `-- ui/           Shared UI components, hooks, and styles
@@ -23,6 +25,7 @@ Use this README as the repository entry point. It explains the workspace at a us
 ## Workspace layout
 
 - `apps/web`: the application surface. It owns routes, loaders, and rendering for browsing Coin Archive data.
+- `apps/staging-verification`: the automated deployed staging verification harness. Its local Cloudflare Worker proxy reaches the private staging web Worker through a remote service binding, and its release smoke test verifies the Orientation Maintenance path through the web backend-for-frontend, API Worker, and staging PostgreSQL.
 - `packages/db`: the shared database boundary. It owns PostgreSQL schema, Drizzle migrations, seed logic, client setup, reusable queries, and database-focused tests.
 - `packages/ui`: shared UI primitives, exported components, hooks, and global styles used by app surfaces.
 - `docs/testing.md`: the current testing strategy, feedback-loop split, and verification expectations.
@@ -58,6 +61,11 @@ Useful verification commands:
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm db:test`
+
+The root test graph includes the staging-verification workspace's fast proxy
+unit test. The environment-dependent `pnpm verify:staging` command is reserved
+for the post-deployment release workflow because it requires protected staging
+credentials and the deployed Workers.
 
 Useful database maintenance commands:
 

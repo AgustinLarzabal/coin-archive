@@ -99,11 +99,18 @@ Each application uses the same allow policy: Google identity email equals `agust
 
 After a staging deployment, or after manually resetting staging, perform this smoke check:
 
-The deployment workflow also runs an automated Orientation Maintenance check
-after both Workers deploy. A local Wrangler harness reaches the deployed web
-Worker through a remote service binding, bypassing the Access ingress without
-changing its policy. The check uses a short-lived Better Auth session, crosses
-the web proxy and API, verifies staging PostgreSQL, and removes its records.
+The deployment workflow also runs `pnpm verify:staging` after both Workers
+deploy. The `apps/staging-verification` application workspace is an automated
+release smoke-test harness: its local Cloudflare Worker proxy reaches the
+private staging web Worker through a remote service binding without weakening
+the Access policy. The check uses a short-lived Better Auth session, crosses
+the web backend-for-frontend and API Worker, verifies an Orientation in staging
+PostgreSQL, and removes its records.
+
+The workspace's proxy unit test is fast and remains part of the ordinary
+`pnpm test` graph. The deployed verification is environment-dependent and stays
+in the post-deployment release workflow; do not replace it with a local check
+that requires copying protected staging credentials.
 
 1. In a private browser session, visit each staging hostname. Both must redirect to Cloudflare Access before returning application or image-host content. A header-only check is also useful:
 

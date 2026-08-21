@@ -2,12 +2,8 @@ import type { SeededCoinRuler } from "./types"
 
 export const seededCoinRulers: SeededCoinRuler[] = [
   {
-    coinTitle: "Spain 2 Euro",
-    rulerCode: "felipe-vi",
-    rulerOrder: 1,
-  },
-  {
-    coinTitle: "Spain 1 Euro",
+    coinTitle:
+      "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
     rulerCode: "felipe-vi",
     rulerOrder: 1,
   },

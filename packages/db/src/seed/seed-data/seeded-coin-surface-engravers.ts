@@ -2,8 +2,15 @@ import type { SeededCoinSurfaceEngraver } from "./types"
 
 export const seededCoinSurfaceEngravers: SeededCoinSurfaceEngraver[] = [
   {
-    coinTitle: "Spain 2 Euro",
+    coinTitle:
+      "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
     coinSurfaceKind: "reverse",
-    engraverCode: "georgios-stamatopoulos",
+    engraverCode: "luc-luycx",
+  },
+  {
+    coinTitle:
+      "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
+    coinSurfaceKind: "obverse",
+    engraverCode: "begona-castellanos-garcia",
   },
 ]

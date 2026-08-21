@@ -2,7 +2,8 @@ import type { SeededCoinMint } from "./types"
 
 export const seededCoinMints: SeededCoinMint[] = [
   {
-    coinTitle: "Spain 2 Euro",
+    coinTitle:
+      "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
     mintCode: "royal-mint-of-madrid",
   },
 ]

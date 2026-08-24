@@ -13,6 +13,8 @@ const databaseUrl = getDatabaseTestUrl()
 const resetDatabaseName = `${getDatabaseName(databaseUrl)}_reset_${randomUUID().replaceAll("-", "")}`
 const resetDatabaseUrl = new URL(databaseUrl)
 resetDatabaseUrl.pathname = `/${resetDatabaseName}`
+const expectedSeededCoinTitle =
+  "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»"
 
 function escapePostgresIdentifier(identifier: string) {
   return `"${identifier.replaceAll('"', '""')}"`
@@ -72,7 +74,7 @@ describe("database reset and reseed", () => {
       db
         .select({ count: count() })
         .from(coin)
-        .where(eq(coin.title, "Spain 2 Euro"))
+        .where(eq(coin.title, expectedSeededCoinTitle))
     ).resolves.toEqual([{ count: 1 }])
   })
 })

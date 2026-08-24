@@ -29,6 +29,9 @@ import {
 } from "./seed-data"
 import { seedDatabase } from "./index"
 
+const expectedSeededCoinTitle =
+  "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»"
+
 const expectedSeededCurrencies = [
   {
     code: "euro",
@@ -79,7 +82,7 @@ const expectedSeededTechniques = [
   },
 ] as const
 
-const expectedSpain2EuroSurfaceRows = [
+const expectedSeededCoinSurfaceRows = [
   {
     kind: "edge-surface",
     imageUrl: null,
@@ -95,7 +98,7 @@ const expectedSpain2EuroSurfaceRows = [
 ] as const
 
 const expectedPublishedCoinWithoutRulerMessage =
-  'Seed import rejected coin "Spain 2 Euro" because published Coins require at least one Ruler Attribution. Seed data is the current published Coin validation seam; low-level fixtures remain flexible.'
+  `Seed import rejected coin "${expectedSeededCoinTitle}" because published Coins require at least one Ruler Attribution. Seed data is the current published Coin validation seam; low-level fixtures remain flexible.`
 
 function removeSeededCoinRulersForCoinTitle(coinTitle: string) {
   const originalSeededCoinRulers = [...seededCoinRulers]
@@ -165,7 +168,7 @@ describe("seed integration", () => {
       await db
         .select({ count: count() })
         .from(coinReference)
-        .where(eq(coinReference.number, "1338A"))
+        .where(eq(coinReference.number, "1063"))
     ).at(0)
     const standardCirculationCount = (
       await db
@@ -281,9 +284,11 @@ describe("seed integration", () => {
 
     const seededCoins = await getCoins({ limit: 30 })
 
-    expect(findCoinRecordByTitle(seededCoins, "Spain 2 Euro")).toMatchObject({
+    expect(
+      findCoinRecordByTitle(seededCoins, expectedSeededCoinTitle)
+    ).toMatchObject({
       id: expect.any(String),
-      title: "Spain 2 Euro",
+      title: expectedSeededCoinTitle,
       issuer: {
         code: "spain",
         isoCode: "ES",
@@ -292,25 +297,25 @@ describe("seed integration", () => {
     })
   })
 
-  it("seeds the Spain 2 Euro surface image URL combinations", async () => {
+  it("seeds the demo Coin surface image URL combinations", async () => {
     await seedDatabase()
 
-    const seededSpain2EuroSurfaceRows = await db
+    const seededCoinSurfaceRows = await db
       .select({
         kind: coinSurface.kind,
         imageUrl: coinSurface.imageUrl,
       })
       .from(coinSurface)
       .innerJoin(coin, eq(coin.id, coinSurface.coinId))
-      .where(eq(coin.title, "Spain 2 Euro"))
+      .where(eq(coin.title, expectedSeededCoinTitle))
       .orderBy(asc(coinSurface.kind))
 
-    expect(seededSpain2EuroSurfaceRows).toEqual(expectedSpain2EuroSurfaceRows)
+    expect(seededCoinSurfaceRows).toEqual(expectedSeededCoinSurfaceRows)
   })
 
   it("rejects published seed data without a ruler attribution while leaving low-level fixtures outside that seam", async () => {
     const restoreSeededCoinRulers =
-      removeSeededCoinRulersForCoinTitle("Spain 2 Euro")
+      removeSeededCoinRulersForCoinTitle(expectedSeededCoinTitle)
 
     try {
       await expect(seedDatabase()).rejects.toThrow(
@@ -325,10 +330,13 @@ describe("seed integration", () => {
     await seedDatabase()
 
     const seededCoins = await getCoins({ limit: 30 })
-    const spain2Euro = findCoinRecordByTitle(seededCoins, "Spain 2 Euro")
+    const seededCoin = findCoinRecordByTitle(
+      seededCoins,
+      expectedSeededCoinTitle
+    )
 
-    await expect(getCoin(spain2Euro.id)).resolves.toMatchObject({
-      title: "Spain 2 Euro",
+    await expect(getCoin(seededCoin.id)).resolves.toMatchObject({
+      title: expectedSeededCoinTitle,
       rulers: [
         {
           code: "felipe-vi",
@@ -347,8 +355,7 @@ describe("seed integration", () => {
     })
 
     expect(filteredCoins.map(({ title }) => title)).toEqual([
-      "Spain 1 Euro",
-      "Spain 2 Euro",
+      expectedSeededCoinTitle,
     ])
   })
 })

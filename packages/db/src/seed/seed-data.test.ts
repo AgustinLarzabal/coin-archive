@@ -47,25 +47,35 @@ describe("SeededCoin", () => {
     >()
 
     expect(
-      seededCoinSurfaces.filter(({ coinTitle }) => coinTitle === "Spain 2 Euro")
+      seededCoinSurfaces.filter(
+        ({ coinTitle }) =>
+          coinTitle ===
+          "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»"
+      )
     ).toEqual([
       {
-        coinTitle: "Spain 2 Euro",
+        coinTitle:
+          "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
         kind: "obverse",
-        description: "Portrait of Felipe VI facing left.",
-        lettering: "FELIPE VI REY DE ESPANA",
+        description:
+          "Half-length figure of Don Quixote with hat holding a lance and two windmills in the background. Twelve stars of Europe of which four are bound by a band.",
+        lettering: "ESPAÑA M 20 05",
       },
       {
-        coinTitle: "Spain 2 Euro",
+        coinTitle:
+          "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
         kind: "reverse",
-        description: "Map of Europe with denomination.",
-        lettering: "2 EURO",
+        description:
+          "Map of Europe symbolizing the gathering of the fifteen nations of the European Union and twelve stars (six above and six below map).",
+        lettering: "2 EURO LL",
       },
       {
-        coinTitle: "Spain 2 Euro",
+        coinTitle:
+          "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
         kind: "edge-surface",
-        description: "Finely reeded with incuse lettering.",
-        lettering: "2 **",
+        description:
+          'Lettering on reeding. The sequence "2 ★ ★" repeated six times alternately upright and inverted.',
+        lettering: "2 ★ ★ ↊ ★ ★ 2 ★ ★ ↊ ★ ★ 2 ★ ★ ↊ ★ ★",
       },
     ])
   })
@@ -88,7 +98,7 @@ describe("SeededCoin", () => {
           description.trim().length > 0
       )
 
-    expect(descriptions.length).toBeGreaterThanOrEqual(2)
+    expect(descriptions).toHaveLength(seededCoins.length)
     expect(new Set(descriptions).size).toBe(descriptions.length)
   })
 
@@ -260,11 +270,15 @@ describe("seededTechniques", () => {
 })
 
 describe("seededEngravers", () => {
-  it("defines only Georgios Stamatópoulos", () => {
+  it("defines only the requested Engravers", () => {
     expect(seededEngravers.map(({ code, name }) => ({ code, name }))).toEqual([
       {
-        code: "georgios-stamatopoulos",
-        name: "Georgios Stamatópoulos",
+        code: "luc-luycx",
+        name: "Luc Luycx",
+      },
+      {
+        code: "begona-castellanos-garcia",
+        name: "Begoña Castellanos García",
       },
     ])
   })

@@ -174,9 +174,26 @@ const belgianCommemorativeCoinTitlesAndYears = [
   ["Circuito de Spa-Francorchamps", 2025],
 ] as const
 
+const cypriotCommemorativeCoinTitlesAndYears = [
+  ["Chipre: 10 Aniversario de la Unión Económica y Monetaria", 2009],
+  ["Chipre: 10 Aniversario de las Monedas y Billetes de Euro", 2012],
+  ["Chipre: 30 Aniversario de la Bandera de la Unión Europea", 2015],
+  ["Pafos, Capital Europea de la Cultura", 2017],
+  ["30 Aniversario del Instituto de Neurologia y Genética de Chipre", 2020],
+  ["Chipre: 35 Aniversario del Programa Erasmus", 2022],
+  ["60 Aniversario del Banco Central de Chipre", 2023],
+  ["20 Aniversario de la Adhesión a la Unión Europea", 2024],
+] as const
+
 function createCommemorativeCoins(
   titlesAndYears: readonly (readonly [string, number])[],
-  issuerCode: "andorra" | "austria" | "belgium" | "germany" | "spain"
+  issuerCode:
+    | "andorra"
+    | "austria"
+    | "belgium"
+    | "cyprus"
+    | "germany"
+    | "spain"
 ): SeededCoin[] {
   return titlesAndYears.map(([title, year]) => ({
     ...spanishCommemorativeCoinSeedData,
@@ -199,4 +216,5 @@ export const seededCoins: SeededCoin[] = [
   ),
   ...createCommemorativeCoins(austrianCommemorativeCoinTitlesAndYears, "austria"),
   ...createCommemorativeCoins(belgianCommemorativeCoinTitlesAndYears, "belgium"),
+  ...createCommemorativeCoins(cypriotCommemorativeCoinTitlesAndYears, "cyprus"),
 ]

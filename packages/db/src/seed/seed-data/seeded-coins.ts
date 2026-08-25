@@ -93,9 +93,41 @@ const germanCommemorativeCoinTitlesAndYears = [
   ["Estado Federado de Bremen (Casa del Clima de Bremerhaven)", 2026],
 ] as const
 
+const andorranCommemorativeCoinTitlesAndYears = [
+  ["20 Aniversario de la Adhesión de Andorra al Consejo de Europa", 2014],
+  [
+    "30 Aniversario de la Mayoría de Edad y los Derechos Políticos a los 18 años",
+    2015,
+  ],
+  ["25 Aniversario del Acuerdo Aduanero con la Unión Europea", 2015],
+  ["25 Aniversario de la Radio y Televisión de Andorra", 2016],
+  ["150 Aniversario de la Nueva Reforma de 1866", 2016],
+  ["Andorra, el País de los Pirineos", 2017],
+  ["100 Aniversario del Himno Nacional de Andorra", 2017],
+  ["25 Aniversario de la Constitución de Andorra", 2018],
+  ["70 Aniversario de la Declaración Universal de los Derechos Humanos", 2018],
+  ["Finales de la Copa del Mundo de Esquí Alpino", 2019],
+  ["600 Aniversario del Consell de la Terra", 2019],
+  ["50 Aniversario del Sufragio Universal Femenino", 2020],
+  ["XXVII Cumbre Iberoamericana en Andorra", 2020],
+  ["100 Aniversario de la Coronación de Nuestra Señora de Meritxell", 2021],
+  ["Cuidemos de nuestros mayores", 2021],
+  ["La Leyenda de Carlomagno", 2022],
+  [
+    "10 Aniversario del Acuerdo Monetario entre Andorra y la Unión Europea",
+    2022,
+  ],
+  ["Fiestas del Solsticio de Verano", 2023],
+  ["30 Aniversario de la Adhesión a las Naciones Unidas (ONU)", 2023],
+  ["Campeonatos del Mundo de Mountain Bike", 2024],
+  ["100 Aniversario del esquí en Andorra", 2024],
+  ["Quebrantahuesos", 2025],
+  ["Juegos de los Pequeños Estados de Europa", 2025],
+] as const
+
 function createCommemorativeCoins(
   titlesAndYears: readonly (readonly [string, number])[],
-  issuerCode: "germany" | "spain"
+  issuerCode: "andorra" | "germany" | "spain"
 ): SeededCoin[] {
   return titlesAndYears.map(([title, year]) => ({
     ...spanishCommemorativeCoinSeedData,
@@ -112,4 +144,8 @@ export const seededCoins: SeededCoin[] = [
     "spain"
   ),
   ...createCommemorativeCoins(germanCommemorativeCoinTitlesAndYears, "germany"),
+  ...createCommemorativeCoins(
+    andorranCommemorativeCoinTitlesAndYears,
+    "andorra"
+  ),
 ]

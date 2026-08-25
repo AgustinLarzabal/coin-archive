@@ -13,7 +13,7 @@ export function Footer({ apiReferenceUrl }: { apiReferenceUrl: string }) {
   return (
     <div className="flex justify-end gap-1 border-t p-4">
       {canAccessDatabase && (
-        <FooterLink href="/database">
+        <FooterLink href="/database" openInNewTab={false}>
           <Icons.Database size={20} />
           <span className="text-xs text-muted-foreground">Database</span>
         </FooterLink>

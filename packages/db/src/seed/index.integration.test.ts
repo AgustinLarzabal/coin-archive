@@ -22,6 +22,7 @@ import { coin } from "../schema/coin"
 import { distribution } from "../schema/distribution"
 import { useTestDatabaseIsolation } from "../testing/test-database"
 import {
+  seededCoins,
   seededCoinRulers,
   seededEngravers,
   seededIssuers,
@@ -282,10 +283,12 @@ describe("seed integration", () => {
       )
     )
 
-    const seededCoins = await getCoins({ limit: 30 })
+    const seededCoinRecords = await getCoins({
+      limit: seededCoins.length,
+    })
 
     expect(
-      findCoinRecordByTitle(seededCoins, expectedSeededCoinTitle)
+      findCoinRecordByTitle(seededCoinRecords, expectedSeededCoinTitle)
     ).toMatchObject({
       id: expect.any(String),
       title: expectedSeededCoinTitle,
@@ -329,9 +332,11 @@ describe("seed integration", () => {
   it("exposes seeded coin ruler attributions through direct catalogue reads", async () => {
     await seedDatabase()
 
-    const seededCoins = await getCoins({ limit: 30 })
+    const seededCoinRecords = await getCoins({
+      limit: seededCoins.length,
+    })
     const seededCoin = findCoinRecordByTitle(
-      seededCoins,
+      seededCoinRecords,
       expectedSeededCoinTitle
     )
 
@@ -351,11 +356,11 @@ describe("seed integration", () => {
 
     const filteredCoins = await getCoins({
       rulerCode: "  FELIPE-VI  ",
-      limit: 30,
+      limit: seededCoins.length,
     })
 
-    expect(filteredCoins.map(({ title }) => title)).toEqual([
-      expectedSeededCoinTitle,
-    ])
+    expect(filteredCoins.map(({ title }) => title).sort()).toEqual(
+      seededCoinRulers.map(({ coinTitle }) => coinTitle).sort()
+    )
   })
 })

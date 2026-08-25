@@ -2,10 +2,9 @@ import {
   getLocationRedirectTarget,
   getSafeAuthRedirect,
 } from "@/lib/auth-redirect"
-import { getCollectorRole } from "@/lib/collector-role"
 import { getProductFlags } from "@/lib/product-flags"
 import { Link, useRouterState } from "@tanstack/react-router"
-import { authClient, hasEditorAccess } from "@coin-archive/auth/client"
+import { authClient } from "@coin-archive/auth/client"
 import { buttonVariants } from "@coin-archive/ui/components/button"
 import { UserMenu } from "./user-menu"
 import { Icons } from "./icons"
@@ -31,8 +30,6 @@ export function getLoginRedirectTarget({
 export function Header() {
   const { data: session } = authClient.useSession()
   const { showSignInButton } = getProductFlags()
-  const role = getCollectorRole(session?.user ?? null)
-  const canAccessDatabase = role !== null && hasEditorAccess(role)
   const loginRedirectTarget = useRouterState({
     select: (state) =>
       getLoginRedirectTarget({
@@ -47,17 +44,9 @@ export function Header() {
   return (
     <header className="z-10 flex h-[70px] items-center justify-between gap-4 border-b bg-background px-6">
       <div>
-        {canAccessDatabase && (
-          <Link
-            to="/database"
-            className={buttonVariants({
-              size: "sm",
-              variant: "ghost",
-            })}
-          >
-            <Icons.Database size={20} /> Database
-          </Link>
-        )}
+        <Link to="/" className="">
+          <Icons.LogoSmall />
+        </Link>
       </div>
       <div>
         {session === null ? (

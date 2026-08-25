@@ -61,18 +61,4 @@ describe("Header", () => {
     expect(markup).not.toContain("Sign in")
   })
 
-  it("hides Database from people without editor access", () => {
-    authState.session = { user: { role: "collector" } }
-
-    expect(renderToStaticMarkup(<Header />)).not.toContain("Database")
-  })
-
-  it.each(["editor", "admin"]) (
-    "shows Database to a signed-in %s",
-    (role) => {
-      authState.session = { user: { role } }
-
-      expect(renderToStaticMarkup(<Header />)).toContain("Database")
-    }
-  )
 })

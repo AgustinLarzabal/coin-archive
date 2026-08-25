@@ -1,7 +1,7 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+// import { Sidebar } from "@/components/sidebar"
 import { Footer } from "@/components/footer"
 
 const loadApiReferenceUrl = createServerFn({ method: "GET" }).handler(
@@ -21,8 +21,9 @@ function SharedShellRouteComponent() {
 
   return (
     <div className="relative min-h-svh">
-      <Sidebar />
-      <div className="flex min-h-svh grow flex-col md:ml-[70px]">
+      {/* <Sidebar /> */}
+      {/* <div className="flex min-h-svh grow flex-col md:ml-[70px]"> */}
+      <div className="flex min-h-svh grow flex-col">
         <Header />
         <div className="flex grow flex-col">
           <Outlet />

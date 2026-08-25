@@ -5,15 +5,21 @@ import { cn } from "@coin-archive/ui/lib/utils"
 export function FooterLink({
   children,
   href,
+  openInNewTab = true,
 }: {
   children: ReactNode
   href: string
+  openInNewTab?: boolean
 }) {
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noreferrer"
+      {...(openInNewTab
+        ? {
+            target: "_blank",
+            rel: "noreferrer",
+          }
+        : {})}
       className={cn(
         buttonVariants({
           variant: "ghost",

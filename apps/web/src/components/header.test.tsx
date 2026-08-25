@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { Header } from "./header"
 
-const authState = vi.hoisted(() => ({ session: null as object | null }))
+const authState = vi.hoisted(() => ({
+  session: null as { user: { role?: string | null } } | null,
+}))
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="/login">{children}</a>,
@@ -24,6 +26,9 @@ vi.mock("@coin-archive/auth/client", () => ({
   authClient: {
     useSession: () => ({ data: authState.session }),
   },
+  hasEditorAccess: (role: string) => role === "editor" || role === "admin",
+  isCollectorRole: (role: string) =>
+    role === "collector" || role === "editor" || role === "admin",
 }))
 
 vi.mock("./user-menu", () => ({
@@ -47,7 +52,7 @@ describe("Header", () => {
   })
 
   it("shows the Collector menu to a signed-in Collector regardless of the flag", () => {
-    authState.session = {}
+    authState.session = { user: { role: "collector" } }
     vi.stubEnv("VITE_SHOW_SIGN_IN_BUTTON", "false")
 
     const markup = renderToStaticMarkup(<Header />)
@@ -55,4 +60,19 @@ describe("Header", () => {
     expect(markup).toContain("Collector menu")
     expect(markup).not.toContain("Sign in")
   })
+
+  it("hides Database from people without editor access", () => {
+    authState.session = { user: { role: "collector" } }
+
+    expect(renderToStaticMarkup(<Header />)).not.toContain("Database")
+  })
+
+  it.each(["editor", "admin"]) (
+    "shows Database to a signed-in %s",
+    (role) => {
+      authState.session = { user: { role } }
+
+      expect(renderToStaticMarkup(<Header />)).toContain("Database")
+    }
+  )
 })

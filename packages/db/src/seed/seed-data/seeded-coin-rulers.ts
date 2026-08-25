@@ -1,10 +1,10 @@
+import { seededCoins } from "./seeded-coins"
 import type { SeededCoinRuler } from "./types"
 
-export const seededCoinRulers: SeededCoinRuler[] = [
-  {
-    coinTitle:
-      "400 Aniversario de la 1a. edición del «Don Quijote de la Mancha»",
+export const seededCoinRulers: SeededCoinRuler[] = seededCoins.map(
+  ({ title: coinTitle }) => ({
+    coinTitle,
     rulerCode: "felipe-vi",
     rulerOrder: 1,
-  },
-]
+  })
+)

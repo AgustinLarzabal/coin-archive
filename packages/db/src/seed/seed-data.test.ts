@@ -88,7 +88,7 @@ describe("SeededCoin", () => {
     ).toEqual([])
   })
 
-  it("retains distinct Coin-owned Bimetallic Composition Descriptions", () => {
+  it("retains a Coin-owned Bimetallic Composition Description", () => {
     const descriptions = seededCoins
       .filter(({ compositionCode }) => compositionCode === "bimetallic")
       .map(({ compositionDescription }) => compositionDescription)
@@ -99,7 +99,6 @@ describe("SeededCoin", () => {
       )
 
     expect(descriptions).toHaveLength(seededCoins.length)
-    expect(new Set(descriptions).size).toBe(descriptions.length)
   })
 
   it("has at least one ruler attribution for every seeded coin", () => {

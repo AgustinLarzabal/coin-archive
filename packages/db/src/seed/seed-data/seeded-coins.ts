@@ -136,9 +136,47 @@ const austrianCommemorativeCoinTitlesAndYears = [
   ["Austria: 35 Aniversario del Programa Erasmus", 2022],
 ] as const
 
+const belgianCommemorativeCoinTitlesAndYears = [
+  ["Unión Económica Belgo-Luxemburguesa", 2005],
+  ["El Atomium", 2006],
+  ["Bélgica: 50 Aniversario del Tratado de Roma", 2007],
+  ["60 Aniversario de la Declaración Universal de los Derechos Humanos", 2008],
+  ["Bélgica: 10 Aniversario de la Unión Económica y Monetaria", 2009],
+  ["200 Aniversario del Nacimiento de Louis Braille", 2009],
+  ["Bélgica: Presidencia en Consejo de la Unión Europea (2010)", 2010],
+  ["100 Aniversario del Día Internacional de la Mujer", 2011],
+  ["Bélgica: 10 Aniversario de las Monedas y Billetes de Euro", 2012],
+  ["75 Aniversario del Concurso Musical Reina Isabel", 2012],
+  ["100 Aniversario del Real Instituto de Meteorología de Bélgica", 2013],
+  ["100 Aniversario del Comienzo de la Primera Guerra Mundial", 2014],
+  ["150 Aniversario de la Cruz Roja de Bélgica", 2014],
+  ["Año Europeo del Desarrollo", 2015],
+  ["Bélgica: 30 Aniversario de la Bandera de la Unión Europea", 2015],
+  ["Juegos Olímpicos de Verano en Río de Janeiro", 2016],
+  ["Día Internacional de los Niños Desaparecidos (Fundación Child Focus)", 2016],
+  ["200 Aniversario de la Universidad de Lieja", 2017],
+  ["200 Aniversario de la Universidad de Gante", 2017],
+  ["50 Aniversario de los Acontecimientos de Mayo del 1968 en Bélgica", 2018],
+  ["50 Aniversario del Lanzamiento del Satélite ESRO 2B", 2018],
+  ["450 Aniversario de la Muerte de Pieter Brueghel «El Viejo»", 2019],
+  ["25 Aniversario del Instituto Monetario Europeo (IME)", 2019],
+  ["Año Internacional de la Sanidad Vegetal, AISV 2020", 2020],
+  ["Jan Van Eyck", 2020],
+  ["100 Aniversario de la Constitución de la Unión Económica Belga-Luxemburguesa", 2021],
+  ["500 Aniversario de Emisión de Monedas durante el Reinado de Carlos V", 2021],
+  ["Homenaje al Sector Sanitario, pandemia de COVID-19", 2022],
+  ["Bélgica: 35 Aniversario del Programa Erasmus", 2022],
+  ["130 Aniversario del Art Nouveau en Bruselas", 2023],
+  ["75 Aniversario del Sufragio Universal Femenino", 2023],
+  ["Bélgica: Presidencia en Consejo de la Unión Europea (2024)", 2024],
+  ["Lucha contra el Cáncer", 2024],
+  ["Lotería Nacional de Bélgica", 2025],
+  ["Circuito de Spa-Francorchamps", 2025],
+] as const
+
 function createCommemorativeCoins(
   titlesAndYears: readonly (readonly [string, number])[],
-  issuerCode: "andorra" | "austria" | "germany" | "spain"
+  issuerCode: "andorra" | "austria" | "belgium" | "germany" | "spain"
 ): SeededCoin[] {
   return titlesAndYears.map(([title, year]) => ({
     ...spanishCommemorativeCoinSeedData,
@@ -160,4 +198,5 @@ export const seededCoins: SeededCoin[] = [
     "andorra"
   ),
   ...createCommemorativeCoins(austrianCommemorativeCoinTitlesAndYears, "austria"),
+  ...createCommemorativeCoins(belgianCommemorativeCoinTitlesAndYears, "belgium"),
 ]

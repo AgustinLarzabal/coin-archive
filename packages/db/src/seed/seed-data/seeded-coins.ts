@@ -125,9 +125,20 @@ const andorranCommemorativeCoinTitlesAndYears = [
   ["Juegos de los Pequeños Estados de Europa", 2025],
 ] as const
 
+const austrianCommemorativeCoinTitlesAndYears = [
+  ["50 Aniversario del Tratado de Estado de Austria", 2005],
+  ["Austria: 50 Aniversario del Tratado de Roma", 2007],
+  ["Austria: 10 Aniversario de la Unión Económica y Monetaria", 2009],
+  ["Austria: 10 Aniversario de las Monedas y Billetes de Euro", 2012],
+  ["Austria: 30 Aniversario de la Bandera de la Unión Europea", 2015],
+  ["200 Aniversario del Banco Nacional de Austria", 2016],
+  ["100 Aniversario de la República de Austria", 2018],
+  ["Austria: 35 Aniversario del Programa Erasmus", 2022],
+] as const
+
 function createCommemorativeCoins(
   titlesAndYears: readonly (readonly [string, number])[],
-  issuerCode: "andorra" | "germany" | "spain"
+  issuerCode: "andorra" | "austria" | "germany" | "spain"
 ): SeededCoin[] {
   return titlesAndYears.map(([title, year]) => ({
     ...spanishCommemorativeCoinSeedData,
@@ -148,4 +159,5 @@ export const seededCoins: SeededCoin[] = [
     andorranCommemorativeCoinTitlesAndYears,
     "andorra"
   ),
+  ...createCommemorativeCoins(austrianCommemorativeCoinTitlesAndYears, "austria"),
 ]

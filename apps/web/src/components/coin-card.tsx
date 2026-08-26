@@ -4,7 +4,6 @@ import { Badge } from "@coin-archive/ui/components/badge"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,

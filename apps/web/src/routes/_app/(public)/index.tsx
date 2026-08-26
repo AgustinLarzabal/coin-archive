@@ -143,33 +143,35 @@ function App() {
 
   return (
     <>
-      <div className="mb-10 flex flex-col gap-4">
-        <HomeFilters
-          distributions={filterOptions.distributions}
-          engravers={filterOptions.engravers}
-          issuers={filterOptions.issuers}
-          rulers={filterOptions.rulers}
-          themes={filterOptions.themes}
-          selectedDistributionCode={search.distribution}
-          selectedEngraverCode={search.engraver}
-          selectedIssuerCode={search.issuer}
-          selectedRulerCode={search.ruler}
-          selectedThemeCode={search.theme}
-          onFiltersChange={updateHomeFilters}
-        />
-        <form
-          action={updateCoinTitleSearch}
-          className="flex w-full max-w-xl gap-2"
-        >
-          <Input
-            type="search"
-            name="q"
-            defaultValue={search.q ?? ""}
-            placeholder="Search Coin Titles"
+      {coins.length > 0 ? (
+        <div className="mb-10 flex flex-col gap-4">
+          <HomeFilters
+            distributions={filterOptions.distributions}
+            engravers={filterOptions.engravers}
+            issuers={filterOptions.issuers}
+            rulers={filterOptions.rulers}
+            themes={filterOptions.themes}
+            selectedDistributionCode={search.distribution}
+            selectedEngraverCode={search.engraver}
+            selectedIssuerCode={search.issuer}
+            selectedRulerCode={search.ruler}
+            selectedThemeCode={search.theme}
+            onFiltersChange={updateHomeFilters}
           />
-          <Button type="submit">Search</Button>
-        </form>
-      </div>
+          <form
+            action={updateCoinTitleSearch}
+            className="flex w-full max-w-xl gap-2"
+          >
+            <Input
+              type="search"
+              name="q"
+              defaultValue={search.q ?? ""}
+              placeholder="Search Coin Titles"
+            />
+            <Button type="submit">Search</Button>
+          </form>
+        </div>
+      ) : null}
 
       {coins.length === 0 ? (
         <EmptyState hasActiveFilters={hasActiveCoinSearchFilters(search)} />

@@ -174,7 +174,7 @@ function App() {
       {coins.length === 0 ? (
         <EmptyState hasActiveFilters={hasActiveCoinSearchFilters(search)} />
       ) : (
-        <div className="grid h-full w-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 [@media(min-width:1920px)]:[grid-template-columns:repeat(auto-fit,minmax(0,290px))]">
+        <div className="grid h-full w-full [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))] gap-6">
           {coins.map((coin) => (
             <CoinCard coin={coin} key={coin.id} search={search} />
           ))}

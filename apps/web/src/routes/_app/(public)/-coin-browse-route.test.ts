@@ -22,6 +22,8 @@ describe("public Coin browse route", () => {
         {
           id: "018f1a11-aaaa-7000-8000-000000000001",
           title: "Spanish Euro Commemorative",
+          minYear: 1999,
+          maxYear: 2004,
           issuer: { code: "spain", isoCode: "ES", name: "Spain" },
           surfaceImages: {
             obverse: "https://images.coinarchive.app/obverse.jpg",
@@ -48,6 +50,8 @@ describe("public Coin browse route", () => {
       coins: [
         {
           title: "Spanish Euro Commemorative",
+          minYear: 1999,
+          maxYear: 2004,
           issuer: { name: "Spain" },
           surfaces: {
             obverse: {

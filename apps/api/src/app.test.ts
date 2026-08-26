@@ -5,6 +5,8 @@ const coins = [
   {
     id: "018f1a11-aaaa-7000-8000-000000000001",
     title: "First Coin",
+    minYear: 1999,
+    maxYear: 2004,
     createdAt: new Date("2026-02-01T00:00:00.000Z"),
     issuer: { code: "spain", isoCode: "ES", name: "Spain" },
     surfaces: {
@@ -16,6 +18,8 @@ const coins = [
   {
     id: "018f1a11-aaaa-7000-8000-000000000002",
     title: "Second Coin",
+    minYear: null,
+    maxYear: null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     issuer: { code: "spain", isoCode: "ES", name: "Spain" },
     surfaces: { obverse: null, reverse: null, edge: null },
@@ -152,6 +156,8 @@ describe("GET /api/v1/coins", () => {
         {
           id: coins[0].id,
           title: "First Coin",
+          minYear: 1999,
+          maxYear: 2004,
           detailUrl: `https://api.coinarchive.app/api/v1/coins/${coins[0].id}`,
         },
       ],

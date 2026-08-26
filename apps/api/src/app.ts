@@ -71,6 +71,8 @@ const queryNames = [
 type CoinSource = {
   id: string
   title: string
+  minYear: number | null
+  maxYear: number | null
   createdAt: Date
   issuer: { code: string; isoCode: string; name: string }
   surfaces: {
@@ -804,6 +806,8 @@ export function createApiApp({
       data: page.map((coin) => ({
         id: coin.id,
         title: coin.title,
+        minYear: coin.minYear,
+        maxYear: coin.maxYear,
         issuer: coin.issuer,
         surfaceImages: {
           obverse: safeImageUrl(

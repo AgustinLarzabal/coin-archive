@@ -8,6 +8,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         {
           id: "coin-1",
           title: "Spanish Test Coin",
+          minYear: 1999,
+          maxYear: 2004,
           issuerId: "issuer-1",
           issuerCode: "spain",
           issuerIsoCode: "ES",
@@ -23,6 +25,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         {
           id: "coin-1",
           title: "Spanish Test Coin",
+          minYear: 1999,
+          maxYear: 2004,
           issuerId: "issuer-1",
           issuerCode: "spain",
           issuerIsoCode: "ES",
@@ -38,6 +42,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
         {
           id: "coin-1",
           title: "Spanish Test Coin",
+          minYear: 1999,
+          maxYear: 2004,
           issuerId: "issuer-1",
           issuerCode: "spain",
           issuerIsoCode: "ES",
@@ -55,6 +61,8 @@ describe("mapGetCoinsRowsToCoinRecords", () => {
       {
         id: "coin-1",
         title: "Spanish Test Coin",
+        minYear: 1999,
+        maxYear: 2004,
         issuer: {
           code: "spain",
           isoCode: "ES",

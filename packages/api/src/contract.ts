@@ -55,6 +55,8 @@ export const databaseMaintenanceOverviewOutputSchema = z.object({
 export const coinSummarySchema = z.object({
   id: z.uuid(),
   title: z.string(),
+  minYear: z.number().int().nullable(),
+  maxYear: z.number().int().nullable(),
   issuer: z.object({ code: z.string(), isoCode: z.string(), name: z.string() }),
   surfaceImages: z.object({
     obverse: z.string().url().nullable(),

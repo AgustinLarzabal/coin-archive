@@ -181,6 +181,8 @@ export function buildGetCoinsQuery(
     .select({
       id: coin.id,
       title: coin.title,
+      minYear: coin.minYear,
+      maxYear: coin.maxYear,
       issuerId: coin.issuerId,
       createdAt: coin.createdAt,
     })
@@ -199,6 +201,8 @@ export function buildGetCoinsQuery(
     .select({
       id: limitedCoins.id,
       title: limitedCoins.title,
+      minYear: limitedCoins.minYear,
+      maxYear: limitedCoins.maxYear,
       engraverId: engraver.id,
       engraverCode: engraver.code,
       engraverName: engraver.name,

@@ -27,6 +27,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 const baseCoin: CoinListRecord = {
   id: "coin-1",
   title: "Preview Test Coin",
+  minYear: 2005,
+  maxYear: 2005,
   issuer: {
     code: "spain",
     isoCode: "ES",
@@ -70,5 +72,22 @@ describe("CoinCard", () => {
     )
 
     expect(markup).toContain("/placeholder-coin.svg")
+  })
+
+  it("renders a known issue year range", () => {
+    const markup = renderToStaticMarkup(
+      <CoinCard coin={{ ...baseCoin, minYear: 1999, maxYear: 2004 }} />
+    )
+
+    expect(markup).toContain("1999")
+    expect(markup).toContain("2004")
+  })
+
+  it("omits the issue year when its range is unknown", () => {
+    const markup = renderToStaticMarkup(
+      <CoinCard coin={{ ...baseCoin, minYear: null, maxYear: null }} />
+    )
+
+    expect(markup).not.toContain("2005")
   })
 })

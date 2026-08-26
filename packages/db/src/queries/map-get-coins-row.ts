@@ -8,6 +8,8 @@ import type {
 export type GetCoinsRow = {
   id: string
   title: string
+  minYear: number | null
+  maxYear: number | null
   issuerId: string
   issuerCode: string
   issuerIsoCode: string
@@ -25,6 +27,8 @@ export type GetCoinsRow = {
 export type CoinListRecord = {
   id: string
   title: string
+  minYear: number | null
+  maxYear: number | null
   issuer: CoinListIssuer
   surfaces: CoinSurfaceSetRecord
   createdAt?: Date
@@ -42,6 +46,8 @@ export function mapGetCoinsRowsToCoinRecords(
       {
         id: row.id,
         title: row.title,
+        minYear: row.minYear,
+        maxYear: row.maxYear,
         issuer: {
           code: row.issuerCode,
           isoCode: row.issuerIsoCode,

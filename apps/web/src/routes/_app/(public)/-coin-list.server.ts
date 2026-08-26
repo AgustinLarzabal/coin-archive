@@ -15,6 +15,8 @@ export async function getPublicCoinList(data: CoinListLoaderDeps) {
     coins: response.data.map((coin) => ({
       id: coin.id,
       title: coin.title,
+      minYear: coin.minYear,
+      maxYear: coin.maxYear,
       issuer: coin.issuer,
       surfaces: {
         obverse:

@@ -6,6 +6,7 @@ import { Header } from "./header"
 
 const authState = vi.hoisted(() => ({
   session: null as { user: { role?: string | null } } | null,
+  isPending: false,
 }))
 
 vi.mock("@tanstack/react-router", () => ({
@@ -24,7 +25,10 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("@coin-archive/auth/client", () => ({
   authClient: {
-    useSession: () => ({ data: authState.session }),
+    useSession: () => ({
+      data: authState.session,
+      isPending: authState.isPending,
+    }),
   },
   hasEditorAccess: (role: string) => role === "editor" || role === "admin",
   isCollectorRole: (role: string) =>
@@ -38,7 +42,18 @@ vi.mock("./user-menu", () => ({
 describe("Header", () => {
   afterEach(() => {
     authState.session = null
+    authState.isPending = false
     vi.unstubAllEnvs()
+  })
+
+  it("shows a skeleton while the Collector session is loading", () => {
+    authState.isPending = true
+
+    const markup = renderToStaticMarkup(<Header />)
+
+    expect(markup).toContain('data-slot="skeleton"')
+    expect(markup).not.toContain("Sign in")
+    expect(markup).not.toContain("Collector menu")
   })
 
   it("shows Sign in to an unauthenticated person by default", () => {

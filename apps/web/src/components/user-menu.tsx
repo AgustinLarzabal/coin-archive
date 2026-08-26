@@ -16,8 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@coin-archive/ui/components/dropdown-menu"
 
-export function UserMenu() {
-  const { data: session } = authClient.useSession()
+type CollectorSession = typeof authClient.$Infer.Session
+
+export function UserMenu({ session }: { session: CollectorSession }) {
   const navigate = useNavigate()
 
   return (
@@ -31,7 +32,7 @@ export function UserMenu() {
             className="rounded-full p-0"
           >
             <Avatar>
-              {session?.user.image && (
+              {session.user.image && (
                 <AvatarImage
                   src={session.user.image}
                   alt={session.user.name}
@@ -39,7 +40,7 @@ export function UserMenu() {
                 />
               )}
               <AvatarFallback>
-                {session?.user.name.charAt(0).toUpperCase()}
+                {session.user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -50,10 +51,10 @@ export function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">
             <span className="line-clamp-1 block max-w-[155px] truncate text-xs font-bold text-foreground">
-              {session?.user.name}
+              {session.user.name}
             </span>
             <span className="truncate text-xs font-normal text-muted-foreground">
-              {session?.user.email}
+              {session.user.email}
             </span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>

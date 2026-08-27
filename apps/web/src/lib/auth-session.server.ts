@@ -5,6 +5,7 @@ import type { authClient } from "@coin-archive/auth/client"
 
 import { proxyAuthRequest } from "./auth-proxy.server"
 import { getPublicApiBaseUrl } from "./public-api.server"
+import { createSessionRequestHeaders } from "./auth-session-request-headers"
 
 type CollectorSession = typeof authClient.$Infer.Session
 
@@ -13,7 +14,9 @@ export async function getRequestAuthSession(): Promise<CollectorSession | null> 
   const incomingRequest = getRequest()
   const sessionUrl = new URL("/api/auth/get-session", incomingRequest.url)
   const response = await proxyAuthRequest(
-    new Request(sessionUrl, { headers: incomingRequest.headers }),
+    new Request(sessionUrl, {
+      headers: createSessionRequestHeaders(incomingRequest.headers),
+    }),
     {
       apiBaseUrl: getPublicApiBaseUrl(),
       allowSignInAttempt: async () => true,

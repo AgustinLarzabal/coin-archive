@@ -5,7 +5,6 @@ import { createServerFn, useServerFn } from "@tanstack/react-start"
 import { Button } from "@coin-archive/ui/components/button"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { getAuthSession } from "@/lib/auth-session"
 import type {
   CoinDraft,
   CoinEdgeSurfaceDraft,
@@ -48,14 +47,14 @@ type CoinFormProps =
 const createCoinAction = createServerFn({ method: "POST" })
   .inputValidator((data: CoinDraft) => data)
   .handler(async ({ data }) => {
-    const session = await getAuthSession()
+    const session = await getRequestAuthSession()
     return submitCreateCoin(session?.user ?? null, data)
   })
 
 const updateCoinAction = createServerFn({ method: "POST" })
   .inputValidator((data: CoinDraft & { id: string; etag: string }) => data)
   .handler(async ({ data }) => {
-    const session = await getAuthSession()
+    const session = await getRequestAuthSession()
     return submitUpdateCoin(session?.user ?? null, data)
   })
 
@@ -79,6 +78,12 @@ const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     return removeSurfaceImageUpload(data)
   })
+
+async function getRequestAuthSession() {
+  const { getRequestAuthSession: resolveRequestAuthSession } =
+    await import("@/lib/auth-session.server")
+  return resolveRequestAuthSession()
+}
 
 function getCoinDraftValidationErrors(draft: CoinDraft): CoinFieldErrors {
   const parsedDraft = coinDraftSchema.safeParse(draft)

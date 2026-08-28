@@ -1,5 +1,4 @@
-import { AccessDenied } from "@/components/access-denied"
-
+import { renderMaintenancePage } from "../maintenance-page"
 import type { DatabaseOverviewPageLoaderData } from "./database-overview-route-data"
 import { DatabaseOverviewTable } from "./overview-table"
 
@@ -15,17 +14,9 @@ type DatabaseOverviewRouteComponentProps = {
 export function DatabaseOverviewRouteComponent({
   loaderData,
 }: DatabaseOverviewRouteComponentProps) {
-  if (!loaderData.isAllowed) {
-    return (
-      <div className="grid items-center">
-        <AccessDenied />
-      </div>
-    )
-  }
-
-  return (
+  return renderMaintenancePage(loaderData, ({ counts }) => (
     <main className="mt-8">
-      <DatabaseOverviewTable counts={loaderData.counts} />
+      <DatabaseOverviewTable counts={counts} />
     </main>
-  )
+  ))
 }

@@ -34,7 +34,7 @@ function DatabaseRouteComponent() {
     <div>
       <SecondaryMenu items={[...databaseSecondaryMenuItems]} />
 
-      <div className="max-w-3xl">
+      <div>
         <Outlet />
       </div>
     </div>

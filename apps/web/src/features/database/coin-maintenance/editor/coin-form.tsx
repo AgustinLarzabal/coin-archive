@@ -16,10 +16,6 @@ import type {
 import {
   coinDraftSchema,
   getCoinFieldErrors,
-  submitCreateCoin,
-  submitUpdateCoin,
-  authorizeSurfaceImageUpload,
-  removeSurfaceImageUpload,
 } from "../actions"
 import {
   createEmptyRulerAttribution,
@@ -36,6 +32,12 @@ import { PhysicalCharacteristicsSection } from "./sections/physical-characterist
 import { ProductionChronologySection } from "./sections/production-chronology-section"
 import { ThemesSection } from "./sections/themes-section"
 import { FieldError } from "@coin-archive/ui/components/field"
+import {
+  authorizeCoinSurfaceImageUpload,
+  cancelCoinSurfaceImageUpload,
+  createCoin,
+  replaceCoin,
+} from "../actions.server"
 
 const UNSAVED_CHANGES_WARNING =
   "You have unsaved changes. Are you sure you want to leave this page?"
@@ -48,14 +50,14 @@ const createCoinAction = createServerFn({ method: "POST" })
   .inputValidator((data: CoinDraft) => data)
   .handler(async ({ data }) => {
     const session = await getRequestAuthSession()
-    return submitCreateCoin(session?.user ?? null, data)
+    return createCoin(session?.user ?? null, data)
   })
 
 const updateCoinAction = createServerFn({ method: "POST" })
   .inputValidator((data: CoinDraft & { id: string; etag: string }) => data)
   .handler(async ({ data }) => {
     const session = await getRequestAuthSession()
-    return submitUpdateCoin(session?.user ?? null, data)
+    return replaceCoin(session?.user ?? null, data)
   })
 
 const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
@@ -67,7 +69,7 @@ const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
     }) => data
   )
   .handler(async ({ data }) => {
-    return authorizeSurfaceImageUpload(data)
+    return authorizeCoinSurfaceImageUpload(data)
   })
 
 const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
@@ -76,7 +78,7 @@ const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
       data
   )
   .handler(async ({ data }) => {
-    return removeSurfaceImageUpload(data)
+    return cancelCoinSurfaceImageUpload(data)
   })
 
 async function getRequestAuthSession() {

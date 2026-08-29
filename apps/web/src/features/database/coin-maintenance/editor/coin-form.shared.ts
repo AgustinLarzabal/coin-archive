@@ -122,17 +122,6 @@ export const EMPTY_COIN_DRAFT: CoinDraft = {
   },
 }
 
-export async function getCoinFormOptionsDependencies(): Promise<CoinFormOptionsDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const maintenanceClient = await getMaintenanceApiClient()
-
-  return {
-    getCoinMaintenanceOptions: async () =>
-      (await maintenanceClient.coins.options({})).data,
-  }
-}
-
 export async function loadCoinFormOptions(
   dependencies: CoinFormOptionsDependencies
 ): Promise<CoinFormOptions> {

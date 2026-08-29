@@ -3,10 +3,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { getAuthSession } from "@/lib/auth-session"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-import {
-  getCoinFormOptionsDependencies,
-  loadCoinFormOptions,
-} from "./coin-form.shared"
+import { loadCoinFormOptions } from "./coin-form.shared"
 import type {
   CoinFormOptionsDependencies,
   CoinFormOptions,
@@ -17,6 +14,7 @@ import type {
   MaintenancePageLoaderData,
 } from "../../maintenance-page"
 import { hasCoinMaintenanceAccess } from "../actions"
+import { getCoinCreateDependencies } from "../coin-loaders.server"
 
 type CreateCoinPageData = {
   options: CoinFormOptions
@@ -34,12 +32,13 @@ export async function loadCoinCreatePageData(
     }
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getCoinFormOptionsDependencies())
+  if (!dependencies) {
+    throw new Error("Coin create loading must run through its server function.")
+  }
 
   return {
     status: "success",
-    options: await loadCoinFormOptions(resolvedDependencies),
+    options: await loadCoinFormOptions(dependencies),
   }
 }
 
@@ -47,7 +46,10 @@ const getCoinCreateLoaderData = createServerFn({
   method: "GET",
 }).handler(async () => {
   const session = await getAuthSession()
-  const result = await loadCoinCreatePageData(session?.user ?? null)
+  const result = await loadCoinCreatePageData(
+    session?.user ?? null,
+    await getCoinCreateDependencies()
+  )
 
   return toMaintenancePageLoaderData(result)
 })

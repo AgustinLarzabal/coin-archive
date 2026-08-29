@@ -29,16 +29,16 @@ describe("composition-maintenance public API", () => {
     }
 
     const coinFormSource = readFeatureSource(
-      new URL("../coin-maintenance/editor/", FEATURE_DIRECTORY_URL),
-      "coin-form.shared.ts"
+      new URL("../coin-maintenance/", FEATURE_DIRECTORY_URL),
+      "coin-loaders.server.ts"
     )
-    expect(coinFormSource).toContain("maintenanceClient.coins.options")
+    expect(coinFormSource).toContain("client.coins.options")
     expect(coinFormSource).not.toMatch(/\n\s+getCompositions,/)
 
     const listingSource = readFeatureSource(
-      new URL("../coin-maintenance/listing/", FEATURE_DIRECTORY_URL),
-      "coin-maintenance-route-data.ts"
+      new URL("../coin-maintenance/", FEATURE_DIRECTORY_URL),
+      "coin-loaders.server.ts"
     )
-    expect(listingSource).toContain("maintenanceClient.coins.options")
+    expect(listingSource).toContain("client.coins.options")
   })
 })

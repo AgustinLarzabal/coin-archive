@@ -23,10 +23,9 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import { Label } from "@coin-archive/ui/components/label"
 
-import { getAuthSession } from "@/lib/auth-session"
-
-import { submitDeleteCoin } from "../actions"
 import type { CoinDeleteMutationResult } from "../actions"
+import { deleteCoin } from "../actions.server"
+import { getRequestAuthSession } from "@/lib/auth-session.server"
 
 const deleteCoinAction = createServerFn({
   method: "POST",
@@ -35,9 +34,9 @@ const deleteCoinAction = createServerFn({
     (data: { confirmationTitle: string; etag: string; id: string }) => data
   )
   .handler(async ({ data }) => {
-    const session = await getAuthSession()
+    const session = await getRequestAuthSession()
 
-    return submitDeleteCoin(session?.user ?? null, data)
+    return deleteCoin(session?.user ?? null, data)
   })
 
 type DeleteCoinProps = {

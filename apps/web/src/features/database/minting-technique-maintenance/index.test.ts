@@ -29,10 +29,10 @@ describe("minting-technique-maintenance public API", () => {
     }
 
     const coinFormSource = readFeatureSource(
-      new URL("../coin-maintenance/editor/", FEATURE_DIRECTORY_URL),
-      "coin-form.shared.ts"
+      new URL("../coin-maintenance/", FEATURE_DIRECTORY_URL),
+      "coin-loaders.server.ts"
     )
-    expect(coinFormSource).toContain("maintenanceClient.coins.options")
+    expect(coinFormSource).toContain("client.coins.options")
     expect(coinFormSource).not.toMatch(/\n\s+getMintingTechniques,/)
   })
 })

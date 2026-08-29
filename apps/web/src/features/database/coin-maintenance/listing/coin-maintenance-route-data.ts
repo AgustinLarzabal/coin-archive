@@ -18,6 +18,7 @@ import type {
   MaintenancePageLoadResult,
   MaintenancePageLoaderData,
 } from "../../maintenance-page"
+import { getCoinMaintenanceReadDependencies } from "../coin-loaders.server"
 
 export const COIN_MAINTENANCE_PAGE_SIZE = 50
 
@@ -131,17 +132,6 @@ const COIN_MAINTENANCE_FILTER_KEYS = [
   ["composition", "compositionCode"],
 ] as const
 
-async function getDefaultCoinMaintenanceReadDependencies(): Promise<CoinMaintenanceReadDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const maintenanceClient = await getMaintenanceApiClient()
-
-  return {
-    listCoins: maintenanceClient.coins.list,
-    getOptions: () => maintenanceClient.coins.options({}),
-  }
-}
-
 function hasCoinMaintenanceAccess(
   collector: CollectorWithRole | null
 ): collector is CollectorWithRole {
@@ -191,8 +181,9 @@ export async function loadCoinMaintenancePageData(
     }
   }
 
-  const resolvedDependencies =
-    dependencies ?? (await getDefaultCoinMaintenanceReadDependencies())
+  if (!dependencies) {
+    throw new Error("Coin listing must run through its server function.")
+  }
 
   const input = {
     q: loaderDeps.titleQuery,
@@ -203,8 +194,8 @@ export async function loadCoinMaintenancePageData(
     composition: loaderDeps.compositionCode,
   }
   const [items, options] = await Promise.all([
-    loadAllCoinMaintenanceItems(resolvedDependencies.listCoins, input),
-    resolvedDependencies.getOptions(),
+    loadAllCoinMaintenanceItems(dependencies.listCoins, input),
+    dependencies.getOptions(),
   ])
   const page = loaderDeps.page ?? 1
   const totalItems = items.length
@@ -282,7 +273,8 @@ const getCoinMaintenanceLoaderData = createServerFn({
     const session = await getAuthSession()
     const result = await loadCoinMaintenancePageData(
       session?.user ?? null,
-      data
+      data,
+      await getCoinMaintenanceReadDependencies()
     )
 
     return toMaintenancePageLoaderData(result)

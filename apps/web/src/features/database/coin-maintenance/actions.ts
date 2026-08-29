@@ -518,46 +518,6 @@ type CoinDeleteDependencies = {
   getCoinMaintenanceDeleteSummary: MaintenanceApiClient["coins"]["deleteSummary"]
 }
 
-async function getDefaultCoinReplaceDependencies(): Promise<CoinReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  return { replaceCoin: (await getMaintenanceApiClient()).coins.replace }
-}
-
-async function getDefaultCoinCreateDependencies(): Promise<CoinCreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createCoin: client.coins.create,
-    createIdempotencyKey: () => crypto.randomUUID(),
-  }
-}
-
-async function getDefaultSurfaceImageUploadDependencies(): Promise<
-  SurfaceImageUploadDependencies & SurfaceImageUploadRemovalDependencies
-> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    authorizeUpload: client.surfaceImageUploads.authorize,
-    cancelUpload: client.surfaceImageUploads.cancel,
-    createIdempotencyKey: () => crypto.randomUUID(),
-  }
-}
-
-async function getDefaultDeleteDependencies(): Promise<CoinDeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-
-  return {
-    deleteCoin: client.coins.delete,
-    getCoinMaintenanceDeleteSummary: client.coins.deleteSummary,
-  }
-}
-
 function createAuthorizationError(): CoinMutationErrorResult {
   return createFormErrorResult(COIN_AUTHORIZATION_ERROR)
 }
@@ -721,7 +681,7 @@ export async function authorizeSurfaceImageUpload(
 ): Promise<SurfaceImageUploadAuthorization | CoinMutationErrorResult> {
   try {
     const resolved =
-      dependencies ?? (await getDefaultSurfaceImageUploadDependencies())
+      dependencies ?? missingServerDependencies()
     const result = await resolved.authorizeUpload({
       headers: { "idempotency-key": resolved.createIdempotencyKey() },
       body: input as {
@@ -745,7 +705,7 @@ export async function removeSurfaceImageUpload(
 ): Promise<void | CoinMutationErrorResult> {
   try {
     await (
-      dependencies ?? (await getDefaultSurfaceImageUploadDependencies())
+      dependencies ?? missingServerDependencies()
     ).cancelUpload({ body: input })
   } catch (error) {
     return createFormErrorResult(getSurfaceImageApiError(error))
@@ -779,7 +739,7 @@ export async function submitCreateCoin(
   }
 
   try {
-    const resolved = dependencies ?? (await getDefaultCoinCreateDependencies())
+    const resolved = dependencies ?? missingServerDependencies()
     const created = await resolved.createCoin({
       headers: { "idempotency-key": resolved.createIdempotencyKey() },
       body: mapDraftToCreateBody(validationResult.data),
@@ -910,7 +870,7 @@ export async function submitUpdateCoin(
   const { id, etag, ...draft } = validationResult.data
 
   try {
-    const resolved = dependencies ?? (await getDefaultCoinReplaceDependencies())
+    const resolved = dependencies ?? missingServerDependencies()
     const replaced = await resolved.replaceCoin({
       params: { uuid: id },
       headers: { "if-match": etag },
@@ -990,7 +950,7 @@ export async function submitDeleteCoin(
   }
 
   const resolvedDependencies =
-    dependencies ?? (await getDefaultDeleteDependencies())
+    dependencies ?? missingServerDependencies()
 
   try {
     const deleteSummary = (
@@ -1018,4 +978,10 @@ export async function submitDeleteCoin(
   } catch (error) {
     return getCoinReplaceApiError(error)
   }
+}
+
+function missingServerDependencies(): never {
+  throw new Error(
+    "Coin Maintenance orchestration must be called through its server-function boundary."
+  )
 }

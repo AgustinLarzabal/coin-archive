@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useBlocker, useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { Button } from "@coin-archive/ui/components/button"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
@@ -13,10 +13,7 @@ import type {
   CoinMutationResult,
   CoinReferenceDraft,
 } from "../actions"
-import {
-  coinDraftSchema,
-  getCoinFieldErrors,
-} from "../actions"
+import { coinDraftSchema, getCoinFieldErrors } from "../actions"
 import {
   createEmptyRulerAttribution,
   getInitialCoinDraft,
@@ -33,11 +30,11 @@ import { ProductionChronologySection } from "./sections/production-chronology-se
 import { ThemesSection } from "./sections/themes-section"
 import { FieldError } from "@coin-archive/ui/components/field"
 import {
-  authorizeCoinSurfaceImageUpload,
-  cancelCoinSurfaceImageUpload,
-  createCoin,
-  replaceCoin,
-} from "../actions.server"
+  authorizeCoinSurfaceImageUploadMutation,
+  cancelCoinSurfaceImageUploadMutation,
+  createCoinMutation,
+  replaceCoinMutation,
+} from "../coin-mutations"
 
 const UNSAVED_CHANGES_WARNING =
   "You have unsaved changes. Are you sure you want to leave this page?"
@@ -45,47 +42,6 @@ const UNSAVED_CHANGES_WARNING =
 type CoinFormProps =
   | { mode: "create"; options: CoinFormOptions }
   | { coin: EditableCoinRecord; mode: "edit"; options: CoinFormOptions }
-
-const createCoinAction = createServerFn({ method: "POST" })
-  .inputValidator((data: CoinDraft) => data)
-  .handler(async ({ data }) => {
-    const session = await getRequestAuthSession()
-    return createCoin(session?.user ?? null, data)
-  })
-
-const updateCoinAction = createServerFn({ method: "POST" })
-  .inputValidator((data: CoinDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => {
-    const session = await getRequestAuthSession()
-    return replaceCoin(session?.user ?? null, data)
-  })
-
-const authorizeSurfaceImageUploadAction = createServerFn({ method: "POST" })
-  .inputValidator(
-    (data: {
-      surface: "obverse" | "reverse" | "edge"
-      contentType: string
-      contentLength: number
-    }) => data
-  )
-  .handler(async ({ data }) => {
-    return authorizeCoinSurfaceImageUpload(data)
-  })
-
-const removeSurfaceImageUploadAction = createServerFn({ method: "POST" })
-  .inputValidator(
-    (data: { surface: "obverse" | "reverse" | "edge"; reference: string }) =>
-      data
-  )
-  .handler(async ({ data }) => {
-    return cancelCoinSurfaceImageUpload(data)
-  })
-
-async function getRequestAuthSession() {
-  const { getRequestAuthSession: resolveRequestAuthSession } =
-    await import("@/lib/auth-session.server")
-  return resolveRequestAuthSession()
-}
 
 function getCoinDraftValidationErrors(draft: CoinDraft): CoinFieldErrors {
   const parsedDraft = coinDraftSchema.safeParse(draft)
@@ -126,10 +82,12 @@ function CoinFormNavigationBlocker({
 export function CoinForm(props: CoinFormProps) {
   const isEditMode = props.mode === "edit"
   const router = useRouter()
-  const createCoin = useServerFn(createCoinAction)
-  const updateCoin = useServerFn(updateCoinAction)
-  const authorizeImageUpload = useServerFn(authorizeSurfaceImageUploadAction)
-  const removeImageUpload = useServerFn(removeSurfaceImageUploadAction)
+  const createCoin = useServerFn(createCoinMutation)
+  const updateCoin = useServerFn(replaceCoinMutation)
+  const authorizeImageUpload = useServerFn(
+    authorizeCoinSurfaceImageUploadMutation
+  )
+  const removeImageUpload = useServerFn(cancelCoinSurfaceImageUploadMutation)
   const initialDraft = getInitialCoinDraft(props)
   const [fieldErrors, setFieldErrors] = useState<CoinFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)

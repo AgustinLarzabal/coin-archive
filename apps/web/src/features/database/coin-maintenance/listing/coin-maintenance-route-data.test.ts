@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import {
-  COIN_MAINTENANCE_PAGE_SIZE,
-  loadCoinMaintenancePageData,
-} from "./coin-maintenance-route-data"
+import { COIN_MAINTENANCE_PAGE_SIZE } from "./coin-maintenance-route-data"
+import { loadCoinMaintenancePageData } from "../coin-loaders.server"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",

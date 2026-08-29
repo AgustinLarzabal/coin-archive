@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { loadCoinEditPageData } from "./coin-edit-route-data"
+import { loadCoinEditPageData } from "../coin-loaders.server"
 import type { EditableCoinRecord } from "./coin-form.shared"
 
 vi.mock("@/components/access-denied", () => ({

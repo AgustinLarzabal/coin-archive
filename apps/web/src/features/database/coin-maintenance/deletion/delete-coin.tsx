@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { CoinMaintenanceDeleteSummary } from "@coin-archive/api"
 import {
   AlertDialog,
@@ -24,20 +24,7 @@ import { Input } from "@coin-archive/ui/components/input"
 import { Label } from "@coin-archive/ui/components/label"
 
 import type { CoinDeleteMutationResult } from "../actions"
-import { deleteCoin } from "../actions.server"
-import { getRequestAuthSession } from "@/lib/auth-session.server"
-
-const deleteCoinAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: { confirmationTitle: string; etag: string; id: string }) => data
-  )
-  .handler(async ({ data }) => {
-    const session = await getRequestAuthSession()
-
-    return deleteCoin(session?.user ?? null, data)
-  })
+import { deleteCoinMutation } from "../coin-mutations"
 
 type DeleteCoinProps = {
   coinId: string
@@ -101,7 +88,7 @@ function applyDeleteResult(
 }
 
 export function DeleteCoin({ coinId, etag, deleteSummary }: DeleteCoinProps) {
-  const deleteCoin = useServerFn(deleteCoinAction)
+  const deleteCoin = useServerFn(deleteCoinMutation)
   const [confirmationTitle, setConfirmationTitle] = useState("")
   const [confirmationError, setConfirmationError] = useState<string | null>(
     null

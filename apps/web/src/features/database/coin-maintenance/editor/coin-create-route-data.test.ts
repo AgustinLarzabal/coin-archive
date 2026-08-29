@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { loadCoinCreatePageData } from "./coin-create-route-data"
+import { loadCoinCreatePageData } from "../coin-loaders.server"
 
 vi.mock("@/components/access-denied", () => ({
   AccessDenied: () => "Access denied",

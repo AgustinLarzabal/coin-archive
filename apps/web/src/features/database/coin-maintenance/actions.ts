@@ -5,13 +5,13 @@ import type { MaintenanceApiClient } from "@coin-archive/api"
 import { getCollectorRole } from "@/lib/collector-role"
 import type { CollectorWithRole } from "@/lib/collector-role"
 
-type SurfaceImageUploadRequest = {
+export type SurfaceImageUploadRequest = {
   contentLength: number
   contentType: string
   surface: "obverse" | "reverse" | "edge"
 }
 
-type SurfaceImageUploadAuthorization = {
+export type SurfaceImageUploadAuthorization = {
   reference: string
   uploadUrl: string
 }
@@ -445,7 +445,7 @@ export type CoinDraft = z.input<typeof coinDraftSchema>
 export type CoinReferenceDraft = z.input<typeof referenceSchema>
 export type CoinFaceSurfaceDraft = z.input<typeof faceSurfaceSchema>
 export type CoinEdgeSurfaceDraft = z.input<typeof edgeSurfaceSchema>
-type CoinDraftData = z.output<typeof coinDraftSchema>
+export type CoinDraftData = z.output<typeof coinDraftSchema>
 type CoinFaceSurfaceData = z.output<typeof faceSurfaceSchema>
 type CoinEdgeSurfaceData = z.output<typeof edgeSurfaceSchema>
 type CoinFaceSurfacePersistenceData = Omit<
@@ -456,8 +456,8 @@ type CoinEdgeSurfacePersistenceData = Omit<
   CoinEdgeSurfaceData,
   "imageUploadReference"
 >
-type UpdateCoinInput = z.input<typeof updateCoinInputSchema>
-type DeleteCoinInput = z.input<typeof deleteCoinInputSchema>
+export type UpdateCoinInput = z.input<typeof updateCoinInputSchema>
+export type DeleteCoinInput = z.input<typeof deleteCoinInputSchema>
 type CoinPersistenceInput = Omit<
   CoinDraftData,
   "demonetizationStatus" | "rulers" | "mints" | "themes" | "surfaces"
@@ -474,7 +474,7 @@ type CoinPersistenceInput = Omit<
 }
 export type CoinFieldErrors = Partial<Record<string, string>>
 
-type CoinMutationErrorResult = {
+export type CoinMutationErrorResult = {
   status: "error"
   fieldErrors: CoinFieldErrors
   formError?: string
@@ -496,33 +496,35 @@ export type CoinDeleteMutationResult =
       redirectTo: "/database/coins"
     }
 
-type CoinReplaceDependencies = {
+export type CoinReplaceDependencies = {
   replaceCoin: MaintenanceApiClient["coins"]["replace"]
 }
 
-type CoinCreateDependencies = {
+export type CoinCreateDependencies = {
   createCoin: MaintenanceApiClient["coins"]["create"]
   createIdempotencyKey: () => string
 }
 
-type SurfaceImageUploadDependencies = {
+export type SurfaceImageUploadDependencies = {
   authorizeUpload: MaintenanceApiClient["surfaceImageUploads"]["authorize"]
   createIdempotencyKey: () => string
 }
-type SurfaceImageUploadRemovalDependencies = {
+export type SurfaceImageUploadRemovalDependencies = {
   cancelUpload: MaintenanceApiClient["surfaceImageUploads"]["cancel"]
 }
 
-type CoinDeleteDependencies = {
+export type CoinDeleteDependencies = {
   deleteCoin: MaintenanceApiClient["coins"]["delete"]
   getCoinMaintenanceDeleteSummary: MaintenanceApiClient["coins"]["deleteSummary"]
 }
 
-function createAuthorizationError(): CoinMutationErrorResult {
+export function createAuthorizationError(): CoinMutationErrorResult {
   return createFormErrorResult(COIN_AUTHORIZATION_ERROR)
 }
 
-function createFormErrorResult(formError: string): CoinMutationErrorResult {
+export function createFormErrorResult(
+  formError: string
+): CoinMutationErrorResult {
   return {
     status: "error",
     fieldErrors: {},
@@ -530,7 +532,7 @@ function createFormErrorResult(formError: string): CoinMutationErrorResult {
   }
 }
 
-function createFieldErrorResult(
+export function createFieldErrorResult(
   fieldErrors: CoinFieldErrors
 ): CoinMutationErrorResult {
   return {
@@ -585,7 +587,7 @@ function getIssueMessage(issue: z.ZodIssue) {
   return issue.message
 }
 
-function validateInput<TSchema extends z.ZodType>(
+export function validateInput<TSchema extends z.ZodType>(
   schema: TSchema,
   input: z.input<TSchema>
 ) {
@@ -675,44 +677,7 @@ function mapDraftToPersistenceInput(
   }
 }
 
-export async function authorizeSurfaceImageUpload(
-  input: SurfaceImageUploadRequest,
-  dependencies?: SurfaceImageUploadDependencies
-): Promise<SurfaceImageUploadAuthorization | CoinMutationErrorResult> {
-  try {
-    const resolved =
-      dependencies ?? missingServerDependencies()
-    const result = await resolved.authorizeUpload({
-      headers: { "idempotency-key": resolved.createIdempotencyKey() },
-      body: input as {
-        surface: "obverse" | "reverse" | "edge"
-        contentType: "image/jpeg" | "image/png" | "image/webp"
-        contentLength: number
-      },
-    })
-    return {
-      reference: result.body.reference,
-      uploadUrl: result.body.uploadUrl,
-    }
-  } catch (error) {
-    return createFormErrorResult(getSurfaceImageApiError(error))
-  }
-}
-
-export async function removeSurfaceImageUpload(
-  input: { reference: string; surface: "obverse" | "reverse" | "edge" },
-  dependencies?: SurfaceImageUploadRemovalDependencies
-): Promise<void | CoinMutationErrorResult> {
-  try {
-    await (
-      dependencies ?? missingServerDependencies()
-    ).cancelUpload({ body: input })
-  } catch (error) {
-    return createFormErrorResult(getSurfaceImageApiError(error))
-  }
-}
-
-function getSurfaceImageApiError(error: unknown) {
+export function getSurfaceImageApiError(error: unknown) {
   const problem = getApiProblem(error)
   if (problem === null) return SURFACE_IMAGE_UPLOAD_ERROR
   return problem.code === "authentication_required" ||
@@ -723,39 +688,7 @@ function getSurfaceImageApiError(error: unknown) {
       : SURFACE_IMAGE_UPLOAD_ERROR
 }
 
-export async function submitCreateCoin(
-  collector: CollectorWithRole | null,
-  input: CoinDraft,
-  dependencies?: CoinCreateDependencies
-): Promise<CoinMutationResult> {
-  if (!hasCoinMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validateInput(coinDraftSchema, input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  try {
-    const resolved = dependencies ?? missingServerDependencies()
-    const created = await resolved.createCoin({
-      headers: { "idempotency-key": resolved.createIdempotencyKey() },
-      body: mapDraftToCreateBody(validationResult.data),
-    })
-
-    return {
-      status: "success",
-      coinId: created.body.data.id,
-      message: "Coin created.",
-    }
-  } catch (error) {
-    return getCoinCreateApiError(error)
-  }
-}
-
-function mapDraftToCreateBody(input: CoinDraftData) {
+export function mapDraftToCreateBody(input: CoinDraftData) {
   const fields = mapDraftToPersistenceInput(input)
   const surfaceFields = (value: CoinFaceSurfaceData | CoinEdgeSurfaceData) => {
     const imageUploadReference = value.imageUploadReference.trim() || null
@@ -797,7 +730,7 @@ function mapDraftToCreateBody(input: CoinDraftData) {
   }
 }
 
-function getCoinCreateApiError(error: unknown): CoinMutationErrorResult {
+export function getCoinCreateApiError(error: unknown): CoinMutationErrorResult {
   const problem = getApiProblem(error)
   if (problem === null) return createFormErrorResult(COIN_GENERIC_SAVE_ERROR)
   if (
@@ -852,42 +785,7 @@ function getApiProblem(error: unknown): {
   return { code: body.code, ...(invalidParams ? { invalidParams } : {}) }
 }
 
-export async function submitUpdateCoin(
-  collector: CollectorWithRole | null,
-  input: UpdateCoinInput,
-  dependencies?: CoinReplaceDependencies
-): Promise<CoinMutationResult> {
-  if (!hasCoinMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validateInput(updateCoinInputSchema, input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const { id, etag, ...draft } = validationResult.data
-
-  try {
-    const resolved = dependencies ?? missingServerDependencies()
-    const replaced = await resolved.replaceCoin({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body: mapDraftToReplaceBody(draft),
-    })
-
-    return {
-      status: "success",
-      coinId: replaced.body.data.id,
-      message: "Saved.",
-    }
-  } catch (error) {
-    return getCoinReplaceApiError(error)
-  }
-}
-
-function mapDraftToReplaceBody(input: CoinDraftData) {
+export function mapDraftToReplaceBody(input: CoinDraftData) {
   const fields = mapDraftToCreateBody(input)
   const face = (surface: CoinFaceSurfaceData) => {
     const common = {
@@ -923,7 +821,9 @@ function mapDraftToReplaceBody(input: CoinDraftData) {
   }
 }
 
-function getCoinReplaceApiError(error: unknown): CoinMutationErrorResult {
+export function getCoinReplaceApiError(
+  error: unknown
+): CoinMutationErrorResult {
   const problem = getApiProblem(error)
   if (problem?.code === "coin_precondition_failed") {
     return createFormErrorResult(COIN_EDIT_CONFLICT_ERROR)
@@ -932,56 +832,4 @@ function getCoinReplaceApiError(error: unknown): CoinMutationErrorResult {
     return createFormErrorResult(COIN_MISSING_ERROR)
   }
   return getCoinCreateApiError(error)
-}
-
-export async function submitDeleteCoin(
-  collector: CollectorWithRole | null,
-  input: DeleteCoinInput,
-  dependencies?: CoinDeleteDependencies
-): Promise<CoinDeleteMutationResult> {
-  if (!hasCoinMaintenanceAccess(collector)) {
-    return createAuthorizationError()
-  }
-
-  const validationResult = validateInput(deleteCoinInputSchema, input)
-
-  if (!validationResult.success) {
-    return validationResult.result
-  }
-
-  const resolvedDependencies =
-    dependencies ?? missingServerDependencies()
-
-  try {
-    const deleteSummary = (
-      await resolvedDependencies.getCoinMaintenanceDeleteSummary({
-        uuid: validationResult.data.id,
-      })
-    ).data
-
-    if (validationResult.data.confirmationTitle !== deleteSummary.title) {
-      return createFieldErrorResult({
-        confirmationTitle: COIN_DELETE_CONFIRMATION_ERROR,
-      })
-    }
-
-    await resolvedDependencies.deleteCoin({
-      params: { uuid: validationResult.data.id },
-      headers: { "if-match": validationResult.data.etag },
-    })
-
-    return {
-      status: "success",
-      message: "Coin deleted.",
-      redirectTo: "/database/coins",
-    }
-  } catch (error) {
-    return getCoinReplaceApiError(error)
-  }
-}
-
-function missingServerDependencies(): never {
-  throw new Error(
-    "Coin Maintenance orchestration must be called through its server-function boundary."
-  )
 }

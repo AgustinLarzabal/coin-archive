@@ -1,4 +1,3 @@
-import { createServerFn } from "@tanstack/react-start"
 import type {
   CoinMaintenanceOptionsOutput,
   CompositionOption,
@@ -10,15 +9,10 @@ import type {
 } from "@coin-archive/api"
 import { z } from "zod"
 
-import { getAuthSession } from "@/lib/auth-session"
-import type { CollectorWithRole } from "@/lib/collector-role"
-
-import { toMaintenancePageLoaderData } from "../../maintenance-page"
 import type {
   MaintenancePageLoadResult,
   MaintenancePageLoaderData,
 } from "../../maintenance-page"
-import { getCoinMaintenanceReadDependencies } from "../coin-loaders.server"
 
 export const COIN_MAINTENANCE_PAGE_SIZE = 50
 
@@ -60,7 +54,8 @@ export const coinMaintenanceSearchSchema = z.object({
   page: optionalPositiveIntegerSchema,
 })
 
-const coinMaintenanceLoaderDepsSchema = z.object({
+export type CoinMaintenanceSearch = z.infer<typeof coinMaintenanceSearchSchema>
+export const coinMaintenanceLoaderDepsSchema = z.object({
   titleQuery: optionalStringSchema,
   issuerCode: optionalStringSchema,
   rulerCode: optionalStringSchema,
@@ -69,13 +64,11 @@ const coinMaintenanceLoaderDepsSchema = z.object({
   compositionCode: optionalStringSchema,
   page: optionalPositiveIntegerSchema,
 })
-
-export type CoinMaintenanceSearch = z.infer<typeof coinMaintenanceSearchSchema>
 export type CoinMaintenanceLoaderDeps = z.infer<
   typeof coinMaintenanceLoaderDepsSchema
 >
 
-type CoinMaintenanceFilterOptions = {
+export type CoinMaintenanceFilterOptions = {
   issuers: IssuerOption[]
   rulers: RulerOption[]
   distributions: DistributionOption[]
@@ -83,18 +76,18 @@ type CoinMaintenanceFilterOptions = {
   compositions: CompositionOption[]
 }
 
-type CoinMaintenancePageData = {
+export type CoinMaintenancePageData = {
   search: CoinMaintenanceSearch
   list: CoinMaintenanceWebListResult
   filterOptions: CoinMaintenanceFilterOptions
 }
 
-type CoinMaintenanceReadDependencies = {
+export type CoinMaintenanceReadDependencies = {
   listCoins: MaintenanceApiClient["coins"]["list"]
   getOptions: () => Promise<CoinMaintenanceOptionsOutput>
 }
 
-type CoinMaintenanceWebListItem = {
+export type CoinMaintenanceWebListItem = {
   id: string
   title: string
   issuer: { code: string; name: string }
@@ -117,7 +110,7 @@ export type CoinMaintenanceWebListResult = {
   hasPreviousPage: boolean
 }
 
-type LoadCoinMaintenancePageDataResult =
+export type LoadCoinMaintenancePageDataResult =
   MaintenancePageLoadResult<CoinMaintenancePageData>
 
 export type CoinMaintenancePageLoaderData =
@@ -131,12 +124,6 @@ const COIN_MAINTENANCE_FILTER_KEYS = [
   ["currency", "currencyCode"],
   ["composition", "compositionCode"],
 ] as const
-
-function hasCoinMaintenanceAccess(
-  collector: CollectorWithRole | null
-): collector is CollectorWithRole {
-  return collector?.role === "editor" || collector?.role === "admin"
-}
 
 export function getCoinMaintenanceLoaderDeps(
   search: CoinMaintenanceSearch
@@ -152,7 +139,7 @@ export function getCoinMaintenanceLoaderDeps(
   return loaderDeps
 }
 
-function mapLoaderDepsToSearch(
+export function mapLoaderDepsToSearch(
   loaderDeps: CoinMaintenanceLoaderDeps
 ): CoinMaintenanceSearch {
   const search = {
@@ -168,122 +155,4 @@ function mapLoaderDepsToSearch(
   }
 
   return search
-}
-
-export async function loadCoinMaintenancePageData(
-  collector: CollectorWithRole | null,
-  loaderDeps: CoinMaintenanceLoaderDeps,
-  dependencies?: CoinMaintenanceReadDependencies
-): Promise<LoadCoinMaintenancePageDataResult> {
-  if (!hasCoinMaintenanceAccess(collector)) {
-    return {
-      status: "error",
-    }
-  }
-
-  if (!dependencies) {
-    throw new Error("Coin listing must run through its server function.")
-  }
-
-  const input = {
-    q: loaderDeps.titleQuery,
-    issuer: loaderDeps.issuerCode,
-    ruler: loaderDeps.rulerCode,
-    distribution: loaderDeps.distributionCode,
-    currency: loaderDeps.currencyCode,
-    composition: loaderDeps.compositionCode,
-  }
-  const [items, options] = await Promise.all([
-    loadAllCoinMaintenanceItems(dependencies.listCoins, input),
-    dependencies.getOptions(),
-  ])
-  const page = loaderDeps.page ?? 1
-  const totalItems = items.length
-  const totalPages = Math.ceil(totalItems / COIN_MAINTENANCE_PAGE_SIZE)
-  const pageStart = (page - 1) * COIN_MAINTENANCE_PAGE_SIZE
-  const list: CoinMaintenanceWebListResult = {
-    items: items.slice(pageStart, pageStart + COIN_MAINTENANCE_PAGE_SIZE),
-    page,
-    pageSize: COIN_MAINTENANCE_PAGE_SIZE,
-    totalItems,
-    totalPages,
-    hasNextPage: page < totalPages,
-    hasPreviousPage: page > 1 && totalItems > 0,
-  }
-  const { issuers, rulers, distributions, currencies, compositions } =
-    options.data
-
-  return {
-    status: "success",
-    search: mapLoaderDepsToSearch(loaderDeps),
-    list,
-    filterOptions: {
-      issuers,
-      rulers,
-      distributions,
-      currencies,
-      compositions,
-    },
-  }
-}
-
-async function loadAllCoinMaintenanceItems(
-  listCoins: MaintenanceApiClient["coins"]["list"],
-  filters: {
-    q?: string
-    issuer?: string
-    ruler?: string
-    distribution?: string
-    currency?: string
-    composition?: string
-  }
-): Promise<CoinMaintenanceWebListItem[]> {
-  const items: CoinMaintenanceWebListItem[] = []
-  const seenCursors = new Set<string>()
-  let cursor: string | undefined
-  do {
-    const result = await listCoins({
-      ...filters,
-      ...(cursor === undefined ? {} : { cursor }),
-      limit: 100,
-      sort: "updatedAt",
-      order: "desc",
-    })
-    items.push(
-      ...result.data.map((item) => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-        updatedAt: new Date(item.updatedAt),
-      }))
-    )
-    cursor = result.nextCursor ?? undefined
-    if (cursor !== undefined && seenCursors.has(cursor)) {
-      throw new Error("Coin Maintenance API repeated a cursor.")
-    }
-    if (cursor !== undefined) seenCursors.add(cursor)
-  } while (cursor !== undefined)
-  return items
-}
-
-const getCoinMaintenanceLoaderData = createServerFn({
-  method: "GET",
-})
-  .inputValidator(coinMaintenanceLoaderDepsSchema)
-  .handler(async ({ data }) => {
-    const session = await getAuthSession()
-    const result = await loadCoinMaintenancePageData(
-      session?.user ?? null,
-      data,
-      await getCoinMaintenanceReadDependencies()
-    )
-
-    return toMaintenancePageLoaderData(result)
-  })
-
-export function loadCoinMaintenanceRouteData({
-  deps,
-}: {
-  deps: CoinMaintenanceLoaderDeps
-}) {
-  return getCoinMaintenanceLoaderData({ data: deps })
 }

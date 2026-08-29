@@ -1,17 +1,19 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  authorizeSurfaceImageUpload,
   COIN_AUTHORIZATION_ERROR,
   COIN_DELETE_CONFIRMATION_ERROR,
   COIN_EDIT_CONFLICT_ERROR,
   COIN_MISSING_ERROR,
   hasCoinMaintenanceAccess,
+} from "./actions"
+import {
+  authorizeSurfaceImageUpload,
   removeSurfaceImageUpload,
   submitCreateCoin,
   submitDeleteCoin,
   submitUpdateCoin,
-} from "./actions"
+} from "./actions.server"
 import type { CoinDraft } from "./actions"
 
 const VALID_COIN_ID = "2c717ddb-95a2-4dad-a280-f58a4779aee8"

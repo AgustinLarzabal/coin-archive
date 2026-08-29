@@ -2,7 +2,7 @@ import type { Orientation } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { ORIENTATION_AUTHORIZATION_ERROR } from "./actions"
-import { loadOrientationMaintenanceOrientations } from "./orientation-maintenance-route-data"
+import { loadOrientationMaintenanceOrientations } from "./orientation-loaders.server"
 
 const orientations: Orientation[] = [
   {

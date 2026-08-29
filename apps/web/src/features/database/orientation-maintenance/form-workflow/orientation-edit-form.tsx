@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Orientation as OrientationOption } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateOrientation } from "../actions"
+import { replaceOrientationMutation } from "../orientation-mutations"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
 import { createOrientationInputSchema } from "../orientation-validation"
 import type { OrientationFieldErrors } from "../orientation-validation"
@@ -18,27 +18,18 @@ import {
   createOrientationDraft,
   hasOrientationEditChanges,
 } from "./orientation-form.shared"
-import type { OrientationDraft } from "./orientation-form.shared"
 
 type OrientationEditFormProps = {
   orientation: OrientationOption
   onSaved?: () => void
 }
 
-const updateOrientationAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: OrientationDraft & { id: string; etag: string }) => data
-  )
-  .handler(async ({ data }) => submitUpdateOrientation(data))
-
 export function OrientationEditForm({
   orientation,
   onSaved,
 }: OrientationEditFormProps) {
   const router = useRouter()
-  const updateOrientation = useServerFn(updateOrientationAction)
+  const updateOrientation = useServerFn(replaceOrientationMutation)
   const [fieldErrors, setFieldErrors] = useState<OrientationFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

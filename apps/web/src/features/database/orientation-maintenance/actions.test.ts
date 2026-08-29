@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { ORIENTATION_AUTHORIZATION_ERROR } from "./actions"
 import {
-  ORIENTATION_AUTHORIZATION_ERROR,
   submitCreateOrientation,
   submitDeleteOrientation,
   submitUpdateOrientation,
-} from "./actions"
+} from "./actions.server"
 import {
   ORIENTATION_DUPLICATE_CODE_ERROR,
   ORIENTATION_IN_USE_DELETE_ERROR,
@@ -45,8 +45,8 @@ describe("Orientation web mutation adapter", () => {
 
     await expect(
       submitCreateOrientation(
-        { code: "Reeded", name: " " },
-        { createOrientation, createIdempotencyKey: () => "attempt-1" }
+        { code: "Reeded", name: " ", idempotencyKey: "attempt-1" },
+        { createOrientation }
       )
     ).resolves.toMatchObject({
       status: "error",
@@ -67,8 +67,8 @@ describe("Orientation web mutation adapter", () => {
 
     await expect(
       submitCreateOrientation(
-        { code: " reeded ", name: " Reeded " },
-        { createOrientation, createIdempotencyKey: () => "attempt-1" }
+        { code: " reeded ", name: " Reeded ", idempotencyKey: "attempt-1" },
+        { createOrientation }
       )
     ).resolves.toStrictEqual({
       status: "success",
@@ -115,24 +115,22 @@ describe("Orientation web mutation adapter", () => {
   it("maps API authorization, duplicate, stale, and dependency problems to current feedback", async () => {
     await expect(
       submitCreateOrientation(
-        { code: "reeded", name: "Reeded" },
+        { code: "reeded", name: "Reeded", idempotencyKey: "attempt-1" },
         {
           createOrientation: vi
             .fn()
             .mockRejectedValue(problem("editor_access_required", 403)),
-          createIdempotencyKey: () => "attempt-1",
         }
       )
     ).resolves.toMatchObject({ formError: ORIENTATION_AUTHORIZATION_ERROR })
 
     await expect(
       submitCreateOrientation(
-        { code: "reeded", name: "Reeded" },
+        { code: "reeded", name: "Reeded", idempotencyKey: "attempt-1" },
         {
           createOrientation: vi
             .fn()
             .mockRejectedValue(problem("orientation_code_conflict", 409)),
-          createIdempotencyKey: () => "attempt-1",
         }
       )
     ).resolves.toMatchObject({

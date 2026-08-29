@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   ORIENTATION_DUPLICATE_CODE_ERROR,
   ORIENTATION_GENERIC_SAVE_ERROR,
@@ -11,17 +9,6 @@ import {
   createOrientationFormErrorResult,
 } from "./orientation-mutation-errors"
 import type { OrientationMutationResult } from "./orientation-mutation-errors"
-import {
-  createOrientationInputSchema,
-  deleteOrientationInputSchema,
-  updateOrientationInputSchema,
-  validateOrientationInput,
-} from "./orientation-validation"
-import type {
-  CreateOrientationInput,
-  DeleteOrientationInput,
-  UpdateOrientationInput,
-} from "./orientation-validation"
 
 export const ORIENTATION_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Orientations."
@@ -31,122 +18,13 @@ export type OrientationAuthorizationErrorResult = {
   formError: typeof ORIENTATION_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createOrientation: MaintenanceApiClient["orientations"]["create"]
-  createIdempotencyKey: () => string
-}
-
-type ReplaceDependencies = {
-  replaceOrientation: MaintenanceApiClient["orientations"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteOrientation: MaintenanceApiClient["orientations"]["delete"]
-}
-
 export function createOrientationAuthorizationError(): OrientationAuthorizationErrorResult {
   return { status: "error", formError: ORIENTATION_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createOrientation: client.orientations.create,
-    createIdempotencyKey: () => crypto.randomUUID(),
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceOrientation: client.orientations.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteOrientation: client.orientations.delete }
-}
-
-export async function submitCreateOrientation(
-  input: CreateOrientationInput,
-  dependencies?: CreateDependencies
-): Promise<OrientationMutationResult> {
-  const validation = validateOrientationInput(
-    createOrientationInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createOrientationFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createOrientation({
-      headers: { "idempotency-key": resolved.createIdempotencyKey() },
-      body: validation.data,
-    })
-    return { status: "success", message: "Orientation added." }
-  } catch (error) {
-    return mapOrientationApiProblem(error)
-  }
-}
-
-export async function submitUpdateOrientation(
-  input: UpdateOrientationInput,
-  dependencies?: ReplaceDependencies
-): Promise<OrientationMutationResult> {
-  const validation = validateOrientationInput(
-    updateOrientationInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createOrientationFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
-
-  try {
-    await resolved.replaceOrientation({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: "Saved." }
-  } catch (error) {
-    return mapOrientationApiProblem(error)
-  }
-}
-
-export async function submitDeleteOrientation(
-  input: DeleteOrientationInput,
-  dependencies?: DeleteDependencies
-): Promise<OrientationMutationResult> {
-  const validation = validateOrientationInput(
-    deleteOrientationInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createOrientationFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteOrientation({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
-    })
-    return { status: "success", message: "Orientation deleted." }
-  } catch (error) {
-    return mapOrientationApiProblem(error)
-  }
-}
-
-function mapOrientationApiProblem(error: unknown): OrientationMutationResult {
+export function mapOrientationApiProblem(
+  error: unknown
+): OrientationMutationResult {
   const code = getMaintenanceProblemCode(error)
   switch (code) {
     case "authentication_required":

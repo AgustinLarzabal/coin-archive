@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Orientation as OrientationOption } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteOrientation } from "../actions"
+import { deleteOrientationMutation } from "../orientation-mutations"
 import {
   ORIENTATION_GENERIC_SAVE_ERROR,
   ORIENTATION_IN_USE_DELETE_GUIDANCE,
@@ -44,19 +44,13 @@ type OrientationMaintenanceSheetProps = {
 
 export const ORIENTATION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Orientation. ${ORIENTATION_IN_USE_DELETE_GUIDANCE}`
 
-const deleteOrientationAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteOrientation(data))
-
 export function OrientationMaintenanceSheet({
   orientation,
   open,
   onOpenChange,
 }: OrientationMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteOrientation = useServerFn(deleteOrientationAction)
+  const deleteOrientation = useServerFn(deleteOrientationMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

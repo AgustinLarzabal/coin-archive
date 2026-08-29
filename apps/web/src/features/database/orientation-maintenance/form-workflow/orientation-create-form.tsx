@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateOrientation } from "../actions"
+import { createOrientationMutation } from "../orientation-mutations"
 import type { OrientationMutationResult } from "../orientation-mutation-errors"
 import { createOrientationInputSchema } from "../orientation-validation"
 import type { OrientationFieldErrors } from "../orientation-validation"
@@ -17,25 +17,21 @@ import {
   EMPTY_ORIENTATION_DRAFT,
   isOrientationDraftComplete,
 } from "./orientation-form.shared"
-import type { OrientationDraft } from "./orientation-form.shared"
 
 type OrientationCreateFormProps = {
   onCreated?: () => void
 }
 
-const createOrientationAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: OrientationDraft) => data)
-  .handler(async ({ data }) => submitCreateOrientation(data))
-
 export function OrientationCreateForm({
   onCreated,
 }: OrientationCreateFormProps) {
   const router = useRouter()
-  const createOrientation = useServerFn(createOrientationAction)
+  const createOrientation = useServerFn(createOrientationMutation)
   const [fieldErrors, setFieldErrors] = useState<OrientationFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID()
+  )
 
   function clearFeedback() {
     setFieldErrors({})
@@ -59,12 +55,13 @@ export function OrientationCreateForm({
     validators: { onSubmit: createOrientationInputSchema },
     onSubmit: async ({ value }) => {
       const result = await createOrientation({
-        data: value,
+        data: { ...value, idempotencyKey },
       })
       const shouldRefresh = applyResult(result)
 
       if (shouldRefresh) {
         form.reset()
+        setIdempotencyKey(crypto.randomUUID())
         await router.invalidate()
         onCreated?.()
       }

@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { CATALOGUE_AUTHORIZATION_ERROR } from "./actions"
 import {
-  CATALOGUE_AUTHORIZATION_ERROR,
   submitCreateCatalogue,
   submitDeleteCatalogue,
   submitUpdateCatalogue,
-} from "./actions"
+} from "./actions.server"
 import {
   CATALOGUE_DUPLICATE_CODE_ERROR,
   CATALOGUE_IN_USE_DELETE_ERROR,
+  CATALOGUE_MISSING_ERROR,
   CATALOGUE_STALE_ERROR,
 } from "./catalogue-mutation-errors"
 
@@ -207,6 +208,19 @@ describe("Catalogue web mutation adapter", () => {
         }
       )
     ).resolves.toMatchObject({ formError: CATALOGUE_IN_USE_DELETE_ERROR })
+  })
+
+  it("maps a missing Catalogue returned by the API", async () => {
+    await expect(
+      submitUpdateCatalogue(
+        { id, etag, code: "KM", title: "Standard Catalog of World Coins" },
+        {
+          replaceCatalogue: vi
+            .fn()
+            .mockRejectedValue(problem("catalogue_not_found", 404)),
+        }
+      )
+    ).resolves.toMatchObject({ formError: CATALOGUE_MISSING_ERROR })
   })
 
   it("maps authoritative validation pointers back to current controls", async () => {

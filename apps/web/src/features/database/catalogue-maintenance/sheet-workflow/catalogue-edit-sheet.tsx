@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import {
   Sheet,
   SheetContent,
@@ -28,7 +28,7 @@ import {
 } from "@coin-archive/ui/components/alert-dialog"
 import { Button } from "@coin-archive/ui/components/button"
 import { Icons } from "@/components/icons"
-import { submitDeleteCatalogue } from "../actions"
+import { deleteCatalogueMutation } from "../catalogue-mutations"
 import { CatalogueCreateForm } from "../form-workflow/catalogue-create-form"
 import { CatalogueEditForm } from "../form-workflow/catalogue-edit-form"
 
@@ -38,19 +38,13 @@ type CatalogueEditSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const deleteCatalogueMaintenanceCatalogue = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteCatalogue(data))
-
 export function CatalogueEditSheet({
   catalogue,
   open,
   onOpenChange,
 }: CatalogueEditSheetProps) {
   const router = useRouter()
-  const deleteCatalogue = useServerFn(deleteCatalogueMaintenanceCatalogue)
+  const deleteCatalogue = useServerFn(deleteCatalogueMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

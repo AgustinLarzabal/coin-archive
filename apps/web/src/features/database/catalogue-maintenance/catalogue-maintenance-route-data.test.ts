@@ -2,7 +2,7 @@ import type { Catalogue } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { CATALOGUE_AUTHORIZATION_ERROR } from "./actions"
-import { loadCatalogueMaintenancePageData } from "./catalogue-maintenance-route-data"
+import { loadCatalogueMaintenancePageData } from "./catalogue-loaders.server"
 
 const catalogues: Catalogue[] = [
   {

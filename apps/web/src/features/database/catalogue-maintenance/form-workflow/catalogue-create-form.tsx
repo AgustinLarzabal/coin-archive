@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { FieldError } from "@coin-archive/ui/components/field"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateCatalogue } from "../actions"
+import { createCatalogueMutation } from "../catalogue-mutations"
 import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
 import { createCatalogueInputSchema } from "../catalogue-validation"
 import type { CatalogueFieldErrors } from "../catalogue-validation"
@@ -18,21 +18,14 @@ import {
   EMPTY_CATALOGUE_DRAFT,
   hasCatalogueCreateInput,
 } from "./catalogue-form.shared"
-import type { CatalogueDraft } from "./catalogue-form.shared"
 
 type CatalogueCreateFormProps = {
   onCreated?: () => void
 }
 
-const createCatalogueMaintenanceCatalogue = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CatalogueDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateCatalogue(data))
-
 export function CatalogueCreateForm({ onCreated }: CatalogueCreateFormProps) {
   const router = useRouter()
-  const createCatalogue = useServerFn(createCatalogueMaintenanceCatalogue)
+  const createCatalogue = useServerFn(createCatalogueMutation)
   const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

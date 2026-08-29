@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Catalogue } from "@coin-archive/api"
 import { FieldError } from "@coin-archive/ui/components/field"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateCatalogue } from "../actions"
+import { replaceCatalogueMutation } from "../catalogue-mutations"
 import type { CatalogueMutationResult } from "../catalogue-mutation-errors"
 import { createCatalogueInputSchema } from "../catalogue-validation"
 import type { CatalogueFieldErrors } from "../catalogue-validation"
@@ -19,13 +19,6 @@ import {
   createCatalogueDraft,
   hasCatalogueEditChanges,
 } from "./catalogue-form.shared"
-import type { CatalogueDraft } from "./catalogue-form.shared"
-
-const updateCatalogueMaintenanceCatalogue = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CatalogueDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateCatalogue(data))
 
 type CatalogueEditFormProps = {
   catalogue: Catalogue
@@ -37,7 +30,7 @@ export function CatalogueEditForm({
   onSaved,
 }: CatalogueEditFormProps) {
   const router = useRouter()
-  const updateCatalogue = useServerFn(updateCatalogueMaintenanceCatalogue)
+  const updateCatalogue = useServerFn(replaceCatalogueMutation)
   const [fieldErrors, setFieldErrors] = useState<CatalogueFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   CATALOGUE_DUPLICATE_CODE_ERROR,
   CATALOGUE_GENERIC_SAVE_ERROR,
@@ -10,17 +8,6 @@ import {
   createCatalogueFormErrorResult,
 } from "./catalogue-mutation-errors"
 import type { CatalogueMutationResult } from "./catalogue-mutation-errors"
-import {
-  createCatalogueInputSchema,
-  deleteCatalogueInputSchema,
-  updateCatalogueInputSchema,
-  validateCatalogueInput,
-} from "./catalogue-validation"
-import type {
-  CreateCatalogueInput,
-  DeleteCatalogueInput,
-  UpdateCatalogueInput,
-} from "./catalogue-validation"
 
 export const CATALOGUE_AUTHORIZATION_ERROR =
   "Only Editors and Admins can maintain Catalogues."
@@ -30,112 +17,13 @@ export type CatalogueAuthorizationErrorResult = {
   formError: typeof CATALOGUE_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createCatalogue: MaintenanceApiClient["catalogues"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceCatalogue: MaintenanceApiClient["catalogues"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteCatalogue: MaintenanceApiClient["catalogues"]["delete"]
-}
-
 export function createCatalogueAuthorizationError(): CatalogueAuthorizationErrorResult {
   return { status: "error", formError: CATALOGUE_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createCatalogue: client.catalogues.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceCatalogue: client.catalogues.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteCatalogue: client.catalogues.delete }
-}
-
-export async function submitCreateCatalogue(
-  input: CreateCatalogueInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<CatalogueMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const validation = validateCatalogueInput(createCatalogueInputSchema, fields)
-  if (!validation.success) {
-    return createCatalogueFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createCatalogue({
-      headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
-    })
-    return { status: "success", message: "Catalogue added." }
-  } catch (error) {
-    return mapCatalogueApiProblem(error)
-  }
-}
-
-export async function submitUpdateCatalogue(
-  input: UpdateCatalogueInput,
-  dependencies?: ReplaceDependencies
-): Promise<CatalogueMutationResult> {
-  const validation = validateCatalogueInput(updateCatalogueInputSchema, input)
-  if (!validation.success) {
-    return createCatalogueFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
-
-  try {
-    await resolved.replaceCatalogue({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: "Saved." }
-  } catch (error) {
-    return mapCatalogueApiProblem(error)
-  }
-}
-
-export async function submitDeleteCatalogue(
-  input: DeleteCatalogueInput,
-  dependencies?: DeleteDependencies
-): Promise<CatalogueMutationResult> {
-  const validation = validateCatalogueInput(deleteCatalogueInputSchema, input)
-  if (!validation.success) {
-    return createCatalogueFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteCatalogue({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
-    })
-    return { status: "success", message: "Catalogue deleted." }
-  } catch (error) {
-    return mapCatalogueApiProblem(error)
-  }
-}
-
-function mapCatalogueApiProblem(error: unknown): CatalogueMutationResult {
+export function mapCatalogueApiProblem(
+  error: unknown
+): CatalogueMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

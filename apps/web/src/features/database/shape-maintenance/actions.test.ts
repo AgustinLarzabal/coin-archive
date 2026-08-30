@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { SHAPE_AUTHORIZATION_ERROR } from "./actions"
 import {
-  SHAPE_AUTHORIZATION_ERROR,
   submitCreateShape,
   submitDeleteShape,
   submitUpdateShape,
-} from "./actions"
+} from "./actions.server"
 import {
   SHAPE_DUPLICATE_CODE_ERROR,
   SHAPE_IN_USE_DELETE_ERROR,

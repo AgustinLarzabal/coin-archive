@@ -2,7 +2,7 @@ import type { Shape } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { SHAPE_AUTHORIZATION_ERROR } from "./actions"
-import { loadShapeMaintenancePageData } from "./shape-maintenance-route-data"
+import { loadShapeMaintenanceShapes } from "./shape-loaders.server"
 
 const shapes: Shape[] = [
   {
@@ -25,7 +25,7 @@ const shapes: Shape[] = [
   },
 ]
 
-describe("loadShapeMaintenancePageData", () => {
+describe("loadShapeMaintenanceShapes", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,7 @@ describe("loadShapeMaintenancePageData", () => {
       })
 
       await expect(
-        loadShapeMaintenancePageData({ listShapes })
+        loadShapeMaintenanceShapes({ listShapes })
       ).resolves.toStrictEqual({
         status: "error",
         formError: SHAPE_AUTHORIZATION_ERROR,
@@ -49,7 +49,7 @@ describe("loadShapeMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [shapes[1]], nextCursor: null })
 
     await expect(
-      loadShapeMaintenancePageData({ listShapes })
+      loadShapeMaintenanceShapes({ listShapes })
     ).resolves.toStrictEqual({ status: "success", shapes })
     expect(listShapes).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -68,7 +68,7 @@ describe("loadShapeMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadShapeMaintenancePageData({
+      loadShapeMaintenanceShapes({
         listShapes: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

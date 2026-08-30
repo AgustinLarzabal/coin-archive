@@ -1,31 +1,24 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateShape } from "../actions"
-import type { ShapeMutationResult } from "../actions"
+import type { ShapeMutationResult } from "../shape-mutation-errors"
+import { createShapeMutation } from "../shape-mutations"
 import { createShapeInputSchema } from "../shape-validation"
 import type { ShapeFieldErrors } from "../shape-validation"
 
 import { EMPTY_SHAPE_DRAFT, isShapeDraftComplete } from "./shape-form.shared"
 import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
-import type { ShapeDraft } from "./shape-form.shared"
 
 type ShapeCreateFormProps = {
   onCreated?: () => void
 }
 
-const createShapeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: ShapeDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateShape(data))
-
 export function ShapeCreateForm({ onCreated }: ShapeCreateFormProps) {
   const router = useRouter()
-  const createShape = useServerFn(createShapeAction)
+  const createShape = useServerFn(createShapeMutation)
   const [fieldErrors, setFieldErrors] = useState<ShapeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Shape } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateShape } from "../actions"
-import type { ShapeMutationResult } from "../actions"
+import type { ShapeMutationResult } from "../shape-mutation-errors"
+import { replaceShapeMutation } from "../shape-mutations"
 import { createShapeInputSchema } from "../shape-validation"
 import type { ShapeFieldErrors } from "../shape-validation"
 
 import { createShapeDraft, hasShapeEditChanges } from "./shape-form.shared"
 import { ShapeFormFields, ShapeTextField } from "./shape-form-fields"
-import type { ShapeDraft } from "./shape-form.shared"
 
 type ShapeEditFormProps = {
   shape: Shape
   onSaved?: () => void
 }
 
-const updateShapeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: ShapeDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateShape(data))
-
 export function ShapeEditForm({ shape, onSaved }: ShapeEditFormProps) {
   const router = useRouter()
-  const updateShape = useServerFn(updateShapeAction)
+  const updateShape = useServerFn(replaceShapeMutation)
   const [fieldErrors, setFieldErrors] = useState<ShapeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

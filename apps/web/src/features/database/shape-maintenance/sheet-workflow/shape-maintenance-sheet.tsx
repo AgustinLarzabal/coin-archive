@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Shape } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,8 +27,8 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteShape } from "../actions"
 import { SHAPE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
+import { deleteShapeMutation } from "../shape-mutations"
 
 import { ShapeCreateForm } from "../form-workflow/shape-create-form"
 import { ShapeEditForm } from "../form-workflow/shape-edit-form"
@@ -41,19 +41,13 @@ type ShapeMaintenanceSheetProps = {
 
 export const SHAPE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Shape. ${SHAPE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteShapeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteShape(data))
-
 export function ShapeMaintenanceSheet({
   shape,
   open,
   onOpenChange,
 }: ShapeMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteShape = useServerFn(deleteShapeAction)
+  const deleteShape = useServerFn(deleteShapeMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

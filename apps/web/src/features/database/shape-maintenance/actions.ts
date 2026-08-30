@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   SHAPE_DUPLICATE_CODE_ERROR,
   SHAPE_GENERIC_SAVE_ERROR,
@@ -12,15 +10,7 @@ import {
 import type { ShapeMutationResult } from "./shape-mutation-errors"
 import {
   SHAPE_AUTHORIZATION_ERROR,
-  SHAPE_CREATED_MESSAGE,
-  SHAPE_DELETED_MESSAGE,
-  SHAPE_UPDATED_MESSAGE,
 } from "./messages"
-import type {
-  CreateShapeInput,
-  DeleteShapeInput,
-  UpdateShapeInput,
-} from "./shape-validation"
 
 export { SHAPE_AUTHORIZATION_ERROR } from "./messages"
 export type { ShapeMutationResult } from "./shape-mutation-errors"
@@ -30,100 +20,10 @@ export type ShapeAuthorizationErrorResult = {
   formError: typeof SHAPE_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createShape: MaintenanceApiClient["shapes"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceShape: MaintenanceApiClient["shapes"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteShape: MaintenanceApiClient["shapes"]["delete"]
-}
-
 export function createShapeAuthorizationError(): ShapeAuthorizationErrorResult {
   return { status: "error", formError: SHAPE_AUTHORIZATION_ERROR }
 }
-
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createShape: client.shapes.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceShape: client.shapes.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteShape: client.shapes.delete }
-}
-
-export async function submitCreateShape(
-  input: CreateShapeInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<ShapeMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createShape({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: SHAPE_CREATED_MESSAGE }
-  } catch (error) {
-    return mapShapeApiProblem(error)
-  }
-}
-
-export async function submitUpdateShape(
-  input: UpdateShapeInput,
-  dependencies?: ReplaceDependencies
-): Promise<ShapeMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceShape({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: SHAPE_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapShapeApiProblem(error)
-  }
-}
-
-export async function submitDeleteShape(
-  input: DeleteShapeInput,
-  dependencies?: DeleteDependencies
-): Promise<ShapeMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteShape({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: SHAPE_DELETED_MESSAGE }
-  } catch (error) {
-    return mapShapeApiProblem(error)
-  }
-}
-
-function mapShapeApiProblem(error: unknown): ShapeMutationResult {
+export function mapShapeApiProblem(error: unknown): ShapeMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

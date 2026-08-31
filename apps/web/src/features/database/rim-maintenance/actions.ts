@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   RIM_DUPLICATE_CODE_ERROR,
   RIM_GENERIC_SAVE_ERROR,
@@ -10,18 +8,7 @@ import {
   createRimFormErrorResult,
 } from "./rim-mutation-errors"
 import type { RimMutationResult } from "./rim-mutation-errors"
-import {
-  RIM_AUTHORIZATION_ERROR,
-  RIM_CREATED_MESSAGE,
-  RIM_DELETED_MESSAGE,
-  RIM_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateRimInput,
-  DeleteRimInput,
-  UpdateRimInput,
-} from "./rim-validation"
-
+import { RIM_AUTHORIZATION_ERROR } from "./messages"
 export { RIM_AUTHORIZATION_ERROR } from "./messages"
 export type { RimMutationResult } from "./rim-mutation-errors"
 
@@ -30,100 +17,11 @@ export type RimAuthorizationErrorResult = {
   formError: typeof RIM_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createRim: MaintenanceApiClient["rims"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceRim: MaintenanceApiClient["rims"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteRim: MaintenanceApiClient["rims"]["delete"]
-}
-
 export function createRimAuthorizationError(): RimAuthorizationErrorResult {
   return { status: "error", formError: RIM_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createRim: client.rims.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceRim: client.rims.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteRim: client.rims.delete }
-}
-
-export async function submitCreateRim(
-  input: CreateRimInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<RimMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createRim({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: RIM_CREATED_MESSAGE }
-  } catch (error) {
-    return mapRimApiProblem(error)
-  }
-}
-
-export async function submitUpdateRim(
-  input: UpdateRimInput,
-  dependencies?: ReplaceDependencies
-): Promise<RimMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceRim({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: RIM_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapRimApiProblem(error)
-  }
-}
-
-export async function submitDeleteRim(
-  input: DeleteRimInput,
-  dependencies?: DeleteDependencies
-): Promise<RimMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteRim({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: RIM_DELETED_MESSAGE }
-  } catch (error) {
-    return mapRimApiProblem(error)
-  }
-}
-
-function mapRimApiProblem(error: unknown): RimMutationResult {
+export function mapRimApiProblem(error: unknown): RimMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

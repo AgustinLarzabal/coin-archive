@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Rim } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,8 +27,8 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteRim } from "../actions"
 import { RIM_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
+import { deleteRimMutation } from "../rim-mutations"
 
 import { RimCreateForm } from "../form-workflow/rim-create-form"
 import { RimEditForm } from "../form-workflow/rim-edit-form"
@@ -41,19 +41,13 @@ type RimMaintenanceSheetProps = {
 
 export const RIM_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Rim. ${RIM_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteRimAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteRim(data))
-
 export function RimMaintenanceSheet({
   rim,
   open,
   onOpenChange,
 }: RimMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteRim = useServerFn(deleteRimAction)
+  const deleteRim = useServerFn(deleteRimMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

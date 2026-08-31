@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { RIM_AUTHORIZATION_ERROR } from "./actions"
 import {
-  RIM_AUTHORIZATION_ERROR,
   submitCreateRim,
   submitDeleteRim,
   submitUpdateRim,
-} from "./actions"
+} from "./actions.server"
 import {
   RIM_DUPLICATE_CODE_ERROR,
   RIM_IN_USE_DELETE_ERROR,

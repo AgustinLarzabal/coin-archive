@@ -2,7 +2,7 @@ import type { Rim } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { RIM_AUTHORIZATION_ERROR } from "./actions"
-import { loadRimMaintenancePageData } from "./rim-maintenance-route-data"
+import { loadRimMaintenanceRims } from "./rim-loaders.server"
 
 const rims: Rim[] = [
   {
@@ -25,7 +25,7 @@ const rims: Rim[] = [
   },
 ]
 
-describe("loadRimMaintenancePageData", () => {
+describe("loadRimMaintenanceRims", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -33,12 +33,12 @@ describe("loadRimMaintenancePageData", () => {
         data: { body: { code } },
       })
 
-      await expect(
-        loadRimMaintenancePageData({ listRims })
-      ).resolves.toStrictEqual({
-        status: "error",
-        formError: RIM_AUTHORIZATION_ERROR,
-      })
+      await expect(loadRimMaintenanceRims({ listRims })).resolves.toStrictEqual(
+        {
+          status: "error",
+          formError: RIM_AUTHORIZATION_ERROR,
+        }
+      )
     }
   )
 
@@ -48,9 +48,10 @@ describe("loadRimMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [rims[0]], nextCursor: "next" })
       .mockResolvedValueOnce({ data: [rims[1]], nextCursor: null })
 
-    await expect(
-      loadRimMaintenancePageData({ listRims })
-    ).resolves.toStrictEqual({ status: "success", rims })
+    await expect(loadRimMaintenanceRims({ listRims })).resolves.toStrictEqual({
+      status: "success",
+      rims,
+    })
     expect(listRims).toHaveBeenNthCalledWith(1, {
       limit: 100,
       sort: "name",
@@ -68,7 +69,7 @@ describe("loadRimMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadRimMaintenancePageData({
+      loadRimMaintenanceRims({
         listRims: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

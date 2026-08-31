@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Rim } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateRim } from "../actions"
 import type { RimMutationResult } from "../actions"
+import { replaceRimMutation } from "../rim-mutations"
 import { createRimInputSchema } from "../rim-validation"
 import type { RimFieldErrors } from "../rim-validation"
 
 import { createRimDraft, hasRimEditChanges } from "./rim-form.shared"
 import { RimFormFields, RimTextField } from "./rim-form-fields"
-import type { RimDraft } from "./rim-form.shared"
 
 type RimEditFormProps = {
   rim: Rim
   onSaved?: () => void
 }
 
-const updateRimAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: RimDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateRim(data))
-
 export function RimEditForm({ rim, onSaved }: RimEditFormProps) {
   const router = useRouter()
-  const updateRim = useServerFn(updateRimAction)
+  const updateRim = useServerFn(replaceRimMutation)
   const [fieldErrors, setFieldErrors] = useState<RimFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

@@ -1,31 +1,24 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateRim } from "../actions"
 import type { RimMutationResult } from "../actions"
+import { createRimMutation } from "../rim-mutations"
 import { createRimInputSchema } from "../rim-validation"
 import type { RimFieldErrors } from "../rim-validation"
 
 import { EMPTY_RIM_DRAFT, isRimDraftComplete } from "./rim-form.shared"
 import { RimFormFields, RimTextField } from "./rim-form-fields"
-import type { RimDraft } from "./rim-form.shared"
 
 type RimCreateFormProps = {
   onCreated?: () => void
 }
 
-const createRimAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: RimDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateRim(data))
-
 export function RimCreateForm({ onCreated }: RimCreateFormProps) {
   const router = useRouter()
-  const createRim = useServerFn(createRimAction)
+  const createRim = useServerFn(createRimMutation)
   const [fieldErrors, setFieldErrors] = useState<RimFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   EDGE_DUPLICATE_CODE_ERROR,
   EDGE_GENERIC_SAVE_ERROR,
@@ -10,23 +8,7 @@ import {
   createEdgeFormErrorResult,
 } from "./edge-mutation-errors"
 import type { EdgeMutationResult } from "./edge-mutation-errors"
-import {
-  EDGE_AUTHORIZATION_ERROR,
-  EDGE_CREATED_MESSAGE,
-  EDGE_DELETED_MESSAGE,
-  EDGE_UPDATED_MESSAGE,
-} from "./messages"
-import {
-  createEdgeInputSchema,
-  deleteEdgeInputSchema,
-  updateEdgeInputSchema,
-  validateEdgeInput,
-} from "./edge-validation"
-import type {
-  CreateEdgeInput,
-  DeleteEdgeInput,
-  UpdateEdgeInput,
-} from "./edge-validation"
+import { EDGE_AUTHORIZATION_ERROR } from "./messages"
 
 export { EDGE_AUTHORIZATION_ERROR } from "./messages"
 export type { EdgeMutationResult } from "./edge-mutation-errors"
@@ -36,112 +18,11 @@ export type EdgeAuthorizationErrorResult = {
   formError: typeof EDGE_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createEdge: MaintenanceApiClient["edges"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceEdge: MaintenanceApiClient["edges"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteEdge: MaintenanceApiClient["edges"]["delete"]
-}
-
 export function createEdgeAuthorizationError(): EdgeAuthorizationErrorResult {
   return { status: "error", formError: EDGE_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createEdge: client.edges.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceEdge: client.edges.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteEdge: client.edges.delete }
-}
-
-export async function submitCreateEdge(
-  input: CreateEdgeInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<EdgeMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const validation = validateEdgeInput(createEdgeInputSchema, fields)
-  if (!validation.success) {
-    return createEdgeFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createEdge({
-      headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
-    })
-    return { status: "success", message: EDGE_CREATED_MESSAGE }
-  } catch (error) {
-    return mapEdgeApiProblem(error)
-  }
-}
-
-export async function submitUpdateEdge(
-  input: UpdateEdgeInput,
-  dependencies?: ReplaceDependencies
-): Promise<EdgeMutationResult> {
-  const validation = validateEdgeInput(updateEdgeInputSchema, input)
-  if (!validation.success) {
-    return createEdgeFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
-
-  try {
-    await resolved.replaceEdge({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: EDGE_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapEdgeApiProblem(error)
-  }
-}
-
-export async function submitDeleteEdge(
-  input: DeleteEdgeInput,
-  dependencies?: DeleteDependencies
-): Promise<EdgeMutationResult> {
-  const validation = validateEdgeInput(deleteEdgeInputSchema, input)
-  if (!validation.success) {
-    return createEdgeFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteEdge({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
-    })
-    return { status: "success", message: EDGE_DELETED_MESSAGE }
-  } catch (error) {
-    return mapEdgeApiProblem(error)
-  }
-}
-
-function mapEdgeApiProblem(error: unknown): EdgeMutationResult {
+export function mapEdgeApiProblem(error: unknown): EdgeMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

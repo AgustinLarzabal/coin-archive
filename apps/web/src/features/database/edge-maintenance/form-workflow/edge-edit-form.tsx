@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Edge } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateEdge } from "../actions"
 import type { EdgeMutationResult } from "../actions"
+import { replaceEdgeMutation } from "../edge-mutations"
 import { createEdgeInputSchema } from "../edge-validation"
 import type { EdgeFieldErrors } from "../edge-validation"
 
 import { createEdgeDraft, hasEdgeEditChanges } from "./edge-form.shared"
 import { EdgeFormFields, EdgeTextField } from "./edge-form-fields"
-import type { EdgeDraft } from "./edge-form.shared"
 
 type EdgeEditFormProps = {
   edge: Edge
   onSaved?: () => void
 }
 
-const updateEdgeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: EdgeDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateEdge(data))
-
 export function EdgeEditForm({ edge, onSaved }: EdgeEditFormProps) {
   const router = useRouter()
-  const updateEdge = useServerFn(updateEdgeAction)
+  const updateEdge = useServerFn(replaceEdgeMutation)
   const [fieldErrors, setFieldErrors] = useState<EdgeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

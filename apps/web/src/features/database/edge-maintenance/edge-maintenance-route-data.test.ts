@@ -2,7 +2,7 @@ import type { Edge } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { EDGE_AUTHORIZATION_ERROR } from "./actions"
-import { loadEdgeMaintenancePageData } from "./edge-maintenance-route-data"
+import { loadEdgeMaintenanceEdges } from "./edge-loaders.server"
 
 const edges: Edge[] = [
   {
@@ -25,14 +25,16 @@ const edges: Edge[] = [
   },
 ]
 
-describe("loadEdgeMaintenancePageData", () => {
-  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+describe("loadEdgeMaintenanceEdges", () => {
+  it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
-      const listEdges = vi.fn().mockRejectedValue({ code })
+      const listEdges = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
       await expect(
-        loadEdgeMaintenancePageData({ listEdges })
+        loadEdgeMaintenanceEdges({ listEdges })
       ).resolves.toStrictEqual({
         status: "error",
         formError: EDGE_AUTHORIZATION_ERROR,
@@ -47,7 +49,7 @@ describe("loadEdgeMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [edges[1]], nextCursor: null })
 
     await expect(
-      loadEdgeMaintenancePageData({ listEdges })
+      loadEdgeMaintenanceEdges({ listEdges })
     ).resolves.toStrictEqual({ status: "success", edges })
     expect(listEdges).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -66,7 +68,7 @@ describe("loadEdgeMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadEdgeMaintenancePageData({
+      loadEdgeMaintenanceEdges({
         listEdges: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Edge } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,8 +27,8 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteEdge } from "../actions"
 import { EDGE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
+import { deleteEdgeMutation } from "../edge-mutations"
 
 import { EdgeCreateForm } from "../form-workflow/edge-create-form"
 import { EdgeEditForm } from "../form-workflow/edge-edit-form"
@@ -41,19 +41,13 @@ type EdgeMaintenanceSheetProps = {
 
 export const EDGE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Edge. ${EDGE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteEdgeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteEdge(data))
-
 export function EdgeMaintenanceSheet({
   edge,
   open,
   onOpenChange,
 }: EdgeMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteEdge = useServerFn(deleteEdgeAction)
+  const deleteEdge = useServerFn(deleteEdgeMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

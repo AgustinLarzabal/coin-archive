@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { EDGE_AUTHORIZATION_ERROR } from "./actions"
 import {
-  EDGE_AUTHORIZATION_ERROR,
   submitCreateEdge,
   submitDeleteEdge,
   submitUpdateEdge,
-} from "./actions"
+} from "./actions.server"
 import {
   EDGE_DUPLICATE_CODE_ERROR,
   EDGE_IN_USE_DELETE_ERROR,

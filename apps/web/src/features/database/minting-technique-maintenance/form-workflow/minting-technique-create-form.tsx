@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateMintingTechnique } from "../actions"
 import type { MintingTechniqueMutationResult } from "../actions"
+import { createMintingTechniqueMutation } from "../minting-technique-mutations"
 import { createMintingTechniqueInputSchema } from "../minting-technique-validation"
 import type { MintingTechniqueFieldErrors } from "../minting-technique-validation"
 
@@ -17,25 +17,16 @@ import {
   MintingTechniqueFormFields,
   MintingTechniqueTextField,
 } from "./minting-technique-form-fields"
-import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
 
 type MintingTechniqueCreateFormProps = {
   onCreated?: () => void
 }
 
-const createMintingTechniqueAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: MintingTechniqueDraft & { idempotencyKey: string }) => data
-  )
-  .handler(async ({ data }) => submitCreateMintingTechnique(data))
-
 export function MintingTechniqueCreateForm({
   onCreated,
 }: MintingTechniqueCreateFormProps) {
   const router = useRouter()
-  const createMintingTechnique = useServerFn(createMintingTechniqueAction)
+  const createMintingTechnique = useServerFn(createMintingTechniqueMutation)
   const [fieldErrors, setFieldErrors] = useState<MintingTechniqueFieldErrors>(
     {}
   )

@@ -1,2 +1,2 @@
 export { MintingTechniqueMaintenanceRouteComponent } from "./minting-technique-maintenance-page"
-export { loadMintingTechniqueMaintenanceRouteData } from "./minting-technique-maintenance-route-data"
+export { loadMintingTechniqueMaintenanceRouteData } from "./minting-technique-route-loaders"

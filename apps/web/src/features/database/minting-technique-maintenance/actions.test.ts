@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./actions"
 import {
-  MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
   submitCreateMintingTechnique,
   submitDeleteMintingTechnique,
   submitUpdateMintingTechnique,
-} from "./actions"
+} from "./actions.server"
 import {
   MINTING_TECHNIQUE_DUPLICATE_CODE_ERROR,
   MINTING_TECHNIQUE_IN_USE_DELETE_ERROR,

@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   MINTING_TECHNIQUE_DUPLICATE_CODE_ERROR,
   MINTING_TECHNIQUE_GENERIC_SAVE_ERROR,
@@ -10,17 +8,7 @@ import {
   createMintingTechniqueFormErrorResult,
 } from "./minting-technique-mutation-errors"
 import type { MintingTechniqueMutationResult } from "./minting-technique-mutation-errors"
-import {
-  MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
-  MINTING_TECHNIQUE_CREATED_MESSAGE,
-  MINTING_TECHNIQUE_DELETED_MESSAGE,
-  MINTING_TECHNIQUE_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateMintingTechniqueInput,
-  DeleteMintingTechniqueInput,
-  UpdateMintingTechniqueInput,
-} from "./minting-technique-validation"
+import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./messages"
 
 export { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./messages"
 export type { MintingTechniqueMutationResult } from "./minting-technique-mutation-errors"
@@ -30,100 +18,11 @@ export type MintingTechniqueAuthorizationErrorResult = {
   formError: typeof MINTING_TECHNIQUE_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createMintingTechnique: MaintenanceApiClient["mintingTechniques"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceMintingTechnique: MaintenanceApiClient["mintingTechniques"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteMintingTechnique: MaintenanceApiClient["mintingTechniques"]["delete"]
-}
-
 export function createMintingTechniqueAuthorizationError(): MintingTechniqueAuthorizationErrorResult {
   return { status: "error", formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createMintingTechnique: client.mintingTechniques.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceMintingTechnique: client.mintingTechniques.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteMintingTechnique: client.mintingTechniques.delete }
-}
-
-export async function submitCreateMintingTechnique(
-  input: CreateMintingTechniqueInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<MintingTechniqueMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createMintingTechnique({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: MINTING_TECHNIQUE_CREATED_MESSAGE }
-  } catch (error) {
-    return mapMintingTechniqueApiProblem(error)
-  }
-}
-
-export async function submitUpdateMintingTechnique(
-  input: UpdateMintingTechniqueInput,
-  dependencies?: ReplaceDependencies
-): Promise<MintingTechniqueMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceMintingTechnique({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: MINTING_TECHNIQUE_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapMintingTechniqueApiProblem(error)
-  }
-}
-
-export async function submitDeleteMintingTechnique(
-  input: DeleteMintingTechniqueInput,
-  dependencies?: DeleteDependencies
-): Promise<MintingTechniqueMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteMintingTechnique({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: MINTING_TECHNIQUE_DELETED_MESSAGE }
-  } catch (error) {
-    return mapMintingTechniqueApiProblem(error)
-  }
-}
-
-function mapMintingTechniqueApiProblem(
+export function mapMintingTechniqueApiProblem(
   error: unknown
 ): MintingTechniqueMutationResult {
   const body = getProblemBody(error)

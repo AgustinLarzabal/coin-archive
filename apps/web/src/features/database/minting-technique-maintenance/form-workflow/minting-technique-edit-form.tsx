@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { MintingTechnique } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateMintingTechnique } from "../actions"
 import type { MintingTechniqueMutationResult } from "../actions"
+import { replaceMintingTechniqueMutation } from "../minting-technique-mutations"
 import { createMintingTechniqueInputSchema } from "../minting-technique-validation"
 import type { MintingTechniqueFieldErrors } from "../minting-technique-validation"
 
@@ -18,27 +18,18 @@ import {
   MintingTechniqueFormFields,
   MintingTechniqueTextField,
 } from "./minting-technique-form-fields"
-import type { MintingTechniqueDraft } from "./minting-technique-form.shared"
 
 type MintingTechniqueEditFormProps = {
   mintingTechnique: MintingTechnique
   onSaved?: () => void
 }
 
-const updateMintingTechniqueAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: MintingTechniqueDraft & { id: string; etag: string }) => data
-  )
-  .handler(async ({ data }) => submitUpdateMintingTechnique(data))
-
 export function MintingTechniqueEditForm({
   mintingTechnique,
   onSaved,
 }: MintingTechniqueEditFormProps) {
   const router = useRouter()
-  const updateMintingTechnique = useServerFn(updateMintingTechniqueAction)
+  const updateMintingTechnique = useServerFn(replaceMintingTechniqueMutation)
   const [fieldErrors, setFieldErrors] = useState<MintingTechniqueFieldErrors>(
     {}
   )

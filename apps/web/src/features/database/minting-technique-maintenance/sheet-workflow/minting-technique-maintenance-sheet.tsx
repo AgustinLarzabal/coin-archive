@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { MintingTechnique } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteMintingTechnique } from "../actions"
+import { deleteMintingTechniqueMutation } from "../minting-technique-mutations"
 import { MINTING_TECHNIQUE_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { MintingTechniqueCreateForm } from "../form-workflow/minting-technique-create-form"
@@ -41,19 +41,13 @@ type MintingTechniqueMaintenanceSheetProps = {
 
 export const MINTING_TECHNIQUE_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Minting Technique. ${MINTING_TECHNIQUE_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteMintingTechniqueAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteMintingTechnique(data))
-
 export function MintingTechniqueMaintenanceSheet({
   mintingTechnique,
   open,
   onOpenChange,
 }: MintingTechniqueMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteMintingTechnique = useServerFn(deleteMintingTechniqueAction)
+  const deleteMintingTechnique = useServerFn(deleteMintingTechniqueMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

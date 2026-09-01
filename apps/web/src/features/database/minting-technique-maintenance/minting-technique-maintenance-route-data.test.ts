@@ -2,7 +2,7 @@ import type { MintingTechnique } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { MINTING_TECHNIQUE_AUTHORIZATION_ERROR } from "./actions"
-import { loadMintingTechniqueMaintenancePageData } from "./minting-technique-maintenance-route-data"
+import { loadMintingTechniqueMaintenanceTechniques } from "./minting-technique-loaders.server"
 
 const mintingTechniques: MintingTechnique[] = [
   {
@@ -25,7 +25,7 @@ const mintingTechniques: MintingTechnique[] = [
   },
 ]
 
-describe("loadMintingTechniqueMaintenancePageData", () => {
+describe("loadMintingTechniqueMaintenanceTechniques", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,9 @@ describe("loadMintingTechniqueMaintenancePageData", () => {
       })
 
       await expect(
-        loadMintingTechniqueMaintenancePageData({ listMintingTechniques })
+        loadMintingTechniqueMaintenanceTechniques({
+          listMintingTechniques,
+        })
       ).resolves.toStrictEqual({
         status: "error",
         formError: MINTING_TECHNIQUE_AUTHORIZATION_ERROR,
@@ -52,7 +54,9 @@ describe("loadMintingTechniqueMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [mintingTechniques[1]], nextCursor: null })
 
     await expect(
-      loadMintingTechniqueMaintenancePageData({ listMintingTechniques })
+      loadMintingTechniqueMaintenanceTechniques({
+        listMintingTechniques,
+      })
     ).resolves.toStrictEqual({ status: "success", mintingTechniques })
     expect(listMintingTechniques).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -71,7 +75,7 @@ describe("loadMintingTechniqueMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadMintingTechniqueMaintenancePageData({
+      loadMintingTechniqueMaintenanceTechniques({
         listMintingTechniques: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

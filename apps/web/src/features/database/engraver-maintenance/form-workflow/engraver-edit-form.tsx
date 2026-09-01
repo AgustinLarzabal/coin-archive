@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Engraver } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateEngraver } from "../actions"
 import type { EngraverMutationResult } from "../actions"
+import { replaceEngraverMutation } from "../engraver-mutations"
 import { createEngraverInputSchema } from "../engraver-validation"
 import type { EngraverFieldErrors } from "../engraver-validation"
 
@@ -15,22 +15,15 @@ import {
   hasEngraverEditChanges,
 } from "./engraver-form.shared"
 import { EngraverFormFields, EngraverTextField } from "./engraver-form-fields"
-import type { EngraverDraft } from "./engraver-form.shared"
 
 type EngraverEditFormProps = {
   engraver: Engraver
   onSaved?: () => void
 }
 
-const updateEngraverAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: EngraverDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateEngraver(data))
-
 export function EngraverEditForm({ engraver, onSaved }: EngraverEditFormProps) {
   const router = useRouter()
-  const updateEngraver = useServerFn(updateEngraverAction)
+  const updateEngraver = useServerFn(replaceEngraverMutation)
   const [fieldErrors, setFieldErrors] = useState<EngraverFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

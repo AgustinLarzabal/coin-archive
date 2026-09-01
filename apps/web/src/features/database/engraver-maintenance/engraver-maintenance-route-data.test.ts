@@ -2,7 +2,7 @@ import type { Engraver } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { ENGRAVER_AUTHORIZATION_ERROR } from "./actions"
-import { loadEngraverMaintenancePageData } from "./engraver-maintenance-route-data"
+import { loadEngraverMaintenanceEngravers } from "./engraver-loaders.server"
 
 const engravers: Engraver[] = [
   {
@@ -25,7 +25,7 @@ const engravers: Engraver[] = [
   },
 ]
 
-describe("loadEngraverMaintenancePageData", () => {
+describe("loadEngraverMaintenanceEngravers", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,7 @@ describe("loadEngraverMaintenancePageData", () => {
       })
 
       await expect(
-        loadEngraverMaintenancePageData({ listEngravers })
+        loadEngraverMaintenanceEngravers({ listEngravers })
       ).resolves.toStrictEqual({
         status: "error",
         formError: ENGRAVER_AUTHORIZATION_ERROR,
@@ -49,7 +49,7 @@ describe("loadEngraverMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [engravers[1]], nextCursor: null })
 
     await expect(
-      loadEngraverMaintenancePageData({ listEngravers })
+      loadEngraverMaintenanceEngravers({ listEngravers })
     ).resolves.toStrictEqual({ status: "success", engravers })
     expect(listEngravers).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -68,7 +68,7 @@ describe("loadEngraverMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadEngraverMaintenancePageData({
+      loadEngraverMaintenanceEngravers({
         listEngravers: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

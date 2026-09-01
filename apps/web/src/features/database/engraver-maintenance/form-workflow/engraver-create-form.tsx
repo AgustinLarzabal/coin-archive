@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateEngraver } from "../actions"
 import type { EngraverMutationResult } from "../actions"
+import { createEngraverMutation } from "../engraver-mutations"
 import { createEngraverInputSchema } from "../engraver-validation"
 import type { EngraverFieldErrors } from "../engraver-validation"
 
@@ -14,21 +14,14 @@ import {
   isEngraverDraftComplete,
 } from "./engraver-form.shared"
 import { EngraverFormFields, EngraverTextField } from "./engraver-form-fields"
-import type { EngraverDraft } from "./engraver-form.shared"
 
 type EngraverCreateFormProps = {
   onCreated?: () => void
 }
 
-const createEngraverAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: EngraverDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateEngraver(data))
-
 export function EngraverCreateForm({ onCreated }: EngraverCreateFormProps) {
   const router = useRouter()
-  const createEngraver = useServerFn(createEngraverAction)
+  const createEngraver = useServerFn(createEngraverMutation)
   const [fieldErrors, setFieldErrors] = useState<EngraverFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

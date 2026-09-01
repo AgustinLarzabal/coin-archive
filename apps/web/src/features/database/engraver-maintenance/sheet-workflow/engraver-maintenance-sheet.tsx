@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Engraver } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteEngraver } from "../actions"
+import { deleteEngraverMutation } from "../engraver-mutations"
 import { ENGRAVER_GENERIC_SAVE_ERROR } from "../engraver-mutation-errors"
 import { ENGRAVER_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
@@ -43,12 +43,6 @@ type EngraverMaintenanceSheetProps = {
 
 export const ENGRAVER_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Engraver. ${ENGRAVER_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteEngraverAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteEngraver(data))
-
 export function EngraverMaintenanceSheet({
   engraver,
   initialDeleteDialogOpen = false,
@@ -56,7 +50,7 @@ export function EngraverMaintenanceSheet({
   onOpenChange,
 }: EngraverMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteEngraver = useServerFn(deleteEngraverAction)
+  const deleteEngraver = useServerFn(deleteEngraverMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

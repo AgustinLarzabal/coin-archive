@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   RULER_GROUP_DUPLICATE_CODE_ERROR,
   RULER_GROUP_GENERIC_SAVE_ERROR,
@@ -10,17 +8,7 @@ import {
   createRulerGroupFormErrorResult,
 } from "./ruler-group-mutation-errors"
 import type { RulerGroupMutationResult } from "./ruler-group-mutation-errors"
-import {
-  RULER_GROUP_AUTHORIZATION_ERROR,
-  RULER_GROUP_CREATED_MESSAGE,
-  RULER_GROUP_DELETED_MESSAGE,
-  RULER_GROUP_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateRulerGroupInput,
-  DeleteRulerGroupInput,
-  UpdateRulerGroupInput,
-} from "./ruler-group-validation"
+import { RULER_GROUP_AUTHORIZATION_ERROR } from "./messages"
 
 export { RULER_GROUP_AUTHORIZATION_ERROR } from "./messages"
 export type { RulerGroupMutationResult } from "./ruler-group-mutation-errors"
@@ -30,100 +18,12 @@ export type RulerGroupAuthorizationErrorResult = {
   formError: typeof RULER_GROUP_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createRulerGroup: MaintenanceApiClient["rulerGroups"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceRulerGroup: MaintenanceApiClient["rulerGroups"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteRulerGroup: MaintenanceApiClient["rulerGroups"]["delete"]
-}
-
 export function createRulerGroupAuthorizationError(): RulerGroupAuthorizationErrorResult {
   return { status: "error", formError: RULER_GROUP_AUTHORIZATION_ERROR }
 }
-
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createRulerGroup: client.rulerGroups.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceRulerGroup: client.rulerGroups.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteRulerGroup: client.rulerGroups.delete }
-}
-
-export async function submitCreateRulerGroup(
-  input: CreateRulerGroupInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<RulerGroupMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createRulerGroup({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: RULER_GROUP_CREATED_MESSAGE }
-  } catch (error) {
-    return mapRulerGroupApiProblem(error)
-  }
-}
-
-export async function submitUpdateRulerGroup(
-  input: UpdateRulerGroupInput,
-  dependencies?: ReplaceDependencies
-): Promise<RulerGroupMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceRulerGroup({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: RULER_GROUP_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapRulerGroupApiProblem(error)
-  }
-}
-
-export async function submitDeleteRulerGroup(
-  input: DeleteRulerGroupInput,
-  dependencies?: DeleteDependencies
-): Promise<RulerGroupMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteRulerGroup({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: RULER_GROUP_DELETED_MESSAGE }
-  } catch (error) {
-    return mapRulerGroupApiProblem(error)
-  }
-}
-
-function mapRulerGroupApiProblem(error: unknown): RulerGroupMutationResult {
+export function mapRulerGroupApiProblem(
+  error: unknown
+): RulerGroupMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

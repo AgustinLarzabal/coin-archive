@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { RulerGroup } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateRulerGroup } from "../actions"
 import type { RulerGroupMutationResult } from "../actions"
+import { replaceRulerGroupMutation } from "../ruler-group-mutations"
 import { createRulerGroupInputSchema } from "../ruler-group-validation"
 import type { RulerGroupFieldErrors } from "../ruler-group-validation"
 
@@ -18,27 +18,18 @@ import {
   RulerGroupFormFields,
   RulerGroupTextField,
 } from "./ruler-group-form-fields"
-import type { RulerGroupDraft } from "./ruler-group-form.shared"
 
 type RulerGroupEditFormProps = {
   rulerGroup: RulerGroup
   onSaved?: () => void
 }
 
-const updateRulerGroupAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: RulerGroupDraft & { id: string; etag: string }) => data
-  )
-  .handler(async ({ data }) => submitUpdateRulerGroup(data))
-
 export function RulerGroupEditForm({
   rulerGroup,
   onSaved,
 }: RulerGroupEditFormProps) {
   const router = useRouter()
-  const updateRulerGroup = useServerFn(updateRulerGroupAction)
+  const updateRulerGroup = useServerFn(replaceRulerGroupMutation)
   const [fieldErrors, setFieldErrors] = useState<RulerGroupFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

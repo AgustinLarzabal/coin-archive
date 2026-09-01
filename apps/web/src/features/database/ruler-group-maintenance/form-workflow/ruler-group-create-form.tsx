@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateRulerGroup } from "../actions"
 import type { RulerGroupMutationResult } from "../actions"
+import { createRulerGroupMutation } from "../ruler-group-mutations"
 import { createRulerGroupInputSchema } from "../ruler-group-validation"
 import type { RulerGroupFieldErrors } from "../ruler-group-validation"
 
@@ -17,21 +17,14 @@ import {
   RulerGroupFormFields,
   RulerGroupTextField,
 } from "./ruler-group-form-fields"
-import type { RulerGroupDraft } from "./ruler-group-form.shared"
 
 type RulerGroupCreateFormProps = {
   onCreated?: () => void
 }
 
-const createRulerGroupAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: RulerGroupDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateRulerGroup(data))
-
 export function RulerGroupCreateForm({ onCreated }: RulerGroupCreateFormProps) {
   const router = useRouter()
-  const createRulerGroup = useServerFn(createRulerGroupAction)
+  const createRulerGroup = useServerFn(createRulerGroupMutation)
   const [fieldErrors, setFieldErrors] = useState<RulerGroupFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

@@ -2,7 +2,7 @@ import type { RulerGroup } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { RULER_GROUP_AUTHORIZATION_ERROR } from "./actions"
-import { loadRulerGroupMaintenancePageData } from "./ruler-group-maintenance-route-data"
+import { loadRulerGroupMaintenanceRulerGroups } from "./ruler-group-loaders.server"
 
 const rulerGroups: RulerGroup[] = [
   {
@@ -25,7 +25,7 @@ const rulerGroups: RulerGroup[] = [
   },
 ]
 
-describe("loadRulerGroupMaintenancePageData", () => {
+describe("loadRulerGroupMaintenanceRulerGroups", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,7 @@ describe("loadRulerGroupMaintenancePageData", () => {
       })
 
       await expect(
-        loadRulerGroupMaintenancePageData({ listRulerGroups })
+        loadRulerGroupMaintenanceRulerGroups({ listRulerGroups })
       ).resolves.toStrictEqual({
         status: "error",
         formError: RULER_GROUP_AUTHORIZATION_ERROR,
@@ -52,7 +52,7 @@ describe("loadRulerGroupMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [rulerGroups[1]], nextCursor: null })
 
     await expect(
-      loadRulerGroupMaintenancePageData({ listRulerGroups })
+      loadRulerGroupMaintenanceRulerGroups({ listRulerGroups })
     ).resolves.toStrictEqual({ status: "success", rulerGroups })
     expect(listRulerGroups).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -71,7 +71,7 @@ describe("loadRulerGroupMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadRulerGroupMaintenancePageData({
+      loadRulerGroupMaintenanceRulerGroups({
         listRulerGroups: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

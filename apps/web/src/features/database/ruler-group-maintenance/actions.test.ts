@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { RULER_GROUP_AUTHORIZATION_ERROR } from "./actions"
 import {
-  RULER_GROUP_AUTHORIZATION_ERROR,
   submitCreateRulerGroup,
   submitDeleteRulerGroup,
   submitUpdateRulerGroup,
-} from "./actions"
+} from "./actions.server"
 import {
   RULER_GROUP_DUPLICATE_CODE_ERROR,
   RULER_GROUP_IN_USE_DELETE_ERROR,

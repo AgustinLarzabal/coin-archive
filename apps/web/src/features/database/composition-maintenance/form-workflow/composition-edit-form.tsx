@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Composition } from "@coin-archive/api"
 import {
   Field,
@@ -12,8 +12,8 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateComposition } from "../actions"
 import type { CompositionMutationResult } from "../actions"
+import { replaceCompositionMutation } from "../composition-mutations"
 import { createCompositionInputSchema } from "../validation"
 import type { CompositionFieldErrors } from "../validation"
 
@@ -26,14 +26,6 @@ type CompositionEditFormProps = {
   composition: Composition
   onSaved?: () => void
 }
-
-const updateCompositionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: CompositionDraft & { id: string; etag: string }) => data
-  )
-  .handler(async ({ data }) => submitUpdateComposition(data))
 
 function createCompositionDraft(composition: Composition): CompositionDraft {
   return {
@@ -71,7 +63,7 @@ export function CompositionEditForm({
   onSaved,
 }: CompositionEditFormProps) {
   const router = useRouter()
-  const updateComposition = useServerFn(updateCompositionAction)
+  const updateComposition = useServerFn(replaceCompositionMutation)
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

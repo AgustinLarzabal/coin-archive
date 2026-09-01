@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Composition } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteComposition } from "../actions"
+import { deleteCompositionMutation } from "../composition-mutations"
 import { COMPOSITION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { CompositionCreateForm } from "../form-workflow/composition-create-form"
@@ -47,19 +47,13 @@ const COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
 
 export const COMPOSITION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Composition. ${COMPOSITION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
-const deleteCompositionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteComposition(data))
-
 export function CompositionMaintenanceSheet({
   composition,
   open,
   onOpenChange,
 }: CompositionMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteComposition = useServerFn(deleteCompositionAction)
+  const deleteComposition = useServerFn(deleteCompositionMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

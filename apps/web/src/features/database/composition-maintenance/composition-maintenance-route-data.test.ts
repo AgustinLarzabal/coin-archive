@@ -2,7 +2,7 @@ import type { Composition } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { COMPOSITION_AUTHORIZATION_ERROR } from "./actions"
-import { loadCompositionMaintenancePageData } from "./composition-maintenance-route-data"
+import { loadCompositionMaintenanceCompositions } from "./composition-loaders.server"
 
 const compositions: Composition[] = [
   {
@@ -25,14 +25,16 @@ const compositions: Composition[] = [
   },
 ]
 
-describe("loadCompositionMaintenancePageData", () => {
-  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+describe("loadCompositionMaintenanceCompositions", () => {
+  it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
-      const listCompositions = vi.fn().mockRejectedValue({ code })
+      const listCompositions = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
       await expect(
-        loadCompositionMaintenancePageData({ listCompositions })
+        loadCompositionMaintenanceCompositions({ listCompositions })
       ).resolves.toStrictEqual({
         status: "error",
         formError: COMPOSITION_AUTHORIZATION_ERROR,
@@ -47,7 +49,7 @@ describe("loadCompositionMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [compositions[1]], nextCursor: null })
 
     await expect(
-      loadCompositionMaintenancePageData({ listCompositions })
+      loadCompositionMaintenanceCompositions({ listCompositions })
     ).resolves.toStrictEqual({ status: "success", compositions })
     expect(listCompositions).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -66,7 +68,7 @@ describe("loadCompositionMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadCompositionMaintenancePageData({
+      loadCompositionMaintenanceCompositions({
         listCompositions: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

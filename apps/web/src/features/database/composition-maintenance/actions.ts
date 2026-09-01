@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   COMPOSITION_DUPLICATE_CODE_ERROR,
   COMPOSITION_GENERIC_SAVE_ERROR,
@@ -10,23 +8,7 @@ import {
   createCompositionFormErrorResult,
 } from "./composition-mutation-errors"
 import type { CompositionMutationResult } from "./composition-mutation-errors"
-import {
-  COMPOSITION_AUTHORIZATION_ERROR,
-  COMPOSITION_CREATED_MESSAGE,
-  COMPOSITION_DELETED_MESSAGE,
-  COMPOSITION_UPDATED_MESSAGE,
-} from "./messages"
-import {
-  createCompositionInputSchema,
-  deleteCompositionInputSchema,
-  updateCompositionInputSchema,
-  validateCompositionInput,
-} from "./validation"
-import type {
-  CreateCompositionInput,
-  DeleteCompositionInput,
-  UpdateCompositionInput,
-} from "./validation"
+import { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
 
 export { COMPOSITION_AUTHORIZATION_ERROR } from "./messages"
 export type { CompositionMutationResult } from "./composition-mutation-errors"
@@ -36,121 +18,13 @@ export type CompositionAuthorizationErrorResult = {
   formError: typeof COMPOSITION_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createComposition: MaintenanceApiClient["compositions"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceComposition: MaintenanceApiClient["compositions"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteComposition: MaintenanceApiClient["compositions"]["delete"]
-}
-
 export function createCompositionAuthorizationError(): CompositionAuthorizationErrorResult {
   return { status: "error", formError: COMPOSITION_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createComposition: client.compositions.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceComposition: client.compositions.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteComposition: client.compositions.delete }
-}
-
-export async function submitCreateComposition(
-  input: CreateCompositionInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<CompositionMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const validation = validateCompositionInput(
-    createCompositionInputSchema,
-    fields
-  )
-  if (!validation.success) {
-    return createCompositionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createComposition({
-      headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
-    })
-    return { status: "success", message: COMPOSITION_CREATED_MESSAGE }
-  } catch (error) {
-    return mapCompositionApiProblem(error)
-  }
-}
-
-export async function submitUpdateComposition(
-  input: UpdateCompositionInput,
-  dependencies?: ReplaceDependencies
-): Promise<CompositionMutationResult> {
-  const validation = validateCompositionInput(
-    updateCompositionInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createCompositionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
-
-  try {
-    await resolved.replaceComposition({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: COMPOSITION_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapCompositionApiProblem(error)
-  }
-}
-
-export async function submitDeleteComposition(
-  input: DeleteCompositionInput,
-  dependencies?: DeleteDependencies
-): Promise<CompositionMutationResult> {
-  const validation = validateCompositionInput(
-    deleteCompositionInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createCompositionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteComposition({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
-    })
-    return { status: "success", message: COMPOSITION_DELETED_MESSAGE }
-  } catch (error) {
-    return mapCompositionApiProblem(error)
-  }
-}
-
-function mapCompositionApiProblem(error: unknown): CompositionMutationResult {
+export function mapCompositionApiProblem(
+  error: unknown
+): CompositionMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { COMPOSITION_AUTHORIZATION_ERROR } from "./actions"
 import {
-  COMPOSITION_AUTHORIZATION_ERROR,
   submitCreateComposition,
   submitDeleteComposition,
   submitUpdateComposition,
-} from "./actions"
+} from "./actions.server"
 import {
   COMPOSITION_DUPLICATE_CODE_ERROR,
   COMPOSITION_IN_USE_DELETE_ERROR,

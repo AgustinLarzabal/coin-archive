@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import {
   Field,
   FieldError,
@@ -11,8 +11,8 @@ import {
 import { Input } from "@coin-archive/ui/components/input"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateComposition } from "../actions"
 import type { CompositionMutationResult } from "../actions"
+import { createCompositionMutation } from "../composition-mutations"
 import { createCompositionInputSchema } from "../validation"
 import type { CompositionFieldErrors } from "../validation"
 
@@ -30,12 +30,6 @@ const EMPTY_DRAFT: CompositionDraft = {
   name: "",
 }
 
-const createCompositionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CompositionDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateComposition(data))
-
 export function isCompositionCreateReady(draft: CompositionDraft) {
   return draft.code.trim().length > 0 && draft.name.trim().length > 0
 }
@@ -44,7 +38,7 @@ export function CompositionCreateForm({
   onCreated,
 }: CompositionCreateFormProps) {
   const router = useRouter()
-  const createComposition = useServerFn(createCompositionAction)
+  const createComposition = useServerFn(createCompositionMutation)
   const [fieldErrors, setFieldErrors] = useState<CompositionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

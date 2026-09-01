@@ -2,7 +2,7 @@ import type { Theme } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { THEME_AUTHORIZATION_ERROR } from "./actions"
-import { loadThemeMaintenancePageData } from "./theme-maintenance-route-data"
+import { loadThemeMaintenanceThemes } from "./theme-loaders.server"
 
 const themes: Theme[] = [
   {
@@ -25,7 +25,7 @@ const themes: Theme[] = [
   },
 ]
 
-describe("loadThemeMaintenancePageData", () => {
+describe("loadThemeMaintenanceThemes", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,7 @@ describe("loadThemeMaintenancePageData", () => {
       })
 
       await expect(
-        loadThemeMaintenancePageData({ listThemes })
+        loadThemeMaintenanceThemes({ listThemes })
       ).resolves.toStrictEqual({
         status: "error",
         formError: THEME_AUTHORIZATION_ERROR,
@@ -49,7 +49,7 @@ describe("loadThemeMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [themes[1]], nextCursor: null })
 
     await expect(
-      loadThemeMaintenancePageData({ listThemes })
+      loadThemeMaintenanceThemes({ listThemes })
     ).resolves.toStrictEqual({ status: "success", themes })
     expect(listThemes).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -68,7 +68,7 @@ describe("loadThemeMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadThemeMaintenancePageData({
+      loadThemeMaintenanceThemes({
         listThemes: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

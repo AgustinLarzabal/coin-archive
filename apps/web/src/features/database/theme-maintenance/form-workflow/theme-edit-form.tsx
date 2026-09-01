@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Theme } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateTheme } from "../actions"
 import type { ThemeMutationResult } from "../actions"
+import { replaceThemeMutation } from "../theme-mutations"
 import { createThemeInputSchema } from "../theme-validation"
 import type { ThemeFieldErrors } from "../theme-validation"
 
 import { createThemeDraft, hasThemeEditChanges } from "./theme-form.shared"
 import { ThemeFormFields, ThemeTextField } from "./theme-form-fields"
-import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeEditFormProps = {
   theme: Theme
   onSaved?: (message: string) => void
 }
 
-const updateThemeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: ThemeDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateTheme(data))
-
 export function ThemeEditForm({ theme, onSaved }: ThemeEditFormProps) {
   const router = useRouter()
-  const updateTheme = useServerFn(updateThemeAction)
+  const updateTheme = useServerFn(replaceThemeMutation)
   const [fieldErrors, setFieldErrors] = useState<ThemeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

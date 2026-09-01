@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  THEME_AUTHORIZATION_ERROR,
   submitCreateTheme,
   submitDeleteTheme,
   submitUpdateTheme,
-} from "./actions"
+} from "./actions.server"
+import { THEME_AUTHORIZATION_ERROR } from "./actions"
 import {
   THEME_DUPLICATE_CODE_ERROR,
   THEME_IN_USE_DELETE_ERROR,

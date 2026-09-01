@@ -1,31 +1,24 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateTheme } from "../actions"
 import type { ThemeMutationResult } from "../actions"
+import { createThemeMutation } from "../theme-mutations"
 import { createThemeInputSchema } from "../theme-validation"
 import type { ThemeFieldErrors } from "../theme-validation"
 
 import { EMPTY_THEME_DRAFT, isThemeDraftComplete } from "./theme-form.shared"
 import { ThemeFormFields, ThemeTextField } from "./theme-form-fields"
-import type { ThemeDraft } from "./theme-form.shared"
 
 type ThemeCreateFormProps = {
   onCreated?: (message: string) => void
 }
 
-const createThemeAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: ThemeDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateTheme(data))
-
 export function ThemeCreateForm({ onCreated }: ThemeCreateFormProps) {
   const router = useRouter()
-  const createTheme = useServerFn(createThemeAction)
+  const createTheme = useServerFn(createThemeMutation)
   const [fieldErrors, setFieldErrors] = useState<ThemeFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

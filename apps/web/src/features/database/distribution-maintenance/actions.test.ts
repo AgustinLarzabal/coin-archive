@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { DISTRIBUTION_AUTHORIZATION_ERROR } from "./actions"
 import {
-  DISTRIBUTION_AUTHORIZATION_ERROR,
   submitCreateDistribution,
   submitDeleteDistribution,
   submitUpdateDistribution,
-} from "./actions"
+} from "./actions.server"
 import {
   DISTRIBUTION_DUPLICATE_CODE_ERROR,
   DISTRIBUTION_IN_USE_DELETE_ERROR,

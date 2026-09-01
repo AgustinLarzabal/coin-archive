@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   DISTRIBUTION_DUPLICATE_CODE_ERROR,
   DISTRIBUTION_GENERIC_SAVE_ERROR,
@@ -10,23 +8,7 @@ import {
   createDistributionFormErrorResult,
 } from "./distribution-mutation-errors"
 import type { DistributionMutationResult } from "./distribution-mutation-errors"
-import {
-  DISTRIBUTION_AUTHORIZATION_ERROR,
-  DISTRIBUTION_CREATED_MESSAGE,
-  DISTRIBUTION_DELETED_MESSAGE,
-  DISTRIBUTION_UPDATED_MESSAGE,
-} from "./messages"
-import {
-  createDistributionInputSchema,
-  deleteDistributionInputSchema,
-  updateDistributionInputSchema,
-  validateDistributionInput,
-} from "./validation"
-import type {
-  CreateDistributionInput,
-  DeleteDistributionInput,
-  UpdateDistributionInput,
-} from "./validation"
+import { DISTRIBUTION_AUTHORIZATION_ERROR } from "./messages"
 
 export { DISTRIBUTION_AUTHORIZATION_ERROR } from "./messages"
 export type { DistributionMutationResult } from "./distribution-mutation-errors"
@@ -36,121 +18,13 @@ export type DistributionAuthorizationErrorResult = {
   formError: typeof DISTRIBUTION_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createDistribution: MaintenanceApiClient["distributions"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceDistribution: MaintenanceApiClient["distributions"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteDistribution: MaintenanceApiClient["distributions"]["delete"]
-}
-
 export function createDistributionAuthorizationError(): DistributionAuthorizationErrorResult {
   return { status: "error", formError: DISTRIBUTION_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createDistribution: client.distributions.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceDistribution: client.distributions.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteDistribution: client.distributions.delete }
-}
-
-export async function submitCreateDistribution(
-  input: CreateDistributionInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<DistributionMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const validation = validateDistributionInput(
-    createDistributionInputSchema,
-    fields
-  )
-  if (!validation.success) {
-    return createDistributionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createDistribution({
-      headers: { "idempotency-key": idempotencyKey },
-      body: validation.data,
-    })
-    return { status: "success", message: DISTRIBUTION_CREATED_MESSAGE }
-  } catch (error) {
-    return mapDistributionApiProblem(error)
-  }
-}
-
-export async function submitUpdateDistribution(
-  input: UpdateDistributionInput,
-  dependencies?: ReplaceDependencies
-): Promise<DistributionMutationResult> {
-  const validation = validateDistributionInput(
-    updateDistributionInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createDistributionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = validation.data
-
-  try {
-    await resolved.replaceDistribution({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: DISTRIBUTION_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapDistributionApiProblem(error)
-  }
-}
-
-export async function submitDeleteDistribution(
-  input: DeleteDistributionInput,
-  dependencies?: DeleteDependencies
-): Promise<DistributionMutationResult> {
-  const validation = validateDistributionInput(
-    deleteDistributionInputSchema,
-    input
-  )
-  if (!validation.success) {
-    return createDistributionFieldErrorResult(validation.fieldErrors)
-  }
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteDistribution({
-      params: { uuid: validation.data.id },
-      headers: { "if-match": validation.data.etag },
-    })
-    return { status: "success", message: DISTRIBUTION_DELETED_MESSAGE }
-  } catch (error) {
-    return mapDistributionApiProblem(error)
-  }
-}
-
-function mapDistributionApiProblem(error: unknown): DistributionMutationResult {
+export function mapDistributionApiProblem(
+  error: unknown
+): DistributionMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

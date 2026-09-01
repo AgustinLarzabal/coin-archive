@@ -2,7 +2,7 @@ import type { Distribution } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { DISTRIBUTION_AUTHORIZATION_ERROR } from "./actions"
-import { loadDistributionMaintenancePageData } from "./distribution-maintenance-route-data"
+import { loadDistributionMaintenanceDistributions } from "./distribution-loaders.server"
 
 const distributions: Distribution[] = [
   {
@@ -25,14 +25,14 @@ const distributions: Distribution[] = [
   },
 ]
 
-describe("loadDistributionMaintenancePageData", () => {
+describe("loadDistributionMaintenanceDistributions", () => {
   it.each(["UNAUTHORIZED", "FORBIDDEN"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
       const listDistributions = vi.fn().mockRejectedValue({ code })
 
       await expect(
-        loadDistributionMaintenancePageData({ listDistributions })
+        loadDistributionMaintenanceDistributions({ listDistributions })
       ).resolves.toStrictEqual({
         status: "error",
         formError: DISTRIBUTION_AUTHORIZATION_ERROR,
@@ -47,7 +47,7 @@ describe("loadDistributionMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [distributions[1]], nextCursor: null })
 
     await expect(
-      loadDistributionMaintenancePageData({ listDistributions })
+      loadDistributionMaintenanceDistributions({ listDistributions })
     ).resolves.toStrictEqual({ status: "success", distributions })
     expect(listDistributions).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -66,7 +66,7 @@ describe("loadDistributionMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadDistributionMaintenancePageData({
+      loadDistributionMaintenanceDistributions({
         listDistributions: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

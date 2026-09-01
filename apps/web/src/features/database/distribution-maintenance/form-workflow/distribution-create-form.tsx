@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateDistribution } from "../actions"
 import type { DistributionMutationResult } from "../actions"
+import { createDistributionMutation } from "../distribution-mutations"
 import { createDistributionInputSchema } from "../validation"
 import type { DistributionFieldErrors } from "../validation"
 
@@ -17,25 +17,16 @@ import {
   DistributionFormFields,
   DistributionTextField,
 } from "./distribution-form-fields"
-import type { DistributionDraft } from "./distribution-form.shared"
 
 type DistributionCreateFormProps = {
   onCreated?: () => void
 }
 
-const createDistributionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: DistributionDraft & { idempotencyKey: string }) => data
-  )
-  .handler(async ({ data }) => submitCreateDistribution(data))
-
 export function DistributionCreateForm({
   onCreated,
 }: DistributionCreateFormProps) {
   const router = useRouter()
-  const createDistribution = useServerFn(createDistributionAction)
+  const createDistribution = useServerFn(createDistributionMutation)
   const [fieldErrors, setFieldErrors] = useState<DistributionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

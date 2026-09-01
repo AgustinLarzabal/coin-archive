@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Distribution } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteDistribution } from "../actions"
+import { deleteDistributionMutation } from "../distribution-mutations"
 import { DISTRIBUTION_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { DistributionCreateForm } from "../form-workflow/distribution-create-form"
@@ -47,19 +47,13 @@ const DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
 
 export const DISTRIBUTION_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Distribution. ${DISTRIBUTION_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
-const deleteDistributionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteDistribution(data))
-
 export function DistributionMaintenanceSheet({
   distribution,
   open,
   onOpenChange,
 }: DistributionMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteDistribution = useServerFn(deleteDistributionAction)
+  const deleteDistribution = useServerFn(deleteDistributionMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

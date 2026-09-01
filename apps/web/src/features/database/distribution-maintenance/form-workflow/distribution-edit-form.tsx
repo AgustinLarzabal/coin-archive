@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Distribution } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateDistribution } from "../actions"
 import type { DistributionMutationResult } from "../actions"
+import { replaceDistributionMutation } from "../distribution-mutations"
 import { createDistributionInputSchema } from "../validation"
 import type { DistributionFieldErrors } from "../validation"
 
@@ -24,14 +24,6 @@ type DistributionEditFormProps = {
   distribution: Distribution
   onSaved?: () => void
 }
-
-const updateDistributionAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: DistributionDraft & { id: string; etag: string }) => data
-  )
-  .handler(async ({ data }) => submitUpdateDistribution(data))
 
 export function hasDistributionEditChanges(
   distribution: Distribution,
@@ -53,7 +45,7 @@ export function DistributionEditForm({
   onSaved,
 }: DistributionEditFormProps) {
   const router = useRouter()
-  const updateDistribution = useServerFn(updateDistributionAction)
+  const updateDistribution = useServerFn(replaceDistributionMutation)
   const [fieldErrors, setFieldErrors] = useState<DistributionFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

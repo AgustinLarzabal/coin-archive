@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Currency } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteCurrency } from "../actions"
+import { deleteCurrencyMutation } from "../currency-mutations"
 import { CURRENCY_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { CurrencyCreateForm } from "../form-workflow/currency-create-form"
@@ -47,19 +47,13 @@ const CURRENCY_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE =
 
 export const CURRENCY_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Currency. ${CURRENCY_DELETE_CONFIRMATION_REASSIGNMENT_MESSAGE}`
 
-const deleteCurrencyAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteCurrency(data))
-
 export function CurrencyMaintenanceSheet({
   currency,
   open,
   onOpenChange,
 }: CurrencyMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteCurrency = useServerFn(deleteCurrencyAction)
+  const deleteCurrency = useServerFn(deleteCurrencyMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

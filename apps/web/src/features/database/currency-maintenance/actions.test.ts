@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { CURRENCY_AUTHORIZATION_ERROR } from "./actions"
 import {
-  CURRENCY_AUTHORIZATION_ERROR,
   submitCreateCurrency,
   submitDeleteCurrency,
   submitUpdateCurrency,
-} from "./actions"
+} from "./actions.server"
 import {
   CURRENCY_DUPLICATE_CODE_ERROR,
   CURRENCY_IN_USE_DELETE_ERROR,

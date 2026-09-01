@@ -2,7 +2,7 @@ import type { Currency } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { CURRENCY_AUTHORIZATION_ERROR } from "./actions"
-import { loadCurrencyMaintenancePageData } from "./currency-maintenance-route-data"
+import { loadCurrencyMaintenanceCurrencies } from "./currency-loaders.server"
 
 const currencies: Currency[] = [
   {
@@ -27,14 +27,16 @@ const currencies: Currency[] = [
   },
 ]
 
-describe("loadCurrencyMaintenancePageData", () => {
-  it.each(["UNAUTHORIZED", "FORBIDDEN"])(
+describe("loadCurrencyMaintenanceCurrencies", () => {
+  it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
-      const listCurrencies = vi.fn().mockRejectedValue({ code })
+      const listCurrencies = vi.fn().mockRejectedValue({
+        data: { body: { code } },
+      })
 
       await expect(
-        loadCurrencyMaintenancePageData({ listCurrencies })
+        loadCurrencyMaintenanceCurrencies({ listCurrencies })
       ).resolves.toStrictEqual({
         status: "error",
         formError: CURRENCY_AUTHORIZATION_ERROR,
@@ -49,7 +51,7 @@ describe("loadCurrencyMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [currencies[1]], nextCursor: null })
 
     await expect(
-      loadCurrencyMaintenancePageData({ listCurrencies })
+      loadCurrencyMaintenanceCurrencies({ listCurrencies })
     ).resolves.toStrictEqual({ status: "success", currencies })
     expect(listCurrencies).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -68,7 +70,7 @@ describe("loadCurrencyMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadCurrencyMaintenancePageData({
+      loadCurrencyMaintenanceCurrencies({
         listCurrencies: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   CURRENCY_DUPLICATE_CODE_ERROR,
   CURRENCY_GENERIC_SAVE_ERROR,
@@ -10,17 +8,7 @@ import {
   createCurrencyFormErrorResult,
 } from "./currency-mutation-errors"
 import type { CurrencyMutationResult } from "./currency-mutation-errors"
-import {
-  CURRENCY_AUTHORIZATION_ERROR,
-  CURRENCY_CREATED_MESSAGE,
-  CURRENCY_DELETED_MESSAGE,
-  CURRENCY_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateCurrencyInput,
-  DeleteCurrencyInput,
-  UpdateCurrencyInput,
-} from "./validation"
+import { CURRENCY_AUTHORIZATION_ERROR } from "./messages"
 
 export { CURRENCY_AUTHORIZATION_ERROR } from "./messages"
 export type { CurrencyMutationResult } from "./currency-mutation-errors"
@@ -30,101 +18,11 @@ export type CurrencyAuthorizationErrorResult = {
   formError: typeof CURRENCY_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createCurrency: MaintenanceApiClient["currencies"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceCurrency: MaintenanceApiClient["currencies"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteCurrency: MaintenanceApiClient["currencies"]["delete"]
-}
-
 export function createCurrencyAuthorizationError(): CurrencyAuthorizationErrorResult {
   return { status: "error", formError: CURRENCY_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const currencies = await getCurrencyOperations()
-  return {
-    createCurrency: currencies.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const currencies = await getCurrencyOperations()
-  return { replaceCurrency: currencies.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const currencies = await getCurrencyOperations()
-  return { deleteCurrency: currencies.delete }
-}
-
-async function getCurrencyOperations() {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return client.currencies
-}
-
-export async function submitCreateCurrency(
-  input: CreateCurrencyInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<CurrencyMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createCurrency({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: CURRENCY_CREATED_MESSAGE }
-  } catch (error) {
-    return mapCurrencyApiProblem(error)
-  }
-}
-
-export async function submitUpdateCurrency(
-  input: UpdateCurrencyInput,
-  dependencies?: ReplaceDependencies
-): Promise<CurrencyMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceCurrency({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: CURRENCY_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapCurrencyApiProblem(error)
-  }
-}
-
-export async function submitDeleteCurrency(
-  input: DeleteCurrencyInput,
-  dependencies?: DeleteDependencies
-): Promise<CurrencyMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteCurrency({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: CURRENCY_DELETED_MESSAGE }
-  } catch (error) {
-    return mapCurrencyApiProblem(error)
-  }
-}
-
-function mapCurrencyApiProblem(error: unknown): CurrencyMutationResult {
+export function mapCurrencyApiProblem(error: unknown): CurrencyMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

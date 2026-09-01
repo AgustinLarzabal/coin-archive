@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Currency } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateCurrency } from "../actions"
 import type { CurrencyMutationResult } from "../actions"
+import { replaceCurrencyMutation } from "../currency-mutations"
 import { createCurrencyInputSchema } from "../validation"
 import type { CurrencyFieldErrors } from "../validation"
 
@@ -21,12 +21,6 @@ type CurrencyEditFormProps = {
   currency: Currency
   onSaved?: () => void
 }
-
-const updateCurrencyAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CurrencyDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateCurrency(data))
 
 export function hasCurrencyEditChanges(
   currency: Currency,
@@ -46,7 +40,7 @@ export function hasCurrencyEditChanges(
 
 export function CurrencyEditForm({ currency, onSaved }: CurrencyEditFormProps) {
   const router = useRouter()
-  const updateCurrency = useServerFn(updateCurrencyAction)
+  const updateCurrency = useServerFn(replaceCurrencyMutation)
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

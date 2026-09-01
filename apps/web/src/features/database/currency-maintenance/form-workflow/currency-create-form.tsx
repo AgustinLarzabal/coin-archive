@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateCurrency } from "../actions"
 import type { CurrencyMutationResult } from "../actions"
+import { createCurrencyMutation } from "../currency-mutations"
 import { createCurrencyInputSchema } from "../validation"
 import type { CurrencyFieldErrors } from "../validation"
 
@@ -14,21 +14,14 @@ import {
   isCurrencyDraftComplete,
 } from "./currency-form.shared"
 import { CurrencyFormFields, CurrencyTextField } from "./currency-form-fields"
-import type { CurrencyDraft } from "./currency-form.shared"
 
 type CurrencyCreateFormProps = {
   onCreated?: () => void
 }
 
-const createCurrencyAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CurrencyDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateCurrency(data))
-
 export function CurrencyCreateForm({ onCreated }: CurrencyCreateFormProps) {
   const router = useRouter()
-  const createCurrency = useServerFn(createCurrencyAction)
+  const createCurrency = useServerFn(createCurrencyMutation)
   const [fieldErrors, setFieldErrors] = useState<CurrencyFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

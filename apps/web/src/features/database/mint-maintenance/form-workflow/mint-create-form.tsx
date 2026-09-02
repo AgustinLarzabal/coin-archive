@@ -1,31 +1,24 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateMint } from "../actions"
 import type { MintMutationResult } from "../actions"
+import { createMintMutation } from "../mint-mutations"
 import { createMintInputSchema } from "../mint-validation"
 import type { MintFieldErrors } from "../mint-validation"
 
 import { EMPTY_MINT_DRAFT, isMintDraftComplete } from "./mint-form.shared"
 import { MintFormFields, MintTextField } from "./mint-form-fields"
-import type { MintDraft } from "./mint-form.shared"
 
 type MintCreateFormProps = {
   onCreated?: () => void
 }
 
-const createMintAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: MintDraft & { idempotencyKey: string }) => data)
-  .handler(async ({ data }) => submitCreateMint(data))
-
 export function MintCreateForm({ onCreated }: MintCreateFormProps) {
   const router = useRouter()
-  const createMint = useServerFn(createMintAction)
+  const createMint = useServerFn(createMintMutation)
   const [fieldErrors, setFieldErrors] = useState<MintFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

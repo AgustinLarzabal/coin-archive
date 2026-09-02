@@ -2,7 +2,7 @@ import type { Mint } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { MINT_AUTHORIZATION_ERROR } from "./actions"
-import { loadMintMaintenancePageData } from "./mint-maintenance-route-data"
+import { loadMintMaintenanceMints } from "./mint-loaders.server"
 
 const mints: Mint[] = [
   {
@@ -25,7 +25,7 @@ const mints: Mint[] = [
   },
 ]
 
-describe("loadMintMaintenancePageData", () => {
+describe("loadMintMaintenanceMints", () => {
   it.each(["authentication_required", "editor_access_required"])(
     "maps API %s problems to the current access-denied presentation",
     async (code) => {
@@ -34,7 +34,7 @@ describe("loadMintMaintenancePageData", () => {
       })
 
       await expect(
-        loadMintMaintenancePageData({ listMints })
+        loadMintMaintenanceMints({ listMints })
       ).resolves.toStrictEqual({
         status: "error",
         formError: MINT_AUTHORIZATION_ERROR,
@@ -52,7 +52,7 @@ describe("loadMintMaintenancePageData", () => {
       .mockResolvedValueOnce({ data: [mints[1]], nextCursor: null })
 
     await expect(
-      loadMintMaintenancePageData({ listMints })
+      loadMintMaintenanceMints({ listMints })
     ).resolves.toStrictEqual({ status: "success", mints })
     expect(listMints).toHaveBeenNthCalledWith(1, {
       limit: 100,
@@ -71,7 +71,7 @@ describe("loadMintMaintenancePageData", () => {
     const failure = new Error("API unavailable")
 
     await expect(
-      loadMintMaintenancePageData({
+      loadMintMaintenanceMints({
         listMints: vi.fn().mockRejectedValue(failure),
       })
     ).rejects.toBe(failure)

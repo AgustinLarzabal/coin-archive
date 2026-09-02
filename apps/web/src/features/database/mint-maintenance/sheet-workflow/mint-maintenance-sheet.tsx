@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Mint } from "@coin-archive/api"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteMint } from "../actions"
+import { deleteMintMutation } from "../mint-mutations"
 import { MINT_DELETE_REASSIGN_REQUIRED_MESSAGE } from "../messages"
 
 import { MintCreateForm } from "../form-workflow/mint-create-form"
@@ -41,19 +41,13 @@ type MintMaintenanceSheetProps = {
 
 export const MINT_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Mint. ${MINT_DELETE_REASSIGN_REQUIRED_MESSAGE}`
 
-const deleteMintAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteMint(data))
-
 export function MintMaintenanceSheet({
   mint,
   open,
   onOpenChange,
 }: MintMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteMint = useServerFn(deleteMintAction)
+  const deleteMint = useServerFn(deleteMintMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

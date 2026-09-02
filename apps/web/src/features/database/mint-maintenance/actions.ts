@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   MINT_DUPLICATE_CODE_ERROR,
   MINT_GENERIC_SAVE_ERROR,
@@ -10,17 +8,7 @@ import {
   createMintFormErrorResult,
 } from "./mint-mutation-errors"
 import type { MintMutationResult } from "./mint-mutation-errors"
-import {
-  MINT_AUTHORIZATION_ERROR,
-  MINT_CREATED_MESSAGE,
-  MINT_DELETED_MESSAGE,
-  MINT_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateMintInput,
-  DeleteMintInput,
-  UpdateMintInput,
-} from "./mint-validation"
+import { MINT_AUTHORIZATION_ERROR } from "./messages"
 
 export { MINT_AUTHORIZATION_ERROR } from "./messages"
 export type { MintMutationResult } from "./mint-mutation-errors"
@@ -30,100 +18,11 @@ export type MintAuthorizationErrorResult = {
   formError: typeof MINT_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createMint: MaintenanceApiClient["mints"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceMint: MaintenanceApiClient["mints"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteMint: MaintenanceApiClient["mints"]["delete"]
-}
-
 export function createMintAuthorizationError(): MintAuthorizationErrorResult {
   return { status: "error", formError: MINT_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createMint: client.mints.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceMint: client.mints.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteMint: client.mints.delete }
-}
-
-export async function submitCreateMint(
-  input: CreateMintInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<MintMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createMint({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: MINT_CREATED_MESSAGE }
-  } catch (error) {
-    return mapMintApiProblem(error)
-  }
-}
-
-export async function submitUpdateMint(
-  input: UpdateMintInput,
-  dependencies?: ReplaceDependencies
-): Promise<MintMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceMint({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: MINT_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapMintApiProblem(error)
-  }
-}
-
-export async function submitDeleteMint(
-  input: DeleteMintInput,
-  dependencies?: DeleteDependencies
-): Promise<MintMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteMint({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: MINT_DELETED_MESSAGE }
-  } catch (error) {
-    return mapMintApiProblem(error)
-  }
-}
-
-function mapMintApiProblem(error: unknown): MintMutationResult {
+export function mapMintApiProblem(error: unknown): MintMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

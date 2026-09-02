@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { Mint } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateMint } from "../actions"
 import type { MintMutationResult } from "../actions"
+import { replaceMintMutation } from "../mint-mutations"
 import { createMintInputSchema } from "../mint-validation"
 import type { MintFieldErrors } from "../mint-validation"
 
 import { createMintDraft, hasMintEditChanges } from "./mint-form.shared"
 import { MintFormFields, MintTextField } from "./mint-form-fields"
-import type { MintDraft } from "./mint-form.shared"
 
 type MintEditFormProps = {
   mint: Mint
   onSaved?: () => void
 }
 
-const updateMintAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: MintDraft & { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitUpdateMint(data))
-
 export function MintEditForm({ mint, onSaved }: MintEditFormProps) {
   const router = useRouter()
-  const updateMint = useServerFn(updateMintAction)
+  const updateMint = useServerFn(replaceMintMutation)
   const [fieldErrors, setFieldErrors] = useState<MintFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  MINT_AUTHORIZATION_ERROR,
   submitCreateMint,
   submitDeleteMint,
   submitUpdateMint,
-} from "./actions"
+} from "./actions.server"
+import { MINT_AUTHORIZATION_ERROR } from "./actions"
 import {
   MINT_DUPLICATE_CODE_ERROR,
   MINT_IN_USE_DELETE_ERROR,

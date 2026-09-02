@@ -2,7 +2,7 @@ import type { Issuer } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
 import { ISSUER_AUTHORIZATION_ERROR } from "./actions"
-import { loadIssuerMaintenancePageData } from "./issuer-maintenance-route-data"
+import { loadIssuerMaintenancePageData } from "./issuer-loaders.server"
 
 const issuers: Issuer[] = [
   {

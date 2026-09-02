@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import {
   Sheet,
@@ -27,7 +27,7 @@ import {
 import { Button } from "@coin-archive/ui/components/button"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteIssuer } from "../actions"
+import { deleteIssuerMutation } from "../issuer-mutations"
 import {
   ISSUER_DELETE_CONFIRMATION_DESCRIPTION,
   ISSUER_GENERIC_SAVE_ERROR,
@@ -46,12 +46,6 @@ type IssuerMaintenanceSheetProps = {
   onOpenChange: (open: boolean) => void
 }
 
-const deleteIssuerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteIssuer(data))
-
 export function IssuerMaintenanceSheet({
   issuer,
   initialDeleteDialogOpen = false,
@@ -60,7 +54,7 @@ export function IssuerMaintenanceSheet({
   onOpenChange,
 }: IssuerMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteIssuer = useServerFn(deleteIssuerAction)
+  const deleteIssuer = useServerFn(deleteIssuerMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

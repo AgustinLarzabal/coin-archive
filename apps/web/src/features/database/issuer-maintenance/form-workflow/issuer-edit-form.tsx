@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateIssuer } from "../actions"
 import type { IssuerMutationResult } from "../actions"
+import { replaceIssuerMutation } from "../issuer-mutations"
 import type { IssuerFieldErrors } from "../validation"
 import {
   createIssuerDraft,
@@ -22,21 +22,6 @@ type IssuerEditFormProps = {
   issuers: IssuerMaintenanceRecord[]
   onSaved?: () => void
 }
-
-const updateIssuerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: {
-      id: string
-      code: string
-      isoCode: string
-      name: string
-      parentIssuerId: string | null
-      etag: string
-    }) => data
-  )
-  .handler(async ({ data }) => submitUpdateIssuer(data))
 
 export function hasIssuerEditChanges(
   issuer: IssuerMaintenanceRecord,
@@ -62,7 +47,7 @@ export function IssuerEditForm({
   onSaved,
 }: IssuerEditFormProps) {
   const router = useRouter()
-  const updateIssuer = useServerFn(updateIssuerAction)
+  const updateIssuer = useServerFn(replaceIssuerMutation)
   const [fieldErrors, setFieldErrors] = useState<IssuerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)

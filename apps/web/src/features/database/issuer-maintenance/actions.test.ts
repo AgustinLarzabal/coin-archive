@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { ISSUER_AUTHORIZATION_ERROR } from "./actions"
 import {
-  ISSUER_AUTHORIZATION_ERROR,
   submitCreateIssuer,
   submitDeleteIssuer,
   submitUpdateIssuer,
-} from "./actions"
+} from "./actions.server"
 import {
   ISSUER_DUPLICATE_CODE_ERROR,
   ISSUER_COINS_DELETE_ERROR,

@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { IssuerMaintenanceRecord } from "../issuer-maintenance-route-data"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateIssuer } from "../actions"
 import type { IssuerMutationResult } from "../actions"
+import { createIssuerMutation } from "../issuer-mutations"
 import type { IssuerFieldErrors } from "../validation"
 import {
   EMPTY_ISSUER_DRAFT,
@@ -21,26 +21,12 @@ type IssuerCreateFormProps = {
   onCreated?: () => void
 }
 
-const createIssuerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: {
-      code: string
-      isoCode: string
-      name: string
-      parentIssuerId: string | null
-      idempotencyKey: string
-    }) => data
-  )
-  .handler(async ({ data }) => submitCreateIssuer(data))
-
 export function IssuerCreateForm({
   issuers,
   onCreated,
 }: IssuerCreateFormProps) {
   const router = useRouter()
-  const createIssuer = useServerFn(createIssuerAction)
+  const createIssuer = useServerFn(createIssuerMutation)
   const [fieldErrors, setFieldErrors] = useState<IssuerFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

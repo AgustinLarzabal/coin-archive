@@ -1,11 +1,11 @@
 import { useEffect } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
+import { useServerFn } from "@tanstack/react-start"
+import type { RulerGroupOption, Ruler } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitUpdateRuler } from "../actions"
+import { replaceRulerMutation } from "../ruler-mutations"
 
 import { RulerFormFields, RulerTextField } from "./ruler-form-fields"
 import {
@@ -22,20 +22,6 @@ type RulerEditFormProps = {
   rulerGroups: RulerGroupOption[]
   onSaved?: () => void
 }
-
-const updateRulerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: {
-      id: string
-      code: string
-      name: string
-      rulerGroupId: string | null
-      etag: string
-    }) => data
-  )
-  .handler(async ({ data }) => submitUpdateRuler(data))
 
 export function hasRulerEditChanges(ruler: Ruler, draft: RulerDraft) {
   const normalizedCurrent = normalizeRulerDraft(createRulerDraft(ruler))
@@ -54,7 +40,7 @@ export function RulerEditForm({
   onSaved,
 }: RulerEditFormProps) {
   const router = useRouter()
-  const updateRuler = useServerFn(updateRulerAction)
+  const updateRuler = useServerFn(replaceRulerMutation)
   const { fieldErrors, formError, successMessage, clearFeedback, applyResult } =
     useRulerFormFeedback()
   const rulerGroupOptions = getRulerGroupSelectionOptions(rulerGroups)

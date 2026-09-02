@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
+import { useServerFn } from "@tanstack/react-start"
 import type { RulerGroupOption } from "@coin-archive/api"
 import { SubmitButton } from "@coin-archive/ui/components/submit-button"
 
-import { submitCreateRuler } from "../actions"
+import { createRulerMutation } from "../ruler-mutations"
 
 import { RulerFormFields, RulerTextField } from "./ruler-form-fields"
 import {
@@ -21,25 +21,12 @@ type RulerCreateFormProps = {
   onCreated?: () => void
 }
 
-const createRulerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator(
-    (data: {
-      code: string
-      name: string
-      rulerGroupId: string | null
-      idempotencyKey: string
-    }) => data
-  )
-  .handler(async ({ data }) => submitCreateRuler(data))
-
 export function RulerCreateForm({
   rulerGroups,
   onCreated,
 }: RulerCreateFormProps) {
   const router = useRouter()
-  const createRuler = useServerFn(createRulerAction)
+  const createRuler = useServerFn(createRulerMutation)
   const { fieldErrors, formError, clearFeedback, applyResult } =
     useRulerFormFeedback()
   const [idempotencyKey, setIdempotencyKey] = useState(() =>

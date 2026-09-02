@@ -1,5 +1,3 @@
-import type { MaintenanceApiClient } from "@coin-archive/api"
-
 import {
   RULER_DUPLICATE_CODE_ERROR,
   RULER_GENERIC_SAVE_ERROR,
@@ -11,17 +9,7 @@ import {
   createRulerFormErrorResult,
 } from "./ruler-mutation-errors"
 import type { RulerMutationResult } from "./ruler-mutation-errors"
-import {
-  RULER_AUTHORIZATION_ERROR,
-  RULER_CREATED_MESSAGE,
-  RULER_DELETED_MESSAGE,
-  RULER_UPDATED_MESSAGE,
-} from "./messages"
-import type {
-  CreateRulerInput,
-  DeleteRulerInput,
-  UpdateRulerInput,
-} from "./ruler-validation"
+import { RULER_AUTHORIZATION_ERROR } from "./messages"
 
 export { RULER_AUTHORIZATION_ERROR } from "./messages"
 export type { RulerMutationResult } from "./ruler-mutation-errors"
@@ -31,100 +19,11 @@ export type RulerAuthorizationErrorResult = {
   formError: typeof RULER_AUTHORIZATION_ERROR
 }
 
-type CreateDependencies = {
-  createRuler: MaintenanceApiClient["rulers"]["create"]
-}
-
-type ReplaceDependencies = {
-  replaceRuler: MaintenanceApiClient["rulers"]["replace"]
-}
-
-type DeleteDependencies = {
-  deleteRuler: MaintenanceApiClient["rulers"]["delete"]
-}
-
 export function createRulerAuthorizationError(): RulerAuthorizationErrorResult {
   return { status: "error", formError: RULER_AUTHORIZATION_ERROR }
 }
 
-async function getDefaultCreateDependencies(): Promise<CreateDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return {
-    createRuler: client.rulers.create,
-  }
-}
-
-async function getDefaultReplaceDependencies(): Promise<ReplaceDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { replaceRuler: client.rulers.replace }
-}
-
-async function getDefaultDeleteDependencies(): Promise<DeleteDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
-  const client = await getMaintenanceApiClient()
-  return { deleteRuler: client.rulers.delete }
-}
-
-export async function submitCreateRuler(
-  input: CreateRulerInput & { idempotencyKey: string },
-  dependencies?: CreateDependencies
-): Promise<RulerMutationResult> {
-  const { idempotencyKey, ...fields } = input
-  const resolved = dependencies ?? (await getDefaultCreateDependencies())
-
-  try {
-    await resolved.createRuler({
-      headers: { "idempotency-key": idempotencyKey },
-      body: fields,
-    })
-    return { status: "success", message: RULER_CREATED_MESSAGE }
-  } catch (error) {
-    return mapRulerApiProblem(error)
-  }
-}
-
-export async function submitUpdateRuler(
-  input: UpdateRulerInput,
-  dependencies?: ReplaceDependencies
-): Promise<RulerMutationResult> {
-  const resolved = dependencies ?? (await getDefaultReplaceDependencies())
-  const { id, etag, ...body } = input
-
-  try {
-    await resolved.replaceRuler({
-      params: { uuid: id },
-      headers: { "if-match": etag },
-      body,
-    })
-    return { status: "success", message: RULER_UPDATED_MESSAGE }
-  } catch (error) {
-    return mapRulerApiProblem(error)
-  }
-}
-
-export async function submitDeleteRuler(
-  input: DeleteRulerInput,
-  dependencies?: DeleteDependencies
-): Promise<RulerMutationResult> {
-  const resolved = dependencies ?? (await getDefaultDeleteDependencies())
-
-  try {
-    await resolved.deleteRuler({
-      params: { uuid: input.id },
-      headers: { "if-match": input.etag },
-    })
-    return { status: "success", message: RULER_DELETED_MESSAGE }
-  } catch (error) {
-    return mapRulerApiProblem(error)
-  }
-}
-
-function mapRulerApiProblem(error: unknown): RulerMutationResult {
+export function mapRulerApiProblem(error: unknown): RulerMutationResult {
   const body = getProblemBody(error)
   switch (body?.code) {
     case "authentication_required":

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
-import { createServerFn, useServerFn } from "@tanstack/react-start"
-import type { RulerGroupOption, Ruler  } from "@coin-archive/api"
+import { useServerFn } from "@tanstack/react-start"
+import type { RulerGroupOption, Ruler } from "@coin-archive/api"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +27,7 @@ import {
 } from "@coin-archive/ui/components/sheet"
 
 import { Icons } from "@/components/icons"
-import { submitDeleteRuler } from "../actions"
+import { deleteRulerMutation } from "../ruler-mutations"
 import {
   RULER_GENERIC_SAVE_ERROR,
   RULER_IN_USE_DELETE_GUIDANCE,
@@ -45,12 +45,6 @@ type RulerMaintenanceSheetProps = {
 
 export const RULER_DELETE_CONFIRMATION_DESCRIPTION = `This permanently deletes the Ruler. ${RULER_IN_USE_DELETE_GUIDANCE}`
 
-const deleteRulerAction = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { id: string; etag: string }) => data)
-  .handler(async ({ data }) => submitDeleteRuler(data))
-
 export function RulerMaintenanceSheet({
   ruler,
   rulerGroups,
@@ -58,7 +52,7 @@ export function RulerMaintenanceSheet({
   onOpenChange,
 }: RulerMaintenanceSheetProps) {
   const router = useRouter()
-  const deleteRuler = useServerFn(deleteRulerAction)
+  const deleteRuler = useServerFn(deleteRulerMutation)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeletePending, setIsDeletePending] = useState(false)

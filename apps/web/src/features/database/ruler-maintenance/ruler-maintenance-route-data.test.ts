@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { RULER_AUTHORIZATION_ERROR } from "./actions"
-import { loadRulerMaintenancePageData } from "./ruler-maintenance-route-data"
+import { loadRulerMaintenancePageData } from "./ruler-loaders.server"
 
 const ruler = {
   id: "2f0b5ff0-f4a9-4333-8f6d-dad19cd8510b",

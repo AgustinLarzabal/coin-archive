@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
-  RULER_AUTHORIZATION_ERROR,
   submitCreateRuler,
   submitDeleteRuler,
   submitUpdateRuler,
-} from "./actions"
+} from "./actions.server"
+import { RULER_AUTHORIZATION_ERROR } from "./actions"
 import {
   RULER_DUPLICATE_CODE_ERROR,
   RULER_IN_USE_DELETE_ERROR,

@@ -1,7 +1,7 @@
 import type { DatabaseMaintenanceOverview } from "@coin-archive/api"
 import { describe, expect, it, vi } from "vitest"
 
-import { loadDatabaseOverviewPageData } from "./database-overview-route-data"
+import { loadDatabaseOverviewPageData } from "./database-overview-loaders.server"
 
 const counts: DatabaseMaintenanceOverview = {
   coins: 14,

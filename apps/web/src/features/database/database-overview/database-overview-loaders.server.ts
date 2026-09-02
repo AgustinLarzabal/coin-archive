@@ -1,8 +1,9 @@
-import { createServerFn } from "@tanstack/react-start"
 import type {
   DatabaseMaintenanceOverview,
   MaintenanceApiClient,
 } from "@coin-archive/api"
+
+import { getMaintenanceApiClient } from "@/lib/maintenance-api.server"
 
 export type DatabaseOverviewPageLoaderData =
   | {
@@ -13,43 +14,25 @@ export type DatabaseOverviewPageLoaderData =
       counts: DatabaseMaintenanceOverview
     }
 
-type DatabaseOverviewDependencies = {
+export type DatabaseOverviewReadDependencies = {
   getOverview: MaintenanceApiClient["overview"]["get"]
 }
 
-async function getDefaultDatabaseOverviewDependencies(): Promise<DatabaseOverviewDependencies> {
-  const { getMaintenanceApiClient } =
-    await import("@/lib/maintenance-api.server")
+export async function getDatabaseOverviewReadDependencies(): Promise<DatabaseOverviewReadDependencies> {
   const client = await getMaintenanceApiClient()
-
-  return {
-    getOverview: client.overview.get,
-  }
+  return { getOverview: client.overview.get }
 }
 
 export async function loadDatabaseOverviewPageData(
-  dependencies?: DatabaseOverviewDependencies
+  dependencies: DatabaseOverviewReadDependencies
 ): Promise<DatabaseOverviewPageLoaderData> {
-  const { getOverview } =
-    dependencies ?? (await getDefaultDatabaseOverviewDependencies())
-
   try {
-    const { data: counts } = await getOverview({})
+    const { data: counts } = await dependencies.getOverview({})
     return { isAllowed: true, counts }
   } catch (error) {
     if (isAuthorizationProblem(error)) return { isAllowed: false }
     throw error
   }
-}
-
-const getDatabaseOverviewLoaderData = createServerFn({
-  method: "GET",
-}).handler(async () => {
-  return loadDatabaseOverviewPageData()
-})
-
-export function loadDatabaseOverviewRouteData() {
-  return getDatabaseOverviewLoaderData()
 }
 
 function isAuthorizationProblem(error: unknown) {

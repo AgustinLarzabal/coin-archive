@@ -11,7 +11,6 @@ describe("database-overview public API", () => {
     deletedNestedEntrypoints: ["page/index.ts", "table/index.ts"],
     exportedNames: [
       "DatabaseOverviewRouteComponent",
-      "loadDatabaseOverviewPageData",
       "loadDatabaseOverviewRouteData",
     ],
     feature,

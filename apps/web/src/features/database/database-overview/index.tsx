@@ -1,11 +1,8 @@
 import { renderMaintenancePage } from "../maintenance-page"
-import type { DatabaseOverviewPageLoaderData } from "./database-overview-route-data"
+import type { DatabaseOverviewPageLoaderData } from "./database-overview-loaders.server"
 import { DatabaseOverviewTable } from "./overview-table"
 
-export {
-  loadDatabaseOverviewPageData,
-  loadDatabaseOverviewRouteData,
-} from "./database-overview-route-data"
+export { loadDatabaseOverviewRouteData } from "./database-overview-route-loaders"
 
 type DatabaseOverviewRouteComponentProps = {
   loaderData: DatabaseOverviewPageLoaderData

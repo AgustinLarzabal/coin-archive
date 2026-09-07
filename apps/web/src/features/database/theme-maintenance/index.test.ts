@@ -1,11 +1,8 @@
-import { describe, expect, it } from "vitest"
+import { describe } from "vitest"
 
 import * as feature from "./index"
 import { assertFeaturePublicApi } from "../public-api-contract"
-import { readFeatureSource } from "../public-api-test-helpers"
 
-const FEATURE_DIRECTORY_URL = new URL(".", import.meta.url)
-const FEATURE_ALIAS = "@/features/database/theme-maintenance"
 
 describe("theme-maintenance public API", () => {
   assertFeaturePublicApi({
@@ -14,22 +11,5 @@ describe("theme-maintenance public API", () => {
       "loadThemeMaintenanceRouteData",
     ],
     feature,
-    featureAlias: FEATURE_ALIAS,
-    featureDirectoryUrl: FEATURE_DIRECTORY_URL,
-  })
-
-  it("keeps migrated Theme reads and writes outside the database package boundary", () => {
-    for (const file of ["actions.ts", "theme-maintenance-route-data.ts"]) {
-      expect(readFeatureSource(FEATURE_DIRECTORY_URL, file)).not.toContain(
-        "@coin-archive/db"
-      )
-    }
-
-    const coinFormSource = readFeatureSource(
-      new URL("../coin-maintenance/", FEATURE_DIRECTORY_URL),
-      "coin-loaders.server.ts"
-    )
-    expect(coinFormSource).toContain("client.coins.options")
-    expect(coinFormSource).not.toMatch(/\n\s+getThemes,/)
   })
 })

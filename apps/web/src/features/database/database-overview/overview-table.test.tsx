@@ -5,26 +5,6 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DatabaseOverviewTable } from "./overview-table"
 
-type SummaryRow = {
-  href: string
-  label: string
-  count: number
-}
-
-const summaryRowPattern =
-  /<a href="([^"]+)"[^>]*>([^<]+)<\/a><\/td><td[^>]*>(\d+)<\/td>/g
-
-function extractSummaryRows(markup: string): SummaryRow[] {
-  return Array.from(
-    markup.matchAll(summaryRowPattern),
-    ([, href, label, count]) => ({
-      href,
-      label,
-      count: Number(count),
-    })
-  )
-}
-
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof TanstackReactRouter>()
 
@@ -45,7 +25,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 })
 
 describe("DatabaseOverviewTable", () => {
-  it("renders a plain summary table with stable linked rows and zero counts", () => {
+  it("renders linked summary cards with stable labels and zero counts", () => {
     const expectedRows = [
       { href: "/database/coins", label: "Coins", count: 21 },
       { href: "/database/catalogues", label: "Catalogues", count: 0 },
@@ -92,9 +72,15 @@ describe("DatabaseOverviewTable", () => {
       />
     )
 
-    expect(markup).toContain("Record type")
-    expect(markup).toContain("Count")
-    expect(markup).toContain('data-slot="table-body"')
-    expect(extractSummaryRows(markup)).toStrictEqual(expectedRows)
+    expect(markup).toContain('data-slot="item-group"')
+    expect(markup.match(/data-slot="item"/g)).toHaveLength(
+      expectedRows.length
+    )
+
+    for (const { href, label, count } of expectedRows) {
+      expect(markup).toContain(`href="${href}"`)
+      expect(markup).toContain(`>${label}</p>`)
+      expect(markup).toContain(`>${count}</div>`)
+    }
   })
 })

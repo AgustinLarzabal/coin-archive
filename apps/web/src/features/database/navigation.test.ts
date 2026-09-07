@@ -7,7 +7,13 @@ import {
 
 describe("database navigation", () => {
   it("keeps the existing database menu labels, ordering, routes, and count keys", () => {
-    expect(databaseMaintenanceSections).toStrictEqual([
+    expect(
+      databaseMaintenanceSections.map(({ to, label, countKey }) => ({
+        to,
+        label,
+        countKey,
+      }))
+    ).toStrictEqual([
       {
         to: "/database/coins",
         label: "Coins",

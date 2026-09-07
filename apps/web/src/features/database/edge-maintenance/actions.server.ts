@@ -3,10 +3,8 @@ import type { MaintenanceApiClient } from "@coin-archive/api"
 import { getMaintenanceApiClient } from "@/lib/maintenance-api.server"
 
 import { mapEdgeApiProblem } from "./actions"
-import {
-  createEdgeFieldErrorResult,
-  type EdgeMutationResult,
-} from "./edge-mutation-errors"
+import { createEdgeFieldErrorResult } from "./edge-mutation-errors"
+import type { EdgeMutationResult } from "./edge-mutation-errors"
 import {
   EDGE_CREATED_MESSAGE,
   EDGE_DELETED_MESSAGE,

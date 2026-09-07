@@ -3,10 +3,8 @@ import type { MaintenanceApiClient } from "@coin-archive/api"
 import { getMaintenanceApiClient } from "@/lib/maintenance-api.server"
 
 import { mapDistributionApiProblem } from "./actions"
-import {
-  createDistributionFieldErrorResult,
-  type DistributionMutationResult,
-} from "./distribution-mutation-errors"
+import { createDistributionFieldErrorResult } from "./distribution-mutation-errors"
+import type { DistributionMutationResult } from "./distribution-mutation-errors"
 import {
   DISTRIBUTION_CREATED_MESSAGE,
   DISTRIBUTION_DELETED_MESSAGE,

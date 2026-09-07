@@ -9,6 +9,7 @@ import {
 } from "./rim-mutation-errors"
 import type { RimMutationResult } from "./rim-mutation-errors"
 import { RIM_AUTHORIZATION_ERROR } from "./messages"
+
 export { RIM_AUTHORIZATION_ERROR } from "./messages"
 export type { RimMutationResult } from "./rim-mutation-errors"
 

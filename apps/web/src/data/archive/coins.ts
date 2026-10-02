@@ -1,13 +1,12 @@
 import { queryOptions } from "@tanstack/react-query"
 import {
   coinIdSchema,
-  coinListResponseSchema,
   coinNotFoundErrorSchema,
-  coinResponseSchema,
+  compatibleCoinDetailResponseSchema,
+  compatibleCoinListResponseSchema,
   issuerCodeSchema,
 } from "@workspace/api"
-import type { QueryClient } from "@tanstack/react-query"
-import type { CoinListResponse, CoinResponse } from "@workspace/api"
+import type { CoinDetailResponse, CoinListResponse } from "@workspace/api"
 
 import { API_BASE_URL } from "@/config"
 
@@ -42,7 +41,7 @@ async function getCoins(issuerCode?: string): Promise<CoinListResponse> {
   }
 
   try {
-    return coinListResponseSchema.parse(await response.json())
+    return compatibleCoinListResponseSchema.parse(await response.json())
   } catch (error) {
     throw new InvalidCoinListResponseError("Coin list response is invalid", {
       cause: error,
@@ -50,7 +49,7 @@ async function getCoins(issuerCode?: string): Promise<CoinListResponse> {
   }
 }
 
-async function getCoin(coinId: string): Promise<CoinResponse> {
+async function getCoin(coinId: string): Promise<CoinDetailResponse> {
   let response: Response
 
   try {
@@ -76,7 +75,7 @@ async function getCoin(coinId: string): Promise<CoinResponse> {
   }
 
   try {
-    return coinResponseSchema.parse(await response.json())
+    return compatibleCoinDetailResponseSchema.parse(await response.json())
   } catch (error) {
     throw new InvalidCoinResponseError("Coin response is invalid", {
       cause: error,
@@ -111,16 +110,6 @@ function coinDetailQueryKey(coinId: string) {
   const validCoinId = validateCoinId(coinId)
 
   return ["coins", "detail", validCoinId] as const
-}
-
-export function primeCoinDetailQueries(
-  queryClient: QueryClient,
-  coinList: CoinListResponse,
-  updatedAt: number
-) {
-  for (const coin of coinList.coins) {
-    queryClient.setQueryData(coinDetailQueryKey(coin.id), coin, { updatedAt })
-  }
 }
 
 export function coinDetailQueryOptions(coinId: string) {

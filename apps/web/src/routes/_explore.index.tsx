@@ -8,7 +8,6 @@ import {
   InvalidCoinListResponseError,
   InvalidIssuerCodeError,
   issuerListQueryOptions,
-  primeCoinDetailQueries,
 } from "@/data/archive"
 import { Explore } from "@/features/explore/explore"
 
@@ -17,19 +16,7 @@ export const Route = createFileRoute("/_explore/")({
   errorComponent: ExploreError,
   loaderDeps: ({ search: { issuer: issuerCode } }) => ({ issuerCode }),
   loader: async ({ context, deps: { issuerCode } }) => {
-    const listQuery = coinListQueryOptions(issuerCode)
-    const coinList = await context.queryClient.query(listQuery)
-    const listState = context.queryClient.getQueryState(listQuery.queryKey)
-
-    if (listState?.status !== "success" || listState.dataUpdatedAt === 0) {
-      throw new Error("Coin list query completed without a success timestamp")
-    }
-
-    primeCoinDetailQueries(
-      context.queryClient,
-      coinList,
-      listState.dataUpdatedAt
-    )
+    await context.queryClient.query(coinListQueryOptions(issuerCode))
   },
   pendingComponent: () => <RouteMessage>Loading coins…</RouteMessage>,
 })

@@ -7,11 +7,11 @@ import { useState } from "react"
 
 import { CoinViewerDetails } from "./coin-viewer-details"
 import { CoinViewerPreview } from "./coin-viewer-preview"
-import type { CoinResponse } from "@workspace/api"
+import type { CoinDetailResponse } from "@workspace/api"
 
 type ViewerPanel = "preview" | "details"
 
-export function CoinViewerLayout({ coin }: { coin: CoinResponse }) {
+export function CoinViewerLayout({ coin }: { coin: CoinDetailResponse }) {
   const [selectedPanel, setSelectedPanel] = useState<ViewerPanel>("preview")
 
   return (

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   coinDetailQueryOptions,
+  coinListQueryOptions,
   InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
@@ -20,18 +21,22 @@ vi.mock("@tanstack/react-devtools", () => ({
 }))
 
 const coinId = "00000000-0000-4000-8000-000000000001"
+const coin = {
+  id: coinId,
+  title: "First coin",
+  issuer: { name: "Argentina", code: "AR" },
+  createdAt: "2026-09-16T10:00:00.000Z",
+  updatedAt: "2026-09-16T11:00:00.000Z",
+}
+
+function jsonResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    headers: { "content-type": "application/json" },
+  })
+}
 
 function coinResponse(issuer: { code: string; name: string; id?: string }) {
-  return new Response(
-    JSON.stringify({
-      id: coinId,
-      title: "First coin",
-      issuer,
-      createdAt: "2026-09-16T10:00:00.000Z",
-      updatedAt: "2026-09-16T11:00:00.000Z",
-    }),
-    { headers: { "content-type": "application/json" } }
-  )
+  return jsonResponse({ ...coin, issuer })
 }
 
 function createQueryClient() {
@@ -45,6 +50,54 @@ afterEach(() => {
 })
 
 describe("Archive data module", () => {
+  it("accepts rollout additions to a Coin list response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            coins: [
+              {
+                ...coin,
+                obverseImageUrl: "https://images.example/obverse.webp",
+                reverseImageUrl: null,
+              },
+            ],
+          })
+        )
+      )
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinListQueryOptions())
+    ).resolves.toEqual({ coins: [coin] })
+    queryClient.clear()
+  })
+
+  it("accepts rollout additions to a Coin detail response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            ...coin,
+            obverse: {
+              description: "A portrait",
+              imageUrl: "https://images.example/obverse.webp",
+            },
+          })
+        )
+      )
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinDetailQueryOptions(coinId))
+    ).resolves.toEqual(coin)
+    queryClient.clear()
+  })
+
   it.each([
     ["ISO", { name: "Argentina", code: "AR" }],
     ["Archive-defined", { name: "Roman Empire", code: "ROMAN" }],

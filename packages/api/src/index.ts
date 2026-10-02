@@ -33,21 +33,36 @@ export const issuerListResponseSchema = z.strictObject({
 
 export type IssuerListResponse = z.infer<typeof issuerListResponseSchema>
 
-export const coinResponseSchema = z.strictObject({
+const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
   issuer: issuerResponseSchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
-})
+}
 
-export type CoinResponse = z.infer<typeof coinResponseSchema>
+export const coinListItemResponseSchema = z.strictObject(coinResponseShape)
+
+export type CoinListItemResponse = z.infer<typeof coinListItemResponseSchema>
+
+export const coinDetailResponseSchema = z.strictObject(coinResponseShape)
+
+export type CoinDetailResponse = z.infer<typeof coinDetailResponseSchema>
 
 export const coinListResponseSchema = z.strictObject({
-  coins: z.array(coinResponseSchema),
+  coins: z.array(coinListItemResponseSchema),
 })
 
 export type CoinListResponse = z.infer<typeof coinListResponseSchema>
+
+// Remove after the version-one Coin Surface rollout is complete.
+export const compatibleCoinListResponseSchema = z.object({
+  coins: z.array(coinListItemResponseSchema.strip()),
+})
+
+// Remove after the version-one Coin Surface rollout is complete.
+export const compatibleCoinDetailResponseSchema =
+  coinDetailResponseSchema.strip()
 
 function errorResponseSchema<
   const TCode extends string,

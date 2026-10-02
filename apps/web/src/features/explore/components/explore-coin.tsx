@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router"
 import { Flag } from "@workspace/ui/components/flags/flag"
 import { cn } from "@workspace/ui/lib/utils"
-import type { CoinResponse } from "@workspace/api"
+import type { CoinListItemResponse } from "@workspace/api"
 import type { ComponentProps } from "react"
 
 type ExploreCoinProps = Omit<ComponentProps<"a">, "children" | "href"> & {
-  coin: CoinResponse
+  coin: CoinListItemResponse
 }
 
 function isIsoIssuerCode(code: string) {

@@ -401,26 +401,35 @@ describe("Archive landing route", () => {
     expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
   })
 
-  it("navigates from a Coin tile to the Coin detail route", async () => {
+  it("accepts expanded rollout responses while navigating to Coin detail", async () => {
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
       return Promise.resolve(
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
           : url.endsWith(`/v1/coins/${coinId}`)
-            ? jsonResponse(coin)
-            : jsonResponse({ coins: [coin] })
+            ? jsonResponse({
+                ...coin,
+                obverse: {
+                  description: "A portrait",
+                  imageUrl: "https://images.example/obverse.webp",
+                },
+              })
+            : jsonResponse({
+                coins: [
+                  {
+                    ...coin,
+                    obverseImageUrl: "https://images.example/obverse.webp",
+                    reverseImageUrl: null,
+                  },
+                ],
+              })
       )
     })
     vi.stubGlobal("fetch", fetchMock)
     const user = userEvent.setup()
     const router = renderArchiveRoute()
     const coinLink = await screen.findByRole("link", { name: "First coin" })
-    const listUpdatedAt = router.options.context.queryClient.getQueryState([
-      "coins",
-      "list",
-      null,
-    ])?.dataUpdatedAt
 
     expect(
       router.options.context.queryClient.getQueryState([
@@ -428,7 +437,7 @@ describe("Archive landing route", () => {
         "detail",
         coinId,
       ])?.dataUpdatedAt
-    ).toBe(listUpdatedAt)
+    ).toBeUndefined()
 
     await user.click(coinLink)
 
@@ -441,7 +450,7 @@ describe("Archive landing route", () => {
       fetchMock.mock.calls.filter(([input]) =>
         String(input).endsWith(`/v1/coins/${coinId}`)
       )
-    ).toHaveLength(0)
+    ).toHaveLength(1)
   })
 
   it("does not show pending feedback when Coin detail resolves quickly", async () => {
@@ -479,9 +488,7 @@ describe("Archive landing route", () => {
     detailResponse.resolve(jsonResponse(coin))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
-    expect(
-      screen.getByRole("heading", { name: "First coin" })
-    ).toBeVisible()
+    expect(screen.getByRole("heading", { name: "First coin" })).toBeVisible()
     expect(screen.queryByText("Loading coin…")).not.toBeInTheDocument()
   })
 
@@ -522,19 +529,19 @@ describe("Archive landing route", () => {
     detailResponse.resolve(jsonResponse(coin))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
-    expect(
-      screen.getByRole("heading", { name: "First coin" })
-    ).toBeVisible()
+    expect(screen.getByRole("heading", { name: "First coin" })).toBeVisible()
   })
 
-  it("reuses primed Coin detail during intent preload and navigation", async () => {
+  it("reuses independently preloaded Coin detail during navigation", async () => {
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
 
       return Promise.resolve(
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
-          : jsonResponse({ coins: [coin] })
+          : url.endsWith(`/v1/coins/${coinId}`)
+            ? jsonResponse(coin)
+            : jsonResponse({ coins: [coin] })
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -553,7 +560,7 @@ describe("Archive landing route", () => {
       fetchMock.mock.calls.filter(([input]) =>
         String(input).endsWith(`/v1/coins/${coinId}`)
       )
-    ).toHaveLength(0)
+    ).toHaveLength(1)
   })
 
   it("configures intent preloading for router navigations", () => {

@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto"
 
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi"
 import {
+  coinDetailResponseSchema,
   coinIdSchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
-  coinResponseSchema,
   internalErrorSchema as sharedInternalErrorSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
@@ -17,8 +17,9 @@ import {
 } from "@workspace/api"
 import { cors } from "hono/cors"
 import type {
+  CoinDetailResponse,
+  CoinListItemResponse,
   CoinListResponse,
-  CoinResponse,
   IssuerListResponse,
 } from "@workspace/api"
 import type { Coin, CoinListOptions, IssuerRecord } from "@workspace/db"
@@ -53,7 +54,7 @@ const operationalResponseHeaders = {
 }
 
 const issuerSchema = issuerResponseSchema.openapi("Issuer")
-const coinSchema = coinResponseSchema
+const coinSchema = coinDetailResponseSchema
   .extend({ issuer: issuerSchema })
   .openapi("Coin")
 const coinListResponseSchema =
@@ -68,7 +69,9 @@ const coinListQuerySchema = z.object({
   }),
 })
 
-function toCoinResponse(coin: Coin): CoinResponse {
+function toCoinResponseFields(
+  coin: Coin
+): CoinDetailResponse & CoinListItemResponse {
   return {
     id: coin.id,
     title: coin.title,
@@ -292,7 +295,7 @@ export function createApp(options: AppOptions) {
         ? listCoins()
         : listCoins({ issuerCode }))
       const response = {
-        coins: coins.map(toCoinResponse),
+        coins: coins.map(toCoinResponseFields),
       } satisfies CoinListResponse
 
       return context.json(response, 200)
@@ -330,7 +333,7 @@ export function createApp(options: AppOptions) {
         )
       }
 
-      const response = toCoinResponse(coin)
+      const response = toCoinResponseFields(coin) satisfies CoinDetailResponse
 
       return context.json(response, 200)
     },

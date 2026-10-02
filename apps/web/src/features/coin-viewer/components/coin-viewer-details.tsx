@@ -1,11 +1,11 @@
 import { Flag } from "@workspace/ui/components/flags/flag"
-import type { CoinResponse } from "@workspace/api"
+import type { CoinDetailResponse } from "@workspace/api"
 
 function isIsoIssuerCode(code: string) {
   return /^[A-Z]{2}$/.test(code)
 }
 
-export function CoinViewerDetails({ coin }: { coin: CoinResponse }) {
+export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
   return (
     <aside className="flex-1 border-l bg-sidebar">
       <div className="mb-2 p-6 pb-3">

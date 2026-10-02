@@ -16,7 +16,6 @@ export {
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
   InvalidIssuerCodeError,
-  primeCoinDetailQueries,
   validateCoinId,
 } from "./archive/coins"
 export {

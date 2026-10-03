@@ -71,7 +71,14 @@ describe("Archive data module", () => {
 
     await expect(
       queryClient.fetchQuery(coinListQueryOptions())
-    ).resolves.toEqual({ coins: [coin] })
+    ).resolves.toEqual({
+      coins: [
+        {
+          ...coin,
+          obverseImageUrl: "https://images.example/obverse.webp",
+        },
+      ],
+    })
     queryClient.clear()
   })
 
@@ -85,6 +92,8 @@ describe("Archive data module", () => {
             obverse: {
               description: "A portrait",
               imageUrl: "https://images.example/obverse.webp",
+              createdAt: "2026-09-16T10:30:00.000Z",
+              updatedAt: "2026-09-16T10:45:00.000Z",
             },
           })
         )
@@ -94,7 +103,15 @@ describe("Archive data module", () => {
 
     await expect(
       queryClient.fetchQuery(coinDetailQueryOptions(coinId))
-    ).resolves.toEqual(coin)
+    ).resolves.toEqual({
+      ...coin,
+      obverse: {
+        description: "A portrait",
+        imageUrl: "https://images.example/obverse.webp",
+        createdAt: "2026-09-16T10:30:00.000Z",
+        updatedAt: "2026-09-16T10:45:00.000Z",
+      },
+    })
     queryClient.clear()
   })
 

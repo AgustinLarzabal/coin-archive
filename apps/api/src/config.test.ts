@@ -8,6 +8,7 @@ describe("API configuration", () => {
       loadConfig({
         API_ALLOWED_ORIGINS:
           "http://localhost:3000, https://preview.coin-archive.example",
+        IMAGE_BASE_URL: "https://images.coin-archive.example/",
         DATABASE_URL:
           "postgresql://coin_archive:secret@localhost:5432/coin_archive",
       })
@@ -20,6 +21,7 @@ describe("API configuration", () => {
       databaseStatementTimeoutMillis: 10_000,
       databaseUrl:
         "postgresql://coin_archive:secret@localhost:5432/coin_archive",
+      imageBaseUrl: "https://images.coin-archive.example",
       port: 3001,
     })
   })
@@ -28,6 +30,7 @@ describe("API configuration", () => {
     expect(
       loadConfig({
         API_ALLOWED_ORIGINS: "http://localhost:3000",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         API_DATABASE_CONNECTION_TIMEOUT_MS: "2500",
         API_DATABASE_STATEMENT_TIMEOUT_MS: "7500",
         DATABASE_URL:
@@ -52,6 +55,7 @@ describe("API configuration", () => {
     expect(() =>
       loadConfig({
         API_ALLOWED_ORIGINS: "http://localhost:3000",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         DATABASE_URL:
           "postgresql://coin_archive:secret@localhost:5432/coin_archive",
         [name]: value,
@@ -61,6 +65,7 @@ describe("API configuration", () => {
     try {
       loadConfig({
         API_ALLOWED_ORIGINS: "http://localhost:3000",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         DATABASE_URL:
           "postgresql://coin_archive:secret@localhost:5432/coin_archive",
         [name]: value,
@@ -75,6 +80,7 @@ describe("API configuration", () => {
       loadConfig({
         API_ALLOWED_ORIGINS: "*",
         API_PORT: "not-a-port",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         DATABASE_URL: "mysql://localhost/coin_archive",
       })
     ).toThrow(/API_PORT.*API_ALLOWED_ORIGINS/s)
@@ -87,6 +93,7 @@ describe("API configuration", () => {
     expect(() =>
       loadConfig({
         API_ALLOWED_ORIGINS: "http://localhost:3000",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         DATABASE_URL: databaseUrl.replace("postgresql", "https"),
       })
     ).toThrow(/DATABASE_URL/)
@@ -94,11 +101,28 @@ describe("API configuration", () => {
     try {
       loadConfig({
         API_ALLOWED_ORIGINS: "http://localhost:3000",
+        IMAGE_BASE_URL: "https://images.coin-archive.example",
         DATABASE_URL: databaseUrl.replace("postgresql", "https"),
       })
     } catch (error) {
       expect(String(error)).not.toContain("secret")
       expect(String(error)).not.toContain("database.internal")
     }
+  })
+
+  it.each([
+    ["missing", undefined],
+    ["not a URL", "images.coin-archive.example"],
+    ["not HTTP", "ftp://images.coin-archive.example"],
+    ["not an origin", "https://images.coin-archive.example/catalogue"],
+  ])("rejects a %s image base URL", (_case, imageBaseUrl) => {
+    expect(() =>
+      loadConfig({
+        API_ALLOWED_ORIGINS: "http://localhost:3000",
+        DATABASE_URL:
+          "postgresql://coin_archive:secret@localhost:5432/coin_archive",
+        IMAGE_BASE_URL: imageBaseUrl,
+      })
+    ).toThrow(/IMAGE_BASE_URL/)
   })
 })

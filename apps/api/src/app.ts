@@ -12,6 +12,7 @@ import {
   issuerCodeSchema,
   issuerListResponseSchema as sharedIssuerListResponseSchema,
   issuerResponseSchema,
+  missingCoinObverseResponse,
   operationalOkResponseSchema as sharedOperationalOkResponseSchema,
   operationalUnavailableResponseSchema as sharedOperationalUnavailableResponseSchema,
 } from "@workspace/api"
@@ -22,13 +23,19 @@ import type {
   CoinListResponse,
   IssuerListResponse,
 } from "@workspace/api"
-import type { Coin, CoinListOptions, IssuerRecord } from "@workspace/db"
+import type {
+  Coin,
+  CoinListItem,
+  CoinListOptions,
+  IssuerRecord,
+} from "@workspace/db"
 
 export interface AppOptions {
   allowedOrigins: ReadonlyArray<string>
   checkReadiness: () => Promise<void>
   findCoinById?: (coinId: string) => Promise<Coin | null>
-  listCoins?: (options?: CoinListOptions) => Promise<Array<Coin>>
+  imageBaseUrl?: string
+  listCoins?: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   log?: (line: string) => void
 }
@@ -69,15 +76,53 @@ const coinListQuerySchema = z.object({
   }),
 })
 
-function toCoinResponseFields(
-  coin: Coin
-): CoinDetailResponse & CoinListItemResponse {
+function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
     id: coin.id,
     title: coin.title,
     issuer: { name: coin.issuer.name, code: coin.issuer.code },
     createdAt: coin.createdAt.toISOString(),
     updatedAt: coin.updatedAt.toISOString(),
+  }
+}
+
+function toPublicImageUrl(imageBaseUrl: string | undefined, imageKey: string) {
+  if (!imageBaseUrl) {
+    throw new Error("IMAGE_BASE_URL is required for persisted image keys")
+  }
+
+  const encodedKey = imageKey.split("/").map(encodeURIComponent).join("/")
+  return new URL(encodedKey, `${imageBaseUrl}/`).href
+}
+
+function toCoinDetailResponse(
+  coin: Coin,
+  imageBaseUrl: string | undefined
+): CoinDetailResponse {
+  return {
+    ...toCoinResponseFields(coin),
+    obverse: coin.obverse
+      ? {
+          description: coin.obverse.description,
+          imageUrl: coin.obverse.imageKey
+            ? toPublicImageUrl(imageBaseUrl, coin.obverse.imageKey)
+            : null,
+          createdAt: coin.obverse.createdAt.toISOString(),
+          updatedAt: coin.obverse.updatedAt.toISOString(),
+        }
+      : { ...missingCoinObverseResponse },
+  }
+}
+
+function toCoinListItemResponse(
+  coin: CoinListItem,
+  imageBaseUrl: string | undefined
+): CoinListItemResponse {
+  return {
+    ...toCoinResponseFields(coin),
+    obverseImageUrl: coin.obverseImageKey
+      ? toPublicImageUrl(imageBaseUrl, coin.obverseImageKey)
+      : null,
   }
 }
 
@@ -295,7 +340,9 @@ export function createApp(options: AppOptions) {
         ? listCoins()
         : listCoins({ issuerCode }))
       const response = {
-        coins: coins.map(toCoinResponseFields),
+        coins: coins.map((coin) =>
+          toCoinListItemResponse(coin, options.imageBaseUrl)
+        ),
       } satisfies CoinListResponse
 
       return context.json(response, 200)
@@ -333,7 +380,10 @@ export function createApp(options: AppOptions) {
         )
       }
 
-      const response = toCoinResponseFields(coin) satisfies CoinDetailResponse
+      const response = toCoinDetailResponse(
+        coin,
+        options.imageBaseUrl
+      ) satisfies CoinDetailResponse
 
       return context.json(response, 200)
     },

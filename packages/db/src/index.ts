@@ -1,6 +1,7 @@
 export { createDatabase } from "./connection.js"
 export type {
   Coin,
+  CoinListItem,
   CoinListOptions,
   Database,
   DatabaseOptions,

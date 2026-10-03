@@ -15,7 +15,7 @@ export function CoinViewerLayout({ coin }: { coin: CoinDetailResponse }) {
   const [selectedPanel, setSelectedPanel] = useState<ViewerPanel>("preview")
 
   return (
-    <div className="flex w-full flex-col gap-0 lg:flex-row lg:animate-fade-in">
+    <div className="flex w-full flex-col gap-0 lg:animate-fade-in lg:flex-row">
       <ToggleGroup
         value={[selectedPanel]}
         variant="line"
@@ -46,7 +46,7 @@ export function CoinViewerLayout({ coin }: { coin: CoinDetailResponse }) {
           selectedPanel === "preview" ? "flex" : "hidden"
         )}
       >
-        <CoinViewerPreview />
+        <CoinViewerPreview coin={coin} />
       </div>
       <div
         className={cn(

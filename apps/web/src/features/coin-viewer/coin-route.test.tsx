@@ -127,6 +127,12 @@ describe("Coin viewer route", () => {
             issuer: { name: "Argentina", code: "AR" },
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T10:00:00.000Z",
+            obverse: {
+              description: "A portrait of the sovereign",
+              imageUrl: "https://images.example/first-obverse.webp",
+              createdAt: "2026-09-16T10:30:00.000Z",
+              updatedAt: "2026-09-16T10:45:00.000Z",
+            },
           })
         )
       )
@@ -192,6 +198,12 @@ describe("Coin viewer route", () => {
           issuer: { name: "Argentina", code: "AR" },
           createdAt: "2026-09-16T10:00:00.000Z",
           updatedAt: "2026-09-16T10:00:00.000Z",
+          obverse: {
+            description: "A portrait of the sovereign",
+            imageUrl: "https://images.example/first-obverse.webp",
+            createdAt: "2026-09-16T10:30:00.000Z",
+            updatedAt: "2026-09-16T10:45:00.000Z",
+          },
         })
       )
     )
@@ -208,6 +220,15 @@ describe("Coin viewer route", () => {
     )
     expect(screen.getByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Issuer")).not.toBeInTheDocument()
+    expect(screen.getByText("A portrait of the sovereign")).toBeInTheDocument()
+    expect(
+      screen.getByRole("img", { name: "Obverse of First coin" })
+    ).toHaveAttribute("src", "https://images.example/first-obverse.webp")
+    expect(
+      screen.queryByText(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      )
+    ).not.toBeInTheDocument()
     const flag = screen.getByAltText("")
     expect(flag).toHaveAttribute("src", expect.stringMatching(/\/ar\.svg$/))
     expect(flag).toHaveAttribute("aria-hidden", "true")
@@ -215,6 +236,37 @@ describe("Coin viewer route", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       `http://localhost:3001/v1/coins/${coinId}`
     )
+  })
+
+  it("renders honest missing-data states for an empty Obverse", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            id: coinId,
+            title: "First coin",
+            issuer: { name: "Argentina", code: "AR" },
+            createdAt: "2026-09-16T10:00:00.000Z",
+            updatedAt: "2026-09-16T10:00:00.000Z",
+            obverse: {
+              description: null,
+              imageUrl: null,
+              createdAt: null,
+              updatedAt: null,
+            },
+          })
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Obverse image unavailable")).toBeVisible()
+    expect(screen.getByText("Obverse description unavailable")).toBeVisible()
+    expect(
+      screen.queryByRole("img", { name: "Obverse of First coin" })
+    ).not.toBeInTheDocument()
   })
 
   it("renders an Archive-defined Issuer without a flag or visible Issuer Code", async () => {

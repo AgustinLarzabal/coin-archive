@@ -310,6 +310,15 @@ describe("API", () => {
       },
       createdAt: new Date("2026-09-16T10:00:00.000Z"),
       updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+      obverse: {
+        id: "20000000-0000-4000-8000-000000000001",
+        coinId,
+        kind: "obverse" as const,
+        description: "A portrait of the sovereign",
+        imageKey: "coins/first/obverse image.webp",
+        createdAt: new Date("2026-09-16T10:30:00.000Z"),
+        updatedAt: new Date("2026-09-16T10:45:00.000Z"),
+      },
     }
 
     it("returns the Coin contract with UTC timestamps and no caching", async () => {
@@ -317,6 +326,7 @@ describe("API", () => {
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
         findCoinById: async () => coin,
+        imageBaseUrl: "https://images.coin-archive.example",
       }).request(`/v1/coins/${coinId}`)
 
       expect(response.status).toBe(200)
@@ -327,6 +337,37 @@ describe("API", () => {
         issuer: { name: "Argentina", code: "AR" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
+        obverse: {
+          description: "A portrait of the sovereign",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/obverse%20image.webp",
+          createdAt: "2026-09-16T10:30:00.000Z",
+          updatedAt: "2026-09-16T10:45:00.000Z",
+        },
+      })
+    })
+
+    it("returns explicit missing Obverse content when no surface is persisted", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({ ...coin, obverse: null }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual({
+        id: coinId,
+        title: "First coin",
+        issuer: { name: "Argentina", code: "AR" },
+        createdAt: "2026-09-16T10:00:00.000Z",
+        updatedAt: "2026-09-16T11:00:00.000Z",
+        obverse: {
+          description: null,
+          imageUrl: null,
+          createdAt: null,
+          updatedAt: null,
+        },
       })
     })
 
@@ -343,7 +384,13 @@ describe("API", () => {
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
         findCoinById: async () => romanCoin,
-        listCoins: async () => [romanCoin],
+        listCoins: async () => [
+          {
+            ...romanCoin,
+            obverseImageKey: romanCoin.obverse.imageKey,
+          },
+        ],
+        imageBaseUrl: "https://images.coin-archive.example",
       })
 
       const detail = await app.request(`/v1/coins/${coinId}`)
@@ -354,12 +401,31 @@ describe("API", () => {
         issuer: { name: "Roman Empire", code: "ROMAN" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
+        obverse: {
+          description: "A portrait of the sovereign",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/obverse%20image.webp",
+          createdAt: "2026-09-16T10:30:00.000Z",
+          updatedAt: "2026-09-16T10:45:00.000Z",
+        },
       }
 
       expect(detail.status).toBe(200)
       await expect(detail.json()).resolves.toEqual(expectedCoin)
       expect(list.status).toBe(200)
-      await expect(list.json()).resolves.toEqual({ coins: [expectedCoin] })
+      await expect(list.json()).resolves.toEqual({
+        coins: [
+          {
+            id: coinId,
+            title: "First coin",
+            issuer: { name: "Roman Empire", code: "ROMAN" },
+            createdAt: "2026-09-16T10:00:00.000Z",
+            updatedAt: "2026-09-16T11:00:00.000Z",
+            obverseImageUrl:
+              "https://images.coin-archive.example/coins/first/obverse%20image.webp",
+          },
+        ],
+      })
     })
 
     it("rejects malformed IDs before lookup", async () => {
@@ -570,6 +636,7 @@ describe("API", () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
+        imageBaseUrl: "https://images.coin-archive.example",
         listCoins: async () => [
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -584,6 +651,7 @@ describe("API", () => {
             },
             createdAt: new Date("2026-09-16T10:00:00.000Z"),
             updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+            obverseImageKey: "coins/first/obverse.webp",
           },
         ],
       }).request("/v1/coins")
@@ -598,9 +666,46 @@ describe("API", () => {
             issuer: { name: "Argentina", code: "AR" },
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",
+            obverseImageUrl:
+              "https://images.coin-archive.example/coins/first/obverse.webp",
           },
         ],
       })
+    })
+
+    it("returns an explicit missing Obverse image without detail-only data", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: async () => [
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            title: "First coin",
+            issuerId: "10000000-0000-4000-8000-000000000001",
+            issuer: {
+              id: "10000000-0000-4000-8000-000000000001",
+              name: "Argentina",
+              code: "AR",
+              createdAt: new Date("2026-09-16T09:00:00.000Z"),
+              updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+            },
+            createdAt: new Date("2026-09-16T10:00:00.000Z"),
+            updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+            obverseImageKey: null,
+          },
+        ],
+      }).request("/v1/coins")
+
+      const body = await response.json()
+      expect(body).toEqual({
+        coins: [
+          expect.objectContaining({
+            obverseImageUrl: null,
+          }),
+        ],
+      })
+      expect(JSON.stringify(body)).not.toContain("description")
+      expect(JSON.stringify(body)).not.toContain("imageKey")
     })
 
     it("returns an empty Coin list", async () => {

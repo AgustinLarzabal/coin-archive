@@ -75,6 +75,11 @@ The API defaults to port 3001. Its liveness contract is available at
 `GET /health`, PostgreSQL-backed readiness is available at `GET /ready`, and
 its generated contract is available at `GET /openapi.json`.
 
+Coin image URLs use the API's required `IMAGE_BASE_URL` setting. Local setup
+points it at the web application's public assets; deployment setup for the
+future R2 bucket and custom image domain is documented in the
+[R2 image delivery guide](docs/r2-images.md).
+
 ## Database
 
 The first-run setup above creates `.env.local`. Replace its example password,

@@ -7,7 +7,11 @@
     {
       "id": "00000000-0000-4000-8000-000000000001",
       "title": "400th Anniversary of the First Edition of Don Quixote",
-      "issuerCode": "ES"
+      "issuerCode": "ES",
+      "obverse": {
+        "description": "A portrait of Miguel de Cervantes holding a quill.",
+        "imageKey": "coin-placeholder.webp"
+      }
     },
     {
       "id": "00000000-0000-4000-8000-000000000002",

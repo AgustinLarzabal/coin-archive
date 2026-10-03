@@ -39,6 +39,29 @@ const databaseUrlSchema = z.string().superRefine((value, context) => {
   }
 })
 
+const imageBaseUrlSchema = z
+  .string()
+  .superRefine((value, context) => {
+    try {
+      const url = new URL(value)
+      const withoutTrailingSlash = value.endsWith("/")
+        ? value.slice(0, -1)
+        : value
+      if (
+        (url.protocol !== "http:" && url.protocol !== "https:") ||
+        url.origin !== withoutTrailingSlash
+      ) {
+        throw new Error("not an HTTP origin")
+      }
+    } catch {
+      context.addIssue({
+        code: "custom",
+        message: "must be an HTTP or HTTPS origin without a path",
+      })
+    }
+  })
+  .transform((value) => value.replace(/\/$/, ""))
+
 const environmentSchema = z.object({
   API_DATABASE_CONNECTION_TIMEOUT_MS: z.coerce
     .number()
@@ -60,6 +83,7 @@ const environmentSchema = z.object({
     .transform((value) => value.split(",").map((origin) => origin.trim()))
     .pipe(z.array(originSchema).min(1)),
   DATABASE_URL: databaseUrlSchema,
+  IMAGE_BASE_URL: imageBaseUrlSchema,
 })
 
 export interface ApiConfig {
@@ -67,6 +91,7 @@ export interface ApiConfig {
   databaseConnectionTimeoutMillis: number
   databaseStatementTimeoutMillis: number
   databaseUrl: string
+  imageBaseUrl: string
   port: number
 }
 
@@ -88,6 +113,7 @@ export function loadConfig(
     databaseStatementTimeoutMillis:
       result.data.API_DATABASE_STATEMENT_TIMEOUT_MS,
     databaseUrl: result.data.DATABASE_URL,
+    imageBaseUrl: result.data.IMAGE_BASE_URL,
     port: result.data.API_PORT,
   }
 }

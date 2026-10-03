@@ -41,11 +41,26 @@ const coinResponseShape = {
   updatedAt: z.iso.datetime(),
 }
 
-export const coinListItemResponseSchema = z.strictObject(coinResponseShape)
+export const coinListItemResponseSchema = z.strictObject({
+  ...coinResponseShape,
+  obverseImageUrl: z.url().nullable(),
+})
 
 export type CoinListItemResponse = z.infer<typeof coinListItemResponseSchema>
 
-export const coinDetailResponseSchema = z.strictObject(coinResponseShape)
+export const coinObverseResponseSchema = z.strictObject({
+  description: z.string().min(1).max(10_000).nullable(),
+  imageUrl: z.url().nullable(),
+  createdAt: z.iso.datetime().nullable(),
+  updatedAt: z.iso.datetime().nullable(),
+})
+
+export type CoinObverseResponse = z.infer<typeof coinObverseResponseSchema>
+
+export const coinDetailResponseSchema = z.strictObject({
+  ...coinResponseShape,
+  obverse: coinObverseResponseSchema,
+})
 
 export type CoinDetailResponse = z.infer<typeof coinDetailResponseSchema>
 
@@ -56,13 +71,34 @@ export const coinListResponseSchema = z.strictObject({
 export type CoinListResponse = z.infer<typeof coinListResponseSchema>
 
 // Remove after the version-one Coin Surface rollout is complete.
+const compatibleCoinListItemResponseSchema = coinListItemResponseSchema
+  .partial({ obverseImageUrl: true })
+  .strip()
+  .transform((coin) => ({
+    ...coin,
+    obverseImageUrl: coin.obverseImageUrl ?? null,
+  }))
+
 export const compatibleCoinListResponseSchema = z.object({
-  coins: z.array(coinListItemResponseSchema.strip()),
+  coins: z.array(compatibleCoinListItemResponseSchema),
 })
 
 // Remove after the version-one Coin Surface rollout is complete.
-export const compatibleCoinDetailResponseSchema =
-  coinDetailResponseSchema.strip()
+export const missingCoinObverseResponse: Readonly<CoinObverseResponse> =
+  Object.freeze({
+    description: null,
+    imageUrl: null,
+    createdAt: null,
+    updatedAt: null,
+  })
+
+export const compatibleCoinDetailResponseSchema = coinDetailResponseSchema
+  .partial({ obverse: true })
+  .strip()
+  .transform((coin) => ({
+    ...coin,
+    obverse: coin.obverse ?? { ...missingCoinObverseResponse },
+  }))
 
 function errorResponseSchema<
   const TCode extends string,

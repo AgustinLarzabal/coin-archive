@@ -39,6 +39,7 @@ const app = createApp({
   allowedOrigins: config.allowedOrigins,
   checkReadiness: database.checkReadiness,
   findCoinById: database.findCoinById,
+  imageBaseUrl: config.imageBaseUrl,
   listCoins: database.listCoins,
   listIssuers: database.listIssuers,
 })

@@ -317,6 +317,17 @@ describe("Archive landing route", () => {
     ).toBeInTheDocument()
   })
 
+  it("shows an honest missing-image state without a placeholder image", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+
+    renderArchiveRoute()
+
+    expect(await screen.findByText("Image unavailable")).toBeVisible()
+    expect(
+      screen.queryByRole("img", { name: "Obverse of First coin" })
+    ).not.toBeInTheDocument()
+  })
+
   it("shows loading feedback while the Coin list is pending", async () => {
     vi.stubGlobal(
       "fetch",
@@ -413,6 +424,8 @@ describe("Archive landing route", () => {
                 obverse: {
                   description: "A portrait",
                   imageUrl: "https://images.example/obverse.webp",
+                  createdAt: "2026-09-16T10:30:00.000Z",
+                  updatedAt: "2026-09-16T10:45:00.000Z",
                 },
               })
             : jsonResponse({
@@ -432,6 +445,10 @@ describe("Archive landing route", () => {
     const coinLink = await screen.findByRole("link", { name: "First coin" })
 
     expect(
+      screen.getByRole("img", { name: "Obverse of First coin" })
+    ).toHaveAttribute("src", "https://images.example/obverse.webp")
+
+    expect(
       router.options.context.queryClient.getQueryState([
         "coins",
         "detail",
@@ -444,6 +461,7 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByRole("heading", { name: "First coin" })
     ).toBeInTheDocument()
+    expect(screen.getByText("A portrait")).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(`/coins/${coinId}`)
     expect(screen.queryByText("Loading coin…")).not.toBeInTheDocument()
     expect(

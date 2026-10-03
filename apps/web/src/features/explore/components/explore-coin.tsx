@@ -37,10 +37,17 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
       <span className="absolute inset-e-5 top-5 -translate-y-1.5 font-mono text-xs tracking-wider text-muted-foreground opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
         KM# 1234
       </span>
-      <img
-        src="/coin-placeholder.webp"
-        className="w-1/2 grayscale group-hover:grayscale-0"
-      />
+      {coin.obverseImageUrl ? (
+        <img
+          src={coin.obverseImageUrl}
+          alt={`Obverse of ${coin.title}`}
+          className="w-1/2 grayscale group-hover:grayscale-0"
+        />
+      ) : (
+        <span className="font-mono text-xs text-muted-foreground">
+          Image unavailable
+        </span>
+      )}
       <span className="absolute right-5 bottom-5 left-5 h-[2lh] text-center font-mono text-xs tracking-wider text-muted-foreground">
         {coin.title}
       </span>

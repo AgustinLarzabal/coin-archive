@@ -1,4 +1,4 @@
-import { asc, desc, eq, sql } from "drizzle-orm"
+import { and, asc, desc, eq, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 
@@ -8,13 +8,21 @@ export interface Database {
   checkReadiness: () => Promise<void>
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
-  listCoins: (options?: CoinListOptions) => Promise<Array<Coin>>
+  listCoins: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   orm: ReturnType<typeof drizzle<typeof schema>>
   schema: typeof schema
 }
 
-export type Coin = schema.CoinRecord & { issuer: schema.IssuerRecord }
+export type Coin = schema.CoinRecord & {
+  issuer: schema.IssuerRecord
+  obverse: schema.CoinSurfaceRecord | null
+}
+
+export type CoinListItem = schema.CoinRecord & {
+  issuer: schema.IssuerRecord
+  obverseImageKey: string | null
+}
 
 export interface CoinListOptions {
   issuerCode?: string
@@ -45,26 +53,54 @@ export function createDatabase(
     close: () => pool.end(),
     async findCoinById(coinId) {
       const rows = await orm
-        .select({ coin: schema.coins, issuer: schema.issuers })
+        .select({
+          coin: schema.coins,
+          issuer: schema.issuers,
+          obverse: schema.coinSurfaces,
+        })
         .from(schema.coins)
         .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
+        .leftJoin(
+          schema.coinSurfaces,
+          and(
+            eq(schema.coinSurfaces.coinId, schema.coins.id),
+            eq(schema.coinSurfaces.kind, "obverse")
+          )
+        )
         .where(eq(schema.coins.id, coinId))
         .limit(1)
       const row = rows.at(0)
-      return row ? { ...row.coin, issuer: row.issuer } : null
+      return row
+        ? { ...row.coin, issuer: row.issuer, obverse: row.obverse }
+        : null
     },
     async listCoins(filters = {}) {
       const rows = await orm
-        .select({ coin: schema.coins, issuer: schema.issuers })
+        .select({
+          coin: schema.coins,
+          issuer: schema.issuers,
+          obverseImageKey: schema.coinSurfaces.imageKey,
+        })
         .from(schema.coins)
         .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
+        .leftJoin(
+          schema.coinSurfaces,
+          and(
+            eq(schema.coinSurfaces.coinId, schema.coins.id),
+            eq(schema.coinSurfaces.kind, "obverse")
+          )
+        )
         .where(
           filters.issuerCode === undefined
             ? undefined
             : eq(schema.issuers.code, filters.issuerCode)
         )
         .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
-      return rows.map(({ coin, issuer }) => ({ ...coin, issuer }))
+      return rows.map(({ coin, issuer, obverseImageKey }) => ({
+        ...coin,
+        issuer,
+        obverseImageKey,
+      }))
     },
     listIssuers: () =>
       orm

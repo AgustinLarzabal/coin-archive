@@ -50,7 +50,7 @@ afterEach(() => {
 })
 
 describe("Archive data module", () => {
-  it("accepts rollout additions to a Coin list response", async () => {
+  it("accepts both surface images in a Coin list response", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
@@ -76,13 +76,14 @@ describe("Archive data module", () => {
         {
           ...coin,
           obverseImageUrl: "https://images.example/obverse.webp",
+          reverseImageUrl: null,
         },
       ],
     })
     queryClient.clear()
   })
 
-  it("accepts rollout additions to a Coin detail response", async () => {
+  it("accepts complete surface data in a Coin detail response", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
@@ -94,6 +95,12 @@ describe("Archive data module", () => {
               imageUrl: "https://images.example/obverse.webp",
               createdAt: "2026-09-16T10:30:00.000Z",
               updatedAt: "2026-09-16T10:45:00.000Z",
+            },
+            reverse: {
+              description: "A coat of arms",
+              imageUrl: "https://images.example/reverse.webp",
+              createdAt: "2026-09-16T10:31:00.000Z",
+              updatedAt: "2026-09-16T10:46:00.000Z",
             },
           })
         )
@@ -110,6 +117,12 @@ describe("Archive data module", () => {
         imageUrl: "https://images.example/obverse.webp",
         createdAt: "2026-09-16T10:30:00.000Z",
         updatedAt: "2026-09-16T10:45:00.000Z",
+      },
+      reverse: {
+        description: "A coat of arms",
+        imageUrl: "https://images.example/reverse.webp",
+        createdAt: "2026-09-16T10:31:00.000Z",
+        updatedAt: "2026-09-16T10:46:00.000Z",
       },
     })
     queryClient.clear()

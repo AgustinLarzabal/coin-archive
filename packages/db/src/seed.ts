@@ -48,6 +48,7 @@ const coinSurfaceSeedRecordSchema = z
 
 const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
   obverse: coinSurfaceSeedRecordSchema.optional(),
+  reverse: coinSurfaceSeedRecordSchema.optional(),
 })
 
 const seedDocumentSchema = z
@@ -96,20 +97,27 @@ export async function seedCoins(database: Database, input: unknown) {
     )
 
     await transaction.insert(coins).values(
-      document.coins.map(({ issuerCode, obverse: _obverse, ...coin }) => {
-        const issuerId = issuerIdsByCode.get(issuerCode)
-        if (!issuerId) {
-          throw new Error(`Coin references unknown Issuer Code: ${issuerCode}`)
+      document.coins.map(
+        ({ issuerCode, obverse: _obverse, reverse: _reverse, ...coin }) => {
+          const issuerId = issuerIdsByCode.get(issuerCode)
+          if (!issuerId) {
+            throw new Error(
+              `Coin references unknown Issuer Code: ${issuerCode}`
+            )
+          }
+          return { ...coin, issuerId }
         }
-        return { ...coin, issuerId }
-      })
+      )
     )
 
-    const obverses = document.coins.flatMap(({ id: coinId, obverse }) =>
-      obverse ? [{ ...obverse, coinId, kind: "obverse" as const }] : []
+    const surfaces = document.coins.flatMap(
+      ({ id: coinId, obverse, reverse }) => [
+        ...(obverse ? [{ ...obverse, coinId, kind: "obverse" as const }] : []),
+        ...(reverse ? [{ ...reverse, coinId, kind: "reverse" as const }] : []),
+      ]
     )
-    if (obverses.length > 0) {
-      await transaction.insert(coinSurfaces).values(obverses)
+    if (surfaces.length > 0) {
+      await transaction.insert(coinSurfaces).values(surfaces)
     }
   })
 }

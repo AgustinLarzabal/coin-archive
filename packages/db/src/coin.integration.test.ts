@@ -41,46 +41,80 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
-  it("reads sparse Obverse catalogue data without creating empty Coin Surfaces", async () => {
+  it("reads sparse catalogue data without creating empty Coin Surfaces", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)
-      const [withObverse, withoutSurfaces] = await database.orm
-        .insert(database.schema.coins)
+      const [withBothSurfaces, withPartialReverse, withoutSurfaces] =
+        await database.orm
+          .insert(database.schema.coins)
+          .values([
+            { title: "Coin with both surfaces", issuerId: issuer.id },
+            { title: "Coin with a partial Reverse", issuerId: issuer.id },
+            { title: "Coin without surfaces", issuerId: issuer.id },
+          ])
+          .returning()
+      const [obverse, reverse, partialReverse] = await database.orm
+        .insert(database.schema.coinSurfaces)
         .values([
-          { title: "Coin with an Obverse", issuerId: issuer.id },
-          { title: "Coin without surfaces", issuerId: issuer.id },
+          {
+            coinId: withBothSurfaces.id,
+            kind: "obverse",
+            description: "A portrait of the sovereign",
+            imageKey: "coins/first/obverse.webp",
+          },
+          {
+            coinId: withBothSurfaces.id,
+            kind: "reverse",
+            description: "The national coat of arms",
+            imageKey: "coins/first/reverse.webp",
+          },
+          {
+            coinId: withPartialReverse.id,
+            kind: "reverse",
+            description: "A wreath around the denomination",
+          },
         ])
         .returning()
-      const [obverse] = await database.orm
-        .insert(database.schema.coinSurfaces)
-        .values({
-          coinId: withObverse.id,
-          kind: "obverse",
-          description: "A portrait of the sovereign",
-          imageKey: "coins/first/obverse.webp",
-        })
-        .returning()
 
-      await expect(database.findCoinById(withObverse.id)).resolves.toEqual({
-        ...withObverse,
+      await expect(database.findCoinById(withBothSurfaces.id)).resolves.toEqual(
+        {
+          ...withBothSurfaces,
+          issuer,
+          obverse,
+          reverse,
+        }
+      )
+      await expect(
+        database.findCoinById(withPartialReverse.id)
+      ).resolves.toEqual({
+        ...withPartialReverse,
         issuer,
-        obverse,
+        obverse: null,
+        reverse: partialReverse,
       })
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
         ...withoutSurfaces,
         issuer,
         obverse: null,
+        reverse: null,
       })
       await expect(database.listCoins()).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: withoutSurfaces.id,
             obverseImageKey: null,
+            reverseImageKey: null,
           }),
           expect.objectContaining({
-            id: withObverse.id,
+            id: withBothSurfaces.id,
             obverseImageKey: "coins/first/obverse.webp",
+            reverseImageKey: "coins/first/reverse.webp",
+          }),
+          expect.objectContaining({
+            id: withPartialReverse.id,
+            obverseImageKey: null,
+            reverseImageKey: null,
           }),
         ])
       )
@@ -408,6 +442,7 @@ describe("Coin persistence", () => {
         ...inserted,
         issuer,
         obverse: null,
+        reverse: null,
       })
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000099")
@@ -639,11 +674,15 @@ describe("Coin seed", () => {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
         },
+        reverse: {
+          description: "The national coat of arms",
+          imageKey: "coins/first/reverse.webp",
+        },
       },
     ],
   }
 
-  it("inserts a validated Obverse in the same transaction as its Coin", async () => {
+  it("inserts validated Coin Surfaces in the same transaction as their Coin", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await seedCoins(database, validSeed)
@@ -656,6 +695,12 @@ describe("Coin seed", () => {
           kind: "obverse",
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
+        },
+        reverse: {
+          coinId: SEEDED_COIN_ID,
+          kind: "reverse",
+          description: "The national coat of arms",
+          imageKey: "coins/first/reverse.webp",
         },
       })
     } finally {
@@ -680,6 +725,11 @@ describe("Coin seed", () => {
           description: "A portrait of Miguel de Cervantes holding a quill.",
           imageKey: "coin-placeholder.webp",
         }),
+        reverse: expect.objectContaining({
+          kind: "reverse",
+          description: "Don Quixote holding a lance beside two windmills.",
+          imageKey: "coin-placeholder2.webp",
+        }),
       })
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000030")
@@ -690,6 +740,7 @@ describe("Coin seed", () => {
           code: "ROMAN",
         }),
         obverse: null,
+        reverse: null,
       })
     } finally {
       await database.close()

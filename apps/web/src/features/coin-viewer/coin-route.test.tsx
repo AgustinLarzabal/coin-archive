@@ -190,6 +190,7 @@ describe("Coin viewer route", () => {
   })
 
   it("renders persisted Coin data", async () => {
+    const user = userEvent.setup()
     const fetchMock = vi.fn(() =>
       Promise.resolve(
         jsonResponse({
@@ -203,6 +204,12 @@ describe("Coin viewer route", () => {
             imageUrl: "https://images.example/first-obverse.webp",
             createdAt: "2026-09-16T10:30:00.000Z",
             updatedAt: "2026-09-16T10:45:00.000Z",
+          },
+          reverse: {
+            description: "The national coat of arms",
+            imageUrl: "https://images.example/first-reverse.webp",
+            createdAt: "2026-09-16T10:31:00.000Z",
+            updatedAt: "2026-09-16T10:46:00.000Z",
           },
         })
       )
@@ -224,6 +231,11 @@ describe("Coin viewer route", () => {
     expect(
       screen.getByRole("img", { name: "Obverse of First coin" })
     ).toHaveAttribute("src", "https://images.example/first-obverse.webp")
+    await user.click(screen.getByRole("tab", { name: "Reverse" }))
+    expect(screen.getByText("The national coat of arms")).toBeVisible()
+    expect(
+      screen.getByRole("img", { name: "Reverse of First coin" })
+    ).toHaveAttribute("src", "https://images.example/first-reverse.webp")
     expect(
       screen.queryByText(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -238,7 +250,8 @@ describe("Coin viewer route", () => {
     )
   })
 
-  it("renders honest missing-data states for an empty Obverse", async () => {
+  it("renders honest missing-data states for empty Coin Surfaces", async () => {
+    const user = userEvent.setup()
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
@@ -267,6 +280,48 @@ describe("Coin viewer route", () => {
     expect(
       screen.queryByRole("img", { name: "Obverse of First coin" })
     ).not.toBeInTheDocument()
+    await user.click(screen.getByRole("tab", { name: "Reverse" }))
+    expect(screen.getByText("Reverse image unavailable")).toBeVisible()
+    expect(screen.getByText("Reverse description unavailable")).toBeVisible()
+    expect(
+      screen.queryByRole("img", { name: "Reverse of First coin" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("renders a partial Reverse with its missing-image state", async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            id: coinId,
+            title: "First coin",
+            issuer: { name: "Argentina", code: "AR" },
+            createdAt: "2026-09-16T10:00:00.000Z",
+            updatedAt: "2026-09-16T10:00:00.000Z",
+            obverse: {
+              description: null,
+              imageUrl: null,
+              createdAt: null,
+              updatedAt: null,
+            },
+            reverse: {
+              description: "The national coat of arms",
+              imageUrl: null,
+              createdAt: "2026-09-16T10:31:00.000Z",
+              updatedAt: "2026-09-16T10:46:00.000Z",
+            },
+          })
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    await user.click(await screen.findByRole("tab", { name: "Reverse" }))
+    expect(screen.getByText("The national coat of arms")).toBeVisible()
+    expect(screen.getByText("Reverse image unavailable")).toBeVisible()
   })
 
   it("renders an Archive-defined Issuer without a flag or visible Issuer Code", async () => {

@@ -28,6 +28,11 @@ const issuers = [
   { name: "Uruguay", code: "UY" },
 ]
 
+type CoinListResponseFixture = typeof coin & {
+  obverseImageUrl?: string | null
+  reverseImageUrl?: string | null
+}
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: { "content-type": "application/json" },
@@ -44,7 +49,7 @@ function createDeferred<T>() {
   return { promise, resolve }
 }
 
-function createArchiveFetch(coins: Array<typeof coin> = [coin]) {
+function createArchiveFetch(coins: Array<CoinListResponseFixture> = [coin]) {
   return (input: string | URL | Request) =>
     Promise.resolve(
       String(input).endsWith("/v1/issuers")
@@ -328,6 +333,28 @@ describe("Archive landing route", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("falls back to the Reverse image when the Obverse image is missing", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetch([
+          {
+            ...coin,
+            obverseImageUrl: null,
+            reverseImageUrl: "https://images.example/reverse.webp",
+          },
+        ])
+      )
+    )
+
+    renderArchiveRoute()
+
+    expect(
+      await screen.findByRole("img", { name: "Reverse of First coin" })
+    ).toHaveAttribute("src", "https://images.example/reverse.webp")
+    expect(screen.queryByText("Image unavailable")).not.toBeInTheDocument()
+  })
+
   it("shows loading feedback while the Coin list is pending", async () => {
     vi.stubGlobal(
       "fetch",
@@ -433,7 +460,7 @@ describe("Archive landing route", () => {
                   {
                     ...coin,
                     obverseImageUrl: "https://images.example/obverse.webp",
-                    reverseImageUrl: null,
+                    reverseImageUrl: "https://images.example/reverse.webp",
                   },
                 ],
               })

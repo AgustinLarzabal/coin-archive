@@ -12,7 +12,7 @@ import {
   issuerCodeSchema,
   issuerListResponseSchema as sharedIssuerListResponseSchema,
   issuerResponseSchema,
-  missingCoinObverseResponse,
+  missingCoinSurfaceResponse,
   operationalOkResponseSchema as sharedOperationalOkResponseSchema,
   operationalUnavailableResponseSchema as sharedOperationalUnavailableResponseSchema,
 } from "@workspace/api"
@@ -95,6 +95,20 @@ function toPublicImageUrl(imageBaseUrl: string | undefined, imageKey: string) {
   return new URL(encodedKey, `${imageBaseUrl}/`).href
 }
 
+function toCoinSurfaceResponse(
+  surface: NonNullable<Coin["obverse"]>,
+  imageBaseUrl: string | undefined
+) {
+  return {
+    description: surface.description,
+    imageUrl: surface.imageKey
+      ? toPublicImageUrl(imageBaseUrl, surface.imageKey)
+      : null,
+    createdAt: surface.createdAt.toISOString(),
+    updatedAt: surface.updatedAt.toISOString(),
+  }
+}
+
 function toCoinDetailResponse(
   coin: Coin,
   imageBaseUrl: string | undefined
@@ -102,15 +116,11 @@ function toCoinDetailResponse(
   return {
     ...toCoinResponseFields(coin),
     obverse: coin.obverse
-      ? {
-          description: coin.obverse.description,
-          imageUrl: coin.obverse.imageKey
-            ? toPublicImageUrl(imageBaseUrl, coin.obverse.imageKey)
-            : null,
-          createdAt: coin.obverse.createdAt.toISOString(),
-          updatedAt: coin.obverse.updatedAt.toISOString(),
-        }
-      : { ...missingCoinObverseResponse },
+      ? toCoinSurfaceResponse(coin.obverse, imageBaseUrl)
+      : { ...missingCoinSurfaceResponse },
+    reverse: coin.reverse
+      ? toCoinSurfaceResponse(coin.reverse, imageBaseUrl)
+      : { ...missingCoinSurfaceResponse },
   }
 }
 
@@ -122,6 +132,9 @@ function toCoinListItemResponse(
     ...toCoinResponseFields(coin),
     obverseImageUrl: coin.obverseImageKey
       ? toPublicImageUrl(imageBaseUrl, coin.obverseImageKey)
+      : null,
+    reverseImageUrl: coin.reverseImageKey
+      ? toPublicImageUrl(imageBaseUrl, coin.reverseImageKey)
       : null,
   }
 }

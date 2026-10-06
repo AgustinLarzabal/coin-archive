@@ -11,6 +11,10 @@
       "obverse": {
         "description": "A portrait of Miguel de Cervantes holding a quill.",
         "imageKey": "coin-placeholder.webp"
+      },
+      "reverse": {
+        "description": "Don Quixote holding a lance beside two windmills.",
+        "imageKey": "coin-placeholder2.webp"
       }
     },
     {

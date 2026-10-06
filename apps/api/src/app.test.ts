@@ -319,6 +319,15 @@ describe("API", () => {
         createdAt: new Date("2026-09-16T10:30:00.000Z"),
         updatedAt: new Date("2026-09-16T10:45:00.000Z"),
       },
+      reverse: {
+        id: "20000000-0000-4000-8000-000000000002",
+        coinId,
+        kind: "reverse" as const,
+        description: "The national coat of arms",
+        imageKey: "coins/first/reverse image.webp",
+        createdAt: new Date("2026-09-16T10:31:00.000Z"),
+        updatedAt: new Date("2026-09-16T10:46:00.000Z"),
+      },
     }
 
     it("returns the Coin contract with UTC timestamps and no caching", async () => {
@@ -344,14 +353,25 @@ describe("API", () => {
           createdAt: "2026-09-16T10:30:00.000Z",
           updatedAt: "2026-09-16T10:45:00.000Z",
         },
+        reverse: {
+          description: "The national coat of arms",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/reverse%20image.webp",
+          createdAt: "2026-09-16T10:31:00.000Z",
+          updatedAt: "2026-09-16T10:46:00.000Z",
+        },
       })
     })
 
-    it("returns explicit missing Obverse content when no surface is persisted", async () => {
+    it("returns explicit missing surface content when no surface is persisted", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
-        findCoinById: async () => ({ ...coin, obverse: null }),
+        findCoinById: async () => ({
+          ...coin,
+          obverse: null,
+          reverse: null,
+        }),
         imageBaseUrl: "https://images.coin-archive.example",
       }).request(`/v1/coins/${coinId}`)
 
@@ -368,7 +388,44 @@ describe("API", () => {
           createdAt: null,
           updatedAt: null,
         },
+        reverse: {
+          description: null,
+          imageUrl: null,
+          createdAt: null,
+          updatedAt: null,
+        },
       })
+    })
+
+    it("returns a partial Reverse while keeping an absent Obverse explicit", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({
+          ...coin,
+          obverse: null,
+          reverse: { ...coin.reverse, imageKey: null },
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(
+        expect.objectContaining({
+          obverse: {
+            description: null,
+            imageUrl: null,
+            createdAt: null,
+            updatedAt: null,
+          },
+          reverse: {
+            description: "The national coat of arms",
+            imageUrl: null,
+            createdAt: "2026-09-16T10:31:00.000Z",
+            updatedAt: "2026-09-16T10:46:00.000Z",
+          },
+        })
+      )
     })
 
     it("returns an Archive-defined Issuer from detail and list endpoints without internal IDs", async () => {
@@ -388,6 +445,7 @@ describe("API", () => {
           {
             ...romanCoin,
             obverseImageKey: romanCoin.obverse.imageKey,
+            reverseImageKey: romanCoin.reverse.imageKey,
           },
         ],
         imageBaseUrl: "https://images.coin-archive.example",
@@ -408,6 +466,13 @@ describe("API", () => {
           createdAt: "2026-09-16T10:30:00.000Z",
           updatedAt: "2026-09-16T10:45:00.000Z",
         },
+        reverse: {
+          description: "The national coat of arms",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/reverse%20image.webp",
+          createdAt: "2026-09-16T10:31:00.000Z",
+          updatedAt: "2026-09-16T10:46:00.000Z",
+        },
       }
 
       expect(detail.status).toBe(200)
@@ -423,6 +488,8 @@ describe("API", () => {
             updatedAt: "2026-09-16T11:00:00.000Z",
             obverseImageUrl:
               "https://images.coin-archive.example/coins/first/obverse%20image.webp",
+            reverseImageUrl:
+              "https://images.coin-archive.example/coins/first/reverse%20image.webp",
           },
         ],
       })
@@ -652,6 +719,7 @@ describe("API", () => {
             createdAt: new Date("2026-09-16T10:00:00.000Z"),
             updatedAt: new Date("2026-09-16T11:00:00.000Z"),
             obverseImageKey: "coins/first/obverse.webp",
+            reverseImageKey: "coins/first/reverse.webp",
           },
         ],
       }).request("/v1/coins")
@@ -668,6 +736,8 @@ describe("API", () => {
             updatedAt: "2026-09-16T11:00:00.000Z",
             obverseImageUrl:
               "https://images.coin-archive.example/coins/first/obverse.webp",
+            reverseImageUrl:
+              "https://images.coin-archive.example/coins/first/reverse.webp",
           },
         ],
       })
@@ -692,6 +762,7 @@ describe("API", () => {
             createdAt: new Date("2026-09-16T10:00:00.000Z"),
             updatedAt: new Date("2026-09-16T11:00:00.000Z"),
             obverseImageKey: null,
+            reverseImageKey: null,
           },
         ],
       }).request("/v1/coins")
@@ -701,6 +772,7 @@ describe("API", () => {
         coins: [
           expect.objectContaining({
             obverseImageUrl: null,
+            reverseImageUrl: null,
           }),
         ],
       })

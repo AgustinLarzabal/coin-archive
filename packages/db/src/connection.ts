@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
+import { alias } from "drizzle-orm/pg-core"
 import { Pool } from "pg"
 
 import * as schema from "./schema/index.js"
@@ -17,11 +18,13 @@ export interface Database {
 export type Coin = schema.CoinRecord & {
   issuer: schema.IssuerRecord
   obverse: schema.CoinSurfaceRecord | null
+  reverse: schema.CoinSurfaceRecord | null
 }
 
 export type CoinListItem = schema.CoinRecord & {
   issuer: schema.IssuerRecord
   obverseImageKey: string | null
+  reverseImageKey: string | null
 }
 
 export interface CoinListOptions {
@@ -45,6 +48,8 @@ export function createDatabase(
   })
   pool.on("error", options.onPoolError ?? ((error) => console.error(error)))
   const orm = drizzle({ client: pool, schema })
+  const obverses = alias(schema.coinSurfaces, "obverses")
+  const reverses = alias(schema.coinSurfaces, "reverses")
 
   return {
     async checkReadiness() {
@@ -56,22 +61,35 @@ export function createDatabase(
         .select({
           coin: schema.coins,
           issuer: schema.issuers,
-          obverse: schema.coinSurfaces,
+          obverse: obverses,
+          reverse: reverses,
         })
         .from(schema.coins)
         .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
         .leftJoin(
-          schema.coinSurfaces,
+          obverses,
           and(
-            eq(schema.coinSurfaces.coinId, schema.coins.id),
-            eq(schema.coinSurfaces.kind, "obverse")
+            eq(obverses.coinId, schema.coins.id),
+            eq(obverses.kind, "obverse")
+          )
+        )
+        .leftJoin(
+          reverses,
+          and(
+            eq(reverses.coinId, schema.coins.id),
+            eq(reverses.kind, "reverse")
           )
         )
         .where(eq(schema.coins.id, coinId))
         .limit(1)
       const row = rows.at(0)
       return row
-        ? { ...row.coin, issuer: row.issuer, obverse: row.obverse }
+        ? {
+            ...row.coin,
+            issuer: row.issuer,
+            obverse: row.obverse,
+            reverse: row.reverse,
+          }
         : null
     },
     async listCoins(filters = {}) {
@@ -79,15 +97,23 @@ export function createDatabase(
         .select({
           coin: schema.coins,
           issuer: schema.issuers,
-          obverseImageKey: schema.coinSurfaces.imageKey,
+          obverseImageKey: obverses.imageKey,
+          reverseImageKey: reverses.imageKey,
         })
         .from(schema.coins)
         .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
         .leftJoin(
-          schema.coinSurfaces,
+          obverses,
           and(
-            eq(schema.coinSurfaces.coinId, schema.coins.id),
-            eq(schema.coinSurfaces.kind, "obverse")
+            eq(obverses.coinId, schema.coins.id),
+            eq(obverses.kind, "obverse")
+          )
+        )
+        .leftJoin(
+          reverses,
+          and(
+            eq(reverses.coinId, schema.coins.id),
+            eq(reverses.kind, "reverse")
           )
         )
         .where(
@@ -96,10 +122,11 @@ export function createDatabase(
             : eq(schema.issuers.code, filters.issuerCode)
         )
         .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
-      return rows.map(({ coin, issuer, obverseImageKey }) => ({
+      return rows.map(({ coin, issuer, obverseImageKey, reverseImageKey }) => ({
         ...coin,
         issuer,
         obverseImageKey,
+        reverseImageKey,
       }))
     },
     listIssuers: () =>

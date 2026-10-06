@@ -13,6 +13,12 @@ function isIsoIssuerCode(code: string) {
 }
 
 export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
+  const image = coin.obverseImageUrl
+    ? { surface: "Obverse", url: coin.obverseImageUrl }
+    : coin.reverseImageUrl
+      ? { surface: "Reverse", url: coin.reverseImageUrl }
+      : null
+
   return (
     <Link
       to="/coins/$coinId"
@@ -37,10 +43,10 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
       <span className="absolute inset-e-5 top-5 -translate-y-1.5 font-mono text-xs tracking-wider text-muted-foreground opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
         KM# 1234
       </span>
-      {coin.obverseImageUrl ? (
+      {image ? (
         <img
-          src={coin.obverseImageUrl}
-          alt={`Obverse of ${coin.title}`}
+          src={image.url}
+          alt={`${image.surface} of ${coin.title}`}
           className="w-1/2 grayscale group-hover:grayscale-0"
         />
       ) : (

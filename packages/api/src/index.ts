@@ -62,6 +62,7 @@ export const coinDetailResponseSchema = z.strictObject({
   ...coinResponseShape,
   obverse: coinSurfaceResponseSchema,
   reverse: coinSurfaceResponseSchema,
+  edge: coinSurfaceResponseSchema,
 })
 
 export type CoinDetailResponse = z.infer<typeof coinDetailResponseSchema>
@@ -96,12 +97,13 @@ export const missingCoinSurfaceResponse: Readonly<CoinSurfaceResponse> =
   })
 
 export const compatibleCoinDetailResponseSchema = coinDetailResponseSchema
-  .partial({ obverse: true, reverse: true })
+  .partial({ obverse: true, reverse: true, edge: true })
   .strip()
   .transform((coin) => ({
     ...coin,
     obverse: coin.obverse ?? { ...missingCoinSurfaceResponse },
     reverse: coin.reverse ?? { ...missingCoinSurfaceResponse },
+    edge: coin.edge ?? { ...missingCoinSurfaceResponse },
   }))
 
 function errorResponseSchema<

@@ -49,6 +49,7 @@ const coinSurfaceSeedRecordSchema = z
 const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
   obverse: coinSurfaceSeedRecordSchema.optional(),
   reverse: coinSurfaceSeedRecordSchema.optional(),
+  edge: coinSurfaceSeedRecordSchema.optional(),
 })
 
 const seedDocumentSchema = z
@@ -98,7 +99,13 @@ export async function seedCoins(database: Database, input: unknown) {
 
     await transaction.insert(coins).values(
       document.coins.map(
-        ({ issuerCode, obverse: _obverse, reverse: _reverse, ...coin }) => {
+        ({
+          issuerCode,
+          obverse: _obverse,
+          reverse: _reverse,
+          edge: _edge,
+          ...coin
+        }) => {
           const issuerId = issuerIdsByCode.get(issuerCode)
           if (!issuerId) {
             throw new Error(
@@ -111,9 +118,10 @@ export async function seedCoins(database: Database, input: unknown) {
     )
 
     const surfaces = document.coins.flatMap(
-      ({ id: coinId, obverse, reverse }) => [
+      ({ id: coinId, obverse, reverse, edge }) => [
         ...(obverse ? [{ ...obverse, coinId, kind: "obverse" as const }] : []),
         ...(reverse ? [{ ...reverse, coinId, kind: "reverse" as const }] : []),
+        ...(edge ? [{ ...edge, coinId, kind: "edge" as const }] : []),
       ]
     )
     if (surfaces.length > 0) {

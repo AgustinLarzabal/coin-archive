@@ -15,6 +15,10 @@
       "reverse": {
         "description": "Don Quixote holding a lance beside two windmills.",
         "imageKey": "coin-placeholder2.webp"
+      },
+      "edge": {
+        "description": "CERVANTES repeated around the circumference.",
+        "imageKey": "coin-placeholder3.webp"
       }
     },
     {

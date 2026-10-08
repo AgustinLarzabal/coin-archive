@@ -211,6 +211,12 @@ describe("Coin viewer route", () => {
             createdAt: "2026-09-16T10:31:00.000Z",
             updatedAt: "2026-09-16T10:46:00.000Z",
           },
+          edge: {
+            description: "A lettered inscription",
+            imageUrl: "https://images.example/first-edge.webp",
+            createdAt: "2026-09-16T10:32:00.000Z",
+            updatedAt: "2026-09-16T10:47:00.000Z",
+          },
         })
       )
     )
@@ -236,6 +242,11 @@ describe("Coin viewer route", () => {
     expect(
       screen.getByRole("img", { name: "Reverse of First coin" })
     ).toHaveAttribute("src", "https://images.example/first-reverse.webp")
+    await user.click(screen.getByRole("tab", { name: "Edge" }))
+    expect(screen.getByText("A lettered inscription")).toBeVisible()
+    expect(
+      screen.getByRole("img", { name: "Edge of First coin" })
+    ).toHaveAttribute("src", "https://images.example/first-edge.webp")
     expect(
       screen.queryByText(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -286,6 +297,58 @@ describe("Coin viewer route", () => {
     expect(
       screen.queryByRole("img", { name: "Reverse of First coin" })
     ).not.toBeInTheDocument()
+    expect(screen.queryByRole("tab", { name: "Edge" })).not.toBeInTheDocument()
+  })
+
+  it.each([
+    [
+      "description",
+      {
+        description: "A lettered inscription",
+        imageUrl: null,
+        createdAt: "2026-09-16T10:32:00.000Z",
+        updatedAt: "2026-09-16T10:47:00.000Z",
+      },
+    ],
+    [
+      "image",
+      {
+        description: null,
+        imageUrl: "https://images.example/first-edge.webp",
+        createdAt: "2026-09-16T10:32:00.000Z",
+        updatedAt: "2026-09-16T10:47:00.000Z",
+      },
+    ],
+  ])("shows Edge when only its %s exists", async (_content, edge) => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            id: coinId,
+            title: "First coin",
+            issuer: { name: "Argentina", code: "AR" },
+            createdAt: "2026-09-16T10:00:00.000Z",
+            updatedAt: "2026-09-16T10:00:00.000Z",
+            edge,
+          })
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    await user.click(await screen.findByRole("tab", { name: "Edge" }))
+    if (edge.description) {
+      expect(screen.getByText(edge.description)).toBeVisible()
+      expect(screen.getByText("Edge image unavailable")).toBeVisible()
+    } else {
+      expect(screen.getByText("Edge description unavailable")).toBeVisible()
+      expect(
+        screen.getByRole("img", { name: "Edge of First coin" })
+      ).toHaveAttribute("src", edge.imageUrl)
+    }
   })
 
   it("renders a partial Reverse with its missing-image state", async () => {

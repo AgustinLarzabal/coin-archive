@@ -45,46 +45,62 @@ describe("Coin persistence", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)
-      const [withBothSurfaces, withPartialReverse, withoutSurfaces] =
-        await database.orm
-          .insert(database.schema.coins)
-          .values([
-            { title: "Coin with both surfaces", issuerId: issuer.id },
-            { title: "Coin with a partial Reverse", issuerId: issuer.id },
-            { title: "Coin without surfaces", issuerId: issuer.id },
-          ])
-          .returning()
-      const [obverse, reverse, partialReverse] = await database.orm
-        .insert(database.schema.coinSurfaces)
+      const [
+        withAllSurfaces,
+        withPartialReverse,
+        withPartialEdge,
+        withoutSurfaces,
+      ] = await database.orm
+        .insert(database.schema.coins)
         .values([
-          {
-            coinId: withBothSurfaces.id,
-            kind: "obverse",
-            description: "A portrait of the sovereign",
-            imageKey: "coins/first/obverse.webp",
-          },
-          {
-            coinId: withBothSurfaces.id,
-            kind: "reverse",
-            description: "The national coat of arms",
-            imageKey: "coins/first/reverse.webp",
-          },
-          {
-            coinId: withPartialReverse.id,
-            kind: "reverse",
-            description: "A wreath around the denomination",
-          },
+          { title: "Coin with all surfaces", issuerId: issuer.id },
+          { title: "Coin with a partial Reverse", issuerId: issuer.id },
+          { title: "Coin with a partial Edge", issuerId: issuer.id },
+          { title: "Coin without surfaces", issuerId: issuer.id },
         ])
         .returning()
+      const [obverse, reverse, edge, partialReverse, partialEdge] =
+        await database.orm
+          .insert(database.schema.coinSurfaces)
+          .values([
+            {
+              coinId: withAllSurfaces.id,
+              kind: "obverse",
+              description: "A portrait of the sovereign",
+              imageKey: "coins/first/obverse.webp",
+            },
+            {
+              coinId: withAllSurfaces.id,
+              kind: "reverse",
+              description: "The national coat of arms",
+              imageKey: "coins/first/reverse.webp",
+            },
+            {
+              coinId: withAllSurfaces.id,
+              kind: "edge",
+              description: "A lettered inscription",
+              imageKey: "coins/first/edge.webp",
+            },
+            {
+              coinId: withPartialReverse.id,
+              kind: "reverse",
+              description: "A wreath around the denomination",
+            },
+            {
+              coinId: withPartialEdge.id,
+              kind: "edge",
+              imageKey: "coins/partial/edge.webp",
+            },
+          ])
+          .returning()
 
-      await expect(database.findCoinById(withBothSurfaces.id)).resolves.toEqual(
-        {
-          ...withBothSurfaces,
-          issuer,
-          obverse,
-          reverse,
-        }
-      )
+      await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
+        ...withAllSurfaces,
+        issuer,
+        obverse,
+        reverse,
+        edge,
+      })
       await expect(
         database.findCoinById(withPartialReverse.id)
       ).resolves.toEqual({
@@ -92,12 +108,21 @@ describe("Coin persistence", () => {
         issuer,
         obverse: null,
         reverse: partialReverse,
+        edge: null,
+      })
+      await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
+        ...withPartialEdge,
+        issuer,
+        obverse: null,
+        reverse: null,
+        edge: partialEdge,
       })
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
         ...withoutSurfaces,
         issuer,
         obverse: null,
         reverse: null,
+        edge: null,
       })
       await expect(database.listCoins()).resolves.toEqual(
         expect.arrayContaining([
@@ -107,7 +132,7 @@ describe("Coin persistence", () => {
             reverseImageKey: null,
           }),
           expect.objectContaining({
-            id: withBothSurfaces.id,
+            id: withAllSurfaces.id,
             obverseImageKey: "coins/first/obverse.webp",
             reverseImageKey: "coins/first/reverse.webp",
           }),
@@ -443,6 +468,7 @@ describe("Coin persistence", () => {
         issuer,
         obverse: null,
         reverse: null,
+        edge: null,
       })
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000099")
@@ -678,6 +704,10 @@ describe("Coin seed", () => {
           description: "The national coat of arms",
           imageKey: "coins/first/reverse.webp",
         },
+        edge: {
+          description: "A lettered inscription",
+          imageKey: "coins/first/edge.webp",
+        },
       },
     ],
   }
@@ -701,6 +731,12 @@ describe("Coin seed", () => {
           kind: "reverse",
           description: "The national coat of arms",
           imageKey: "coins/first/reverse.webp",
+        },
+        edge: {
+          coinId: SEEDED_COIN_ID,
+          kind: "edge",
+          description: "A lettered inscription",
+          imageKey: "coins/first/edge.webp",
         },
       })
     } finally {
@@ -730,6 +766,11 @@ describe("Coin seed", () => {
           description: "Don Quixote holding a lance beside two windmills.",
           imageKey: "coin-placeholder2.webp",
         }),
+        edge: expect.objectContaining({
+          kind: "edge",
+          description: "CERVANTES repeated around the circumference.",
+          imageKey: "coin-placeholder3.webp",
+        }),
       })
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000030")
@@ -741,6 +782,7 @@ describe("Coin seed", () => {
         }),
         obverse: null,
         reverse: null,
+        edge: null,
       })
     } finally {
       await database.close()

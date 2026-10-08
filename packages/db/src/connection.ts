@@ -19,6 +19,7 @@ export type Coin = schema.CoinRecord & {
   issuer: schema.IssuerRecord
   obverse: schema.CoinSurfaceRecord | null
   reverse: schema.CoinSurfaceRecord | null
+  edge: schema.CoinSurfaceRecord | null
 }
 
 export type CoinListItem = schema.CoinRecord & {
@@ -50,6 +51,7 @@ export function createDatabase(
   const orm = drizzle({ client: pool, schema })
   const obverses = alias(schema.coinSurfaces, "obverses")
   const reverses = alias(schema.coinSurfaces, "reverses")
+  const edges = alias(schema.coinSurfaces, "edges")
 
   return {
     async checkReadiness() {
@@ -63,6 +65,7 @@ export function createDatabase(
           issuer: schema.issuers,
           obverse: obverses,
           reverse: reverses,
+          edge: edges,
         })
         .from(schema.coins)
         .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
@@ -80,6 +83,10 @@ export function createDatabase(
             eq(reverses.kind, "reverse")
           )
         )
+        .leftJoin(
+          edges,
+          and(eq(edges.coinId, schema.coins.id), eq(edges.kind, "edge"))
+        )
         .where(eq(schema.coins.id, coinId))
         .limit(1)
       const row = rows.at(0)
@@ -89,6 +96,7 @@ export function createDatabase(
             issuer: row.issuer,
             obverse: row.obverse,
             reverse: row.reverse,
+            edge: row.edge,
           }
         : null
     },

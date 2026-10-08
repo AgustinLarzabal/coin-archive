@@ -328,6 +328,15 @@ describe("API", () => {
         createdAt: new Date("2026-09-16T10:31:00.000Z"),
         updatedAt: new Date("2026-09-16T10:46:00.000Z"),
       },
+      edge: {
+        id: "20000000-0000-4000-8000-000000000003",
+        coinId,
+        kind: "edge" as const,
+        description: "A lettered inscription",
+        imageKey: "coins/first/edge image.webp",
+        createdAt: new Date("2026-09-16T10:32:00.000Z"),
+        updatedAt: new Date("2026-09-16T10:47:00.000Z"),
+      },
     }
 
     it("returns the Coin contract with UTC timestamps and no caching", async () => {
@@ -360,6 +369,13 @@ describe("API", () => {
           createdAt: "2026-09-16T10:31:00.000Z",
           updatedAt: "2026-09-16T10:46:00.000Z",
         },
+        edge: {
+          description: "A lettered inscription",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/edge%20image.webp",
+          createdAt: "2026-09-16T10:32:00.000Z",
+          updatedAt: "2026-09-16T10:47:00.000Z",
+        },
       })
     })
 
@@ -371,6 +387,7 @@ describe("API", () => {
           ...coin,
           obverse: null,
           reverse: null,
+          edge: null,
         }),
         imageBaseUrl: "https://images.coin-archive.example",
       }).request(`/v1/coins/${coinId}`)
@@ -394,7 +411,38 @@ describe("API", () => {
           createdAt: null,
           updatedAt: null,
         },
+        edge: {
+          description: null,
+          imageUrl: null,
+          createdAt: null,
+          updatedAt: null,
+        },
       })
+    })
+
+    it("returns partial Edge catalogue data", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({
+          ...coin,
+          edge: { ...coin.edge, description: null },
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(
+        expect.objectContaining({
+          edge: {
+            description: null,
+            imageUrl:
+              "https://images.coin-archive.example/coins/first/edge%20image.webp",
+            createdAt: "2026-09-16T10:32:00.000Z",
+            updatedAt: "2026-09-16T10:47:00.000Z",
+          },
+        })
+      )
     })
 
     it("returns a partial Reverse while keeping an absent Obverse explicit", async () => {
@@ -472,6 +520,13 @@ describe("API", () => {
             "https://images.coin-archive.example/coins/first/reverse%20image.webp",
           createdAt: "2026-09-16T10:31:00.000Z",
           updatedAt: "2026-09-16T10:46:00.000Z",
+        },
+        edge: {
+          description: "A lettered inscription",
+          imageUrl:
+            "https://images.coin-archive.example/coins/first/edge%20image.webp",
+          createdAt: "2026-09-16T10:32:00.000Z",
+          updatedAt: "2026-09-16T10:47:00.000Z",
         },
       }
 

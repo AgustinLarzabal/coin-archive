@@ -102,6 +102,12 @@ describe("Archive data module", () => {
               createdAt: "2026-09-16T10:31:00.000Z",
               updatedAt: "2026-09-16T10:46:00.000Z",
             },
+            edge: {
+              description: "A lettered inscription",
+              imageUrl: "https://images.example/edge.webp",
+              createdAt: "2026-09-16T10:32:00.000Z",
+              updatedAt: "2026-09-16T10:47:00.000Z",
+            },
           })
         )
       )
@@ -123,6 +129,12 @@ describe("Archive data module", () => {
         imageUrl: "https://images.example/reverse.webp",
         createdAt: "2026-09-16T10:31:00.000Z",
         updatedAt: "2026-09-16T10:46:00.000Z",
+      },
+      edge: {
+        description: "A lettered inscription",
+        imageUrl: "https://images.example/edge.webp",
+        createdAt: "2026-09-16T10:32:00.000Z",
+        updatedAt: "2026-09-16T10:47:00.000Z",
       },
     })
     queryClient.clear()

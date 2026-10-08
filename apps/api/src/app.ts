@@ -121,6 +121,9 @@ function toCoinDetailResponse(
     reverse: coin.reverse
       ? toCoinSurfaceResponse(coin.reverse, imageBaseUrl)
       : { ...missingCoinSurfaceResponse },
+    edge: coin.edge
+      ? toCoinSurfaceResponse(coin.edge, imageBaseUrl)
+      : { ...missingCoinSurfaceResponse },
   }
 }
 

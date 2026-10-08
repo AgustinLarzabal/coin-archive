@@ -123,12 +123,14 @@ describe("Archive data module", () => {
         imageUrl: "https://images.example/obverse.webp",
         createdAt: "2026-09-16T10:30:00.000Z",
         updatedAt: "2026-09-16T10:45:00.000Z",
+        engravers: [],
       },
       reverse: {
         description: "A coat of arms",
         imageUrl: "https://images.example/reverse.webp",
         createdAt: "2026-09-16T10:31:00.000Z",
         updatedAt: "2026-09-16T10:46:00.000Z",
+        engravers: [],
       },
       edge: {
         description: "A lettered inscription",

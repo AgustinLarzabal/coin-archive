@@ -3,11 +3,20 @@ export type {
   Coin,
   CoinListItem,
   CoinListOptions,
+  CoinSurfaceWithEngravers,
   Database,
   DatabaseOptions,
 } from "./connection.js"
-export { coinRecordSchema, issuerRecordSchema } from "./schema/index.js"
-export type { CoinRecord, IssuerRecord } from "./schema/index.js"
+export {
+  coinRecordSchema,
+  engraverRecordSchema,
+  issuerRecordSchema,
+} from "./schema/index.js"
+export type {
+  CoinRecord,
+  EngraverRecord,
+  IssuerRecord,
+} from "./schema/index.js"
 export { rebuildDatabase } from "./reset.js"
 export { readCoinSeed, seedCoins } from "./seed.js"
 export type { CoinSeedDocument } from "./seed.js"

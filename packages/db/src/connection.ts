@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm"
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { alias } from "drizzle-orm/pg-core"
 import { Pool } from "pg"
@@ -17,9 +17,13 @@ export interface Database {
 
 export type Coin = schema.CoinRecord & {
   issuer: schema.IssuerRecord
-  obverse: schema.CoinSurfaceRecord | null
-  reverse: schema.CoinSurfaceRecord | null
+  obverse: CoinSurfaceWithEngravers | null
+  reverse: CoinSurfaceWithEngravers | null
   edge: schema.CoinSurfaceRecord | null
+}
+
+export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
+  engravers: Array<schema.EngraverRecord>
 }
 
 export type CoinListItem = schema.CoinRecord & {
@@ -90,15 +94,51 @@ export function createDatabase(
         .where(eq(schema.coins.id, coinId))
         .limit(1)
       const row = rows.at(0)
-      return row
-        ? {
-            ...row.coin,
-            issuer: row.issuer,
-            obverse: row.obverse,
-            reverse: row.reverse,
-            edge: row.edge,
-          }
-        : null
+      if (!row) return null
+
+      const engraverCreditableSurfaces = [row.obverse, row.reverse].filter(
+        (surface): surface is schema.CoinSurfaceRecord => surface !== null
+      )
+      const credits =
+        engraverCreditableSurfaces.length === 0
+          ? []
+          : await orm
+              .select({
+                coinSurfaceId: schema.coinSurfaceEngravers.coinSurfaceId,
+                engraver: schema.engravers,
+              })
+              .from(schema.coinSurfaceEngravers)
+              .innerJoin(
+                schema.engravers,
+                eq(schema.coinSurfaceEngravers.engraverId, schema.engravers.id)
+              )
+              .where(
+                inArray(
+                  schema.coinSurfaceEngravers.coinSurfaceId,
+                  engraverCreditableSurfaces.map((surface) => surface.id)
+                )
+              )
+              .orderBy(
+                asc(schema.coinSurfaceEngravers.coinSurfaceId),
+                asc(schema.coinSurfaceEngravers.position)
+              )
+      const withEngravers = (surface: schema.CoinSurfaceRecord | null) =>
+        surface
+          ? {
+              ...surface,
+              engravers: credits
+                .filter((credit) => credit.coinSurfaceId === surface.id)
+                .map((credit) => credit.engraver),
+            }
+          : null
+
+      return {
+        ...row.coin,
+        issuer: row.issuer,
+        obverse: withEngravers(row.obverse),
+        reverse: withEngravers(row.reverse),
+        edge: row.edge,
+      }
     },
     async listCoins(filters = {}) {
       const rows = await orm

@@ -261,6 +261,69 @@ describe("Coin viewer route", () => {
     )
   })
 
+  it("renders ordered Engraver names within their corresponding Obverse and Reverse tabs", async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse({
+            id: coinId,
+            title: "Credited coin",
+            issuer: { name: "Argentina", code: "AR" },
+            createdAt: "2026-09-16T10:00:00.000Z",
+            updatedAt: "2026-09-16T10:00:00.000Z",
+            obverse: {
+              description: "Portrait",
+              imageUrl: null,
+              createdAt: "2026-09-16T10:30:00.000Z",
+              updatedAt: "2026-09-16T10:45:00.000Z",
+              engravers: [
+                {
+                  id: "30000000-0000-4000-8000-000000000002",
+                  fullName: "Second Engraver",
+                  createdAt: "2026-09-10T10:00:00.000Z",
+                  updatedAt: "2026-09-11T10:00:00.000Z",
+                },
+                {
+                  id: "30000000-0000-4000-8000-000000000001",
+                  fullName: "First Engraver",
+                  createdAt: "2026-09-08T10:00:00.000Z",
+                  updatedAt: "2026-09-09T10:00:00.000Z",
+                },
+              ],
+            },
+            reverse: {
+              description: "Arms",
+              imageUrl: null,
+              createdAt: "2026-09-16T10:31:00.000Z",
+              updatedAt: "2026-09-16T10:46:00.000Z",
+              engravers: [
+                {
+                  id: "30000000-0000-4000-8000-000000000003",
+                  fullName: "Reverse Engraver",
+                  createdAt: "2026-09-12T10:00:00.000Z",
+                  updatedAt: "2026-09-13T10:00:00.000Z",
+                },
+              ],
+            },
+          })
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Second Engraver")).toBeVisible()
+    expect(screen.getByText("First Engraver")).toBeVisible()
+    expect(screen.queryByText("Reverse Engraver")).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("tab", { name: "Reverse" }))
+
+    expect(screen.getByText("Reverse Engraver")).toBeVisible()
+    expect(screen.queryByText("Second Engraver")).not.toBeInTheDocument()
+  })
+
   it("renders honest missing-data states for empty Coin Surfaces", async () => {
     const user = userEvent.setup()
     vi.stubGlobal(

@@ -7,12 +7,15 @@ import { beforeEach, describe, expect, it } from "vitest"
 import {
   coinRecordSchema,
   createDatabase,
+  engraverRecordSchema,
   issuerRecordSchema,
   readCoinSeed,
   seedCoins,
 } from "./index.js"
 
 const SEEDED_COIN_ID = "00000000-0000-4000-8000-000000000001"
+const FIRST_ENGRAVER_ID = "30000000-0000-4000-8000-000000000001"
+const SECOND_ENGRAVER_ID = "30000000-0000-4000-8000-000000000002"
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
   const [issuer] = await database.orm
@@ -41,6 +44,230 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("reads ordered reusable Engraver credits on Obverse and Reverse", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Credited Coin", issuerId: issuer.id })
+        .returning()
+      const [obverse, reverse] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values([
+          { coinId: coin.id, kind: "obverse", description: "Portrait" },
+          { coinId: coin.id, kind: "reverse", description: "Arms" },
+        ])
+        .returning()
+      const [first, second] = await database.orm
+        .insert(database.schema.engravers)
+        .values([
+          { fullName: "First Engraver" },
+          { fullName: "Second Engraver" },
+        ])
+        .returning()
+
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values([
+        { coinSurfaceId: obverse.id, engraverId: second.id, position: 2 },
+        { coinSurfaceId: obverse.id, engraverId: first.id, position: 1 },
+        { coinSurfaceId: reverse.id, engraverId: first.id, position: 1 },
+      ])
+
+      await expect(database.findCoinById(coin.id)).resolves.toEqual({
+        ...coin,
+        issuer,
+        obverse: { ...obverse, engravers: [first, second] },
+        reverse: { ...reverse, engravers: [first] },
+        edge: null,
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("enforces Engraver identity, names, timestamps, and credit invariants", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Invariant Coin", issuerId: issuer.id })
+        .returning()
+      const [obverse, edge] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values([
+          { coinId: coin.id, kind: "obverse", description: "Portrait" },
+          { coinId: coin.id, kind: "edge", description: "Reeded" },
+        ])
+        .returning()
+      const [engraver, sameName] = await database.orm
+        .insert(database.schema.engravers)
+        .values([
+          { fullName: "Reusable Engraver" },
+          { fullName: "Reusable Engraver" },
+        ])
+        .returning()
+
+      expect(engraverRecordSchema.parse(engraver)).toEqual(engraver)
+      expect(engraver.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      )
+      expect(sameName.fullName).toBe(engraver.fullName)
+      await expect(
+        database.orm
+          .insert(database.schema.engravers)
+          .values({ fullName: " padded" })
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: obverse.id,
+          engraverId: engraver.id,
+          position: 0,
+        })
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: edge.id,
+          engraverId: engraver.id,
+          position: 1,
+        })
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: obverse.id,
+          engraverId: "30000000-0000-4000-8000-000000000099",
+          position: 1,
+        })
+      ).rejects.toThrow()
+
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values({
+        coinSurfaceId: obverse.id,
+        engraverId: engraver.id,
+        position: 1,
+      })
+      await database.orm
+        .delete(database.schema.coinSurfaces)
+        .where(sql`${database.schema.coinSurfaces.id} = ${edge.id}`)
+      await expect(
+        database.orm
+          .update(database.schema.coinSurfaces)
+          .set({ kind: "edge" })
+          .where(sql`${database.schema.coinSurfaces.id} = ${obverse.id}`)
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: obverse.id,
+          engraverId: sameName.id,
+          position: 1,
+        })
+      ).rejects.toThrow()
+      await expect(
+        database.orm
+          .delete(database.schema.engravers)
+          .where(sql`${database.schema.engravers.id} = ${engraver.id}`)
+      ).rejects.toThrow()
+
+      await database.orm.execute(sql`
+        update engravers
+        set full_name = 'Updated Engraver', updated_at = created_at
+        where id = ${engraver.id}
+      `)
+      const [updated] = await database.orm
+        .select()
+        .from(database.schema.engravers)
+        .where(sql`${database.schema.engravers.id} = ${engraver.id}`)
+      expect(updated.updatedAt.getTime()).toBeGreaterThan(
+        engraver.updatedAt.getTime()
+      )
+
+      await database.orm
+        .delete(database.schema.coinSurfaces)
+        .where(sql`${database.schema.coinSurfaces.id} = ${obverse.id}`)
+      await expect(
+        database.orm.select().from(database.schema.coinSurfaceEngravers)
+      ).resolves.toEqual([])
+      await expect(
+        database.orm
+          .delete(database.schema.engravers)
+          .where(sql`${database.schema.engravers.id} = ${engraver.id}`)
+      ).resolves.toBeDefined()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("serializes Engraver credits with changes to Edge", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    const concurrentDatabase = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Concurrent Coin", issuerId: issuer.id })
+        .returning()
+      const [obverse] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values({
+          coinId: coin.id,
+          kind: "obverse",
+          description: "Portrait",
+        })
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({ fullName: "Concurrent Engraver" })
+        .returning()
+
+      let creditInserted: () => void = () => {}
+      const creditIsInserted = new Promise<void>((resolve) => {
+        creditInserted = resolve
+      })
+      let allowCreditCommit: () => void = () => {}
+      const creditMayCommit = new Promise<void>((resolve) => {
+        allowCreditCommit = resolve
+      })
+      const creditTransaction = database.orm.transaction(
+        async (transaction) => {
+          await transaction
+            .insert(database.schema.coinSurfaceEngravers)
+            .values({
+              coinSurfaceId: obverse.id,
+              engraverId: engraver.id,
+              position: 1,
+            })
+          creditInserted()
+          await creditMayCommit
+        }
+      )
+
+      await creditIsInserted
+      const changeToEdge = concurrentDatabase.orm
+        .update(concurrentDatabase.schema.coinSurfaces)
+        .set({ kind: "edge" })
+        .where(
+          sql`${concurrentDatabase.schema.coinSurfaces.id} = ${obverse.id}`
+        )
+      const changeOutcome = changeToEdge.then(
+        () => "resolved" as const,
+        () => "rejected" as const
+      )
+      const initialOutcome = await Promise.race([
+        changeOutcome,
+        new Promise<"pending">((resolve) =>
+          setTimeout(() => resolve("pending"), 100)
+        ),
+      ])
+
+      allowCreditCommit()
+      await creditTransaction
+      expect(initialOutcome).toBe("pending")
+      await expect(changeOutcome).resolves.toBe("rejected")
+    } finally {
+      await concurrentDatabase.close()
+      await database.close()
+    }
+  })
+
   it("reads sparse catalogue data without creating empty Coin Surfaces", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -97,8 +324,8 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
         ...withAllSurfaces,
         issuer,
-        obverse,
-        reverse,
+        obverse: { ...obverse, engravers: [] },
+        reverse: { ...reverse, engravers: [] },
         edge,
       })
       await expect(
@@ -107,7 +334,7 @@ describe("Coin persistence", () => {
         ...withPartialReverse,
         issuer,
         obverse: null,
-        reverse: partialReverse,
+        reverse: { ...partialReverse, engravers: [] },
         edge: null,
       })
       await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
@@ -331,10 +558,22 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values({ title: "Disposable Coin", issuerId: issuer.id })
         .returning()
-      await database.orm.insert(database.schema.coinSurfaces).values({
-        coinId: coin.id,
-        kind: "obverse",
-        description: "Disposable portrait",
+      const [surface] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values({
+          coinId: coin.id,
+          kind: "obverse",
+          description: "Disposable portrait",
+        })
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({ fullName: "Surviving Engraver" })
+        .returning()
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values({
+        coinSurfaceId: surface.id,
+        engraverId: engraver.id,
+        position: 1,
       })
 
       await database.orm
@@ -344,6 +583,12 @@ describe("Coin persistence", () => {
       await expect(
         database.orm.select().from(database.schema.coinSurfaces)
       ).resolves.toEqual([])
+      await expect(
+        database.orm.select().from(database.schema.coinSurfaceEngravers)
+      ).resolves.toEqual([])
+      await expect(
+        database.orm.select().from(database.schema.engravers)
+      ).resolves.toEqual([engraver])
     } finally {
       await database.close()
     }
@@ -691,6 +936,10 @@ describe("Issuer persistence", () => {
 describe("Coin seed", () => {
   const validSeed = {
     issuers: [{ name: "Argentina", code: "AR" }],
+    engravers: [
+      { id: FIRST_ENGRAVER_ID, fullName: "First Engraver" },
+      { id: SECOND_ENGRAVER_ID, fullName: "Second Engraver" },
+    ],
     coins: [
       {
         id: SEEDED_COIN_ID,
@@ -699,10 +948,12 @@ describe("Coin seed", () => {
         obverse: {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
+          engraverIds: [SECOND_ENGRAVER_ID, FIRST_ENGRAVER_ID],
         },
         reverse: {
           description: "The national coat of arms",
           imageKey: "coins/first/reverse.webp",
+          engraverIds: [FIRST_ENGRAVER_ID],
         },
         edge: {
           description: "A lettered inscription",
@@ -711,6 +962,30 @@ describe("Coin seed", () => {
       },
     ],
   }
+
+  it("inserts stable ordered Engravers and reuses them across Coin Surfaces", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, validSeed)
+
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({
+        obverse: {
+          engravers: [
+            { id: SECOND_ENGRAVER_ID, fullName: "Second Engraver" },
+            { id: FIRST_ENGRAVER_ID, fullName: "First Engraver" },
+          ],
+        },
+        reverse: {
+          engravers: [{ id: FIRST_ENGRAVER_ID, fullName: "First Engraver" }],
+        },
+        edge: expect.not.objectContaining({ engravers: expect.anything() }),
+      })
+    } finally {
+      await database.close()
+    }
+  })
 
   it("inserts validated Coin Surfaces in the same transaction as their Coin", async () => {
     const database = createDatabase(getDatabaseUrl())

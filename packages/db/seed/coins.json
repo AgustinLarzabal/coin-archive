@@ -3,6 +3,16 @@
     { "name": "Spain", "code": "ES" },
     { "name": "Roman Empire", "code": "ROMAN" }
   ],
+  "engravers": [
+    {
+      "id": "30000000-0000-4000-8000-000000000001",
+      "fullName": "First Archive Engraver"
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000002",
+      "fullName": "Second Archive Engraver"
+    }
+  ],
   "coins": [
     {
       "id": "00000000-0000-4000-8000-000000000001",
@@ -10,11 +20,16 @@
       "issuerCode": "ES",
       "obverse": {
         "description": "A portrait of Miguel de Cervantes holding a quill.",
-        "imageKey": "coin-placeholder.webp"
+        "imageKey": "coin-placeholder.webp",
+        "engraverIds": [
+          "30000000-0000-4000-8000-000000000002",
+          "30000000-0000-4000-8000-000000000001"
+        ]
       },
       "reverse": {
         "description": "Don Quixote holding a lance beside two windmills.",
-        "imageKey": "coin-placeholder2.webp"
+        "imageKey": "coin-placeholder2.webp",
+        "engraverIds": ["30000000-0000-4000-8000-000000000001"]
       },
       "edge": {
         "description": "CERVANTES repeated around the circumference.",

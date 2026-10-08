@@ -5,16 +5,22 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import type { CoinDetailResponse, CoinSurfaceResponse } from "@workspace/api"
+import type {
+  CoinDetailResponse,
+  CoinSurfaceResponse,
+  CoinSurfaceWithEngraversResponse,
+} from "@workspace/api"
 
 function CoinSurfacePreview({
   coinTitle,
   surfaceName,
   surface,
+  engravers,
 }: {
   coinTitle: string
   surfaceName: "Obverse" | "Reverse" | "Edge"
   surface: CoinSurfaceResponse
+  engravers?: CoinSurfaceWithEngraversResponse["engravers"]
 }) {
   return (
     <div className="px-7 py-5">
@@ -31,6 +37,18 @@ function CoinSurfacePreview({
         <p className="font-mono text-muted-foreground">
           {surface.description ?? `${surfaceName} description unavailable`}
         </p>
+        {engravers && engravers.length > 0 && (
+          <div>
+            <h3 className="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+              {engravers.length === 1 ? "Engraver" : "Engravers"}
+            </h3>
+            <ol className="mt-2 space-y-1 font-mono">
+              {engravers.map((engraver) => (
+                <li key={engraver.id}>{engraver.fullName}</li>
+              ))}
+            </ol>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -65,6 +83,7 @@ export function CoinViewerPreview({ coin }: { coin: CoinDetailResponse }) {
               coinTitle={coin.title}
               surfaceName="Obverse"
               surface={coin.obverse}
+              engravers={coin.obverse.engravers}
             />
           </ScrollArea>
         </TabsContent>
@@ -74,6 +93,7 @@ export function CoinViewerPreview({ coin }: { coin: CoinDetailResponse }) {
               coinTitle={coin.title}
               surfaceName="Reverse"
               surface={coin.reverse}
+              engravers={coin.reverse.engravers}
             />
           </ScrollArea>
         </TabsContent>

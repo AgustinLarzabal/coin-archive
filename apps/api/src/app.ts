@@ -13,6 +13,7 @@ import {
   issuerListResponseSchema as sharedIssuerListResponseSchema,
   issuerResponseSchema,
   missingCoinSurfaceResponse,
+  missingCoinSurfaceWithEngraversResponse,
   operationalOkResponseSchema as sharedOperationalOkResponseSchema,
   operationalUnavailableResponseSchema as sharedOperationalUnavailableResponseSchema,
 } from "@workspace/api"
@@ -96,7 +97,7 @@ function toPublicImageUrl(imageBaseUrl: string | undefined, imageKey: string) {
 }
 
 function toCoinSurfaceResponse(
-  surface: NonNullable<Coin["obverse"]>,
+  surface: NonNullable<Coin["edge"]>,
   imageBaseUrl: string | undefined
 ) {
   return {
@@ -109,6 +110,21 @@ function toCoinSurfaceResponse(
   }
 }
 
+function toCoinSurfaceWithEngraversResponse(
+  surface: NonNullable<Coin["obverse"]>,
+  imageBaseUrl: string | undefined
+) {
+  return {
+    ...toCoinSurfaceResponse(surface, imageBaseUrl),
+    engravers: surface.engravers.map((engraver) => ({
+      id: engraver.id,
+      fullName: engraver.fullName,
+      createdAt: engraver.createdAt.toISOString(),
+      updatedAt: engraver.updatedAt.toISOString(),
+    })),
+  }
+}
+
 function toCoinDetailResponse(
   coin: Coin,
   imageBaseUrl: string | undefined
@@ -116,11 +132,11 @@ function toCoinDetailResponse(
   return {
     ...toCoinResponseFields(coin),
     obverse: coin.obverse
-      ? toCoinSurfaceResponse(coin.obverse, imageBaseUrl)
-      : { ...missingCoinSurfaceResponse },
+      ? toCoinSurfaceWithEngraversResponse(coin.obverse, imageBaseUrl)
+      : { ...missingCoinSurfaceWithEngraversResponse },
     reverse: coin.reverse
-      ? toCoinSurfaceResponse(coin.reverse, imageBaseUrl)
-      : { ...missingCoinSurfaceResponse },
+      ? toCoinSurfaceWithEngraversResponse(coin.reverse, imageBaseUrl)
+      : { ...missingCoinSurfaceWithEngraversResponse },
     edge: coin.edge
       ? toCoinSurfaceResponse(coin.edge, imageBaseUrl)
       : { ...missingCoinSurfaceResponse },

@@ -58,10 +58,28 @@ export const coinSurfaceResponseSchema = z.strictObject({
 
 export type CoinSurfaceResponse = z.infer<typeof coinSurfaceResponseSchema>
 
+export const engraverResponseSchema = z.strictObject({
+  id: z.uuid(),
+  fullName: z.string().min(1).max(200),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+})
+
+export type EngraverResponse = z.infer<typeof engraverResponseSchema>
+
+export const coinSurfaceWithEngraversResponseSchema =
+  coinSurfaceResponseSchema.extend({
+    engravers: z.array(engraverResponseSchema),
+  })
+
+export type CoinSurfaceWithEngraversResponse = z.infer<
+  typeof coinSurfaceWithEngraversResponseSchema
+>
+
 export const coinDetailResponseSchema = z.strictObject({
   ...coinResponseShape,
-  obverse: coinSurfaceResponseSchema,
-  reverse: coinSurfaceResponseSchema,
+  obverse: coinSurfaceWithEngraversResponseSchema,
+  reverse: coinSurfaceWithEngraversResponseSchema,
   edge: coinSurfaceResponseSchema,
 })
 
@@ -87,6 +105,15 @@ export const compatibleCoinListResponseSchema = z.object({
   coins: z.array(compatibleCoinListItemResponseSchema),
 })
 
+const compatibleCoinSurfaceWithEngraversResponseSchema =
+  coinSurfaceWithEngraversResponseSchema
+    .partial({ engravers: true })
+    .strip()
+    .transform((surface) => ({
+      ...surface,
+      engravers: surface.engravers ?? [],
+    }))
+
 // Remove after the version-one Coin Surface rollout is complete.
 export const missingCoinSurfaceResponse: Readonly<CoinSurfaceResponse> =
   Object.freeze({
@@ -96,13 +123,20 @@ export const missingCoinSurfaceResponse: Readonly<CoinSurfaceResponse> =
     updatedAt: null,
   })
 
+export const missingCoinSurfaceWithEngraversResponse: Readonly<CoinSurfaceWithEngraversResponse> =
+  Object.freeze({ ...missingCoinSurfaceResponse, engravers: [] })
+
 export const compatibleCoinDetailResponseSchema = coinDetailResponseSchema
+  .extend({
+    obverse: compatibleCoinSurfaceWithEngraversResponseSchema,
+    reverse: compatibleCoinSurfaceWithEngraversResponseSchema,
+  })
   .partial({ obverse: true, reverse: true, edge: true })
   .strip()
   .transform((coin) => ({
     ...coin,
-    obverse: coin.obverse ?? { ...missingCoinSurfaceResponse },
-    reverse: coin.reverse ?? { ...missingCoinSurfaceResponse },
+    obverse: coin.obverse ?? { ...missingCoinSurfaceWithEngraversResponse },
+    reverse: coin.reverse ?? { ...missingCoinSurfaceWithEngraversResponse },
     edge: coin.edge ?? { ...missingCoinSurfaceResponse },
   }))
 

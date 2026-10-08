@@ -119,6 +119,36 @@ describe("database rebuild lifecycle", () => {
         ])
       )
       expect(issuers.rows).toHaveLength(2)
+
+      const credits = await databaseAfterReset.query<{
+        full_name: string
+        kind: string
+        position: number
+      }>(`
+        select engravers.full_name, coin_surfaces.kind,
+          coin_surface_engravers.position
+        from coin_surface_engravers
+        join engravers on engravers.id = coin_surface_engravers.engraver_id
+        join coin_surfaces on coin_surfaces.id = coin_surface_engravers.coin_surface_id
+        order by coin_surfaces.kind, coin_surface_engravers.position
+      `)
+      expect(credits.rows).toEqual([
+        {
+          full_name: "Second Archive Engraver",
+          kind: "obverse",
+          position: 1,
+        },
+        {
+          full_name: "First Archive Engraver",
+          kind: "obverse",
+          position: 2,
+        },
+        {
+          full_name: "First Archive Engraver",
+          kind: "reverse",
+          position: 1,
+        },
+      ])
     } finally {
       await databaseAfterReset.end()
     }

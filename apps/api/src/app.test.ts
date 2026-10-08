@@ -318,6 +318,20 @@ describe("API", () => {
         imageKey: "coins/first/obverse image.webp",
         createdAt: new Date("2026-09-16T10:30:00.000Z"),
         updatedAt: new Date("2026-09-16T10:45:00.000Z"),
+        engravers: [
+          {
+            id: "30000000-0000-4000-8000-000000000002",
+            fullName: "Second Engraver",
+            createdAt: new Date("2026-09-10T10:00:00.000Z"),
+            updatedAt: new Date("2026-09-11T10:00:00.000Z"),
+          },
+          {
+            id: "30000000-0000-4000-8000-000000000001",
+            fullName: "First Engraver",
+            createdAt: new Date("2026-09-08T10:00:00.000Z"),
+            updatedAt: new Date("2026-09-09T10:00:00.000Z"),
+          },
+        ],
       },
       reverse: {
         id: "20000000-0000-4000-8000-000000000002",
@@ -327,6 +341,14 @@ describe("API", () => {
         imageKey: "coins/first/reverse image.webp",
         createdAt: new Date("2026-09-16T10:31:00.000Z"),
         updatedAt: new Date("2026-09-16T10:46:00.000Z"),
+        engravers: [
+          {
+            id: "30000000-0000-4000-8000-000000000001",
+            fullName: "First Engraver",
+            createdAt: new Date("2026-09-08T10:00:00.000Z"),
+            updatedAt: new Date("2026-09-09T10:00:00.000Z"),
+          },
+        ],
       },
       edge: {
         id: "20000000-0000-4000-8000-000000000003",
@@ -361,6 +383,20 @@ describe("API", () => {
             "https://images.coin-archive.example/coins/first/obverse%20image.webp",
           createdAt: "2026-09-16T10:30:00.000Z",
           updatedAt: "2026-09-16T10:45:00.000Z",
+          engravers: [
+            {
+              id: "30000000-0000-4000-8000-000000000002",
+              fullName: "Second Engraver",
+              createdAt: "2026-09-10T10:00:00.000Z",
+              updatedAt: "2026-09-11T10:00:00.000Z",
+            },
+            {
+              id: "30000000-0000-4000-8000-000000000001",
+              fullName: "First Engraver",
+              createdAt: "2026-09-08T10:00:00.000Z",
+              updatedAt: "2026-09-09T10:00:00.000Z",
+            },
+          ],
         },
         reverse: {
           description: "The national coat of arms",
@@ -368,6 +404,14 @@ describe("API", () => {
             "https://images.coin-archive.example/coins/first/reverse%20image.webp",
           createdAt: "2026-09-16T10:31:00.000Z",
           updatedAt: "2026-09-16T10:46:00.000Z",
+          engravers: [
+            {
+              id: "30000000-0000-4000-8000-000000000001",
+              fullName: "First Engraver",
+              createdAt: "2026-09-08T10:00:00.000Z",
+              updatedAt: "2026-09-09T10:00:00.000Z",
+            },
+          ],
         },
         edge: {
           description: "A lettered inscription",
@@ -404,12 +448,14 @@ describe("API", () => {
           imageUrl: null,
           createdAt: null,
           updatedAt: null,
+          engravers: [],
         },
         reverse: {
           description: null,
           imageUrl: null,
           createdAt: null,
           updatedAt: null,
+          engravers: [],
         },
         edge: {
           description: null,
@@ -465,12 +511,21 @@ describe("API", () => {
             imageUrl: null,
             createdAt: null,
             updatedAt: null,
+            engravers: [],
           },
           reverse: {
             description: "The national coat of arms",
             imageUrl: null,
             createdAt: "2026-09-16T10:31:00.000Z",
             updatedAt: "2026-09-16T10:46:00.000Z",
+            engravers: [
+              {
+                id: "30000000-0000-4000-8000-000000000001",
+                fullName: "First Engraver",
+                createdAt: "2026-09-08T10:00:00.000Z",
+                updatedAt: "2026-09-09T10:00:00.000Z",
+              },
+            ],
           },
         })
       )
@@ -513,6 +568,20 @@ describe("API", () => {
             "https://images.coin-archive.example/coins/first/obverse%20image.webp",
           createdAt: "2026-09-16T10:30:00.000Z",
           updatedAt: "2026-09-16T10:45:00.000Z",
+          engravers: [
+            {
+              id: "30000000-0000-4000-8000-000000000002",
+              fullName: "Second Engraver",
+              createdAt: "2026-09-10T10:00:00.000Z",
+              updatedAt: "2026-09-11T10:00:00.000Z",
+            },
+            {
+              id: "30000000-0000-4000-8000-000000000001",
+              fullName: "First Engraver",
+              createdAt: "2026-09-08T10:00:00.000Z",
+              updatedAt: "2026-09-09T10:00:00.000Z",
+            },
+          ],
         },
         reverse: {
           description: "The national coat of arms",
@@ -520,6 +589,14 @@ describe("API", () => {
             "https://images.coin-archive.example/coins/first/reverse%20image.webp",
           createdAt: "2026-09-16T10:31:00.000Z",
           updatedAt: "2026-09-16T10:46:00.000Z",
+          engravers: [
+            {
+              id: "30000000-0000-4000-8000-000000000001",
+              fullName: "First Engraver",
+              createdAt: "2026-09-08T10:00:00.000Z",
+              updatedAt: "2026-09-09T10:00:00.000Z",
+            },
+          ],
         },
         edge: {
           description: "A lettered inscription",

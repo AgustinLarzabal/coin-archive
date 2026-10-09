@@ -21,9 +21,6 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
           <span>Ruler / Period</span>
         </div>
       </div>
-      <div className="border-y px-6 py-3 font-mono text-xs text-muted-foreground">
-        Lorem ipsum dolor sit amet
-      </div>
     </aside>
   )
 }

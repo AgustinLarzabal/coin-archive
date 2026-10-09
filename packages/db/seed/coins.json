@@ -39,12 +39,19 @@
     {
       "id": "00000000-0000-4000-8000-000000000002",
       "title": "50th Anniversary of the Treaty of Rome",
-      "issuerCode": "ES"
+      "issuerCode": "ES",
+      "obverse": {
+        "description": "The Treaty of Rome anniversary emblem.",
+        "imageKey": "coin-placeholder2.webp"
+      }
     },
     {
       "id": "00000000-0000-4000-8000-000000000003",
       "title": "10th Anniversary of Economic and Monetary Union",
-      "issuerCode": "ES"
+      "issuerCode": "ES",
+      "reverse": {
+        "imageKey": "coin-placeholder3.webp"
+      }
     },
     {
       "id": "00000000-0000-4000-8000-000000000004",

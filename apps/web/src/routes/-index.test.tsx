@@ -2,6 +2,7 @@ import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import type { CoinListItemResponse } from "@workspace/api"
 
 import {
   coinDetailQueryOptions,
@@ -9,19 +10,29 @@ import {
   issuerListQueryOptions,
 } from "@/data/archive"
 import { getRouter } from "@/router"
+import { coinDetailFixture } from "@/test/coin-fixtures"
 
 vi.mock("@tanstack/react-devtools", () => ({
   TanStackDevtools: () => null,
 }))
 
 const coinId = "00000000-0000-4000-8000-000000000001"
-const coin = {
+const coin: CoinListItemResponse = {
   id: coinId,
   title: "First coin",
   issuer: { name: "Argentina", code: "AR" },
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
+  obverseImageUrl: null,
+  reverseImageUrl: null,
 }
+const detailCoin = coinDetailFixture({
+  id: coin.id,
+  title: coin.title,
+  issuer: coin.issuer,
+  createdAt: coin.createdAt,
+  updatedAt: coin.updatedAt,
+})
 const issuers = [
   { name: "Argentina", code: "AR" },
   { name: "Roman Empire", code: "ROMAN" },
@@ -29,8 +40,8 @@ const issuers = [
 ]
 
 type CoinListResponseFixture = typeof coin & {
-  obverseImageUrl?: string | null
-  reverseImageUrl?: string | null
+  obverseImageUrl: string | null
+  reverseImageUrl: string | null
 }
 
 function jsonResponse(body: unknown, status = 200) {
@@ -447,12 +458,13 @@ describe("Archive landing route", () => {
           ? jsonResponse({ issuers })
           : url.endsWith(`/v1/coins/${coinId}`)
             ? jsonResponse({
-                ...coin,
+                ...detailCoin,
                 obverse: {
                   description: "A portrait",
                   imageUrl: "https://images.example/obverse.webp",
                   createdAt: "2026-09-16T10:30:00.000Z",
                   updatedAt: "2026-09-16T10:45:00.000Z",
+                  engravers: [],
                 },
               })
             : jsonResponse({
@@ -530,7 +542,7 @@ describe("Archive landing route", () => {
 
     expect(screen.queryByText("Loading coin…")).not.toBeInTheDocument()
 
-    detailResponse.resolve(jsonResponse(coin))
+    detailResponse.resolve(jsonResponse(detailCoin))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
     expect(screen.getByRole("heading", { name: "First coin" })).toBeVisible()
@@ -571,7 +583,7 @@ describe("Archive landing route", () => {
 
     expect(screen.getByText("Loading coin…")).toBeVisible()
 
-    detailResponse.resolve(jsonResponse(coin))
+    detailResponse.resolve(jsonResponse(detailCoin))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
     expect(screen.getByRole("heading", { name: "First coin" })).toBeVisible()
@@ -585,7 +597,7 @@ describe("Archive landing route", () => {
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
           : url.endsWith(`/v1/coins/${coinId}`)
-            ? jsonResponse(coin)
+            ? jsonResponse(detailCoin)
             : jsonResponse({ coins: [coin] })
       )
     })

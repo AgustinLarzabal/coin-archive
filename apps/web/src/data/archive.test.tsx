@@ -15,6 +15,7 @@ import { Route as ExploreRoute } from "@/routes/_explore"
 import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$coinId"
 import { startInstance } from "@/start"
+import { coinDetailFixture } from "@/test/coin-fixtures"
 
 vi.mock("@tanstack/react-devtools", () => ({
   TanStackDevtools: () => null,
@@ -36,7 +37,7 @@ function jsonResponse(body: unknown) {
 }
 
 function coinResponse(issuer: { code: string; name: string; id?: string }) {
-  return jsonResponse({ ...coin, issuer })
+  return jsonResponse(coinDetailFixture({ ...coin, issuer }))
 }
 
 function createQueryClient() {
@@ -83,6 +84,19 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
+  it("rejects the legacy Coin list response without surface image fields", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse({ coins: [coin] })))
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinListQueryOptions())
+    ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
+    queryClient.clear()
+  })
+
   it("accepts complete surface data in a Coin detail response", async () => {
     vi.stubGlobal(
       "fetch",
@@ -95,12 +109,14 @@ describe("Archive data module", () => {
               imageUrl: "https://images.example/obverse.webp",
               createdAt: "2026-09-16T10:30:00.000Z",
               updatedAt: "2026-09-16T10:45:00.000Z",
+              engravers: [],
             },
             reverse: {
               description: "A coat of arms",
               imageUrl: "https://images.example/reverse.webp",
               createdAt: "2026-09-16T10:31:00.000Z",
               updatedAt: "2026-09-16T10:46:00.000Z",
+              engravers: [],
             },
             edge: {
               description: "A lettered inscription",
@@ -139,6 +155,19 @@ describe("Archive data module", () => {
         updatedAt: "2026-09-16T10:47:00.000Z",
       },
     })
+    queryClient.clear()
+  })
+
+  it("rejects the legacy Coin detail response without fixed surfaces", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coin)))
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinDetailQueryOptions(coinId))
+    ).rejects.toBeInstanceOf(InvalidCoinResponseError)
     queryClient.clear()
   })
 

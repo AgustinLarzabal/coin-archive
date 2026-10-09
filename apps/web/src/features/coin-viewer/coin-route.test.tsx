@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { getRouter } from "@/router"
+import { coinDetailFixture, coinFaceFixture } from "@/test/coin-fixtures"
 
 vi.mock("@tanstack/react-devtools", () => ({
   TanStackDevtools: () => null,
@@ -121,19 +122,16 @@ describe("Coin viewer route", () => {
       "fetch",
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "First coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-            obverse: {
-              description: "A portrait of the sovereign",
-              imageUrl: "https://images.example/first-obverse.webp",
-              createdAt: "2026-09-16T10:30:00.000Z",
-              updatedAt: "2026-09-16T10:45:00.000Z",
-            },
-          })
+          jsonResponse(
+            coinDetailFixture({
+              obverse: coinFaceFixture({
+                description: "A portrait of the sovereign",
+                imageUrl: "https://images.example/first-obverse.webp",
+                createdAt: "2026-09-16T10:30:00.000Z",
+                updatedAt: "2026-09-16T10:45:00.000Z",
+              }),
+            })
+          )
         )
       )
     )
@@ -155,17 +153,7 @@ describe("Coin viewer route", () => {
     const user = userEvent.setup()
     vi.stubGlobal(
       "fetch",
-      vi.fn(() =>
-        Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "First coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-          })
-        )
-      )
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
     )
 
     renderCoinRoute()
@@ -193,31 +181,28 @@ describe("Coin viewer route", () => {
     const user = userEvent.setup()
     const fetchMock = vi.fn(() =>
       Promise.resolve(
-        jsonResponse({
-          id: coinId,
-          title: "First coin",
-          issuer: { name: "Argentina", code: "AR" },
-          createdAt: "2026-09-16T10:00:00.000Z",
-          updatedAt: "2026-09-16T10:00:00.000Z",
-          obverse: {
-            description: "A portrait of the sovereign",
-            imageUrl: "https://images.example/first-obverse.webp",
-            createdAt: "2026-09-16T10:30:00.000Z",
-            updatedAt: "2026-09-16T10:45:00.000Z",
-          },
-          reverse: {
-            description: "The national coat of arms",
-            imageUrl: "https://images.example/first-reverse.webp",
-            createdAt: "2026-09-16T10:31:00.000Z",
-            updatedAt: "2026-09-16T10:46:00.000Z",
-          },
-          edge: {
-            description: "A lettered inscription",
-            imageUrl: "https://images.example/first-edge.webp",
-            createdAt: "2026-09-16T10:32:00.000Z",
-            updatedAt: "2026-09-16T10:47:00.000Z",
-          },
-        })
+        jsonResponse(
+          coinDetailFixture({
+            obverse: coinFaceFixture({
+              description: "A portrait of the sovereign",
+              imageUrl: "https://images.example/first-obverse.webp",
+              createdAt: "2026-09-16T10:30:00.000Z",
+              updatedAt: "2026-09-16T10:45:00.000Z",
+            }),
+            reverse: coinFaceFixture({
+              description: "The national coat of arms",
+              imageUrl: "https://images.example/first-reverse.webp",
+              createdAt: "2026-09-16T10:31:00.000Z",
+              updatedAt: "2026-09-16T10:46:00.000Z",
+            }),
+            edge: {
+              description: "A lettered inscription",
+              imageUrl: "https://images.example/first-edge.webp",
+              createdAt: "2026-09-16T10:32:00.000Z",
+              updatedAt: "2026-09-16T10:47:00.000Z",
+            },
+          })
+        )
       )
     )
     vi.stubGlobal("fetch", fetchMock)
@@ -247,11 +232,7 @@ describe("Coin viewer route", () => {
     expect(
       screen.getByRole("img", { name: "Edge of First coin" })
     ).toHaveAttribute("src", "https://images.example/first-edge.webp")
-    expect(
-      screen.queryByText(
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-      )
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/Lorem ipsum/i)).not.toBeInTheDocument()
     const flag = screen.getByAltText("")
     expect(flag).toHaveAttribute("src", expect.stringMatching(/\/ar\.svg$/))
     expect(flag).toHaveAttribute("aria-hidden", "true")
@@ -267,47 +248,45 @@ describe("Coin viewer route", () => {
       "fetch",
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "Credited coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-            obverse: {
-              description: "Portrait",
-              imageUrl: null,
-              createdAt: "2026-09-16T10:30:00.000Z",
-              updatedAt: "2026-09-16T10:45:00.000Z",
-              engravers: [
-                {
-                  id: "30000000-0000-4000-8000-000000000002",
-                  fullName: "Second Engraver",
-                  createdAt: "2026-09-10T10:00:00.000Z",
-                  updatedAt: "2026-09-11T10:00:00.000Z",
-                },
-                {
-                  id: "30000000-0000-4000-8000-000000000001",
-                  fullName: "First Engraver",
-                  createdAt: "2026-09-08T10:00:00.000Z",
-                  updatedAt: "2026-09-09T10:00:00.000Z",
-                },
-              ],
-            },
-            reverse: {
-              description: "Arms",
-              imageUrl: null,
-              createdAt: "2026-09-16T10:31:00.000Z",
-              updatedAt: "2026-09-16T10:46:00.000Z",
-              engravers: [
-                {
-                  id: "30000000-0000-4000-8000-000000000003",
-                  fullName: "Reverse Engraver",
-                  createdAt: "2026-09-12T10:00:00.000Z",
-                  updatedAt: "2026-09-13T10:00:00.000Z",
-                },
-              ],
-            },
-          })
+          jsonResponse(
+            coinDetailFixture({
+              title: "Credited coin",
+              obverse: {
+                description: "Portrait",
+                imageUrl: null,
+                createdAt: "2026-09-16T10:30:00.000Z",
+                updatedAt: "2026-09-16T10:45:00.000Z",
+                engravers: [
+                  {
+                    id: "30000000-0000-4000-8000-000000000002",
+                    fullName: "Second Engraver",
+                    createdAt: "2026-09-10T10:00:00.000Z",
+                    updatedAt: "2026-09-11T10:00:00.000Z",
+                  },
+                  {
+                    id: "30000000-0000-4000-8000-000000000001",
+                    fullName: "First Engraver",
+                    createdAt: "2026-09-08T10:00:00.000Z",
+                    updatedAt: "2026-09-09T10:00:00.000Z",
+                  },
+                ],
+              },
+              reverse: {
+                description: "Arms",
+                imageUrl: null,
+                createdAt: "2026-09-16T10:31:00.000Z",
+                updatedAt: "2026-09-16T10:46:00.000Z",
+                engravers: [
+                  {
+                    id: "30000000-0000-4000-8000-000000000003",
+                    fullName: "Reverse Engraver",
+                    createdAt: "2026-09-12T10:00:00.000Z",
+                    updatedAt: "2026-09-13T10:00:00.000Z",
+                  },
+                ],
+              },
+            })
+          )
         )
       )
     )
@@ -328,23 +307,7 @@ describe("Coin viewer route", () => {
     const user = userEvent.setup()
     vi.stubGlobal(
       "fetch",
-      vi.fn(() =>
-        Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "First coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-            obverse: {
-              description: null,
-              imageUrl: null,
-              createdAt: null,
-              updatedAt: null,
-            },
-          })
-        )
-      )
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
     )
 
     renderCoinRoute()
@@ -388,14 +351,11 @@ describe("Coin viewer route", () => {
       "fetch",
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "First coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-            edge,
-          })
+          jsonResponse(
+            coinDetailFixture({
+              edge,
+            })
+          )
         )
       )
     )
@@ -420,25 +380,16 @@ describe("Coin viewer route", () => {
       "fetch",
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({
-            id: coinId,
-            title: "First coin",
-            issuer: { name: "Argentina", code: "AR" },
-            createdAt: "2026-09-16T10:00:00.000Z",
-            updatedAt: "2026-09-16T10:00:00.000Z",
-            obverse: {
-              description: null,
-              imageUrl: null,
-              createdAt: null,
-              updatedAt: null,
-            },
-            reverse: {
-              description: "The national coat of arms",
-              imageUrl: null,
-              createdAt: "2026-09-16T10:31:00.000Z",
-              updatedAt: "2026-09-16T10:46:00.000Z",
-            },
-          })
+          jsonResponse(
+            coinDetailFixture({
+              reverse: coinFaceFixture({
+                description: "The national coat of arms",
+                imageUrl: null,
+                createdAt: "2026-09-16T10:31:00.000Z",
+                updatedAt: "2026-09-16T10:46:00.000Z",
+              }),
+            })
+          )
         )
       )
     )
@@ -453,13 +404,12 @@ describe("Coin viewer route", () => {
   it("renders an Archive-defined Issuer without a flag or visible Issuer Code", async () => {
     const fetchMock = vi.fn(() =>
       Promise.resolve(
-        jsonResponse({
-          id: coinId,
-          title: "Roman coin",
-          issuer: { name: "Roman Empire", code: "ROMAN" },
-          createdAt: "2026-09-16T10:00:00.000Z",
-          updatedAt: "2026-09-16T10:00:00.000Z",
-        })
+        jsonResponse(
+          coinDetailFixture({
+            title: "Roman coin",
+            issuer: { name: "Roman Empire", code: "ROMAN" },
+          })
+        )
       )
     )
     vi.stubGlobal("fetch", fetchMock)

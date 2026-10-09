@@ -1048,6 +1048,28 @@ describe("Coin seed", () => {
         }),
       })
       await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000002")
+      ).resolves.toMatchObject({
+        obverse: expect.objectContaining({
+          kind: "obverse",
+          description: "The Treaty of Rome anniversary emblem.",
+          imageKey: "coin-placeholder2.webp",
+        }),
+        reverse: null,
+        edge: null,
+      })
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000003")
+      ).resolves.toMatchObject({
+        obverse: null,
+        reverse: expect.objectContaining({
+          kind: "reverse",
+          description: null,
+          imageKey: "coin-placeholder3.webp",
+        }),
+        edge: null,
+      })
+      await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000030")
       ).resolves.toMatchObject({
         id: "00000000-0000-4000-8000-000000000030",

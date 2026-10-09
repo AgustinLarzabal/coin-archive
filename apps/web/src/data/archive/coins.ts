@@ -1,9 +1,9 @@
 import { queryOptions } from "@tanstack/react-query"
 import {
+  coinDetailResponseSchema,
   coinIdSchema,
+  coinListResponseSchema,
   coinNotFoundErrorSchema,
-  compatibleCoinDetailResponseSchema,
-  compatibleCoinListResponseSchema,
   issuerCodeSchema,
 } from "@workspace/api"
 import type { CoinDetailResponse, CoinListResponse } from "@workspace/api"
@@ -41,7 +41,7 @@ async function getCoins(issuerCode?: string): Promise<CoinListResponse> {
   }
 
   try {
-    return compatibleCoinListResponseSchema.parse(await response.json())
+    return coinListResponseSchema.parse(await response.json())
   } catch (error) {
     throw new InvalidCoinListResponseError("Coin list response is invalid", {
       cause: error,
@@ -75,7 +75,7 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
   }
 
   try {
-    return compatibleCoinDetailResponseSchema.parse(await response.json())
+    return coinDetailResponseSchema.parse(await response.json())
   } catch (error) {
     throw new InvalidCoinResponseError("Coin response is invalid", {
       cause: error,

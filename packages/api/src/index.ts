@@ -91,30 +91,6 @@ export const coinListResponseSchema = z.strictObject({
 
 export type CoinListResponse = z.infer<typeof coinListResponseSchema>
 
-// Remove after the version-one Coin Surface rollout is complete.
-const compatibleCoinListItemResponseSchema = coinListItemResponseSchema
-  .partial({ obverseImageUrl: true, reverseImageUrl: true })
-  .strip()
-  .transform((coin) => ({
-    ...coin,
-    obverseImageUrl: coin.obverseImageUrl ?? null,
-    reverseImageUrl: coin.reverseImageUrl ?? null,
-  }))
-
-export const compatibleCoinListResponseSchema = z.object({
-  coins: z.array(compatibleCoinListItemResponseSchema),
-})
-
-const compatibleCoinSurfaceWithEngraversResponseSchema =
-  coinSurfaceWithEngraversResponseSchema
-    .partial({ engravers: true })
-    .strip()
-    .transform((surface) => ({
-      ...surface,
-      engravers: surface.engravers ?? [],
-    }))
-
-// Remove after the version-one Coin Surface rollout is complete.
 export const missingCoinSurfaceResponse: Readonly<CoinSurfaceResponse> =
   Object.freeze({
     description: null,
@@ -125,20 +101,6 @@ export const missingCoinSurfaceResponse: Readonly<CoinSurfaceResponse> =
 
 export const missingCoinSurfaceWithEngraversResponse: Readonly<CoinSurfaceWithEngraversResponse> =
   Object.freeze({ ...missingCoinSurfaceResponse, engravers: [] })
-
-export const compatibleCoinDetailResponseSchema = coinDetailResponseSchema
-  .extend({
-    obverse: compatibleCoinSurfaceWithEngraversResponseSchema,
-    reverse: compatibleCoinSurfaceWithEngraversResponseSchema,
-  })
-  .partial({ obverse: true, reverse: true, edge: true })
-  .strip()
-  .transform((coin) => ({
-    ...coin,
-    obverse: coin.obverse ?? { ...missingCoinSurfaceWithEngraversResponse },
-    reverse: coin.reverse ?? { ...missingCoinSurfaceWithEngraversResponse },
-    edge: coin.edge ?? { ...missingCoinSurfaceResponse },
-  }))
 
 function errorResponseSchema<
   const TCode extends string,

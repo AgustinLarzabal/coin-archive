@@ -58,10 +58,6 @@ export const coinSurfaces = pgTable(
       "coin_surfaces_image_key_format",
       sql`${table.imageKey} is null or (${table.imageKey} !~ '^/' and ${table.imageKey} !~* '^[a-z][a-z0-9+.-]*:' and ${table.imageKey} !~ '(^|/)[.]{1,2}(/|$)')`
     ),
-    check(
-      "coin_surfaces_has_catalogue_data",
-      sql`${table.description} is not null or ${table.imageKey} is not null`
-    ),
   ]
 )
 

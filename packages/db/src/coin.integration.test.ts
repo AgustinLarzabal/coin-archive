@@ -44,6 +44,51 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("persists a Coin Surface whose only catalogue data is an Engraver credit", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Credit-only Coin", issuerId: issuer.id })
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({ fullName: "Credited Engraver" })
+        .returning()
+
+      let obverseId = ""
+      await database.orm.transaction(async (transaction) => {
+        const [obverse] = await transaction
+          .insert(database.schema.coinSurfaces)
+          .values({ coinId: coin.id, kind: "obverse" })
+          .returning()
+        obverseId = obverse.id
+        await transaction.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: obverse.id,
+          engraverId: engraver.id,
+          position: 1,
+        })
+      })
+
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        obverse: {
+          description: null,
+          imageKey: null,
+          engravers: [engraver],
+        },
+      })
+      await expect(
+        database.orm.execute(sql`
+          delete from coin_surface_engravers
+          where coin_surface_id = ${obverseId}
+        `)
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
+
   it("reads ordered reusable Engraver credits on Obverse and Reverse", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -403,6 +448,34 @@ describe("Coin persistence", () => {
           values (${coin.id}, 'front')
         `)
       ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("evaluates sparse Coin Surface data from its final transaction state", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Deferred surface data", issuerId: issuer.id })
+        .returning()
+
+      await database.orm.transaction(async (transaction) => {
+        const [obverse] = await transaction
+          .insert(database.schema.coinSurfaces)
+          .values({ coinId: coin.id, kind: "obverse" })
+          .returning()
+        await transaction
+          .update(database.schema.coinSurfaces)
+          .set({ description: "Portrait added in the same transaction" })
+          .where(sql`${database.schema.coinSurfaces.id} = ${obverse.id}`)
+      })
+
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        obverse: { description: "Portrait added in the same transaction" },
+      })
     } finally {
       await database.close()
     }
@@ -963,6 +1036,36 @@ describe("Coin seed", () => {
     ],
   }
 
+  it("inserts a Coin Surface whose only seeded data is an Engraver credit", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, {
+        issuers: validSeed.issuers,
+        engravers: [validSeed.engravers[0]],
+        coins: [
+          {
+            id: SEEDED_COIN_ID,
+            title: "Credit-only Coin",
+            issuerCode: "AR",
+            obverse: { engraverIds: [FIRST_ENGRAVER_ID] },
+          },
+        ],
+      })
+
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({
+        obverse: {
+          description: null,
+          imageKey: null,
+          engravers: [{ id: FIRST_ENGRAVER_ID }],
+        },
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("inserts stable ordered Engravers and reuses them across Coin Surfaces", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -1092,6 +1195,7 @@ describe("Coin seed", () => {
       await expect(
         seedCoins(database, {
           issuers: validSeed.issuers,
+          engravers: validSeed.engravers,
           coins: [
             validSeed.coins[0],
             { id: "not-a-uuid", title: "Invalid", issuerCode: "AR" },
@@ -1117,6 +1221,7 @@ describe("Coin seed", () => {
       await expect(
         seedCoins(database, {
           issuers: validSeed.issuers,
+          engravers: validSeed.engravers,
           coins: [{ ...validSeed.coins[0], obverse }],
         })
       ).rejects.toThrow()
@@ -1134,6 +1239,7 @@ describe("Coin seed", () => {
         await expect(
           seedCoins(database, {
             issuers: [{ name: "Argentina", code }],
+            engravers: validSeed.engravers,
             coins: [{ ...validSeed.coins[0], issuerCode: code }],
           })
         ).rejects.toThrow()
@@ -1152,6 +1258,7 @@ describe("Coin seed", () => {
         await expect(
           seedCoins(database, {
             issuers: [{ name, code: "AR" }],
+            engravers: validSeed.engravers,
             coins: validSeed.coins,
           })
         ).rejects.toThrow()
@@ -1167,6 +1274,7 @@ describe("Coin seed", () => {
       "an unknown Coin relationship",
       {
         issuers: validSeed.issuers,
+        engravers: validSeed.engravers,
         coins: [{ ...validSeed.coins[0], issuerCode: "UY" }],
       },
     ],
@@ -1177,7 +1285,40 @@ describe("Coin seed", () => {
           ...validSeed.issuers,
           { name: "Argentine Republic", code: "AR" },
         ],
+        engravers: validSeed.engravers,
         coins: validSeed.coins,
+      },
+    ],
+    [
+      "a duplicate Engraver reference on one Coin Surface",
+      {
+        issuers: validSeed.issuers,
+        engravers: validSeed.engravers,
+        coins: [
+          {
+            ...validSeed.coins[0],
+            obverse: {
+              ...validSeed.coins[0].obverse,
+              engraverIds: [FIRST_ENGRAVER_ID, FIRST_ENGRAVER_ID],
+            },
+          },
+        ],
+      },
+    ],
+    [
+      "an unknown Engraver reference",
+      {
+        issuers: validSeed.issuers,
+        engravers: validSeed.engravers,
+        coins: [
+          {
+            ...validSeed.coins[0],
+            reverse: {
+              ...validSeed.coins[0].reverse,
+              engraverIds: ["30000000-0000-4000-8000-000000000099"],
+            },
+          },
+        ],
       },
     ],
   ])("validates %s before attempting writes", async (_case, seed) => {
@@ -1222,6 +1363,7 @@ describe("Coin seed", () => {
       await expect(
         seedCoins(database, {
           issuers: [{ name: "Uruguay", code: "UY" }],
+          engravers: validSeed.engravers,
           coins: [
             { ...validSeed.coins[0], issuerCode: "UY" },
             { id: duplicateId, title: "Duplicate", issuerCode: "UY" },

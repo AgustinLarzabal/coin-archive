@@ -42,14 +42,14 @@ const coinSurfaceSeedShape = {
   imageKey: imageKeySchema.optional(),
 }
 
-const hasCatalogueData = (surface: {
+const hasDescriptionOrImage = (surface: {
   description?: string
   imageKey?: string
 }) => surface.description !== undefined || surface.imageKey !== undefined
 
 const coinSurfaceSeedRecordSchema = z
   .strictObject(coinSurfaceSeedShape)
-  .refine(hasCatalogueData, {
+  .refine(hasDescriptionOrImage, {
     message: "Coin Surface must contain catalogue data",
   })
 
@@ -58,9 +58,13 @@ const coinSurfaceWithEngraversSeedRecordSchema = z
     ...coinSurfaceSeedShape,
     engraverIds: z.array(z.uuid()).optional(),
   })
-  .refine(hasCatalogueData, {
-    message: "Coin Surface must contain catalogue data",
-  })
+  .refine(
+    (surface) =>
+      hasDescriptionOrImage(surface) || (surface.engraverIds?.length ?? 0) > 0,
+    {
+      message: "Coin Surface must contain catalogue data",
+    }
+  )
 
 const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
   obverse: coinSurfaceWithEngraversSeedRecordSchema.optional(),
@@ -121,6 +125,7 @@ const seedDocumentSchema = z
         })
       }
       for (const kind of ["obverse", "reverse"] as const) {
+        const surfaceEngraverIds = new Set<string>()
         coin[kind]?.engraverIds?.forEach((engraverId, creditIndex) => {
           if (!engraverIds.has(engraverId)) {
             context.addIssue({
@@ -129,6 +134,14 @@ const seedDocumentSchema = z
               path: ["coins", index, kind, "engraverIds", creditIndex],
             })
           }
+          if (surfaceEngraverIds.has(engraverId)) {
+            context.addIssue({
+              code: "custom",
+              message: `Duplicate Engraver reference: ${engraverId}`,
+              path: ["coins", index, kind, "engraverIds", creditIndex],
+            })
+          }
+          surfaceEngraverIds.add(engraverId)
         })
       }
     })

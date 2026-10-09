@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { getRouter } from "@/router"
-import { coinDetailFixture, coinFaceFixture } from "@/test/coin-fixtures"
+import {
+  coinDetailFixture,
+  coinSurfaceWithEngraversFixture,
+} from "@/test/coin-fixtures"
 
 vi.mock("@tanstack/react-devtools", () => ({
   TanStackDevtools: () => null,
@@ -124,7 +127,7 @@ describe("Coin viewer route", () => {
         Promise.resolve(
           jsonResponse(
             coinDetailFixture({
-              obverse: coinFaceFixture({
+              obverse: coinSurfaceWithEngraversFixture({
                 description: "A portrait of the sovereign",
                 imageUrl: "https://images.example/first-obverse.webp",
                 createdAt: "2026-09-16T10:30:00.000Z",
@@ -183,13 +186,13 @@ describe("Coin viewer route", () => {
       Promise.resolve(
         jsonResponse(
           coinDetailFixture({
-            obverse: coinFaceFixture({
+            obverse: coinSurfaceWithEngraversFixture({
               description: "A portrait of the sovereign",
               imageUrl: "https://images.example/first-obverse.webp",
               createdAt: "2026-09-16T10:30:00.000Z",
               updatedAt: "2026-09-16T10:45:00.000Z",
             }),
-            reverse: coinFaceFixture({
+            reverse: coinSurfaceWithEngraversFixture({
               description: "The national coat of arms",
               imageUrl: "https://images.example/first-reverse.webp",
               createdAt: "2026-09-16T10:31:00.000Z",
@@ -382,7 +385,7 @@ describe("Coin viewer route", () => {
         Promise.resolve(
           jsonResponse(
             coinDetailFixture({
-              reverse: coinFaceFixture({
+              reverse: coinSurfaceWithEngraversFixture({
                 description: "The national coat of arms",
                 imageUrl: null,
                 createdAt: "2026-09-16T10:31:00.000Z",

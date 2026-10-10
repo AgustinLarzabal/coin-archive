@@ -1,12 +1,19 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { ExploreGrid } from "./components/explore-grid"
+import type { CoinListFilters } from "@/data/archive"
 import type { IssuerResponse } from "@workspace/api"
 import { RouteMessage } from "@/components/route-message"
 import { coinListQueryOptions } from "@/data/archive"
 
-export function Explore({ issuer }: { issuer?: IssuerResponse }) {
-  const { data } = useSuspenseQuery(coinListQueryOptions(issuer?.code))
+export function Explore({
+  filters,
+  issuer,
+}: {
+  filters: CoinListFilters
+  issuer?: IssuerResponse
+}) {
+  const { data } = useSuspenseQuery(coinListQueryOptions(filters))
 
   if (data.coins.length === 0) {
     return (

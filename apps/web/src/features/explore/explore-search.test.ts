@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { exploreSearchSchema } from "./explore-search"
+import {
+  exploreSearchSchema,
+  getExploreCoinListFilters,
+} from "./explore-search"
 
 describe("Explore search schema", () => {
   it("accepts a valid Issuer Code", () => {
@@ -21,4 +24,10 @@ describe("Explore search schema", () => {
       })
     }
   )
+
+  it("maps URL search state to Coin list filters", () => {
+    expect(getExploreCoinListFilters({ issuer: "AR" })).toEqual({
+      issuerCode: "AR",
+    })
+  })
 })

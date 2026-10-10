@@ -18,6 +18,7 @@ export {
   InvalidIssuerCodeError,
   validateCoinId,
 } from "./archive/coins"
+export type { CoinListFilters } from "./archive/coins"
 export {
   InvalidIssuerListResponseError,
   issuerListQueryOptions,

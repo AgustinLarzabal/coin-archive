@@ -10,28 +10,29 @@ import {
   issuerListQueryOptions,
 } from "@/data/archive"
 import { Explore } from "@/features/explore/explore"
+import { getExploreCoinListFilters } from "@/features/explore/explore-search"
 
 export const Route = createFileRoute("/_explore/")({
+  loaderDeps: ({ search }) => getExploreCoinListFilters(search),
+  loader: async ({ context, deps: filters }) => {
+    await context.queryClient.query(coinListQueryOptions(filters))
+  },
   component: ExploreRoute,
   errorComponent: ExploreError,
-  loaderDeps: ({ search: { issuer: issuerCode } }) => ({ issuerCode }),
-  loader: async ({ context, deps: { issuerCode } }) => {
-    await context.queryClient.query(coinListQueryOptions(issuerCode))
-  },
   pendingComponent: () => <RouteMessage>Loading coins…</RouteMessage>,
 })
 
 function ExploreRoute() {
-  const { issuer: issuerCode } = Route.useSearch()
+  const filters = Route.useLoaderDeps()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const selectedIssuer = issuerList.issuers.find(
-    (issuer) => issuer.code === issuerCode
+    (issuer) => issuer.code === filters.issuerCode
   )
 
-  return issuerCode && !selectedIssuer ? (
+  return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
   ) : (
-    <Explore issuer={selectedIssuer} />
+    <Explore filters={filters} issuer={selectedIssuer} />
   )
 }
 

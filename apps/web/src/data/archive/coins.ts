@@ -18,12 +18,22 @@ class CoinListRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 export class InvalidIssuerCodeError extends Error {}
 
-async function getCoins(issuerCode?: string): Promise<CoinListResponse> {
+export type CoinListFilters = Readonly<{
+  issuerCode?: string
+}>
+
+type ValidatedCoinListFilters = Readonly<{
+  issuerCode: string | null
+}>
+
+async function getCoins({
+  issuerCode,
+}: ValidatedCoinListFilters): Promise<CoinListResponse> {
   let response: Response
 
   try {
     const search = new URLSearchParams()
-    if (issuerCode !== undefined) {
+    if (issuerCode !== null) {
       search.set("issuer", issuerCode)
     }
     const query = search.size === 0 ? "" : `?${search.toString()}`
@@ -83,7 +93,8 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
   }
 }
 
-export function coinListQueryOptions(issuerCode?: string) {
+export function coinListQueryOptions(filters: CoinListFilters = {}) {
+  const { issuerCode } = filters
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
@@ -91,9 +102,13 @@ export function coinListQueryOptions(issuerCode?: string) {
     throw new InvalidIssuerCodeError("Invalid issuer code")
   }
 
+  const validatedFilters: ValidatedCoinListFilters = {
+    issuerCode: issuerCode ?? null,
+  }
+
   return queryOptions({
-    queryKey: ["coins", "list", issuerCode ?? null] as const,
-    queryFn: () => getCoins(issuerCode),
+    queryKey: ["coins", "list", validatedFilters] as const,
+    queryFn: () => getCoins(validatedFilters),
     staleTime: 30_000,
   })
 }

@@ -16,8 +16,8 @@ export const Route = createFileRoute("/_explore")({
     await context.queryClient.query(issuerListQueryOptions())
   },
   component: ExploreLayout,
-  pendingComponent: () => <RouteMessage>Loading coins…</RouteMessage>,
   errorComponent: ExploreLayoutError,
+  pendingComponent: () => <RouteMessage>Loading coins…</RouteMessage>,
 })
 
 function ExploreLayout() {

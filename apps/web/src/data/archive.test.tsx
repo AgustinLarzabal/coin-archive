@@ -231,7 +231,7 @@ describe("Archive data module", () => {
     },
     {
       ErrorType: InvalidIssuerCodeError,
-      route: ExploreRoute,
+      route: ExploreIndexRoute,
       message: "Invalid issuer code",
     },
   ])(

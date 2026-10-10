@@ -270,19 +270,25 @@ describe("Archive landing route", () => {
   })
 
   it.each(["", "ar", "A", "ABC_123"])(
-    "shows an error for malformed Issuer Code %j without rewriting or requesting",
+    "normalizes malformed Issuer Code %j to the unfiltered route",
     async (issuerCode) => {
-      const fetchMock = vi.fn(() =>
-        Promise.resolve(jsonResponse({ coins: [coin] }))
-      )
+      const fetchMock = vi.fn(createArchiveFetch())
       vi.stubGlobal("fetch", fetchMock)
       const search = `?issuer=${encodeURIComponent(issuerCode)}`
 
       const router = renderArchiveRoute(`/${search}`)
 
-      expect(await screen.findByText("Invalid issuer code")).toBeVisible()
-      expect(fetchMock).not.toHaveBeenCalled()
-      expect(router.state.location.searchStr).toBe(search)
+      expect(
+        await screen.findByRole("link", { name: "First coin" })
+      ).toBeVisible()
+      expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/coins")
+      expect(fetchMock).not.toHaveBeenCalledWith(
+        `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}`
+      )
+      expect(
+        screen.getByRole("combobox", { name: "Issuer" })
+      ).toHaveTextContent("All issuers")
+      expect(router.state.location.searchStr).toBe("")
     }
   )
 

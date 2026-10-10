@@ -4,31 +4,20 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
 import {
-  coinListQueryOptions,
-  InvalidIssuerCodeError,
   InvalidIssuerListResponseError,
   issuerListQueryOptions,
 } from "@/data/archive"
 import { ExploreFilters } from "@/features/explore/components/explore-filters"
+import { exploreSearchSchema } from "@/features/explore/explore-search"
 
 export const Route = createFileRoute("/_explore")({
-  component: ExploreLayout,
-  errorComponent: ExploreLayoutError,
-  validateSearch: (search): { issuer?: string } => ({
-    issuer:
-      search.issuer === undefined
-        ? undefined
-        : typeof search.issuer === "string"
-          ? search.issuer
-          : "",
-  }),
-  beforeLoad: ({ search: { issuer: issuerCode } }) => {
-    coinListQueryOptions(issuerCode)
-  },
+  validateSearch: exploreSearchSchema,
   loader: async ({ context }) => {
     await context.queryClient.query(issuerListQueryOptions())
   },
+  component: ExploreLayout,
   pendingComponent: () => <RouteMessage>Loading coins…</RouteMessage>,
+  errorComponent: ExploreLayoutError,
 })
 
 function ExploreLayout() {
@@ -48,9 +37,7 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
     <RouteMessage>
       {error instanceof InvalidIssuerListResponseError
         ? "Invalid issuer list response"
-        : error instanceof InvalidIssuerCodeError
-          ? "Invalid issuer code"
-          : "Unable to load coins"}
+        : "Unable to load coins"}
     </RouteMessage>
   )
 }

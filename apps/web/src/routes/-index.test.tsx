@@ -401,23 +401,38 @@ describe("Archive landing route", () => {
     expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
   })
 
-  it("shows request failures", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")))
-
-    renderArchiveRoute()
-
-    expect(await screen.findByText("Unable to load coins")).toBeInTheDocument()
-  })
-
-  it("shows server failures", async () => {
+  it("shows Coin request failures while preserving the filters", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(jsonResponse({ error: {} }, 503)))
+      vi.fn((input: string | URL | Request) =>
+        String(input).endsWith("/v1/issuers")
+          ? Promise.resolve(jsonResponse({ issuers }))
+          : Promise.reject(new TypeError("offline"))
+      )
     )
 
     renderArchiveRoute()
 
     expect(await screen.findByText("Unable to load coins")).toBeInTheDocument()
+    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
+  })
+
+  it("shows Coin server failures while preserving the filters", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: string | URL | Request) =>
+        Promise.resolve(
+          String(input).endsWith("/v1/issuers")
+            ? jsonResponse({ issuers })
+            : jsonResponse({ error: {} }, 503)
+        )
+      )
+    )
+
+    renderArchiveRoute()
+
+    expect(await screen.findByText("Unable to load coins")).toBeInTheDocument()
+    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
   })
 
   it("uses the route error state for an invalid Issuer response", async () => {
@@ -452,7 +467,7 @@ describe("Archive landing route", () => {
 
     renderArchiveRoute()
 
-    expect(await screen.findByText("Unable to load coins")).toBeVisible()
+    expect(await screen.findByText("Unable to load issuers")).toBeVisible()
     expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
   })
 

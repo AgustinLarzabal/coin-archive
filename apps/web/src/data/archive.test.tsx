@@ -233,10 +233,11 @@ describe("Archive data module", () => {
       ErrorType: InvalidIssuerCodeError,
       route: ExploreIndexRoute,
       message: "Invalid issuer code",
+      renderedMessage: "Unable to load coins",
     },
   ])(
     "preserves '$message' after SSR serialization",
-    async ({ ErrorType, route, message }) => {
+    async ({ ErrorType, route, message, renderedMessage }) => {
       const original = new ErrorType(message, {
         cause: new Error("Internal response details"),
       })
@@ -250,6 +251,7 @@ describe("Archive data module", () => {
 
       expect(restored).toBeInstanceOf(ErrorType)
       expect(restored).not.toBe(original)
+      expect(restored.message).toBe(message)
       expect(restored.cause).toBeUndefined()
       expect(payload).not.toContain("Internal response details")
       expect(payload).not.toContain(original.stack)
@@ -257,7 +259,7 @@ describe("Archive data module", () => {
       const ErrorComponent = route.options.errorComponent
       if (!ErrorComponent) throw new Error("Missing route error component")
       render(<ErrorComponent error={restored} reset={() => {}} />)
-      expect(screen.getByText(message)).toBeInTheDocument()
+      expect(screen.getByText(renderedMessage ?? message)).toBeInTheDocument()
     }
   )
 })

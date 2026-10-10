@@ -37,7 +37,7 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
     <RouteMessage>
       {error instanceof InvalidIssuerListResponseError
         ? "Invalid issuer list response"
-        : "Unable to load coins"}
+        : "Unable to load issuers"}
     </RouteMessage>
   )
 }

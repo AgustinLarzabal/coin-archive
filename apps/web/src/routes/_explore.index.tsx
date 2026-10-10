@@ -6,7 +6,6 @@ import { RouteMessage } from "@/components/route-message"
 import {
   coinListQueryOptions,
   InvalidCoinListResponseError,
-  InvalidIssuerCodeError,
   issuerListQueryOptions,
 } from "@/data/archive"
 import { Explore } from "@/features/explore/explore"
@@ -41,9 +40,7 @@ function ExploreError({ error }: ErrorComponentProps) {
     <RouteMessage>
       {error instanceof InvalidCoinListResponseError
         ? "Invalid coin list response"
-        : error instanceof InvalidIssuerCodeError
-          ? "Invalid issuer code"
-          : "Unable to load coins"}
+        : "Unable to load coins"}
     </RouteMessage>
   )
 }

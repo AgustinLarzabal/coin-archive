@@ -6,7 +6,7 @@ const MAX_COIN_ANIMATION_DELAY_MS = 240
 
 export function ExploreGrid({ coins }: { coins: Array<CoinListItemResponse> }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
       {coins.map((coin, index) => (
         <ExploreCoin
           key={coin.id}

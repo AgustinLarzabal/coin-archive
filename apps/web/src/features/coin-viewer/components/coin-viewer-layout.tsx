@@ -21,7 +21,7 @@ export function CoinViewerLayout({ coin }: { coin: CoinDetailResponse }) {
         variant="line"
         spacing={0}
         className="h-11 w-full lg:hidden"
-        onValueChange={([panel]) => {
+        onValueChange={([panel]: string[]) => {
           if (panel === "preview" || panel === "details") {
             setSelectedPanel(panel)
           }

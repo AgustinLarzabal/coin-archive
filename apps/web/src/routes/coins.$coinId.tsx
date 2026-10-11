@@ -12,8 +12,6 @@ import {
 import { CoinViewer } from "@/features/coin-viewer/components/coin-viewer"
 
 export const Route = createFileRoute("/coins/$coinId")({
-  component: CoinViewerRoute,
-  errorComponent: CoinViewerError,
   loader: async ({ context, params }) => {
     const coinId = validateCoinId(params.coinId)
     try {
@@ -25,8 +23,10 @@ export const Route = createFileRoute("/coins/$coinId")({
       throw error
     }
   },
-  notFoundComponent: () => <RouteMessage>Coin not found</RouteMessage>,
+  component: CoinViewerRoute,
+  errorComponent: CoinViewerError,
   pendingComponent: () => <RouteMessage>Loading coin…</RouteMessage>,
+  notFoundComponent: () => <RouteMessage>Coin not found</RouteMessage>,
 })
 
 function CoinViewerRoute() {
@@ -35,12 +35,13 @@ function CoinViewerRoute() {
 }
 
 function CoinViewerError({ error }: ErrorComponentProps) {
+  let message = "Unable to load coin"
+
   if (error instanceof InvalidCoinIdError) {
-    return <RouteMessage>Invalid coin identifier</RouteMessage>
-  }
-  if (error instanceof InvalidCoinResponseError) {
-    return <RouteMessage>Invalid coin response</RouteMessage>
+    message = "Invalid coin identifier"
+  } else if (error instanceof InvalidCoinResponseError) {
+    message = "Invalid coin response"
   }
 
-  return <RouteMessage>Unable to load coin</RouteMessage>
+  return <RouteMessage>{message}</RouteMessage>
 }

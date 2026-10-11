@@ -33,11 +33,10 @@ function ExploreLayout() {
 }
 
 function ExploreLayoutError({ error }: ErrorComponentProps) {
-  return (
-    <RouteMessage>
-      {error instanceof InvalidIssuerListResponseError
-        ? "Invalid issuer list response"
-        : "Unable to load issuers"}
-    </RouteMessage>
-  )
+  const message =
+    error instanceof InvalidIssuerListResponseError
+      ? "Invalid issuer list response"
+      : "Unable to load issuers"
+
+  return <RouteMessage>{message}</RouteMessage>
 }

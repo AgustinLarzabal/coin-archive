@@ -1,9 +1,6 @@
+import { isIsoIssuerCode } from "@workspace/api"
 import { Flag } from "@workspace/ui/components/flags/flag"
 import type { CoinDetailResponse } from "@workspace/api"
-
-function isIsoIssuerCode(code: string) {
-  return /^[A-Z]{2}$/.test(code)
-}
 
 export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
   return (

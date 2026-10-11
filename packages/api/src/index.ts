@@ -20,6 +20,10 @@ export const issuerCodeSchema = z
   .string()
   .regex(/^(?:[A-Z]{2}|[A-Z0-9-]{3,12})$/)
 
+export function isIsoIssuerCode(code: string) {
+  return /^[A-Z]{2}$/.test(code)
+}
+
 export const issuerResponseSchema = z.strictObject({
   name: z.string().min(1).max(200),
   code: issuerCodeSchema,

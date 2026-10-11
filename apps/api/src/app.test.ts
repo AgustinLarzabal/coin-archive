@@ -762,6 +762,39 @@ describe("API", () => {
   })
 
   describe("GET /v1/coins", () => {
+    it("passes one exact Engraver Slug to the Coin collection", async () => {
+      const listCoins = vi.fn(async () => [])
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?engraver=first-archive-engraver")
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get("cache-control")).toBe("no-store")
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        engraverSlug: "first-archive-engraver",
+      })
+      await expect(response.json()).resolves.toEqual({ coins: [] })
+    })
+
+    it("combines Issuer and Engraver filters for the Coin collection", async () => {
+      const listCoins = vi.fn(async () => [])
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?issuer=ROMAN&engraver=first-archive-engraver")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        issuerCode: "ROMAN",
+        engraverSlug: "first-archive-engraver",
+      })
+    })
+
     it("passes one exact Issuer Code to the Coin collection", async () => {
       const listCoins = vi.fn(async () => [])
 
@@ -830,6 +863,48 @@ describe("API", () => {
         error: {
           code: "invalid_issuer_code",
           message: "Issuer Code is invalid",
+        },
+      })
+    })
+
+    it.each(["", "First-Engraver", "ab", "first--engraver"])(
+      "rejects the malformed Engraver Slug %j without listing Coins",
+      async (engraverSlug) => {
+        const listCoins = vi.fn(async () => [])
+
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?engraver=${encodeURIComponent(engraverSlug)}`)
+
+        expect(response.status).toBe(400)
+        expect(response.headers.get("cache-control")).toBe("no-store")
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: {
+            code: "invalid_engraver_slug",
+            message: "Engraver Slug is invalid",
+          },
+        })
+      }
+    )
+
+    it("rejects multiple Engraver filters without listing Coins", async () => {
+      const listCoins = vi.fn(async () => [])
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?engraver=first-engraver&engraver=second-engraver")
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_engraver_slug",
+          message: "Engraver Slug is invalid",
         },
       })
     })
@@ -967,6 +1042,13 @@ describe("API", () => {
 
       expect(document.paths["/v1/coins"].get.parameters).toEqual([
         expect.objectContaining({
+          description: "Exact, case-sensitive Engraver Slug",
+          in: "query",
+          name: "engraver",
+          required: false,
+          schema: expect.objectContaining({ pattern: expect.any(String) }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Issuer Code",
           in: "query",
           name: "issuer",
@@ -986,7 +1068,12 @@ describe("API", () => {
           "400": expect.objectContaining({
             content: {
               "application/json": {
-                schema: { $ref: "#/components/schemas/InvalidIssuerCodeError" },
+                schema: {
+                  anyOf: [
+                    { $ref: "#/components/schemas/InvalidIssuerCodeError" },
+                    { $ref: "#/components/schemas/InvalidEngraverSlugError" },
+                  ],
+                },
               },
             },
           }),
@@ -1002,6 +1089,7 @@ describe("API", () => {
       expect(document.components.schemas).toEqual(
         expect.objectContaining({
           CoinListResponse: expect.any(Object),
+          InvalidEngraverSlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
           InternalError: expect.any(Object),
         })

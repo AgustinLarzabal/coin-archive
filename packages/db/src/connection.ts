@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm"
+import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { alias } from "drizzle-orm/pg-core"
 import { Pool } from "pg"
@@ -34,6 +34,7 @@ export type CoinListItem = schema.CoinRecord & {
 }
 
 export interface CoinListOptions {
+  engraverSlug?: string
   issuerCode?: string
 }
 
@@ -166,9 +167,44 @@ export function createDatabase(
           )
         )
         .where(
-          filters.issuerCode === undefined
-            ? undefined
-            : eq(schema.issuers.code, filters.issuerCode)
+          and(
+            filters.issuerCode === undefined
+              ? undefined
+              : eq(schema.issuers.code, filters.issuerCode),
+            filters.engraverSlug === undefined
+              ? undefined
+              : exists(
+                  orm
+                    .select({
+                      coinSurfaceId: schema.coinSurfaceEngravers.coinSurfaceId,
+                    })
+                    .from(schema.coinSurfaceEngravers)
+                    .innerJoin(
+                      schema.coinSurfaces,
+                      eq(
+                        schema.coinSurfaceEngravers.coinSurfaceId,
+                        schema.coinSurfaces.id
+                      )
+                    )
+                    .innerJoin(
+                      schema.engravers,
+                      eq(
+                        schema.coinSurfaceEngravers.engraverId,
+                        schema.engravers.id
+                      )
+                    )
+                    .where(
+                      and(
+                        eq(schema.coinSurfaces.coinId, schema.coins.id),
+                        inArray(schema.coinSurfaces.kind, [
+                          "obverse",
+                          "reverse",
+                        ]),
+                        eq(schema.engravers.slug, filters.engraverSlug)
+                      )
+                    )
+                )
+          )
         )
         .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
       return rows.map(({ coin, issuer, obverseImageKey, reverseImageKey }) => ({

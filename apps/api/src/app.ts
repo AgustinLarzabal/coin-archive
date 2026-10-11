@@ -7,8 +7,10 @@ import {
   coinListResponseSchema as sharedCoinListResponseSchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   engraverListResponseSchema as sharedEngraverListResponseSchema,
+  engraverSlugSchema,
   internalErrorSchema as sharedInternalErrorSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
+  invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   issuerCodeSchema,
   issuerListResponseSchema as sharedIssuerListResponseSchema,
@@ -78,6 +80,10 @@ const issuerListResponseSchema =
   sharedIssuerListResponseSchema.openapi("IssuerListResponse")
 
 const coinListQuerySchema = z.object({
+  engraver: engraverSlugSchema.optional().openapi({
+    description: "Exact, case-sensitive Engraver Slug",
+    param: { name: "engraver", in: "query" },
+  }),
   issuer: issuerCodeSchema.optional().openapi({
     description: "Exact, case-sensitive Issuer Code",
     param: { name: "issuer", in: "query" },
@@ -178,6 +184,12 @@ const invalidCoinIdErrorSchema =
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
   "InvalidIssuerCodeError"
 )
+const invalidEngraverSlugErrorSchema =
+  sharedInvalidEngraverSlugErrorSchema.openapi("InvalidEngraverSlugError")
+const invalidCoinListFilterErrorSchema = z.union([
+  invalidIssuerCodeErrorSchema,
+  invalidEngraverSlugErrorSchema,
+])
 const coinNotFoundErrorSchema =
   sharedCoinNotFoundErrorSchema.openapi("CoinNotFoundError")
 const internalErrorSchema = sharedInternalErrorSchema.openapi("InternalError")
@@ -221,8 +233,10 @@ const coinListRoute = createRoute({
       headers: operationalResponseHeaders,
     },
     400: {
-      content: { "application/json": { schema: invalidIssuerCodeErrorSchema } },
-      description: "The Issuer Code filter is malformed",
+      content: {
+        "application/json": { schema: invalidCoinListFilterErrorSchema },
+      },
+      description: "A Coin collection filter is malformed",
       headers: operationalResponseHeaders,
     },
     500: {
@@ -391,11 +405,13 @@ export function createApp(options: AppOptions) {
   app.openapi(
     coinListRoute,
     async (context) => {
-      const { issuer: issuerCode } = context.req.valid("query")
+      const { engraver: engraverSlug, issuer: issuerCode } =
+        context.req.valid("query")
       const listCoins = options.listCoins ?? (async () => [])
-      const coins = await (issuerCode === undefined
-        ? listCoins()
-        : listCoins({ issuerCode }))
+      const hasFilters = issuerCode !== undefined || engraverSlug !== undefined
+      const coins = await (hasFilters
+        ? listCoins({ engraverSlug, issuerCode })
+        : listCoins())
       const response = {
         coins: coins.map((coin) =>
           toCoinListItemResponse(coin, options.imageBaseUrl)
@@ -406,13 +422,23 @@ export function createApp(options: AppOptions) {
     },
     (result, context) => {
       if (!result.success) {
+        const invalidEngraver = result.error.issues.some(
+          (issue) => issue.path[0] === "engraver"
+        )
         return context.json(
-          {
-            error: {
-              code: "invalid_issuer_code" as const,
-              message: "Issuer Code is invalid" as const,
-            },
-          },
+          invalidEngraver
+            ? {
+                error: {
+                  code: "invalid_engraver_slug" as const,
+                  message: "Engraver Slug is invalid" as const,
+                },
+              }
+            : {
+                error: {
+                  code: "invalid_issuer_code" as const,
+                  message: "Issuer Code is invalid" as const,
+                },
+              },
           400
         )
       }

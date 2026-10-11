@@ -149,6 +149,11 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
   "Issuer Code is invalid"
 )
 
+export const invalidEngraverSlugErrorSchema = errorResponseSchema(
+  "invalid_engraver_slug",
+  "Engraver Slug is invalid"
+)
+
 export const coinNotFoundErrorSchema = errorResponseSchema(
   "coin_not_found",
   "Coin not found"

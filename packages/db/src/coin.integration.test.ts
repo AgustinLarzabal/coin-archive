@@ -812,6 +812,146 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("lists Coins credited to one Engraver on either face once and combines with Issuer filtering", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const argentina = await insertArgentina(database)
+      const [romanEmpire] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ name: "Roman Empire", code: "ROMAN" })
+        .returning()
+      const [selectedEngraver, otherEngraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values([
+          { slug: "selected-engraver", fullName: "Selected Engraver" },
+          { slug: "other-engraver", fullName: "Other Engraver" },
+        ])
+        .returning()
+      const bothFacesId = "00000000-0000-4000-8000-000000000001"
+      const obverseId = "00000000-0000-4000-8000-000000000002"
+      const reverseId = "00000000-0000-4000-8000-000000000003"
+      const edgeOnlyId = "00000000-0000-4000-8000-000000000004"
+      const otherEngraverId = "00000000-0000-4000-8000-000000000005"
+
+      await database.orm.insert(database.schema.coins).values([
+        {
+          id: bothFacesId,
+          title: "Both faces",
+          issuerId: romanEmpire.id,
+          createdAt: new Date("2026-09-17T10:00:00.000Z"),
+        },
+        {
+          id: obverseId,
+          title: "Obverse credit",
+          issuerId: romanEmpire.id,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          id: reverseId,
+          title: "Reverse credit",
+          issuerId: argentina.id,
+          createdAt: new Date("2026-09-18T10:00:00.000Z"),
+        },
+        {
+          id: edgeOnlyId,
+          title: "Edge only",
+          issuerId: romanEmpire.id,
+          createdAt: new Date("2026-09-19T10:00:00.000Z"),
+        },
+        {
+          id: otherEngraverId,
+          title: "Other Engraver",
+          issuerId: romanEmpire.id,
+          createdAt: new Date("2026-09-20T10:00:00.000Z"),
+        },
+      ])
+      const surfaces = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values([
+          { coinId: bothFacesId, kind: "obverse", description: "Portrait" },
+          { coinId: bothFacesId, kind: "reverse", description: "Arms" },
+          { coinId: obverseId, kind: "obverse", description: "Portrait" },
+          { coinId: reverseId, kind: "reverse", description: "Arms" },
+          { coinId: edgeOnlyId, kind: "edge", description: "Lettered" },
+          {
+            coinId: otherEngraverId,
+            kind: "obverse",
+            description: "Portrait",
+          },
+        ])
+        .returning()
+
+      const surface = (
+        coinId: string,
+        kind: "obverse" | "reverse" | "edge"
+      ) => {
+        const match = surfaces.find(
+          (candidate) => candidate.coinId === coinId && candidate.kind === kind
+        )
+        expect(match).toBeDefined()
+        return match!
+      }
+
+      await expect(
+        database.orm.insert(database.schema.coinSurfaceEngravers).values({
+          coinSurfaceId: surface(edgeOnlyId, "edge").id,
+          engraverId: selectedEngraver.id,
+          position: 1,
+        })
+      ).rejects.toThrow()
+
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values([
+        {
+          coinSurfaceId: surface(bothFacesId, "obverse").id,
+          engraverId: selectedEngraver.id,
+          position: 1,
+        },
+        {
+          coinSurfaceId: surface(bothFacesId, "reverse").id,
+          engraverId: selectedEngraver.id,
+          position: 1,
+        },
+        {
+          coinSurfaceId: surface(obverseId, "obverse").id,
+          engraverId: selectedEngraver.id,
+          position: 1,
+        },
+        {
+          coinSurfaceId: surface(reverseId, "reverse").id,
+          engraverId: selectedEngraver.id,
+          position: 1,
+        },
+        {
+          coinSurfaceId: surface(otherEngraverId, "obverse").id,
+          engraverId: otherEngraver.id,
+          position: 1,
+        },
+      ])
+
+      await expect(
+        database.listCoins({ engraverSlug: "selected-engraver" })
+      ).resolves.toEqual([
+        expect.objectContaining({ id: reverseId }),
+        expect.objectContaining({ id: bothFacesId }),
+        expect.objectContaining({ id: obverseId }),
+      ])
+      await expect(
+        database.listCoins({
+          issuerCode: "ROMAN",
+          engraverSlug: "selected-engraver",
+        })
+      ).resolves.toEqual([
+        expect.objectContaining({ id: bothFacesId }),
+        expect.objectContaining({ id: obverseId }),
+      ])
+      await expect(
+        database.listCoins({ engraverSlug: "unknown-engraver" })
+      ).resolves.toEqual([])
+    } finally {
+      await database.close()
+    }
+  })
+
   it("lists no Coins from an empty archive", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

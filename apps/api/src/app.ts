@@ -6,6 +6,7 @@ import {
   coinIdSchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
+  engraverListResponseSchema as sharedEngraverListResponseSchema,
   internalErrorSchema as sharedInternalErrorSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
@@ -22,12 +23,14 @@ import type {
   CoinDetailResponse,
   CoinListItemResponse,
   CoinListResponse,
+  EngraverListResponse,
   IssuerListResponse,
 } from "@workspace/api"
 import type {
   Coin,
   CoinListItem,
   CoinListOptions,
+  EngraverRecord,
   IssuerRecord,
 } from "@workspace/db"
 
@@ -37,6 +40,7 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
+  listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   log?: (line: string) => void
 }
@@ -67,6 +71,9 @@ const coinSchema = coinDetailResponseSchema
   .openapi("Coin")
 const coinListResponseSchema =
   sharedCoinListResponseSchema.openapi("CoinListResponse")
+const engraverListResponseSchema = sharedEngraverListResponseSchema.openapi(
+  "EngraverListResponse"
+)
 const issuerListResponseSchema =
   sharedIssuerListResponseSchema.openapi("IssuerListResponse")
 
@@ -243,6 +250,23 @@ const issuerListRoute = createRoute({
   },
 })
 
+const engraverListRoute = createRoute({
+  method: "get",
+  path: "/v1/engravers",
+  responses: {
+    200: {
+      content: { "application/json": { schema: engraverListResponseSchema } },
+      description: "A list of Engravers",
+      headers: operationalResponseHeaders,
+    },
+    500: {
+      content: { "application/json": { schema: internalErrorSchema } },
+      description: "Failed to list Engravers",
+      headers: operationalResponseHeaders,
+    },
+  },
+})
+
 const healthRoute = createRoute({
   method: "get",
   path: "/health",
@@ -293,6 +317,7 @@ const noStorePaths = new Set([
   "/openapi.json",
   "/ready",
   "/v1/coins",
+  "/v1/engravers",
   "/v1/issuers",
 ])
 
@@ -439,6 +464,15 @@ export function createApp(options: AppOptions) {
     const response = {
       issuers: issuers.map(({ name, code }) => ({ name, code })),
     } satisfies IssuerListResponse
+
+    return context.json(response, 200)
+  })
+
+  app.openapi(engraverListRoute, async (context) => {
+    const engravers = await (options.listEngravers ?? (async () => []))()
+    const response = {
+      engravers: engravers.map(({ slug, fullName }) => ({ slug, fullName })),
+    } satisfies EngraverListResponse
 
     return context.json(response, 200)
   })

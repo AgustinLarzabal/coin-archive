@@ -10,6 +10,7 @@ export interface Database {
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
+  listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   orm: ReturnType<typeof drizzle<typeof schema>>
   schema: typeof schema
@@ -177,6 +178,11 @@ export function createDatabase(
         reverseImageKey,
       }))
     },
+    listEngravers: () =>
+      orm
+        .select()
+        .from(schema.engravers)
+        .orderBy(asc(schema.engravers.fullName), asc(schema.engravers.slug)),
     listIssuers: () =>
       orm
         .select()

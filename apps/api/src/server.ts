@@ -41,6 +41,7 @@ const app = createApp({
   findCoinById: database.findCoinById,
   imageBaseUrl: config.imageBaseUrl,
   listCoins: database.listCoins,
+  listEngravers: database.listEngravers,
   listIssuers: database.listIssuers,
 })
 const server = serve(

@@ -77,6 +77,21 @@ export const engraverResponseSchema = z.strictObject({
 
 export type EngraverResponse = z.infer<typeof engraverResponseSchema>
 
+export const engraverListItemResponseSchema = z.strictObject({
+  slug: engraverSlugSchema,
+  fullName: z.string().min(1).max(200),
+})
+
+export type EngraverListItemResponse = z.infer<
+  typeof engraverListItemResponseSchema
+>
+
+export const engraverListResponseSchema = z.strictObject({
+  engravers: z.array(engraverListItemResponseSchema),
+})
+
+export type EngraverListResponse = z.infer<typeof engraverListResponseSchema>
+
 export const coinSurfaceWithEngraversResponseSchema =
   coinSurfaceResponseSchema.extend({
     engravers: z.array(engraverResponseSchema),

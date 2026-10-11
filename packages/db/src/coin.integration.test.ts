@@ -1064,6 +1064,57 @@ describe("Issuer persistence", () => {
   })
 })
 
+describe("Engraver collection", () => {
+  it("lists every Engraver by full name and then Slug, including uncredited Engravers", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [credited] = await database.orm
+        .insert(database.schema.engravers)
+        .values([
+          { slug: "zeta-engraver", fullName: "Duplicate Name" },
+          { slug: "alpha-engraver", fullName: "Duplicate Name" },
+          { slug: "uncredited-engraver", fullName: "Uncredited Engraver" },
+        ])
+        .returning()
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({ title: "Credited Coin", issuerId: issuer.id })
+        .returning()
+      const [obverse] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values({
+          coinId: coin.id,
+          kind: "obverse",
+          description: "Credited design",
+        })
+        .returning()
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values({
+        coinSurfaceId: obverse.id,
+        engraverId: credited.id,
+        position: 1,
+      })
+
+      await expect(database.listEngravers()).resolves.toEqual([
+        expect.objectContaining({
+          slug: "alpha-engraver",
+          fullName: "Duplicate Name",
+        }),
+        expect.objectContaining({
+          slug: "zeta-engraver",
+          fullName: "Duplicate Name",
+        }),
+        expect.objectContaining({
+          slug: "uncredited-engraver",
+          fullName: "Uncredited Engraver",
+        }),
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+})
+
 describe("Coin seed", () => {
   const validSeed = {
     issuers: [{ name: "Argentina", code: "AR" }],

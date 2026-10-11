@@ -5,9 +5,12 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
+  EngraverListRequestError,
   InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
+  InvalidEngraverListResponseError,
+  InvalidEngraverSlugError,
   InvalidIssuerCodeError,
   InvalidIssuerListResponseError,
 } from "./archive"
@@ -230,9 +233,26 @@ describe("Archive data module", () => {
       message: "Invalid issuer list response",
     },
     {
+      ErrorType: InvalidEngraverListResponseError,
+      route: ExploreRoute,
+      message: "Invalid engraver list response",
+    },
+    {
+      ErrorType: EngraverListRequestError,
+      route: ExploreRoute,
+      message: "Engraver list request failed",
+      renderedMessage: "Unable to load engravers",
+    },
+    {
       ErrorType: InvalidIssuerCodeError,
       route: ExploreIndexRoute,
       message: "Invalid issuer code",
+      renderedMessage: "Unable to load coins",
+    },
+    {
+      ErrorType: InvalidEngraverSlugError,
+      route: ExploreIndexRoute,
+      message: "Invalid engraver slug",
       renderedMessage: "Unable to load coins",
     },
   ])(

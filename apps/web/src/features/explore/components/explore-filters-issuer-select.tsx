@@ -10,6 +10,7 @@ import {
 import type { IssuerResponse } from "@workspace/api"
 
 type IssuerSelectProps = {
+  engraverSlug?: string
   issuerCode?: string
   issuers: Array<IssuerResponse>
 }
@@ -20,7 +21,11 @@ type IssuerOption = {
   disabled?: boolean
 }
 
-export function IssuerSelect({ issuerCode, issuers }: IssuerSelectProps) {
+export function IssuerSelect({
+  engraverSlug,
+  issuerCode,
+  issuers,
+}: IssuerSelectProps) {
   const navigate = useNavigate({ from: "/" })
   const unknownIssuerCode =
     issuerCode && !issuers.some((issuer) => issuer.code === issuerCode)
@@ -52,7 +57,10 @@ export function IssuerSelect({ issuerCode, issuers }: IssuerSelectProps) {
         onValueChange={(issuer: string | null) => {
           void navigate({
             to: "/",
-            search: issuer ? { issuer } : {},
+            search: {
+              engraver: engraverSlug,
+              issuer: issuer || undefined,
+            },
           })
         }}
       >

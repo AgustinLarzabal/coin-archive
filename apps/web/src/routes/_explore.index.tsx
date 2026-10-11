@@ -5,6 +5,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 import { RouteMessage } from "@/components/route-message"
 import {
   coinListQueryOptions,
+  engraverListQueryOptions,
   InvalidCoinListResponseError,
   issuerListQueryOptions,
 } from "@/data/archive"
@@ -24,14 +25,24 @@ export const Route = createFileRoute("/_explore/")({
 function ExploreRoute() {
   const filters = Route.useLoaderDeps()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
+  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const selectedIssuer = issuerList.issuers.find(
     (issuer) => issuer.code === filters.issuerCode
+  )
+  const selectedEngraver = engraverList.engravers.find(
+    (engraver) => engraver.slug === filters.engraverSlug
   )
 
   return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
+  ) : filters.engraverSlug && !selectedEngraver ? (
+    <RouteMessage>Engraver not found</RouteMessage>
   ) : (
-    <Explore filters={filters} issuer={selectedIssuer} />
+    <Explore
+      filters={filters}
+      issuer={selectedIssuer}
+      engraver={selectedEngraver}
+    />
   )
 }
 

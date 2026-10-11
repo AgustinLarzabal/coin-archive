@@ -4,6 +4,7 @@ import {
   coinIdSchema,
   coinListResponseSchema,
   coinNotFoundErrorSchema,
+  engraverSlugSchema,
   issuerCodeSchema,
 } from "@workspace/api"
 import type { CoinDetailResponse, CoinListResponse } from "@workspace/api"
@@ -17,16 +18,20 @@ export class InvalidCoinListResponseError extends Error {}
 class CoinListRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 export class InvalidIssuerCodeError extends Error {}
+export class InvalidEngraverSlugError extends Error {}
 
 export type CoinListFilters = Readonly<{
+  engraverSlug?: string
   issuerCode?: string
 }>
 
 type ValidatedCoinListFilters = Readonly<{
+  engraverSlug: string | null
   issuerCode: string | null
 }>
 
 async function getCoins({
+  engraverSlug,
   issuerCode,
 }: ValidatedCoinListFilters): Promise<CoinListResponse> {
   let response: Response
@@ -35,6 +40,9 @@ async function getCoins({
     const search = new URLSearchParams()
     if (issuerCode !== null) {
       search.set("issuer", issuerCode)
+    }
+    if (engraverSlug !== null) {
+      search.set("engraver", engraverSlug)
     }
     const query = search.size === 0 ? "" : `?${search.toString()}`
     response = await fetch(`${API_BASE_URL}/v1/coins${query}`)
@@ -94,15 +102,22 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 }
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
-  const { issuerCode } = filters
+  const { engraverSlug, issuerCode } = filters
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
   ) {
     throw new InvalidIssuerCodeError("Invalid issuer code")
   }
+  if (
+    engraverSlug !== undefined &&
+    !engraverSlugSchema.safeParse(engraverSlug).success
+  ) {
+    throw new InvalidEngraverSlugError("Invalid engraver slug")
+  }
 
   const validatedFilters: ValidatedCoinListFilters = {
+    engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
   }
 

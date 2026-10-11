@@ -5,7 +5,7 @@ import type { IssuerListResponse } from "@workspace/api"
 import { API_BASE_URL } from "@/config"
 
 export class InvalidIssuerListResponseError extends Error {}
-class IssuerListRequestError extends Error {}
+export class IssuerListRequestError extends Error {}
 
 async function getIssuers(): Promise<IssuerListResponse> {
   let response: Response

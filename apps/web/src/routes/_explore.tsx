@@ -4,8 +4,12 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
 import {
+  engraverListQueryOptions,
+  EngraverListRequestError,
+  InvalidEngraverListResponseError,
   InvalidIssuerListResponseError,
   issuerListQueryOptions,
+  IssuerListRequestError,
 } from "@/data/archive"
 import { ExploreFilters } from "@/features/explore/components/explore-filters"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
@@ -13,7 +17,10 @@ import { exploreSearchSchema } from "@/features/explore/explore-search"
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
   loader: async ({ context }) => {
-    await context.queryClient.query(issuerListQueryOptions())
+    await Promise.all([
+      context.queryClient.query(issuerListQueryOptions()),
+      context.queryClient.query(engraverListQueryOptions()),
+    ])
   },
   component: ExploreLayout,
   errorComponent: ExploreLayoutError,
@@ -21,12 +28,17 @@ export const Route = createFileRoute("/_explore")({
 })
 
 function ExploreLayout() {
-  const { issuer: issuerCode } = Route.useSearch()
+  const { engraver: engraverSlug, issuer: issuerCode } = Route.useSearch()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
+  useSuspenseQuery(engraverListQueryOptions())
 
   return (
     <main className="mt-18 mb-14 flex flex-1 flex-col">
-      <ExploreFilters issuerCode={issuerCode} issuers={issuerList.issuers} />
+      <ExploreFilters
+        engraverSlug={engraverSlug}
+        issuerCode={issuerCode}
+        issuers={issuerList.issuers}
+      />
       <Outlet />
     </main>
   )
@@ -34,9 +46,15 @@ function ExploreLayout() {
 
 function ExploreLayoutError({ error }: ErrorComponentProps) {
   const message =
-    error instanceof InvalidIssuerListResponseError
-      ? "Invalid issuer list response"
-      : "Unable to load issuers"
+    error instanceof InvalidEngraverListResponseError
+      ? "Invalid engraver list response"
+      : error instanceof InvalidIssuerListResponseError
+        ? "Invalid issuer list response"
+        : error instanceof EngraverListRequestError
+          ? "Unable to load engravers"
+          : error instanceof IssuerListRequestError
+            ? "Unable to load issuers"
+            : "Unable to load Explore filters"
 
   return <RouteMessage>{message}</RouteMessage>
 }

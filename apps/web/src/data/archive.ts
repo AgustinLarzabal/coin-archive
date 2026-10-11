@@ -4,9 +4,17 @@ import {
   InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
+  InvalidEngraverSlugError,
   InvalidIssuerCodeError,
 } from "./archive/coins"
-import { InvalidIssuerListResponseError } from "./archive/issuers"
+import {
+  EngraverListRequestError,
+  InvalidEngraverListResponseError,
+} from "./archive/engravers"
+import {
+  InvalidIssuerListResponseError,
+  IssuerListRequestError,
+} from "./archive/issuers"
 
 export {
   coinDetailQueryOptions,
@@ -15,13 +23,20 @@ export {
   InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
+  InvalidEngraverSlugError,
   InvalidIssuerCodeError,
   validateCoinId,
 } from "./archive/coins"
 export type { CoinListFilters } from "./archive/coins"
 export {
+  engraverListQueryOptions,
+  EngraverListRequestError,
+  InvalidEngraverListResponseError,
+} from "./archive/engravers"
+export {
   InvalidIssuerListResponseError,
   issuerListQueryOptions,
+  IssuerListRequestError,
 } from "./archive/issuers"
 
 function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
@@ -39,8 +54,15 @@ export const archiveErrorSerializationAdapters = [
   errorAdapter("InvalidCoinResponseError", InvalidCoinResponseError),
   errorAdapter("InvalidCoinListResponseError", InvalidCoinListResponseError),
   errorAdapter(
+    "InvalidEngraverListResponseError",
+    InvalidEngraverListResponseError
+  ),
+  errorAdapter("EngraverListRequestError", EngraverListRequestError),
+  errorAdapter(
     "InvalidIssuerListResponseError",
     InvalidIssuerListResponseError
   ),
+  errorAdapter("IssuerListRequestError", IssuerListRequestError),
   errorAdapter("InvalidIssuerCodeError", InvalidIssuerCodeError),
+  errorAdapter("InvalidEngraverSlugError", InvalidEngraverSlugError),
 ]

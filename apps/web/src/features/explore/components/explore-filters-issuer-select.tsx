@@ -9,19 +9,24 @@ import {
 } from "@workspace/ui/components/select"
 import type { IssuerResponse } from "@workspace/api"
 
-export function IssuerSelect({
-  issuerCode,
-  issuers,
-}: {
+type IssuerSelectProps = {
   issuerCode?: string
   issuers: Array<IssuerResponse>
-}) {
+}
+
+type IssuerOption = {
+  label: string
+  value: string
+  disabled?: boolean
+}
+
+export function IssuerSelect({ issuerCode, issuers }: IssuerSelectProps) {
   const navigate = useNavigate({ from: "/" })
   const unknownIssuerCode =
     issuerCode && !issuers.some((issuer) => issuer.code === issuerCode)
       ? issuerCode
       : undefined
-  const items = [
+  const items: Array<IssuerOption> = [
     { label: "All issuers", value: "" },
     ...issuers.map((issuer) => ({
       label: issuer.name,
@@ -32,6 +37,7 @@ export function IssuerSelect({
           {
             label: `Unknown issuer (${unknownIssuerCode})`,
             value: unknownIssuerCode,
+            disabled: true,
           },
         ]
       : []),
@@ -43,10 +49,10 @@ export function IssuerSelect({
         name="issuer"
         items={items}
         value={issuerCode ?? ""}
-        onValueChange={(issuer) => {
+        onValueChange={(issuer: string | null) => {
           void navigate({
             to: "/",
-            search: issuer === null || issuer === "" ? {} : { issuer },
+            search: issuer ? { issuer } : {},
           })
         }}
       >
@@ -59,17 +65,15 @@ export function IssuerSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="">All issuers</SelectItem>
-            {issuers.map((issuer) => (
-              <SelectItem key={issuer.code} value={issuer.code}>
-                {issuer.name}
+            {items.map((item) => (
+              <SelectItem
+                key={item.value}
+                value={item.value}
+                disabled={item.disabled}
+              >
+                {item.label}
               </SelectItem>
             ))}
-            {unknownIssuerCode && (
-              <SelectItem value={unknownIssuerCode} disabled>
-                Unknown issuer ({unknownIssuerCode})
-              </SelectItem>
-            )}
           </SelectGroup>
         </SelectContent>
       </Select>

@@ -1,0 +1,400 @@
+{
+  "id": "655a5fe9-3ae0-4584-92b3-76f882791cb3",
+  "prevId": "2f807acc-7a4e-470d-9582-aa15a2803900",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.coin_surface_engravers": {
+      "name": "coin_surface_engravers",
+      "schema": "",
+      "columns": {
+        "coin_surface_id": {
+          "name": "coin_surface_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engraver_id": {
+          "name": "engraver_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "coin_surface_engravers_coin_surface_id_coin_surfaces_id_fk": {
+          "name": "coin_surface_engravers_coin_surface_id_coin_surfaces_id_fk",
+          "tableFrom": "coin_surface_engravers",
+          "tableTo": "coin_surfaces",
+          "columnsFrom": ["coin_surface_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "coin_surface_engravers_engraver_id_engravers_id_fk": {
+          "name": "coin_surface_engravers_engraver_id_engravers_id_fk",
+          "tableFrom": "coin_surface_engravers",
+          "tableTo": "engravers",
+          "columnsFrom": ["engraver_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "coin_surface_engravers_coin_surface_id_engraver_id_pk": {
+          "name": "coin_surface_engravers_coin_surface_id_engraver_id_pk",
+          "columns": ["coin_surface_id", "engraver_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "coin_surface_engravers_surface_position_unique": {
+          "name": "coin_surface_engravers_surface_position_unique",
+          "nullsNotDistinct": false,
+          "columns": ["coin_surface_id", "position"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_surface_engravers_position_positive": {
+          "name": "coin_surface_engravers_position_positive",
+          "value": "\"coin_surface_engravers\".\"position\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_surfaces": {
+      "name": "coin_surfaces",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coin_id": {
+          "name": "coin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "coin_surface_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_key": {
+          "name": "image_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "coin_surfaces_coin_id_coins_id_fk": {
+          "name": "coin_surfaces_coin_id_coins_id_fk",
+          "tableFrom": "coin_surfaces",
+          "tableTo": "coins",
+          "columnsFrom": ["coin_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_surfaces_coin_id_kind_unique": {
+          "name": "coin_surfaces_coin_id_kind_unique",
+          "nullsNotDistinct": false,
+          "columns": ["coin_id", "kind"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_surfaces_description_length": {
+          "name": "coin_surfaces_description_length",
+          "value": "\"coin_surfaces\".\"description\" is null or length(\"coin_surfaces\".\"description\") between 1 and 10000"
+        },
+        "coin_surfaces_description_trimmed": {
+          "name": "coin_surfaces_description_trimmed",
+          "value": "\"coin_surfaces\".\"description\" is null or \"coin_surfaces\".\"description\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "coin_surfaces_image_key_length": {
+          "name": "coin_surfaces_image_key_length",
+          "value": "\"coin_surfaces\".\"image_key\" is null or octet_length(\"coin_surfaces\".\"image_key\") between 1 and 1024"
+        },
+        "coin_surfaces_image_key_trimmed": {
+          "name": "coin_surfaces_image_key_trimmed",
+          "value": "\"coin_surfaces\".\"image_key\" is null or \"coin_surfaces\".\"image_key\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "coin_surfaces_image_key_format": {
+          "name": "coin_surfaces_image_key_format",
+          "value": "\"coin_surfaces\".\"image_key\" is null or (\"coin_surfaces\".\"image_key\" !~ '^/' and \"coin_surfaces\".\"image_key\" !~* '^[a-z][a-z0-9+.-]*:' and \"coin_surfaces\".\"image_key\" !~ '(^|/)[.]{1,2}(/|$)')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coins": {
+      "name": "coins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "issuer_id": {
+          "name": "issuer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "coins_issuer_id_issuers_id_fk": {
+          "name": "coins_issuer_id_issuers_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "issuers",
+          "columnsFrom": ["issuer_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "coins_title_not_empty": {
+          "name": "coins_title_not_empty",
+          "value": "length(\"coins\".\"title\") >= 1"
+        },
+        "coins_title_trimmed": {
+          "name": "coins_title_trimmed",
+          "value": "\"coins\".\"title\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.engravers": {
+      "name": "engravers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "engravers_slug_unique": {
+          "name": "engravers_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "engravers_slug_min_length": {
+          "name": "engravers_slug_min_length",
+          "value": "length(\"engravers\".\"slug\") >= 3"
+        },
+        "engravers_slug_format": {
+          "name": "engravers_slug_format",
+          "value": "\"engravers\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "engravers_full_name_not_empty": {
+          "name": "engravers_full_name_not_empty",
+          "value": "length(\"engravers\".\"full_name\") >= 1"
+        },
+        "engravers_full_name_trimmed": {
+          "name": "engravers_full_name_trimmed",
+          "value": "\"engravers\".\"full_name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.issuers": {
+      "name": "issuers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "issuers_code_unique": {
+          "name": "issuers_code_unique",
+          "nullsNotDistinct": false,
+          "columns": ["code"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "issuers_name_not_empty": {
+          "name": "issuers_name_not_empty",
+          "value": "length(\"issuers\".\"name\") >= 1"
+        },
+        "issuers_name_trimmed": {
+          "name": "issuers_name_trimmed",
+          "value": "\"issuers\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "issuers_code_format": {
+          "name": "issuers_code_format",
+          "value": "\"issuers\".\"code\" ~ '^(?:[A-Z]{2}|[A-Z0-9-]{3,12})$'"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.coin_surface_kind": {
+      "name": "coin_surface_kind",
+      "schema": "public",
+      "values": ["obverse", "reverse", "edge"]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

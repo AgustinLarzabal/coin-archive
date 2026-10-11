@@ -20,6 +20,12 @@ export const issuerCodeSchema = z
   .string()
   .regex(/^(?:[A-Z]{2}|[A-Z0-9-]{3,12})$/)
 
+export const engraverSlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
 export function isIsoIssuerCode(code: string) {
   return /^[A-Z]{2}$/.test(code)
 }
@@ -63,7 +69,7 @@ export const coinSurfaceResponseSchema = z.strictObject({
 export type CoinSurfaceResponse = z.infer<typeof coinSurfaceResponseSchema>
 
 export const engraverResponseSchema = z.strictObject({
-  id: z.uuid(),
+  slug: engraverSlugSchema,
   fullName: z.string().min(1).max(200),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

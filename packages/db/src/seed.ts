@@ -30,6 +30,12 @@ const imageKeySchema = z
     { message: "Coin Surface image location must be an R2 object key" }
   )
 
+const engraverSlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
 const coinSurfaceSeedShape = {
   description: z
     .string()
@@ -56,11 +62,12 @@ const coinSurfaceSeedRecordSchema = z
 const coinSurfaceWithEngraversSeedRecordSchema = z
   .strictObject({
     ...coinSurfaceSeedShape,
-    engraverIds: z.array(z.uuid()).optional(),
+    engraverSlugs: z.array(engraverSlugSchema).optional(),
   })
   .refine(
     (surface) =>
-      hasDescriptionOrImage(surface) || (surface.engraverIds?.length ?? 0) > 0,
+      hasDescriptionOrImage(surface) ||
+      (surface.engraverSlugs?.length ?? 0) > 0,
     {
       message: "Coin Surface must contain catalogue data",
     }
@@ -77,7 +84,7 @@ const seedDocumentSchema = z
     issuers: z.array(issuerSeedRecordSchema),
     engravers: z.array(
       z.strictObject({
-        id: z.uuid(),
+        slug: engraverSlugSchema,
         fullName: z
           .string()
           .min(1)
@@ -92,7 +99,7 @@ const seedDocumentSchema = z
   .strict()
   .superRefine((document, context) => {
     const issuerCodes = new Set<string>()
-    const engraverIds = new Set<string>()
+    const engraverSlugs = new Set<string>()
 
     document.issuers.forEach((issuer, index) => {
       if (issuerCodes.has(issuer.code)) {
@@ -106,14 +113,14 @@ const seedDocumentSchema = z
     })
 
     document.engravers.forEach((engraver, index) => {
-      if (engraverIds.has(engraver.id)) {
+      if (engraverSlugs.has(engraver.slug)) {
         context.addIssue({
           code: "custom",
-          message: `Duplicate Engraver ID: ${engraver.id}`,
-          path: ["engravers", index, "id"],
+          message: `Duplicate Engraver Slug: ${engraver.slug}`,
+          path: ["engravers", index, "slug"],
         })
       }
-      engraverIds.add(engraver.id)
+      engraverSlugs.add(engraver.slug)
     })
 
     document.coins.forEach((coin, index) => {
@@ -125,23 +132,23 @@ const seedDocumentSchema = z
         })
       }
       for (const kind of ["obverse", "reverse"] as const) {
-        const surfaceEngraverIds = new Set<string>()
-        coin[kind]?.engraverIds?.forEach((engraverId, creditIndex) => {
-          if (!engraverIds.has(engraverId)) {
+        const surfaceEngraverSlugs = new Set<string>()
+        coin[kind]?.engraverSlugs?.forEach((engraverSlug, creditIndex) => {
+          if (!engraverSlugs.has(engraverSlug)) {
             context.addIssue({
               code: "custom",
-              message: `Coin Surface references unknown Engraver ID: ${engraverId}`,
-              path: ["coins", index, kind, "engraverIds", creditIndex],
+              message: `Coin Surface references unknown Engraver Slug: ${engraverSlug}`,
+              path: ["coins", index, kind, "engraverSlugs", creditIndex],
             })
           }
-          if (surfaceEngraverIds.has(engraverId)) {
+          if (surfaceEngraverSlugs.has(engraverSlug)) {
             context.addIssue({
               code: "custom",
-              message: `Duplicate Engraver reference: ${engraverId}`,
-              path: ["coins", index, kind, "engraverIds", creditIndex],
+              message: `Duplicate Engraver reference: ${engraverSlug}`,
+              path: ["coins", index, kind, "engraverSlugs", creditIndex],
             })
           }
-          surfaceEngraverIds.add(engraverId)
+          surfaceEngraverSlugs.add(engraverSlug)
         })
       }
     })
@@ -149,13 +156,24 @@ const seedDocumentSchema = z
 
 export type CoinSeedDocument = z.infer<typeof seedDocumentSchema>
 
+export function parseCoinSeedDocument(input: unknown): CoinSeedDocument {
+  return seedDocumentSchema.parse(input)
+}
+
 export async function seedCoins(database: Database, input: unknown) {
-  const document = seedDocumentSchema.parse(input)
+  const document = parseCoinSeedDocument(input)
 
   await database.orm.transaction(async (transaction) => {
-    if (document.engravers.length > 0) {
-      await transaction.insert(engravers).values(document.engravers)
-    }
+    const insertedEngravers =
+      document.engravers.length === 0
+        ? []
+        : await transaction
+            .insert(engravers)
+            .values(document.engravers)
+            .returning({ id: engravers.id, slug: engravers.slug })
+    const engraverIdsBySlug = new Map(
+      insertedEngravers.map((engraver) => [engraver.slug, engraver.id])
+    )
     const insertedIssuers = await transaction
       .insert(issuers)
       .values(document.issuers)
@@ -227,14 +245,18 @@ export async function seedCoins(database: Database, input: unknown) {
       const credits = document.coins.flatMap((coin) =>
         (["obverse", "reverse"] as const).flatMap((kind) => {
           const surface = coin[kind]
-          if (!surface?.engraverIds) return []
+          if (!surface?.engraverSlugs) return []
           const coinSurfaceId = surfaceIds.get(`${coin.id}:${kind}`)
           if (!coinSurfaceId) throw new Error(`Missing seeded ${kind}`)
-          return surface.engraverIds.map((engraverId, index) => ({
-            coinSurfaceId,
-            engraverId,
-            position: index + 1,
-          }))
+          return surface.engraverSlugs.map((engraverSlug, index) => {
+            const engraverId = engraverIdsBySlug.get(engraverSlug)
+            if (!engraverId) {
+              throw new Error(
+                `Coin Surface references unknown Engraver Slug: ${engraverSlug}`
+              )
+            }
+            return { coinSurfaceId, engraverId, position: index + 1 }
+          })
         })
       )
       if (credits.length > 0) {

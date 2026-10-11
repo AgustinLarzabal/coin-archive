@@ -14,8 +14,8 @@ import {
 } from "./index.js"
 
 const SEEDED_COIN_ID = "00000000-0000-4000-8000-000000000001"
-const FIRST_ENGRAVER_ID = "30000000-0000-4000-8000-000000000001"
-const SECOND_ENGRAVER_ID = "30000000-0000-4000-8000-000000000002"
+const FIRST_ENGRAVER_SLUG = "first-engraver"
+const SECOND_ENGRAVER_SLUG = "second-engraver"
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
   const [issuer] = await database.orm
@@ -44,6 +44,61 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("requires stable unique Engraver Slugs while allowing duplicate full names", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [engraver, sameName] = await database.orm
+        .insert(database.schema.engravers)
+        .values([
+          { slug: "first-engraver", fullName: "Reusable Engraver" },
+          { slug: "second-engraver", fullName: "Reusable Engraver" },
+        ])
+        .returning()
+
+      expect(sameName.fullName).toBe(engraver.fullName)
+      await expect(
+        database.orm.execute(
+          sql`insert into engravers (full_name) values ('Missing Slug')`
+        )
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.engravers).values({
+          slug: engraver.slug,
+          fullName: "Different Name",
+        })
+      ).rejects.toThrow()
+      for (const slug of [
+        "ab",
+        "a".repeat(65),
+        "Invalid-slug",
+        "invalid_slug",
+        "-invalid-slug",
+        "invalid-slug-",
+        "invalid--slug",
+      ]) {
+        await expect(
+          database.orm.insert(database.schema.engravers).values({
+            slug,
+            fullName: "Invalid Slug",
+          })
+        ).rejects.toThrow()
+      }
+
+      await database.orm
+        .update(database.schema.engravers)
+        .set({ fullName: "Updated Engraver" })
+        .where(sql`${database.schema.engravers.id} = ${engraver.id}`)
+      const [updated] = await database.orm
+        .select()
+        .from(database.schema.engravers)
+        .where(sql`${database.schema.engravers.id} = ${engraver.id}`)
+
+      expect(updated.slug).toBe("first-engraver")
+    } finally {
+      await database.close()
+    }
+  })
+
   it("persists a Coin Surface whose only catalogue data is an Engraver credit", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -54,7 +109,7 @@ describe("Coin persistence", () => {
         .returning()
       const [engraver] = await database.orm
         .insert(database.schema.engravers)
-        .values({ fullName: "Credited Engraver" })
+        .values({ slug: "credited-engraver", fullName: "Credited Engraver" })
         .returning()
 
       let obverseId = ""
@@ -107,8 +162,8 @@ describe("Coin persistence", () => {
       const [first, second] = await database.orm
         .insert(database.schema.engravers)
         .values([
-          { fullName: "First Engraver" },
-          { fullName: "Second Engraver" },
+          { slug: "first-engraver", fullName: "First Engraver" },
+          { slug: "second-engraver", fullName: "Second Engraver" },
         ])
         .returning()
 
@@ -148,8 +203,8 @@ describe("Coin persistence", () => {
       const [engraver, sameName] = await database.orm
         .insert(database.schema.engravers)
         .values([
-          { fullName: "Reusable Engraver" },
-          { fullName: "Reusable Engraver" },
+          { slug: "reusable-engraver", fullName: "Reusable Engraver" },
+          { slug: "same-name-engraver", fullName: "Reusable Engraver" },
         ])
         .returning()
 
@@ -161,7 +216,7 @@ describe("Coin persistence", () => {
       await expect(
         database.orm
           .insert(database.schema.engravers)
-          .values({ fullName: " padded" })
+          .values({ slug: "padded-engraver", fullName: " padded" })
       ).rejects.toThrow()
       await expect(
         database.orm.insert(database.schema.coinSurfaceEngravers).values({
@@ -260,7 +315,10 @@ describe("Coin persistence", () => {
         .returning()
       const [engraver] = await database.orm
         .insert(database.schema.engravers)
-        .values({ fullName: "Concurrent Engraver" })
+        .values({
+          slug: "concurrent-engraver",
+          fullName: "Concurrent Engraver",
+        })
         .returning()
 
       let creditInserted: () => void = () => {}
@@ -641,7 +699,7 @@ describe("Coin persistence", () => {
         .returning()
       const [engraver] = await database.orm
         .insert(database.schema.engravers)
-        .values({ fullName: "Surviving Engraver" })
+        .values({ slug: "surviving-engraver", fullName: "Surviving Engraver" })
         .returning()
       await database.orm.insert(database.schema.coinSurfaceEngravers).values({
         coinSurfaceId: surface.id,
@@ -1010,8 +1068,8 @@ describe("Coin seed", () => {
   const validSeed = {
     issuers: [{ name: "Argentina", code: "AR" }],
     engravers: [
-      { id: FIRST_ENGRAVER_ID, fullName: "First Engraver" },
-      { id: SECOND_ENGRAVER_ID, fullName: "Second Engraver" },
+      { slug: FIRST_ENGRAVER_SLUG, fullName: "First Engraver" },
+      { slug: SECOND_ENGRAVER_SLUG, fullName: "Second Engraver" },
     ],
     coins: [
       {
@@ -1021,12 +1079,12 @@ describe("Coin seed", () => {
         obverse: {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
-          engraverIds: [SECOND_ENGRAVER_ID, FIRST_ENGRAVER_ID],
+          engraverSlugs: [SECOND_ENGRAVER_SLUG, FIRST_ENGRAVER_SLUG],
         },
         reverse: {
           description: "The national coat of arms",
           imageKey: "coins/first/reverse.webp",
-          engraverIds: [FIRST_ENGRAVER_ID],
+          engraverSlugs: [FIRST_ENGRAVER_SLUG],
         },
         edge: {
           description: "A lettered inscription",
@@ -1047,7 +1105,7 @@ describe("Coin seed", () => {
             id: SEEDED_COIN_ID,
             title: "Credit-only Coin",
             issuerCode: "AR",
-            obverse: { engraverIds: [FIRST_ENGRAVER_ID] },
+            obverse: { engraverSlugs: [FIRST_ENGRAVER_SLUG] },
           },
         ],
       })
@@ -1058,7 +1116,7 @@ describe("Coin seed", () => {
         obverse: {
           description: null,
           imageKey: null,
-          engravers: [{ id: FIRST_ENGRAVER_ID }],
+          engravers: [{ slug: FIRST_ENGRAVER_SLUG }],
         },
       })
     } finally {
@@ -1076,12 +1134,14 @@ describe("Coin seed", () => {
       ).resolves.toMatchObject({
         obverse: {
           engravers: [
-            { id: SECOND_ENGRAVER_ID, fullName: "Second Engraver" },
-            { id: FIRST_ENGRAVER_ID, fullName: "First Engraver" },
+            { slug: SECOND_ENGRAVER_SLUG, fullName: "Second Engraver" },
+            { slug: FIRST_ENGRAVER_SLUG, fullName: "First Engraver" },
           ],
         },
         reverse: {
-          engravers: [{ id: FIRST_ENGRAVER_ID, fullName: "First Engraver" }],
+          engravers: [
+            { slug: FIRST_ENGRAVER_SLUG, fullName: "First Engraver" },
+          ],
         },
         edge: expect.not.objectContaining({ engravers: expect.anything() }),
       })
@@ -1299,7 +1359,7 @@ describe("Coin seed", () => {
             ...validSeed.coins[0],
             obverse: {
               ...validSeed.coins[0].obverse,
-              engraverIds: [FIRST_ENGRAVER_ID, FIRST_ENGRAVER_ID],
+              engraverSlugs: [FIRST_ENGRAVER_SLUG, FIRST_ENGRAVER_SLUG],
             },
           },
         ],
@@ -1315,7 +1375,7 @@ describe("Coin seed", () => {
             ...validSeed.coins[0],
             reverse: {
               ...validSeed.coins[0].reverse,
-              engraverIds: ["30000000-0000-4000-8000-000000000099"],
+              engraverSlugs: ["unknown-engraver"],
             },
           },
         ],

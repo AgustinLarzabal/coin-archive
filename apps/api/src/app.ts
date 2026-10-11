@@ -117,7 +117,7 @@ function toCoinSurfaceWithEngraversResponse(
   return {
     ...toCoinSurfaceResponse(surface, imageBaseUrl),
     engravers: surface.engravers.map((engraver) => ({
-      id: engraver.id,
+      slug: engraver.slug,
       fullName: engraver.fullName,
       createdAt: engraver.createdAt.toISOString(),
       updatedAt: engraver.updatedAt.toISOString(),

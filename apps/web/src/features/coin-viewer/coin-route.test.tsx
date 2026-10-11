@@ -261,13 +261,13 @@ describe("Coin viewer route", () => {
                 updatedAt: "2026-09-16T10:45:00.000Z",
                 engravers: [
                   {
-                    id: "30000000-0000-4000-8000-000000000002",
+                    slug: "second-engraver",
                     fullName: "Second Engraver",
                     createdAt: "2026-09-10T10:00:00.000Z",
                     updatedAt: "2026-09-11T10:00:00.000Z",
                   },
                   {
-                    id: "30000000-0000-4000-8000-000000000001",
+                    slug: "first-engraver",
                     fullName: "First Engraver",
                     createdAt: "2026-09-08T10:00:00.000Z",
                     updatedAt: "2026-09-09T10:00:00.000Z",
@@ -281,7 +281,7 @@ describe("Coin viewer route", () => {
                 updatedAt: "2026-09-16T10:46:00.000Z",
                 engravers: [
                   {
-                    id: "30000000-0000-4000-8000-000000000003",
+                    slug: "reverse-engraver",
                     fullName: "Reverse Engraver",
                     createdAt: "2026-09-12T10:00:00.000Z",
                     updatedAt: "2026-09-13T10:00:00.000Z",

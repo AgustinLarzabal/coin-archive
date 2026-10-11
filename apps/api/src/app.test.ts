@@ -321,12 +321,14 @@ describe("API", () => {
         engravers: [
           {
             id: "30000000-0000-4000-8000-000000000002",
+            slug: "second-engraver",
             fullName: "Second Engraver",
             createdAt: new Date("2026-09-10T10:00:00.000Z"),
             updatedAt: new Date("2026-09-11T10:00:00.000Z"),
           },
           {
             id: "30000000-0000-4000-8000-000000000001",
+            slug: "first-engraver",
             fullName: "First Engraver",
             createdAt: new Date("2026-09-08T10:00:00.000Z"),
             updatedAt: new Date("2026-09-09T10:00:00.000Z"),
@@ -344,6 +346,7 @@ describe("API", () => {
         engravers: [
           {
             id: "30000000-0000-4000-8000-000000000001",
+            slug: "first-engraver",
             fullName: "First Engraver",
             createdAt: new Date("2026-09-08T10:00:00.000Z"),
             updatedAt: new Date("2026-09-09T10:00:00.000Z"),
@@ -385,13 +388,13 @@ describe("API", () => {
           updatedAt: "2026-09-16T10:45:00.000Z",
           engravers: [
             {
-              id: "30000000-0000-4000-8000-000000000002",
+              slug: "second-engraver",
               fullName: "Second Engraver",
               createdAt: "2026-09-10T10:00:00.000Z",
               updatedAt: "2026-09-11T10:00:00.000Z",
             },
             {
-              id: "30000000-0000-4000-8000-000000000001",
+              slug: "first-engraver",
               fullName: "First Engraver",
               createdAt: "2026-09-08T10:00:00.000Z",
               updatedAt: "2026-09-09T10:00:00.000Z",
@@ -406,7 +409,7 @@ describe("API", () => {
           updatedAt: "2026-09-16T10:46:00.000Z",
           engravers: [
             {
-              id: "30000000-0000-4000-8000-000000000001",
+              slug: "first-engraver",
               fullName: "First Engraver",
               createdAt: "2026-09-08T10:00:00.000Z",
               updatedAt: "2026-09-09T10:00:00.000Z",
@@ -520,7 +523,7 @@ describe("API", () => {
             updatedAt: "2026-09-16T10:46:00.000Z",
             engravers: [
               {
-                id: "30000000-0000-4000-8000-000000000001",
+                slug: "first-engraver",
                 fullName: "First Engraver",
                 createdAt: "2026-09-08T10:00:00.000Z",
                 updatedAt: "2026-09-09T10:00:00.000Z",
@@ -570,13 +573,13 @@ describe("API", () => {
           updatedAt: "2026-09-16T10:45:00.000Z",
           engravers: [
             {
-              id: "30000000-0000-4000-8000-000000000002",
+              slug: "second-engraver",
               fullName: "Second Engraver",
               createdAt: "2026-09-10T10:00:00.000Z",
               updatedAt: "2026-09-11T10:00:00.000Z",
             },
             {
-              id: "30000000-0000-4000-8000-000000000001",
+              slug: "first-engraver",
               fullName: "First Engraver",
               createdAt: "2026-09-08T10:00:00.000Z",
               updatedAt: "2026-09-09T10:00:00.000Z",
@@ -591,7 +594,7 @@ describe("API", () => {
           updatedAt: "2026-09-16T10:46:00.000Z",
           engravers: [
             {
-              id: "30000000-0000-4000-8000-000000000001",
+              slug: "first-engraver",
               fullName: "First Engraver",
               createdAt: "2026-09-08T10:00:00.000Z",
               updatedAt: "2026-09-09T10:00:00.000Z",

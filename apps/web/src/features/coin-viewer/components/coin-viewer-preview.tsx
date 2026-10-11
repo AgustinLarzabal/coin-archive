@@ -44,7 +44,7 @@ function CoinSurfacePreview({
             </h3>
             <ol className="mt-2 space-y-1 font-mono">
               {engravers.map((engraver) => (
-                <li key={engraver.id}>{engraver.fullName}</li>
+                <li key={engraver.slug}>{engraver.fullName}</li>
               ))}
             </ol>
           </div>

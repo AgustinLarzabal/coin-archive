@@ -18,5 +18,5 @@ export type {
   IssuerRecord,
 } from "./schema/index.js"
 export { rebuildDatabase } from "./reset.js"
-export { readCoinSeed, seedCoins } from "./seed.js"
+export { parseCoinSeedDocument, readCoinSeed, seedCoins } from "./seed.js"
 export type { CoinSeedDocument } from "./seed.js"

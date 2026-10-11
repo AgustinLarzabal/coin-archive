@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm"
-import { check, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import {
+  check,
+  pgTable,
+  timestamp,
+  unique,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core"
 import { createSelectSchema } from "drizzle-zod"
 
 import type { z } from "zod"
@@ -8,6 +15,7 @@ export const engravers = pgTable(
   "engravers",
   {
     id: uuid().primaryKey().defaultRandom(),
+    slug: varchar({ length: 64 }).notNull(),
     fullName: varchar("full_name", { length: 200 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -17,6 +25,12 @@ export const engravers = pgTable(
       .defaultNow(),
   },
   (table) => [
+    unique("engravers_slug_unique").on(table.slug),
+    check("engravers_slug_min_length", sql`length(${table.slug}) >= 3`),
+    check(
+      "engravers_slug_format",
+      sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
+    ),
     check("engravers_full_name_not_empty", sql`length(${table.fullName}) >= 1`),
     check(
       "engravers_full_name_trimmed",

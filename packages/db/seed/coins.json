@@ -5,11 +5,11 @@
   ],
   "engravers": [
     {
-      "id": "30000000-0000-4000-8000-000000000001",
+      "slug": "first-archive-engraver",
       "fullName": "First Archive Engraver"
     },
     {
-      "id": "30000000-0000-4000-8000-000000000002",
+      "slug": "second-archive-engraver",
       "fullName": "Second Archive Engraver"
     }
   ],
@@ -21,15 +21,12 @@
       "obverse": {
         "description": "A portrait of Miguel de Cervantes holding a quill.",
         "imageKey": "coin-placeholder.webp",
-        "engraverIds": [
-          "30000000-0000-4000-8000-000000000002",
-          "30000000-0000-4000-8000-000000000001"
-        ]
+        "engraverSlugs": ["second-archive-engraver", "first-archive-engraver"]
       },
       "reverse": {
         "description": "Don Quixote holding a lance beside two windmills.",
         "imageKey": "coin-placeholder2.webp",
-        "engraverIds": ["30000000-0000-4000-8000-000000000001"]
+        "engraverSlugs": ["first-archive-engraver"]
       },
       "edge": {
         "description": "CERVANTES repeated around the circumference.",

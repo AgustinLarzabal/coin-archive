@@ -39,5 +39,9 @@ The narrow outer surface around a Coin's circumference.
 A canonical person credited with engraving the Obverse or Reverse of one or more Coins. An Engraver may have many surface credits, and an Obverse or Reverse may credit multiple Engravers.
 _Avoid_: Artist name, Engraver text
 
+**Engraver Slug**:
+A unique, lowercase public identifier for an Engraver used in URLs. It is assigned independently of the Engraver's full name.
+_Avoid_: Engraver Code, Engraver ID
+
 **Explore**:
 The experience of browsing the Archive.

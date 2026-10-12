@@ -284,7 +284,7 @@ describe("Archive landing route", () => {
     renderArchiveRoute("/?engraver=first-engraver")
 
     expect(
-      await screen.findByText("No coins found for First Engraver")
+      await screen.findByText("No coins found engraved by First Engraver.")
     ).toBeVisible()
   })
 
@@ -295,7 +295,7 @@ describe("Archive landing route", () => {
 
     expect(
       await screen.findByText(
-        "No coins found for Roman Empire and First Engraver"
+        "No coins found for Roman Empire engraved by First Engraver."
       )
     ).toBeVisible()
   })

@@ -156,7 +156,7 @@ const seedDocumentSchema = z
 
 export type CoinSeedDocument = z.infer<typeof seedDocumentSchema>
 
-export function parseCoinSeedDocument(input: unknown): CoinSeedDocument {
+function parseCoinSeedDocument(input: unknown): CoinSeedDocument {
   return seedDocumentSchema.parse(input)
 }
 

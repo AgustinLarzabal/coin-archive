@@ -762,7 +762,7 @@ describe("API", () => {
   })
 
   describe("GET /v1/coins", () => {
-    it("passes one exact Engraver Slug to the Coin collection", async () => {
+    it("passes one exact Engraver Slug to the Coin list", async () => {
       const listCoins = vi.fn(async () => [])
 
       const response = await createApp({
@@ -779,7 +779,7 @@ describe("API", () => {
       await expect(response.json()).resolves.toEqual({ coins: [] })
     })
 
-    it("combines Issuer and Engraver filters for the Coin collection", async () => {
+    it("combines Issuer and Engraver filters for the Coin list", async () => {
       const listCoins = vi.fn(async () => [])
 
       const response = await createApp({
@@ -1206,7 +1206,7 @@ describe("API", () => {
       })
     })
 
-    it("keeps Engraver collection failures safe and uncacheable", async () => {
+    it("keeps Engraver list failures safe and uncacheable", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
@@ -1225,7 +1225,7 @@ describe("API", () => {
       })
     })
 
-    it("documents the public Engraver collection response", async () => {
+    it("documents the public Engraver list response", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,

@@ -1204,7 +1204,7 @@ describe("Issuer persistence", () => {
   })
 })
 
-describe("Engraver collection", () => {
+describe("Engraver list", () => {
   it("lists every Engraver by full name and then Slug, including uncredited Engravers", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

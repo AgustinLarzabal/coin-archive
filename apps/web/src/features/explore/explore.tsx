@@ -18,15 +18,16 @@ export function Explore({
   const { data } = useSuspenseQuery(coinListQueryOptions(filters))
 
   if (data.coins.length === 0) {
-    return (
-      <RouteMessage>
-        {issuer || engraver
-          ? `No coins found for ${[issuer?.name, engraver?.fullName]
-              .filter(Boolean)
-              .join(" and ")}`
-          : "No coins have been added to the archive yet"}
-      </RouteMessage>
-    )
+    const message =
+      issuer && engraver
+        ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
+        : engraver
+          ? `No coins found engraved by ${engraver.fullName}.`
+          : issuer
+            ? `No coins found for ${issuer.name}`
+            : "No coins have been added to the archive yet"
+
+    return <RouteMessage>{message}</RouteMessage>
   }
 
   return <ExploreGrid coins={data.coins} />

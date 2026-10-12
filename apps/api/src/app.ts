@@ -236,7 +236,7 @@ const coinListRoute = createRoute({
       content: {
         "application/json": { schema: invalidCoinListFilterErrorSchema },
       },
-      description: "A Coin collection filter is malformed",
+      description: "A Coin list filter is malformed",
       headers: operationalResponseHeaders,
     },
     500: {

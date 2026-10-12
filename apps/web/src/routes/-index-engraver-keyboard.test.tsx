@@ -1,56 +1,12 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
-import type { KeyboardEvent, ReactNode } from "react"
 
 import {
   createArchiveFetch,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-vi.mock("@workspace/ui/components/combobox", async () => {
-  const { createContext, useContext } = await import("react")
-  const ComboboxContext = createContext<{
-    items: Array<string>
-    onValueChange: (value: string | null) => void
-  } | null>(null)
-
-  return {
-    Combobox: ({
-      children,
-      items,
-      onValueChange,
-    }: {
-      children: ReactNode
-      items: Array<string>
-      onValueChange: (value: string | null) => void
-    }) => (
-      <ComboboxContext value={{ items, onValueChange }}>
-        {children}
-      </ComboboxContext>
-    ),
-    ComboboxContent: () => null,
-    ComboboxEmpty: () => null,
-    ComboboxInput: ({ "aria-label": ariaLabel }: { "aria-label": string }) => {
-      const context = useContext(ComboboxContext)
-
-      return (
-        <input
-          aria-label={ariaLabel}
-          role="combobox"
-          onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-            if (event.key === "Enter") {
-              context?.onValueChange(context.items[1] ?? null)
-            }
-          }}
-        />
-      )
-    },
-    ComboboxItem: () => null,
-    ComboboxList: () => null,
-  }
-})
-
-it("selects an Engraver with Enter and preserves the Issuer", async () => {
+it("supports keyboard navigation and preserves the Issuer on selection", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -67,7 +23,11 @@ it("selects an Engraver with Enter and preserves the Issuer", async () => {
   const combobox = await screen.findByRole("combobox", { name: "Engraver" })
 
   combobox.focus()
-  fireEvent.keyDown(combobox, { key: "Enter" })
+  fireEvent.input(combobox, { target: { value: "Second" } })
+  fireEvent.keyDown(combobox, { key: "ArrowDown" })
+  const option = screen.getByRole("option", { name: "Second Engraver" })
+  expect(option).toHaveAttribute("data-highlighted")
+  fireEvent.click(option, { detail: 0 })
 
   await waitFor(() =>
     expect(router.state.location.search).toEqual({

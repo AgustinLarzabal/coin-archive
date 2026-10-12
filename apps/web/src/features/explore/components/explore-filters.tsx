@@ -1,5 +1,5 @@
 import { EngraverCombobox } from "./explore-filters-engraver-combobox"
-import { IssuerSelect } from "./explore-filters-issuer-select"
+import { IssuerCombobox } from "./explore-filters-issuer-combobox"
 import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
 
 export function ExploreFilters({
@@ -14,8 +14,8 @@ export function ExploreFilters({
   issuers: Array<IssuerResponse>
 }) {
   return (
-    <nav className="flex h-18 items-center gap-3 border-b px-5 md:px-10">
-      <IssuerSelect
+    <nav className="flex h-18 items-center gap-5 border-b px-5 md:px-10">
+      <IssuerCombobox
         engraverSlug={engraverSlug}
         issuerCode={issuerCode}
         issuers={issuers}

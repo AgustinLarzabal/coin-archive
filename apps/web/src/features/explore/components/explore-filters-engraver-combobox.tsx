@@ -7,9 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
-import { useCallback, useMemo } from "react"
 
-import { exploreFilterControlClassName } from "./explore-filter-styles"
 import type { EngraverListItemResponse } from "@workspace/api"
 
 type EngraverComboboxProps = {
@@ -35,30 +33,24 @@ export function EngraverCombobox({
     !engravers.some((engraver) => engraver.slug === engraverSlug)
       ? engraverSlug
       : undefined
-  const options = useMemo<Array<EngraverOption>>(
-    () => [
-      ...engravers.map((engraver) => ({
-        label: engraver.fullName,
-        value: engraver.slug,
-      })),
-      ...(unknownEngraverSlug
-        ? [
-            {
-              disabled: true,
-              label: `Unknown engraver (${unknownEngraverSlug})`,
-              value: unknownEngraverSlug,
-            },
-          ]
-        : []),
-    ],
-    [engravers, unknownEngraverSlug]
-  )
-  const items = useMemo(() => options.map((option) => option.value), [options])
-  const getEngraverLabel = useCallback(
-    (slug: string) =>
-      options.find((option) => option.value === slug)?.label ?? slug,
-    [options]
-  )
+  const options: Array<EngraverOption> = [
+    ...engravers.map((engraver) => ({
+      label: engraver.fullName,
+      value: engraver.slug,
+    })),
+    ...(unknownEngraverSlug
+      ? [
+          {
+            disabled: true,
+            label: `Unknown engraver (${unknownEngraverSlug})`,
+            value: unknownEngraverSlug,
+          },
+        ]
+      : []),
+  ]
+  const items = options.map((option) => option.value)
+  const getEngraverLabel = (slug: string) =>
+    options.find((option) => option.value === slug)?.label ?? slug
 
   return (
     <Combobox
@@ -72,23 +64,20 @@ export function EngraverCombobox({
 
         if (nextEngraverSlug === engraverSlug) return
 
-        // Let Base UI finish the interaction before URL state rerenders the root.
-        setTimeout(() => {
-          void navigate({
-            to: "/",
-            search: {
-              engraver: nextEngraverSlug,
-              issuer: issuerCode,
-            },
-          })
-        }, 0)
+        void navigate({
+          to: "/",
+          search: {
+            engraver: nextEngraverSlug,
+            issuer: issuerCode,
+          },
+        })
       }}
     >
       <ComboboxInput
         aria-label="Engraver"
         placeholder="All engravers"
         showClear
-        className={exploreFilterControlClassName}
+        className="w-full md:w-[calc(33.3vw-(--spacing(10)))] lg:w-[calc(25vw-(--spacing(10)))] xl:w-[calc(20vw-(--spacing(20)))] 2xl:w-[calc(16.7vw-(--spacing(20)))]"
       />
       <ComboboxContent>
         <ComboboxEmpty>No engravers found.</ComboboxEmpty>

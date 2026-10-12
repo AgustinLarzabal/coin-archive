@@ -1,5 +1,5 @@
 import { createMemoryHistory } from "@tanstack/react-router"
-import { act, fireEvent, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { CoinListItemResponse } from "@workspace/api"
@@ -122,7 +122,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(router.state.status).toBe("idle")
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveTextContent(
+    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
       "Argentina"
     )
     expect(router.state.location.searchStr).toBe("?issuer=AR")
@@ -155,11 +155,12 @@ describe("Archive landing route", () => {
     const router = renderArchiveRoute()
     const select = await screen.findByRole("combobox", { name: "Issuer" })
 
-    expect(select).toHaveTextContent("All issuers")
+    expect(select).toHaveValue("")
+    expect(select).toHaveAttribute("placeholder", "All issuers")
     await router.navigate({ to: "/", search: { issuer: "ROMAN" } })
 
     expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
-    expect(select).toHaveTextContent("Roman Empire")
+    expect(select).toHaveValue("Roman Empire")
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?issuer=ROMAN"
     )
@@ -167,17 +168,17 @@ describe("Archive landing route", () => {
     await router.navigate({ to: "/", search: {} })
 
     expect(router.state.location.searchStr).toBe("")
-    expect(select).toHaveTextContent("All issuers")
+    expect(select).toHaveValue("")
 
     router.history.back()
     await waitFor(() =>
       expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
     )
-    expect(select).toHaveTextContent("Roman Empire")
+    expect(select).toHaveValue("Roman Empire")
 
     router.history.forward()
     await waitFor(() => expect(router.state.location.searchStr).toBe(""))
-    expect(select).toHaveTextContent("All issuers")
+    expect(select).toHaveValue("")
   })
 
   it("clears only the selected Engraver", async () => {
@@ -186,7 +187,12 @@ describe("Archive landing route", () => {
     const combobox = await screen.findByRole("combobox", { name: "Engraver" })
 
     expect(combobox).toHaveValue("First Engraver")
-    fireEvent.click(screen.getByRole("button", { name: "Clear" }))
+    const engraverControl = combobox.parentElement
+    if (!engraverControl) throw new Error("Engraver combobox control not found")
+
+    fireEvent.click(
+      within(engraverControl).getByRole("button", { name: "Clear" })
+    )
 
     await waitFor(() =>
       expect(router.state.location.searchStr).toBe("?issuer=AR")
@@ -435,7 +441,7 @@ describe("Archive landing route", () => {
     filteredCoinsResponse.resolve(jsonResponse({ coins: [coin] }))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveTextContent(
+    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
       "Roman Empire"
     )
   })
@@ -448,7 +454,7 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByText("No coins found for Argentina")
     ).toBeVisible()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveTextContent(
+    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
       "Argentina"
     )
   })
@@ -458,8 +464,8 @@ describe("Archive landing route", () => {
     renderArchiveRoute("/?issuer=ZZ")
 
     expect(await screen.findByText("Issuer not found")).toBeVisible()
-    const select = screen.getByRole("combobox", { name: "Issuer" })
-    expect(select).toHaveTextContent("Unknown issuer (ZZ)")
+    const combobox = screen.getByRole("combobox", { name: "Issuer" })
+    expect(combobox).toHaveValue("Unknown issuer (ZZ)")
   })
 
   it("keeps filtered and unfiltered Coin collections distinct", async () => {
@@ -493,9 +499,7 @@ describe("Archive landing route", () => {
       expect(fetchMock).not.toHaveBeenCalledWith(
         `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}`
       )
-      expect(
-        screen.getByRole("combobox", { name: "Issuer" })
-      ).toHaveTextContent("All issuers")
+      expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue("")
       expect(router.state.location.searchStr).toBe("")
     }
   )

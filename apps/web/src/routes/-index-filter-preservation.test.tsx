@@ -6,28 +6,34 @@ import {
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-vi.mock("@workspace/ui/components/select", () => ({
-  Select: ({
+vi.mock("@workspace/ui/components/combobox", () => ({
+  Combobox: ({
+    name,
     onValueChange,
     value,
   }: {
+    name?: string
     onValueChange: (value: string | null) => void
-    value: string
+    value: string | null
   }) => (
     <button
       type="button"
       role="combobox"
-      aria-label="Issuer"
-      onClick={() => onValueChange(value === "AR" ? "ROMAN" : null)}
+      aria-label={name === "issuer" ? "Issuer" : "Engraver"}
+      onClick={() => {
+        if (name === "issuer") {
+          onValueChange(value === "AR" ? "ROMAN" : null)
+        }
+      }}
     >
-      {value || "All issuers"}
+      {value}
     </button>
   ),
-  SelectContent: () => null,
-  SelectGroup: () => null,
-  SelectItem: () => null,
-  SelectTrigger: () => null,
-  SelectValue: () => null,
+  ComboboxContent: () => null,
+  ComboboxEmpty: () => null,
+  ComboboxInput: () => null,
+  ComboboxItem: () => null,
+  ComboboxList: () => null,
 }))
 
 it("preserves the Engraver when the Issuer changes and clears", async () => {
@@ -44,9 +50,9 @@ it("preserves the Engraver when the Issuer changes and clears", async () => {
     )
   )
   const router = renderArchiveRoute("/?issuer=AR&engraver=first-engraver")
-  const issuerSelect = await screen.findByRole("combobox", { name: "Issuer" })
+  const issuerCombobox = await screen.findByRole("combobox", { name: "Issuer" })
 
-  fireEvent.click(issuerSelect)
+  fireEvent.click(issuerCombobox)
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
       issuer: "ROMAN",
@@ -54,7 +60,7 @@ it("preserves the Engraver when the Issuer changes and clears", async () => {
     })
   )
 
-  fireEvent.click(issuerSelect)
+  fireEvent.click(issuerCombobox)
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
       engraver: "first-engraver",

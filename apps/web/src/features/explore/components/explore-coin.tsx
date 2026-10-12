@@ -51,7 +51,7 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
           Image unavailable
         </span>
       )}
-      <span className="absolute right-5 bottom-5 left-5 h-[2lh] text-center font-mono text-xs tracking-wider text-muted-foreground">
+      <span className="absolute right-5 bottom-5 left-5 h-[2lh] text-center font-mono text-xs tracking-wider text-balance text-muted-foreground">
         {coin.title}
       </span>
     </Link>

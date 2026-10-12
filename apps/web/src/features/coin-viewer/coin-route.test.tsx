@@ -1,17 +1,13 @@
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { getRouter } from "@/router"
 import {
   coinDetailFixture,
   coinSurfaceWithEngraversFixture,
 } from "@/test/coin-fixtures"
-
-vi.mock("@tanstack/react-devtools", () => ({
-  TanStackDevtools: () => null,
-}))
 
 const coinId = "00000000-0000-4000-8000-000000000001"
 
@@ -28,10 +24,6 @@ function jsonResponse(body: unknown, status = 200) {
     status,
   })
 }
-
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
 
 describe("Coin viewer route", () => {
   it("shows loading feedback while Coin data is pending", async () => {

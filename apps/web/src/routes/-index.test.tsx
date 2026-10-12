@@ -1,5 +1,5 @@
-import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { createMemoryHistory } from "@tanstack/react-router"
+import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { CoinListItemResponse } from "@workspace/api"
@@ -11,11 +11,12 @@ import {
   issuerListQueryOptions,
 } from "@/data/archive"
 import { getRouter } from "@/router"
+import {
+  createArchiveFetch as createArchiveFetchFixture,
+  jsonResponse,
+  renderArchiveRoute,
+} from "@/test/archive-route-test"
 import { coinDetailFixture } from "@/test/coin-fixtures"
-
-vi.mock("@tanstack/react-devtools", () => ({
-  TanStackDevtools: () => null,
-}))
 
 const coinId = "00000000-0000-4000-8000-000000000001"
 const coin: CoinListItemResponse = {
@@ -49,13 +50,6 @@ type CoinListResponseFixture = typeof coin & {
   reverseImageUrl: string | null
 }
 
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    headers: { "content-type": "application/json" },
-    status,
-  })
-}
-
 function createDeferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((resolvePromise) => {
@@ -66,29 +60,11 @@ function createDeferred<T>() {
 }
 
 function createArchiveFetch(coins: Array<CoinListResponseFixture> = [coin]) {
-  return (input: string | URL | Request) => {
-    const url = String(input)
-
-    return Promise.resolve(
-      url.endsWith("/v1/issuers")
-        ? jsonResponse({ issuers })
-        : url.endsWith("/v1/engravers")
-          ? jsonResponse({ engravers })
-          : jsonResponse({ coins })
-    )
-  }
-}
-
-function renderArchiveRoute(initialEntry = "/") {
-  const history = createMemoryHistory({ initialEntries: [initialEntry] })
-  const router = getRouter({ history })
-  render(<RouterProvider router={router} />)
-  return router
+  return createArchiveFetchFixture({ coins, engravers, issuers })
 }
 
 afterEach(() => {
   vi.useRealTimers()
-  vi.unstubAllGlobals()
 })
 
 describe("Archive landing route", () => {
@@ -202,6 +178,35 @@ describe("Archive landing route", () => {
     router.history.forward()
     await waitFor(() => expect(router.state.location.searchStr).toBe(""))
     expect(select).toHaveTextContent("All issuers")
+  })
+
+  it("clears only the selected Engraver", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+    const router = renderArchiveRoute("/?issuer=AR&engraver=first-engraver")
+    const combobox = await screen.findByRole("combobox", { name: "Engraver" })
+
+    expect(combobox).toHaveValue("First Engraver")
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }))
+
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toBe("?issuer=AR")
+    )
+    expect(combobox).toHaveValue("")
+    expect(combobox).toHaveAttribute("placeholder", "All engravers")
+
+    router.history.back()
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toBe(
+        "?issuer=AR&engraver=first-engraver"
+      )
+    )
+    expect(combobox).toHaveValue("First Engraver")
+
+    router.history.forward()
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toBe("?issuer=AR")
+    )
+    expect(combobox).toHaveValue("")
   })
 
   it("filters Coins by a valid Engraver Slug and combines it with an Issuer", async () => {

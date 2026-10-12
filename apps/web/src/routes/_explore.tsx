@@ -30,12 +30,13 @@ export const Route = createFileRoute("/_explore")({
 function ExploreLayout() {
   const { engraver: engraverSlug, issuer: issuerCode } = Route.useSearch()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
-  useSuspenseQuery(engraverListQueryOptions())
+  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
 
   return (
     <main className="mt-18 mb-14 flex flex-1 flex-col">
       <ExploreFilters
         engraverSlug={engraverSlug}
+        engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
       />

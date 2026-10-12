@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import {
   coinDetailQueryOptions,
@@ -19,10 +19,6 @@ import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$coinId"
 import { startInstance } from "@/start"
 import { coinDetailFixture } from "@/test/coin-fixtures"
-
-vi.mock("@tanstack/react-devtools", () => ({
-  TanStackDevtools: () => null,
-}))
 
 const coinId = "00000000-0000-4000-8000-000000000001"
 const coin = {
@@ -48,10 +44,6 @@ function createQueryClient() {
     defaultOptions: { queries: { retry: false } },
   })
 }
-
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
 
 describe("Archive data module", () => {
   it("accepts both surface images in a Coin list response", async () => {

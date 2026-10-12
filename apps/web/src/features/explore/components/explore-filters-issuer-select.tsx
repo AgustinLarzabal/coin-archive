@@ -7,6 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+
+import { exploreFilterControlClassName } from "./explore-filter-styles"
 import type { IssuerResponse } from "@workspace/api"
 
 type IssuerSelectProps = {
@@ -49,42 +51,40 @@ export function IssuerSelect({
   ]
 
   return (
-    <div className="flex w-full items-center gap-3">
-      <Select
-        name="issuer"
-        items={items}
-        value={issuerCode ?? ""}
-        onValueChange={(issuer: string | null) => {
-          void navigate({
-            to: "/",
-            search: {
-              engraver: engraverSlug,
-              issuer: issuer || undefined,
-            },
-          })
-        }}
+    <Select
+      name="issuer"
+      items={items}
+      value={issuerCode ?? ""}
+      onValueChange={(issuer: string | null) => {
+        void navigate({
+          to: "/",
+          search: {
+            engraver: engraverSlug,
+            issuer: issuer || undefined,
+          },
+        })
+      }}
+    >
+      <SelectTrigger
+        id="issuer-filter"
+        aria-label="Issuer"
+        className={exploreFilterControlClassName}
       >
-        <SelectTrigger
-          id="issuer-filter"
-          aria-label="Issuer"
-          className="w-full md:w-[calc(33.3vw-(--spacing(10)))] lg:w-[calc(25vw-(--spacing(10)))] xl:w-[calc(20vw-(--spacing(20)))] 2xl:w-[calc(16.7vw-(--spacing(20)))]"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {items.map((item) => (
-              <SelectItem
-                key={item.value}
-                value={item.value}
-                disabled={item.disabled}
-              >
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </div>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {items.map((item) => (
+            <SelectItem
+              key={item.value}
+              value={item.value}
+              disabled={item.disabled}
+            >
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   )
 }

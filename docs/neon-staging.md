@@ -47,7 +47,7 @@ Both private `*.local` files are ignored by Git. Never put either Neon URL in
 ## Commands
 
 Apply checked-in migrations to an empty or existing Staging Database, then load
-the committed Issuer and Coin seed data:
+the committed Issuer, Engraver, and Coin seed data:
 
 ```bash
 pnpm db:migrate:staging
@@ -71,13 +71,13 @@ Staging Database.
 
 Until the application exposes a Coin-writing workflow, add disposable records
 with the Neon SQL Editor. This example associates a new Coin with the seeded
-Spain Issuer and returns the new identifier:
+Italy Issuer and returns the new identifier:
 
 ```sql
 INSERT INTO coins (title, issuer_id)
 SELECT 'Manual Neon staging Coin', id
 FROM issuers
-WHERE code = 'ES'
+WHERE code = 'IT'
 RETURNING id, title;
 ```
 

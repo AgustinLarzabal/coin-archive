@@ -1,189 +1,74 @@
-{
-  "issuers": [
-    { "name": "Spain", "code": "ES" },
-    { "name": "Roman Empire", "code": "ROMAN" }
-  ],
-  "engravers": [
-    {
-      "slug": "first-archive-engraver",
-      "fullName": "First Archive Engraver"
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "title": "50th Anniversary of the World Food Programme",
+    "issuerCode": "IT",
+    "obverse": {
+      "description": "A globe bearing the World Food Programme inscription, accompanied by ears of wheat, maize, and rice. The design also includes the Italian Republic monogram, the Rome mint mark, and the year 2004.",
+      "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Obverse.jpg"
     },
-    {
-      "slug": "second-archive-engraver",
-      "fullName": "Second Archive Engraver"
+    "reverse": {
+      "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Reverse.jpg"
     }
-  ],
-  "coins": [
-    {
-      "id": "00000000-0000-4000-8000-000000000001",
-      "title": "400th Anniversary of the First Edition of Don Quixote",
-      "issuerCode": "ES",
-      "obverse": {
-        "description": "A portrait of Miguel de Cervantes holding a quill.",
-        "imageKey": "coin-placeholder.webp",
-        "engraverSlugs": ["second-archive-engraver", "first-archive-engraver"]
-      },
-      "reverse": {
-        "description": "Don Quixote holding a lance beside two windmills.",
-        "imageKey": "coin-placeholder2.webp",
-        "engraverSlugs": ["first-archive-engraver"]
-      },
-      "edge": {
-        "description": "CERVANTES repeated around the circumference.",
-        "imageKey": "coin-placeholder3.webp"
-      }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "title": "75th Anniversary of the Founding of Vatican City State",
+    "issuerCode": "VA",
+    "obverse": {
+      "description": "A schematic view of the Vatican City walls and St Peter's Basilica, surrounded by anniversary dates and inscriptions marking 75 years since the state's founding.",
+      "imageKey": "Vatican City/John Paul II (Ioannes Paulus II) (1978-2005)/2004/John Paul II State anniversary - Obverse.jpg"
     },
-    {
-      "id": "00000000-0000-4000-8000-000000000002",
-      "title": "50th Anniversary of the Treaty of Rome",
-      "issuerCode": "ES",
-      "obverse": {
-        "description": "The Treaty of Rome anniversary emblem.",
-        "imageKey": "coin-placeholder2.webp"
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000003",
-      "title": "10th Anniversary of Economic and Monetary Union",
-      "issuerCode": "ES",
-      "reverse": {
-        "imageKey": "coin-placeholder3.webp"
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000004",
-      "title": "Historic Centre of Córdoba",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000005",
-      "title": "Alhambra of Granada",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000006",
-      "title": "10th Anniversary of Euro Coins and Banknotes",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000007",
-      "title": "Burgos Cathedral",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000008",
-      "title": "Monastery of San Lorenzo de El Escorial",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000009",
-      "title": "Park Güell",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000010",
-      "title": "Accession of King Felipe VI",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000011",
-      "title": "Cave of Altamira",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000012",
-      "title": "30th Anniversary of the Flag of the European Union",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000013",
-      "title": "Aqueduct of Segovia",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000014",
-      "title": "Church of Santa María del Naranco",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000015",
-      "title": "50th Anniversary of King Felipe VI",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000016",
-      "title": "Old Town of Santiago de Compostela",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000017",
-      "title": "Old Town of Ávila",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000018",
-      "title": "Mudéjar Architecture of Aragon",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000019",
-      "title": "Historic City of Toledo",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000020",
-      "title": "500th Anniversary of the First Circumnavigation of the World",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000021",
-      "title": "Garajonay National Park",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000022",
-      "title": "35th Anniversary of the Erasmus Programme",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000023",
-      "title": "Old Town of Cáceres",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000024",
-      "title": "Spanish Presidency of the Council of the European Union",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000025",
-      "title": "200th Anniversary of the National Police",
-      "issuerCode": "ES"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000026",
-      "title": "Twenty-sixth coin",
-      "issuerCode": "ROMAN"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000027",
-      "title": "Twenty-seventh coin",
-      "issuerCode": "ROMAN"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000028",
-      "title": "Twenty-eighth coin",
-      "issuerCode": "ROMAN"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000029",
-      "title": "Twenty-ninth coin",
-      "issuerCode": "ROMAN"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000030",
-      "title": "Thirtieth coin",
-      "issuerCode": "ROMAN"
+    "reverse": {
+      "imageKey": "Vatican City/John Paul II (Ioannes Paulus II) (1978-2005)/2004/John Paul II State anniversary - Reverse.jpg"
     }
-  ]
-}
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "title": "Bartolomeo Borghesi",
+    "issuerCode": "SM",
+    "obverse": {
+      "description": "A bust of historian and numismatist Bartolomeo Borghesi, encircled by the twelve stars of the European Union, his name, San Marino, and the year 2004.",
+      "imageKey": "San Marino/Republic (301-date)/2004/Bartolomeo Borghesi - Obverse.jpg"
+    },
+    "reverse": {
+      "imageKey": "San Marino/Republic (301-date)/2004/Bartolomeo Borghesi - Reverse.jpg"
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "title": "Effigy and Monogram of Grand Duke Henri",
+    "issuerCode": "LU",
+    "obverse": {
+      "description": "Grand Duke Henri's right-facing portrait appears beside his crowned monogram. The surrounding inscriptions include Luxembourg's name, his title, the year 2004, mint marks, and twelve stars.",
+      "imageKey": "Luxembourg/Henry (2000-2025)/2004/Henri I Monogramme - Obverse.jpg"
+    },
+    "reverse": {
+      "imageKey": "Luxembourg/Henry (2000-2025)/2004/Henri I Monogramme - Reverse.jpg"
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "title": "Enlargement of the European Union by Ten New Member States",
+    "issuerCode": "FI",
+    "obverse": {
+      "description": "A stylised pillar supports upward-growing shoots, symbolising the European Union's enlargement and its foundation for growth. The design includes the letters EU, the year 2004, and twelve stars.",
+      "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Obverse.jpg"
+    },
+    "reverse": {
+      "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Reverse.jpg"
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000006",
+    "title": "Olympic Games in Athens 2004",
+    "issuerCode": "GR",
+    "obverse": {
+      "description": "An ancient statue of a discobolus preparing to throw the discus, accompanied by the Athens 2004 Olympic emblem, the Greek euro denomination, the yearmark, and twelve stars.",
+      "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Obverse.jpg"
+    },
+    "reverse": {
+      "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Reverse.jpg"
+    }
+  }
+]

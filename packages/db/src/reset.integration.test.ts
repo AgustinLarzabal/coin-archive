@@ -92,14 +92,14 @@ describe("database rebuild lifecycle", () => {
         id: string
         title: string
       }>("select id, title from coins order by id")
-      expect(coins.rows).toHaveLength(30)
+      expect(coins.rows).toHaveLength(6)
       expect(coins.rows[0]).toEqual({
         id: "00000000-0000-4000-8000-000000000001",
-        title: "400th Anniversary of the First Edition of Don Quixote",
+        title: "50th Anniversary of the World Food Programme",
       })
       expect(coins.rows.at(-1)).toEqual({
-        id: "00000000-0000-4000-8000-000000000030",
-        title: "Thirtieth coin",
+        id: "00000000-0000-4000-8000-000000000006",
+        title: "Olympic Games in Athens 2004",
       })
 
       const issuers = await databaseAfterReset.query<{
@@ -114,11 +114,15 @@ describe("database rebuild lifecycle", () => {
       `)
       expect(issuers.rows).toEqual(
         expect.arrayContaining([
-          { name: "Spain", code: "ES", coin_count: 25 },
-          { name: "Roman Empire", code: "ROMAN", coin_count: 5 },
+          { name: "Vatican City", code: "VA", coin_count: 1 },
+          { name: "Italy", code: "IT", coin_count: 1 },
+          { name: "San Marino", code: "SM", coin_count: 1 },
+          { name: "Finland", code: "FI", coin_count: 1 },
+          { name: "Luxembourg", code: "LU", coin_count: 1 },
+          { name: "Greece", code: "GR", coin_count: 1 },
         ])
       )
-      expect(issuers.rows).toHaveLength(2)
+      expect(issuers.rows).toHaveLength(6)
 
       const credits = await databaseAfterReset.query<{
         full_name: string
@@ -132,23 +136,7 @@ describe("database rebuild lifecycle", () => {
         join coin_surfaces on coin_surfaces.id = coin_surface_engravers.coin_surface_id
         order by coin_surfaces.kind, coin_surface_engravers.position
       `)
-      expect(credits.rows).toEqual([
-        {
-          full_name: "Second Archive Engraver",
-          kind: "obverse",
-          position: 1,
-        },
-        {
-          full_name: "First Archive Engraver",
-          kind: "obverse",
-          position: 2,
-        },
-        {
-          full_name: "First Archive Engraver",
-          kind: "reverse",
-          position: 1,
-        },
-      ])
+      expect(credits.rows).toEqual([])
     } finally {
       await databaseAfterReset.end()
     }

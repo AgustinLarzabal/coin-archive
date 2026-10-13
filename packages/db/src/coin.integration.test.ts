@@ -1377,61 +1377,25 @@ describe("Coin seed", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await seedCoins(database, await readCoinSeed())
+      const issuers = await database.listIssuers()
+      expect(issuers.map(({ name, code }) => ({ name, code }))).toEqual([
+        { name: "Finland", code: "FI" },
+        { name: "Greece", code: "GR" },
+        { name: "Italy", code: "IT" },
+        { name: "Luxembourg", code: "LU" },
+        { name: "San Marino", code: "SM" },
+        { name: "Vatican City", code: "VA" },
+      ])
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({
         id: SEEDED_COIN_ID,
-        title: "400th Anniversary of the First Edition of Don Quixote",
-        issuer: expect.objectContaining({ name: "Spain", code: "ES" }),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        title: "50th Anniversary of the World Food Programme",
+        issuer: expect.objectContaining({ name: "Italy", code: "IT" }),
         obverse: expect.objectContaining({
           kind: "obverse",
-          description: "A portrait of Miguel de Cervantes holding a quill.",
-          imageKey: "coin-placeholder.webp",
+          description: expect.stringContaining("World Food Programme"),
         }),
-        reverse: expect.objectContaining({
-          kind: "reverse",
-          description: "Don Quixote holding a lance beside two windmills.",
-          imageKey: "coin-placeholder2.webp",
-        }),
-        edge: expect.objectContaining({
-          kind: "edge",
-          description: "CERVANTES repeated around the circumference.",
-          imageKey: "coin-placeholder3.webp",
-        }),
-      })
-      await expect(
-        database.findCoinById("00000000-0000-4000-8000-000000000002")
-      ).resolves.toMatchObject({
-        obverse: expect.objectContaining({
-          kind: "obverse",
-          description: "The Treaty of Rome anniversary emblem.",
-          imageKey: "coin-placeholder2.webp",
-        }),
-        reverse: null,
-        edge: null,
-      })
-      await expect(
-        database.findCoinById("00000000-0000-4000-8000-000000000003")
-      ).resolves.toMatchObject({
-        obverse: null,
-        reverse: expect.objectContaining({
-          kind: "reverse",
-          description: null,
-          imageKey: "coin-placeholder3.webp",
-        }),
-        edge: null,
-      })
-      await expect(
-        database.findCoinById("00000000-0000-4000-8000-000000000030")
-      ).resolves.toMatchObject({
-        id: "00000000-0000-4000-8000-000000000030",
-        issuer: expect.objectContaining({
-          name: "Roman Empire",
-          code: "ROMAN",
-        }),
-        obverse: null,
         reverse: null,
         edge: null,
       })

@@ -182,25 +182,24 @@ export async function seedCoins(database: Database, input: unknown) {
       insertedIssuers.map((issuer) => [issuer.code, issuer.id])
     )
 
-    await transaction.insert(coins).values(
-      document.coins.map(
-        ({
-          issuerCode,
-          obverse: _obverse,
-          reverse: _reverse,
-          edge: _edge,
-          ...coin
-        }) => {
-          const issuerId = issuerIdsByCode.get(issuerCode)
-          if (!issuerId) {
-            throw new Error(
-              `Coin references unknown Issuer Code: ${issuerCode}`
-            )
-          }
-          return { ...coin, issuerId }
+    const coinRecords = document.coins.map(
+      ({
+        issuerCode,
+        obverse: _obverse,
+        reverse: _reverse,
+        edge: _edge,
+        ...coin
+      }) => {
+        const issuerId = issuerIdsByCode.get(issuerCode)
+        if (!issuerId) {
+          throw new Error(`Coin references unknown Issuer Code: ${issuerCode}`)
         }
-      )
+        return { ...coin, issuerId }
+      }
     )
+    if (coinRecords.length > 0) {
+      await transaction.insert(coins).values(coinRecords)
+    }
 
     const surfaces = document.coins.flatMap(
       ({ id: coinId, obverse, reverse, edge }) => [
@@ -266,8 +265,22 @@ export async function seedCoins(database: Database, input: unknown) {
   })
 }
 
-export async function readCoinSeed(
-  path = new URL("../seed/coins.json", import.meta.url)
-) {
+async function readSeedFile(path: URL) {
   return JSON.parse(await readFile(path, "utf8")) as unknown
+}
+
+export async function readCoinSeed(
+  seedDirectory = new URL("../seed/", import.meta.url)
+) {
+  const [issuerSeedData, engraverSeedData, coinSeedData] = await Promise.all([
+    readSeedFile(new URL("issuers.json", seedDirectory)),
+    readSeedFile(new URL("engravers.json", seedDirectory)),
+    readSeedFile(new URL("coins.json", seedDirectory)),
+  ])
+
+  return {
+    issuers: issuerSeedData,
+    engravers: engraverSeedData,
+    coins: coinSeedData,
+  }
 }

@@ -12,6 +12,18 @@ _Avoid_: Collection
 A catalogue entry representing a historical kind of coin that collectors can identify as the same issue or type. Every Coin has exactly one Issuer; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
 
+**Issue Period**:
+The inclusive span from the first through the last confirmed calendar year in which a Coin's exact issue or type was officially issued. Every Coin has an Issue Period; a single-year issue has identical endpoints, while an ongoing issue's last year is the latest confirmed year. The span may include intervening years in which issuance paused, and is not the Coin's circulation period or its Issuer's reign.
+_Avoid_: Circulation Period, Reign Period
+
+**First Issue Year**:
+The earliest asserted BCE or CE year in a Coin's Issue Period, using the conventional attribution of the catalogue source. It does not represent an approximate or disputed date.
+_Avoid_: Minimum Year, Min Year
+
+**Last Issue Year**:
+The latest asserted BCE or CE year in a Coin's Issue Period, using the conventional attribution of the catalogue source. For an ongoing issue, it advances only after issuance in a later year is confirmed.
+_Avoid_: Maximum Year, Max Year
+
 **Issuer**:
 The canonical political entity under whose authority one or more Coins were issued. Every Issuer has an Issuer Code; an Issuer may be a present-day or historical state, territory, or similar polity, and is not the central bank, mint, or place that manufactured a Coin.
 _Avoid_: Country, Mint, Manufacturer

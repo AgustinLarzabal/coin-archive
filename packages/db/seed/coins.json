@@ -532,5 +532,255 @@
     "obverse": {
       "description": "Hamburg's baroque St Michael's Church, known as the Michel, above the name Hamburg, accompanied by the mint mark, the year 2008, Germany's official name, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000034",
+    "title": "20th Anniversary of 17 November 1989",
+    "issuerCode": "SK",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stylised bell with keys as clappers commemorates the demonstration that began the Velvet Revolution, surrounded by the freedom and democracy legend, the dates 1989–2009, Slovakia's name, artist and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000035",
+    "title": "200th Anniversary of Finnish Autonomy and the Diet of Porvoo",
+    "issuerCode": "FI",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A profile of Porvoo Cathedral, where the first Diet of Finland opened in 1809, accompanied by the stylised date 1809, Finland's country code, the year 2009, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000036",
+    "title": "International Year of Astronomy",
+    "issuerCode": "VA",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "An allegory of the birth of stars and planets with astronomical instruments, inspired by Michelangelo's frescoes in the Sistine Chapel and surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000037",
+    "title": "200th Anniversary of the Birth of Louis Braille",
+    "issuerCode": "IT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A hand reads an open book by touch while two birds symbolise freedom of knowledge, accompanied by Louis Braille's name and the dates 1809–2009, the Italian Republic monogram, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000038",
+    "title": "200th Anniversary of the Birth of Louis Braille",
+    "issuerCode": "BE",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A portrait of Louis Braille with his initials in braille, accompanied by his name, Belgium's country code, the dates 1809 and 2009, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000039",
+    "title": "2nd Lusophone Games",
+    "issuerCode": "PT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A gymnast swirls a ribbon beneath the Portuguese coat of arms, the country name, and the year 2009, accompanied by the Lisbon Lusophone Games legend, artist and mint marks, and twelve stars over concentric lines."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003a",
+    "title": "European Year of Creativity and Innovation",
+    "issuerCode": "SM",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A book, compass, test tube, and flask symbolise scientific research, accompanied by San Marino's three feathers, the creativity and innovation legend, the year 2009, artist and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003b",
+    "title": "Saarland",
+    "issuerCode": "DE",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "The Ludwigskirche in Saarbrücken above the name Saarland, accompanied by the mint and artist marks, the year 2009, Germany's official name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003c",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "AT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Austria's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003d",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "BE",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Belgium's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003e",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "CY",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Cyprus's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000003f",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "FI",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Finland's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000040",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "FR",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by France's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000041",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "DE",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Germany's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000042",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "GR",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Greece's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000043",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "IE",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Ireland's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000044",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "IT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Italy's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000045",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "LU",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Luxembourg's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000046",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "MT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Malta's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000047",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "NL",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by the Netherlands' name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000048",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "PT",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Portugal's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000049",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "SK",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Slovakia's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004a",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "SI",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Slovenia's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004b",
+    "title": "10th Anniversary of Economic and Monetary Union",
+    "issuerCode": "ES",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Spain's name, the local EMU 1999–2009 legend, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004c",
+    "title": "Grand Duke Henri and Grand Duchess Charlotte",
+    "issuerCode": "LU",
+    "firstIssueYear": 2009,
+    "lastIssueYear": 2009,
+    "obverse": {
+      "description": "Portraits of Grand Duke Henri and Grand Duchess Charlotte, accompanied by Luxembourg's name, the year 2009, mint marks, and twelve stars."
+    }
   }
 ]

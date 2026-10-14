@@ -1,6 +1,7 @@
 [
   { "name": "Austria", "code": "AT" },
   { "name": "Belgium", "code": "BE" },
+  { "name": "Cyprus", "code": "CY" },
   { "name": "Finland", "code": "FI" },
   { "name": "France", "code": "FR" },
   { "name": "Germany", "code": "DE" },
@@ -8,10 +9,12 @@
   { "name": "Ireland", "code": "IE" },
   { "name": "Italy", "code": "IT" },
   { "name": "Luxembourg", "code": "LU" },
+  { "name": "Malta", "code": "MT" },
   { "name": "Monaco", "code": "MC" },
   { "name": "Netherlands", "code": "NL" },
   { "name": "Portugal", "code": "PT" },
   { "name": "San Marino", "code": "SM" },
+  { "name": "Slovakia", "code": "SK" },
   { "name": "Slovenia", "code": "SI" },
   { "name": "Spain", "code": "ES" },
   { "name": "Vatican City", "code": "VA" }

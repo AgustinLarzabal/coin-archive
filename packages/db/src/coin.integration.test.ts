@@ -1553,6 +1553,7 @@ describe("Coin seed", () => {
       expect(issuers.map(({ name, code }) => ({ name, code }))).toEqual([
         { name: "Austria", code: "AT" },
         { name: "Belgium", code: "BE" },
+        { name: "Cyprus", code: "CY" },
         { name: "Finland", code: "FI" },
         { name: "France", code: "FR" },
         { name: "Germany", code: "DE" },
@@ -1560,16 +1561,18 @@ describe("Coin seed", () => {
         { name: "Ireland", code: "IE" },
         { name: "Italy", code: "IT" },
         { name: "Luxembourg", code: "LU" },
+        { name: "Malta", code: "MT" },
         { name: "Monaco", code: "MC" },
         { name: "Netherlands", code: "NL" },
         { name: "Portugal", code: "PT" },
         { name: "San Marino", code: "SM" },
+        { name: "Slovakia", code: "SK" },
         { name: "Slovenia", code: "SI" },
         { name: "Spain", code: "ES" },
         { name: "Vatican City", code: "VA" },
       ])
       const seededCoins = await database.listCoins()
-      expect(seededCoins).toHaveLength(51)
+      expect(seededCoins).toHaveLength(76)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -1600,6 +1603,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2008 && lastIssueYear === 2008
         )
       ).toHaveLength(10)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2009 && lastIssueYear === 2009
+        )
+      ).toHaveLength(25)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

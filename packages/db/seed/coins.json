@@ -162,5 +162,75 @@
     "obverse": {
       "description": "Grand Duke Henri's right-facing portrait superimposed on that of Grand Duke Adolphe, with their names and commemorative dates, Luxembourg's name, the year 2005, mint marks, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000f",
+    "title": "5th Centenary of the Swiss Pontifical Guard",
+    "issuerCode": "VA",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "A Swiss guard taking an oath of loyalty to the Pope, surrounded by the Swiss Pontifical Guard inscription, the dates 1506 and 2006, Vatican City's name, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000010",
+    "title": "500th Anniversary of Christopher Columbus' Death",
+    "issuerCode": "SM",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "Christopher Columbus with three caravels, a wind rose, the Rome mint mark, San Marino's name, and the dates 1506–2006 on a scroll, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000011",
+    "title": "100th Anniversary of Universal and Equal Suffrage",
+    "issuerCode": "FI",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "Male and female faces separated by a line, flanked by the date 1 October 1906 and the inscription 20 FI 06, with mint marks beside the faces and twelve stars around the design."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000012",
+    "title": "Atomium",
+    "issuerCode": "BE",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "The Atomium monument with the engraver's initials and two mint marks, surrounded by the letter B, the year 2006, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000013",
+    "title": "Schleswig-Holstein",
+    "issuerCode": "DE",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "Lübeck's Holstentor gate above the name Schleswig-Holstein, accompanied by the engraver's initials, one of five German mint marks, the year 2006, Germany's official name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000014",
+    "title": "XX Olympic Winter Games — Turin 2006",
+    "issuerCode": "IT",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "A skier in motion beside Turin's Mole Antonelliana, accompanied by the Winter Games inscription, the Italian Republic monogram, the Rome mint mark, the year 2006, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000015",
+    "title": "25th Birthday of Grand Duke Guillaume",
+    "issuerCode": "LU",
+    "firstIssueYear": 2006,
+    "lastIssueYear": 2006,
+    "obverse": {
+      "description": "Grand Duke Henri's portrait superimposed on that of Hereditary Grand Duke Guillaume, with Luxembourg's name, the year 2006, mint marks, and twelve stars."
+    }
   }
 ]

@@ -432,5 +432,105 @@
     "obverse": {
       "description": "Grand Duke Henri's portrait superimposed on the Grand Ducal Palace, accompanied by Luxembourg's name, the year 2007, the engraver and mint marks, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002a",
+    "title": "The Year of St Paul — 2000th Anniversary of His Birth",
+    "issuerCode": "VA",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "The conversion of Saint Paul on the road to Damascus, showing him falling from his rearing horse before the city, accompanied by Vatican City's name, the commemorative legend, the year 2008, the Rome mint mark, artist and engraver credits, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002b",
+    "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "issuerCode": "FI",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "A human figure inside a heart above the inscription HUMAN RIGHTS, accompanied by Finland's country code, the sculptor's initial, the mint mark, the year 2008, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002c",
+    "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "issuerCode": "PT",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "The Portuguese coat of arms above Portugal's name and the year 2008, with a geometric design and a Portuguese inscription commemorating 60 years of the Universal Declaration of Human Rights, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002d",
+    "title": "French Presidency of the Council of the European Union",
+    "issuerCode": "FR",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "The inscription 2008 PRÉSIDENCE FRANÇAISE UNION EUROPÉENNE RF, with the mint and mintmaster's marks below and twelve stars around the design."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002e",
+    "title": "500th Anniversary of Primož Trubar's Birth",
+    "issuerCode": "SI",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "A profile portrait of Primož Trubar accompanied by his name, the dates 1508–1586, the inscription SLOVENIJA 2008, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000002f",
+    "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "issuerCode": "BE",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "Curved lines surround a rectangle bearing the number 60, with the year 2008 above and the Universal Declaration of Human Rights inscription below, accompanied by Belgium's name in its three official languages, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000030",
+    "title": "European Year of Intercultural Dialogue",
+    "issuerCode": "SM",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "Five human silhouettes and sacred texts symbolise the cultures and communities of Europe's five regions, accompanied by the intercultural dialogue inscription, San Marino's name, the year 2008, artist and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000031",
+    "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "issuerCode": "IT",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "A man and woman appear with symbols of the rights to peace, food, work, and freedom, accompanied by the Italian Republic monogram, the year 2008, chain links forming the number 60, the inscription DIRITTI UMANI, artist and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000032",
+    "title": "Grand Duke Henri and Château de Berg",
+    "issuerCode": "LU",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "Grand Duke Henri and his official residence, Château de Berg, accompanied by the year 2008, mint and engraving workshop marks, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000033",
+    "title": "Hamburg",
+    "issuerCode": "DE",
+    "firstIssueYear": 2008,
+    "lastIssueYear": 2008,
+    "obverse": {
+      "description": "Hamburg's baroque St Michael's Church, known as the Michel, above the name Hamburg, accompanied by the mint mark, the year 2008, Germany's official name, and twelve stars."
+    }
   }
 ]

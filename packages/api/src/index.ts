@@ -86,6 +86,33 @@ export const coinListItemResponseSchema = z
 
 export type CoinListItemResponse = z.infer<typeof coinListItemResponseSchema>
 
+export const COIN_LIST_DEFAULT_PAGE = 1
+export const COIN_LIST_DEFAULT_PAGE_SIZE = 24
+export const COIN_LIST_MAX_PAGE_SIZE = 100
+
+export const coinListPageSchema = z.int().min(1)
+export const coinListPageSizeSchema = z
+  .int()
+  .min(1)
+  .max(COIN_LIST_MAX_PAGE_SIZE)
+export const coinListPageQuerySchema = z.coerce.number().int().min(1)
+export const coinListPageSizeQuerySchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(COIN_LIST_MAX_PAGE_SIZE)
+
+export const coinListPaginationResponseSchema = z.strictObject({
+  page: coinListPageSchema,
+  pageSize: coinListPageSizeSchema,
+  totalItems: z.int().min(0),
+  totalPages: z.int().min(0),
+})
+
+export type CoinListPaginationResponse = z.infer<
+  typeof coinListPaginationResponseSchema
+>
+
 export const coinSurfaceResponseSchema = z.strictObject({
   description: z.string().min(1).max(10_000).nullable(),
   imageUrl: z.url().nullable(),
@@ -140,7 +167,8 @@ export const coinDetailResponseSchema = z
 export type CoinDetailResponse = z.infer<typeof coinDetailResponseSchema>
 
 export const coinListResponseSchema = z.strictObject({
-  coins: z.array(coinListItemResponseSchema),
+  coins: z.array(coinListItemResponseSchema).max(COIN_LIST_MAX_PAGE_SIZE),
+  pagination: coinListPaginationResponseSchema,
 })
 
 export type CoinListResponse = z.infer<typeof coinListResponseSchema>
@@ -181,6 +209,11 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(
   "invalid_engraver_slug",
   "Engraver Slug is invalid"
+)
+
+export const invalidPaginationErrorSchema = errorResponseSchema(
+  "invalid_pagination",
+  "Pagination is invalid"
 )
 
 export const coinNotFoundErrorSchema = errorResponseSchema(

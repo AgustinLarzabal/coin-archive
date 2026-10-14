@@ -32,7 +32,24 @@ const coin = {
 }
 
 function jsonResponse(body: unknown) {
-  return new Response(JSON.stringify(body), {
+  const responseBody =
+    typeof body === "object" &&
+    body !== null &&
+    "coins" in body &&
+    Array.isArray(body.coins) &&
+    !("pagination" in body)
+      ? {
+          ...body,
+          pagination: {
+            page: 1,
+            pageSize: 24,
+            totalItems: body.coins.length,
+            totalPages: body.coins.length === 0 ? 0 : 1,
+          },
+        }
+      : body
+
+  return new Response(JSON.stringify(responseBody), {
     headers: { "content-type": "application/json" },
   })
 }
@@ -77,7 +94,41 @@ describe("Archive data module", () => {
           reverseImageUrl: null,
         },
       ],
+      pagination: {
+        page: 1,
+        pageSize: 24,
+        totalItems: 1,
+        totalPages: 1,
+      },
     })
+    queryClient.clear()
+  })
+
+  it("rejects a Coin list response without pagination metadata", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              coins: [
+                {
+                  ...coin,
+                  obverseImageUrl: null,
+                  reverseImageUrl: null,
+                },
+              ],
+            }),
+            { headers: { "content-type": "application/json" } }
+          )
+        )
+      )
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinListQueryOptions())
+    ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
     queryClient.clear()
   })
 
@@ -262,9 +313,7 @@ describe("Archive data module", () => {
         "fetch",
         vi.fn(() =>
           Promise.resolve(
-            jsonResponse(
-              coinDetailFixture({ firstIssueYear, lastIssueYear })
-            )
+            jsonResponse(coinDetailFixture({ firstIssueYear, lastIssueYear }))
           )
         )
       )

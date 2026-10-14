@@ -50,6 +50,18 @@ describe("Explore search schema", () => {
     ).toEqual({
       issuerCode: "AR",
       engraverSlug: "first-engraver",
+      page: 1,
+    })
+  })
+
+  it("maps a one-based URL page to the Coin list request", () => {
+    const search = exploreSearchSchema.parse({ page: "3" })
+
+    expect(search).toEqual({ page: 3 })
+    expect(getExploreCoinListFilters(search)).toEqual({
+      engraverSlug: undefined,
+      issuerCode: undefined,
+      page: 3,
     })
   })
 })

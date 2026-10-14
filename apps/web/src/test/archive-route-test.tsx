@@ -5,7 +5,24 @@ import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
 import { getRouter } from "@/router"
 
 export function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+  const responseBody =
+    typeof body === "object" &&
+    body !== null &&
+    "coins" in body &&
+    Array.isArray(body.coins) &&
+    !("pagination" in body)
+      ? {
+          ...body,
+          pagination: {
+            page: 1,
+            pageSize: 24,
+            totalItems: body.coins.length,
+            totalPages: body.coins.length === 0 ? 0 : 1,
+          },
+        }
+      : body
+
+  return new Response(JSON.stringify(responseBody), {
     headers: { "content-type": "application/json" },
     status,
   })

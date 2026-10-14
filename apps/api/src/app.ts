@@ -2,8 +2,12 @@ import { randomUUID } from "node:crypto"
 
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi"
 import {
+  COIN_LIST_DEFAULT_PAGE,
+  COIN_LIST_DEFAULT_PAGE_SIZE,
   coinDetailResponseSchema,
   coinIdSchema,
+  coinListPageQuerySchema,
+  coinListPageSizeQuerySchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   engraverListResponseSchema as sharedEngraverListResponseSchema,
@@ -12,6 +16,7 @@ import {
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
+  invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   issuerCodeSchema,
   issuerListResponseSchema as sharedIssuerListResponseSchema,
   issuerResponseSchema,
@@ -32,6 +37,7 @@ import type {
   Coin,
   CoinListItem,
   CoinListOptions,
+  CoinListPage,
   EngraverRecord,
   IssuerRecord,
 } from "@workspace/db"
@@ -41,7 +47,7 @@ export interface AppOptions {
   checkReadiness: () => Promise<void>
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
-  listCoins?: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
+  listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   log?: (line: string) => void
@@ -88,6 +94,16 @@ const coinListQuerySchema = z.object({
     description: "Exact, case-sensitive Issuer Code",
     param: { name: "issuer", in: "query" },
   }),
+  page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
+    description: "One-based page number",
+    param: { name: "page", in: "query" },
+  }),
+  pageSize: coinListPageSizeQuerySchema
+    .default(COIN_LIST_DEFAULT_PAGE_SIZE)
+    .openapi({
+      description: "Number of Coins per page (maximum 100)",
+      param: { name: "pageSize", in: "query" },
+    }),
 })
 
 function toCoinResponseFields(coin: Coin | CoinListItem) {
@@ -188,9 +204,13 @@ const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
 )
 const invalidEngraverSlugErrorSchema =
   sharedInvalidEngraverSlugErrorSchema.openapi("InvalidEngraverSlugError")
+const invalidPaginationErrorSchema = sharedInvalidPaginationErrorSchema.openapi(
+  "InvalidPaginationError"
+)
 const invalidCoinListFilterErrorSchema = z.union([
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
+  invalidPaginationErrorSchema,
 ])
 const coinNotFoundErrorSchema =
   sharedCoinNotFoundErrorSchema.openapi("CoinNotFoundError")
@@ -407,17 +427,30 @@ export function createApp(options: AppOptions) {
   app.openapi(
     coinListRoute,
     async (context) => {
-      const { engraver: engraverSlug, issuer: issuerCode } =
-        context.req.valid("query")
-      const listCoins = options.listCoins ?? (async () => [])
-      const hasFilters = issuerCode !== undefined || engraverSlug !== undefined
-      const coins = await (hasFilters
-        ? listCoins({ engraverSlug, issuerCode })
-        : listCoins())
+      const {
+        engraver: engraverSlug,
+        issuer: issuerCode,
+        page,
+        pageSize,
+      } = context.req.valid("query")
+      const listCoins =
+        options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
+      const { coins, totalItems } = await listCoins({
+        ...(engraverSlug === undefined ? {} : { engraverSlug }),
+        ...(issuerCode === undefined ? {} : { issuerCode }),
+        page,
+        pageSize,
+      })
       const response = {
-        coins: coins.map((coin) =>
-          toCoinListItemResponse(coin, options.imageBaseUrl)
-        ),
+        coins: coins
+          .slice(0, pageSize)
+          .map((coin) => toCoinListItemResponse(coin, options.imageBaseUrl)),
+        pagination: {
+          page,
+          pageSize,
+          totalItems,
+          totalPages: Math.ceil(totalItems / pageSize),
+        },
       } satisfies CoinListResponse
 
       return context.json(response, 200)
@@ -427,6 +460,9 @@ export function createApp(options: AppOptions) {
         const invalidEngraver = result.error.issues.some(
           (issue) => issue.path[0] === "engraver"
         )
+        const invalidPagination = result.error.issues.some(
+          (issue) => issue.path[0] === "page" || issue.path[0] === "pageSize"
+        )
         return context.json(
           invalidEngraver
             ? {
@@ -435,12 +471,19 @@ export function createApp(options: AppOptions) {
                   message: "Engraver Slug is invalid" as const,
                 },
               }
-            : {
-                error: {
-                  code: "invalid_issuer_code" as const,
-                  message: "Issuer Code is invalid" as const,
+            : invalidPagination
+              ? {
+                  error: {
+                    code: "invalid_pagination" as const,
+                    message: "Pagination is invalid" as const,
+                  },
+                }
+              : {
+                  error: {
+                    code: "invalid_issuer_code" as const,
+                    message: "Issuer Code is invalid" as const,
+                  },
                 },
-              },
           400
         )
       }

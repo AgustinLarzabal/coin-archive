@@ -1,7 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
 import {
+  COIN_LIST_DEFAULT_PAGE,
+  COIN_LIST_DEFAULT_PAGE_SIZE,
   coinDetailResponseSchema,
   coinIdSchema,
+  coinListPageSchema,
   coinListResponseSchema,
   coinNotFoundErrorSchema,
   engraverSlugSchema,
@@ -23,16 +26,21 @@ export class InvalidEngraverSlugError extends Error {}
 export type CoinListFilters = Readonly<{
   engraverSlug?: string
   issuerCode?: string
+  page?: number
 }>
 
 type ValidatedCoinListFilters = Readonly<{
   engraverSlug: string | null
   issuerCode: string | null
+  page: number
+  pageSize: number
 }>
 
 async function getCoins({
   engraverSlug,
   issuerCode,
+  page,
+  pageSize,
 }: ValidatedCoinListFilters): Promise<CoinListResponse> {
   let response: Response
 
@@ -44,6 +52,8 @@ async function getCoins({
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
     }
+    search.set("page", String(page))
+    search.set("pageSize", String(pageSize))
     const query = search.size === 0 ? "" : `?${search.toString()}`
     response = await fetch(`${API_BASE_URL}/v1/coins${query}`)
   } catch (error) {
@@ -102,7 +112,7 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 }
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
-  const { engraverSlug, issuerCode } = filters
+  const { engraverSlug, issuerCode, page = COIN_LIST_DEFAULT_PAGE } = filters
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
@@ -115,10 +125,15 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   ) {
     throw new InvalidEngraverSlugError("Invalid engraver slug")
   }
+  if (!coinListPageSchema.safeParse(page).success) {
+    throw new RangeError("Invalid Coin list page")
+  }
 
   const validatedFilters: ValidatedCoinListFilters = {
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
+    page,
+    pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,
   }
 
   return queryOptions({

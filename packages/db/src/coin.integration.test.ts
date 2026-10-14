@@ -110,13 +110,16 @@ describe("Coin persistence", () => {
           })
           .returning()
 
-        await expect(database.listCoins()).resolves.toEqual([
-          expect.objectContaining({
-            id: coin.id,
-            firstIssueYear,
-            lastIssueYear,
-          }),
-        ])
+        await expect(database.listCoins()).resolves.toEqual({
+          coins: [
+            expect.objectContaining({
+              id: coin.id,
+              firstIssueYear,
+              lastIssueYear,
+            }),
+          ],
+          totalItems: 1,
+        })
         await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
           firstIssueYear,
           lastIssueYear,
@@ -569,8 +572,8 @@ describe("Coin persistence", () => {
         reverse: null,
         edge: null,
       })
-      await expect(database.listCoins()).resolves.toEqual(
-        expect.arrayContaining([
+      await expect(database.listCoins()).resolves.toEqual({
+        coins: expect.arrayContaining([
           expect.objectContaining({
             id: withoutSurfaces.id,
             obverseImageKey: null,
@@ -586,8 +589,9 @@ describe("Coin persistence", () => {
             obverseImageKey: null,
             reverseImageKey: null,
           }),
-        ])
-      )
+        ]),
+        totalItems: 4,
+      })
     } finally {
       await database.close()
     }
@@ -900,11 +904,44 @@ describe("Coin persistence", () => {
         },
       ])
 
-      await expect(database.listCoins()).resolves.toEqual([
-        expect.objectContaining({ id: firstTiedId }),
-        expect.objectContaining({ id: secondTiedId }),
-        expect.objectContaining({ id: olderId }),
-      ])
+      await expect(database.listCoins()).resolves.toEqual({
+        coins: [
+          expect.objectContaining({ id: firstTiedId }),
+          expect.objectContaining({ id: secondTiedId }),
+          expect.objectContaining({ id: olderId }),
+        ],
+        totalItems: 3,
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("returns one bounded page with an exact total", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values(
+        Array.from({ length: 5 }, (_, index) => ({
+          id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+          title: `Coin ${index + 1}`,
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        }))
+      )
+
+      const page = await database.listCoins({ page: 2, pageSize: 2 })
+
+      expect(page.totalItems).toBe(5)
+      expect(page.coins.map((coin) => coin.title)).toEqual(["Coin 3", "Coin 4"])
+
+      await expect(
+        database.listCoins({ page: 4, pageSize: 2 })
+      ).resolves.toEqual({ coins: [], totalItems: 5 })
+      await expect(database.listCoins({ pageSize: 101 })).rejects.toThrow(
+        "pageSize must be an integer between 1 and 100"
+      )
     } finally {
       await database.close()
     }
@@ -946,16 +983,19 @@ describe("Coin persistence", () => {
 
       await expect(
         database.listCoins({ issuerCode: "ROMAN" })
-      ).resolves.toEqual([
-        expect.objectContaining({ id: firstTiedId }),
-        expect.objectContaining({ id: secondTiedId }),
-      ])
+      ).resolves.toEqual({
+        coins: [
+          expect.objectContaining({ id: firstTiedId }),
+          expect.objectContaining({ id: secondTiedId }),
+        ],
+        totalItems: 2,
+      })
       await expect(
         database.listCoins({ issuerCode: "roman" })
-      ).resolves.toEqual([])
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
       await expect(
         database.listCoins({ issuerCode: "UNKNOWN" })
-      ).resolves.toEqual([])
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
     } finally {
       await database.close()
     }
@@ -1084,23 +1124,29 @@ describe("Coin persistence", () => {
 
       await expect(
         database.listCoins({ engraverSlug: "selected-engraver" })
-      ).resolves.toEqual([
-        expect.objectContaining({ id: reverseId }),
-        expect.objectContaining({ id: bothFacesId }),
-        expect.objectContaining({ id: obverseId }),
-      ])
+      ).resolves.toEqual({
+        coins: [
+          expect.objectContaining({ id: reverseId }),
+          expect.objectContaining({ id: bothFacesId }),
+          expect.objectContaining({ id: obverseId }),
+        ],
+        totalItems: 3,
+      })
       await expect(
         database.listCoins({
           issuerCode: "ROMAN",
           engraverSlug: "selected-engraver",
         })
-      ).resolves.toEqual([
-        expect.objectContaining({ id: bothFacesId }),
-        expect.objectContaining({ id: obverseId }),
-      ])
+      ).resolves.toEqual({
+        coins: [
+          expect.objectContaining({ id: bothFacesId }),
+          expect.objectContaining({ id: obverseId }),
+        ],
+        totalItems: 2,
+      })
       await expect(
         database.listCoins({ engraverSlug: "unknown-engraver" })
-      ).resolves.toEqual([])
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
     } finally {
       await database.close()
     }
@@ -1109,7 +1155,10 @@ describe("Coin persistence", () => {
   it("lists no Coins from an empty archive", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
-      await expect(database.listCoins()).resolves.toEqual([])
+      await expect(database.listCoins()).resolves.toEqual({
+        coins: [],
+        totalItems: 0,
+      })
     } finally {
       await database.close()
     }
@@ -1571,46 +1620,47 @@ describe("Coin seed", () => {
         { name: "Spain", code: "ES" },
         { name: "Vatican City", code: "VA" },
       ])
-      const seededCoins = await database.listCoins()
-      expect(seededCoins).toHaveLength(88)
+      const seededCoins = await database.listCoins({ pageSize: 100 })
+      expect(seededCoins.coins).toHaveLength(88)
+      expect(seededCoins.totalItems).toBe(88)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2004 && lastIssueYear === 2004
         )
       ).toHaveLength(6)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2005 && lastIssueYear === 2005
         )
       ).toHaveLength(8)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2006 && lastIssueYear === 2006
         )
       ).toHaveLength(7)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2007 && lastIssueYear === 2007
         )
       ).toHaveLength(20)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2008 && lastIssueYear === 2008
         )
       ).toHaveLength(10)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2009 && lastIssueYear === 2009
         )
       ).toHaveLength(25)
       expect(
-        seededCoins.filter(
+        seededCoins.coins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2010 && lastIssueYear === 2010
         )
@@ -1653,7 +1703,10 @@ describe("Coin seed", () => {
           })
         ).rejects.toThrow()
         expect(transaction).not.toHaveBeenCalled()
-        await expect(database.listCoins()).resolves.toEqual([])
+        await expect(database.listCoins()).resolves.toEqual({
+          coins: [],
+          totalItems: 0,
+        })
       } finally {
         await database.close()
       }
@@ -1746,7 +1799,10 @@ describe("Coin seed", () => {
             coins: [{ ...validSeed.coins[0], issuerCode: code }],
           })
         ).rejects.toThrow()
-        await expect(database.listCoins()).resolves.toEqual([])
+        await expect(database.listCoins()).resolves.toEqual({
+          coins: [],
+          totalItems: 0,
+        })
       } finally {
         await database.close()
       }
@@ -1765,7 +1821,10 @@ describe("Coin seed", () => {
             coins: validSeed.coins,
           })
         ).rejects.toThrow()
-        await expect(database.listCoins()).resolves.toEqual([])
+        await expect(database.listCoins()).resolves.toEqual({
+          coins: [],
+          totalItems: 0,
+        })
       } finally {
         await database.close()
       }

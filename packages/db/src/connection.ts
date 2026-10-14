@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, exists, inArray, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { alias } from "drizzle-orm/pg-core"
 import { Pool } from "pg"
@@ -9,7 +9,7 @@ export interface Database {
   checkReadiness: () => Promise<void>
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
-  listCoins: (options?: CoinListOptions) => Promise<Array<CoinListItem>>
+  listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   orm: ReturnType<typeof drizzle<typeof schema>>
@@ -36,6 +36,13 @@ export type CoinListItem = schema.CoinRecord & {
 export interface CoinListOptions {
   engraverSlug?: string
   issuerCode?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface CoinListPage {
+  coins: Array<CoinListItem>
+  totalItems: number
 }
 
 export interface DatabaseOptions {
@@ -142,77 +149,112 @@ export function createDatabase(
         edge: row.edge,
       }
     },
-    async listCoins(filters = {}) {
-      const rows = await orm
-        .select({
-          coin: schema.coins,
-          issuer: schema.issuers,
-          obverseImageKey: obverses.imageKey,
-          reverseImageKey: reverses.imageKey,
-        })
-        .from(schema.coins)
-        .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
-        .leftJoin(
-          obverses,
-          and(
-            eq(obverses.coinId, schema.coins.id),
-            eq(obverses.kind, "obverse")
-          )
-        )
-        .leftJoin(
-          reverses,
-          and(
-            eq(reverses.coinId, schema.coins.id),
-            eq(reverses.kind, "reverse")
-          )
-        )
-        .where(
-          and(
-            filters.issuerCode === undefined
-              ? undefined
-              : eq(schema.issuers.code, filters.issuerCode),
-            filters.engraverSlug === undefined
-              ? undefined
-              : exists(
-                  orm
-                    .select({
-                      coinSurfaceId: schema.coinSurfaceEngravers.coinSurfaceId,
-                    })
-                    .from(schema.coinSurfaceEngravers)
-                    .innerJoin(
-                      schema.coinSurfaces,
-                      eq(
-                        schema.coinSurfaceEngravers.coinSurfaceId,
-                        schema.coinSurfaces.id
+    async listCoins(listOptions = {}) {
+      const page = listOptions.page ?? 1
+      const pageSize = listOptions.pageSize ?? 24
+      if (!Number.isSafeInteger(page) || page < 1) {
+        throw new RangeError("page must be a positive safe integer")
+      }
+      if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+        throw new RangeError("pageSize must be an integer between 1 and 100")
+      }
+
+      return orm.transaction(
+        async (transaction) => {
+          const filteredCoins = () =>
+            and(
+              listOptions.issuerCode === undefined
+                ? undefined
+                : eq(schema.issuers.code, listOptions.issuerCode),
+              listOptions.engraverSlug === undefined
+                ? undefined
+                : exists(
+                    transaction
+                      .select({
+                        coinSurfaceId:
+                          schema.coinSurfaceEngravers.coinSurfaceId,
+                      })
+                      .from(schema.coinSurfaceEngravers)
+                      .innerJoin(
+                        schema.coinSurfaces,
+                        eq(
+                          schema.coinSurfaceEngravers.coinSurfaceId,
+                          schema.coinSurfaces.id
+                        )
                       )
-                    )
-                    .innerJoin(
-                      schema.engravers,
-                      eq(
-                        schema.coinSurfaceEngravers.engraverId,
-                        schema.engravers.id
+                      .innerJoin(
+                        schema.engravers,
+                        eq(
+                          schema.coinSurfaceEngravers.engraverId,
+                          schema.engravers.id
+                        )
                       )
-                    )
-                    .where(
-                      and(
-                        eq(schema.coinSurfaces.coinId, schema.coins.id),
-                        inArray(schema.coinSurfaces.kind, [
-                          "obverse",
-                          "reverse",
-                        ]),
-                        eq(schema.engravers.slug, filters.engraverSlug)
+                      .where(
+                        and(
+                          eq(schema.coinSurfaces.coinId, schema.coins.id),
+                          inArray(schema.coinSurfaces.kind, [
+                            "obverse",
+                            "reverse",
+                          ]),
+                          eq(schema.engravers.slug, listOptions.engraverSlug)
+                        )
                       )
-                    )
-                )
-          )
-        )
-        .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
-      return rows.map(({ coin, issuer, obverseImageKey, reverseImageKey }) => ({
-        ...coin,
-        issuer,
-        obverseImageKey,
-        reverseImageKey,
-      }))
+                  )
+            )
+
+          const [{ totalItems }] = await transaction
+            .select({ totalItems: count() })
+            .from(schema.coins)
+            .innerJoin(
+              schema.issuers,
+              eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .where(filteredCoins())
+          const rows = await transaction
+            .select({
+              coin: schema.coins,
+              issuer: schema.issuers,
+              obverseImageKey: obverses.imageKey,
+              reverseImageKey: reverses.imageKey,
+            })
+            .from(schema.coins)
+            .innerJoin(
+              schema.issuers,
+              eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .leftJoin(
+              obverses,
+              and(
+                eq(obverses.coinId, schema.coins.id),
+                eq(obverses.kind, "obverse")
+              )
+            )
+            .leftJoin(
+              reverses,
+              and(
+                eq(reverses.coinId, schema.coins.id),
+                eq(reverses.kind, "reverse")
+              )
+            )
+            .where(filteredCoins())
+            .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
+            .limit(pageSize)
+            .offset((page - 1) * pageSize)
+
+          return {
+            coins: rows.map(
+              ({ coin, issuer, obverseImageKey, reverseImageKey }) => ({
+                ...coin,
+                issuer,
+                obverseImageKey,
+                reverseImageKey,
+              })
+            ),
+            totalItems,
+          }
+        },
+        { accessMode: "read only", isolationLevel: "repeatable read" }
+      )
     },
     listEngravers: () =>
       orm

@@ -3,6 +3,7 @@ export type {
   Coin,
   CoinListItem,
   CoinListOptions,
+  CoinListPage,
   CoinSurfaceWithEngravers,
   Database,
   DatabaseOptions,

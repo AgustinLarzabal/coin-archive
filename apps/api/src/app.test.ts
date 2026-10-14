@@ -3,6 +3,16 @@ import { describe, expect, it, vi } from "vitest"
 import { createApp } from "./app.js"
 
 const successfulReadinessCheck = async () => {}
+const emptyCoinPage = async () => ({ coins: [], totalItems: 0 })
+const emptyCoinListResponse = {
+  coins: [],
+  pagination: {
+    page: 1,
+    pageSize: 24,
+    totalItems: 0,
+    totalPages: 0,
+  },
+}
 
 describe("API", () => {
   it("reports liveness without external dependencies", async () => {
@@ -574,13 +584,16 @@ describe("API", () => {
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
         findCoinById: async () => romanCoin,
-        listCoins: async () => [
-          {
-            ...romanCoin,
-            obverseImageKey: romanCoin.obverse.imageKey,
-            reverseImageKey: romanCoin.reverse.imageKey,
-          },
-        ],
+        listCoins: async () => ({
+          coins: [
+            {
+              ...romanCoin,
+              obverseImageKey: romanCoin.obverse.imageKey,
+              reverseImageKey: romanCoin.reverse.imageKey,
+            },
+          ],
+          totalItems: 1,
+        }),
         imageBaseUrl: "https://images.coin-archive.example",
       })
 
@@ -658,6 +671,12 @@ describe("API", () => {
               "https://images.coin-archive.example/coins/first/reverse%20image.webp",
           },
         ],
+        pagination: {
+          page: 1,
+          pageSize: 24,
+          totalItems: 1,
+          totalPages: 1,
+        },
       })
     })
 
@@ -795,8 +814,9 @@ describe("API", () => {
             ]),
           }),
           CoinListResponse: expect.objectContaining({
-            properties: {
+            properties: expect.objectContaining({
               coins: expect.objectContaining({
+                maxItems: 100,
                 items: expect.objectContaining({
                   properties: expect.objectContaining(issueYearProperties),
                   required: expect.arrayContaining([
@@ -805,7 +825,17 @@ describe("API", () => {
                   ]),
                 }),
               }),
-            },
+              pagination: expect.objectContaining({
+                additionalProperties: false,
+                properties: {
+                  page: { type: "integer", minimum: 1 },
+                  pageSize: { type: "integer", minimum: 1, maximum: 100 },
+                  totalItems: { type: "integer", minimum: 0 },
+                  totalPages: { type: "integer", minimum: 0 },
+                },
+                required: ["page", "pageSize", "totalItems", "totalPages"],
+              }),
+            }),
           }),
           Issuer: {
             type: "object",
@@ -826,8 +856,138 @@ describe("API", () => {
   })
 
   describe("GET /v1/coins", () => {
+    it("uses bounded pagination defaults and returns exact metadata", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 49 }))
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual({
+        coins: [],
+        pagination: {
+          page: 1,
+          pageSize: 24,
+          totalItems: 49,
+          totalPages: 3,
+        },
+      })
+    })
+
+    it("passes a requested page and maximum page size to the Coin list", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 201 }))
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?page=3&pageSize=100")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        page: 3,
+        pageSize: 100,
+      })
+      await expect(response.json()).resolves.toEqual({
+        coins: [],
+        pagination: {
+          page: 3,
+          pageSize: 100,
+          totalItems: 201,
+          totalPages: 3,
+        },
+      })
+    })
+
+    it("returns an empty successful page beyond the result range", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: async () => ({ coins: [], totalItems: 1 }),
+      }).request("/v1/coins?page=2&pageSize=24")
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual({
+        coins: [],
+        pagination: {
+          page: 2,
+          pageSize: 24,
+          totalItems: 1,
+          totalPages: 1,
+        },
+      })
+    })
+
+    it("never returns more than the requested bounded page size", async () => {
+      const coin = {
+        id: "00000000-0000-4000-8000-000000000001",
+        title: "Bounded coin",
+        issuerId: "10000000-0000-4000-8000-000000000001",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
+        issuer: {
+          id: "10000000-0000-4000-8000-000000000001",
+          name: "Argentina",
+          code: "AR",
+          createdAt: new Date("2026-09-16T09:00:00.000Z"),
+          updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+        },
+        createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+        obverseImageKey: null,
+        reverseImageKey: null,
+      }
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: async () => ({
+          coins: Array.from({ length: 101 }, () => coin),
+          totalItems: 101,
+        }),
+      }).request("/v1/coins?pageSize=100")
+
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as { coins: Array<unknown> }
+      expect(body.coins).toHaveLength(100)
+    })
+
+    it.each([
+      ["page", "0"],
+      ["page", "1.5"],
+      ["pageSize", "0"],
+      ["pageSize", "101"],
+      ["pageSize", "1.5"],
+    ])(
+      "rejects invalid %s value %s without listing Coins",
+      async (parameter, value) => {
+        const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?${parameter}=${value}`)
+
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: {
+            code: "invalid_pagination",
+            message: "Pagination is invalid",
+          },
+        })
+      }
+    )
+
     it("passes one exact Engraver Slug to the Coin list", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -839,12 +999,14 @@ describe("API", () => {
       expect(response.headers.get("cache-control")).toBe("no-store")
       expect(listCoins).toHaveBeenCalledExactlyOnceWith({
         engraverSlug: "first-archive-engraver",
+        page: 1,
+        pageSize: 24,
       })
-      await expect(response.json()).resolves.toEqual({ coins: [] })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
     it("combines Issuer and Engraver filters for the Coin list", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -856,11 +1018,13 @@ describe("API", () => {
       expect(listCoins).toHaveBeenCalledExactlyOnceWith({
         issuerCode: "ROMAN",
         engraverSlug: "first-archive-engraver",
+        page: 1,
+        pageSize: 24,
       })
     })
 
     it("passes one exact Issuer Code to the Coin collection", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -872,12 +1036,14 @@ describe("API", () => {
       expect(response.headers.get("cache-control")).toBe("no-store")
       expect(listCoins).toHaveBeenCalledExactlyOnceWith({
         issuerCode: "ROMAN",
+        page: 1,
+        pageSize: 24,
       })
-      await expect(response.json()).resolves.toEqual({ coins: [] })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
     it("omits the Coin collection filter when the query parameter is absent", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -886,13 +1052,16 @@ describe("API", () => {
       }).request("/v1/coins")
 
       expect(response.status).toBe(200)
-      expect(listCoins).toHaveBeenCalledExactlyOnceWith()
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        page: 1,
+        pageSize: 24,
+      })
     })
 
     it.each(["", "ar", "A", "ABC_123"])(
       "rejects the malformed Issuer Code %j without listing Coins",
       async (issuerCode) => {
-        const listCoins = vi.fn(async () => [])
+        const listCoins = vi.fn(emptyCoinPage)
 
         const response = await createApp({
           allowedOrigins: [],
@@ -913,7 +1082,7 @@ describe("API", () => {
     )
 
     it("rejects multiple Issuer Code filters without listing Coins", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -934,7 +1103,7 @@ describe("API", () => {
     it.each(["", "First-Engraver", "ab", "first--engraver"])(
       "rejects the malformed Engraver Slug %j without listing Coins",
       async (engraverSlug) => {
-        const listCoins = vi.fn(async () => [])
+        const listCoins = vi.fn(emptyCoinPage)
 
         const response = await createApp({
           allowedOrigins: [],
@@ -955,7 +1124,7 @@ describe("API", () => {
     )
 
     it("rejects multiple Engraver filters without listing Coins", async () => {
-      const listCoins = vi.fn(async () => [])
+      const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
         allowedOrigins: [],
@@ -978,26 +1147,29 @@ describe("API", () => {
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
         imageBaseUrl: "https://images.coin-archive.example",
-        listCoins: async () => [
-          {
-            id: "00000000-0000-4000-8000-000000000001",
-            title: "First coin",
-            issuerId: "10000000-0000-4000-8000-000000000001",
-            firstIssueYear: -2,
-            lastIssueYear: 2,
-            issuer: {
-              id: "10000000-0000-4000-8000-000000000001",
-              name: "Argentina",
-              code: "AR",
-              createdAt: new Date("2026-09-16T09:00:00.000Z"),
-              updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+        listCoins: async () => ({
+          coins: [
+            {
+              id: "00000000-0000-4000-8000-000000000001",
+              title: "First coin",
+              issuerId: "10000000-0000-4000-8000-000000000001",
+              firstIssueYear: -2,
+              lastIssueYear: 2,
+              issuer: {
+                id: "10000000-0000-4000-8000-000000000001",
+                name: "Argentina",
+                code: "AR",
+                createdAt: new Date("2026-09-16T09:00:00.000Z"),
+                updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+              },
+              createdAt: new Date("2026-09-16T10:00:00.000Z"),
+              updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+              obverseImageKey: "coins/first/obverse.webp",
+              reverseImageKey: "coins/first/reverse.webp",
             },
-            createdAt: new Date("2026-09-16T10:00:00.000Z"),
-            updatedAt: new Date("2026-09-16T11:00:00.000Z"),
-            obverseImageKey: "coins/first/obverse.webp",
-            reverseImageKey: "coins/first/reverse.webp",
-          },
-        ],
+          ],
+          totalItems: 1,
+        }),
       }).request("/v1/coins")
 
       expect(response.status).toBe(200)
@@ -1018,6 +1190,12 @@ describe("API", () => {
               "https://images.coin-archive.example/coins/first/reverse.webp",
           },
         ],
+        pagination: {
+          page: 1,
+          pageSize: 24,
+          totalItems: 1,
+          totalPages: 1,
+        },
       })
     })
 
@@ -1025,26 +1203,29 @@ describe("API", () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
-        listCoins: async () => [
-          {
-            id: "00000000-0000-4000-8000-000000000001",
-            title: "First coin",
-            issuerId: "10000000-0000-4000-8000-000000000001",
-            firstIssueYear: 2004,
-            lastIssueYear: 2004,
-            issuer: {
-              id: "10000000-0000-4000-8000-000000000001",
-              name: "Argentina",
-              code: "AR",
-              createdAt: new Date("2026-09-16T09:00:00.000Z"),
-              updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+        listCoins: async () => ({
+          coins: [
+            {
+              id: "00000000-0000-4000-8000-000000000001",
+              title: "First coin",
+              issuerId: "10000000-0000-4000-8000-000000000001",
+              firstIssueYear: 2004,
+              lastIssueYear: 2004,
+              issuer: {
+                id: "10000000-0000-4000-8000-000000000001",
+                name: "Argentina",
+                code: "AR",
+                createdAt: new Date("2026-09-16T09:00:00.000Z"),
+                updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+              },
+              createdAt: new Date("2026-09-16T10:00:00.000Z"),
+              updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+              obverseImageKey: null,
+              reverseImageKey: null,
             },
-            createdAt: new Date("2026-09-16T10:00:00.000Z"),
-            updatedAt: new Date("2026-09-16T11:00:00.000Z"),
-            obverseImageKey: null,
-            reverseImageKey: null,
-          },
-        ],
+          ],
+          totalItems: 1,
+        }),
       }).request("/v1/coins")
 
       const body = await response.json()
@@ -1055,6 +1236,12 @@ describe("API", () => {
             reverseImageUrl: null,
           }),
         ],
+        pagination: {
+          page: 1,
+          pageSize: 24,
+          totalItems: 1,
+          totalPages: 1,
+        },
       })
       expect(JSON.stringify(body)).not.toContain("description")
       expect(JSON.stringify(body)).not.toContain("imageKey")
@@ -1064,12 +1251,12 @@ describe("API", () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
-        listCoins: async () => [],
+        listCoins: emptyCoinPage,
       }).request("/v1/coins")
 
       expect(response.status).toBe(200)
       expect(response.headers.get("cache-control")).toBe("no-store")
-      await expect(response.json()).resolves.toEqual({ coins: [] })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
     it("keeps Coin list failures safe and uncacheable", async () => {
@@ -1125,6 +1312,29 @@ describe("API", () => {
           required: false,
           schema: expect.objectContaining({ pattern: expect.any(String) }),
         }),
+        expect.objectContaining({
+          description: "One-based page number",
+          in: "query",
+          name: "page",
+          required: false,
+          schema: expect.objectContaining({
+            default: 1,
+            minimum: 1,
+            type: "integer",
+          }),
+        }),
+        expect.objectContaining({
+          description: "Number of Coins per page (maximum 100)",
+          in: "query",
+          name: "pageSize",
+          required: false,
+          schema: expect.objectContaining({
+            default: 24,
+            maximum: 100,
+            minimum: 1,
+            type: "integer",
+          }),
+        }),
       ])
       expect(document.paths["/v1/coins"].get.responses).toEqual(
         expect.objectContaining({
@@ -1142,6 +1352,7 @@ describe("API", () => {
                   anyOf: [
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
+                    { $ref: "#/components/schemas/InvalidPaginationError" },
                   ],
                 },
               },
@@ -1161,6 +1372,7 @@ describe("API", () => {
           CoinListResponse: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
+          InvalidPaginationError: expect.any(Object),
           InternalError: expect.any(Object),
         })
       )

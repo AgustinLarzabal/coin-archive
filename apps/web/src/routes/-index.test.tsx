@@ -70,6 +70,32 @@ afterEach(() => {
 })
 
 describe("Archive landing route", () => {
+  it("loads and caches the page selected in the Explore URL", async () => {
+    const fetchMock = vi.fn(createArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?page=3")
+
+    expect(
+      await screen.findByRole("link", { name: "First coin" })
+    ).toBeVisible()
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?page=3&pageSize=24"
+    )
+    expect(
+      router.options.context.queryClient.getQueryState([
+        "coins",
+        "list",
+        {
+          engraverSlug: null,
+          issuerCode: null,
+          page: 3,
+          pageSize: 24,
+        },
+      ])?.status
+    ).toBe("success")
+    expect(router.state.location.searchStr).toBe("?page=3")
+  })
+
   it("loads Coins, Issuers, and Engravers concurrently and keeps loading until all are ready", async () => {
     const coinsResponse = createDeferred<Response>()
     const issuersResponse = createDeferred<Response>()
@@ -80,7 +106,7 @@ describe("Archive landing route", () => {
 
       if (url.endsWith("/v1/issuers")) return issuersResponse.promise
       if (url.endsWith("/v1/engravers")) return engraversResponse.promise
-      if (url.endsWith("/v1/coins?issuer=ROMAN")) {
+      if (url.endsWith("/v1/coins?issuer=ROMAN&page=1&pageSize=24")) {
         return filteredCoinsResponse.promise
       }
       return coinsResponse.promise
@@ -91,7 +117,7 @@ describe("Archive landing route", () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR"
+      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/issuers")
     expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/engravers")
@@ -135,7 +161,7 @@ describe("Archive landing route", () => {
     })
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:3001/v1/coins?issuer=ROMAN"
+        "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
       )
     )
     const settlement = await Promise.race([
@@ -164,7 +190,7 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
     expect(select).toHaveValue("Roman Empire")
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=ROMAN"
+      "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
     )
 
     await router.navigate({ to: "/", search: {} })
@@ -243,7 +269,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=ROMAN&engraver=first-engraver"
+      "http://localhost:3001/v1/coins?issuer=ROMAN&engraver=first-engraver&page=1&pageSize=24"
     )
     expect(router.state.location.search).toEqual({
       issuer: "ROMAN",
@@ -261,7 +287,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR"
+      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
     )
     expect(router.state.location.search).toEqual({
       issuer: "AR",
@@ -278,7 +304,7 @@ describe("Archive landing route", () => {
 
     expect(await screen.findByText("Engraver not found")).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=unknown-engraver"
+      "http://localhost:3001/v1/coins?engraver=unknown-engraver&page=1&pageSize=24"
     )
     expect(router.state.location.search).toEqual({
       engraver: "unknown-engraver",
@@ -326,24 +352,36 @@ describe("Archive landing route", () => {
 
     const queryClient = router.options.context.queryClient
     for (const filters of [
-      { issuerCode: null, engraverSlug: null },
-      { issuerCode: "AR", engraverSlug: null },
-      { issuerCode: null, engraverSlug: "first-engraver" },
-      { issuerCode: "AR", engraverSlug: "first-engraver" },
+      { issuerCode: null, engraverSlug: null, page: 1, pageSize: 24 },
+      { issuerCode: "AR", engraverSlug: null, page: 1, pageSize: 24 },
+      {
+        issuerCode: null,
+        engraverSlug: "first-engraver",
+        page: 1,
+        pageSize: 24,
+      },
+      {
+        issuerCode: "AR",
+        engraverSlug: "first-engraver",
+        page: 1,
+        pageSize: 24,
+      },
     ]) {
       expect(
         queryClient.getQueryState(["coins", "list", filters])?.status
       ).toBe("success")
     }
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/coins")
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR"
+      "http://localhost:3001/v1/coins?page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=first-engraver"
+      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver"
+      "http://localhost:3001/v1/coins?engraver=first-engraver&page=1&pageSize=24"
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&page=1&pageSize=24"
     )
   })
 
@@ -418,7 +456,7 @@ describe("Archive landing route", () => {
         return Promise.resolve(jsonResponse({ engravers }))
       }
 
-      if (url.endsWith("/v1/coins?issuer=ROMAN")) {
+      if (url.endsWith("/v1/coins?issuer=ROMAN&page=1&pageSize=24")) {
         filteredCoinsRequested.resolve()
         return filteredCoinsResponse.promise
       }
@@ -479,9 +517,11 @@ describe("Archive landing route", () => {
     await router.navigate({ to: "/", search: {} })
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR"
+      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
     )
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/coins")
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?page=1&pageSize=24"
+    )
     expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 
@@ -497,7 +537,9 @@ describe("Archive landing route", () => {
       expect(
         await screen.findByRole("link", { name: "First coin" })
       ).toBeVisible()
-      expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/coins")
+      expect(fetchMock).toHaveBeenCalledWith(
+        "http://localhost:3001/v1/coins?page=1&pageSize=24"
+      )
       expect(fetchMock).not.toHaveBeenCalledWith(
         `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}`
       )

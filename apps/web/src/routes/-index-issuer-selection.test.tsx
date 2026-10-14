@@ -32,6 +32,6 @@ it("selects an Issuer and keeps focus on its combobox", async () => {
   expect(combobox).toHaveValue("Roman Empire")
   expect(combobox).toHaveFocus()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=ROMAN"
+    "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
   )
 })

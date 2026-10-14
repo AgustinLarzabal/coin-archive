@@ -1,6 +1,10 @@
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
-import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
+import type {
+  CoinListPaginationResponse,
+  EngraverListItemResponse,
+  IssuerResponse,
+} from "@workspace/api"
 
 import { getRouter } from "@/router"
 
@@ -11,25 +15,30 @@ export function jsonResponse(body: unknown, status = 200) {
   })
 }
 
-export function coinListJsonResponse(coins: Array<unknown>, page = 1) {
+export function coinListJsonResponse(
+  coins: Array<unknown>,
+  pagination: CoinListPaginationResponse = {
+    page: 1,
+    pageSize: 24,
+    totalItems: coins.length,
+    totalPages: coins.length === 0 ? 0 : 1,
+  }
+) {
   return jsonResponse({
     coins,
-    pagination: {
-      page,
-      pageSize: 24,
-      totalItems: coins.length,
-      totalPages: coins.length === 0 ? 0 : 1,
-    },
+    pagination,
   })
 }
 
 export function createArchiveFetch({
   coins = [],
   engravers = [],
+  pagination,
   issuers = [],
 }: {
   coins?: Array<unknown>
   engravers?: Array<EngraverListItemResponse>
+  pagination?: CoinListPaginationResponse
   issuers?: Array<IssuerResponse>
 } = {}) {
   return (input: string | URL | Request) => {
@@ -40,7 +49,7 @@ export function createArchiveFetch({
         ? jsonResponse({ issuers })
         : url.endsWith("/v1/engravers")
           ? jsonResponse({ engravers })
-          : coinListJsonResponse(coins)
+          : coinListJsonResponse(coins, pagination)
     )
   }
 }

@@ -72,7 +72,19 @@ afterEach(() => {
 
 describe("Archive landing route", () => {
   it("loads and caches the page selected in the Explore URL", async () => {
-    const fetchMock = vi.fn(createArchiveFetch())
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        engravers,
+        issuers,
+        pagination: {
+          page: 3,
+          pageSize: 24,
+          totalItems: 49,
+          totalPages: 3,
+        },
+      })
+    )
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute("/?page=3")
 
@@ -540,7 +552,7 @@ describe("Archive landing route", () => {
         "http://localhost:3001/v1/coins?page=1&pageSize=24"
       )
       expect(fetchMock).not.toHaveBeenCalledWith(
-        `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}`
+        `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}&page=1&pageSize=24`
       )
       expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue("")
       expect(router.state.location.searchStr).toBe("")

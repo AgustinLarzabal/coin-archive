@@ -56,6 +56,6 @@ it("navigates duplicate names by keyboard and selects an Engraver by pointer", a
   expect(selectedCombobox).toHaveValue("Shared Name")
   expect(selectedCombobox).toHaveFocus()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&engraver=second-engraver"
+    "http://localhost:3001/v1/coins?issuer=AR&engraver=second-engraver&page=1&pageSize=24"
   )
 })

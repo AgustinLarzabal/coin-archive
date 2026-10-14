@@ -4,6 +4,7 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi"
 import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
+  COIN_LIST_MAX_PAGE_SIZE,
   coinDetailResponseSchema,
   coinIdSchema,
   coinListPageQuerySchema,
@@ -106,7 +107,7 @@ const coinListQuerySchema = z.object({
     .openapi({
       description: "Number of Coins per page (maximum 100)",
       default: COIN_LIST_DEFAULT_PAGE_SIZE,
-      maximum: 100,
+      maximum: COIN_LIST_MAX_PAGE_SIZE,
       minimum: 1,
       param: { name: "pageSize", in: "query" },
       type: "integer",

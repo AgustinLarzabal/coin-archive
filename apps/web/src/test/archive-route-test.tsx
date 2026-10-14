@@ -5,26 +5,21 @@ import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
 import { getRouter } from "@/router"
 
 export function jsonResponse(body: unknown, status = 200) {
-  const responseBody =
-    typeof body === "object" &&
-    body !== null &&
-    "coins" in body &&
-    Array.isArray(body.coins) &&
-    !("pagination" in body)
-      ? {
-          ...body,
-          pagination: {
-            page: 1,
-            pageSize: 24,
-            totalItems: body.coins.length,
-            totalPages: body.coins.length === 0 ? 0 : 1,
-          },
-        }
-      : body
-
-  return new Response(JSON.stringify(responseBody), {
+  return new Response(JSON.stringify(body), {
     headers: { "content-type": "application/json" },
     status,
+  })
+}
+
+export function coinListJsonResponse(coins: Array<unknown>, page = 1) {
+  return jsonResponse({
+    coins,
+    pagination: {
+      page,
+      pageSize: 24,
+      totalItems: coins.length,
+      totalPages: coins.length === 0 ? 0 : 1,
+    },
   })
 }
 
@@ -45,7 +40,7 @@ export function createArchiveFetch({
         ? jsonResponse({ issuers })
         : url.endsWith("/v1/engravers")
           ? jsonResponse({ engravers })
-          : jsonResponse({ coins })
+          : coinListJsonResponse(coins)
     )
   }
 }

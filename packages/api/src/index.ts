@@ -95,12 +95,12 @@ export const coinListPageSizeSchema = z
   .int()
   .min(1)
   .max(COIN_LIST_MAX_PAGE_SIZE)
-export const coinListPageQuerySchema = z.coerce.number().int().min(1)
-export const coinListPageSizeQuerySchema = z.coerce
-  .number()
-  .int()
-  .min(1)
-  .max(COIN_LIST_MAX_PAGE_SIZE)
+const decimalIntegerQuerySchema = z.string().regex(/^\d+$/).transform(Number)
+export const coinListPageQuerySchema =
+  decimalIntegerQuerySchema.pipe(coinListPageSchema)
+export const coinListPageSizeQuerySchema = decimalIntegerQuerySchema.pipe(
+  coinListPageSizeSchema
+)
 
 export const coinListPaginationResponseSchema = z.strictObject({
   page: coinListPageSchema,

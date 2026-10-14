@@ -96,13 +96,20 @@ const coinListQuerySchema = z.object({
   }),
   page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
     description: "One-based page number",
+    default: COIN_LIST_DEFAULT_PAGE,
     param: { name: "page", in: "query" },
+    type: "integer",
+    minimum: 1,
   }),
   pageSize: coinListPageSizeQuerySchema
     .default(COIN_LIST_DEFAULT_PAGE_SIZE)
     .openapi({
       description: "Number of Coins per page (maximum 100)",
+      default: COIN_LIST_DEFAULT_PAGE_SIZE,
+      maximum: 100,
+      minimum: 1,
       param: { name: "pageSize", in: "query" },
+      type: "integer",
     }),
 })
 

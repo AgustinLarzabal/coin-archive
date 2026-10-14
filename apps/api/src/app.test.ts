@@ -961,9 +961,13 @@ describe("API", () => {
     it.each([
       ["page", "0"],
       ["page", "1.5"],
+      ["page", "0x10"],
+      ["page", "1e2"],
+      ["page", "%201%20"],
       ["pageSize", "0"],
       ["pageSize", "101"],
       ["pageSize", "1.5"],
+      ["pageSize", "0x10"],
     ])(
       "rejects invalid %s value %s without listing Coins",
       async (parameter, value) => {

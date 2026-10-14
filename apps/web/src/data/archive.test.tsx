@@ -18,6 +18,7 @@ import { Route as ExploreRoute } from "@/routes/_explore"
 import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$coinId"
 import { startInstance } from "@/start"
+import { coinListJsonResponse, jsonResponse } from "@/test/archive-route-test"
 import { coinDetailFixture } from "@/test/coin-fixtures"
 
 const coinId = "00000000-0000-4000-8000-000000000001"
@@ -29,29 +30,6 @@ const coin = {
   issuer: { name: "Argentina", code: "AR" },
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
-}
-
-function jsonResponse(body: unknown) {
-  const responseBody =
-    typeof body === "object" &&
-    body !== null &&
-    "coins" in body &&
-    Array.isArray(body.coins) &&
-    !("pagination" in body)
-      ? {
-          ...body,
-          pagination: {
-            page: 1,
-            pageSize: 24,
-            totalItems: body.coins.length,
-            totalPages: body.coins.length === 0 ? 0 : 1,
-          },
-        }
-      : body
-
-  return new Response(JSON.stringify(responseBody), {
-    headers: { "content-type": "application/json" },
-  })
 }
 
 function coinResponse(issuer: { code: string; name: string; id?: string }) {
@@ -70,15 +48,13 @@ describe("Archive data module", () => {
       "fetch",
       vi.fn(() =>
         Promise.resolve(
-          jsonResponse({
-            coins: [
-              {
-                ...coin,
-                obverseImageUrl: "https://images.example/obverse.webp",
-                reverseImageUrl: null,
-              },
-            ],
-          })
+          coinListJsonResponse([
+            {
+              ...coin,
+              obverseImageUrl: "https://images.example/obverse.webp",
+              reverseImageUrl: null,
+            },
+          ])
         )
       )
     )
@@ -135,7 +111,7 @@ describe("Archive data module", () => {
   it("rejects the legacy Coin list response without surface image fields", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(jsonResponse({ coins: [coin] })))
+      vi.fn(() => Promise.resolve(coinListJsonResponse([coin])))
     )
     const queryClient = createQueryClient()
 
@@ -153,15 +129,13 @@ describe("Archive data module", () => {
         "fetch",
         vi.fn(() =>
           Promise.resolve(
-            jsonResponse({
-              coins: [
-                {
-                  ...legacyCoin,
-                  obverseImageUrl: null,
-                  reverseImageUrl: null,
-                },
-              ],
-            })
+            coinListJsonResponse([
+              {
+                ...legacyCoin,
+                obverseImageUrl: null,
+                reverseImageUrl: null,
+              },
+            ])
           )
         )
       )
@@ -185,17 +159,15 @@ describe("Archive data module", () => {
         "fetch",
         vi.fn(() =>
           Promise.resolve(
-            jsonResponse({
-              coins: [
-                {
-                  ...coin,
-                  firstIssueYear,
-                  lastIssueYear,
-                  obverseImageUrl: null,
-                  reverseImageUrl: null,
-                },
-              ],
-            })
+            coinListJsonResponse([
+              {
+                ...coin,
+                firstIssueYear,
+                lastIssueYear,
+                obverseImageUrl: null,
+                reverseImageUrl: null,
+              },
+            ])
           )
         )
       )

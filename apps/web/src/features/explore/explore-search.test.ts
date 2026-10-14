@@ -64,4 +64,11 @@ describe("Explore search schema", () => {
       page: 3,
     })
   })
+
+  it.each(["0", "1.5", "0x10", "1e2", " 1 "])(
+    "ignores the malformed page %j",
+    (page) => {
+      expect(exploreSearchSchema.parse({ page })).toEqual({ page: undefined })
+    }
+  )
 })

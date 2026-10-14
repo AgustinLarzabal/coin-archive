@@ -82,5 +82,85 @@
     "reverse": {
       "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Reverse.jpg"
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "title": "20th World Youth Day",
+    "issuerCode": "VA",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "Cologne Cathedral with a comet passing overhead, surrounded by the World Youth Day inscription, the year 2005, the Rome mint mark, Vatican City's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000008",
+    "title": "World Year of Physics 2005",
+    "issuerCode": "SM",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "A free interpretation of an allegorical painting of Galileo Galilei studying the planets, with a globe, a stylised atom, the year 2005, San Marino's name, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000009",
+    "title": "1st Anniversary of the Signing of the European Constitution",
+    "issuerCode": "IT",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "Europa riding the bull while holding a pen and the text of the European Constitution, accompanied by the Italian Republic monogram, the Rome mint mark, the year 2005, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000a",
+    "title": "60th Anniversary of the United Nations and 50th Anniversary of Finland's Membership",
+    "issuerCode": "FI",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "Jigsaw puzzle pieces form a dove of peace above the inscription FINLAND — UN, accompanied by the year 2005, the engraver's initial, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000b",
+    "title": "50th Anniversary of the Austrian State Treaty",
+    "issuerCode": "AT",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "The signatures and seals from the Austrian State Treaty appear over vertical stripes representing Austria's national colours, together with an anniversary inscription, the year 2005, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000c",
+    "title": "400th Anniversary of the First Edition of Don Quixote",
+    "issuerCode": "ES",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "Don Quixote holding a lance with windmills in the background, accompanied by Spain's name, the Madrid mint mark, the year 2005, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000d",
+    "title": "Belgium–Luxembourg Economic Union",
+    "issuerCode": "BE",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "The profiles of Grand Duke Henri of Luxembourg and King Albert II of Belgium above the year 2005, surrounded by their monograms, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000000e",
+    "title": "Anniversaries of Grand Dukes Henri and Adolphe",
+    "issuerCode": "LU",
+    "firstIssueYear": 2005,
+    "lastIssueYear": 2005,
+    "obverse": {
+      "description": "Grand Duke Henri's right-facing portrait superimposed on that of Grand Duke Adolphe, with their names and commemorative dates, Luxembourg's name, the year 2005, mint marks, and twelve stars."
+    }
   }
 ]

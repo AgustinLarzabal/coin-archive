@@ -1551,21 +1551,30 @@ describe("Coin seed", () => {
       await seedCoins(database, await readCoinSeed())
       const issuers = await database.listIssuers()
       expect(issuers.map(({ name, code }) => ({ name, code }))).toEqual([
+        { name: "Austria", code: "AT" },
+        { name: "Belgium", code: "BE" },
         { name: "Finland", code: "FI" },
         { name: "Greece", code: "GR" },
         { name: "Italy", code: "IT" },
         { name: "Luxembourg", code: "LU" },
         { name: "San Marino", code: "SM" },
+        { name: "Spain", code: "ES" },
         { name: "Vatican City", code: "VA" },
       ])
       const seededCoins = await database.listCoins()
-      expect(seededCoins).toHaveLength(6)
+      expect(seededCoins).toHaveLength(14)
       expect(
-        seededCoins.every(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2004 && lastIssueYear === 2004
         )
-      ).toBe(true)
+      ).toHaveLength(6)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2005 && lastIssueYear === 2005
+        )
+      ).toHaveLength(8)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

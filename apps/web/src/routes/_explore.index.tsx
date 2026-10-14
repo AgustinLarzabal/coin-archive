@@ -47,10 +47,13 @@ function ExploreRoute() {
 }
 
 function ExploreError({ error }: ErrorComponentProps) {
-  const message =
-    error instanceof InvalidCoinListResponseError
-      ? "Invalid coin list response"
-      : "Unable to load coins"
+  return <RouteMessage>{getExploreErrorMessage(error)}</RouteMessage>
+}
 
-  return <RouteMessage>{message}</RouteMessage>
+function getExploreErrorMessage(error: unknown) {
+  if (error instanceof InvalidCoinListResponseError) {
+    return "Invalid coin list response"
+  }
+
+  return "Unable to load coins"
 }

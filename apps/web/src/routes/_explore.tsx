@@ -46,16 +46,25 @@ function ExploreLayout() {
 }
 
 function ExploreLayoutError({ error }: ErrorComponentProps) {
-  const message =
-    error instanceof InvalidEngraverListResponseError
-      ? "Invalid engraver list response"
-      : error instanceof InvalidIssuerListResponseError
-        ? "Invalid issuer list response"
-        : error instanceof EngraverListRequestError
-          ? "Unable to load engravers"
-          : error instanceof IssuerListRequestError
-            ? "Unable to load issuers"
-            : "Unable to load Explore filters"
+  return <RouteMessage>{getExploreLayoutErrorMessage(error)}</RouteMessage>
+}
 
-  return <RouteMessage>{message}</RouteMessage>
+function getExploreLayoutErrorMessage(error: unknown) {
+  if (error instanceof InvalidEngraverListResponseError) {
+    return "Invalid engraver list response"
+  }
+
+  if (error instanceof InvalidIssuerListResponseError) {
+    return "Invalid issuer list response"
+  }
+
+  if (error instanceof EngraverListRequestError) {
+    return "Unable to load engravers"
+  }
+
+  if (error instanceof IssuerListRequestError) {
+    return "Unable to load issuers"
+  }
+
+  return "Unable to load Explore filters"
 }

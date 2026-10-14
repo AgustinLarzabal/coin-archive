@@ -123,6 +123,40 @@ describe("Archive data module", () => {
     }
   )
 
+  it.each([
+    [0, 2004],
+    [2004, 0],
+    [2005, 2004],
+  ])(
+    "rejects a Coin list response with the invalid Issue Period %i–%i",
+    async (firstIssueYear, lastIssueYear) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse({
+              coins: [
+                {
+                  ...coin,
+                  firstIssueYear,
+                  lastIssueYear,
+                  obverseImageUrl: null,
+                  reverseImageUrl: null,
+                },
+              ],
+            })
+          )
+        )
+      )
+      const queryClient = createQueryClient()
+
+      await expect(
+        queryClient.fetchQuery(coinListQueryOptions())
+      ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
+      queryClient.clear()
+    }
+  )
+
   it("accepts complete surface data in a Coin detail response", async () => {
     vi.stubGlobal(
       "fetch",
@@ -205,6 +239,32 @@ describe("Archive data module", () => {
         vi.fn(() =>
           Promise.resolve(
             jsonResponse({ ...coinDetailFixture(), [endpoint]: undefined })
+          )
+        )
+      )
+      const queryClient = createQueryClient()
+
+      await expect(
+        queryClient.fetchQuery(coinDetailQueryOptions(coinId))
+      ).rejects.toBeInstanceOf(InvalidCoinResponseError)
+      queryClient.clear()
+    }
+  )
+
+  it.each([
+    [0, 2004],
+    [2004, 0],
+    [2005, 2004],
+  ])(
+    "rejects a Coin detail response with the invalid Issue Period %i–%i",
+    async (firstIssueYear, lastIssueYear) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse(
+              coinDetailFixture({ firstIssueYear, lastIssueYear })
+            )
           )
         )
       )

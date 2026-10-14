@@ -69,7 +69,7 @@ const operationalResponseHeaders = {
 
 const issuerSchema = issuerResponseSchema.openapi("Issuer")
 const coinSchema = coinDetailResponseSchema
-  .extend({ issuer: issuerSchema })
+  .safeExtend({ issuer: issuerSchema })
   .openapi("Coin")
 const coinListResponseSchema =
   sharedCoinListResponseSchema.openapi("CoinListResponse")

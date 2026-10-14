@@ -97,6 +97,17 @@ describe("database rebuild lifecycle", () => {
         "select id, title, first_issue_year, last_issue_year from coins order by id"
       )
       expect(coins.rows).toHaveLength(6)
+      expect(
+        coins.rows.map(({ first_issue_year, last_issue_year }) => ({
+          first_issue_year,
+          last_issue_year,
+        }))
+      ).toEqual(
+        Array.from({ length: 6 }, () => ({
+          first_issue_year: 2004,
+          last_issue_year: 2004,
+        }))
+      )
       expect(coins.rows[0]).toEqual({
         id: "00000000-0000-4000-8000-000000000001",
         title: "50th Anniversary of the World Food Programme",

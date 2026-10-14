@@ -43,21 +43,34 @@ export const issuerListResponseSchema = z.strictObject({
 
 export type IssuerListResponse = z.infer<typeof issuerListResponseSchema>
 
+const issueYearSchema = z
+  .int()
+  .refine((year) => year !== 0, "Issue Year cannot be zero")
+
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
-  firstIssueYear: z.int(),
-  lastIssueYear: z.int(),
+  firstIssueYear: issueYearSchema,
+  lastIssueYear: issueYearSchema,
   issuer: issuerResponseSchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 }
 
-export const coinListItemResponseSchema = z.strictObject({
-  ...coinResponseShape,
-  obverseImageUrl: z.url().nullable(),
-  reverseImageUrl: z.url().nullable(),
-})
+function hasOrderedIssuePeriod(coin: {
+  firstIssueYear: number
+  lastIssueYear: number
+}) {
+  return coin.firstIssueYear <= coin.lastIssueYear
+}
+
+export const coinListItemResponseSchema = z
+  .strictObject({
+    ...coinResponseShape,
+    obverseImageUrl: z.url().nullable(),
+    reverseImageUrl: z.url().nullable(),
+  })
+  .refine(hasOrderedIssuePeriod, "Issue Period must be ordered")
 
 export type CoinListItemResponse = z.infer<typeof coinListItemResponseSchema>
 
@@ -103,12 +116,14 @@ export type CoinSurfaceWithEngraversResponse = z.infer<
   typeof coinSurfaceWithEngraversResponseSchema
 >
 
-export const coinDetailResponseSchema = z.strictObject({
-  ...coinResponseShape,
-  obverse: coinSurfaceWithEngraversResponseSchema,
-  reverse: coinSurfaceWithEngraversResponseSchema,
-  edge: coinSurfaceResponseSchema,
-})
+export const coinDetailResponseSchema = z
+  .strictObject({
+    ...coinResponseShape,
+    obverse: coinSurfaceWithEngraversResponseSchema,
+    reverse: coinSurfaceWithEngraversResponseSchema,
+    edge: coinSurfaceResponseSchema,
+  })
+  .refine(hasOrderedIssuePeriod, "Issue Period must be ordered")
 
 export type CoinDetailResponse = z.infer<typeof coinDetailResponseSchema>
 

@@ -7,7 +7,13 @@ export function formatIssuePeriod(
   lastIssueYear: number
 ) {
   const first = formatIssueYear(firstIssueYear)
-  return firstIssueYear === lastIssueYear
-    ? first
-    : `${first}–${formatIssueYear(lastIssueYear)}`
+  if (firstIssueYear === lastIssueYear) return first
+  if (lastIssueYear < 0) {
+    return `${Math.abs(firstIssueYear)}–${Math.abs(lastIssueYear)} BCE`
+  }
+  if (firstIssueYear < 0) {
+    return `${first}–${lastIssueYear} CE`
+  }
+
+  return `${first}–${formatIssueYear(lastIssueYear)}`
 }

@@ -89,30 +89,30 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("returns a multi-year CE Issue Period unchanged from list and detail queries", async () => {
+  it("returns a BCE Issue Period unchanged from list and detail queries", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
-          title: "Multi-year Coin",
+          title: "BCE Coin",
           issuerId: issuer.id,
-          firstIssueYear: 2004,
-          lastIssueYear: 2007,
+          firstIssueYear: -44,
+          lastIssueYear: -42,
         })
         .returning()
 
       await expect(database.listCoins()).resolves.toEqual([
         expect.objectContaining({
           id: coin.id,
-          firstIssueYear: 2004,
-          lastIssueYear: 2007,
+          firstIssueYear: -44,
+          lastIssueYear: -42,
         }),
       ])
       await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
-        firstIssueYear: 2004,
-        lastIssueYear: 2007,
+        firstIssueYear: -44,
+        lastIssueYear: -42,
       })
     } finally {
       await database.close()

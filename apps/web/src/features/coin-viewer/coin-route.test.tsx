@@ -255,6 +255,44 @@ describe("Coin viewer route", () => {
     expect(screen.getByText("2004–2007")).toBeInTheDocument()
   })
 
+  it("renders a cross-era Issue Period in Coin details", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({ firstIssueYear: -2, lastIssueYear: 2 })
+          )
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.getByText("2 BCE–2 CE")).toBeInTheDocument()
+    expect(screen.queryByText(/-2|year 0/i)).not.toBeInTheDocument()
+  })
+
+  it("renders a BCE Issue Period in Coin details", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({ firstIssueYear: -44, lastIssueYear: -42 })
+          )
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.getByText("44–42 BCE")).toBeInTheDocument()
+    expect(screen.queryByText(/-44|-42/)).not.toBeInTheDocument()
+  })
+
   it("renders ordered Engraver names within their corresponding Obverse and Reverse tabs", async () => {
     const user = userEvent.setup()
     vi.stubGlobal(

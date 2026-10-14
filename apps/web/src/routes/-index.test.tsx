@@ -576,6 +576,36 @@ describe("Archive landing route", () => {
     expect(await screen.findByText("2004–2007")).toBeVisible()
   })
 
+  it("renders a BCE Issue Period on an Explore card", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetch([
+          { ...coin, firstIssueYear: -44, lastIssueYear: -42 },
+        ])
+      )
+    )
+
+    renderArchiveRoute()
+
+    expect(await screen.findByText("44–42 BCE")).toBeVisible()
+    expect(screen.queryByText(/-44|-42/)).not.toBeInTheDocument()
+  })
+
+  it("renders a cross-era Issue Period on an Explore card", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetch([{ ...coin, firstIssueYear: -2, lastIssueYear: 2 }])
+      )
+    )
+
+    renderArchiveRoute()
+
+    expect(await screen.findByText("2 BCE–2 CE")).toBeVisible()
+    expect(screen.queryByText(/-2|year 0/i)).not.toBeInTheDocument()
+  })
+
   it("falls back to the Reverse image when the Obverse image is missing", async () => {
     vi.stubGlobal(
       "fetch",

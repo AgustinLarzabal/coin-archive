@@ -430,19 +430,23 @@ describe("API", () => {
       })
     })
 
-    it("returns a multi-year CE Issue Period unchanged", async () => {
+    it("returns a BCE Issue Period unchanged", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
-        findCoinById: async () => ({ ...coin, lastIssueYear: 2007 }),
+        findCoinById: async () => ({
+          ...coin,
+          firstIssueYear: -44,
+          lastIssueYear: -42,
+        }),
         imageBaseUrl: "https://images.coin-archive.example",
       }).request(`/v1/coins/${coinId}`)
 
       expect(response.status).toBe(200)
       await expect(response.json()).resolves.toEqual(
         expect.objectContaining({
-          firstIssueYear: 2004,
-          lastIssueYear: 2007,
+          firstIssueYear: -44,
+          lastIssueYear: -42,
         })
       )
     })
@@ -780,6 +784,10 @@ describe("API", () => {
             properties: {
               coins: expect.objectContaining({
                 items: expect.objectContaining({
+                  properties: expect.objectContaining({
+                    firstIssueYear: { type: "integer" },
+                    lastIssueYear: { type: "integer" },
+                  }),
                   required: expect.arrayContaining([
                     "firstIssueYear",
                     "lastIssueYear",
@@ -964,8 +972,8 @@ describe("API", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
             issuerId: "10000000-0000-4000-8000-000000000001",
-            firstIssueYear: 2004,
-            lastIssueYear: 2007,
+            firstIssueYear: -2,
+            lastIssueYear: 2,
             issuer: {
               id: "10000000-0000-4000-8000-000000000001",
               name: "Argentina",
@@ -988,8 +996,8 @@ describe("API", () => {
           {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
-            firstIssueYear: 2004,
-            lastIssueYear: 2007,
+            firstIssueYear: -2,
+            lastIssueYear: 2,
             issuer: { name: "Argentina", code: "AR" },
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",

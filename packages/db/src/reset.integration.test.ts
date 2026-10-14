@@ -96,7 +96,7 @@ describe("database rebuild lifecycle", () => {
       }>(
         "select id, title, first_issue_year, last_issue_year from coins order by id"
       )
-      expect(coins.rows).toHaveLength(21)
+      expect(coins.rows).toHaveLength(41)
       expect(
         coins.rows.map(({ first_issue_year, last_issue_year }) => ({
           first_issue_year,
@@ -115,6 +115,10 @@ describe("database rebuild lifecycle", () => {
           first_issue_year: 2006,
           last_issue_year: 2006,
         })),
+        ...Array.from({ length: 20 }, () => ({
+          first_issue_year: 2007,
+          last_issue_year: 2007,
+        })),
       ])
       expect(coins.rows[0]).toEqual({
         id: "00000000-0000-4000-8000-000000000001",
@@ -123,10 +127,10 @@ describe("database rebuild lifecycle", () => {
         last_issue_year: 2004,
       })
       expect(coins.rows.at(-1)).toEqual({
-        id: "00000000-0000-4000-8000-000000000015",
-        title: "25th Birthday of Grand Duke Guillaume",
-        first_issue_year: 2006,
-        last_issue_year: 2006,
+        id: "00000000-0000-4000-8000-000000000029",
+        title: "Grand Ducal Palace",
+        first_issue_year: 2007,
+        last_issue_year: 2007,
       })
 
       const issuers = await databaseAfterReset.query<{
@@ -141,19 +145,25 @@ describe("database rebuild lifecycle", () => {
       `)
       expect(issuers.rows).toEqual(
         expect.arrayContaining([
-          { name: "Vatican City", code: "VA", coin_count: 3 },
-          { name: "Italy", code: "IT", coin_count: 3 },
-          { name: "San Marino", code: "SM", coin_count: 3 },
-          { name: "Finland", code: "FI", coin_count: 3 },
-          { name: "Luxembourg", code: "LU", coin_count: 3 },
-          { name: "Greece", code: "GR", coin_count: 1 },
-          { name: "Austria", code: "AT", coin_count: 1 },
-          { name: "Belgium", code: "BE", coin_count: 2 },
-          { name: "Germany", code: "DE", coin_count: 1 },
-          { name: "Spain", code: "ES", coin_count: 1 },
+          { name: "Vatican City", code: "VA", coin_count: 4 },
+          { name: "Italy", code: "IT", coin_count: 4 },
+          { name: "San Marino", code: "SM", coin_count: 4 },
+          { name: "Finland", code: "FI", coin_count: 5 },
+          { name: "Luxembourg", code: "LU", coin_count: 5 },
+          { name: "Greece", code: "GR", coin_count: 2 },
+          { name: "Austria", code: "AT", coin_count: 2 },
+          { name: "Belgium", code: "BE", coin_count: 3 },
+          { name: "Germany", code: "DE", coin_count: 3 },
+          { name: "Spain", code: "ES", coin_count: 2 },
+          { name: "France", code: "FR", coin_count: 1 },
+          { name: "Ireland", code: "IE", coin_count: 1 },
+          { name: "Monaco", code: "MC", coin_count: 1 },
+          { name: "Netherlands", code: "NL", coin_count: 1 },
+          { name: "Portugal", code: "PT", coin_count: 2 },
+          { name: "Slovenia", code: "SI", coin_count: 1 },
         ])
       )
-      expect(issuers.rows).toHaveLength(10)
+      expect(issuers.rows).toHaveLength(16)
 
       const credits = await databaseAfterReset.query<{
         full_name: string

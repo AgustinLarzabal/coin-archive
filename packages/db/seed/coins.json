@@ -232,5 +232,205 @@
     "obverse": {
       "description": "Grand Duke Henri's portrait superimposed on that of Hereditary Grand Duke Guillaume, with Luxembourg's name, the year 2006, mint marks, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000016",
+    "title": "90th Anniversary of Finland's Independence",
+    "issuerCode": "FI",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "A nine-oar boat with rowers symbolising collaboration, accompanied by the years 1917 and 2007, Finland's country code, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000017",
+    "title": "Bicentenary of the Birth of Giuseppe Garibaldi",
+    "issuerCode": "SM",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "A portrait of Giuseppe Garibaldi flanked by San Marino's name and the year 2007, with the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000018",
+    "title": "80th Birthday of Pope Benedict XVI",
+    "issuerCode": "VA",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "A left-facing portrait of Pope Benedict XVI surrounded by a Latin anniversary inscription, the year 2007, the Rome mint mark, artist and engraver credits, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000019",
+    "title": "25th Anniversary of the Death of Princess Grace",
+    "issuerCode": "MC",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "A portrait of Princess Grace accompanied by Monaco's name, the year 2007, the mint and engraver marks, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001a",
+    "title": "Portuguese Presidency of the European Union",
+    "issuerCode": "PT",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "A cork oak above the Portuguese coat of arms and country name, accompanied by the EU Council Presidency legend, the year 2007, artist and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001b",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "AT",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Austria's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001c",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "BE",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Belgium's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001d",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "FI",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Finland's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001e",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "FR",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with France's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000001f",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "DE",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Germany's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000020",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "GR",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Greece's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000021",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "IE",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Ireland's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000022",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "IT",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Italy's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000023",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "LU",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Luxembourg's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000024",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "NL",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with the Netherlands' country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000025",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "PT",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Portugal's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000026",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "SI",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Slovenia's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000027",
+    "title": "50th Anniversary of the Treaty of Rome",
+    "issuerCode": "ES",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "The Treaty of Rome document over paving inspired by Rome's Piazza del Campidoglio, with Spain's country name and commemorative legends, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000028",
+    "title": "Mecklenburg-Vorpommern",
+    "issuerCode": "DE",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "Schwerin Castle above the name Mecklenburg-Vorpommern, accompanied by one of five German mint marks, the engraver's initials, the year 2007, Germany's official name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000029",
+    "title": "Grand Ducal Palace",
+    "issuerCode": "LU",
+    "firstIssueYear": 2007,
+    "lastIssueYear": 2007,
+    "obverse": {
+      "description": "Grand Duke Henri's portrait superimposed on the Grand Ducal Palace, accompanied by Luxembourg's name, the year 2007, the engraver and mint marks, and twelve stars."
+    }
   }
 ]

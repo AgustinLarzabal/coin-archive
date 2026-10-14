@@ -2,11 +2,17 @@
   { "name": "Austria", "code": "AT" },
   { "name": "Belgium", "code": "BE" },
   { "name": "Finland", "code": "FI" },
+  { "name": "France", "code": "FR" },
   { "name": "Germany", "code": "DE" },
   { "name": "Greece", "code": "GR" },
+  { "name": "Ireland", "code": "IE" },
   { "name": "Italy", "code": "IT" },
   { "name": "Luxembourg", "code": "LU" },
+  { "name": "Monaco", "code": "MC" },
+  { "name": "Netherlands", "code": "NL" },
+  { "name": "Portugal", "code": "PT" },
   { "name": "San Marino", "code": "SM" },
+  { "name": "Slovenia", "code": "SI" },
   { "name": "Spain", "code": "ES" },
   { "name": "Vatican City", "code": "VA" }
 ]

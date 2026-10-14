@@ -239,6 +239,22 @@ describe("Coin viewer route", () => {
     )
   })
 
+  it("renders a multi-year CE Issue Period in Coin details", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(coinDetailFixture({ lastIssueYear: 2007 }))
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.getByText("2004–2007")).toBeInTheDocument()
+  })
+
   it("renders ordered Engraver names within their corresponding Obverse and Reverse tabs", async () => {
     const user = userEvent.setup()
     vi.stubGlobal(

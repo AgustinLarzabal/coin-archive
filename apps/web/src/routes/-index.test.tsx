@@ -565,6 +565,17 @@ describe("Archive landing route", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("renders a multi-year CE Issue Period on an Explore card", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(createArchiveFetch([{ ...coin, lastIssueYear: 2007 }]))
+    )
+
+    renderArchiveRoute()
+
+    expect(await screen.findByText("2004–2007")).toBeVisible()
+  })
+
   it("falls back to the Reverse image when the Obverse image is missing", async () => {
     vi.stubGlobal(
       "fetch",

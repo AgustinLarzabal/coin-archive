@@ -89,35 +89,43 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("returns a BCE Issue Period unchanged from list and detail queries", async () => {
-    const database = createDatabase(getDatabaseUrl())
-    try {
-      const issuer = await insertArgentina(database)
-      const [coin] = await database.orm
-        .insert(database.schema.coins)
-        .values({
-          title: "BCE Coin",
-          issuerId: issuer.id,
-          firstIssueYear: -44,
-          lastIssueYear: -42,
-        })
-        .returning()
+  it.each([
+    ["single-year CE", 2004, 2004],
+    ["multi-year CE", 2004, 2007],
+    ["BCE", -44, -42],
+    ["cross-era", -2, 2],
+  ])(
+    "returns a %s Issue Period unchanged from list and detail queries",
+    async (_description, firstIssueYear, lastIssueYear) => {
+      const database = createDatabase(getDatabaseUrl())
+      try {
+        const issuer = await insertArgentina(database)
+        const [coin] = await database.orm
+          .insert(database.schema.coins)
+          .values({
+            title: "Dated Coin",
+            issuerId: issuer.id,
+            firstIssueYear,
+            lastIssueYear,
+          })
+          .returning()
 
-      await expect(database.listCoins()).resolves.toEqual([
-        expect.objectContaining({
-          id: coin.id,
-          firstIssueYear: -44,
-          lastIssueYear: -42,
-        }),
-      ])
-      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
-        firstIssueYear: -44,
-        lastIssueYear: -42,
-      })
-    } finally {
-      await database.close()
+        await expect(database.listCoins()).resolves.toEqual([
+          expect.objectContaining({
+            id: coin.id,
+            firstIssueYear,
+            lastIssueYear,
+          }),
+        ])
+        await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+          firstIssueYear,
+          lastIssueYear,
+        })
+      } finally {
+        await database.close()
+      }
     }
-  })
+  )
 
   it("requires stable unique Engraver Slugs while allowing duplicate full names", async () => {
     const database = createDatabase(getDatabaseUrl())
@@ -1550,6 +1558,14 @@ describe("Coin seed", () => {
         { name: "San Marino", code: "SM" },
         { name: "Vatican City", code: "VA" },
       ])
+      const seededCoins = await database.listCoins()
+      expect(seededCoins).toHaveLength(6)
+      expect(
+        seededCoins.every(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2004 && lastIssueYear === 2004
+        )
+      ).toBe(true)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({
@@ -1594,6 +1610,38 @@ describe("Coin seed", () => {
       }
     }
   )
+
+  it("evaluates the future-year rule when catalogue data is written", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    vi.useFakeTimers()
+    try {
+      const nextYearSeed = {
+        ...validSeed,
+        coins: [
+          {
+            ...validSeed.coins[0],
+            firstIssueYear: 2027,
+            lastIssueYear: 2027,
+          },
+        ],
+      }
+
+      vi.setSystemTime(new Date("2026-12-31T12:00:00Z"))
+      await expect(seedCoins(database, nextYearSeed)).rejects.toThrow()
+
+      vi.setSystemTime(new Date("2027-01-01T12:00:00Z"))
+      await expect(seedCoins(database, nextYearSeed)).resolves.toBeUndefined()
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({
+        firstIssueYear: 2027,
+        lastIssueYear: 2027,
+      })
+    } finally {
+      vi.useRealTimers()
+      await database.close()
+    }
+  })
 
   it("validates the complete document before writing any records", async () => {
     const database = createDatabase(getDatabaseUrl())

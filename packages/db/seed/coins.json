@@ -782,5 +782,125 @@
     "obverse": {
       "description": "Portraits of Grand Duke Henri and Grand Duchess Charlotte, accompanied by Luxembourg's name, the year 2009, mint marks, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004d",
+    "title": "2500th Anniversary of the Battle of Marathon",
+    "issuerCode": "GR",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A shield and a runner-warrior symbolise the struggle for freedom and the ideals of the Battle of Marathon, while a bird on the shield represents the birth of Western civilisation, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004e",
+    "title": "Year for Priests",
+    "issuerCode": "VA",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A shepherd pulls a lamb from a lion's mouth to commemorate the Year for Priests proclaimed by Pope Benedict XVI, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000004f",
+    "title": "Currency Decree of 1860",
+    "issuerCode": "FI",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A stylised lion from Finland's coat of arms and the year 2010 appear beside the mint mark and numbers representing coin values, accompanied by Finland's country code and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000050",
+    "title": "500th Anniversary of the Death of Sandro Botticelli",
+    "issuerCode": "SM",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A commemorative design honouring Florentine painter Sandro Botticelli, born Alessandro di Mariano di Vanni Filipepi, on the 500th anniversary of his death, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000051",
+    "title": "100th Anniversary of the Portuguese Republic",
+    "issuerCode": "PT",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A commemorative design marks the centenary of the end of King Manuel II's constitutional monarchy and the establishment of the Portuguese Republic after the revolution of 5 October 1910, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000052",
+    "title": "70th Anniversary of the Appeal of 18 June",
+    "issuerCode": "FR",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "The design commemorates General Charles de Gaulle's BBC appeal of 18 June 1940, regarded as the birth of the French Resistance against occupation during the Second World War, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000053",
+    "title": "Belgian Presidency of the Council of the European Union",
+    "issuerCode": "BE",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "The stylised EU and trio.be presidency logo is encircled by the Belgian Presidency legend and Belgium's name in its three official languages, accompanied by the year 2010, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000054",
+    "title": "200th Anniversary of the Botanical Garden in Ljubljana",
+    "issuerCode": "SI",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "The Hladnikia pastinacifolia plant and its name are encircled by inscriptions marking 200 years of Ljubljana's botanical garden, Slovenia's name, the year 2010, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000055",
+    "title": "Historic Centre of Córdoba",
+    "issuerCode": "ES",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "The forest of columns in the Great Mosque-Cathedral of Córdoba represents the historic centre of Córdoba, the first Spanish site added to UNESCO's World Heritage List, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000056",
+    "title": "200th Anniversary of the Birth of the Count of Cavour",
+    "issuerCode": "IT",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A portrait of Camillo Benso, Count of Cavour, based on Francesco Hayez's 1864 painting, commemorates a leading figure in Italian unification and liberalism, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000057",
+    "title": "Coat of Arms of the Grand Duke",
+    "issuerCode": "LU",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "A right-facing portrait of Grand Duke Henri appears beside the Grand Duke's coat of arms, accompanied by the year 2010, mint marks, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000058",
+    "title": "Bremen",
+    "issuerCode": "DE",
+    "firstIssueYear": 2010,
+    "lastIssueYear": 2010,
+    "obverse": {
+      "description": "Bremen Town Hall and the Roland statue appear above the name Bremen, accompanied by one of five German mint marks, the artist's initials, Germany's country code, the year 2010, and twelve stars."
+    }
   }
 ]

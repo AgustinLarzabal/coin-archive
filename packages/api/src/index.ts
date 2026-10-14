@@ -47,11 +47,23 @@ const issueYearSchema = z
   .int()
   .refine((year) => year !== 0, "Issue Year cannot be zero")
 
+const firstIssueYearSchema = issueYearSchema.meta({
+  description:
+    "Signed conventional Issue Year: negative values are BCE, positive values are CE, and zero is invalid. Must be less than or equal to lastIssueYear.",
+  not: { const: 0 },
+})
+
+const lastIssueYearSchema = issueYearSchema.meta({
+  description:
+    "Signed conventional Issue Year: negative values are BCE, positive values are CE, and zero is invalid. Must be greater than or equal to firstIssueYear.",
+  not: { const: 0 },
+})
+
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
-  firstIssueYear: issueYearSchema,
-  lastIssueYear: issueYearSchema,
+  firstIssueYear: firstIssueYearSchema,
+  lastIssueYear: lastIssueYearSchema,
   issuer: issuerResponseSchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

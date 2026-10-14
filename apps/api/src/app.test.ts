@@ -767,12 +767,26 @@ describe("API", () => {
           }),
         })
       )
+      const issueYearProperties = {
+        firstIssueYear: expect.objectContaining({
+          description:
+            "Signed conventional Issue Year: negative values are BCE, positive values are CE, and zero is invalid. Must be less than or equal to lastIssueYear.",
+          not: { const: 0 },
+          type: "integer",
+        }),
+        lastIssueYear: expect.objectContaining({
+          description:
+            "Signed conventional Issue Year: negative values are BCE, positive values are CE, and zero is invalid. Must be greater than or equal to firstIssueYear.",
+          not: { const: 0 },
+          type: "integer",
+        }),
+      }
+
       expect(document.components.schemas).toEqual(
         expect.objectContaining({
           Coin: expect.objectContaining({
             properties: expect.objectContaining({
-              firstIssueYear: { type: "integer" },
-              lastIssueYear: { type: "integer" },
+              ...issueYearProperties,
               issuer: { $ref: "#/components/schemas/Issuer" },
             }),
             required: expect.arrayContaining([
@@ -784,10 +798,7 @@ describe("API", () => {
             properties: {
               coins: expect.objectContaining({
                 items: expect.objectContaining({
-                  properties: expect.objectContaining({
-                    firstIssueYear: { type: "integer" },
-                    lastIssueYear: { type: "integer" },
-                  }),
+                  properties: expect.objectContaining(issueYearProperties),
                   required: expect.arrayContaining([
                     "firstIssueYear",
                     "lastIssueYear",

@@ -50,21 +50,16 @@ export type CoinRecord = z.infer<typeof coinRecordSchema>
 const varcharIssuerCodeSchema = createInsertSchema(issuers).pick({ code: true })
   .shape.code
 
-function isCurrentOrPastIssueYear(year: number) {
-  return year <= new Date().getFullYear()
+function rejectFutureIssueYear(schema: z.ZodNumber) {
+  return schema.refine(
+    (year) => year <= new Date().getFullYear(),
+    "Issue Year cannot be in the future"
+  )
 }
 
 export const coinSeedRecordSchema = createInsertSchema(coins, {
-  firstIssueYear: (schema) =>
-    schema.refine(
-      isCurrentOrPastIssueYear,
-      "Issue Year cannot be in the future"
-    ),
-  lastIssueYear: (schema) =>
-    schema.refine(
-      isCurrentOrPastIssueYear,
-      "Issue Year cannot be in the future"
-    ),
+  firstIssueYear: rejectFutureIssueYear,
+  lastIssueYear: rejectFutureIssueYear,
   title: (schema) =>
     schema
       .min(1)

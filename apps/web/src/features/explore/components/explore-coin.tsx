@@ -44,7 +44,7 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
         <img
           src={image.url}
           alt={`${image.surface} of ${coin.title}`}
-          className="w-1/2 grayscale group-hover:grayscale-0"
+          className="w-1/2 rounded-full grayscale group-hover:grayscale-0"
         />
       ) : (
         <span className="font-mono text-xs text-muted-foreground">

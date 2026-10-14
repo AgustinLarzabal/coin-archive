@@ -18,7 +18,11 @@ export function CoinSurfacePreview({
     <div className="mx-auto max-w-xl px-3 py-4">
       <div className="mb-5 flex justify-center">
         {surface.imageUrl ? (
-          <img src={surface.imageUrl} alt={`${surfaceName} of ${coinTitle}`} />
+          <img
+            src={surface.imageUrl}
+            alt={`${surfaceName} of ${coinTitle}`}
+            className="rounded-full"
+          />
         ) : (
           <p className="font-mono text-sm text-muted-foreground">
             {surfaceName} image unavailable

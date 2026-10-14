@@ -22,6 +22,8 @@ const coinId = "00000000-0000-4000-8000-000000000001"
 const coin: CoinListItemResponse = {
   id: coinId,
   title: "First coin",
+  firstIssueYear: 2004,
+  lastIssueYear: 2004,
   issuer: { name: "Argentina", code: "AR" },
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
@@ -557,6 +559,7 @@ describe("Archive landing route", () => {
     renderArchiveRoute()
 
     expect(await screen.findByText("Image unavailable")).toBeVisible()
+    expect(screen.getByText("2004")).toBeVisible()
     expect(
       screen.queryByRole("img", { name: "Obverse of First coin" })
     ).not.toBeInTheDocument()

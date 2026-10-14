@@ -94,6 +94,8 @@ function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
     id: coin.id,
     title: coin.title,
+    firstIssueYear: coin.firstIssueYear,
+    lastIssueYear: coin.lastIssueYear,
     issuer: { name: coin.issuer.name, code: coin.issuer.code },
     createdAt: coin.createdAt.toISOString(),
     updatedAt: coin.updatedAt.toISOString(),

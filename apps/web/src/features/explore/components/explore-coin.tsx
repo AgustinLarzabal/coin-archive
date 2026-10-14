@@ -5,6 +5,8 @@ import { cn } from "@workspace/ui/lib/utils"
 import type { CoinListItemResponse } from "@workspace/api"
 import type { ComponentProps } from "react"
 
+import { formatIssuePeriod } from "@/features/issue-period"
+
 type ExploreCoinProps = Omit<ComponentProps<"a">, "children" | "href"> & {
   coin: CoinListItemResponse
 }
@@ -51,8 +53,11 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
           Image unavailable
         </span>
       )}
-      <span className="absolute right-5 bottom-5 left-5 h-[2lh] text-center font-mono text-xs tracking-wider text-balance text-muted-foreground">
-        {coin.title}
+      <span className="absolute right-5 bottom-4 left-5 flex flex-col items-center gap-0.5 text-center font-mono text-xs tracking-wider text-balance text-muted-foreground">
+        <span className="h-[2lh]">{coin.title}</span>
+        <span>
+          {formatIssuePeriod(coin.firstIssueYear, coin.lastIssueYear)}
+        </span>
       </span>
     </Link>
   )

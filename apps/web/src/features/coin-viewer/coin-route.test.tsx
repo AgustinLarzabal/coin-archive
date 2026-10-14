@@ -213,6 +213,8 @@ describe("Coin viewer route", () => {
     )
     expect(screen.getByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Issuer")).not.toBeInTheDocument()
+    expect(screen.getByText("Issue Period")).toBeInTheDocument()
+    expect(screen.getByText("2004")).toBeInTheDocument()
     expect(screen.getByText("A portrait of the sovereign")).toBeInTheDocument()
     expect(
       screen.getByRole("img", { name: "Obverse of First coin" })

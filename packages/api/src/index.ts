@@ -46,6 +46,8 @@ export type IssuerListResponse = z.infer<typeof issuerListResponseSchema>
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
+  firstIssueYear: z.int(),
+  lastIssueYear: z.int(),
   issuer: issuerResponseSchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

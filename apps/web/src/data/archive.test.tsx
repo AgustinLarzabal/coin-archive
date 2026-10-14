@@ -24,6 +24,8 @@ const coinId = "00000000-0000-4000-8000-000000000001"
 const coin = {
   id: coinId,
   title: "First coin",
+  firstIssueYear: 2004,
+  lastIssueYear: 2004,
   issuer: { name: "Argentina", code: "AR" },
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
@@ -91,6 +93,35 @@ describe("Archive data module", () => {
     ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
     queryClient.clear()
   })
+
+  it.each(["firstIssueYear", "lastIssueYear"] as const)(
+    "rejects a legacy Coin list response without %s",
+    async (endpoint) => {
+      const legacyCoin = { ...coin, [endpoint]: undefined }
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse({
+              coins: [
+                {
+                  ...legacyCoin,
+                  obverseImageUrl: null,
+                  reverseImageUrl: null,
+                },
+              ],
+            })
+          )
+        )
+      )
+      const queryClient = createQueryClient()
+
+      await expect(
+        queryClient.fetchQuery(coinListQueryOptions())
+      ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
+      queryClient.clear()
+    }
+  )
 
   it("accepts complete surface data in a Coin detail response", async () => {
     vi.stubGlobal(
@@ -165,6 +196,26 @@ describe("Archive data module", () => {
     ).rejects.toBeInstanceOf(InvalidCoinResponseError)
     queryClient.clear()
   })
+
+  it.each(["firstIssueYear", "lastIssueYear"] as const)(
+    "rejects a legacy Coin detail response without %s",
+    async (endpoint) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse({ ...coinDetailFixture(), [endpoint]: undefined })
+          )
+        )
+      )
+      const queryClient = createQueryClient()
+
+      await expect(
+        queryClient.fetchQuery(coinDetailQueryOptions(coinId))
+      ).rejects.toBeInstanceOf(InvalidCoinResponseError)
+      queryClient.clear()
+    }
+  )
 
   it.each([
     ["ISO", { name: "Argentina", code: "AR" }],

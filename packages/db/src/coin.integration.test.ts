@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 import { Pool } from "pg"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   coinRecordSchema,
@@ -16,6 +16,7 @@ import {
 const SEEDED_COIN_ID = "00000000-0000-4000-8000-000000000001"
 const FIRST_ENGRAVER_SLUG = "first-engraver"
 const SECOND_ENGRAVER_SLUG = "second-engraver"
+const TEST_ISSUE_PERIOD = { firstIssueYear: 2004, lastIssueYear: 2004 }
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
   const [issuer] = await database.orm
@@ -44,6 +45,50 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("requires a valid Issue Period", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+
+      await expect(
+        database.orm.execute(sql`
+          insert into coins (title, issuer_id)
+          values ('Missing Issue Period', ${issuer.id})
+        `)
+      ).rejects.toThrow()
+
+      for (const issuePeriod of [
+        { firstIssueYear: 0, lastIssueYear: 2004 },
+        { firstIssueYear: 2004, lastIssueYear: 0 },
+        { firstIssueYear: 2005, lastIssueYear: 2004 },
+      ]) {
+        await expect(
+          database.orm.insert(database.schema.coins).values({
+            title: "Invalid Issue Period",
+            issuerId: issuer.id,
+            ...issuePeriod,
+          })
+        ).rejects.toThrow()
+      }
+
+      await expect(
+        database.orm
+          .insert(database.schema.coins)
+          .values({
+            title: "Valid Issue Period",
+            issuerId: issuer.id,
+            firstIssueYear: -1,
+            lastIssueYear: 1,
+          })
+          .returning()
+      ).resolves.toEqual([
+        expect.objectContaining({ firstIssueYear: -1, lastIssueYear: 1 }),
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
   it("requires stable unique Engraver Slugs while allowing duplicate full names", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -105,7 +150,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Credit-only Coin", issuerId: issuer.id })
+        .values({
+          title: "Credit-only Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [engraver] = await database.orm
         .insert(database.schema.engravers)
@@ -150,7 +199,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Credited Coin", issuerId: issuer.id })
+        .values({
+          title: "Credited Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [obverse, reverse] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -191,7 +244,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Invariant Coin", issuerId: issuer.id })
+        .values({
+          title: "Invariant Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [obverse, edge] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -303,7 +360,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Concurrent Coin", issuerId: issuer.id })
+        .values({
+          title: "Concurrent Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [obverse] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -383,10 +444,26 @@ describe("Coin persistence", () => {
       ] = await database.orm
         .insert(database.schema.coins)
         .values([
-          { title: "Coin with all surfaces", issuerId: issuer.id },
-          { title: "Coin with a partial Reverse", issuerId: issuer.id },
-          { title: "Coin with a partial Edge", issuerId: issuer.id },
-          { title: "Coin without surfaces", issuerId: issuer.id },
+          {
+            title: "Coin with all surfaces",
+            issuerId: issuer.id,
+            ...TEST_ISSUE_PERIOD,
+          },
+          {
+            title: "Coin with a partial Reverse",
+            issuerId: issuer.id,
+            ...TEST_ISSUE_PERIOD,
+          },
+          {
+            title: "Coin with a partial Edge",
+            issuerId: issuer.id,
+            ...TEST_ISSUE_PERIOD,
+          },
+          {
+            title: "Coin without surfaces",
+            issuerId: issuer.id,
+            ...TEST_ISSUE_PERIOD,
+          },
         ])
         .returning()
       const [obverse, reverse, edge, partialReverse, partialEdge] =
@@ -484,7 +561,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Three surfaces", issuerId: issuer.id })
+        .values({
+          title: "Three surfaces",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
 
       await database.orm.insert(database.schema.coinSurfaces).values([
@@ -517,7 +598,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Deferred surface data", issuerId: issuer.id })
+        .values({
+          title: "Deferred surface data",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
 
       await database.orm.transaction(async (transaction) => {
@@ -556,7 +641,11 @@ describe("Coin persistence", () => {
         const issuer = await insertArgentina(database)
         const [coin] = await database.orm
           .insert(database.schema.coins)
-          .values({ title: "Described Coin", issuerId: issuer.id })
+          .values({
+            title: "Described Coin",
+            issuerId: issuer.id,
+            ...TEST_ISSUE_PERIOD,
+          })
           .returning()
 
         await expect(
@@ -588,7 +677,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Coin image", issuerId: issuer.id })
+        .values({
+          title: "Coin image",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
 
       await expect(
@@ -609,7 +702,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Empty Surface", issuerId: issuer.id })
+        .values({
+          title: "Empty Surface",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
 
       await expect(
@@ -628,7 +725,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Timestamped Surface", issuerId: issuer.id })
+        .values({
+          title: "Timestamped Surface",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [inserted] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -687,7 +788,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Disposable Coin", issuerId: issuer.id })
+        .values({
+          title: "Disposable Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [surface] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -738,18 +843,21 @@ describe("Coin persistence", () => {
           id: olderId,
           title: "Older coin",
           issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
         },
         {
           id: secondTiedId,
           title: "Second tied coin",
           issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
           id: firstTiedId,
           title: "First tied coin",
           issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
       ])
@@ -780,17 +888,20 @@ describe("Coin persistence", () => {
           id: secondTiedId,
           title: "Second Roman coin",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
           title: "Argentine coin",
           issuerId: argentina.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: firstTiedId,
           title: "First Roman coin",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
       ])
@@ -838,30 +949,35 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
           id: reverseId,
           title: "Reverse credit",
           issuerId: argentina.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
           id: edgeOnlyId,
           title: "Edge only",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
           id: otherEngraverId,
           title: "Other Engraver",
           issuerId: romanEmpire.id,
+          ...TEST_ISSUE_PERIOD,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
       ])
@@ -967,7 +1083,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [inserted] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "First coin", issuerId: issuer.id })
+        .values({
+          title: "First coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
 
       expect(inserted).toMatchObject({
@@ -999,8 +1119,8 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
-        { title: "Shared title", issuerId: issuer.id },
-        { title: "Shared title", issuerId: issuer.id },
+        { title: "Shared title", issuerId: issuer.id, ...TEST_ISSUE_PERIOD },
+        { title: "Shared title", issuerId: issuer.id, ...TEST_ISSUE_PERIOD },
       ])
 
       const result = await database.orm.execute<{
@@ -1048,7 +1168,7 @@ describe("Coin persistence", () => {
       await expect(
         database.orm
           .insert(database.schema.coins)
-          .values({ title, issuerId: issuer.id })
+          .values({ title, issuerId: issuer.id, ...TEST_ISSUE_PERIOD })
       ).rejects.toThrow()
     } finally {
       await database.close()
@@ -1061,7 +1181,11 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       const [inserted] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Before", issuerId: issuer.id })
+        .values({
+          title: "Before",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       await database.orm.execute(sql`
         update coins
@@ -1088,9 +1212,11 @@ describe("Issuer persistence", () => {
         { name: "Roman Empire", code: "ROMAN" },
         { name: "Argentina", code: "ARG-HIST" },
       ])
-      await database.orm
-        .insert(database.schema.coins)
-        .values({ title: "First coin", issuerId: argentina.id })
+      await database.orm.insert(database.schema.coins).values({
+        title: "First coin",
+        issuerId: argentina.id,
+        ...TEST_ISSUE_PERIOD,
+      })
 
       await expect(database.listIssuers()).resolves.toEqual([
         expect.objectContaining({ name: "Argentina", code: "AR" }),
@@ -1169,9 +1295,11 @@ describe("Issuer persistence", () => {
           .values({ name: "Duplicate code", code: "AR" })
       ).rejects.toThrow()
 
-      await database.orm
-        .insert(database.schema.coins)
-        .values({ title: "First coin", issuerId: issuer.id })
+      await database.orm.insert(database.schema.coins).values({
+        title: "First coin",
+        issuerId: issuer.id,
+        ...TEST_ISSUE_PERIOD,
+      })
       await expect(
         database.orm
           .delete(database.schema.issuers)
@@ -1219,7 +1347,11 @@ describe("Engraver list", () => {
       const issuer = await insertArgentina(database)
       const [coin] = await database.orm
         .insert(database.schema.coins)
-        .values({ title: "Credited Coin", issuerId: issuer.id })
+        .values({
+          title: "Credited Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
         .returning()
       const [obverse] = await database.orm
         .insert(database.schema.coinSurfaces)
@@ -1267,6 +1399,7 @@ describe("Coin seed", () => {
         id: SEEDED_COIN_ID,
         title: "First coin",
         issuerCode: "AR",
+        ...TEST_ISSUE_PERIOD,
         obverse: {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
@@ -1296,6 +1429,7 @@ describe("Coin seed", () => {
             id: SEEDED_COIN_ID,
             title: "Credit-only Coin",
             issuerCode: "AR",
+            ...TEST_ISSUE_PERIOD,
             obverse: { engraverSlugs: [FIRST_ENGRAVER_SLUG] },
           },
         ],
@@ -1391,18 +1525,45 @@ describe("Coin seed", () => {
       ).resolves.toMatchObject({
         id: SEEDED_COIN_ID,
         title: "50th Anniversary of the World Food Programme",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
         issuer: expect.objectContaining({ name: "Italy", code: "IT" }),
         obverse: expect.objectContaining({
           kind: "obverse",
           description: expect.stringContaining("World Food Programme"),
         }),
-        reverse: null,
+        reverse: expect.objectContaining({ kind: "reverse" }),
         edge: null,
       })
     } finally {
       await database.close()
     }
   })
+
+  it.each(["firstIssueYear", "lastIssueYear"] as const)(
+    "rejects a future %s before writing any records",
+    async (endpoint) => {
+      const database = createDatabase(getDatabaseUrl())
+      try {
+        const transaction = vi.spyOn(database.orm, "transaction")
+        await expect(
+          seedCoins(database, {
+            ...validSeed,
+            coins: [
+              {
+                ...validSeed.coins[0],
+                [endpoint]: new Date().getFullYear() + 1,
+              },
+            ],
+          })
+        ).rejects.toThrow()
+        expect(transaction).not.toHaveBeenCalled()
+        await expect(database.listCoins()).resolves.toEqual([])
+      } finally {
+        await database.close()
+      }
+    }
+  )
 
   it("validates the complete document before writing any records", async () => {
     const database = createDatabase(getDatabaseUrl())
@@ -1573,6 +1734,7 @@ describe("Coin seed", () => {
         id: duplicateId,
         title: "Existing",
         issuerId: (await insertArgentina(database)).id,
+        ...TEST_ISSUE_PERIOD,
       })
 
       await expect(
@@ -1581,7 +1743,12 @@ describe("Coin seed", () => {
           engravers: validSeed.engravers,
           coins: [
             { ...validSeed.coins[0], issuerCode: "UY" },
-            { id: duplicateId, title: "Duplicate", issuerCode: "UY" },
+            {
+              id: duplicateId,
+              title: "Duplicate",
+              issuerCode: "UY",
+              ...TEST_ISSUE_PERIOD,
+            },
           ],
         })
       ).rejects.toThrow()

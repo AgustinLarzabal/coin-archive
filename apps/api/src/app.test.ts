@@ -301,6 +301,8 @@ describe("API", () => {
       id: coinId,
       title: "First coin",
       issuerId,
+      firstIssueYear: 2004,
+      lastIssueYear: 2004,
       issuer: {
         id: issuerId,
         name: "Argentina",
@@ -377,6 +379,8 @@ describe("API", () => {
       await expect(response.json()).resolves.toEqual({
         id: coinId,
         title: "First coin",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
@@ -443,6 +447,8 @@ describe("API", () => {
       await expect(response.json()).resolves.toEqual({
         id: coinId,
         title: "First coin",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
@@ -562,6 +568,8 @@ describe("API", () => {
       const expectedCoin = {
         id: coinId,
         title: "First coin",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
         issuer: { name: "Roman Empire", code: "ROMAN" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
@@ -618,6 +626,8 @@ describe("API", () => {
           {
             id: coinId,
             title: "First coin",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
             issuer: { name: "Roman Empire", code: "ROMAN" },
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",
@@ -740,8 +750,26 @@ describe("API", () => {
         expect.objectContaining({
           Coin: expect.objectContaining({
             properties: expect.objectContaining({
+              firstIssueYear: { type: "integer" },
+              lastIssueYear: { type: "integer" },
               issuer: { $ref: "#/components/schemas/Issuer" },
             }),
+            required: expect.arrayContaining([
+              "firstIssueYear",
+              "lastIssueYear",
+            ]),
+          }),
+          CoinListResponse: expect.objectContaining({
+            properties: {
+              coins: expect.objectContaining({
+                items: expect.objectContaining({
+                  required: expect.arrayContaining([
+                    "firstIssueYear",
+                    "lastIssueYear",
+                  ]),
+                }),
+              }),
+            },
           }),
           Issuer: {
             type: "object",
@@ -919,6 +947,8 @@ describe("API", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
             issuerId: "10000000-0000-4000-8000-000000000001",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
             issuer: {
               id: "10000000-0000-4000-8000-000000000001",
               name: "Argentina",
@@ -941,6 +971,8 @@ describe("API", () => {
           {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
             issuer: { name: "Argentina", code: "AR" },
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",
@@ -962,6 +994,8 @@ describe("API", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
             issuerId: "10000000-0000-4000-8000-000000000001",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
             issuer: {
               id: "10000000-0000-4000-8000-000000000001",
               name: "Argentina",

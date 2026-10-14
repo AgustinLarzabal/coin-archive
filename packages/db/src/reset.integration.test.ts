@@ -89,17 +89,25 @@ describe("database rebuild lifecycle", () => {
       expect(migrationMarker.rows).toEqual([{ name: null }])
 
       const coins = await databaseAfterReset.query<{
+        first_issue_year: number
         id: string
+        last_issue_year: number
         title: string
-      }>("select id, title from coins order by id")
+      }>(
+        "select id, title, first_issue_year, last_issue_year from coins order by id"
+      )
       expect(coins.rows).toHaveLength(6)
       expect(coins.rows[0]).toEqual({
         id: "00000000-0000-4000-8000-000000000001",
         title: "50th Anniversary of the World Food Programme",
+        first_issue_year: 2004,
+        last_issue_year: 2004,
       })
       expect(coins.rows.at(-1)).toEqual({
         id: "00000000-0000-4000-8000-000000000006",
         title: "Olympic Games in Athens 2004",
+        first_issue_year: 2004,
+        last_issue_year: 2004,
       })
 
       const issuers = await databaseAfterReset.query<{

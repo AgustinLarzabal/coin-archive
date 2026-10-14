@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm"
-import { check, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import {
+  check,
+  integer,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { issuers } from "./issuer.js"
@@ -13,6 +20,8 @@ export const coins = pgTable(
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
+    firstIssueYear: integer("first_issue_year").notNull(),
+    lastIssueYear: integer("last_issue_year").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -26,6 +35,12 @@ export const coins = pgTable(
       "coins_title_trimmed",
       sql`${table.title} !~ '^[[:space:]]|[[:space:]]$'`
     ),
+    check("coins_first_issue_year_not_zero", sql`${table.firstIssueYear} <> 0`),
+    check("coins_last_issue_year_not_zero", sql`${table.lastIssueYear} <> 0`),
+    check(
+      "coins_issue_period_ordered",
+      sql`${table.firstIssueYear} <= ${table.lastIssueYear}`
+    ),
   ]
 )
 
@@ -34,8 +49,11 @@ export type CoinRecord = z.infer<typeof coinRecordSchema>
 
 const varcharIssuerCodeSchema = createInsertSchema(issuers).pick({ code: true })
   .shape.code
+const currentCalendarYear = new Date().getFullYear()
 
 export const coinSeedRecordSchema = createInsertSchema(coins, {
+  firstIssueYear: (schema) => schema.max(currentCalendarYear),
+  lastIssueYear: (schema) => schema.max(currentCalendarYear),
   title: (schema) =>
     schema
       .min(1)

@@ -133,7 +133,7 @@ export function ExplorePagination({
               className="w-20"
             />
             <Button type="submit" variant="outline">
-              Go
+              Go to page
             </Button>
           </Field>
         </FieldGroup>

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 import type { CoinListItemResponse } from "@workspace/api"
@@ -24,6 +24,28 @@ const coin: CoinListItemResponse = {
 
 const issuers = [{ name: "Argentina", code: "AR" }]
 const engravers = [{ slug: "first-engraver", fullName: "First Engraver" }]
+
+function createPageAwareArchiveFetch(totalPages = 3) {
+  return (input: string | URL | Request) => {
+    const url = String(input)
+    if (url.endsWith("/v1/issuers")) {
+      return Promise.resolve(jsonResponse({ issuers }))
+    }
+    if (url.endsWith("/v1/engravers")) {
+      return Promise.resolve(jsonResponse({ engravers }))
+    }
+
+    const page = Number(new URL(url).searchParams.get("page"))
+    return Promise.resolve(
+      coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
+        page,
+        pageSize: 24,
+        totalItems: totalPages * 24,
+        totalPages,
+      })
+    )
+  }
+}
 
 describe("Explore pagination", () => {
   it("renders accessible boundary and nearby-page controls", async () => {
@@ -71,35 +93,54 @@ describe("Explore pagination", () => {
     expect(
       within(pagination).getByRole("button", { name: "Go to last page" })
     ).toBeEnabled()
+    expect(
+      within(pagination).queryByRole("button", { name: "Go to page 6" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("operates every sequential and boundary control from the keyboard", async () => {
+    vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
+    const router = renderArchiveRoute("/?page=2")
+    const user = userEvent.setup()
+
+    await screen.findByRole("link", { name: "Coin on page 2" })
+    screen.getByRole("button", { name: "Go to previous page" }).focus()
+    await user.keyboard("{Enter}")
+    await screen.findByRole("link", { name: "Coin on page 1" })
+    expect(router.state.location.searchStr).toBe("")
+
+    screen.getByRole("button", { name: "Go to next page" }).focus()
+    await user.keyboard("{Enter}")
+    await screen.findByRole("link", { name: "Coin on page 2" })
+
+    screen.getByRole("button", { name: "Go to last page" }).focus()
+    await user.keyboard("{Enter}")
+    await screen.findByRole("link", { name: "Coin on page 3" })
+    expect(
+      screen.getByRole("button", { name: "Go to next page" })
+    ).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Go to last page" })
+    ).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Go to first page" })
+    ).toBeEnabled()
+
+    screen.getByRole("button", { name: "Go to first page" }).focus()
+    await user.keyboard("{Enter}")
+    await screen.findByRole("link", { name: "Coin on page 1" })
+    expect(router.state.location.searchStr).toBe("")
   })
 
   it("jumps directly to a page while preserving active filters", async () => {
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-
-      if (url.endsWith("/v1/issuers")) {
-        return Promise.resolve(jsonResponse({ issuers }))
-      }
-      if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
-      }
-
-      const page = Number(new URL(url).searchParams.get("page"))
-      return Promise.resolve(
-        coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
-          page,
-          pageSize: 24,
-          totalItems: 288,
-          totalPages: 12,
-        })
-      )
-    })
+    const fetchMock = vi.fn(createPageAwareArchiveFetch(12))
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute("/?issuer=AR&engraver=first-engraver")
     const user = userEvent.setup()
 
     await screen.findByRole("link", { name: "Coin on page 1" })
     const pageInput = screen.getByRole("spinbutton", { name: "Page number" })
+    expect(screen.getByRole("button", { name: "Go to page" })).toBeEnabled()
     await user.clear(pageInput)
     await user.type(pageInput, "9{enter}")
 
@@ -202,28 +243,7 @@ describe("Explore pagination", () => {
   })
 
   it("restores the page URL and Coins with browser Back and Forward", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((input: string | URL | Request) => {
-        const url = String(input)
-        if (url.endsWith("/v1/issuers")) {
-          return Promise.resolve(jsonResponse({ issuers }))
-        }
-        if (url.endsWith("/v1/engravers")) {
-          return Promise.resolve(jsonResponse({ engravers }))
-        }
-
-        const page = Number(new URL(url).searchParams.get("page"))
-        return Promise.resolve(
-          coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
-            page,
-            pageSize: 24,
-            totalItems: 72,
-            totalPages: 3,
-          })
-        )
-      })
-    )
+    vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
     const router = renderArchiveRoute()
     const user = userEvent.setup()
 
@@ -276,25 +296,7 @@ describe("Explore pagination", () => {
   })
 
   it("resets page navigation when the Issuer filter changes", async () => {
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-      if (url.endsWith("/v1/issuers")) {
-        return Promise.resolve(jsonResponse({ issuers }))
-      }
-      if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
-      }
-
-      const page = Number(new URL(url).searchParams.get("page"))
-      return Promise.resolve(
-        coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
-          page,
-          pageSize: 24,
-          totalItems: 72,
-          totalPages: 3,
-        })
-      )
-    })
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute(
       "/?issuer=AR&engraver=first-engraver&page=3"
@@ -304,7 +306,8 @@ describe("Explore pagination", () => {
     const issuerCombobox = screen.getByRole("combobox", { name: "Issuer" })
     const issuerControl = issuerCombobox.parentElement
     if (!issuerControl) throw new Error("Issuer combobox control not found")
-    fireEvent.click(
+    const user = userEvent.setup()
+    await user.click(
       within(issuerControl).getByRole("button", { name: "Clear" })
     )
 
@@ -321,25 +324,7 @@ describe("Explore pagination", () => {
   })
 
   it("resets page navigation when the Engraver filter changes", async () => {
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-      if (url.endsWith("/v1/issuers")) {
-        return Promise.resolve(jsonResponse({ issuers }))
-      }
-      if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
-      }
-
-      const page = Number(new URL(url).searchParams.get("page"))
-      return Promise.resolve(
-        coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
-          page,
-          pageSize: 24,
-          totalItems: 72,
-          totalPages: 3,
-        })
-      )
-    })
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute(
       "/?issuer=AR&engraver=first-engraver&page=3"
@@ -351,7 +336,8 @@ describe("Explore pagination", () => {
     })
     const engraverControl = engraverCombobox.parentElement
     if (!engraverControl) throw new Error("Engraver combobox control not found")
-    fireEvent.click(
+    const user = userEvent.setup()
+    await user.click(
       within(engraverControl).getByRole("button", { name: "Clear" })
     )
 

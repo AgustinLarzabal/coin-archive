@@ -1139,6 +1139,29 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("returns no Coins for a valid Issue Year beyond PostgreSQL integer storage", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values({
+        title: "Stored Issue Year",
+        issuerId: issuer.id,
+        ...TEST_ISSUE_PERIOD,
+      })
+
+      await expect(
+        database.listCoins({
+          issueYearInterval: {
+            firstIssueYear: Number.MAX_SAFE_INTEGER,
+            lastIssueYear: Number.MAX_SAFE_INTEGER,
+          },
+        })
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("lists exact, partial, contained, and containing BCE overlaps without inventing year zero", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

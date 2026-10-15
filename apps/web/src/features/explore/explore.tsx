@@ -22,17 +22,19 @@ export function Explore({
     filters.issueYear === undefined
       ? undefined
       : formatCoinListYear(filters.issueYear)
+  const issueYearRelationship =
+    typeof filters.issueYear === "number" ? "containing" : "overlapping"
 
   if (data.coins.length === 0) {
     const message =
       issueYear !== undefined
         ? issuer && engraver
-          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} with an Issue Period overlapping ${issueYear}.`
+          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} with an Issue Period ${issueYearRelationship} ${issueYear}.`
           : engraver
-            ? `No coins found engraved by ${engraver.fullName} with an Issue Period overlapping ${issueYear}.`
+            ? `No coins found engraved by ${engraver.fullName} with an Issue Period ${issueYearRelationship} ${issueYear}.`
             : issuer
-              ? `No coins found for ${issuer.name} with an Issue Period overlapping ${issueYear}.`
-              : `No coins found with an Issue Period overlapping ${issueYear}.`
+              ? `No coins found for ${issuer.name} with an Issue Period ${issueYearRelationship} ${issueYear}.`
+              : `No coins found with an Issue Period ${issueYearRelationship} ${issueYear}.`
         : issuer && engraver
           ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
           : engraver

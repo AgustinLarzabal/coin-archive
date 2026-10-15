@@ -1475,7 +1475,7 @@ describe("API", () => {
         }),
         expect.objectContaining({
           description:
-            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE, positive values are CE, zero is invalid, and the first endpoint must not exceed the last",
+            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
           in: "query",
           name: "year",
           required: false,

@@ -232,7 +232,7 @@ it("shows an informative empty state for a valid Year", async () => {
 
   expect(
     await screen.findByText(
-      "No coins found with an Issue Period overlapping 1986."
+      "No coins found with an Issue Period containing 1986."
     )
   ).toBeVisible()
   expect(screen.queryByRole("alert")).not.toBeInTheDocument()
@@ -247,7 +247,7 @@ it("restores and displays a canonical BCE Issue Year without exposing its sign",
     "44 BCE"
   )
   expect(
-    screen.getByText("No coins found with an Issue Period overlapping 44 BCE.")
+    screen.getByText("No coins found with an Issue Period containing 44 BCE.")
   ).toBeVisible()
   expect(screen.queryByText(/-44/)).not.toBeInTheDocument()
 })

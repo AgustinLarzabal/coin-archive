@@ -16,6 +16,9 @@ import { Pool } from "pg"
 
 import * as schema from "./schema/index.js"
 
+const POSTGRES_INTEGER_MIN = -2_147_483_648
+const POSTGRES_INTEGER_MAX = 2_147_483_647
+
 export interface Database {
   checkReadiness: () => Promise<void>
   close: () => Promise<void>
@@ -193,6 +196,23 @@ export function createDatabase(
       ) {
         throw new RangeError("issueYearInterval must be an ordered interval")
       }
+      const persistedIssueYearInterval = issueYearInterval && {
+        firstIssueYear: Math.max(
+          issueYearInterval.firstIssueYear,
+          POSTGRES_INTEGER_MIN
+        ),
+        lastIssueYear: Math.min(
+          issueYearInterval.lastIssueYear,
+          POSTGRES_INTEGER_MAX
+        ),
+      }
+      if (
+        persistedIssueYearInterval &&
+        persistedIssueYearInterval.firstIssueYear >
+          persistedIssueYearInterval.lastIssueYear
+      ) {
+        return { coins: [], totalItems: 0 }
+      }
 
       return orm.transaction(
         async (transaction) => {
@@ -213,16 +233,16 @@ export function createDatabase(
                 : issuerId === null
                   ? sql`false`
                   : eq(schema.coins.issuerId, issuerId),
-              issueYearInterval === undefined
+              persistedIssueYearInterval === undefined
                 ? undefined
                 : and(
                     lte(
                       schema.coins.firstIssueYear,
-                      issueYearInterval.lastIssueYear
+                      persistedIssueYearInterval.lastIssueYear
                     ),
                     gte(
                       schema.coins.lastIssueYear,
-                      issueYearInterval.firstIssueYear
+                      persistedIssueYearInterval.firstIssueYear
                     )
                   ),
               listOptions.engraverSlug === undefined

@@ -12,6 +12,10 @@ _Avoid_: Collection
 A catalogue entry representing a historical kind of coin that collectors can identify as the same issue or type. Every Coin has exactly one Issuer; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
 
+**Issue Year**:
+A conventional BCE or CE calendar year used to express when a Coin was issued. It is a chronological attribution, not necessarily a year inscribed on the Coin.
+_Avoid_: Date, Inscribed Year
+
 **Issue Period**:
 The inclusive span from the first through the last confirmed calendar year in which a Coin's exact issue or type was officially issued. Every Coin has an Issue Period; a single-year issue has identical endpoints, while an ongoing issue's last year is the latest confirmed year. The span may include intervening years in which issuance paused, and is not the Coin's circulation period or its Issuer's reign.
 _Avoid_: Circulation Period, Reign Period

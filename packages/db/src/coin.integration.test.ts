@@ -1685,51 +1685,66 @@ describe("Coin seed", () => {
         { name: "Spain", code: "ES" },
         { name: "Vatican City", code: "VA" },
       ])
-      const seededCoins = await database.listCoins({ pageSize: 100 })
-      expect(seededCoins.coins).toHaveLength(88)
-      expect(seededCoins.totalItems).toBe(88)
+      const firstSeededCoinPage = await database.listCoins({ pageSize: 100 })
+      const secondSeededCoinPage = await database.listCoins({
+        page: 2,
+        pageSize: 100,
+      })
+      const seededCoins = [
+        ...firstSeededCoinPage.coins,
+        ...secondSeededCoinPage.coins,
+      ]
+      expect(seededCoins).toHaveLength(104)
+      expect(firstSeededCoinPage.totalItems).toBe(104)
+      expect(secondSeededCoinPage.totalItems).toBe(104)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2004 && lastIssueYear === 2004
         )
       ).toHaveLength(6)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2005 && lastIssueYear === 2005
         )
       ).toHaveLength(8)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2006 && lastIssueYear === 2006
         )
       ).toHaveLength(7)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2007 && lastIssueYear === 2007
         )
       ).toHaveLength(20)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2008 && lastIssueYear === 2008
         )
       ).toHaveLength(10)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2009 && lastIssueYear === 2009
         )
       ).toHaveLength(25)
       expect(
-        seededCoins.coins.filter(
+        seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2010 && lastIssueYear === 2010
         )
       ).toHaveLength(12)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2011 && lastIssueYear === 2011
+        )
+      ).toHaveLength(16)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

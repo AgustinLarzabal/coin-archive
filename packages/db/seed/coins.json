@@ -902,5 +902,165 @@
     "obverse": {
       "description": "Bremen Town Hall and the Roland statue appear above the name Bremen, accompanied by one of five German mint marks, the artist's initials, Germany's country code, the year 2010, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000059",
+    "title": "Constitutional History — First Election of Representatives in 1849",
+    "issuerCode": "MT",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A hand inserts a ballot paper into a ballot box to commemorate the 1849 election of the first Maltese representatives to the Council of Government, accompanied by a commemorative inscription and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005a",
+    "title": "26th World Youth Day",
+    "issuerCode": "VA",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Young people carrying flags are surrounded by the Roman numerals XXVI, the initials G.M.G., Vatican City's name, the Rome mint mark, the year 2011, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005b",
+    "title": "200th Anniversary of the Bank of Finland",
+    "issuerCode": "FI",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A swan, Finland's national bird, commemorates the bicentenary of the institution that became the Bank of Finland, accompanied by the years 1811 and 2011 and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005c",
+    "title": "500th Anniversary of the Birth of Fernão Mendes Pinto",
+    "issuerCode": "PT",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A sailing ship floats on a sea of wave-shaped references to Portugal, Lisbon, Peregrinação, and destinations from Fernão Mendes Pinto's travels, accompanied by his name, the years 1511 and 2011, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005d",
+    "title": "Wedding of Prince Albert and Charlene Wittstock",
+    "issuerCode": "MC",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "The portraits of Prince Albert and Princess Charlene appear above Monaco's name and the year 2011, flanked by mint marks and surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005e",
+    "title": "30th Anniversary of the Day of Music",
+    "issuerCode": "FR",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A cheerful crowd, a stylised musical instrument, and floating notes evoke France's annual Fête de la Musique, accompanied by anniversary inscriptions, the date 21 June 2011, France's country code, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000005f",
+    "title": "Special Olympics World Summer Games — Athens 2011",
+    "issuerCode": "GR",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "The Games emblem combines a radiant sun, an olive branch representing excellence, and a spiral representing athletic power, accompanied by the event and issuer inscriptions, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "title": "500th Anniversary of the Birth of Giorgio Vasari",
+    "issuerCode": "SM",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A detail from Giorgio Vasari's painting Judith Beheading Holofernes is accompanied by his name, the years 1511–2011, San Marino's name, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000061",
+    "title": "150th Anniversary of the Unification of Italy",
+    "issuerCode": "IT",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Three Italian flags represent the generations associated with 1911, 1961, and 2011, accompanied by an anniversary inscription, the dates 1861 and 2011, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000062",
+    "title": "Court of the Lions, Granada",
+    "issuerCode": "ES",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "The Court of the Lions in Granada's Alhambra represents the fortified complex declared a UNESCO World Heritage site in 1984, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000063",
+    "title": "100th Anniversary of the Birth of Franc Rozman-Stane",
+    "issuerCode": "SI",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "A stylised portrait of Franc Rozman-Stane, a general in the High Command of the Slovene partisan army and a national hero of Slovenia, is surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000064",
+    "title": "100th Anniversary of International Women's Day",
+    "issuerCode": "BE",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Portraits of Isala Van Diest, Belgium's first female doctor, and Marie Popelin, its first female lawyer, appear with their names, professional symbols, Belgium's country code, the year 2011, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000065",
+    "title": "20th Anniversary of the Formation of the Visegrad Group",
+    "issuerCode": "SK",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "The outlines of the Czech Republic, Hungary, Poland, and Slovakia are overlaid by a composite letter V representing the Visegrad Group, accompanied by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000066",
+    "title": "50th Anniversary of the Appointment of Jean as Lieutenant-Représentant",
+    "issuerCode": "LU",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Grand Duke Henri's portrait is superimposed on those of Grand Duke Jean and Grand Duchess Charlotte, accompanied by their names, Luxembourg's name, the year 2011, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000067",
+    "title": "500th Anniversary of the Publication of The Praise of Folly",
+    "issuerCode": "NL",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Erasmus writing The Praise of Folly appears beside Queen Beatrix, separated by her royal title, and accompanied by the year 2011, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000068",
+    "title": "North Rhine-Westphalia",
+    "issuerCode": "DE",
+    "firstIssueYear": 2011,
+    "lastIssueYear": 2011,
+    "obverse": {
+      "description": "Cologne Cathedral appears above the name Nordrhein-Westfalen, accompanied by the year 2011 and twelve stars."
+    }
   }
 ]

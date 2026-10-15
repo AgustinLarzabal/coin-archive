@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm"
 import {
   check,
+  index,
   integer,
   pgTable,
   timestamp,
@@ -30,6 +31,15 @@ export const coins = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("coins_created_at_id_index").on(
+      table.createdAt.desc().nullsFirst(),
+      table.id.asc()
+    ),
+    index("coins_issuer_id_created_at_id_index").on(
+      table.issuerId,
+      table.createdAt.desc().nullsFirst(),
+      table.id.asc()
+    ),
     check("coins_title_not_empty", sql`length(${table.title}) >= 1`),
     check(
       "coins_title_trimmed",

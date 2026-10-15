@@ -161,11 +161,23 @@ export function createDatabase(
 
       return orm.transaction(
         async (transaction) => {
+          const issuerId =
+            listOptions.issuerCode === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.issuers.id })
+                    .from(schema.issuers)
+                    .where(eq(schema.issuers.code, listOptions.issuerCode))
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const filteredCoins = () =>
             and(
-              listOptions.issuerCode === undefined
+              issuerId === undefined
                 ? undefined
-                : eq(schema.issuers.code, listOptions.issuerCode),
+                : issuerId === null
+                  ? sql`false`
+                  : eq(schema.coins.issuerId, issuerId),
               listOptions.engraverSlug === undefined
                 ? undefined
                 : exists(
@@ -205,51 +217,60 @@ export function createDatabase(
           const [{ totalItems }] = await transaction
             .select({ totalItems: count() })
             .from(schema.coins)
-            .innerJoin(
-              schema.issuers,
-              eq(schema.coins.issuerId, schema.issuers.id)
-            )
             .where(filteredCoins())
           const rows = await transaction
             .select({
               coin: schema.coins,
               issuer: schema.issuers,
-              obverseImageKey: obverses.imageKey,
-              reverseImageKey: reverses.imageKey,
             })
             .from(schema.coins)
             .innerJoin(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
             )
-            .leftJoin(
-              obverses,
-              and(
-                eq(obverses.coinId, schema.coins.id),
-                eq(obverses.kind, "obverse")
-              )
-            )
-            .leftJoin(
-              reverses,
-              and(
-                eq(reverses.coinId, schema.coins.id),
-                eq(reverses.kind, "reverse")
-              )
-            )
             .where(filteredCoins())
             .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
             .limit(pageSize)
             .offset((page - 1) * pageSize)
 
+          const pageCoinIds = rows.map(({ coin }) => coin.id)
+          const surfaceImages =
+            pageCoinIds.length === 0
+              ? []
+              : await transaction
+                  .select({
+                    coinId: schema.coinSurfaces.coinId,
+                    imageKey: schema.coinSurfaces.imageKey,
+                    kind: schema.coinSurfaces.kind,
+                  })
+                  .from(schema.coinSurfaces)
+                  .where(
+                    and(
+                      inArray(schema.coinSurfaces.coinId, pageCoinIds),
+                      inArray(schema.coinSurfaces.kind, ["obverse", "reverse"])
+                    )
+                  )
+          const imagesByCoinId = new Map<
+            string,
+            { obverse?: string | null; reverse?: string | null }
+          >()
+          for (const surface of surfaceImages) {
+            if (surface.kind === "edge") continue
+            const images = imagesByCoinId.get(surface.coinId) ?? {}
+            images[surface.kind] = surface.imageKey
+            imagesByCoinId.set(surface.coinId, images)
+          }
+
           return {
-            coins: rows.map(
-              ({ coin, issuer, obverseImageKey, reverseImageKey }) => ({
+            coins: rows.map(({ coin, issuer }) => {
+              const images = imagesByCoinId.get(coin.id)
+              return {
                 ...coin,
                 issuer,
-                obverseImageKey,
-                reverseImageKey,
-              })
-            ),
+                obverseImageKey: images?.obverse ?? null,
+                reverseImageKey: images?.reverse ?? null,
+              }
+            }),
             totalItems,
           }
         },

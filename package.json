@@ -16,6 +16,7 @@
     "dev": "turbo dev",
     "dev:staging": "turbo run dev:staging",
     "lint": "turbo lint && node scripts/check-server-only-dependencies.mjs",
+    "performance:coin-pagination": "pnpm --filter @workspace/db db:migrate && pnpm --filter api performance:coin-pagination",
     "format": "turbo format",
     "test": "turbo test",
     "test:db": "sh scripts/test-db.sh",

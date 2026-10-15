@@ -1,0 +1,88 @@
+# Coin pagination at 100,000 Coins
+
+Issue #51 validates live numbered pagination against a representative Archive
+without committing generated records. The reproducible harness generates the
+records in PostgreSQL, captures `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` plan
+summaries, and calls the real HTTP application with the real database boundary.
+
+## Reproduce
+
+Start the integration PostgreSQL service and create the dedicated database once:
+
+```bash
+docker compose --profile integration-test up -d --wait postgres-test
+docker exec coin-archive-postgres-test-1 \
+  createdb -U coin_archive_test coin_archive_performance
+```
+
+Then run:
+
+```bash
+DATABASE_URL=postgresql://coin_archive_test@127.0.0.1:5433/coin_archive_performance \
+  pnpm performance:coin-pagination
+```
+
+The harness truncates and rebuilds its dataset on each run. It refuses to run
+unless the database name is exactly `coin_archive_performance`.
+
+## Dataset
+
+- 100,000 Coins split evenly across 10 Issuers.
+- Creation timestamps shared in groups of 1,000 Coins, making the Coin-ID
+  ascending tie-breaker observable.
+- 50,000 Obverse surfaces and Engraver credits distributed evenly across 10
+  Engravers; the measured Engraver therefore matches 5,000 Coins.
+- Page size 100, the public API hard maximum.
+- First, middle, and deepest non-empty pages for unfiltered, Issuer-filtered,
+  and Engraver-filtered requests.
+
+The public API assertions check status, exact `page`, `pageSize`, `totalItems`,
+and `totalPages`, exactly 100 Coins, and the known first and last Coin IDs for
+every generated page. Those IDs exercise both creation-time descending order
+and Coin-ID ascending tie ordering.
+
+## Measurements
+
+Measured locally on PostgreSQL 17. These are single warm runs intended to compare
+plans and catch order-of-magnitude regressions, not production latency targets.
+The page-plan time excludes the exact-count query; API time includes the count,
+page rows, page Surface images, serialization, and in-process HTTP handling.
+
+| Path       |  Page | Baseline plan ms | Final plan ms | Baseline API ms | Final API ms |
+| ---------- | ----: | ---------------: | ------------: | --------------: | -----------: |
+| Unfiltered |     1 |           52.515 |         0.107 |          75.058 |       42.510 |
+| Unfiltered |   500 |           76.086 |        21.077 |          61.931 |       66.527 |
+| Unfiltered | 1,000 |           80.584 |        41.772 |          89.740 |       77.317 |
+| Issuer     |     1 |           13.983 |         0.124 |          30.266 |       10.159 |
+| Issuer     |    50 |           30.966 |         6.492 |          32.400 |       21.364 |
+| Issuer     |   100 |           43.706 |         6.907 |          38.668 |       22.810 |
+| Engraver   |     1 |           30.570 |         4.135 |          54.184 |       28.406 |
+| Engraver   |    25 |           33.721 |        34.362 |          44.069 |       42.342 |
+| Engraver   |    50 |           36.123 |        33.832 |          56.175 |       44.763 |
+
+The final plan shapes were:
+
+- Unfiltered pages: ordered `coins_created_at_id_index` scan for first, middle,
+  and deep pages.
+- Issuer pages: ordered `coins_issuer_id_created_at_id_index` scan on the first
+  page; PostgreSQL chose the same index as a bitmap scan plus an in-memory sort
+  for the middle and deep pages.
+- Engraver pages: ordered Coin index plus nested semi-joins on the first page;
+  hash joins and an in-memory sort for middle and deep pages.
+
+The persistence query now selects the bounded Coin page before loading Obverse
+and Reverse image keys for those at-most-100 Coins. This prevents the Surface
+joins from hiding the ordering index while keeping all reads in the same
+repeatable-read snapshot.
+
+## Engraver index decision
+
+A temporary `(engraver_id, coin_surface_id)` probe index was measured against
+the final query shape and then removed. PostgreSQL used it for middle and deep
+pages, reducing their page-plan times from 34.362 ms to 27.800 ms and from
+33.832 ms to 28.228 ms. End-to-end API time did not improve: it moved from
+42.342 ms to 44.062 ms and from 44.763 ms to 50.503 ms respectively.
+
+The evidence does not justify the extra association-index write and storage cost
+or an Engraver query rewrite at the 100,000-Coin target. The reproducible harness
+remains available to revisit that decision as the Archive shape changes.

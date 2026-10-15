@@ -37,9 +37,9 @@ unless the database name is exactly `coin_archive_performance`.
   and Engraver-filtered requests.
 
 The public API assertions check status, exact `page`, `pageSize`, `totalItems`,
-and `totalPages`, exactly 100 Coins, and the known first and last Coin IDs for
-every generated page. Those IDs exercise both creation-time descending order
-and Coin-ID ascending tie ordering.
+and `totalPages`, exactly 100 Coins, and the complete known sequence of 100 Coin
+IDs for every generated page. Those IDs exercise both creation-time descending
+order and Coin-ID ascending tie ordering.
 
 ## Measurements
 
@@ -50,15 +50,15 @@ page rows, page Surface images, serialization, and in-process HTTP handling.
 
 | Path       |  Page | Baseline plan ms | Final plan ms | Baseline API ms | Final API ms |
 | ---------- | ----: | ---------------: | ------------: | --------------: | -----------: |
-| Unfiltered |     1 |           52.515 |         0.107 |          75.058 |       42.510 |
-| Unfiltered |   500 |           76.086 |        21.077 |          61.931 |       66.527 |
-| Unfiltered | 1,000 |           80.584 |        41.772 |          89.740 |       77.317 |
-| Issuer     |     1 |           13.983 |         0.124 |          30.266 |       10.159 |
-| Issuer     |    50 |           30.966 |         6.492 |          32.400 |       21.364 |
-| Issuer     |   100 |           43.706 |         6.907 |          38.668 |       22.810 |
-| Engraver   |     1 |           30.570 |         4.135 |          54.184 |       28.406 |
-| Engraver   |    25 |           33.721 |        34.362 |          44.069 |       42.342 |
-| Engraver   |    50 |           36.123 |        33.832 |          56.175 |       44.763 |
+| Unfiltered |     1 |           52.515 |         0.111 |          75.058 |       31.145 |
+| Unfiltered |   500 |           76.086 |        21.614 |          61.931 |       23.394 |
+| Unfiltered | 1,000 |           80.584 |        41.306 |          89.740 |       32.514 |
+| Issuer     |     1 |           13.983 |         0.093 |          30.266 |        9.310 |
+| Issuer     |    50 |           30.966 |         6.322 |          32.400 |       22.596 |
+| Issuer     |   100 |           43.706 |         6.108 |          38.668 |       12.158 |
+| Engraver   |     1 |           30.570 |         4.003 |          54.184 |       27.131 |
+| Engraver   |    25 |           33.721 |        34.755 |          44.069 |       43.459 |
+| Engraver   |    50 |           36.123 |        34.857 |          56.175 |       41.513 |
 
 The final plan shapes were:
 
@@ -79,10 +79,12 @@ repeatable-read snapshot.
 
 A temporary `(engraver_id, coin_surface_id)` probe index was measured against
 the final query shape and then removed. PostgreSQL used it for middle and deep
-pages, reducing their page-plan times from 34.362 ms to 27.800 ms and from
-33.832 ms to 28.228 ms. End-to-end API time did not improve: it moved from
-42.342 ms to 44.062 ms and from 44.763 ms to 50.503 ms respectively.
+pages, reducing their page-plan times from 34.755 ms to 27.534 ms and from
+34.857 ms to 26.178 ms. The corresponding API samples moved from 43.459 ms to
+38.701 ms and from 41.513 ms to 37.797 ms, but unrelated scenarios varied by a
+similar amount between these single runs.
 
-The evidence does not justify the extra association-index write and storage cost
-or an Engraver query rewrite at the 100,000-Coin target. The reproducible harness
-remains available to revisit that decision as the Archive shape changes.
+The unindexed Engraver page plans remain below 35 ms at the target size, and the
+probe's 7–9 ms plan reduction does not justify its additional write and storage
+cost or an Engraver query rewrite. The reproducible harness remains available to
+revisit that decision as the Archive shape changes.

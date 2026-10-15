@@ -28,11 +28,18 @@ interface ExplainOutput {
 
 interface PageScenario {
   expectedFirstId: number
-  expectedLastId: number
+  expectedIdStep: number
   expectedTotalItems: number
+  filter:
+    | { kind: "engraver"; slug: string }
+    | { code: string; kind: "issuer" }
+    | { kind: "none" }
   label: string
-  offset: number
   page: number
+}
+
+interface LoggedQuery {
+  params: Array<unknown>
   query: string
 }
 
@@ -61,114 +68,78 @@ function collectPlanNodes(plan: ExplainPlan): Array<string> {
   return [details.join(" "), ...(plan.Plans ?? []).flatMap(collectPlanNodes)]
 }
 
-function orderedPageQuery(where = "") {
-  return `
-    select c.*, i.*
-    from coins c
-    inner join issuers i on c.issuer_id = i.id
-    ${where}
-    order by c.created_at desc, c.id asc
-    limit ${PAGE_SIZE}
-  `
-}
-
-const unfilteredQuery = orderedPageQuery()
-const issuerQuery = orderedPageQuery(
-  "where c.issuer_id = '10000000-0000-4000-8000-000000000001'"
-)
-const engraverQuery = orderedPageQuery(`
-  where exists (
-    select 1
-    from coin_surface_engravers cse
-    inner join coin_surfaces cs on cse.coin_surface_id = cs.id
-    inner join engravers e on cse.engraver_id = e.id
-    where cs.coin_id = c.id
-      and cs.kind in ('obverse', 'reverse')
-      and e.slug = 'performance-engraver-1'
-  )
-`)
-
 const scenarios: Array<PageScenario> = [
   {
     expectedFirstId: 1,
-    expectedLastId: 100,
+    expectedIdStep: 1,
     expectedTotalItems: 100_000,
+    filter: { kind: "none" },
     label: "unfiltered-first",
-    offset: 0,
     page: 1,
-    query: unfilteredQuery,
   },
   {
     expectedFirstId: 49_901,
-    expectedLastId: 50_000,
+    expectedIdStep: 1,
     expectedTotalItems: 100_000,
+    filter: { kind: "none" },
     label: "unfiltered-middle",
-    offset: 49_900,
     page: 500,
-    query: unfilteredQuery,
   },
   {
     expectedFirstId: 99_901,
-    expectedLastId: 100_000,
+    expectedIdStep: 1,
     expectedTotalItems: 100_000,
+    filter: { kind: "none" },
     label: "unfiltered-deep",
-    offset: 99_900,
     page: 1_000,
-    query: unfilteredQuery,
   },
   {
     expectedFirstId: 1,
-    expectedLastId: 991,
+    expectedIdStep: 10,
     expectedTotalItems: 10_000,
+    filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-first",
-    offset: 0,
     page: 1,
-    query: issuerQuery,
   },
   {
     expectedFirstId: 49_001,
-    expectedLastId: 49_991,
+    expectedIdStep: 10,
     expectedTotalItems: 10_000,
+    filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-middle",
-    offset: 4_900,
     page: 50,
-    query: issuerQuery,
   },
   {
     expectedFirstId: 99_001,
-    expectedLastId: 99_991,
+    expectedIdStep: 10,
     expectedTotalItems: 10_000,
+    filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-deep",
-    offset: 9_900,
     page: 100,
-    query: issuerQuery,
   },
   {
     expectedFirstId: 1,
-    expectedLastId: 1_981,
+    expectedIdStep: 20,
     expectedTotalItems: 5_000,
+    filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-first",
-    offset: 0,
     page: 1,
-    query: engraverQuery,
   },
   {
     expectedFirstId: 48_001,
-    expectedLastId: 49_981,
+    expectedIdStep: 20,
     expectedTotalItems: 5_000,
+    filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-middle",
-    offset: 2_400,
     page: 25,
-    query: engraverQuery,
   },
   {
     expectedFirstId: 98_001,
-    expectedLastId: 99_981,
+    expectedIdStep: 20,
     expectedTotalItems: 5_000,
+    filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-deep",
-    offset: 4_900,
     page: 50,
-    query: engraverQuery,
   },
 ]
 
@@ -177,9 +148,11 @@ function requestPath(scenario: PageScenario) {
     page: String(scenario.page),
     pageSize: String(PAGE_SIZE),
   })
-  if (scenario.label.startsWith("issuer-")) query.set("issuer", "PERF1")
-  if (scenario.label.startsWith("engraver-")) {
-    query.set("engraver", "performance-engraver-1")
+  if (scenario.filter.kind === "issuer") {
+    query.set("issuer", scenario.filter.code)
+  }
+  if (scenario.filter.kind === "engraver") {
+    query.set("engraver", scenario.filter.slug)
   }
   return `/v1/coins?${query}`
 }
@@ -248,7 +221,9 @@ async function seedDataset(
 }
 
 async function main() {
+  const loggedQueries: Array<LoggedQuery> = []
   const database = createDatabase(requirePerformanceDatabaseUrl(), {
+    onQuery: (query, params) => loggedQueries.push({ params, query }),
     statementTimeoutMillis: 60_000,
   })
   try {
@@ -265,14 +240,7 @@ async function main() {
 
     const measurements = []
     for (const scenario of scenarios) {
-      const explained = await database.orm.$client.query<{
-        "QUERY PLAN": Array<ExplainOutput>
-      }>(
-        `explain (analyze, buffers, format json) ${scenario.query} offset ${scenario.offset}`
-      )
-      const explain = explained.rows.at(0)?.["QUERY PLAN"].at(0)
-      if (!explain) throw new Error(`Missing query plan for ${scenario.label}`)
-
+      loggedQueries.length = 0
       const startedAt = performance.now()
       const response = await app.request(requestPath(scenario))
       const durationMs = performance.now() - startedAt
@@ -283,19 +251,34 @@ async function main() {
       const expectedTotalPages = Math.ceil(
         scenario.expectedTotalItems / PAGE_SIZE
       )
-      const firstCoin = page.coins.at(0)
-      const lastCoin = page.coins.at(-1)
+      const expectedCoinIds = Array.from({ length: PAGE_SIZE }, (_, index) =>
+        coinId(scenario.expectedFirstId + index * scenario.expectedIdStep)
+      )
       if (
         page.coins.length !== PAGE_SIZE ||
         page.pagination.page !== scenario.page ||
         page.pagination.pageSize !== PAGE_SIZE ||
         page.pagination.totalItems !== scenario.expectedTotalItems ||
         page.pagination.totalPages !== expectedTotalPages ||
-        firstCoin?.id !== coinId(scenario.expectedFirstId) ||
-        lastCoin?.id !== coinId(scenario.expectedLastId)
+        page.coins.some((coin, index) => coin.id !== expectedCoinIds[index])
       ) {
         throw new Error(`Unexpected public API page for ${scenario.label}`)
       }
+
+      const pageQuery = loggedQueries.find(({ query }) =>
+        /order by .*"created_at" desc, .*"id" asc/.test(query)
+      )
+      if (!pageQuery) {
+        throw new Error(`Missing emitted page query for ${scenario.label}`)
+      }
+      const explained = await database.orm.$client.query<{
+        "QUERY PLAN": Array<ExplainOutput>
+      }>(
+        `explain (analyze, buffers, format json) ${pageQuery.query}`,
+        pageQuery.params
+      )
+      const explain = explained.rows.at(0)?.["QUERY PLAN"].at(0)
+      if (!explain) throw new Error(`Missing query plan for ${scenario.label}`)
 
       measurements.push({
         apiDurationMs: Number(durationMs.toFixed(3)),

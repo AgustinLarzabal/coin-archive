@@ -48,6 +48,7 @@ export interface CoinListPage {
 export interface DatabaseOptions {
   connectionTimeoutMillis?: number
   onPoolError?: (error: Error) => void
+  onQuery?: (query: string, params: Array<unknown>) => void
   statementTimeoutMillis?: number
 }
 
@@ -61,7 +62,13 @@ export function createDatabase(
     statement_timeout: options.statementTimeoutMillis ?? 10_000,
   })
   pool.on("error", options.onPoolError ?? ((error) => console.error(error)))
-  const orm = drizzle({ client: pool, schema })
+  const orm = drizzle({
+    client: pool,
+    ...(options.onQuery
+      ? { logger: { logQuery: options.onQuery } }
+      : { logger: false }),
+    schema,
+  })
   const obverses = alias(schema.coinSurfaces, "obverses")
   const reverses = alias(schema.coinSurfaces, "reverses")
   const edges = alias(schema.coinSurfaces, "edges")

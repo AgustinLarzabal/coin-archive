@@ -1592,5 +1592,275 @@
     "obverse": {
       "description": "Stylised portraits and signatures of Konrad Adenauer and Charles de Gaulle flank a bilingual 50-year inscription and the year 2013, accompanied by the treaty's French and German names, Germany's country code, a German mint mark, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009e",
+    "title": "Change of Head of State",
+    "issuerCode": "ES",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Overlapping portraits of King Felipe VI and King Juan Carlos I are accompanied by Spain's name, the year 2014, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009f",
+    "title": "World AIDS Day",
+    "issuerCode": "FR",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Three awareness ribbons, including two inverted to form victory symbols, represent the fight against AIDS, accompanied by the date 1 December and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a0",
+    "title": "100th Anniversary of the Birth of Ilmari Tapiovaara",
+    "issuerCode": "FI",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Ilmari Tapiovaara's name and years appear beside a close-up of a furniture fitting characteristic of his designs, accompanied by Finland's country code, the year 2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a1",
+    "title": "25th Anniversary of the Fall of the Berlin Wall",
+    "issuerCode": "VA",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A partially collapsed Berlin Wall reveals an olive branch between bricks and barbed wire, with the Brandenburg Gate behind, accompanied by an anniversary inscription, Vatican City's name, the years 1989 and 2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a2",
+    "title": "600th Anniversary of the Coronation of Barbara of Celje",
+    "issuerCode": "SI",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A lined portrait of Queen Barbara of Celje holding her sceptre is overlaid with three six-pointed stars of the Counts of Celje, accompanied by her name, Slovenia's name, the years 1414–2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a3",
+    "title": "50th Anniversary of Grand Duke Jean's Accession",
+    "issuerCode": "LU",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Portraits of Grand Duke Henri and Grand Duke Jean appear beneath a crown and a circular accession-anniversary inscription, accompanied by their names, the years 1964 and 2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a4",
+    "title": "International Year of Family Farming",
+    "issuerCode": "PT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Traditional agricultural tools surround a chicken, pumpkins, potatoes, vegetables, and flowers, accompanied by a family-farming inscription, Portugal's name, the year 2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a5",
+    "title": "50th Anniversary of Malta's Independence",
+    "issuerCode": "MT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A detail from Malta's Independence Monument shows a young woman representing the nation carrying the Maltese flag, accompanied by an independence inscription, the year 2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a6",
+    "title": "90th Anniversary of the Death of Giacomo Puccini",
+    "issuerCode": "SM",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A portrait of composer Giacomo Puccini is accompanied by his name, San Marino's name, the year 2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a7",
+    "title": "150th Anniversary of the Belgian Red Cross",
+    "issuerCode": "BE",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A cross bearing the number 150 and the organisation's Dutch and French names is accompanied by Belgium's country code, the year 2014, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a8",
+    "title": "150th Anniversary of the Union of the Ionian Islands with Greece",
+    "issuerCode": "GR",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A seven-pointed star bears a Greek union-anniversary inscription, with symbols of the Ionian Islands between its points and a wave motif around the design, accompanied by Greece's name, the years 1864–2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000a9",
+    "title": "400th Anniversary of the Death of Domenikos Theotokopoulos",
+    "issuerCode": "GR",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A portrait of Domenikos Theotokopoulos appears before a characteristic figure from his work, accompanied by his signature and name, the years 1541–1614, Greece's name, the year 2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000aa",
+    "title": "Riga — European Capital of Culture 2014",
+    "issuerCode": "LV",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "The skyline and UNESCO-listed historic centre of Riga are accompanied by a European Capital of Culture inscription, the city's name, the year 2014, Latvia's country code, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ab",
+    "title": "200th Anniversary of the Malta Police Force",
+    "issuerCode": "MT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "The badge of the Malta Police Force is accompanied by a 200-year anniversary legend, the years 1814–2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ac",
+    "title": "500th Anniversary of the Death of Donato Bramante",
+    "issuerCode": "SM",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A portrait of Donato Bramante appears beside part of his Tempietto, accompanied by his full commemorative inscription, the years 1514 and 2014, the artist's initials, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ad",
+    "title": "100th Anniversary of the Birth of Tove Jansson",
+    "issuerCode": "FI",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A portrait of Tove Jansson appears above her signature and the years 1914–2001, accompanied by Finland's country code, the year 2014, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ae",
+    "title": "200th Anniversary of the Carabinieri",
+    "issuerCode": "IT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A reinterpretation of Antonio Berti's sculpture Patrol of Carabinieri in a Storm is accompanied by the years 1814 and 2014, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000af",
+    "title": "450th Anniversary of the Birth of Galileo Galilei",
+    "issuerCode": "IT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Galileo Galilei's portrait, based on a painting by Justus Sustermans, appears with a telescope, his name, the years 1564–2014, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b0",
+    "title": "70th Anniversary of the Normandy Landings",
+    "issuerCode": "FR",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "The inscription D-DAY forms a landing craft and tank barrel above fading soldiers' footprints washed by a wave bearing Paul Verlaine's coded verse, accompanied by the years 1944–2014, an anniversary inscription, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b1",
+    "title": "Official Farewell to Former Queen Beatrix",
+    "issuerCode": "NL",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Portraits of King Willem-Alexander and former Queen Beatrix are surrounded by their royal titles, accompanied by a crown, the year 2014, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b2",
+    "title": "10th Anniversary of Slovakia's Accession to the European Union",
+    "issuerCode": "SK",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Stylised letters representing the European Union incorporate Slovakia's coat of arms, accompanied by the accession date 1 May 2004, the year 2014, Slovakia's name, an anniversary inscription, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b3",
+    "title": "40th Anniversary of the Carnation Revolution",
+    "issuerCode": "PT",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Two curves form a carnation symbolising the revolution of 25 April, accompanied by Portugal's name and coat of arms, the event date, a 40-year inscription, the year 2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b4",
+    "title": "Centenary of the Beginning of the First World War",
+    "issuerCode": "BE",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A poppy appears above the years 2014–18 and a Great War centenary inscription, accompanied by Belgium's name in three languages, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b5",
+    "title": "Park Güell",
+    "issuerCode": "ES",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Antoni Gaudí's emblematic lizard sculpture appears before a pavilion at the entrance to Park Güell, accompanied by Spain's name, the park and architect's names, the year 2014, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b6",
+    "title": "20th Anniversary of Andorra Joining the Council of Europe",
+    "issuerCode": "AD",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "Andorra's coat of arms appears beside the number 20, whose zero represents the Council of Europe flag, accompanied by Andorra's name, a Council of Europe inscription, the year 2014, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b7",
+    "title": "175th Anniversary of Luxembourg's Independence",
+    "issuerCode": "LU",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "A portrait of Grand Duke Henri appears beside the years 1839 and 2014, Luxembourg's name, and inscriptions marking 175 years of independence, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b8",
+    "title": "Lower Saxony",
+    "issuerCode": "DE",
+    "firstIssueYear": 2014,
+    "lastIssueYear": 2014,
+    "obverse": {
+      "description": "St Michael's Church in Hildesheim represents Lower Saxony in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2014, a German mint mark, the engraver's initials, and twelve stars."
+    }
   }
 ]

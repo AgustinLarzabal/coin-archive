@@ -1,4 +1,5 @@
 [
+  { "name": "Andorra", "code": "AD" },
   { "name": "Austria", "code": "AT" },
   { "name": "Belgium", "code": "BE" },
   { "name": "Cyprus", "code": "CY" },
@@ -9,6 +10,7 @@
   { "name": "Greece", "code": "GR" },
   { "name": "Ireland", "code": "IE" },
   { "name": "Italy", "code": "IT" },
+  { "name": "Latvia", "code": "LV" },
   { "name": "Luxembourg", "code": "LU" },
   { "name": "Malta", "code": "MT" },
   { "name": "Monaco", "code": "MC" },

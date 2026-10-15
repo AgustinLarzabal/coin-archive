@@ -178,7 +178,7 @@ export function createDatabase(
                     .where(eq(schema.issuers.code, listOptions.issuerCode))
                     .limit(1)
                 ).at(0)?.id ?? null)
-          const filteredCoins = () =>
+          const coinFilterPredicate = () =>
             and(
               issuerId === undefined
                 ? undefined
@@ -224,7 +224,7 @@ export function createDatabase(
           const [{ totalItems }] = await transaction
             .select({ totalItems: count() })
             .from(schema.coins)
-            .where(filteredCoins())
+            .where(coinFilterPredicate())
           const rows = await transaction
             .select({
               coin: schema.coins,
@@ -235,7 +235,7 @@ export function createDatabase(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
             )
-            .where(filteredCoins())
+            .where(coinFilterPredicate())
             .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
             .limit(pageSize)
             .offset((page - 1) * pageSize)

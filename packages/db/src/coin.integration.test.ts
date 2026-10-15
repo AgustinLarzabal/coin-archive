@@ -947,6 +947,71 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("returns page rows and the exact total from one database snapshot", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    const concurrentDatabase = createDatabase(getDatabaseUrl())
+    const lockPool = new Pool({ connectionString: getDatabaseUrl() })
+    const lockClient = await lockPool.connect()
+    let issuerLockHeld = false
+
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          title: "Coin visible to the page snapshot",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
+        .returning()
+
+      await lockClient.query("begin")
+      await lockClient.query('lock table "issuers" in access exclusive mode')
+      issuerLockHeld = true
+
+      const page = database.listCoins()
+      let pageReadIsBlocked = false
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const result = await lockClient.query<{ waiting: boolean }>(`
+          select exists (
+            select 1
+            from pg_locks
+            where relation = 'issuers'::regclass
+              and mode = 'AccessShareLock'
+              and not granted
+              and pid <> pg_backend_pid()
+          ) as waiting
+        `)
+        if (result.rows[0]?.waiting) {
+          pageReadIsBlocked = true
+          break
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      }
+      if (!pageReadIsBlocked) {
+        throw new Error("Coin page read did not wait for the Issuer lock")
+      }
+
+      await concurrentDatabase.orm
+        .delete(concurrentDatabase.schema.coins)
+        .where(sql`${concurrentDatabase.schema.coins.id} = ${coin.id}`)
+
+      await lockClient.query("commit")
+      issuerLockHeld = false
+
+      await expect(page).resolves.toEqual({
+        coins: [expect.objectContaining({ id: coin.id })],
+        totalItems: 1,
+      })
+    } finally {
+      if (issuerLockHeld) await lockClient.query("rollback")
+      lockClient.release()
+      await lockPool.end()
+      await concurrentDatabase.close()
+      await database.close()
+    }
+  })
+
   it("lists only Coins for one exact Issuer Code while preserving order", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

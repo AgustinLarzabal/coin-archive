@@ -1862,5 +1862,475 @@
     "obverse": {
       "description": "St Michael's Church in Hildesheim represents Lower Saxony in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2014, a German mint mark, the engraver's initials, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000b9",
+    "title": "The Lithuanian Language",
+    "issuerCode": "LT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "The word AČIŪ appears in a specially created Lithuanian font over a cloud of every letter in the Lithuanian alphabet, accompanied by Lithuania's name, the year 2015, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ba",
+    "title": "30th Anniversary of Coming of Age at 18",
+    "issuerCode": "AD",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A young person casts a ballot bearing Andorra's name, accompanied by an inscription commemorating political rights at age 18, the years 1985 and 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000bb",
+    "title": "25th Anniversary of the Customs Agreement with the European Union",
+    "issuerCode": "AD",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A map of Andorra highlights the principality's coat of arms above two interlaced arrows symbolising its customs agreement with the European Union, accompanied by an anniversary inscription, the years 1990 and 2015, Andorra's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000bc",
+    "title": "800th Anniversary of the First Fortress on the Rock of Monaco",
+    "issuerCode": "MC",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A tower stands atop the Rock of Monaco, accompanied by Monaco's name, a fortress-foundation inscription, the years 1215 and 2015, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000bd",
+    "title": "Eighth World Meeting of Families",
+    "issuerCode": "VA",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Two families embrace the Earth, accompanied by the World Meeting of Families and Vatican City inscriptions, the year 2015, the artist's name, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000be",
+    "title": "150th Anniversary of the Birth of Akseli Gallen-Kallela",
+    "issuerCode": "FI",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "The swan of Tuonela swims above rippling water and an artist's palette, accompanied by Akseli Gallen-Kallela's name, the years 1865 and 2015, Finland's country code, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000bf",
+    "title": "The Black Stork",
+    "issuerCode": "LV",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A black stork represents one of Europe's flagship nature-conservation species, accompanied by Latvia's name, the year 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c0",
+    "title": "200th Anniversary of the Birth of Ľudovít Štúr",
+    "issuerCode": "SK",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A portrait of Ľudovít Štúr is accompanied by his name, the years 1815–1856, Slovakia's name, the year 2015, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c1",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "AT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Austria's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c2",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "BE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Belgium's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c3",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "CY",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Cyprus's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c4",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "EE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Estonia's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c5",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "FI",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Finland's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c6",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "FR",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by France's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c7",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "DE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Germany's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c8",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "GR",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Greece's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000c9",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "IE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Ireland's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ca",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "IT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Italy's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000cb",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "LV",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Latvia's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000cc",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "LT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Lithuania's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000cd",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "LU",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Luxembourg's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ce",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "MT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Malta's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000cf",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "NL",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by the Netherlands' name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d0",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "PT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Portugal's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d1",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "SK",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Slovakia's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d2",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "SI",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Slovenia's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d3",
+    "title": "30th Anniversary of the European Union Flag",
+    "issuerCode": "ES",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Twelve stars morph into human figures embracing the birth of a new Europe, accompanied by Spain's name, the years 1985–2015, the artist's initials, and twelve stars on the outer ring."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d4",
+    "title": "75th Anniversary of the Death of Spyros Louis",
+    "issuerCode": "GR",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Spyros Louis and his award cup appear before the Panathenaic Stadium, accompanied by Greece's name, a memorial inscription, the year 2015, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d5",
+    "title": "Republic of Malta 1974",
+    "issuerCode": "MT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A marble tablet from Valletta's Presidential Palace commemorates Malta's transition from monarchy to republic in 1974, accompanied by a republic inscription, the year 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d6",
+    "title": "25th Anniversary of German Reunification",
+    "issuerCode": "SM",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Two intertwined views of the Brandenburg Gate resemble hands joining the two parts of Berlin, accompanied by a German reunification inscription, the years 1990–2015, San Marino's name, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d7",
+    "title": "European Year for Development",
+    "issuerCode": "BE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A hand holds a globe with a plant in the foreground, accompanied by a European Year for Development inscription, Belgium's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d8",
+    "title": "125th Anniversary of the House of Nassau-Weilburg",
+    "issuerCode": "LU",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside portraits of five predecessors from the House of Nassau-Weilburg, accompanied by a dynasty inscription, Luxembourg's name, the year 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000d9",
+    "title": "225th Anniversary of the Fête de la Fédération",
+    "issuerCode": "FR",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Marianne wears a Phrygian cap beside a tricolour cockade, France's country code, and a stanza from Paul Éluard's poem Liberté, accompanied by the year 2015, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000da",
+    "title": "750th Anniversary of the Birth of Dante Alighieri",
+    "issuerCode": "IT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Dante holds an open book before Mount Purgatory in a detail from Domenico di Michelino's Divine Comedy illustration, accompanied by his name, the years 1265 and 2015, the Italian Republic monogram, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000db",
+    "title": "500th Anniversary of the First Contacts with Timor",
+    "issuerCode": "PT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A sixteenth-century Portuguese ship appears beside a traditional Timorese house roof and wood sculptures, accompanied by Portugal's name, Timor's name, the years 1515 and 2015, the artist's signature, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000dc",
+    "title": "150th Anniversary of the Portuguese Red Cross",
+    "issuerCode": "PT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Repeated crosses represent the expansion of humanitarian action over the outline of a helping hand, accompanied by the Portuguese Red Cross inscription, Portugal's coat of arms and name, the years 1865 and 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000dd",
+    "title": "750th Anniversary of the Birth of Dante Alighieri",
+    "issuerCode": "SM",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A portrait of Dante based on a Botticelli fresco is accompanied by his name, the years 1265 and 2015, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000de",
+    "title": "100th Anniversary of the First Flight from Malta",
+    "issuerCode": "MT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Captain Kilmer's seaplane flies over Grand Harbour with Senglea Point behind, accompanied by a first-flight inscription, the years 1915–2015, a centenary inscription, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000df",
+    "title": "15th Anniversary of Grand Duke Henri's Accession",
+    "issuerCode": "LU",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "Grand Duke Henri and the Grand Duchess appear beneath the accession year 2000, Luxembourg's name, and the year 2015, accompanied by a fifteenth-anniversary inscription and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e0",
+    "title": "Expo Milano 2015",
+    "issuerCode": "IT",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A seed watered above the Earth sprouts into a vine, olive branch, and ear of wheat to symbolise fertility, accompanied by the Expo Milano 2015 logo, the Italian Republic monogram, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e1",
+    "title": "Cave of Altamira",
+    "issuerCode": "ES",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A prehistoric bison painting from the Cave of Altamira represents the site in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2015, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e2",
+    "title": "25th Anniversary of German Unity",
+    "issuerCode": "DE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "People symbolising a new beginning stand before the Brandenburg Gate beside the declaration Wir sind ein Volk, accompanied by Germany's country code, a German mint mark, the engraver's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e3",
+    "title": "Hesse",
+    "issuerCode": "DE",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "St Paul's Church in Frankfurt represents Hesse in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2015, a German mint mark, the engraver's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e4",
+    "title": "Emona — Ljubljana",
+    "issuerCode": "SI",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A composition of letters forms EMONA or AEMONA beside a stylised design of the Roman settlement, accompanied by an Emona Ljubljana inscription, Slovenia's name, the year 2015, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e5",
+    "title": "Europe Building Peace and Security Since 1945",
+    "issuerCode": "FR",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A modern dove carries an olive branch formed from the twelve stars of the European flag, surrounded by the country codes of the European Union's members, accompanied by France's country code, the year 2015, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e6",
+    "title": "150th Anniversary of the Birth of Jean Sibelius",
+    "issuerCode": "FI",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "A starry sky and treetops evoke the music of Jean Sibelius, accompanied by his name, Finland's country code, the year 2015, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e7",
+    "title": "Latvian Presidency of the Council of the European Union",
+    "issuerCode": "LV",
+    "firstIssueYear": 2015,
+    "lastIssueYear": 2015,
+    "obverse": {
+      "description": "The official logo of Latvia's Presidency of the Council of the European Union appears with the presidency inscription and website EU2015.LV, surrounded by twelve stars."
+    }
   }
 ]

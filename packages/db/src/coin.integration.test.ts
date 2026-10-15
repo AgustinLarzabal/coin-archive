@@ -1668,6 +1668,7 @@ describe("Coin seed", () => {
         { name: "Austria", code: "AT" },
         { name: "Belgium", code: "BE" },
         { name: "Cyprus", code: "CY" },
+        { name: "Estonia", code: "EE" },
         { name: "Finland", code: "FI" },
         { name: "France", code: "FR" },
         { name: "Germany", code: "DE" },
@@ -1694,9 +1695,9 @@ describe("Coin seed", () => {
         ...firstSeededCoinPage.coins,
         ...secondSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(104)
-      expect(firstSeededCoinPage.totalItems).toBe(104)
-      expect(secondSeededCoinPage.totalItems).toBe(104)
+      expect(seededCoins).toHaveLength(134)
+      expect(firstSeededCoinPage.totalItems).toBe(134)
+      expect(secondSeededCoinPage.totalItems).toBe(134)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -1745,6 +1746,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2011 && lastIssueYear === 2011
         )
       ).toHaveLength(16)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2012 && lastIssueYear === 2012
+        )
+      ).toHaveLength(30)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

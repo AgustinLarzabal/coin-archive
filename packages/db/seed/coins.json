@@ -1062,5 +1062,305 @@
     "obverse": {
       "description": "Cologne Cathedral appears above the name Nordrhein-Westfalen, accompanied by the year 2011 and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000069",
+    "title": "Wedding of Prince Guillaume and Countess Stéphanie de Lannoy",
+    "issuerCode": "LU",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside Prince Guillaume and Countess Stéphanie, accompanied by the inscriptions PRËNZENHOCHZAÏT and LËTZEBUERG, the year 2012, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006a",
+    "title": "Seventh World Meeting of Families",
+    "issuerCode": "VA",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A family stands before Milan Cathedral, accompanied by the event and Vatican City inscriptions, the year 2012, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006b",
+    "title": "150th Anniversary of the Birth of Helene Schjerfbeck",
+    "issuerCode": "FI",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A stylised self-portrait of Helene Schjerfbeck is flanked by her name and the years 1862–1946, accompanied by Finland's country code, the year 2012, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006c",
+    "title": "Majority Representation in 1887",
+    "issuerCode": "MT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A jubilant crowd stands before the Governor's Palace in Valletta, accompanied by an inscription commemorating Malta's majority representation in 1887, the year 2012, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006d",
+    "title": "500th Anniversary of Monaco's Sovereignty",
+    "issuerCode": "MC",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A left-facing portrait of Lucien I Grimaldi is surrounded by an inscription marking Monaco's sovereignty from 1512 to 2012, ornamental diamonds, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006e",
+    "title": "100th Anniversary of the Birth of Abbé Pierre",
+    "issuerCode": "FR",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A portrait of Abbé Pierre wearing his familiar beret appears beside his foundation's logo and the question Et les autres?, accompanied by a centenary inscription, France's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000006f",
+    "title": "Guimarães — European Capital of Culture 2012",
+    "issuerCode": "PT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A stylised image of Portugal's first king, Afonso Henriques, appears with his sword and Guimarães Castle, accompanied by Portugal's shield and name, the Guimarães 2012 logo, a mint mark, the designer's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000070",
+    "title": "75th Anniversary of the Queen Elisabeth Competition",
+    "issuerCode": "BE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "The Queen Elisabeth Competition logo is superimposed on a portrait of its founder, accompanied by the competition's name, the years 1937–2012, Belgium's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000071",
+    "title": "100th Anniversary of the Death of Giovanni Pascoli",
+    "issuerCode": "IT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A portrait of poet Giovanni Pascoli is accompanied by his name, the years 1912 and 2012, the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000072",
+    "title": "Burgos Cathedral",
+    "issuerCode": "ES",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "The Cathedral of Our Lady of Burgos represents the Gothic landmark in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2012, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000073",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "AT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Austria's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000074",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "BE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Belgium's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000075",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "CY",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Cyprus's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000076",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "EE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Estonia's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000077",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "FI",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Finland's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000078",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "FR",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by France's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000079",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "DE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Germany's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007a",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "GR",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Greece's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007b",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "IE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Ireland's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007c",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "IT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Italy's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007d",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "LU",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Luxembourg's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007e",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "MT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Malta's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000007f",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "NL",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by the Netherlands' name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000080",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "PT",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Portugal's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000081",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "SM",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by San Marino's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000082",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "SK",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Slovakia's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000083",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "SI",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Slovenia's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000084",
+    "title": "Ten Years of the Euro",
+    "issuerCode": "ES",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Spain's name, the years 2002–2012, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000085",
+    "title": "Grand Duke Henri and Grand Duke Guillaume IV",
+    "issuerCode": "LU",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "Portraits of Grand Duke Henri and his great-grandfather Grand Duke Guillaume IV appear before the city of Luxembourg, accompanied by their names, a grand-ducal inscription, the year 2012, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000086",
+    "title": "Bavaria",
+    "issuerCode": "DE",
+    "firstIssueYear": 2012,
+    "lastIssueYear": 2012,
+    "obverse": {
+      "description": "Neuschwanstein Castle is shown from the east with its gatehouse, towers, turrets, and surrounding mountains, accompanied by Bavaria's name, a German mint mark, the designer's initials, Germany's country code, the year 2012, and twelve stars."
+    }
   }
 ]

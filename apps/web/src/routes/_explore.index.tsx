@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
@@ -14,8 +14,36 @@ import { getExploreCoinListFilters } from "@/features/explore/explore-search"
 
 export const Route = createFileRoute("/_explore/")({
   loaderDeps: ({ search }) => getExploreCoinListFilters(search),
+  beforeLoad: ({ search }) => {
+    if (search.page === 1) {
+      throw redirect({
+        to: "/",
+        search: {
+          issuer: search.issuer,
+          engraver: search.engraver,
+        },
+        replace: true,
+      })
+    }
+  },
   loader: async ({ context, deps: filters }) => {
-    await context.queryClient.query(coinListQueryOptions(filters))
+    const coinList = await context.queryClient.query(
+      coinListQueryOptions(filters)
+    )
+    const currentPage = filters.page ?? 1
+    const lastPage = Math.max(coinList.pagination.totalPages, 1)
+
+    if (currentPage > lastPage) {
+      throw redirect({
+        to: "/",
+        search: {
+          issuer: filters.issuerCode,
+          engraver: filters.engraverSlug,
+          page: lastPage === 1 ? undefined : lastPage,
+        },
+        replace: true,
+      })
+    }
   },
   component: ExploreRoute,
   errorComponent: ExploreError,

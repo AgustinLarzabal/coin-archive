@@ -447,7 +447,9 @@ describe("Archive landing route", () => {
 
     renderArchiveRoute()
 
-    const filters = await screen.findByRole("navigation")
+    const filters = await screen.findByRole("navigation", {
+      name: "Explore filters",
+    })
     expect(filters).toContainElement(
       screen.getByRole("combobox", { name: "Issuer" })
     )
@@ -677,6 +679,9 @@ describe("Archive landing route", () => {
 
     expect(
       await screen.findByRole("img", { name: "Reverse of First coin" })
+    ).toHaveAttribute("loading", "lazy")
+    expect(
+      screen.getByRole("img", { name: "Reverse of First coin" })
     ).toHaveAttribute("src", "https://images.example/reverse.webp")
     expect(screen.queryByText("Image unavailable")).not.toBeInTheDocument()
   })

@@ -14,7 +14,10 @@ export function ExploreFilters({
   issuers: Array<IssuerResponse>
 }) {
   return (
-    <nav className="flex h-18 items-center gap-5 border-b px-5 md:px-10">
+    <nav
+      aria-label="Explore filters"
+      className="flex h-18 items-center gap-5 border-b px-5 md:px-10"
+    >
       <IssuerCombobox
         engraverSlug={engraverSlug}
         issuerCode={issuerCode}

@@ -46,6 +46,7 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
         <img
           src={image.url}
           alt={`${image.surface} of ${coin.title}`}
+          loading="lazy"
           className="w-1/2 rounded-full grayscale group-hover:grayscale-0"
         />
       ) : (

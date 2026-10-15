@@ -1130,7 +1130,7 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("lists Coins credited to one Engraver on either face once and combines with Issuer filtering", async () => {
+  it("lists Coins credited to one Engraver once and composes BCE Year, Issuer, and pagination filters", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const argentina = await insertArgentina(database)
@@ -1156,15 +1156,16 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
-          firstIssueYear: 2003,
-          lastIssueYear: 2003,
+          firstIssueYear: -44,
+          lastIssueYear: -42,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          firstIssueYear: -46,
+          lastIssueYear: -44,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
@@ -1278,11 +1279,13 @@ describe("Coin persistence", () => {
         database.listCoins({
           issuerCode: "ROMAN",
           engraverSlug: "selected-engraver",
-          issueYearInterval: { firstIssueYear: 2004, lastIssueYear: 2004 },
+          issueYearInterval: { firstIssueYear: -44, lastIssueYear: -44 },
+          page: 1,
+          pageSize: 1,
         })
       ).resolves.toEqual({
-        coins: [expect.objectContaining({ id: obverseId })],
-        totalItems: 1,
+        coins: [expect.objectContaining({ id: bothFacesId })],
+        totalItems: 2,
       })
       await expect(
         database.listCoins({ engraverSlug: "unknown-engraver" })

@@ -99,10 +99,10 @@ const coinListQuerySchema = z.object({
   }),
   year: coinListYearQuerySchema.optional().openapi({
     description:
-      "One positive CE Issue Year contained by the Coin's Issue Period",
+      "One signed conventional Issue Year contained by the Coin's Issue Period: negative values are BCE, positive values are CE, and zero is invalid",
     param: { name: "year", in: "query" },
     type: "integer",
-    minimum: 1,
+    not: { const: 0 },
   }),
   page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
     description: "One-based page number",

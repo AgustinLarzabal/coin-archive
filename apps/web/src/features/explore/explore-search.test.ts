@@ -66,24 +66,36 @@ describe("Explore search schema", () => {
     })
   })
 
+  it("maps one canonical BCE Issue Year to the Coin list request", () => {
+    const search = exploreSearchSchema.parse({ year: "-44" })
+
+    expect(search).toEqual({ year: -44 })
+    expect(getExploreCoinListFilters(search)).toEqual({
+      engraverSlug: undefined,
+      issuerCode: undefined,
+      issueYear: -44,
+      page: 1,
+    })
+  })
+
   it.each([
     "",
     "0",
-    "-1",
+    "-0",
+    "+44",
+    "-044",
+    "--44",
     "1986-",
     "1986-1988",
     "1986,1988",
     "1.5",
     " 1986 ",
-  ])(
-    "ignores the malformed Issue Year %j",
-    (year) => {
-      expect(exploreSearchSchema.parse({ issuer: "AR", year })).toEqual({
-        issuer: "AR",
-        year: undefined,
-      })
-    }
-  )
+  ])("ignores the malformed Issue Year %j", (year) => {
+    expect(exploreSearchSchema.parse({ issuer: "AR", year })).toEqual({
+      issuer: "AR",
+      year: undefined,
+    })
+  })
 
   it("maps a one-based URL page to the Coin list request", () => {
     const search = exploreSearchSchema.parse({ page: "3" })

@@ -91,7 +91,7 @@ export const COIN_LIST_DEFAULT_PAGE_SIZE = 24
 export const COIN_LIST_MAX_PAGE_SIZE = 100
 
 export const coinListPageSchema = z.int().min(1)
-export const coinListYearSchema = z.int().positive()
+export const coinListYearSchema = issueYearSchema
 export const coinListPageSizeSchema = z
   .int()
   .min(1)
@@ -99,7 +99,7 @@ export const coinListPageSizeSchema = z
 const decimalIntegerQuerySchema = z.string().regex(/^\d+$/).transform(Number)
 export const coinListYearQuerySchema = z
   .string()
-  .regex(/^[1-9]\d*$/)
+  .regex(/^-?[1-9]\d*$/)
   .transform(Number)
   .pipe(coinListYearSchema)
 export const coinListPageQuerySchema =

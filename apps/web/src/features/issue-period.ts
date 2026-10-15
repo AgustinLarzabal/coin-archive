@@ -1,4 +1,4 @@
-function formatIssueYear(year: number) {
+export function formatIssueYear(year: number) {
   return year < 0 ? `${Math.abs(year)} BCE` : String(year)
 }
 

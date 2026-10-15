@@ -4,10 +4,21 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
 
+import { formatIssueYear } from "@/features/issue-period"
+
 type YearFilterProps = {
   engraverSlug?: string
   issuerCode?: string
   year?: number
+}
+
+function parseIssueYearDraft(draft: string) {
+  const match = /^([1-9]\d*)\s*(BCE)?$/i.exec(draft.trim())
+  if (!match) return undefined
+
+  const year = Number(match[1]) * (match[2] ? -1 : 1)
+  const result = coinListYearQuerySchema.safeParse(String(year))
+  return result.success ? result.data : undefined
 }
 
 export function YearFilter({
@@ -17,29 +28,34 @@ export function YearFilter({
 }: YearFilterProps) {
   const navigate = useNavigate({ from: "/" })
   const errorId = useId()
-  const [draft, setDraft] = useState(year === undefined ? "" : String(year))
+  const [draft, setDraft] = useState(
+    year === undefined ? "" : formatIssueYear(year)
+  )
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    setDraft(year === undefined ? "" : String(year))
+    setDraft(year === undefined ? "" : formatIssueYear(year))
     setError(undefined)
   }, [year])
 
   const apply = () => {
-    const result = coinListYearQuerySchema.safeParse(draft)
-    if (!result.success) {
-      setError("Enter one positive CE Issue Year.")
+    const issueYear = parseIssueYearDraft(draft)
+    if (issueYear === undefined) {
+      setError("Enter one CE Year or a BCE Year such as 44 BCE.")
       return
     }
 
     setError(undefined)
-    if (result.data === year) return
+    if (issueYear === year) {
+      setDraft(formatIssueYear(issueYear))
+      return
+    }
     void navigate({
       to: "/",
       search: {
         engraver: engraverSlug,
         issuer: issuerCode,
-        year: result.data,
+        year: issueYear,
       },
     })
   }
@@ -70,7 +86,7 @@ export function YearFilter({
           aria-describedby={error ? errorId : undefined}
           aria-invalid={error ? true : undefined}
           aria-label="Year"
-          inputMode="numeric"
+          inputMode="text"
           placeholder="Year"
           value={draft}
           onChange={(event) => {

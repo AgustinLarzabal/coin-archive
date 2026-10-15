@@ -1049,10 +1049,36 @@ describe("API", () => {
       await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
+    it("passes one canonical BCE Issue Year as a one-year interval with the other filters", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?issuer=ROMAN&engraver=first-archive-engraver&year=-44"
+      )
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        issuerCode: "ROMAN",
+        engraverSlug: "first-archive-engraver",
+        issueYearInterval: { firstIssueYear: -44, lastIssueYear: -44 },
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+
     it.each([
       "",
       "0",
-      "-1",
+      "-0",
+      "+44",
+      "-044",
+      "--44",
+      "44 BCE",
       "1986-",
       "1986-1988",
       "1986,1988",
@@ -1390,11 +1416,14 @@ describe("API", () => {
         }),
         expect.objectContaining({
           description:
-            "One positive CE Issue Year contained by the Coin's Issue Period",
+            "One signed conventional Issue Year contained by the Coin's Issue Period: negative values are BCE, positive values are CE, and zero is invalid",
           in: "query",
           name: "year",
           required: false,
-          schema: expect.objectContaining({ minimum: 1, type: "integer" }),
+          schema: expect.objectContaining({
+            not: { const: 0 },
+            type: "integer",
+          }),
         }),
         expect.objectContaining({
           description: "One-based page number",

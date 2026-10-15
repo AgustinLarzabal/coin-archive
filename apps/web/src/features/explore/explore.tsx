@@ -6,6 +6,7 @@ import type { CoinListFilters } from "@/data/archive"
 import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
 import { RouteMessage } from "@/components/route-message"
 import { coinListQueryOptions } from "@/data/archive"
+import { formatIssueYear } from "@/features/issue-period"
 
 export function Explore({
   filters,
@@ -17,17 +18,21 @@ export function Explore({
   issuer?: IssuerResponse
 }) {
   const { data } = useSuspenseQuery(coinListQueryOptions(filters))
+  const issueYear =
+    filters.issueYear === undefined
+      ? undefined
+      : formatIssueYear(filters.issueYear)
 
   if (data.coins.length === 0) {
     const message =
-      filters.issueYear !== undefined
+      issueYear !== undefined
         ? issuer && engraver
-          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} in ${filters.issueYear}.`
+          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} in ${issueYear}.`
           : engraver
-            ? `No coins found engraved by ${engraver.fullName} in ${filters.issueYear}.`
+            ? `No coins found engraved by ${engraver.fullName} in ${issueYear}.`
             : issuer
-              ? `No coins found for ${issuer.name} in ${filters.issueYear}.`
-              : `No coins found for ${filters.issueYear}.`
+              ? `No coins found for ${issuer.name} in ${issueYear}.`
+              : `No coins found for ${issueYear}.`
         : issuer && engraver
           ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
           : engraver

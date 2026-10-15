@@ -1362,5 +1362,235 @@
     "obverse": {
       "description": "Neuschwanstein Castle is shown from the east with its gatehouse, towers, turrets, and surrounding mountains, accompanied by Bavaria's name, a German mint mark, the designer's initials, Germany's country code, the year 2012, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000087",
+    "title": "200th Anniversary of the Kingdom of the Netherlands",
+    "issuerCode": "NL",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A continuous ribbon forms portraits of King Willem-Alexander and his six royal predecessors, accompanied by his royal title, a bicentenary inscription, the year 2013, mint marks, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000088",
+    "title": "125th Anniversary of the Birth of F. E. Sillanpää",
+    "issuerCode": "FI",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A portrait of Nobel Prize-winning author F. E. Sillanpää is accompanied by his name, the years 1888 and 1964, Finland's country code, the year 2013, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000089",
+    "title": "Self-Government Constitution of 1921",
+    "issuerCode": "MT",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A map of the Maltese islands and a representation of the population commemorate Malta's self-government constitution of 1921, accompanied by the year 2013 and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008a",
+    "title": "28th World Youth Day",
+    "issuerCode": "VA",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Young people surround Rio de Janeiro's Christ the Redeemer statue, accompanied by the World Youth Day and Vatican City inscription, the year 2013, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008b",
+    "title": "100th Anniversary of the Union of Crete with Greece",
+    "issuerCode": "GR",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Cretan rebels raise the Greek flag to symbolise Crete's struggle for union with Greece, accompanied by commemorative Greek inscriptions, the years 1913–2013, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008c",
+    "title": "2400th Anniversary of the Founding of Plato's Academy",
+    "issuerCode": "GR",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A profile portrait of Plato is accompanied by ancient Greek inscriptions commemorating 2400 years since the founding of his Academy, the year 2013, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008d",
+    "title": "500th Anniversary of the Death of Pinturicchio",
+    "issuerCode": "SM",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A detail from Pinturicchio's fresco Christ Among the Doctors is accompanied by the painter's name, the years 1513 and 2013, San Marino's name, the Rome mint mark, the designer's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008e",
+    "title": "100th Anniversary of the Royal Meteorological Institute",
+    "issuerCode": "BE",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "The number 100 incorporates the institute's KMI and IRM abbreviations and a sun, with isobars, raindrops, and snowflakes nearby, accompanied by the year 2013, Belgium's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000008f",
+    "title": "150th Anniversary of the Parliament of 1863",
+    "issuerCode": "FI",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A shoot growing from the year 1863 symbolises the beginning of Finnish democracy and development, accompanied by Finland's bilingual name, the year 2013, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "title": "National Anthem of Luxembourg",
+    "issuerCode": "LU",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside musical notation and text from Luxembourg's national anthem, accompanied by the title Ons Heemecht, Luxembourg's name, the year 2013, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000091",
+    "title": "1150th Anniversary of the Mission of Constantine and Methodius",
+    "issuerCode": "SK",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Constantine and Methodius flank a double cross on three hills, with Constantine holding a book and Methodius a church, accompanied by their names, Slovakia's name, the years 863 and 2013, design and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000092",
+    "title": "20th Anniversary of Monaco Joining the United Nations",
+    "issuerCode": "MC",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A dove carrying an olive branch commemorates Monaco's admission to the United Nations, accompanied by Monaco's name, the years 1993 and 2013, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000093",
+    "title": "700th Anniversary of the Birth of Giovanni Boccaccio",
+    "issuerCode": "IT",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A portrait of Giovanni Boccaccio based on Andrea del Castagno's fresco is accompanied by his name, the years 1313 and 2013, the Italian Republic monogram, the Rome mint mark, the artist's initial, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000094",
+    "title": "250th Anniversary of the Clérigos Tower",
+    "issuerCode": "PT",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "The Clérigos Tower rises beside Porto's skyline as seen from the southern bank of the Douro, accompanied by a 250th-anniversary inscription, Portugal's coat of arms and name, the year 2013, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000095",
+    "title": "150th Anniversary of the Birth of Pierre de Coubertin",
+    "issuerCode": "FR",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A young Pierre de Coubertin appears before stylised Olympic rings framing silhouettes of athletes, accompanied by his name, France's country code, the year 2013, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000096",
+    "title": "Sede Vacante 2013",
+    "issuerCode": "VA",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "The coat of arms of the Cardinal Camerlengo appears beneath the symbol of the Apostolic Camera, accompanied by two crosses, Vatican City's name, the inscription SEDE VACANTE MMXIII, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000097",
+    "title": "200th Anniversary of the Birth of Giuseppe Verdi",
+    "issuerCode": "IT",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A three-quarter portrait of Giuseppe Verdi is accompanied by his name, the years 1813 and 2013, the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000098",
+    "title": "Announcement of Queen Beatrix's Abdication",
+    "issuerCode": "NL",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Queen Beatrix appears before the partially obscured portrait of Prince Willem-Alexander, surrounded by their royal titles, the date 28 January 2013, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000099",
+    "title": "Baden-Württemberg",
+    "issuerCode": "DE",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Maulbronn Monastery represents Baden-Württemberg in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2013, a German mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009a",
+    "title": "800th Anniversary of Visits to Postojna Cave",
+    "issuerCode": "SI",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A stylised spiral ends in two cave formations and incorporates the inscription POSTOJNSKA JAMA, the years 1213–2013, Slovenia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009b",
+    "title": "Monastery of San Lorenzo de El Escorial",
+    "issuerCode": "ES",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "A view of the Monastery of San Lorenzo de El Escorial represents the site in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2013, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009c",
+    "title": "50th Anniversary of the Élysée Treaty",
+    "issuerCode": "FR",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Stylised portraits and signatures of Konrad Adenauer and Charles de Gaulle flank a bilingual 50-year inscription and the year 2013, accompanied by the treaty's French and German names, France's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000009d",
+    "title": "50th Anniversary of the Élysée Treaty",
+    "issuerCode": "DE",
+    "firstIssueYear": 2013,
+    "lastIssueYear": 2013,
+    "obverse": {
+      "description": "Stylised portraits and signatures of Konrad Adenauer and Charles de Gaulle flank a bilingual 50-year inscription and the year 2013, accompanied by the treaty's French and German names, Germany's country code, a German mint mark, and twelve stars."
+    }
   }
 ]

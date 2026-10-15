@@ -96,7 +96,7 @@ describe("database rebuild lifecycle", () => {
       }>(
         "select id, title, first_issue_year, last_issue_year from coins order by id"
       )
-      expect(coins.rows).toHaveLength(134)
+      expect(coins.rows).toHaveLength(157)
       expect(
         coins.rows.map(({ first_issue_year, last_issue_year }) => ({
           first_issue_year,
@@ -139,6 +139,10 @@ describe("database rebuild lifecycle", () => {
           first_issue_year: 2012,
           last_issue_year: 2012,
         })),
+        ...Array.from({ length: 23 }, () => ({
+          first_issue_year: 2013,
+          last_issue_year: 2013,
+        })),
       ])
       expect(coins.rows[0]).toEqual({
         id: "00000000-0000-4000-8000-000000000001",
@@ -147,10 +151,10 @@ describe("database rebuild lifecycle", () => {
         last_issue_year: 2004,
       })
       expect(coins.rows.at(-1)).toEqual({
-        id: "00000000-0000-4000-8000-000000000086",
-        title: "Bavaria",
-        first_issue_year: 2012,
-        last_issue_year: 2012,
+        id: "00000000-0000-4000-8000-00000000009d",
+        title: "50th Anniversary of the Élysée Treaty",
+        first_issue_year: 2013,
+        last_issue_year: 2013,
       })
 
       const issuers = await databaseAfterReset.query<{
@@ -165,26 +169,26 @@ describe("database rebuild lifecycle", () => {
       `)
       expect(issuers.rows).toEqual(
         expect.arrayContaining([
-          { name: "Vatican City", code: "VA", coin_count: 9 },
-          { name: "Italy", code: "IT", coin_count: 11 },
-          { name: "San Marino", code: "SM", coin_count: 9 },
-          { name: "Finland", code: "FI", coin_count: 12 },
-          { name: "Luxembourg", code: "LU", coin_count: 13 },
-          { name: "Greece", code: "GR", coin_count: 6 },
+          { name: "Vatican City", code: "VA", coin_count: 11 },
+          { name: "Italy", code: "IT", coin_count: 13 },
+          { name: "San Marino", code: "SM", coin_count: 10 },
+          { name: "Finland", code: "FI", coin_count: 14 },
+          { name: "Luxembourg", code: "LU", coin_count: 14 },
+          { name: "Greece", code: "GR", coin_count: 8 },
           { name: "Austria", code: "AT", coin_count: 4 },
-          { name: "Belgium", code: "BE", coin_count: 10 },
-          { name: "Germany", code: "DE", coin_count: 10 },
-          { name: "Spain", code: "ES", coin_count: 7 },
-          { name: "France", code: "FR", coin_count: 7 },
+          { name: "Belgium", code: "BE", coin_count: 11 },
+          { name: "Germany", code: "DE", coin_count: 12 },
+          { name: "Spain", code: "ES", coin_count: 8 },
+          { name: "France", code: "FR", coin_count: 9 },
           { name: "Ireland", code: "IE", coin_count: 3 },
-          { name: "Monaco", code: "MC", coin_count: 3 },
-          { name: "Netherlands", code: "NL", coin_count: 4 },
-          { name: "Portugal", code: "PT", coin_count: 9 },
-          { name: "Slovenia", code: "SI", coin_count: 6 },
+          { name: "Monaco", code: "MC", coin_count: 4 },
+          { name: "Netherlands", code: "NL", coin_count: 6 },
+          { name: "Portugal", code: "PT", coin_count: 10 },
+          { name: "Slovenia", code: "SI", coin_count: 7 },
           { name: "Cyprus", code: "CY", coin_count: 2 },
           { name: "Estonia", code: "EE", coin_count: 1 },
-          { name: "Malta", code: "MT", coin_count: 4 },
-          { name: "Slovakia", code: "SK", coin_count: 4 },
+          { name: "Malta", code: "MT", coin_count: 5 },
+          { name: "Slovakia", code: "SK", coin_count: 5 },
         ])
       )
       expect(issuers.rows).toHaveLength(20)

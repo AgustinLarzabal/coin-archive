@@ -1695,9 +1695,9 @@ describe("Coin seed", () => {
         ...firstSeededCoinPage.coins,
         ...secondSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(134)
-      expect(firstSeededCoinPage.totalItems).toBe(134)
-      expect(secondSeededCoinPage.totalItems).toBe(134)
+      expect(seededCoins).toHaveLength(157)
+      expect(firstSeededCoinPage.totalItems).toBe(157)
+      expect(secondSeededCoinPage.totalItems).toBe(157)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -1752,6 +1752,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2012 && lastIssueYear === 2012
         )
       ).toHaveLength(30)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2013 && lastIssueYear === 2013
+        )
+      ).toHaveLength(23)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

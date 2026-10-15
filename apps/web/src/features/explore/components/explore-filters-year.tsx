@@ -21,6 +21,10 @@ function parseIssueYearDraft(draft: string) {
   return result.success ? result.data : undefined
 }
 
+function formatIssueYearDraft(year: number | undefined) {
+  return year === undefined ? "" : formatIssueYear(year)
+}
+
 export function YearFilter({
   engraverSlug,
   issuerCode,
@@ -28,20 +32,18 @@ export function YearFilter({
 }: YearFilterProps) {
   const navigate = useNavigate({ from: "/" })
   const errorId = useId()
-  const [draft, setDraft] = useState(
-    year === undefined ? "" : formatIssueYear(year)
-  )
+  const [draft, setDraft] = useState(formatIssueYearDraft(year))
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    setDraft(year === undefined ? "" : formatIssueYear(year))
+    setDraft(formatIssueYearDraft(year))
     setError(undefined)
   }, [year])
 
   const apply = () => {
     const issueYear = parseIssueYearDraft(draft)
     if (issueYear === undefined) {
-      setError("Enter one CE Year or a BCE Year such as 44 BCE.")
+      setError("Enter one CE or BCE Issue Year, such as 44 BCE.")
       return
     }
 

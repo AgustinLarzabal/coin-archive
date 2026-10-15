@@ -7,7 +7,7 @@ import {
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-it("applies, restores, and independently clears an accessible BCE Year filter", async () => {
+it("applies, restores, and independently clears an accessible BCE Issue Year filter", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
@@ -69,10 +69,10 @@ it("shows an inline error for an invalid draft without changing results", async 
   await user.click(screen.getByRole("button", { name: "Apply Year" }))
 
   expect(
-    screen.getByText("Enter one CE Year or a BCE Year such as 44 BCE.")
+    screen.getByText("Enter one CE or BCE Issue Year, such as 44 BCE.")
   ).toBeVisible()
   expect(yearInput).toHaveAccessibleDescription(
-    "Enter one CE Year or a BCE Year such as 44 BCE."
+    "Enter one CE or BCE Issue Year, such as 44 BCE."
   )
   expect(router.state.location.search).toEqual({ year: 1986 })
   expect(fetchMock).toHaveBeenCalledTimes(3)
@@ -98,7 +98,7 @@ it("shows an informative empty state for a valid Year", async () => {
   expect(screen.queryByRole("alert")).not.toBeInTheDocument()
 })
 
-it("restores and displays a canonical BCE Year without exposing its sign", async () => {
+it("restores and displays a canonical BCE Issue Year without exposing its sign", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
 
   renderArchiveRoute("/?year=-44")

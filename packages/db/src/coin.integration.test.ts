@@ -1130,7 +1130,7 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("lists Coins credited to one Engraver once and composes BCE Year, Issuer, and pagination filters", async () => {
+  it("lists Coins credited to one Engraver once and composes BCE Issue Year, Issuer, and pagination filters", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const argentina = await insertArgentina(database)

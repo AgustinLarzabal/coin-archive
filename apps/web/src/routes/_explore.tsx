@@ -33,7 +33,7 @@ function ExploreLayout() {
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
 
   return (
-    <main className="mt-18 mb-14 flex flex-1 flex-col">
+    <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreFilters
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}

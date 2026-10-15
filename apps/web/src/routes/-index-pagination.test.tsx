@@ -132,31 +132,6 @@ describe("Explore pagination", () => {
     expect(router.state.location.searchStr).toBe("")
   })
 
-  it("jumps directly to a page while preserving active filters", async () => {
-    const fetchMock = vi.fn(createPageAwareArchiveFetch(12))
-    vi.stubGlobal("fetch", fetchMock)
-    const router = renderArchiveRoute("/?issuer=AR&engraver=first-engraver")
-    const user = userEvent.setup()
-
-    await screen.findByRole("link", { name: "Coin on page 1" })
-    const pageInput = screen.getByRole("spinbutton", { name: "Page number" })
-    expect(screen.getByRole("button", { name: "Go to page" })).toBeEnabled()
-    await user.clear(pageInput)
-    await user.type(pageInput, "9{enter}")
-
-    expect(
-      await screen.findByRole("link", { name: "Coin on page 9" })
-    ).toBeVisible()
-    expect(router.state.location.search).toEqual({
-      engraver: "first-engraver",
-      issuer: "AR",
-      page: 9,
-    })
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&page=9&pageSize=24"
-    )
-  })
-
   it("canonicalizes an explicit first page without losing filters", async () => {
     vi.stubGlobal(
       "fetch",

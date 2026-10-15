@@ -1,5 +1,7 @@
 import {
   CaretLeftIcon,
+  CaretLineLeftIcon,
+  CaretLineRightIcon,
   CaretRightIcon,
   DotsThreeIcon,
 } from "@phosphor-icons/react"
@@ -84,6 +86,24 @@ function PaginationPrevious({
   )
 }
 
+function PaginationFirst({
+  className,
+  text = "First",
+  ...props
+}: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  return (
+    <PaginationLink
+      aria-label="Go to first page"
+      size="default"
+      className={cn("ps-1.5!", className)}
+      {...props}
+    >
+      <CaretLineLeftIcon data-icon="inline-start" className="rtl:rotate-180" />
+      <span className="hidden sm:block">{text}</span>
+    </PaginationLink>
+  )
+}
+
 function PaginationNext({
   className,
   text = "Next",
@@ -98,6 +118,24 @@ function PaginationNext({
     >
       <span className="hidden sm:block">{text}</span>
       <CaretRightIcon data-icon="inline-end" className="rtl:rotate-180" />
+    </PaginationLink>
+  )
+}
+
+function PaginationLast({
+  className,
+  text = "Last",
+  ...props
+}: React.ComponentProps<typeof PaginationLink> & { text?: string }) {
+  return (
+    <PaginationLink
+      aria-label="Go to last page"
+      size="default"
+      className={cn("pe-1.5!", className)}
+      {...props}
+    >
+      <span className="hidden sm:block">{text}</span>
+      <CaretLineRightIcon data-icon="inline-end" className="rtl:rotate-180" />
     </PaginationLink>
   )
 }
@@ -126,7 +164,9 @@ export {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
+  PaginationFirst,
   PaginationItem,
+  PaginationLast,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,

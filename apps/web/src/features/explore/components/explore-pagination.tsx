@@ -1,17 +1,18 @@
 import { useNavigate } from "@tanstack/react-router"
-import { Button } from "@workspace/ui/components/button"
-import { Field, FieldGroup, FieldLabel } from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
 import {
   Pagination,
   PaginationContent,
+  PaginationFirst,
   PaginationItem,
+  PaginationLast,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from "@workspace/ui/components/pagination"
 import type { CoinListFilters } from "@/data/archive"
 import type { CoinListPaginationResponse } from "@workspace/api"
-import type { FormEvent } from "react"
 
-const PAGE_WINDOW_SIZE = 5
+const MAX_VISIBLE_PAGE_LINKS = 5
 
 export function ExplorePagination({
   filters,
@@ -33,117 +34,46 @@ export function ExplorePagination({
       },
     })
   }
-  const handleDirectPageSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const nextPage = Number(form.get("page"))
-
-    if (!Number.isInteger(nextPage) || nextPage < 1 || nextPage > totalPages) {
-      return
-    }
-
-    goToPage(nextPage)
-  }
-
   return (
-    <Pagination
-      aria-label="Pagination"
-      className="flex-col gap-4 border-t py-5"
-    >
+    <Pagination className="my-10 gap-6">
       <PaginationContent>
         <PaginationItem>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={page === 1}
-            aria-label="Go to first page"
-            onClick={() => goToPage(1)}
-          >
-            First
-          </Button>
+          <PaginationFirst onClick={() => goToPage(1)} />
         </PaginationItem>
         <PaginationItem>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={page === 1}
-            aria-label="Go to previous page"
-            onClick={() => goToPage(page - 1)}
-          >
-            Previous
-          </Button>
+          <PaginationPrevious onClick={() => goToPage(page - 1)} />
         </PaginationItem>
+
         {nearbyPages.map((nearbyPage) => {
           const isCurrent = nearbyPage === page
-
           return (
             <PaginationItem key={nearbyPage}>
-              <Button
-                type="button"
-                size="icon"
-                variant={isCurrent ? "outline" : "ghost"}
-                aria-current={isCurrent ? "page" : undefined}
+              <PaginationLink
+                isActive={isCurrent}
                 aria-label={
                   isCurrent ? `Page ${nearbyPage}` : `Go to page ${nearbyPage}`
                 }
                 onClick={() => goToPage(nearbyPage)}
               >
                 {nearbyPage}
-              </Button>
+              </PaginationLink>
             </PaginationItem>
           )
         })}
+
         <PaginationItem>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={page === totalPages}
-            aria-label="Go to next page"
-            onClick={() => goToPage(page + 1)}
-          >
-            Next
-          </Button>
+          <PaginationNext onClick={() => goToPage(page + 1)} />
         </PaginationItem>
         <PaginationItem>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={page === totalPages}
-            aria-label="Go to last page"
-            onClick={() => goToPage(totalPages)}
-          >
-            Last
-          </Button>
+          <PaginationLast onClick={() => goToPage(totalPages)} />
         </PaginationItem>
       </PaginationContent>
-      <form onSubmit={handleDirectPageSubmit}>
-        <FieldGroup>
-          <Field orientation="horizontal" className="w-auto">
-            <FieldLabel htmlFor="explore-page-number">Page number</FieldLabel>
-            <Input
-              key={page}
-              id="explore-page-number"
-              name="page"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={totalPages}
-              defaultValue={page}
-              required
-              className="w-20"
-            />
-            <Button type="submit" variant="outline">
-              Go to page
-            </Button>
-          </Field>
-        </FieldGroup>
-      </form>
     </Pagination>
   )
 }
 
 function getNearbyPages(page: number, totalPages: number) {
-  const size = Math.min(PAGE_WINDOW_SIZE, totalPages)
+  const size = Math.min(MAX_VISIBLE_PAGE_LINKS, totalPages)
   const start = Math.min(
     Math.max(page - Math.floor(size / 2), 1),
     totalPages - size + 1

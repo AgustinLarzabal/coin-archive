@@ -11,6 +11,7 @@ import {
   coinListPageSizeQuerySchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
   coinListYearQuerySchema,
+  coinListYearToInterval,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   engraverListResponseSchema as sharedEngraverListResponseSchema,
   engraverSlugSchema,
@@ -99,10 +100,10 @@ const coinListQuerySchema = z.object({
   }),
   year: coinListYearQuerySchema.optional().openapi({
     description:
-      "One signed conventional Issue Year contained by the Coin's Issue Period: negative values are BCE, positive values are CE, and zero is invalid",
+      "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical closed CE range whose inclusive boundaries overlap the Issue Period (for example, 1986-1990). Negative single values are BCE; zero is invalid",
     param: { name: "year", in: "query" },
-    type: "integer",
-    not: { const: 0 },
+    type: "string",
+    pattern: "^(?:-?[1-9]\\d*|[1-9]\\d*-[1-9]\\d*)$",
   }),
   page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
     description: "One-based page number",
@@ -461,12 +462,7 @@ export function createApp(options: AppOptions) {
         ...(issuerCode === undefined ? {} : { issuerCode }),
         ...(year === undefined
           ? {}
-          : {
-              issueYearInterval: {
-                firstIssueYear: year,
-                lastIssueYear: year,
-              },
-            }),
+          : { issueYearInterval: coinListYearToInterval(year) }),
         page,
         pageSize,
       })

@@ -8,6 +8,14 @@ import { RouteMessage } from "@/components/route-message"
 import { coinListQueryOptions } from "@/data/archive"
 import { formatIssueYear } from "@/features/issue-period"
 
+function formatIssueYearFilter(
+  issueYear: NonNullable<CoinListFilters["issueYear"]>
+) {
+  return typeof issueYear === "number"
+    ? formatIssueYear(issueYear)
+    : issueYear.replace("-", "–")
+}
+
 export function Explore({
   filters,
   engraver,
@@ -21,18 +29,18 @@ export function Explore({
   const issueYear =
     filters.issueYear === undefined
       ? undefined
-      : formatIssueYear(filters.issueYear)
+      : formatIssueYearFilter(filters.issueYear)
 
   if (data.coins.length === 0) {
     const message =
       issueYear !== undefined
         ? issuer && engraver
-          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} in ${issueYear}.`
+          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} with an Issue Period overlapping ${issueYear}.`
           : engraver
-            ? `No coins found engraved by ${engraver.fullName} in ${issueYear}.`
+            ? `No coins found engraved by ${engraver.fullName} with an Issue Period overlapping ${issueYear}.`
             : issuer
-              ? `No coins found for ${issuer.name} in ${issueYear}.`
-              : `No coins found for ${issueYear}.`
+              ? `No coins found for ${issuer.name} with an Issue Period overlapping ${issueYear}.`
+              : `No coins found with an Issue Period overlapping ${issueYear}.`
         : issuer && engraver
           ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
           : engraver

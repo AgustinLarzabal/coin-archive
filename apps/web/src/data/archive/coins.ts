@@ -11,7 +11,11 @@ import {
   engraverSlugSchema,
   issuerCodeSchema,
 } from "@workspace/api"
-import type { CoinDetailResponse, CoinListResponse } from "@workspace/api"
+import type {
+  CoinDetailResponse,
+  CoinListResponse,
+  CoinListYear,
+} from "@workspace/api"
 
 import { API_BASE_URL } from "@/config"
 
@@ -28,14 +32,14 @@ export class InvalidIssueYearError extends Error {}
 export type CoinListFilters = Readonly<{
   engraverSlug?: string
   issuerCode?: string
-  issueYear?: number
+  issueYear?: CoinListYear
   page?: number
 }>
 
 type ValidatedCoinListFilters = Readonly<{
   engraverSlug: string | null
   issuerCode: string | null
-  issueYear?: number
+  issueYear?: CoinListYear
   page: number
   pageSize: number
 }>

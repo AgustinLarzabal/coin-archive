@@ -3,26 +3,37 @@ import { coinListYearQuerySchema } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
+import type { CoinListYear } from "@workspace/api"
 
 import { formatIssueYear } from "@/features/issue-period"
 
 type YearFilterProps = {
   engraverSlug?: string
   issuerCode?: string
-  year?: number
+  year?: CoinListYear
 }
 
 function parseIssueYearDraft(draft: string) {
-  const match = /^([1-9]\d*)\s*(BCE)?$/i.exec(draft.trim())
-  if (!match) return undefined
+  const trimmedDraft = draft.trim()
+  const rangeMatch = /^([1-9]\d*)\s*[-–]\s*([1-9]\d*)$/.exec(trimmedDraft)
+  if (rangeMatch) {
+    const result = coinListYearQuerySchema.safeParse(
+      `${rangeMatch[1]}-${rangeMatch[2]}`
+    )
+    return result.success ? result.data : undefined
+  }
 
-  const year = Number(match[1]) * (match[2] ? -1 : 1)
+  const singleYearMatch = /^([1-9]\d*)\s*(BCE)?$/i.exec(trimmedDraft)
+  if (!singleYearMatch) return undefined
+
+  const year = Number(singleYearMatch[1]) * (singleYearMatch[2] ? -1 : 1)
   const result = coinListYearQuerySchema.safeParse(String(year))
   return result.success ? result.data : undefined
 }
 
-function formatIssueYearDraft(year: number | undefined) {
-  return year === undefined ? "" : formatIssueYear(year)
+function formatIssueYearDraft(year: CoinListYear | undefined) {
+  if (year === undefined) return ""
+  return typeof year === "number" ? formatIssueYear(year) : year
 }
 
 export function YearFilter({
@@ -43,13 +54,15 @@ export function YearFilter({
   const apply = () => {
     const issueYear = parseIssueYearDraft(draft)
     if (issueYear === undefined) {
-      setError("Enter one CE or BCE Issue Year, such as 44 BCE.")
+      setError(
+        "Enter one Issue Year or an ordered CE range, such as 1986-1990."
+      )
       return
     }
 
     setError(undefined)
     if (issueYear === year) {
-      setDraft(formatIssueYear(issueYear))
+      setDraft(formatIssueYearDraft(issueYear))
       return
     }
     void navigate({

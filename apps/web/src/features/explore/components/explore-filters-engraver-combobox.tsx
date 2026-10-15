@@ -8,13 +8,13 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 
-import type { EngraverListItemResponse } from "@workspace/api"
+import type { CoinListYear, EngraverListItemResponse } from "@workspace/api"
 
 type EngraverComboboxProps = {
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
   issuerCode?: string
-  year?: number
+  year?: CoinListYear
 }
 
 type EngraverOption = {

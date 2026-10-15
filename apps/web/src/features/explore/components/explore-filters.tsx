@@ -1,7 +1,11 @@
 import { EngraverCombobox } from "./explore-filters-engraver-combobox"
 import { IssuerCombobox } from "./explore-filters-issuer-combobox"
 import { YearFilter } from "./explore-filters-year"
-import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
+import type {
+  CoinListYear,
+  EngraverListItemResponse,
+  IssuerResponse,
+} from "@workspace/api"
 
 export function ExploreFilters({
   engraverSlug,
@@ -14,7 +18,7 @@ export function ExploreFilters({
   engravers: Array<EngraverListItemResponse>
   issuerCode?: string
   issuers: Array<IssuerResponse>
-  year?: number
+  year?: CoinListYear
 }) {
   return (
     <nav

@@ -28,13 +28,15 @@ unless the database name is exactly `coin_archive_performance`.
 ## Dataset
 
 - 100,000 Coins split evenly across 10 Issuers.
+- Alternating Issue Periods of 1988 and 1970, so the measured `1986-1990`
+  overlap range selects exactly 50,000 Coins.
 - Creation timestamps shared in groups of 1,000 Coins, making the Coin-ID
   ascending tie-breaker observable.
 - 50,000 Obverse surfaces and Engraver credits distributed evenly across 10
   Engravers; the measured Engraver therefore matches 5,000 Coins.
 - Page size 100, the public API hard maximum.
 - First, middle, and deepest non-empty pages for unfiltered, Issuer-filtered,
-  and Engraver-filtered requests.
+  Engraver-filtered, and Issue Period overlap requests.
 
 The public API assertions check status, exact `page`, `pageSize`, `totalItems`,
 and `totalPages`, exactly 100 Coins, and the complete known sequence of 100 Coin
@@ -59,6 +61,9 @@ page rows, page Surface images, serialization, and in-process HTTP handling.
 | Engraver   |     1 |           30.570 |         4.003 |          54.184 |       27.131 |
 | Engraver   |    25 |           33.721 |        34.755 |          44.069 |       43.459 |
 | Engraver   |    50 |           36.123 |        34.857 |          56.175 |       41.513 |
+| Year range |     1 |                — |         0.100 |               — |       14.560 |
+| Year range |   250 |                — |        13.237 |               — |       22.315 |
+| Year range |   500 |                — |        25.716 |               — |       29.836 |
 
 The final plan shapes were:
 
@@ -69,6 +74,8 @@ The final plan shapes were:
   for the middle and deep pages.
 - Engraver pages: ordered Coin index plus nested semi-joins on the first page;
   hash joins and an in-memory sort for middle and deep pages.
+- Year-range pages: ordered `coins_created_at_id_index` scans for first, middle,
+  and deep pages, with the inclusive Issue Period overlap applied as a filter.
 
 The persistence query now selects the bounded Coin page before loading Obverse
 and Reverse image keys for those at-most-100 Coins. This prevents the Surface
@@ -88,3 +95,13 @@ The unindexed Engraver page plans remain below 35 ms at the target size, and the
 probe's 7–9 ms plan reduction does not justify its additional write and storage
 cost or an Engraver query rewrite. The reproducible harness remains available to
 revisit that decision as the Archive shape changes.
+
+## Issue Period overlap index decision
+
+The `1986-1990` range matched half of the representative 100,000-Coin Archive.
+PostgreSQL retained the existing ordered Coin index for every measured page; the
+deepest page plan completed in 25.716 ms and the full API request in 29.836 ms.
+No supporting Issue Period index was added because this broad overlap query is
+already bounded by the existing ordered scan at the target catalogue volume.
+The harness now keeps these range scenarios alongside the other pagination
+paths so the decision can be revisited if catalogue size or selectivity changes.

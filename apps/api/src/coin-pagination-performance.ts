@@ -33,6 +33,7 @@ interface PageScenario {
   filter:
     | { kind: "engraver"; slug: string }
     | { code: string; kind: "issuer" }
+    | { kind: "year"; year: string }
     | { kind: "none" }
   label: string
   page: number
@@ -141,6 +142,30 @@ const scenarios: Array<PageScenario> = [
     label: "engraver-deep",
     page: 50,
   },
+  {
+    expectedFirstId: 1,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { kind: "year", year: "1986-1990" },
+    label: "year-range-first",
+    page: 1,
+  },
+  {
+    expectedFirstId: 49_801,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { kind: "year", year: "1986-1990" },
+    label: "year-range-middle",
+    page: 250,
+  },
+  {
+    expectedFirstId: 99_801,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { kind: "year", year: "1986-1990" },
+    label: "year-range-deep",
+    page: 500,
+  },
 ]
 
 function requestPath(scenario: PageScenario) {
@@ -153,6 +178,9 @@ function requestPath(scenario: PageScenario) {
   }
   if (scenario.filter.kind === "engraver") {
     query.set("engraver", scenario.filter.slug)
+  }
+  if (scenario.filter.kind === "year") {
+    query.set("year", scenario.filter.year)
   }
   return `/v1/coins?${query}`
 }
@@ -177,8 +205,8 @@ async function seedDataset(
       ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
       'Performance Coin ' || g,
       ('10000000-0000-4000-8000-' || lpad((((g - 1) % 10) + 1)::text, 12, '0'))::uuid,
-      2000,
-      2000,
+      case when g % 2 = 1 then 1988 else 1970 end,
+      case when g % 2 = 1 then 1988 else 1970 end,
       timestamptz '2026-01-01 00:00:00+00' - (((g - 1) / 1000) * interval '1 second'),
       timestamptz '2026-01-01 00:00:00+00'
     from generate_series(1, ${COIN_COUNT}) as g;

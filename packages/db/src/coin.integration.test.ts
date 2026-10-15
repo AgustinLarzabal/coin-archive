@@ -1066,71 +1066,80 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("lists Coins whose inclusive Issue Period contains the requested interval", async () => {
+  it("lists Coins whose inclusive Issue Period overlaps the requested closed range", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
           id: "00000000-0000-4000-8000-000000000001",
-          title: "Starts on requested year",
+          title: "Overlaps the first boundary",
           issuerId: issuer.id,
-          firstIssueYear: 1986,
-          lastIssueYear: 1988,
+          firstIssueYear: 1984,
+          lastIssueYear: 1986,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
         {
           id: "00000000-0000-4000-8000-000000000002",
-          title: "Ends on requested year",
+          title: "Contained by requested range",
           issuerId: issuer.id,
-          firstIssueYear: 1984,
-          lastIssueYear: 1986,
+          firstIssueYear: 1987,
+          lastIssueYear: 1989,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
           id: "00000000-0000-4000-8000-000000000003",
-          title: "Spans requested year",
+          title: "Contains requested range",
           issuerId: issuer.id,
           firstIssueYear: 1984,
-          lastIssueYear: 1988,
+          lastIssueYear: 1992,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
           id: "00000000-0000-4000-8000-000000000004",
-          title: "Before requested year",
+          title: "Overlaps the last boundary",
           issuerId: issuer.id,
-          firstIssueYear: 1984,
-          lastIssueYear: 1985,
+          firstIssueYear: 1990,
+          lastIssueYear: 1992,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: "00000000-0000-4000-8000-000000000005",
-          title: "After requested year",
+          title: "Before requested range",
           issuerId: issuer.id,
-          firstIssueYear: 1987,
-          lastIssueYear: 1988,
+          firstIssueYear: 1984,
+          lastIssueYear: 1985,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000006",
+          title: "After requested range",
+          issuerId: issuer.id,
+          firstIssueYear: 1991,
+          lastIssueYear: 1992,
+          createdAt: new Date("2026-09-15T10:00:00.000Z"),
         },
       ])
 
       const page = await database.listCoins({
-        issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1986 },
+        issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1990 },
         page: 1,
-        pageSize: 2,
+        pageSize: 3,
       })
 
-      expect(page.totalItems).toBe(3)
-      expect(page.coins).toHaveLength(2)
+      expect(page.totalItems).toBe(4)
+      expect(page.coins).toHaveLength(3)
       expect(page.coins.map((coin) => coin.title)).toEqual([
-        "Starts on requested year",
-        "Ends on requested year",
+        "Overlaps the first boundary",
+        "Contained by requested range",
+        "Contains requested range",
       ])
     } finally {
       await database.close()
     }
   })
 
-  it("lists Coins credited to one Engraver once and composes BCE Issue Year, Issuer, and pagination filters", async () => {
+  it("lists Coins credited to one Engraver once and composes a CE range, Issuer, and pagination filters", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const argentina = await insertArgentina(database)
@@ -1156,16 +1165,16 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
-          firstIssueYear: -44,
-          lastIssueYear: -42,
+          firstIssueYear: 1986,
+          lastIssueYear: 1988,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
-          firstIssueYear: -46,
-          lastIssueYear: -44,
+          firstIssueYear: 1984,
+          lastIssueYear: 1986,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
@@ -1279,7 +1288,7 @@ describe("Coin persistence", () => {
         database.listCoins({
           issuerCode: "ROMAN",
           engraverSlug: "selected-engraver",
-          issueYearInterval: { firstIssueYear: -44, lastIssueYear: -44 },
+          issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1990 },
           page: 1,
           pageSize: 1,
         })

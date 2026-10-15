@@ -91,7 +91,34 @@ export const COIN_LIST_DEFAULT_PAGE_SIZE = 24
 export const COIN_LIST_MAX_PAGE_SIZE = 100
 
 export const coinListPageSchema = z.int().min(1)
-export const coinListYearSchema = issueYearSchema
+
+function parseCanonicalCoinListYearRange(range: string) {
+  const match = /^([1-9]\d*)-([1-9]\d*)$/.exec(range)
+  if (!match) return undefined
+
+  return {
+    firstIssueYear: Number(match[1]),
+    lastIssueYear: Number(match[2]),
+  }
+}
+
+const canonicalCoinListYearRangeSchema = z
+  .string()
+  .regex(/^[1-9]\d*-[1-9]\d*$/)
+  .refine((range) => {
+    const interval = parseCanonicalCoinListYearRange(range)
+    return (
+      interval !== undefined &&
+      Number.isSafeInteger(interval.firstIssueYear) &&
+      Number.isSafeInteger(interval.lastIssueYear) &&
+      interval.firstIssueYear <= interval.lastIssueYear
+    )
+  })
+export const coinListYearSchema = z.union([
+  issueYearSchema,
+  canonicalCoinListYearRangeSchema,
+])
+export type CoinListYear = z.infer<typeof coinListYearSchema>
 export const coinListPageSizeSchema = z
   .int()
   .min(1)
@@ -99,14 +126,23 @@ export const coinListPageSizeSchema = z
 const decimalIntegerQuerySchema = z.string().regex(/^\d+$/).transform(Number)
 export const coinListYearQuerySchema = z
   .string()
-  .regex(/^-?[1-9]\d*$/)
-  .transform(Number)
+  .transform((year) => (/^-?[1-9]\d*$/.test(year) ? Number(year) : year))
   .pipe(coinListYearSchema)
 export const coinListPageQuerySchema =
   decimalIntegerQuerySchema.pipe(coinListPageSchema)
 export const coinListPageSizeQuerySchema = decimalIntegerQuerySchema.pipe(
   coinListPageSizeSchema
 )
+
+export function coinListYearToInterval(year: CoinListYear) {
+  if (typeof year === "number") {
+    return { firstIssueYear: year, lastIssueYear: year }
+  }
+
+  const interval = parseCanonicalCoinListYearRange(year)
+  if (!interval) throw new RangeError("Issue Year range is invalid")
+  return interval
+}
 
 export const coinListPaginationResponseSchema = z.strictObject({
   page: coinListPageSchema,

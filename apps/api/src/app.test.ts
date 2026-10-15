@@ -1071,6 +1071,28 @@ describe("API", () => {
       await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
+    it("passes one canonical CE range as an inclusive overlap interval with the other filters", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?issuer=ROMAN&engraver=first-archive-engraver&year=1986-1990"
+      )
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        issuerCode: "ROMAN",
+        engraverSlug: "first-archive-engraver",
+        issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1990 },
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+
     it.each([
       "",
       "0",
@@ -1080,7 +1102,13 @@ describe("API", () => {
       "--44",
       "44 BCE",
       "1986-",
-      "1986-1988",
+      "1990-1986",
+      "0-1986",
+      "1986-0",
+      "1986--1990",
+      "1986-1990-1994",
+      "1986–1990",
+      "1986 - 1990",
       "1986,1988",
       "1.5",
       " 1986 ",
@@ -1416,13 +1444,13 @@ describe("API", () => {
         }),
         expect.objectContaining({
           description:
-            "One signed conventional Issue Year contained by the Coin's Issue Period: negative values are BCE, positive values are CE, and zero is invalid",
+            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical closed CE range whose inclusive boundaries overlap the Issue Period (for example, 1986-1990). Negative single values are BCE; zero is invalid",
           in: "query",
           name: "year",
           required: false,
           schema: expect.objectContaining({
-            not: { const: 0 },
-            type: "integer",
+            pattern: expect.any(String),
+            type: "string",
           }),
         }),
         expect.objectContaining({

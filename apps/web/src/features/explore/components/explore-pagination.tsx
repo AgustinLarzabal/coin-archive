@@ -23,6 +23,8 @@ export function ExplorePagination({
 }) {
   const navigate = useNavigate({ from: "/" })
   const { page, totalPages } = pagination
+  const isFirstPage = page === 1
+  const isLastPage = page === totalPages
   const nearbyPages = getNearbyPages(page, totalPages)
   const goToPage = (nextPage: number) => {
     void navigate({
@@ -38,10 +40,16 @@ export function ExplorePagination({
     <Pagination className="my-10 gap-6">
       <PaginationContent>
         <PaginationItem>
-          <PaginationFirst onClick={() => goToPage(1)} />
+          <PaginationFirst
+            disabled={isFirstPage}
+            onClick={() => goToPage(1)}
+          />
         </PaginationItem>
         <PaginationItem>
-          <PaginationPrevious onClick={() => goToPage(page - 1)} />
+          <PaginationPrevious
+            disabled={isFirstPage}
+            onClick={() => goToPage(page - 1)}
+          />
         </PaginationItem>
 
         {nearbyPages.map((nearbyPage) => {
@@ -62,10 +70,16 @@ export function ExplorePagination({
         })}
 
         <PaginationItem>
-          <PaginationNext onClick={() => goToPage(page + 1)} />
+          <PaginationNext
+            disabled={isLastPage}
+            onClick={() => goToPage(page + 1)}
+          />
         </PaginationItem>
         <PaginationItem>
-          <PaginationLast onClick={() => goToPage(totalPages)} />
+          <PaginationLast
+            disabled={isLastPage}
+            onClick={() => goToPage(totalPages)}
+          />
         </PaginationItem>
       </PaginationContent>
     </Pagination>

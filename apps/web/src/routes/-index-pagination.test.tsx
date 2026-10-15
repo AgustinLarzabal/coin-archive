@@ -198,7 +198,7 @@ describe("Explore pagination", () => {
     await screen.findByRole("link", { name: "First coin" })
     await router.navigate({
       to: "/",
-      search: { issuer: "AR", year: "1986-1990", page: 9 },
+      search: { issuer: "AR", year: "-25-19", page: 9 },
     })
 
     expect(
@@ -206,14 +206,14 @@ describe("Explore pagination", () => {
     ).toBeVisible()
     expect(router.state.location.search).toEqual({
       issuer: "AR",
-      year: "1986-1990",
+      year: "-25-19",
       page: 3,
     })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&year=1986-1990&page=9&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=9&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&year=1986-1990&page=3&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=3&pageSize=24"
     )
 
     router.history.back()

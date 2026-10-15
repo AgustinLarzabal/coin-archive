@@ -1139,7 +1139,139 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("lists Coins credited to one Engraver once and composes a CE range, Issuer, and pagination filters", async () => {
+  it("lists exact, partial, contained, and containing BCE overlaps without inventing year zero", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values([
+        {
+          title: "Touches first BCE boundary",
+          issuerId: issuer.id,
+          firstIssueYear: -450,
+          lastIssueYear: -400,
+          createdAt: new Date("2026-09-20T10:00:00.000Z"),
+        },
+        {
+          title: "Contained BCE period",
+          issuerId: issuer.id,
+          firstIssueYear: -350,
+          lastIssueYear: -325,
+          createdAt: new Date("2026-09-19T10:00:00.000Z"),
+        },
+        {
+          title: "Contains BCE range",
+          issuerId: issuer.id,
+          firstIssueYear: -500,
+          lastIssueYear: -250,
+          createdAt: new Date("2026-09-18T10:00:00.000Z"),
+        },
+        {
+          title: "Touches last BCE boundary",
+          issuerId: issuer.id,
+          firstIssueYear: -300,
+          lastIssueYear: -250,
+          createdAt: new Date("2026-09-17T10:00:00.000Z"),
+        },
+        {
+          title: "Before BCE range",
+          issuerId: issuer.id,
+          firstIssueYear: -500,
+          lastIssueYear: -401,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          title: "After BCE range",
+          issuerId: issuer.id,
+          firstIssueYear: -299,
+          lastIssueYear: -200,
+          createdAt: new Date("2026-09-15T10:00:00.000Z"),
+        },
+      ])
+
+      const page = await database.listCoins({
+        issueYearInterval: { firstIssueYear: -400, lastIssueYear: -300 },
+        page: 1,
+        pageSize: 3,
+      })
+
+      expect(page.totalItems).toBe(4)
+      expect(page.coins.map((coin) => coin.title)).toEqual([
+        "Touches first BCE boundary",
+        "Contained BCE period",
+        "Contains BCE range",
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("lists exact, partial, contained, and containing cross-era overlaps without inventing year zero", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values([
+        {
+          title: "Touches BCE boundary",
+          issuerId: issuer.id,
+          firstIssueYear: -30,
+          lastIssueYear: -25,
+          createdAt: new Date("2026-09-20T10:00:00.000Z"),
+        },
+        {
+          title: "Contained cross-era period",
+          issuerId: issuer.id,
+          firstIssueYear: -10,
+          lastIssueYear: 10,
+          createdAt: new Date("2026-09-19T10:00:00.000Z"),
+        },
+        {
+          title: "Contains cross-era range",
+          issuerId: issuer.id,
+          firstIssueYear: -50,
+          lastIssueYear: 50,
+          createdAt: new Date("2026-09-18T10:00:00.000Z"),
+        },
+        {
+          title: "Touches CE boundary",
+          issuerId: issuer.id,
+          firstIssueYear: 19,
+          lastIssueYear: 25,
+          createdAt: new Date("2026-09-17T10:00:00.000Z"),
+        },
+        {
+          title: "Before cross-era range",
+          issuerId: issuer.id,
+          firstIssueYear: -50,
+          lastIssueYear: -26,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          title: "After cross-era range",
+          issuerId: issuer.id,
+          firstIssueYear: 20,
+          lastIssueYear: 50,
+          createdAt: new Date("2026-09-15T10:00:00.000Z"),
+        },
+      ])
+
+      const page = await database.listCoins({
+        issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
+        page: 1,
+        pageSize: 3,
+      })
+
+      expect(page.totalItems).toBe(4)
+      expect(page.coins.map((coin) => coin.title)).toEqual([
+        "Touches BCE boundary",
+        "Contained cross-era period",
+        "Contains cross-era range",
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("lists Coins credited to one Engraver once and composes a cross-era range, Issuer, and pagination filters", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const argentina = await insertArgentina(database)
@@ -1165,16 +1297,16 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
-          firstIssueYear: 1986,
-          lastIssueYear: 1988,
+          firstIssueYear: -30,
+          lastIssueYear: 1,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
-          firstIssueYear: 1984,
-          lastIssueYear: 1986,
+          firstIssueYear: -50,
+          lastIssueYear: -25,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
@@ -1288,7 +1420,7 @@ describe("Coin persistence", () => {
         database.listCoins({
           issuerCode: "ROMAN",
           engraverSlug: "selected-engraver",
-          issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1990 },
+          issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
           page: 1,
           pageSize: 1,
         })

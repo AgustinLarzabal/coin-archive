@@ -1094,6 +1094,33 @@ describe("API", () => {
     })
 
     it.each([
+      ["-400--300", { firstIssueYear: -400, lastIssueYear: -300 }],
+      ["-25-19", { firstIssueYear: -25, lastIssueYear: 19 }],
+    ])(
+      "passes the canonical %s range as an inclusive overlap interval",
+      async (year, issueYearInterval) => {
+        const listCoins = vi.fn(emptyCoinPage)
+
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(
+          `/v1/coins?issuer=ROMAN&engraver=first-archive-engraver&year=${year}&page=2&pageSize=12`
+        )
+
+        expect(response.status).toBe(200)
+        expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+          issuerCode: "ROMAN",
+          engraverSlug: "first-archive-engraver",
+          issueYearInterval,
+          page: 2,
+          pageSize: 12,
+        })
+      }
+    )
+
+    it.each([
       "",
       "0",
       "-0",
@@ -1106,6 +1133,10 @@ describe("API", () => {
       "0-1986",
       "1986-0",
       "1986--1990",
+      "-300--400",
+      "25--19",
+      "-25-0",
+      "0-19",
       "1986-1990-1994",
       "1986–1990",
       "1986 - 1990",
@@ -1444,12 +1475,12 @@ describe("API", () => {
         }),
         expect.objectContaining({
           description:
-            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical closed CE range whose inclusive boundaries overlap the Issue Period (for example, 1986-1990). Negative single values are BCE; zero is invalid",
+            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE, positive values are CE, zero is invalid, and the first endpoint must not exceed the last",
           in: "query",
           name: "year",
           required: false,
           schema: expect.objectContaining({
-            pattern: expect.any(String),
+            pattern: "^(?:-?[1-9]\\d*|-?[1-9]\\d*--?[1-9]\\d*)$",
             type: "string",
           }),
         }),

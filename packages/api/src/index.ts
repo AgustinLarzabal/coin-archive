@@ -92,8 +92,17 @@ export const COIN_LIST_MAX_PAGE_SIZE = 100
 
 export const coinListPageSchema = z.int().min(1)
 
+const CANONICAL_ISSUE_YEAR_PATTERN = "-?[1-9]\\d*"
+export const COIN_LIST_YEAR_QUERY_PATTERN = `^(?:${CANONICAL_ISSUE_YEAR_PATTERN}|${CANONICAL_ISSUE_YEAR_PATTERN}-${CANONICAL_ISSUE_YEAR_PATTERN})$`
+const canonicalIssueYearPattern = new RegExp(
+  `^${CANONICAL_ISSUE_YEAR_PATTERN}$`
+)
+const canonicalCoinListYearRangePattern = new RegExp(
+  `^(${CANONICAL_ISSUE_YEAR_PATTERN})-(${CANONICAL_ISSUE_YEAR_PATTERN})$`
+)
+
 function parseCanonicalCoinListYearRange(range: string) {
-  const match = /^([1-9]\d*)-([1-9]\d*)$/.exec(range)
+  const match = canonicalCoinListYearRangePattern.exec(range)
   if (!match) return undefined
 
   return {
@@ -102,18 +111,15 @@ function parseCanonicalCoinListYearRange(range: string) {
   }
 }
 
-const canonicalCoinListYearRangeSchema = z
-  .string()
-  .regex(/^[1-9]\d*-[1-9]\d*$/)
-  .refine((range) => {
-    const interval = parseCanonicalCoinListYearRange(range)
-    return (
-      interval !== undefined &&
-      Number.isSafeInteger(interval.firstIssueYear) &&
-      Number.isSafeInteger(interval.lastIssueYear) &&
-      interval.firstIssueYear <= interval.lastIssueYear
-    )
-  })
+const canonicalCoinListYearRangeSchema = z.string().refine((range) => {
+  const interval = parseCanonicalCoinListYearRange(range)
+  return (
+    interval !== undefined &&
+    Number.isSafeInteger(interval.firstIssueYear) &&
+    Number.isSafeInteger(interval.lastIssueYear) &&
+    interval.firstIssueYear <= interval.lastIssueYear
+  )
+})
 export const coinListYearSchema = z.union([
   issueYearSchema,
   canonicalCoinListYearRangeSchema,
@@ -126,7 +132,9 @@ export const coinListPageSizeSchema = z
 const decimalIntegerQuerySchema = z.string().regex(/^\d+$/).transform(Number)
 export const coinListYearQuerySchema = z
   .string()
-  .transform((year) => (/^-?[1-9]\d*$/.test(year) ? Number(year) : year))
+  .transform((year) =>
+    canonicalIssueYearPattern.test(year) ? Number(year) : year
+  )
   .pipe(coinListYearSchema)
 export const coinListPageQuerySchema =
   decimalIntegerQuerySchema.pipe(coinListPageSchema)

@@ -5,7 +5,7 @@ import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
 import type { CoinListYear } from "@workspace/api"
 
-import { formatIssueYear } from "@/features/issue-period"
+import { formatCoinListYear } from "@/features/issue-period"
 
 type YearFilterProps = {
   engraverSlug?: string
@@ -13,27 +13,36 @@ type YearFilterProps = {
   year?: CoinListYear
 }
 
-function parseIssueYearDraft(draft: string) {
+function parseYearFilterDraft(draft: string) {
   const trimmedDraft = draft.trim()
-  const rangeMatch = /^([1-9]\d*)\s*[-–]\s*([1-9]\d*)$/.exec(trimmedDraft)
+  const rangeMatch =
+    /^([1-9]\d*)\s*(BCE|CE)?\s*[-–]\s*([1-9]\d*)\s*(BCE|CE)?$/i.exec(
+      trimmedDraft
+    )
   if (rangeMatch) {
+    const [, first, rawFirstEra = "", last, rawLastEra = ""] = rangeMatch
+    const lastEra = rawLastEra.toUpperCase()
+    const firstEra = rawFirstEra.toUpperCase() || lastEra || "CE"
+    const firstIssueYear = Number(first) * (firstEra === "BCE" ? -1 : 1)
+    const lastIssueYear = Number(last) * (lastEra === "BCE" ? -1 : 1)
     const result = coinListYearQuerySchema.safeParse(
-      `${rangeMatch[1]}-${rangeMatch[2]}`
+      `${firstIssueYear}-${lastIssueYear}`
     )
     return result.success ? result.data : undefined
   }
 
-  const singleYearMatch = /^([1-9]\d*)\s*(BCE)?$/i.exec(trimmedDraft)
+  const singleYearMatch = /^([1-9]\d*)\s*(BCE|CE)?$/i.exec(trimmedDraft)
   if (!singleYearMatch) return undefined
 
-  const year = Number(singleYearMatch[1]) * (singleYearMatch[2] ? -1 : 1)
+  const [, magnitude, rawEra = ""] = singleYearMatch
+  const year = Number(magnitude) * (rawEra.toUpperCase() === "BCE" ? -1 : 1)
   const result = coinListYearQuerySchema.safeParse(String(year))
   return result.success ? result.data : undefined
 }
 
-function formatIssueYearDraft(year: CoinListYear | undefined) {
+function formatYearFilterDraft(year: CoinListYear | undefined) {
   if (year === undefined) return ""
-  return typeof year === "number" ? formatIssueYear(year) : year
+  return formatCoinListYear(year)
 }
 
 export function YearFilter({
@@ -43,26 +52,26 @@ export function YearFilter({
 }: YearFilterProps) {
   const navigate = useNavigate({ from: "/" })
   const errorId = useId()
-  const [draft, setDraft] = useState(formatIssueYearDraft(year))
+  const [draft, setDraft] = useState(formatYearFilterDraft(year))
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    setDraft(formatIssueYearDraft(year))
+    setDraft(formatYearFilterDraft(year))
     setError(undefined)
   }, [year])
 
   const apply = () => {
-    const issueYear = parseIssueYearDraft(draft)
+    const issueYear = parseYearFilterDraft(draft)
     if (issueYear === undefined) {
       setError(
-        "Enter one Issue Year or an ordered CE range, such as 1986-1990."
+        "Enter one Issue Year or an ordered range, such as 400–300 BCE, 25 BCE–19 CE, or 1986–1990."
       )
       return
     }
 
     setError(undefined)
     if (issueYear === year) {
-      setDraft(formatIssueYearDraft(issueYear))
+      setDraft(formatYearFilterDraft(issueYear))
       return
     }
     void navigate({

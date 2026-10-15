@@ -74,7 +74,7 @@ it("accepts, canonicalizes, restores, and clears a friendly CE range", async () 
       year: "1986-1990",
     })
   )
-  expect(yearInput).toHaveValue("1986-1990")
+  expect(yearInput).toHaveValue("1986–1990")
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?issuer=AR&year=1986-1990&page=1&pageSize=24"
   )
@@ -82,7 +82,7 @@ it("accepts, canonicalizes, restores, and clears a friendly CE range", async () 
   router.history.back()
   await waitFor(() => expect(yearInput).toHaveValue(""))
   router.history.forward()
-  await waitFor(() => expect(yearInput).toHaveValue("1986-1990"))
+  await waitFor(() => expect(yearInput).toHaveValue("1986–1990"))
 
   await user.click(screen.getByRole("button", { name: "Clear Year" }))
   await waitFor(() =>
@@ -99,6 +99,55 @@ it("accepts, canonicalizes, restores, and clears a friendly CE range", async () 
   )
 })
 
+it.each([
+  [" 400 – 300 bCe ", "-400--300", "400–300 BCE", "apply"],
+  [" 25 BCE - 19 ce ", "-25-19", "25 BCE–19 CE", "enter"],
+] as const)(
+  "accepts %s and applies the canonical signed range",
+  async (draft, canonicalYear, displayYear, submission) => {
+    const fetchMock = vi.fn(createArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute(
+      "/?issuer=AR&engraver=first-engraver&page=3"
+    )
+    const user = userEvent.setup()
+    const yearInput = await screen.findByRole("textbox", { name: "Year" })
+
+    await user.type(yearInput, draft)
+    if (submission === "enter") {
+      await user.keyboard("{Enter}")
+    } else {
+      await user.click(screen.getByRole("button", { name: "Apply Year" }))
+    }
+
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        issuer: "AR",
+        engraver: "first-engraver",
+        year: canonicalYear,
+      })
+    )
+    expect(yearInput).toHaveValue(displayYear)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&year=${canonicalYear}&page=1&pageSize=24`
+    )
+    router.history.back()
+    await waitFor(() => expect(yearInput).toHaveValue(""))
+    router.history.forward()
+    await waitFor(() => expect(yearInput).toHaveValue(displayYear))
+
+    const clearButton = screen.getByRole("button", { name: "Clear Year" })
+    clearButton.focus()
+    await user.keyboard("{Enter}")
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        issuer: "AR",
+        engraver: "first-engraver",
+      })
+    )
+  }
+)
+
 it("shows an inline error for an invalid range without changing results", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
@@ -108,12 +157,14 @@ it("shows an inline error for an invalid range without changing results", async 
 
   await user.clear(yearInput)
   await user.type(yearInput, "1990-1986")
-  await user.click(screen.getByRole("button", { name: "Apply Year" }))
+  yearInput.focus()
+  await user.keyboard("{Enter}")
 
   const message =
-    "Enter one Issue Year or an ordered CE range, such as 1986-1990."
+    "Enter one Issue Year or an ordered range, such as 400–300 BCE, 25 BCE–19 CE, or 1986–1990."
   expect(screen.getByText(message)).toBeVisible()
   expect(yearInput).toHaveAccessibleDescription(message)
+  expect(yearInput).toHaveFocus()
   expect(router.state.location.search).toEqual({ year: "1986-1990" })
   expect(fetchMock).toHaveBeenCalledTimes(3)
 })
@@ -156,7 +207,7 @@ it("restores and displays a canonical BCE Issue Year without exposing its sign",
   expect(screen.queryByText(/-44/)).not.toBeInTheDocument()
 })
 
-it("describes a combined-filter range empty state as Issue Period overlap", async () => {
+it("describes a combined-filter cross-era range empty state as Issue Period overlap", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -167,11 +218,33 @@ it("describes a combined-filter range empty state as Issue Period overlap", asyn
     )
   )
 
-  renderArchiveRoute("/?issuer=AR&engraver=first-engraver&year=1986-1990")
+  renderArchiveRoute("/?issuer=AR&engraver=first-engraver&year=-25-19")
 
   expect(
     await screen.findByText(
-      "No coins found for Argentina engraved by First Engraver with an Issue Period overlapping 1986–1990."
+      "No coins found for Argentina engraved by First Engraver with an Issue Period overlapping 25 BCE–19 CE."
     )
   ).toBeVisible()
 })
+
+it.each([
+  ["-400--300", "400–300 BCE"],
+  ["-25-19", "25 BCE–19 CE"],
+] as const)(
+  "renders the applied signed range %s without storage signs",
+  async (canonicalYear, displayYear) => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+
+    renderArchiveRoute(`/?year=${canonicalYear}`)
+
+    expect(await screen.findByRole("textbox", { name: "Year" })).toHaveValue(
+      displayYear
+    )
+    expect(
+      screen.getByText(
+        `No coins found with an Issue Period overlapping ${displayYear}.`
+      )
+    ).toBeVisible()
+    expect(screen.queryByText(canonicalYear)).not.toBeInTheDocument()
+  }
+)

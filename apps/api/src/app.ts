@@ -5,6 +5,7 @@ import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
   COIN_LIST_MAX_PAGE_SIZE,
+  COIN_LIST_YEAR_QUERY_PATTERN,
   coinDetailResponseSchema,
   coinIdSchema,
   coinListPageQuerySchema,
@@ -100,10 +101,10 @@ const coinListQuerySchema = z.object({
   }),
   year: coinListYearQuerySchema.optional().openapi({
     description:
-      "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical closed CE range whose inclusive boundaries overlap the Issue Period (for example, 1986-1990). Negative single values are BCE; zero is invalid",
+      "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE, positive values are CE, zero is invalid, and the first endpoint must not exceed the last",
     param: { name: "year", in: "query" },
     type: "string",
-    pattern: "^(?:-?[1-9]\\d*|[1-9]\\d*-[1-9]\\d*)$",
+    pattern: COIN_LIST_YEAR_QUERY_PATTERN,
   }),
   page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
     description: "One-based page number",

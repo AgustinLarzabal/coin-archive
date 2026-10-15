@@ -6,15 +6,7 @@ import type { CoinListFilters } from "@/data/archive"
 import type { EngraverListItemResponse, IssuerResponse } from "@workspace/api"
 import { RouteMessage } from "@/components/route-message"
 import { coinListQueryOptions } from "@/data/archive"
-import { formatIssueYear } from "@/features/issue-period"
-
-function formatIssueYearFilter(
-  issueYear: NonNullable<CoinListFilters["issueYear"]>
-) {
-  return typeof issueYear === "number"
-    ? formatIssueYear(issueYear)
-    : issueYear.replace("-", "–")
-}
+import { formatCoinListYear } from "@/features/issue-period"
 
 export function Explore({
   filters,
@@ -29,7 +21,7 @@ export function Explore({
   const issueYear =
     filters.issueYear === undefined
       ? undefined
-      : formatIssueYearFilter(filters.issueYear)
+      : formatCoinListYear(filters.issueYear)
 
   if (data.coins.length === 0) {
     const message =

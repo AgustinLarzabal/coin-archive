@@ -1,3 +1,6 @@
+import { coinListYearToInterval } from "@workspace/api"
+import type { CoinListYear } from "@workspace/api"
+
 export function formatIssueYear(year: number) {
   return year < 0 ? `${Math.abs(year)} BCE` : String(year)
 }
@@ -16,4 +19,10 @@ export function formatIssuePeriod(
   }
 
   return `${first}–${formatIssueYear(lastIssueYear)}`
+}
+
+export function formatCoinListYear(year: CoinListYear) {
+  if (typeof year === "number") return formatIssueYear(year)
+  const { firstIssueYear, lastIssueYear } = coinListYearToInterval(year)
+  return formatIssuePeriod(firstIssueYear, lastIssueYear)
 }

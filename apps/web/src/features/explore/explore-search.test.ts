@@ -90,6 +90,21 @@ describe("Explore search schema", () => {
     })
   })
 
+  it.each(["-400--300", "-25-19"])(
+    "maps the canonical signed range %s to the Coin list request",
+    (year) => {
+      const search = exploreSearchSchema.parse({ year })
+
+      expect(search).toEqual({ year })
+      expect(getExploreCoinListFilters(search)).toEqual({
+        engraverSlug: undefined,
+        issuerCode: undefined,
+        issueYear: year,
+        page: 1,
+      })
+    }
+  )
+
   it.each([
     "",
     "0",
@@ -101,6 +116,8 @@ describe("Explore search schema", () => {
     "1990-1986",
     "0-1988",
     "1986-0",
+    "-300--400",
+    "25--19",
     "1986–1988",
     "1986,1988",
     "1.5",

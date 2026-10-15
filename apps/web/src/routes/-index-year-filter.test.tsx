@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event"
 import { expect, it, vi } from "vitest"
 
 import {
+  coinListJsonResponse,
   createArchiveFetch,
+  jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
@@ -96,6 +98,49 @@ it("accepts, canonicalizes, restores, and clears a friendly CE range", async () 
       issuer: "AR",
       year: "1986-1990",
     })
+  )
+})
+
+it("returns to the first page when reapplying the active Year", async () => {
+  const fetchMock = vi.fn((input: string | URL | Request) => {
+    const url = String(input)
+
+    if (url.endsWith("/v1/issuers")) {
+      return Promise.resolve(
+        jsonResponse({ issuers: [{ code: "AR", name: "Argentina" }] })
+      )
+    }
+    if (url.endsWith("/v1/engravers")) {
+      return Promise.resolve(jsonResponse({ engravers: [] }))
+    }
+
+    const page = Number(new URL(url).searchParams.get("page"))
+    return Promise.resolve(
+      coinListJsonResponse([], {
+        page,
+        pageSize: 24,
+        totalItems: 49,
+        totalPages: 3,
+      })
+    )
+  })
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&year=-25-19&page=3")
+  const user = userEvent.setup()
+
+  expect(await screen.findByRole("textbox", { name: "Year" })).toHaveValue(
+    "25 BCE–19 CE"
+  )
+  await user.click(screen.getByRole("button", { name: "Apply Year" }))
+
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      year: "-25-19",
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=1&pageSize=24"
   )
 })
 

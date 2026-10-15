@@ -70,10 +70,6 @@ export function YearFilter({
     }
 
     setError(undefined)
-    if (issueYear === year) {
-      setDraft(formatYearFilterDraft(issueYear))
-      return
-    }
     void navigate({
       to: "/",
       search: {

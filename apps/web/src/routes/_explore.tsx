@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_explore")({
 })
 
 function ExploreLayout() {
-  const { engraver: engraverSlug, issuer: issuerCode } = Route.useSearch()
+  const { engraver: engraverSlug, issuer: issuerCode, year } = Route.useSearch()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
 
@@ -39,6 +39,7 @@ function ExploreLayout() {
         engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
+        year={year}
       />
       <Outlet />
     </main>

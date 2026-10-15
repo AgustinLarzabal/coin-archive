@@ -32,6 +32,7 @@ export function ExplorePagination({
       search: {
         engraver: filters.engraverSlug,
         issuer: filters.issuerCode,
+        year: filters.issueYear,
         page: nextPage === 1 ? undefined : nextPage,
       },
     })
@@ -40,10 +41,7 @@ export function ExplorePagination({
     <Pagination className="my-10 gap-6">
       <PaginationContent>
         <PaginationItem>
-          <PaginationFirst
-            disabled={isFirstPage}
-            onClick={() => goToPage(1)}
-          />
+          <PaginationFirst disabled={isFirstPage} onClick={() => goToPage(1)} />
         </PaginationItem>
         <PaginationItem>
           <PaginationPrevious

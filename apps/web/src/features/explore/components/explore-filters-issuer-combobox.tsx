@@ -14,6 +14,7 @@ type IssuerComboboxProps = {
   engraverSlug?: string
   issuerCode?: string
   issuers: Array<IssuerResponse>
+  year?: number
 }
 
 type IssuerOption = {
@@ -26,6 +27,7 @@ export function IssuerCombobox({
   engraverSlug,
   issuerCode,
   issuers,
+  year,
 }: IssuerComboboxProps) {
   const navigate = useNavigate({ from: "/" })
   const unknownIssuerCode =
@@ -69,6 +71,7 @@ export function IssuerCombobox({
           search: {
             engraver: engraverSlug,
             issuer: nextIssuerCode,
+            year,
           },
         })
       }}

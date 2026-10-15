@@ -198,18 +198,22 @@ describe("Explore pagination", () => {
     await screen.findByRole("link", { name: "First coin" })
     await router.navigate({
       to: "/",
-      search: { issuer: "AR", page: 9 },
+      search: { issuer: "AR", year: 1986, page: 9 },
     })
 
     expect(
       await screen.findByRole("link", { name: "Last-page coin" })
     ).toBeVisible()
-    expect(router.state.location.search).toEqual({ issuer: "AR", page: 3 })
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      year: 1986,
+      page: 3,
+    })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=9&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&year=1986&page=9&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=3&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&year=1986&page=3&pageSize=24"
     )
 
     router.history.back()
@@ -274,7 +278,7 @@ describe("Explore pagination", () => {
     const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute(
-      "/?issuer=AR&engraver=first-engraver&page=3"
+      "/?issuer=AR&engraver=first-engraver&year=1986&page=3"
     )
 
     await screen.findByRole("link", { name: "Coin on page 3" })
@@ -289,12 +293,13 @@ describe("Explore pagination", () => {
     await waitFor(() =>
       expect(router.state.location.search).toEqual({
         engraver: "first-engraver",
+        year: 1986,
       })
     )
     await screen.findByRole("link", { name: "Coin on page 1" })
     await waitFor(() => expect(router.state.status).toBe("idle"))
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=first-engraver&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?engraver=first-engraver&year=1986&page=1&pageSize=24"
     )
   })
 
@@ -302,7 +307,7 @@ describe("Explore pagination", () => {
     const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute(
-      "/?issuer=AR&engraver=first-engraver&page=3"
+      "/?issuer=AR&engraver=first-engraver&year=1986&page=3"
     )
 
     await screen.findByRole("link", { name: "Coin on page 3" })
@@ -317,12 +322,12 @@ describe("Explore pagination", () => {
     )
 
     await waitFor(() =>
-      expect(router.state.location.search).toEqual({ issuer: "AR" })
+      expect(router.state.location.search).toEqual({ issuer: "AR", year: 1986 })
     )
     await screen.findByRole("link", { name: "Coin on page 1" })
     await waitFor(() => expect(router.state.status).toBe("idle"))
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&year=1986&page=1&pageSize=24"
     )
   })
 })

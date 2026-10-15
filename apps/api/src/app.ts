@@ -10,6 +10,7 @@ import {
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
+  coinListYearQuerySchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   engraverListResponseSchema as sharedEngraverListResponseSchema,
   engraverSlugSchema,
@@ -18,6 +19,7 @@ import {
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
+  invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
   issuerListResponseSchema as sharedIssuerListResponseSchema,
   issuerResponseSchema,
@@ -94,6 +96,13 @@ const coinListQuerySchema = z.object({
   issuer: issuerCodeSchema.optional().openapi({
     description: "Exact, case-sensitive Issuer Code",
     param: { name: "issuer", in: "query" },
+  }),
+  year: coinListYearQuerySchema.optional().openapi({
+    description:
+      "One positive CE Issue Year contained by the Coin's Issue Period",
+    param: { name: "year", in: "query" },
+    type: "integer",
+    minimum: 1,
   }),
   page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
     description: "One-based page number",
@@ -215,9 +224,12 @@ const invalidEngraverSlugErrorSchema =
 const invalidPaginationErrorSchema = sharedInvalidPaginationErrorSchema.openapi(
   "InvalidPaginationError"
 )
+const invalidYearErrorSchema =
+  sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
+  invalidYearErrorSchema,
   invalidPaginationErrorSchema,
 ])
 const coinNotFoundErrorSchema =
@@ -438,6 +450,7 @@ export function createApp(options: AppOptions) {
       const {
         engraver: engraverSlug,
         issuer: issuerCode,
+        year,
         page,
         pageSize,
       } = context.req.valid("query")
@@ -446,6 +459,14 @@ export function createApp(options: AppOptions) {
       const { coins, totalItems } = await listCoins({
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
+        ...(year === undefined
+          ? {}
+          : {
+              issueYearInterval: {
+                firstIssueYear: year,
+                lastIssueYear: year,
+              },
+            }),
         page,
         pageSize,
       })
@@ -471,6 +492,9 @@ export function createApp(options: AppOptions) {
         const invalidPagination = result.error.issues.some(
           (issue) => issue.path[0] === "page" || issue.path[0] === "pageSize"
         )
+        const invalidYear = result.error.issues.some(
+          (issue) => issue.path[0] === "year"
+        )
         return context.json(
           invalidEngraver
             ? {
@@ -479,19 +503,26 @@ export function createApp(options: AppOptions) {
                   message: "Engraver Slug is invalid" as const,
                 },
               }
-            : invalidPagination
+            : invalidYear
               ? {
                   error: {
-                    code: "invalid_pagination" as const,
-                    message: "Pagination is invalid" as const,
+                    code: "invalid_year" as const,
+                    message: "Issue Year is invalid" as const,
                   },
                 }
-              : {
-                  error: {
-                    code: "invalid_issuer_code" as const,
-                    message: "Issuer Code is invalid" as const,
+              : invalidPagination
+                ? {
+                    error: {
+                      code: "invalid_pagination" as const,
+                      message: "Pagination is invalid" as const,
+                    },
+                  }
+                : {
+                    error: {
+                      code: "invalid_issuer_code" as const,
+                      message: "Issuer Code is invalid" as const,
+                    },
                   },
-                },
           400
         )
       }

@@ -7,6 +7,7 @@ export type {
   CoinSurfaceWithEngravers,
   Database,
   DatabaseOptions,
+  IssueYearInterval,
 } from "./connection.js"
 export {
   coinRecordSchema,

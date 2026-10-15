@@ -1066,6 +1066,70 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("lists Coins whose inclusive Issue Period contains the requested interval", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values([
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          title: "Starts on requested year",
+          issuerId: issuer.id,
+          firstIssueYear: 1986,
+          lastIssueYear: 1988,
+          createdAt: new Date("2026-09-20T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000002",
+          title: "Ends on requested year",
+          issuerId: issuer.id,
+          firstIssueYear: 1984,
+          lastIssueYear: 1986,
+          createdAt: new Date("2026-09-19T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000003",
+          title: "Spans requested year",
+          issuerId: issuer.id,
+          firstIssueYear: 1984,
+          lastIssueYear: 1988,
+          createdAt: new Date("2026-09-18T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000004",
+          title: "Before requested year",
+          issuerId: issuer.id,
+          firstIssueYear: 1984,
+          lastIssueYear: 1985,
+          createdAt: new Date("2026-09-17T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000005",
+          title: "After requested year",
+          issuerId: issuer.id,
+          firstIssueYear: 1987,
+          lastIssueYear: 1988,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+      ])
+
+      const page = await database.listCoins({
+        issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1986 },
+        page: 1,
+        pageSize: 2,
+      })
+
+      expect(page.totalItems).toBe(3)
+      expect(page.coins).toHaveLength(2)
+      expect(page.coins.map((coin) => coin.title)).toEqual([
+        "Starts on requested year",
+        "Ends on requested year",
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
   it("lists Coins credited to one Engraver on either face once and combines with Issuer filtering", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -1092,7 +1156,8 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          firstIssueYear: 2003,
+          lastIssueYear: 2003,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
@@ -1208,6 +1273,16 @@ describe("Coin persistence", () => {
           expect.objectContaining({ id: obverseId }),
         ],
         totalItems: 2,
+      })
+      await expect(
+        database.listCoins({
+          issuerCode: "ROMAN",
+          engraverSlug: "selected-engraver",
+          issueYearInterval: { firstIssueYear: 2004, lastIssueYear: 2004 },
+        })
+      ).resolves.toEqual({
+        coins: [expect.objectContaining({ id: obverseId })],
+        totalItems: 1,
       })
       await expect(
         database.listCoins({ engraverSlug: "unknown-engraver" })

@@ -6,6 +6,7 @@ import {
   coinIdSchema,
   coinListPageSchema,
   coinListResponseSchema,
+  coinListYearSchema,
   coinNotFoundErrorSchema,
   engraverSlugSchema,
   issuerCodeSchema,
@@ -22,16 +23,19 @@ class CoinListRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 export class InvalidIssuerCodeError extends Error {}
 export class InvalidEngraverSlugError extends Error {}
+export class InvalidIssueYearError extends Error {}
 
 export type CoinListFilters = Readonly<{
   engraverSlug?: string
   issuerCode?: string
+  issueYear?: number
   page?: number
 }>
 
 type ValidatedCoinListFilters = Readonly<{
   engraverSlug: string | null
   issuerCode: string | null
+  issueYear?: number
   page: number
   pageSize: number
 }>
@@ -39,6 +43,7 @@ type ValidatedCoinListFilters = Readonly<{
 async function getCoins({
   engraverSlug,
   issuerCode,
+  issueYear,
   page,
   pageSize,
 }: ValidatedCoinListFilters): Promise<CoinListResponse> {
@@ -51,6 +56,9 @@ async function getCoins({
     }
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
+    }
+    if (issueYear !== undefined) {
+      search.set("year", String(issueYear))
     }
     search.set("page", String(page))
     search.set("pageSize", String(pageSize))
@@ -112,12 +120,23 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 }
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
-  const { engraverSlug, issuerCode, page = COIN_LIST_DEFAULT_PAGE } = filters
+  const {
+    engraverSlug,
+    issuerCode,
+    issueYear,
+    page = COIN_LIST_DEFAULT_PAGE,
+  } = filters
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
   ) {
     throw new InvalidIssuerCodeError("Invalid issuer code")
+  }
+  if (
+    issueYear !== undefined &&
+    !coinListYearSchema.safeParse(issueYear).success
+  ) {
+    throw new InvalidIssueYearError("Invalid Issue Year")
   }
   if (
     engraverSlug !== undefined &&
@@ -132,6 +151,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const validatedFilters: ValidatedCoinListFilters = {
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
+    ...(issueYear === undefined ? {} : { issueYear }),
     page,
     pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,
   }

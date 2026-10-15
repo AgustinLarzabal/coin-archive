@@ -91,11 +91,17 @@ export const COIN_LIST_DEFAULT_PAGE_SIZE = 24
 export const COIN_LIST_MAX_PAGE_SIZE = 100
 
 export const coinListPageSchema = z.int().min(1)
+export const coinListYearSchema = z.int().positive()
 export const coinListPageSizeSchema = z
   .int()
   .min(1)
   .max(COIN_LIST_MAX_PAGE_SIZE)
 const decimalIntegerQuerySchema = z.string().regex(/^\d+$/).transform(Number)
+export const coinListYearQuerySchema = z
+  .string()
+  .regex(/^[1-9]\d*$/)
+  .transform(Number)
+  .pipe(coinListYearSchema)
 export const coinListPageQuerySchema =
   decimalIntegerQuerySchema.pipe(coinListPageSchema)
 export const coinListPageSizeQuerySchema = decimalIntegerQuerySchema.pipe(
@@ -209,6 +215,11 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(
   "invalid_engraver_slug",
   "Engraver Slug is invalid"
+)
+
+export const invalidYearErrorSchema = errorResponseSchema(
+  "invalid_year",
+  "Issue Year is invalid"
 )
 
 export const invalidPaginationErrorSchema = errorResponseSchema(

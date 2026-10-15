@@ -20,13 +20,21 @@ export function Explore({
 
   if (data.coins.length === 0) {
     const message =
-      issuer && engraver
-        ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
-        : engraver
-          ? `No coins found engraved by ${engraver.fullName}.`
-          : issuer
-            ? `No coins found for ${issuer.name}`
-            : "No coins have been added to the archive yet"
+      filters.issueYear !== undefined
+        ? issuer && engraver
+          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName} in ${filters.issueYear}.`
+          : engraver
+            ? `No coins found engraved by ${engraver.fullName} in ${filters.issueYear}.`
+            : issuer
+              ? `No coins found for ${issuer.name} in ${filters.issueYear}.`
+              : `No coins found for ${filters.issueYear}.`
+        : issuer && engraver
+          ? `No coins found for ${issuer.name} engraved by ${engraver.fullName}.`
+          : engraver
+            ? `No coins found engraved by ${engraver.fullName}.`
+            : issuer
+              ? `No coins found for ${issuer.name}`
+              : "No coins have been added to the archive yet"
 
     return <RouteMessage>{message}</RouteMessage>
   }

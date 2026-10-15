@@ -1,4 +1,15 @@
-import { and, asc, count, desc, eq, exists, inArray, sql } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  exists,
+  gte,
+  inArray,
+  lte,
+  sql,
+} from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { alias } from "drizzle-orm/pg-core"
 import { Pool } from "pg"
@@ -35,9 +46,15 @@ export type CoinListItem = schema.CoinRecord & {
 
 export interface CoinListOptions {
   engraverSlug?: string
+  issueYearInterval?: IssueYearInterval
   issuerCode?: string
   page?: number
   pageSize?: number
+}
+
+export interface IssueYearInterval {
+  firstIssueYear: number
+  lastIssueYear: number
 }
 
 export interface CoinListPage {
@@ -165,6 +182,17 @@ export function createDatabase(
       if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
         throw new RangeError("pageSize must be an integer between 1 and 100")
       }
+      const issueYearInterval = listOptions.issueYearInterval
+      if (
+        issueYearInterval &&
+        (!Number.isSafeInteger(issueYearInterval.firstIssueYear) ||
+          !Number.isSafeInteger(issueYearInterval.lastIssueYear) ||
+          issueYearInterval.firstIssueYear === 0 ||
+          issueYearInterval.lastIssueYear === 0 ||
+          issueYearInterval.firstIssueYear > issueYearInterval.lastIssueYear)
+      ) {
+        throw new RangeError("issueYearInterval must be an ordered interval")
+      }
 
       return orm.transaction(
         async (transaction) => {
@@ -185,6 +213,18 @@ export function createDatabase(
                 : issuerId === null
                   ? sql`false`
                   : eq(schema.coins.issuerId, issuerId),
+              issueYearInterval === undefined
+                ? undefined
+                : and(
+                    lte(
+                      schema.coins.firstIssueYear,
+                      issueYearInterval.lastIssueYear
+                    ),
+                    gte(
+                      schema.coins.lastIssueYear,
+                      issueYearInterval.firstIssueYear
+                    )
+                  ),
               listOptions.engraverSlug === undefined
                 ? undefined
                 : exists(

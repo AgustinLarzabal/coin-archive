@@ -1027,6 +1027,78 @@ describe("API", () => {
       })
     })
 
+    it("passes one CE Issue Year as a one-year interval with the other filters", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?issuer=ROMAN&engraver=first-archive-engraver&year=1986"
+      )
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        issuerCode: "ROMAN",
+        engraverSlug: "first-archive-engraver",
+        issueYearInterval: { firstIssueYear: 1986, lastIssueYear: 1986 },
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+
+    it.each([
+      "",
+      "0",
+      "-1",
+      "1986-",
+      "1986-1988",
+      "1986,1988",
+      "1.5",
+      " 1986 ",
+    ])(
+      "rejects the invalid Issue Year %j without listing Coins",
+      async (year) => {
+        const listCoins = vi.fn(emptyCoinPage)
+
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?year=${encodeURIComponent(year)}`)
+
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: {
+            code: "invalid_year",
+            message: "Issue Year is invalid",
+          },
+        })
+      }
+    )
+
+    it("rejects repeated Issue Year filters without listing Coins", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?year=1986&year=1987")
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_year",
+          message: "Issue Year is invalid",
+        },
+      })
+    })
+
     it("passes one exact Issuer Code to the Coin collection", async () => {
       const listCoins = vi.fn(emptyCoinPage)
 
@@ -1317,6 +1389,14 @@ describe("API", () => {
           schema: expect.objectContaining({ pattern: expect.any(String) }),
         }),
         expect.objectContaining({
+          description:
+            "One positive CE Issue Year contained by the Coin's Issue Period",
+          in: "query",
+          name: "year",
+          required: false,
+          schema: expect.objectContaining({ minimum: 1, type: "integer" }),
+        }),
+        expect.objectContaining({
           description: "One-based page number",
           in: "query",
           name: "page",
@@ -1356,6 +1436,7 @@ describe("API", () => {
                   anyOf: [
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
+                    { $ref: "#/components/schemas/InvalidYearError" },
                     { $ref: "#/components/schemas/InvalidPaginationError" },
                   ],
                 },
@@ -1376,6 +1457,7 @@ describe("API", () => {
           CoinListResponse: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
+          InvalidYearError: expect.any(Object),
           InvalidPaginationError: expect.any(Object),
           InternalError: expect.any(Object),
         })

@@ -54,6 +54,37 @@ describe("Explore search schema", () => {
     })
   })
 
+  it("maps one canonical CE Issue Year to the Coin list request", () => {
+    const search = exploreSearchSchema.parse({ year: "1986" })
+
+    expect(search).toEqual({ year: 1986 })
+    expect(getExploreCoinListFilters(search)).toEqual({
+      engraverSlug: undefined,
+      issuerCode: undefined,
+      issueYear: 1986,
+      page: 1,
+    })
+  })
+
+  it.each([
+    "",
+    "0",
+    "-1",
+    "1986-",
+    "1986-1988",
+    "1986,1988",
+    "1.5",
+    " 1986 ",
+  ])(
+    "ignores the malformed Issue Year %j",
+    (year) => {
+      expect(exploreSearchSchema.parse({ issuer: "AR", year })).toEqual({
+        issuer: "AR",
+        year: undefined,
+      })
+    }
+  )
+
   it("maps a one-based URL page to the Coin list request", () => {
     const search = exploreSearchSchema.parse({ page: "3" })
 

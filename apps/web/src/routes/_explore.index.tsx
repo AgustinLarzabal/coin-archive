@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_explore/")({
         search: {
           issuer: search.issuer,
           engraver: search.engraver,
+          year: search.year,
         },
         replace: true,
       })
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/_explore/")({
         search: {
           issuer: filters.issuerCode,
           engraver: filters.engraverSlug,
+          year: filters.issueYear,
           page: lastPage === 1 ? undefined : lastPage,
         },
         replace: true,

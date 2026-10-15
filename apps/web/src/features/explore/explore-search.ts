@@ -2,6 +2,8 @@ import {
   COIN_LIST_DEFAULT_PAGE,
   coinListPageQuerySchema,
   coinListPageSchema,
+  coinListYearQuerySchema,
+  coinListYearSchema,
   engraverSlugSchema,
   issuerCodeSchema,
 } from "@workspace/api"
@@ -15,6 +17,10 @@ export const exploreSearchSchema = z.object({
     .union([coinListPageSchema, coinListPageQuerySchema])
     .optional()
     .catch(undefined),
+  year: z
+    .union([coinListYearSchema, coinListYearQuerySchema])
+    .optional()
+    .catch(undefined),
 })
 
 export type ExploreSearch = z.infer<typeof exploreSearchSchema>
@@ -25,6 +31,7 @@ export function getExploreCoinListFilters(
   return {
     engraverSlug: search.engraver,
     issuerCode: search.issuer,
+    issueYear: search.year,
     page: search.page ?? COIN_LIST_DEFAULT_PAGE,
   }
 }

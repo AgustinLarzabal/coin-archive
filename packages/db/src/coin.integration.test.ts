@@ -2086,13 +2086,13 @@ describe("Coin seed", () => {
         ...fifthSeededCoinPage.coins,
         ...sixthSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(516)
-      expect(firstSeededCoinPage.totalItems).toBe(516)
-      expect(secondSeededCoinPage.totalItems).toBe(516)
-      expect(thirdSeededCoinPage.totalItems).toBe(516)
-      expect(fourthSeededCoinPage.totalItems).toBe(516)
-      expect(fifthSeededCoinPage.totalItems).toBe(516)
-      expect(sixthSeededCoinPage.totalItems).toBe(516)
+      expect(seededCoins).toHaveLength(587)
+      expect(firstSeededCoinPage.totalItems).toBe(587)
+      expect(secondSeededCoinPage.totalItems).toBe(587)
+      expect(thirdSeededCoinPage.totalItems).toBe(587)
+      expect(fourthSeededCoinPage.totalItems).toBe(587)
+      expect(fifthSeededCoinPage.totalItems).toBe(587)
+      expect(sixthSeededCoinPage.totalItems).toBe(587)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -2211,6 +2211,18 @@ describe("Coin seed", () => {
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
             firstIssueYear === 2023 && lastIssueYear === 2023
+        )
+      ).toHaveLength(36)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2024 && lastIssueYear === 2024
+        )
+      ).toHaveLength(35)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2025 && lastIssueYear === 2025
         )
       ).toHaveLength(36)
       await expect(

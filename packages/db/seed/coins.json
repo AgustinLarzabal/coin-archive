@@ -2652,5 +2652,325 @@
     "obverse": {
       "description": "The statue of Hibernia atop Dublin's General Post Office appears with her name in lettering inspired by the Book of Kells, sunrays, the years 1916 and 2016, Ireland's name, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000108",
+    "title": "Andorra — The Pyrenean Country",
+    "issuerCode": "AD",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Three undulating bands form a simplified map of Andorra and the government's national brand, accompanied by Andorra's name, the Pyrenean Country inscription, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000109",
+    "title": "100th Anniversary of the Anthem of Andorra",
+    "issuerCode": "AD",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The opening notes of Andorra's national anthem appear between floral ornaments, accompanied by the anthem's name, a centenary inscription, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010a",
+    "title": "Solidarity and Peace",
+    "issuerCode": "MT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Two children hold the Maltese flag while a dove of peace flies above them, accompanied by Malta's name, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010b",
+    "title": "200th Anniversary of the Prince's Carabiniers",
+    "issuerCode": "MC",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A carabinier stands before the Palace of Monaco, accompanied by Monaco's name, the years 1817–2017, the Prince's Carabiniers inscription, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010c",
+    "title": "150th Anniversary of the Birth of Raul Brandão",
+    "issuerCode": "PT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A portrait of writer Raul Brandão appears with his name, the years 1867 and 2017, Portugal's name, the artist's name, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010d",
+    "title": "Latgale",
+    "issuerCode": "LV",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The coat of arms of the Latvian region of Latgale appears with Latvia's name, the region's name, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010e",
+    "title": "200th Anniversary of the Birth of Grand Duke William III",
+    "issuerCode": "LU",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Portraits of Grand Dukes Henri and William III appear with the Grand Dukes of Luxembourg inscription, William III's name and birth year, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000010f",
+    "title": "100th Anniversary of the Apparitions of Fátima",
+    "issuerCode": "VA",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The three shepherd children appear before the Sanctuary of Fátima, accompanied by Vatican City's name, the inscriptions 1917 and Fátima 2017, the Rome mint mark, the designer's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000110",
+    "title": "Finnish Nature",
+    "issuerCode": "FI",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A crow sits on a branch before a cartographic likeness of the moon as seen from Harmaja, accompanied by Finland's country code, the year 2017, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000111",
+    "title": "Paphos 2017 — European Capital of Culture",
+    "issuerCode": "CY",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The ancient Odeon of Paphos appears with Cyprus's name in Greek and Turkish, the Paphos 2017 European Capital of Culture inscription in Greek, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000112",
+    "title": "25th Anniversary of the Pink Ribbon",
+    "issuerCode": "FR",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A woman's bust is symbolically protected by a hand and the pink ribbon of the fight against breast cancer, accompanied by a 25th-anniversary inscription, the years 1992–2017, France's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000113",
+    "title": "200th Anniversary of Ghent University",
+    "issuerCode": "BE",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Ghent University's logo appears above the years 1817–2017 and within a bilingual bicentenary inscription, accompanied by Belgium's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000114",
+    "title": "International Year of Sustainable Tourism for Development",
+    "issuerCode": "SM",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Earth is surrounded by waves and the sustainable-tourism inscription, accompanied by San Marino's name, the year 2017, the Rome mint mark, designer and engraver marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000115",
+    "title": "Kurzeme",
+    "issuerCode": "LV",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The coat of arms of the Latvian region of Kurzeme appears with Latvia's name, the region's name, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000116",
+    "title": "Vilnius",
+    "issuerCode": "LT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A fragment of the Vilnius city panorama appears with the city's name, Lithuania's name, the year 2017, designer and mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000117",
+    "title": "Road to Estonia's Independence",
+    "issuerCode": "EE",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "An oak trunk divides into bare branches symbolising hardship and leaves symbolising strength and achievement, accompanied by the Estonian Provisional Assembly's name, the years 1917 and 2017, Estonia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000118",
+    "title": "60th Anniversary of the Death of Nikos Kazantzakis",
+    "issuerCode": "GR",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A profile portrait of writer Nikos Kazantzakis appears with his name and the Hellenic Republic inscription in Greek, the year 2017, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000119",
+    "title": "Archaeological Site of Philippi",
+    "issuerCode": "GR",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Part of Basilica B appears with linear motifs inspired by an ancient mosaic from Philippi, accompanied by the site's name and the Hellenic Republic inscription in Greek, the year 2017, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011a",
+    "title": "150 Years of Public Security",
+    "issuerCode": "PT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Human figures, buildings, and a simplified police symbol represent citizens, cities, and public security, accompanied by the years 1867 and 2017, Portugal's name, inscriptions for rights, freedoms, and guarantees, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011b",
+    "title": "1,950th Anniversary of the Martyrdom of Saints Peter and Paul",
+    "issuerCode": "VA",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Saints Peter and Paul appear with their respective symbols, the keys and sword, accompanied by Vatican City's name, a martyrdom-anniversary inscription, the year 2017, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011c",
+    "title": "Ħaġar Qim Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The prehistoric Ħaġar Qim temples appear with their name, the dates 3600–3200 BC, Malta's name, the year 2017, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011d",
+    "title": "100 Years of Finnish Independence",
+    "issuerCode": "FI",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A mosaic forms a map of Finland, accompanied by Finland's name in Finnish and Swedish, the years 1917 and 2017, Finland's country code, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011e",
+    "title": "2,000th Anniversary of the Death of Livy",
+    "issuerCode": "IT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A bust of the Roman historian Livy appears with his name, the years 17 and 2017, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000011f",
+    "title": "200th Anniversary of the University of Liège",
+    "issuerCode": "BE",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The University of Liège logo appears above the years 1817–2017 and within a bilingual bicentenary inscription, accompanied by Belgium's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000120",
+    "title": "750th Anniversary of the Birth of Giotto",
+    "issuerCode": "SM",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A detail from Giotto's clock tower at Santa Maria del Fiore appears beside his portrait, accompanied by his name, the years 1267–2017, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000121",
+    "title": "Churches of the Kingdom of Asturias",
+    "issuerCode": "ES",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Santa María del Naranco represents the Churches of the Kingdom of Asturias in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2017, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000122",
+    "title": "Rhineland-Palatinate",
+    "issuerCode": "DE",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The Porta Nigra in Trier represents Rhineland-Palatinate in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2017, a German mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000123",
+    "title": "550th Anniversary of Universitas Istropolitana",
+    "issuerCode": "SK",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "A teacher and two students stand before the former Universitas Istropolitana beside a medallion of founder Matthias Corvinus, accompanied by the university's name, the years 1467 and 2017, Slovakia's name, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000124",
+    "title": "10th Anniversary of the Euro in Slovenia",
+    "issuerCode": "SI",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Ten flying swallows form a circle above an inscription marking ten years of the common European currency, accompanied by Slovenia's name, the year 2017, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000125",
+    "title": "100th Anniversary of the Death of Auguste Rodin",
+    "issuerCode": "FR",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Auguste Rodin and his sculpture The Thinker face each other forehead to forehead, accompanied by his name, the years 1917–2017, France's country code, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000126",
+    "title": "50th Anniversary of Voluntary Service in the Luxembourg Army",
+    "issuerCode": "LU",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside the logo marking 50 years of voluntary service in Luxembourg's army, accompanied by Luxembourg's name, the year 2017, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000127",
+    "title": "400th Anniversary of the Completion of St Mark's Basilica",
+    "issuerCode": "IT",
+    "firstIssueYear": 2017,
+    "lastIssueYear": 2017,
+    "obverse": {
+      "description": "The façade of St Mark's Basilica in Venice appears with the city's and basilica's names, the years 1617 and 2017, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
   }
 ]

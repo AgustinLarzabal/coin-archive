@@ -74,11 +74,11 @@ with the Neon SQL Editor. This example associates a new Coin with the seeded
 Italy Issuer and returns the new identifier:
 
 ```sql
-INSERT INTO coins (title, issuer_id)
-SELECT 'Manual Neon staging Coin', id
+INSERT INTO coins (title, issuer_id, first_issue_year, last_issue_year)
+SELECT 'Manual Neon staging Coin', id, 2004, 2004
 FROM issuers
 WHERE code = 'IT'
-RETURNING id, title;
+RETURNING id, title, first_issue_year, last_issue_year;
 ```
 
 Refresh the Archive at `http://localhost:3000` to see the Coin. Stopping and

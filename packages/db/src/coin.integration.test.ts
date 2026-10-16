@@ -89,6 +89,39 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("executes the documented Neon staging Coin insert", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await database.orm
+        .insert(database.schema.issuers)
+        .values({ name: "Italy", code: "IT" })
+
+      const result = await database.orm.execute<{
+        id: string
+        title: string
+        first_issue_year: number
+        last_issue_year: number
+      }>(sql`
+        insert into coins (title, issuer_id, first_issue_year, last_issue_year)
+        select 'Manual Neon staging Coin', id, 2004, 2004
+        from issuers
+        where code = 'IT'
+        returning id, title, first_issue_year, last_issue_year
+      `)
+
+      expect(result.rows).toEqual([
+        {
+          id: expect.any(String),
+          title: "Manual Neon staging Coin",
+          first_issue_year: 2004,
+          last_issue_year: 2004,
+        },
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
   it.each([
     ["single-year CE", 2004, 2004],
     ["multi-year CE", 2004, 2007],

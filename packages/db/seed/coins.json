@@ -4002,5 +4002,335 @@
     "obverse": {
       "description": "A photographic portrait of Prince Charles appears with his parents, Hereditary Grand Duke Guillaume and Hereditary Grand Duchess Stéphanie, using an embossed minting technique, accompanied by his title and birth date, Luxembourg's name, Grand Duke Henri's crowned monogram, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018f",
+    "title": "Taking Care of Our Seniors",
+    "issuerCode": "AD",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A young hand holds an elderly hand above a stethoscope, symbolising care for seniors, while representations of the SARS-CoV-2 virus accompany Andorra's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000190",
+    "title": "Our Lady of Meritxell",
+    "issuerCode": "AD",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The Romanesque carving of Our Lady of Meritxell appears before her basilica sanctuary and a floral symbol, accompanied by Andorra's name, the years 1921–2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000191",
+    "title": "100th Anniversary of the Birth of Alexander Dubček",
+    "issuerCode": "SK",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A left-facing portrait of Alexander Dubček appears with his name and the years 1921 and 1992, accompanied by Slovakia's name, the year 2021, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000192",
+    "title": "100th Anniversary of the Autonomy of Åland",
+    "issuerCode": "FI",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "An archipelago landscape includes a seaway, nautical signs, a boat's bow, and a hand holding a compass, accompanied by Åland autonomy-centenary inscriptions in Finnish and Swedish, Finland's country code, the year 2021, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000193",
+    "title": "500th Anniversary of Charles V's Second Coinage Ordinance",
+    "issuerCode": "BE",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A portrait of Charles V appears beside a gold Carolus guilder issued after his second coinage ordinance, accompanied by Belgium's country code, the year 2021, mint marks, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000194",
+    "title": "The Wolf",
+    "issuerCode": "EE",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The silhouette of a wolf, Estonia's national animal, appears before a forest, accompanied by its Latin name Canis lupus, Estonia's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000195",
+    "title": "Tarxien Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A detail of the prehistoric Tarxien temple complex appears with the site's name and the dates 3600–2500 BC, accompanied by Malta's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000196",
+    "title": "700th Anniversary of the Death of Dante Alighieri",
+    "issuerCode": "VA",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A portrait of Dante appears with Florence's Palazzo Vecchio, accompanied by his name, the years 1321–2021, Vatican City's name, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000197",
+    "title": "200th Anniversary of the Provincial Museum for Carniola",
+    "issuerCode": "SI",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Bands inspired by the Vače Situla display the museum's successive names as layers of history, accompanied by Slovenia's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000198",
+    "title": "Paris 2024 Olympic Games",
+    "issuerCode": "FR",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Marianne runs in an ancient style and merges with the Eiffel Tower before an athletics track and the Paris 2024 emblem, accompanied by France's country code, the year 2021, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000199",
+    "title": "Finno-Ugric Peoples",
+    "issuerCode": "EE",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Cave-art symbols of a hunter, elk, water bird, and sun form the circle of life of the Finno-Ugric peoples, accompanied by the Fennougria inscription, Estonia's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019a",
+    "title": "550th Anniversary of the Birth of Albrecht Dürer",
+    "issuerCode": "SM",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The Virgin Mary and infant Jesus from Albrecht Dürer's Madonna with Child appear with his name and monogram, the years 1471–2021, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019b",
+    "title": "10th Anniversary of the Marriage of Prince Albert II and Princess Charlene",
+    "issuerCode": "MC",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Profile portraits of Prince Albert II and Princess Charlene appear with Monaco's name, a princely-marriage inscription, the years 2011 and 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019c",
+    "title": "Dzūkija",
+    "issuerCode": "LT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Two lynxes support Dzūkija's coat of arms depicting an armoured soldier with a halberd and Baltic shield, accompanied by a Latin motto, the region's and Lithuania's names, the year 2021, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019d",
+    "title": "450th Anniversary of the Birth of Caravaggio",
+    "issuerCode": "VA",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Caravaggio's Boy with a Basket of Fruit appears with his name, the years 1571–2021, Vatican City's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019e",
+    "title": "Heroes of the Pandemic",
+    "issuerCode": "MT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Two medical professionals brace themselves to face the unknown, honouring frontline workers during the COVID-19 pandemic, accompanied by the Heroes of the Pandemic inscription, Malta's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000019f",
+    "title": "100th Anniversary of the Belgium–Luxembourg Economic Union",
+    "issuerCode": "BE",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Portraits of King Philippe of Belgium and Grand Duke Henri of Luxembourg appear with outlines of both countries and the economic-union inscription, accompanied by the years 1921 and 2021, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a0",
+    "title": "Portuguese Participation in the Tokyo 2020 Olympic Games",
+    "issuerCode": "PT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A stylised form of the Portuguese Olympic Committee emblem appears within an inscription marking Portugal's participation in the Tokyo 2020 Olympic Games, accompanied by the year 2021 and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a1",
+    "title": "Journalism and Open Communication Supporting Finnish Democracy",
+    "issuerCode": "FI",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Stylised human figures intertwine within a ribbon-like network to represent journalism and open communication, accompanied by the word journalism in Finnish and Swedish, Finland's country code, the year 2021, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a2",
+    "title": "Žuvintas Biosphere Reserve",
+    "issuerCode": "LT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A great bittern reaches toward a fire-bellied toad amid the wetlands and birds of Žuvintas Biosphere Reserve, accompanied by the reserve's, UNESCO's, and Lithuania's names, the year 2021, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a3",
+    "title": "200th Anniversary of the Greek Revolution",
+    "issuerCode": "GR",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The Greek flag is encircled by laurel branches, accompanied by a revolution-bicentenary inscription and the Hellenic Republic inscription in Greek, the years 1821–2021, the Greek mint mark, the artist's signature, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a4",
+    "title": "100th Anniversary of Latvia's International Recognition",
+    "issuerCode": "LV",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A typographic composition reads 100 Latvia de iure 2021, marking the centenary of Latvia's international recognition and incorporating the country's name and year of issue, surrounded by twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a5",
+    "title": "450th Anniversary of the Birth of Caravaggio",
+    "issuerCode": "SM",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The Penitent Magdalene from Caravaggio's painting appears with his name, the years 1571–2021, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a6",
+    "title": "75th Anniversary of UNICEF",
+    "issuerCode": "FR",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Successive hands support a globe to represent UNICEF's work across the world, accompanied by its name, motto, 75th-anniversary inscription and dates, France's country code, laurel branches, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a7",
+    "title": "Historic City of Toledo",
+    "issuerCode": "ES",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "The Puerta del Sol and a detail of the Synagogue of El Tránsito represent Toledo in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2021, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a8",
+    "title": "40th Anniversary of the Marriage of Grand Duke Henri — Engraved Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Engraved portraits of Grand Duke Henri and Grand Duchess Maria Teresa appear above two wedding rings, accompanied by their wedding date, the year 2021, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001a9",
+    "title": "Saxony-Anhalt",
+    "issuerCode": "DE",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Magdeburg Cathedral represents Saxony-Anhalt in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2021, a German mint mark, the engraver's mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001aa",
+    "title": "150th Anniversary of Rome as Capital of Italy",
+    "issuerCode": "IT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A detail of Angelo Zanelli's Dea Roma from the Altare della Patria appears with the Rome Capital inscription, the years 1871–2021, the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ab",
+    "title": "Healthcare Professionals",
+    "issuerCode": "IT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "A masked doctor and nurse appear with a stethoscope and medical folder to honour frontline healthcare workers during the COVID-19 pandemic, accompanied by the word Grazie, a heart and medical cross, the Italian Republic monogram, the year 2021, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ac",
+    "title": "100th Anniversary of the Birth of Grand Duke Jean — Engraved Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Engraved portraits of Grand Dukes Jean and Henri appear above the outline of Luxembourg City, accompanied by their names, Jean's birth year 1921, a Grand Dukes of Luxembourg inscription, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ad",
+    "title": "Portuguese Presidency of the Council of the European Union",
+    "issuerCode": "PT",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Lines connect Lisbon with other European capitals to form a map, accompanied by the Portuguese Presidency of the Council of the European Union inscription, Portugal's name, the year 2021, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ae",
+    "title": "40th Anniversary of the Marriage of Grand Duke Henri — Photographic Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Photographic portraits of Grand Duke Henri and Grand Duchess Maria Teresa appear above two wedding rings using an embossed minting technique, accompanied by their wedding date, the year 2021, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001af",
+    "title": "100th Anniversary of the Birth of Grand Duke Jean — Photographic Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2021,
+    "lastIssueYear": 2021,
+    "obverse": {
+      "description": "Photographic portraits of Grand Dukes Jean and Henri appear above the outline of Luxembourg City using an embossed minting technique, accompanied by their names, Jean's birth year 1921, a Grand Dukes of Luxembourg inscription, the year 2021, and twelve stars."
+    }
   }
 ]

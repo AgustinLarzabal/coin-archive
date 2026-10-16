@@ -2332,5 +2332,325 @@
     "obverse": {
       "description": "The official logo of Latvia's Presidency of the Council of the European Union appears with the presidency inscription and website EU2015.LV, surrounded by twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e8",
+    "title": "150th Anniversary of the Burning of Arkadi Monastery",
+    "issuerCode": "GR",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Arkadi Monastery appears with its name and the Hellenic Republic inscription in Greek, accompanied by the year 2016, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000e9",
+    "title": "120th Anniversary of the Birth of Dimitri Mitropoulos",
+    "issuerCode": "GR",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A portrait of Dimitri Mitropoulos appears against a background of musical notes, accompanied by a birth-anniversary inscription in Greek, the Hellenic Republic inscription, the year 2016, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ea",
+    "title": "25th Anniversary of Radio and Television of Andorra",
+    "issuerCode": "AD",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A microphone and antenna are encircled by lines and an inscription marking the 25th anniversary of Andorra's public radio and television, accompanied by Andorra's name, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000eb",
+    "title": "150th Anniversary of the New Reform of 1866",
+    "issuerCode": "AD",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The main room of Casa de la Vall, seat of the Andorran Parliament, appears with an inscription commemorating 150 years of the New Reform of 1866, Andorra's name, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ec",
+    "title": "The Role of the Malta Community Chest Fund in Society",
+    "issuerCode": "MT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Two hands form a heart containing the Maltese flag, with stylised human figures on the wrists, the inscription MALTA 2016, and twelve stars, expressing the student-designed theme Solidarity through Love."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ed",
+    "title": "Vidzeme",
+    "issuerCode": "LV",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The coat of arms of the historical Latvian region of Vidzeme appears with Latvia's name, the region's name, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ee",
+    "title": "100th Anniversary of the Birth of François Mitterrand",
+    "issuerCode": "FR",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A pensive profile of François Mitterrand appears beside his personal emblem of intertwined oak and olive trees, accompanied by his name, the years 1916 and 2016, France's country code, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ef",
+    "title": "Jubilee of Mercy",
+    "issuerCode": "VA",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Saint Martin of Tours shares his cloak with a poor man, surrounded by inscriptions for the Jubilee of Mercy and Vatican City, the year 2016, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f0",
+    "title": "100th Anniversary of the Birth of Georg Henrik von Wright",
+    "issuerCode": "FI",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "An ancient Doric column and an oak branch appear with Georg Henrik von Wright's name, Finland's country code, the year 2016, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f1",
+    "title": "400th Anniversary of the Death of William Shakespeare",
+    "issuerCode": "SM",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A portrait of William Shakespeare appears with his name, the years 1616–2016, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f2",
+    "title": "Ġgantija Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The Neolithic Ġgantija Temples on Gozo appear with their name, the dates 3600–3200 BC, Malta's name, the year 2016, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f3",
+    "title": "50th Anniversary of the 25 de Abril Bridge",
+    "issuerCode": "PT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The 25 de Abril Bridge over the Tagus appears with Portugal's name, the bridge's name, the years 1966 and 2016, the mint mark, the designer's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f4",
+    "title": "Baltic Culture",
+    "issuerCode": "LT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "An amber disc decorated with a cross-shaped pattern of drilled dots symbolises the world's axis, accompanied by Lithuania's name, the year 2016, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f5",
+    "title": "200th Anniversary of the Vatican Gendarmerie Corps",
+    "issuerCode": "VA",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A Vatican gendarme stands before the dome of St Peter's Basilica, accompanied by the corps' name and the years 1816–2016, Vatican City's name, the Rome mint mark, the designer's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f6",
+    "title": "Latvian Agricultural Industry",
+    "issuerCode": "LV",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A Latvian Brown cow symbolises the country's dairy farming in folklore and daily life, accompanied by Latvia's name, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f7",
+    "title": "150th Anniversary of the Founding of Monte Carlo by Charles III",
+    "issuerCode": "MC",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Charles III appears before Monte Carlo, accompanied by Monaco's name, mint marks, an inscription marking the city's founding in 1866, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f8",
+    "title": "25th Anniversary of the Independence of Slovenia",
+    "issuerCode": "SI",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "An oblique line and the inscriptions 25 LET and REPUBLIKA SLOVENIJA appear above Prešeren's handwritten words from the national anthem Zdravljica, accompanied by the year 2016 and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000f9",
+    "title": "International Missing Children's Day",
+    "issuerCode": "BE",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A child's face is surrounded by a multilingual missing-children inscription, the Child Focus website, Belgium's name in three languages, the year 2016, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000fa",
+    "title": "Eino Leino",
+    "issuerCode": "FI",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A flame and an upward-pointing poker represent Finnish writer and lyricist Eino Leino, accompanied by his name, Finland's country code, the year 2016, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000fb",
+    "title": "550th Anniversary of the Death of Donatello",
+    "issuerCode": "SM",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A detail of David from Donatello's bronze sculpture appears with the sculptor's name, the years 1466–2016, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000fc",
+    "title": "Portuguese Team at the Rio 2016 Olympic Games",
+    "issuerCode": "PT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Joana Vasconcelos's Heart of Viana symbolises public support for Portugal's Olympic team, accompanied by the artist's name, the Portuguese team inscription, the year 2016, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000fd",
+    "title": "550th Anniversary of the Death of Donatello",
+    "issuerCode": "IT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The head of David from Donatello's bronze sculpture appears with the sculptor's name, the years 1466 and 2016, the Italian Republic monogram, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000fe",
+    "title": "2,200th Anniversary of the Death of Plautus",
+    "issuerCode": "IT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Theatre masks of a young woman and a slave from a Roman mosaic appear over a Roman theatre plan, accompanied by Plautus's name, the dates 184 BC and 2016, the Italian Republic monogram, mint and artist marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000000ff",
+    "title": "Belgian Olympic Team",
+    "issuerCode": "BE",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A stylised figure appears above the five Olympic rings and the inscription TEAM BELGIUM, accompanied by Belgium's country code, the year 2016, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000100",
+    "title": "First Slovak Presidency of the Council of the European Union",
+    "issuerCode": "SK",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Slovakia's coat of arms appears over centripetal lines with the Slovak presidency inscription, the country's name, the year 2016, the Kremnica mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000101",
+    "title": "50th Anniversary of the Grand Duchess Charlotte Bridge",
+    "issuerCode": "LU",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The Grand Duchess Charlotte Bridge appears beneath Grand Duke Henri's portrait, accompanied by the bridge's French name, the years 1966 and 2016, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000102",
+    "title": "Saxony",
+    "issuerCode": "DE",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A view from the inner courtyard of Dresden's Zwinger Palace toward the Crown Gate represents Saxony in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2016, a German mint mark, the engraver's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000103",
+    "title": "Aqueduct of Segovia",
+    "issuerCode": "ES",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The Roman aqueduct of Segovia represents the city in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2016, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000104",
+    "title": "200th Anniversary of the Oesterreichische Nationalbank",
+    "issuerCode": "AT",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "Mercury and Fortuna stand before the Oesterreichische Nationalbank's main building above a band evoking Austria's flag, accompanied by the bank's bicentenary inscription, the years 1816 and 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000105",
+    "title": "UEFA Euro 2016",
+    "issuerCode": "FR",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The Henri Delaunay Cup appears within an outline of France above a football, accompanied by the UEFA Euro 2016 France inscription, France's country code, Paris Mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000106",
+    "title": "100th Anniversary of the Birth of Paul Keres",
+    "issuerCode": "EE",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "A portrait of Estonian chess grandmaster Paul Keres appears with chess pieces, his name, Estonia's name, the year 2016, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000107",
+    "title": "100th Anniversary of the Easter Rising",
+    "issuerCode": "IE",
+    "firstIssueYear": 2016,
+    "lastIssueYear": 2016,
+    "obverse": {
+      "description": "The statue of Hibernia atop Dublin's General Post Office appears with her name in lettering inspired by the Book of Kells, sunrays, the years 1916 and 2016, Ireland's name, and twelve stars."
+    }
   }
 ]

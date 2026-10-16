@@ -3652,5 +3652,355 @@
     "obverse": {
       "description": "A portrait of the institute's first president, Alexandre Lamfalussy, appears beside its initials and coins marked with the euro, ECU, and Belgian franc, accompanied by the years 1994 and 2019, Belgium's country code, mint and designer marks, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016c",
+    "title": "Birth of Prince Charles — Engraved Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "An engraved portrait of Prince Charles appears with his parents, Hereditary Grand Duke Guillaume and Hereditary Grand Duchess Stéphanie, accompanied by his title and birth date, Luxembourg's name, Grand Duke Henri's crowned monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016d",
+    "title": "730th Anniversary of the University of Coimbra",
+    "issuerCode": "PT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The University of Coimbra tower rises above triangles representing its roofs and Joanina Library, accompanied by a 730th-anniversary inscription, Portugal's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016e",
+    "title": "20th Anniversary of Slovakia's Accession to the OECD",
+    "issuerCode": "SK",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Printed circuits form a human brain around a microprocessor to represent digital humanism, accompanied by Slovakia's coat of arms and name, an OECD accession-anniversary inscription, the year 2020, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016f",
+    "title": "30th Anniversary of the Cyprus Institute of Neurology and Genetics",
+    "issuerCode": "CY",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A neuron and its synapses represent the work of the Cyprus Institute of Neurology and Genetics, accompanied by Cyprus's name in Greek and Turkish, an institute-anniversary inscription, the years 1990–2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000170",
+    "title": "Hill of Crosses",
+    "issuerCode": "LT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Wooden and forged crosses from the Hill of Crosses symbolise Lithuanian cross-crafting and folk culture, accompanied by the site's and Lithuania's names, the year 2020, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000171",
+    "title": "100th Anniversary of the Birth of Väinö Linna",
+    "issuerCode": "FI",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A portrait of writer Väinö Linna appears with letters woven like fabric and threads running through books, recalling his textile-mill work, accompanied by his name, Finland's country code, the year 2020, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000172",
+    "title": "Children's Games",
+    "issuerCode": "MT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Traditional Maltese children's games include marbles, spinning tops, kite-flying, hopscotch, and three bees recalling a playground chant, accompanied by Malta's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000173",
+    "title": "50th Anniversary of Willy Brandt's Warsaw Genuflection",
+    "issuerCode": "DE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Willy Brandt kneels before Warsaw's Monument to the Ghetto Heroes beside a menorah and figures representing victims, accompanied by a 50th-anniversary inscription, Germany's country code, the year 2020, a German mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000174",
+    "title": "Medical Research",
+    "issuerCode": "FR",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A human face within a sphere confronts strands of DNA to symbolise research overcoming disease, accompanied by France's country code, the year 2020, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000175",
+    "title": "500th Anniversary of the Death of Raphael",
+    "issuerCode": "VA",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A portrait of Raphael appears with two angels, accompanied by his name, the years 1520 and 2020, Vatican City's name, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000176",
+    "title": "250th Anniversary of the Death of Giambattista Tiepolo",
+    "issuerCode": "SM",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "An angel from Tiepolo's Angel Succouring Hagar appears with the painter's name, the years 1770 and 2020, San Marino's name, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000177",
+    "title": "100th Anniversary of the University of Turku",
+    "issuerCode": "FI",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A grid-like design represents interaction between universities and society, accompanied by Finland's country code, the year 2020, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000178",
+    "title": "50th Anniversary of Universal Female Suffrage in Andorra",
+    "issuerCode": "AD",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A woman's face is surrounded by flowing lines formed from Catalan women's names, symbolising solidarity in the struggle for rights, accompanied by a universal-suffrage anniversary inscription, Andorra's name, the years 1970–2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000179",
+    "title": "500th Anniversary of the Birth of Adam Bohorič",
+    "issuerCode": "SI",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A multilingual motto from Adam Bohorič's Latin-Slovenian grammar appears in the Bohorič alphabet and Latin, accompanied by his name and birth year, Slovenia's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017a",
+    "title": "Latgalian Ceramics",
+    "issuerCode": "LV",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A traditional Latgalian clay candelabrum represents the region's enduring pottery tradition, accompanied by a Latgalian Ceramics inscription, Latvia's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017b",
+    "title": "Charles de Gaulle",
+    "issuerCode": "FR",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Two profiles show Charles de Gaulle as a wartime general and as president, accompanied by France's country code within a Cross of Lorraine, his birth and death years, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017c",
+    "title": "27th Ibero-American Summit in Andorra",
+    "issuerCode": "AD",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Human figures and gear teeth form a tree symbolising social integration and cooperation toward sustainable development, accompanied by the summit logo and inscription, Andorra's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017d",
+    "title": "300th Anniversary of the Birth of Prince Honoré III",
+    "issuerCode": "MC",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A portrait of Prince Honoré III appears with his name, Monaco's name, a birth inscription, the years 1720 and 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017e",
+    "title": "150th Anniversary of the Birth of Maria Montessori",
+    "issuerCode": "IT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A portrait of Maria Montessori appears within a geometric composition of educational materials from her teaching system, accompanied by her name, the years 1870 and 2020, the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000017f",
+    "title": "100th Anniversary of the Union of Thrace with Greece",
+    "issuerCode": "GR",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A griffin reproduces an ancient coin from the Thracian city of Abdera, accompanied by a union-centenary inscription and the Hellenic Republic inscription in Greek, the year 2020, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000180",
+    "title": "Jan van Eyck",
+    "issuerCode": "BE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A portrait of Jan van Eyck appears with his signature, name, a palette, and paintbrushes, accompanied by Belgium's country code, the year 2020, mint marks, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000181",
+    "title": "75th Anniversary of the United Nations",
+    "issuerCode": "PT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The United Nations emblem appears with a bilingual 75-years inscription, accompanied by Portugal's name, the year 2020, the mint's and engraver's names, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000182",
+    "title": "Skorba Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The prehistoric Skorba temple complex appears with its name and the dates 3600–2500 BC, accompanied by Malta's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000183",
+    "title": "100th Anniversary of the Birth of Pope John Paul II",
+    "issuerCode": "VA",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Pope John Paul II appears with his birthplace and a nearby basilica in Wadowice, accompanied by his name, the years 1920 and 2020, Vatican City's name, the Rome mint mark, artist and engraver credits, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000184",
+    "title": "500th Anniversary of the Death of Raphael",
+    "issuerCode": "SM",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The Virgin Mary's profile from Raphael's Madonna di Casa Santi appears with Raphael's name, the years 1520 and 2020, San Marino's name, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000185",
+    "title": "Aukštaitija",
+    "issuerCode": "LT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Two angels support Aukštaitija's coat of arms depicting an armoured knight with a sword, accompanied by a Latin motto, the region's and Lithuania's names, the year 2020, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000186",
+    "title": "200th Anniversary of the Discovery of Antarctica",
+    "issuerCode": "EE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A sailing ship recalls Fabian Gottlieb von Bellingshausen's role in the discovery of Antarctica, accompanied by his name, a bicentenary inscription, Estonia's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000187",
+    "title": "Mudéjar Architecture of Aragon",
+    "issuerCode": "ES",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The tower of El Salvador in Teruel represents the Mudéjar architecture of Aragon in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2020, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000188",
+    "title": "Brandenburg",
+    "issuerCode": "DE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Sanssouci Palace represents Brandenburg in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2020, a German mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000189",
+    "title": "International Year of Plant Health",
+    "issuerCode": "BE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The International Year of Plant Health logo forms a globe-like circle of protected leaves, accompanied by the initiative's name, Belgium's country code, the year 2020, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018a",
+    "title": "100th Anniversary of the Tartu Peace Treaty",
+    "issuerCode": "EE",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The branches of a tree conceal the words Tartu Peace, accompanied by Estonia's name, the treaty's centenary date of 2 February 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018b",
+    "title": "80th Anniversary of the National Fire Department",
+    "issuerCode": "IT",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "The Italian National Fire Department emblem appears with the department's name, accompanied by the Italian Republic monogram, the year 2020, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018c",
+    "title": "200th Anniversary of the Birth of Prince Henri of Orange-Nassau",
+    "issuerCode": "LU",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "Portraits of Grand Duke Henri and Prince Henri of Orange-Nassau appear with the prince's name and the dates 1820–1879, accompanied by Luxembourg's name, the year 2020, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018d",
+    "title": "2,500th Anniversary of the Battle of Thermopylae",
+    "issuerCode": "GR",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "An ancient Greek helmet symbolises the Battle of Thermopylae, accompanied by a 2,500-years inscription and the Hellenic Republic inscription in Greek, the year 2020, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000018e",
+    "title": "Birth of Prince Charles — Photographic Version",
+    "issuerCode": "LU",
+    "firstIssueYear": 2020,
+    "lastIssueYear": 2020,
+    "obverse": {
+      "description": "A photographic portrait of Prince Charles appears with his parents, Hereditary Grand Duke Guillaume and Hereditary Grand Duchess Stéphanie, using an embossed minting technique, accompanied by his title and birth date, Luxembourg's name, Grand Duke Henri's crowned monogram, and twelve stars."
+    }
   }
 ]

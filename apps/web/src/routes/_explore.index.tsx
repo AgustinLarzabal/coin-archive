@@ -8,6 +8,7 @@ import {
   engraverListQueryOptions,
   InvalidCoinListResponseError,
   issuerListQueryOptions,
+  rulingAuthorityListQueryOptions,
 } from "@/data/archive"
 import { Explore } from "@/features/explore/explore"
 import { getExploreCoinListFilters } from "@/features/explore/explore-search"
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/_explore/")({
         search: {
           issuer: search.issuer,
           engraver: search.engraver,
+          ruler: search.ruler,
           year: search.year,
         },
         replace: true,
@@ -40,6 +42,7 @@ export const Route = createFileRoute("/_explore/")({
         search: {
           issuer: filters.issuerCode,
           engraver: filters.engraverSlug,
+          ruler: filters.rulingAuthoritySlug,
           year: filters.issueYear,
           page: lastPage === 1 ? undefined : lastPage,
         },
@@ -56,17 +59,25 @@ function ExploreRoute() {
   const filters = Route.useLoaderDeps()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
+  const { data: rulerList } = useSuspenseQuery(
+    rulingAuthorityListQueryOptions()
+  )
   const selectedIssuer = issuerList.issuers.find(
     (issuer) => issuer.code === filters.issuerCode
   )
   const selectedEngraver = engraverList.engravers.find(
     (engraver) => engraver.slug === filters.engraverSlug
   )
+  const selectedRuler = rulerList.rulers.find(
+    (ruler) => ruler.slug === filters.rulingAuthoritySlug
+  )
 
   return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
   ) : filters.engraverSlug && !selectedEngraver ? (
     <RouteMessage>Engraver not found</RouteMessage>
+  ) : filters.rulingAuthoritySlug && !selectedRuler ? (
+    <RouteMessage>Ruler / Period not found</RouteMessage>
   ) : (
     <Explore filters={filters} />
   )

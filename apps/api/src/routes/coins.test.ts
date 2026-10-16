@@ -794,6 +794,85 @@ describe("Coin routes", () => {
       await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
 
+    it("passes one exact Ruling Authority Slug with every other filter", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?issuer=ROMAN&ruler=augustus&engraver=first-archive-engraver&year=-25-19&page=2&pageSize=12"
+      )
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        issuerCode: "ROMAN",
+        rulingAuthoritySlug: "augustus",
+        engraverSlug: "first-archive-engraver",
+        issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
+        page: 2,
+        pageSize: 12,
+      })
+    })
+
+    it("returns an empty page for a well-formed missing Ruling Authority Slug", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?ruler=missing-authority")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        rulingAuthoritySlug: "missing-authority",
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+
+    it.each(["", "Augustus", "ab", "first--ruler"])(
+      "rejects the malformed Ruling Authority Slug %j without listing Coins",
+      async (rulerSlug) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?ruler=${encodeURIComponent(rulerSlug)}`)
+
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: {
+            code: "invalid_ruler_slug",
+            message: "Ruling Authority Slug is invalid",
+          },
+        })
+      }
+    )
+
+    it("rejects repeated Ruling Authority filters without listing Coins", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?ruler=first-ruler&ruler=second-ruler")
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_ruler_slug",
+          message: "Ruling Authority Slug is invalid",
+        },
+      })
+    })
+
     it("combines Issuer and Engraver filters for the Coin list", async () => {
       const listCoins = vi.fn(emptyCoinPage)
 
@@ -1259,6 +1338,12 @@ describe("Coin routes", () => {
           schema: expect.objectContaining({ pattern: expect.any(String) }),
         }),
         expect.objectContaining({
+          description: "Exact, case-sensitive Ruling Authority Slug",
+          in: "query",
+          name: "ruler",
+          required: false,
+        }),
+        expect.objectContaining({
           description:
             "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
           in: "query",
@@ -1309,6 +1394,9 @@ describe("Coin routes", () => {
                   anyOf: [
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
+                    {
+                      $ref: "#/components/schemas/InvalidRulingAuthoritySlugError",
+                    },
                     { $ref: "#/components/schemas/InvalidYearError" },
                     { $ref: "#/components/schemas/InvalidPaginationError" },
                   ],
@@ -1330,6 +1418,7 @@ describe("Coin routes", () => {
           CoinListResponse: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
+          InvalidRulingAuthoritySlugError: expect.any(Object),
           InvalidYearError: expect.any(Object),
           InvalidPaginationError: expect.any(Object),
           InternalError: expect.any(Object),

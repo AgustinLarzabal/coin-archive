@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import { isIsoIssuerCode } from "@workspace/api"
 import { Flag } from "@workspace/ui/components/flags/flag"
 import type { CoinDetailResponse } from "@workspace/api"
@@ -52,7 +53,13 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               <dd className="text-right">
                 {group.attributions.map((attribution, attributionIndex) => (
                   <div key={`${attribution.slug}-${attributionIndex}`}>
-                    {attribution.name}
+                    <Link
+                      to="/"
+                      search={{ ruler: attribution.slug }}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {attribution.name}
+                    </Link>
                     {attribution.tenure ? ` (${attribution.tenure})` : ""}
                   </div>
                 ))}

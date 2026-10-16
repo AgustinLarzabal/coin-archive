@@ -10,6 +10,7 @@ import { formatCoinListYear } from "@/features/issue-period"
 type YearFilterProps = {
   engraverSlug?: string
   issuerCode?: string
+  rulerSlug?: string
   year?: CoinListYear
 }
 
@@ -48,6 +49,7 @@ function formatYearFilterDraft(year: CoinListYear | undefined) {
 export function YearFilter({
   engraverSlug,
   issuerCode,
+  rulerSlug,
   year,
 }: YearFilterProps) {
   const navigate = useNavigate({ from: "/" })
@@ -75,6 +77,7 @@ export function YearFilter({
       search: {
         engraver: engraverSlug,
         issuer: issuerCode,
+        ruler: rulerSlug,
         year: issueYear,
       },
     })
@@ -89,6 +92,7 @@ export function YearFilter({
       search: {
         engraver: engraverSlug,
         issuer: issuerCode,
+        ruler: rulerSlug,
       },
     })
   }

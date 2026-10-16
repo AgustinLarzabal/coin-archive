@@ -7,6 +7,7 @@ import { registerCoinRoutes } from "./routes/coins.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
 import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
+import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
 import type { AppEnvironment } from "./routes/shared.js"
 import type {
   Coin,
@@ -14,6 +15,7 @@ import type {
   CoinListPage,
   EngraverRecord,
   IssuerRecord,
+  RulingAuthorityRecord,
 } from "@workspace/db"
 
 export interface AppOptions {
@@ -24,6 +26,7 @@ export interface AppOptions {
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
+  listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
   log?: (line: string) => void
 }
 
@@ -35,6 +38,7 @@ const noStorePaths = new Set([
   "/v1/coins",
   "/v1/engravers",
   "/v1/issuers",
+  "/v1/rulers",
 ])
 
 export function createApp(options: AppOptions) {
@@ -95,6 +99,9 @@ export function createApp(options: AppOptions) {
   })
   registerIssuerRoutes(app, { listIssuers: options.listIssuers })
   registerEngraverRoutes(app, { listEngravers: options.listEngravers })
+  registerRulingAuthorityRoutes(app, {
+    listRulingAuthorities: options.listRulingAuthorities,
+  })
 
   app.doc("/openapi.json", {
     info: {

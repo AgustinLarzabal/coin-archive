@@ -34,6 +34,9 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/engravers")) {
       return Promise.resolve(jsonResponse({ engravers }))
     }
+    if (url.endsWith("/v1/rulers")) {
+      return Promise.resolve(jsonResponse({ rulers: [] }))
+    }
 
     const page = Number(new URL(url).searchParams.get("page"))
     return Promise.resolve(
@@ -167,6 +170,9 @@ describe("Explore pagination", () => {
       if (url.endsWith("/v1/engravers")) {
         return Promise.resolve(jsonResponse({ engravers }))
       }
+      if (url.endsWith("/v1/rulers")) {
+        return Promise.resolve(jsonResponse({ rulers: [] }))
+      }
 
       const page = Number(new URL(url).searchParams.get("page"))
       if (page === 9) {
@@ -221,9 +227,11 @@ describe("Explore pagination", () => {
     expect(screen.getByRole("link", { name: "First coin" })).toBeVisible()
   })
 
-  it("restores the page URL and Coins with browser Back and Forward", async () => {
+  it("restores a filtered page URL and Coins with browser Back and Forward", async () => {
     vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
-    const router = renderArchiveRoute()
+    const router = renderArchiveRoute("/?ruler=selected-authority", [
+      { slug: "selected-authority", name: "Selected Authority" },
+    ])
     const user = userEvent.setup()
 
     await screen.findByRole("link", { name: "Coin on page 1" })
@@ -231,19 +239,23 @@ describe("Explore pagination", () => {
     expect(
       await screen.findByRole("link", { name: "Coin on page 2" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?page=2")
+    expect(router.state.location.searchStr).toBe(
+      "?ruler=selected-authority&page=2"
+    )
 
     router.history.back()
     expect(
       await screen.findByRole("link", { name: "Coin on page 1" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("")
+    expect(router.state.location.searchStr).toBe("?ruler=selected-authority")
 
     router.history.forward()
     expect(
       await screen.findByRole("link", { name: "Coin on page 2" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?page=2")
+    expect(router.state.location.searchStr).toBe(
+      "?ruler=selected-authority&page=2"
+    )
   })
 
   it("normalizes zero matches to page 1 without pagination controls", async () => {

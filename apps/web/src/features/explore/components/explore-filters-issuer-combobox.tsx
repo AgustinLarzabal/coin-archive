@@ -13,6 +13,7 @@ import type { CoinListYear, IssuerResponse } from "@workspace/api"
 type IssuerComboboxProps = {
   engraverSlug?: string
   issuerCode?: string
+  rulerSlug?: string
   issuers: Array<IssuerResponse>
   year?: CoinListYear
 }
@@ -26,6 +27,7 @@ type IssuerOption = {
 export function IssuerCombobox({
   engraverSlug,
   issuerCode,
+  rulerSlug,
   issuers,
   year,
 }: IssuerComboboxProps) {
@@ -71,6 +73,7 @@ export function IssuerCombobox({
           search: {
             engraver: engraverSlug,
             issuer: nextIssuerCode,
+            ruler: rulerSlug,
             year,
           },
         })

@@ -32,6 +32,7 @@ export function ExplorePagination({
       search: {
         engraver: filters.engraverSlug,
         issuer: filters.issuerCode,
+        ruler: filters.rulingAuthoritySlug,
         year: filters.issueYear,
         page: nextPage === 1 ? undefined : nextPage,
       },

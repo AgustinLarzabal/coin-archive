@@ -26,6 +26,7 @@ export interface Database {
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
+  listRulingAuthorities: () => Promise<Array<schema.RulingAuthorityRecord>>
   orm: ReturnType<typeof drizzle<typeof schema>>
   schema: typeof schema
 }
@@ -62,6 +63,7 @@ export interface CoinListOptions {
   issuerCode?: string
   page?: number
   pageSize?: number
+  rulingAuthoritySlug?: string
 }
 
 export interface IssueYearInterval {
@@ -269,6 +271,21 @@ export function createDatabase(
                     .where(eq(schema.issuers.code, listOptions.issuerCode))
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const rulingAuthorityId =
+            listOptions.rulingAuthoritySlug === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.rulingAuthorities.id })
+                    .from(schema.rulingAuthorities)
+                    .where(
+                      eq(
+                        schema.rulingAuthorities.slug,
+                        listOptions.rulingAuthoritySlug
+                      )
+                    )
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
               issuerId === undefined
@@ -321,7 +338,31 @@ export function createDatabase(
                           eq(schema.engravers.slug, listOptions.engraverSlug)
                         )
                       )
-                  )
+                  ),
+              rulingAuthorityId === undefined
+                ? undefined
+                : rulingAuthorityId === null
+                  ? sql`false`
+                  : exists(
+                      transaction
+                        .select({
+                          coinId: schema.coinRulingAuthorityAttributions.coinId,
+                        })
+                        .from(schema.coinRulingAuthorityAttributions)
+                        .where(
+                          and(
+                            eq(
+                              schema.coinRulingAuthorityAttributions.coinId,
+                              schema.coins.id
+                            ),
+                            eq(
+                              schema.coinRulingAuthorityAttributions
+                                .rulingAuthorityId,
+                              rulingAuthorityId
+                            )
+                          )
+                        )
+                    )
             )
 
           const [{ totalItems }] = await transaction
@@ -397,6 +438,14 @@ export function createDatabase(
         .select()
         .from(schema.issuers)
         .orderBy(asc(schema.issuers.name), asc(schema.issuers.code)),
+    listRulingAuthorities: () =>
+      orm
+        .select()
+        .from(schema.rulingAuthorities)
+        .orderBy(
+          asc(schema.rulingAuthorities.name),
+          asc(schema.rulingAuthorities.slug)
+        ),
     orm,
     schema,
   }

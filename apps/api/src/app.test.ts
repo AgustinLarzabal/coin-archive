@@ -124,6 +124,7 @@ describe("API composition", () => {
       "/v1/coins/{coinId}",
       "/v1/engravers",
       "/v1/issuers",
+      "/v1/rulers",
     ])
     expect(Object.keys(document.components.schemas).sort()).toEqual([
       "Coin",
@@ -137,9 +138,11 @@ describe("API composition", () => {
       "InvalidEngraverSlugError",
       "InvalidIssuerCodeError",
       "InvalidPaginationError",
+      "InvalidRulingAuthoritySlugError",
       "InvalidYearError",
       "Issuer",
       "IssuerListResponse",
+      "RulingAuthorityListResponse",
       "UnavailableResponse",
     ])
   })

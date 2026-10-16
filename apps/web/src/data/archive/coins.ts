@@ -10,6 +10,7 @@ import {
   coinNotFoundErrorSchema,
   engraverSlugSchema,
   issuerCodeSchema,
+  rulingAuthoritySlugSchema,
 } from "@workspace/api"
 import type {
   CoinDetailResponse,
@@ -27,6 +28,7 @@ class CoinListRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 export class InvalidIssuerCodeError extends Error {}
 export class InvalidEngraverSlugError extends Error {}
+export class InvalidRulingAuthoritySlugError extends Error {}
 export class InvalidIssueYearError extends Error {}
 
 export type CoinListFilters = Readonly<{
@@ -34,6 +36,7 @@ export type CoinListFilters = Readonly<{
   issuerCode?: string
   issueYear?: CoinListYear
   page?: number
+  rulingAuthoritySlug?: string
 }>
 
 type ValidatedCoinListFilters = Readonly<{
@@ -42,6 +45,7 @@ type ValidatedCoinListFilters = Readonly<{
   issueYear?: CoinListYear
   page: number
   pageSize: number
+  rulingAuthoritySlug?: string
 }>
 
 async function getCoins({
@@ -50,6 +54,7 @@ async function getCoins({
   issueYear,
   page,
   pageSize,
+  rulingAuthoritySlug,
 }: ValidatedCoinListFilters): Promise<CoinListResponse> {
   let response: Response
 
@@ -60,6 +65,9 @@ async function getCoins({
     }
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
+    }
+    if (rulingAuthoritySlug !== undefined) {
+      search.set("ruler", rulingAuthoritySlug)
     }
     if (issueYear !== undefined) {
       search.set("year", String(issueYear))
@@ -129,6 +137,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     issuerCode,
     issueYear,
     page = COIN_LIST_DEFAULT_PAGE,
+    rulingAuthoritySlug,
   } = filters
   if (
     issuerCode !== undefined &&
@@ -151,6 +160,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   if (!coinListPageSchema.safeParse(page).success) {
     throw new RangeError("Invalid Coin list page")
   }
+  if (
+    rulingAuthoritySlug !== undefined &&
+    !rulingAuthoritySlugSchema.safeParse(rulingAuthoritySlug).success
+  ) {
+    throw new InvalidRulingAuthoritySlugError("Invalid Ruling Authority Slug")
+  }
 
   const validatedFilters: ValidatedCoinListFilters = {
     engraverSlug: engraverSlug ?? null,
@@ -158,6 +173,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     ...(issueYear === undefined ? {} : { issueYear }),
     page,
     pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,
+    ...(rulingAuthoritySlug === undefined ? {} : { rulingAuthoritySlug }),
   }
 
   return queryOptions({

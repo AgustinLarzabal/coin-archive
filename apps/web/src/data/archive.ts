@@ -6,6 +6,7 @@ import {
   InvalidCoinResponseError,
   InvalidEngraverSlugError,
   InvalidIssuerCodeError,
+  InvalidRulingAuthoritySlugError,
 } from "./archive/coins"
 import {
   EngraverListRequestError,
@@ -15,6 +16,10 @@ import {
   InvalidIssuerListResponseError,
   IssuerListRequestError,
 } from "./archive/issuers"
+import {
+  InvalidRulingAuthorityListResponseError,
+  RulingAuthorityListRequestError,
+} from "./archive/rulers"
 
 export {
   coinDetailQueryOptions,
@@ -25,6 +30,7 @@ export {
   InvalidCoinResponseError,
   InvalidEngraverSlugError,
   InvalidIssuerCodeError,
+  InvalidRulingAuthoritySlugError,
   validateCoinId,
 } from "./archive/coins"
 export type { CoinListFilters } from "./archive/coins"
@@ -38,6 +44,11 @@ export {
   issuerListQueryOptions,
   IssuerListRequestError,
 } from "./archive/issuers"
+export {
+  InvalidRulingAuthorityListResponseError,
+  rulingAuthorityListQueryOptions,
+  RulingAuthorityListRequestError,
+} from "./archive/rulers"
 
 function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
   return createSerializationAdapter({
@@ -65,4 +76,16 @@ export const archiveErrorSerializationAdapters = [
   errorAdapter("IssuerListRequestError", IssuerListRequestError),
   errorAdapter("InvalidIssuerCodeError", InvalidIssuerCodeError),
   errorAdapter("InvalidEngraverSlugError", InvalidEngraverSlugError),
+  errorAdapter(
+    "InvalidRulingAuthoritySlugError",
+    InvalidRulingAuthoritySlugError
+  ),
+  errorAdapter(
+    "InvalidRulingAuthorityListResponseError",
+    InvalidRulingAuthorityListResponseError
+  ),
+  errorAdapter(
+    "RulingAuthorityListRequestError",
+    RulingAuthorityListRequestError
+  ),
 ]

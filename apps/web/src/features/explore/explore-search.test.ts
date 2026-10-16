@@ -22,6 +22,22 @@ describe("Explore search schema", () => {
     })
   })
 
+  it("accepts one exact Ruling Authority Slug", () => {
+    expect(exploreSearchSchema.parse({ ruler: "first-authority" })).toEqual({
+      ruler: "first-authority",
+    })
+  })
+
+  it.each(["", "First-Authority", "ab", "first--authority", 123])(
+    "ignores the malformed Ruling Authority filter %j",
+    (ruler) => {
+      expect(exploreSearchSchema.parse({ issuer: "AR", ruler })).toEqual({
+        issuer: "AR",
+        ruler: undefined,
+      })
+    }
+  )
+
   it.each(["", "ar", "A", "ABC_123", 123])(
     "ignores the malformed Issuer filter %j",
     (issuer) => {
@@ -46,10 +62,12 @@ describe("Explore search schema", () => {
       getExploreCoinListFilters({
         issuer: "AR",
         engraver: "first-engraver",
+        ruler: "first-authority",
       })
     ).toEqual({
       issuerCode: "AR",
       engraverSlug: "first-engraver",
+      rulingAuthoritySlug: "first-authority",
       page: 1,
     })
   })

@@ -209,6 +209,23 @@ export const engraverListResponseSchema = z.strictObject({
 
 export type EngraverListResponse = z.infer<typeof engraverListResponseSchema>
 
+export const rulingAuthorityListItemResponseSchema = z.strictObject({
+  slug: rulingAuthoritySlugSchema,
+  name: trimmedDisplayTextSchema(200),
+})
+
+export type RulingAuthorityListItemResponse = z.infer<
+  typeof rulingAuthorityListItemResponseSchema
+>
+
+export const rulingAuthorityListResponseSchema = z.strictObject({
+  rulers: z.array(rulingAuthorityListItemResponseSchema),
+})
+
+export type RulingAuthorityListResponse = z.infer<
+  typeof rulingAuthorityListResponseSchema
+>
+
 export const coinSurfaceWithEngraversResponseSchema =
   coinSurfaceResponseSchema.extend({
     engravers: z.array(engraverResponseSchema),
@@ -284,6 +301,11 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(
   "invalid_engraver_slug",
   "Engraver Slug is invalid"
+)
+
+export const invalidRulingAuthoritySlugErrorSchema = errorResponseSchema(
+  "invalid_ruler_slug",
+  "Ruling Authority Slug is invalid"
 )
 
 export const invalidYearErrorSchema = errorResponseSchema(

@@ -294,6 +294,9 @@ describe("Coin viewer route", () => {
       "KingFirst Co-ruler (2000–2002)Second Co-rulerPeriodShared Period (circa 2001)KingLater King (2003–present)"
     )
     expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: "First Co-ruler" })
+    ).toHaveAttribute("href", "/?ruler=first-co-ruler")
   })
 
   it("omits Ruling Authority rows for an uncurated Coin", async () => {

@@ -17,11 +17,13 @@ import {
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
+  invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
   issuerResponseSchema,
   missingCoinSurfaceResponse,
   missingCoinSurfaceWithEngraversResponse,
+  rulingAuthoritySlugSchema,
 } from "@workspace/api"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
@@ -58,6 +60,10 @@ const coinListQuerySchema = z.object({
   issuer: issuerCodeSchema.optional().openapi({
     description: "Exact, case-sensitive Issuer Code",
     param: { name: "issuer", in: "query" },
+  }),
+  ruler: rulingAuthoritySlugSchema.optional().openapi({
+    description: "Exact, case-sensitive Ruling Authority Slug",
+    param: { name: "ruler", in: "query" },
   }),
   year: coinListYearQuerySchema.optional().openapi({
     description:
@@ -103,11 +109,16 @@ const invalidEngraverSlugErrorSchema =
 const invalidPaginationErrorSchema = sharedInvalidPaginationErrorSchema.openapi(
   "InvalidPaginationError"
 )
+const invalidRulingAuthoritySlugErrorSchema =
+  sharedInvalidRulingAuthoritySlugErrorSchema.openapi(
+    "InvalidRulingAuthoritySlugError"
+  )
 const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
+  invalidRulingAuthoritySlugErrorSchema,
   invalidYearErrorSchema,
   invalidPaginationErrorSchema,
 ])
@@ -262,6 +273,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
       const {
         engraver: engraverSlug,
         issuer: issuerCode,
+        ruler: rulingAuthoritySlug,
         year,
         page,
         pageSize,
@@ -271,6 +283,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
       const { coins, totalItems } = await listCoins({
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
+        ...(rulingAuthoritySlug === undefined ? {} : { rulingAuthoritySlug }),
         ...(year === undefined
           ? {}
           : { issueYearInterval: coinListYearToInterval(year) }),
@@ -299,37 +312,47 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
         const invalidPagination = result.error.issues.some(
           (issue) => issue.path[0] === "page" || issue.path[0] === "pageSize"
         )
+        const invalidRulingAuthority = result.error.issues.some(
+          (issue) => issue.path[0] === "ruler"
+        )
         const invalidYear = result.error.issues.some(
           (issue) => issue.path[0] === "year"
         )
         return context.json(
-          invalidEngraver
+          invalidRulingAuthority
             ? {
                 error: {
-                  code: "invalid_engraver_slug" as const,
-                  message: "Engraver Slug is invalid" as const,
+                  code: "invalid_ruler_slug" as const,
+                  message: "Ruling Authority Slug is invalid" as const,
                 },
               }
-            : invalidYear
+            : invalidEngraver
               ? {
                   error: {
-                    code: "invalid_year" as const,
-                    message: "Issue Year is invalid" as const,
+                    code: "invalid_engraver_slug" as const,
+                    message: "Engraver Slug is invalid" as const,
                   },
                 }
-              : invalidPagination
+              : invalidYear
                 ? {
                     error: {
-                      code: "invalid_pagination" as const,
-                      message: "Pagination is invalid" as const,
+                      code: "invalid_year" as const,
+                      message: "Issue Year is invalid" as const,
                     },
                   }
-                : {
-                    error: {
-                      code: "invalid_issuer_code" as const,
-                      message: "Issuer Code is invalid" as const,
+                : invalidPagination
+                  ? {
+                      error: {
+                        code: "invalid_pagination" as const,
+                        message: "Pagination is invalid" as const,
+                      },
+                    }
+                  : {
+                      error: {
+                        code: "invalid_issuer_code" as const,
+                        message: "Issuer Code is invalid" as const,
+                      },
                     },
-                  },
           400
         )
       }

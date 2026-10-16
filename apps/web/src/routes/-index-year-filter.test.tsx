@@ -113,6 +113,9 @@ it("returns to the first page when reapplying the active Year", async () => {
     if (url.endsWith("/v1/engravers")) {
       return Promise.resolve(jsonResponse({ engravers: [] }))
     }
+    if (url.endsWith("/v1/rulers")) {
+      return Promise.resolve(jsonResponse({ rulers: [] }))
+    }
 
     const page = Number(new URL(url).searchParams.get("page"))
     return Promise.resolve(

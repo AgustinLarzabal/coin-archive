@@ -28,7 +28,7 @@ unless the database name is exactly `coin_archive_performance`.
 
 ## Gate behavior
 
-The command prints the complete measurement JSON and a pass summary when all 12
+The command prints the complete measurement JSON and a pass summary when all 15
 scenarios satisfy their bounds. On failure it still prints the measurements,
 then reports each scenario, metric, actual value, and bound before exiting
 nonzero. Response-content and deterministic-order assertions remain part of the
@@ -54,20 +54,23 @@ cold first API request has been observed around 183 ms.
 
 The PostgreSQL 17 calibration sample and enforced work bounds are:
 
-| Scenario | Plan rows baseline / bound | Filtered rows baseline / bound | Shared blocks baseline / bound | Sort rows baseline / bound | Required Coin index |
-| --- | ---: | ---: | ---: | ---: | --- |
-| Unfiltered first | 410 / 1,000 | 0 / 100 | 25 / 500 | 0 / 0 | `coins_created_at_id_index` |
-| Unfiltered middle | 150,110 / 250,000 | 0 / 100 | 936 / 5,000 | 0 / 0 | `coins_created_at_id_index` |
-| Unfiltered deep | 300,110 / 500,000 | 0 / 100 | 1,849 / 10,000 | 0 / 0 | `coins_created_at_id_index` |
-| Issuer first | 401 / 1,000 | 9 / 100 | 19 / 500 | 0 / 0 | `coins_issuer_id_created_at_id_index` |
-| Issuer middle | 35,101 / 75,000 | 9 / 100 | 1,465 / 5,000 | 5,000 / 10,000 | `coins_issuer_id_created_at_id_index` |
-| Issuer deep | 40,101 / 75,000 | 9 / 100 | 1,465 / 5,000 | 10,000 / 10,000 | `coins_issuer_id_created_at_id_index` |
-| Engraver first | 7,335 / 30,000 | 991 / 5,000 | 9,948 / 30,000 | 0 / 0 | `coins_created_at_id_index` |
-| Engraver middle | 232,622 / 500,000 | 9 / 100 | 2,519 / 10,000 | 2,500 / 5,000 | none; full scans are accepted |
-| Engraver deep | 235,122 / 500,000 | 9 / 100 | 2,519 / 10,000 | 5,000 / 5,000 | none; full scans are accepted |
-| Issue Period first | 405 / 1,000 | 99 / 500 | 16 / 500 | 0 / 0 | `coins_created_at_id_index` |
-| Issue Period middle | 75,105 / 150,000 | 24,999 / 75,000 | 926 / 5,000 | 0 / 0 | `coins_created_at_id_index` |
-| Issue Period deep | 150,105 / 300,000 | 49,999 / 150,000 | 1,839 / 10,000 | 0 / 0 | `coins_created_at_id_index` |
+| Scenario                | Plan rows baseline / bound | Filtered rows baseline / bound | Shared blocks baseline / bound | Sort rows baseline / bound | Required Coin index                            |
+| ----------------------- | -------------------------: | -----------------------------: | -----------------------------: | -------------------------: | ---------------------------------------------- |
+| Unfiltered first        |                410 / 1,000 |                        0 / 100 |                       25 / 500 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Unfiltered middle       |          150,110 / 250,000 |                        0 / 100 |                    936 / 5,000 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Unfiltered deep         |          300,110 / 500,000 |                        0 / 100 |                 1,849 / 10,000 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Issuer first            |                401 / 1,000 |                        9 / 100 |                       19 / 500 |                      0 / 0 | `coins_issuer_id_created_at_id_index`          |
+| Issuer middle           |            35,101 / 75,000 |                        9 / 100 |                  1,465 / 5,000 |             5,000 / 10,000 | `coins_issuer_id_created_at_id_index`          |
+| Issuer deep             |            40,101 / 75,000 |                        9 / 100 |                  1,465 / 5,000 |            10,000 / 10,000 | `coins_issuer_id_created_at_id_index`          |
+| Engraver first          |             7,335 / 30,000 |                    991 / 5,000 |                 9,948 / 30,000 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Engraver middle         |          232,622 / 500,000 |                        9 / 100 |                 2,519 / 10,000 |              2,500 / 5,000 | none; full scans are accepted                  |
+| Engraver deep           |          235,122 / 500,000 |                        9 / 100 |                 2,519 / 10,000 |              5,000 / 5,000 | none; full scans are accepted                  |
+| Ruling Authority first  |             2,382 / 30,000 |                      0 / 5,000 |                 4,994 / 30,000 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Ruling Authority middle |          127,620 / 500,000 |                        0 / 100 |                 2,009 / 10,000 |              2,500 / 5,000 | `coin_ruling_authorities_authority_coin_index` |
+| Ruling Authority deep   |          130,120 / 500,000 |                        0 / 100 |                 2,009 / 10,000 |              5,000 / 5,000 | `coin_ruling_authorities_authority_coin_index` |
+| Issue Period first      |                405 / 1,000 |                       99 / 500 |                       16 / 500 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Issue Period middle     |           75,105 / 150,000 |                24,999 / 75,000 |                    926 / 5,000 |                      0 / 0 | `coins_created_at_id_index`                    |
+| Issue Period deep       |          150,105 / 300,000 |               49,999 / 150,000 |                 1,839 / 10,000 |                      0 / 0 | `coins_created_at_id_index`                    |
 
 The margins are generally about 1.7–5 times measured row work and at least 3
 times measured buffer work. Smaller scenarios have minimum floors to tolerate
@@ -88,9 +91,12 @@ in the same commit. Do not raise a bound solely to make a failing gate pass.
   ascending tie-breaker observable.
 - 50,000 Obverse surfaces and Engraver credits distributed evenly across 10
   Engravers; the measured Engraver therefore matches 5,000 Coins.
+- 50,000 contextual Ruling Authority attributions distributed evenly across 10
+  global authorities; the measured authority therefore matches 5,000 Coins.
 - Page size 100, the public API hard maximum.
 - First, middle, and deepest non-empty pages for unfiltered, Issuer-filtered,
-  Engraver-filtered, and Issue Period overlap requests.
+  Engraver-filtered, Ruling-Authority-filtered, and Issue Period overlap
+  requests.
 
 The public API assertions check status, exact `page`, `pageSize`, `totalItems`,
 and `totalPages`, exactly 100 Coins, and the complete known sequence of 100 Coin
@@ -104,20 +110,23 @@ plans and catch order-of-magnitude regressions, not production latency targets.
 The page-plan time excludes the exact-count query; API time includes the count,
 page rows, page Surface images, serialization, and in-process HTTP handling.
 
-| Path       |  Page | Baseline plan ms | Final plan ms | Baseline API ms | Final API ms |
-| ---------- | ----: | ---------------: | ------------: | --------------: | -----------: |
-| Unfiltered |     1 |           52.515 |         0.111 |          75.058 |       31.145 |
-| Unfiltered |   500 |           76.086 |        21.614 |          61.931 |       23.394 |
-| Unfiltered | 1,000 |           80.584 |        41.306 |          89.740 |       32.514 |
-| Issuer     |     1 |           13.983 |         0.093 |          30.266 |        9.310 |
-| Issuer     |    50 |           30.966 |         6.322 |          32.400 |       22.596 |
-| Issuer     |   100 |           43.706 |         6.108 |          38.668 |       12.158 |
-| Engraver   |     1 |           30.570 |         4.003 |          54.184 |       27.131 |
-| Engraver   |    25 |           33.721 |        34.755 |          44.069 |       43.459 |
-| Engraver   |    50 |           36.123 |        34.857 |          56.175 |       41.513 |
-| Year range |     1 |                — |         0.100 |               — |       14.560 |
-| Year range |   250 |                — |        13.237 |               — |       22.315 |
-| Year range |   500 |                — |        25.716 |               — |       29.836 |
+| Path             |  Page | Baseline plan ms | Final plan ms | Baseline API ms | Final API ms |
+| ---------------- | ----: | ---------------: | ------------: | --------------: | -----------: |
+| Unfiltered       |     1 |           52.515 |         0.111 |          75.058 |       31.145 |
+| Unfiltered       |   500 |           76.086 |        21.614 |          61.931 |       23.394 |
+| Unfiltered       | 1,000 |           80.584 |        41.306 |          89.740 |       32.514 |
+| Issuer           |     1 |           13.983 |         0.093 |          30.266 |        9.310 |
+| Issuer           |    50 |           30.966 |         6.322 |          32.400 |       22.596 |
+| Issuer           |   100 |           43.706 |         6.108 |          38.668 |       12.158 |
+| Engraver         |     1 |           30.570 |         4.003 |          54.184 |       27.131 |
+| Engraver         |    25 |           33.721 |        34.755 |          44.069 |       43.459 |
+| Engraver         |    50 |           36.123 |        34.857 |          56.175 |       41.513 |
+| Ruling Authority |     1 |                — |         1.790 |               — |       18.427 |
+| Ruling Authority |    25 |                — |        17.764 |               — |       23.596 |
+| Ruling Authority |    50 |                — |        19.665 |               — |       25.360 |
+| Year range       |     1 |                — |         0.100 |               — |       14.560 |
+| Year range       |   250 |                — |        13.237 |               — |       22.315 |
+| Year range       |   500 |                — |        25.716 |               — |       29.836 |
 
 The final plan shapes were:
 
@@ -128,6 +137,9 @@ The final plan shapes were:
   for the middle and deep pages.
 - Engraver pages: ordered Coin index plus nested semi-joins on the first page;
   hash joins and an in-memory sort for middle and deep pages.
+- Ruling Authority pages: ordered Coin and attribution indexes on the first
+  page; the authority-to-Coin index plus hash joins and an in-memory sort for
+  middle and deep pages.
 - Year-range pages: ordered `coins_created_at_id_index` scans for first, middle,
   and deep pages, with the inclusive Issue Period overlap applied as a filter.
 

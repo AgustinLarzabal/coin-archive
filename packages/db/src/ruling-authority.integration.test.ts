@@ -29,6 +29,138 @@ beforeEach(async () => {
 })
 
 describe("Ruling Authority persistence", () => {
+  it("lists global authorities by name then Slug", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await database.orm.insert(database.schema.rulingAuthorities).values([
+        { slug: "shared-b", name: "Shared" },
+        { slug: "alpha", name: "Alpha" },
+        { slug: "shared-a", name: "Shared" },
+      ])
+
+      await expect(database.listRulingAuthorities()).resolves.toEqual([
+        expect.objectContaining({ slug: "alpha", name: "Alpha" }),
+        expect.objectContaining({ slug: "shared-a", name: "Shared" }),
+        expect.objectContaining({ slug: "shared-b", name: "Shared" }),
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("filters Coins once by exact authority and composes with every filter and pagination", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [issuer] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ name: "Roman Empire", code: "ROMAN" })
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({ slug: "selected-engraver", fullName: "Selected Engraver" })
+        .returning()
+      const [selectedAuthority, otherAuthority] = await database.orm
+        .insert(database.schema.rulingAuthorities)
+        .values([
+          { slug: "selected-authority", name: "Selected Authority" },
+          { slug: "other-authority", name: "Other Authority" },
+        ])
+        .returning()
+      const coins = await database.orm
+        .insert(database.schema.coins)
+        .values([
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            title: "First match",
+            issuerId: issuer.id,
+            firstIssueYear: -30,
+            lastIssueYear: 1,
+            createdAt: new Date("2026-01-02T00:00:00.000Z"),
+          },
+          {
+            id: "00000000-0000-4000-8000-000000000002",
+            title: "Second match",
+            issuerId: issuer.id,
+            firstIssueYear: -25,
+            lastIssueYear: 19,
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          },
+          {
+            id: "00000000-0000-4000-8000-000000000003",
+            title: "Other authority",
+            issuerId: issuer.id,
+            firstIssueYear: -25,
+            lastIssueYear: 19,
+          },
+        ])
+        .returning()
+      const surfaces = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values(
+          coins.map((coin) => ({
+            coinId: coin.id,
+            kind: "obverse" as const,
+            description: "Portrait",
+          }))
+        )
+        .returning()
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values(
+        surfaces.map((surface) => ({
+          coinSurfaceId: surface.id,
+          engraverId: engraver.id,
+          position: 1,
+        }))
+      )
+      await database.orm
+        .insert(database.schema.coinRulingAuthorityAttributions)
+        .values([
+          {
+            coinId: coins[0].id,
+            rulingAuthorityId: selectedAuthority.id,
+            role: "Emperor",
+            position: 1,
+          },
+          {
+            coinId: coins[0].id,
+            rulingAuthorityId: selectedAuthority.id,
+            role: "Augustus",
+            position: 2,
+          },
+          {
+            coinId: coins[1].id,
+            rulingAuthorityId: selectedAuthority.id,
+            role: "Emperor",
+            position: 1,
+          },
+          {
+            coinId: coins[2].id,
+            rulingAuthorityId: otherAuthority.id,
+            role: "Emperor",
+            position: 1,
+          },
+        ])
+
+      await expect(
+        database.listCoins({
+          issuerCode: "ROMAN",
+          rulingAuthoritySlug: "selected-authority",
+          engraverSlug: "selected-engraver",
+          issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
+          page: 2,
+          pageSize: 1,
+        })
+      ).resolves.toEqual({
+        coins: [expect.objectContaining({ id: coins[1].id })],
+        totalItems: 2,
+      })
+      await expect(
+        database.listCoins({ rulingAuthoritySlug: "missing-authority" })
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("requires stable unique Slugs while allowing duplicate names", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

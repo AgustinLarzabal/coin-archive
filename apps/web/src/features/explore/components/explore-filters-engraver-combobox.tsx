@@ -14,6 +14,7 @@ type EngraverComboboxProps = {
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
   issuerCode?: string
+  rulerSlug?: string
   year?: CoinListYear
 }
 
@@ -27,6 +28,7 @@ export function EngraverCombobox({
   engraverSlug,
   engravers,
   issuerCode,
+  rulerSlug,
   year,
 }: EngraverComboboxProps) {
   const navigate = useNavigate({ from: "/" })
@@ -71,6 +73,7 @@ export function EngraverCombobox({
           search: {
             engraver: nextEngraverSlug,
             issuer: issuerCode,
+            ruler: rulerSlug,
             year,
           },
         })

@@ -8,8 +8,11 @@ import {
   EngraverListRequestError,
   InvalidEngraverListResponseError,
   InvalidIssuerListResponseError,
+  InvalidRulingAuthorityListResponseError,
   issuerListQueryOptions,
   IssuerListRequestError,
+  rulingAuthorityListQueryOptions,
+  RulingAuthorityListRequestError,
 } from "@/data/archive"
 import { ExploreFilters } from "@/features/explore/components/explore-filters"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
@@ -20,6 +23,7 @@ export const Route = createFileRoute("/_explore")({
     await Promise.all([
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
+      context.queryClient.query(rulingAuthorityListQueryOptions()),
     ])
   },
   component: ExploreLayout,
@@ -28,9 +32,17 @@ export const Route = createFileRoute("/_explore")({
 })
 
 function ExploreLayout() {
-  const { engraver: engraverSlug, issuer: issuerCode, year } = Route.useSearch()
+  const {
+    engraver: engraverSlug,
+    issuer: issuerCode,
+    ruler: rulerSlug,
+    year,
+  } = Route.useSearch()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
+  const { data: rulerList } = useSuspenseQuery(
+    rulingAuthorityListQueryOptions()
+  )
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
@@ -39,6 +51,8 @@ function ExploreLayout() {
         engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
+        rulerSlug={rulerSlug}
+        rulers={rulerList.rulers}
         year={year}
       />
       <Outlet />
@@ -65,6 +79,14 @@ function getExploreLayoutErrorMessage(error: unknown) {
 
   if (error instanceof IssuerListRequestError) {
     return "Unable to load issuers"
+  }
+
+  if (error instanceof InvalidRulingAuthorityListResponseError) {
+    return "Invalid Ruling Authority list response"
+  }
+
+  if (error instanceof RulingAuthorityListRequestError) {
+    return "Unable to load Ruling Authorities"
   }
 
   return "Unable to load Explore filters"

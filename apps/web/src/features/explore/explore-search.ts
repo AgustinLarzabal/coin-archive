@@ -6,6 +6,7 @@ import {
   coinListYearSchema,
   engraverSlugSchema,
   issuerCodeSchema,
+  rulingAuthoritySlugSchema,
 } from "@workspace/api"
 import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
@@ -17,6 +18,7 @@ export const exploreSearchSchema = z.object({
     .union([coinListPageSchema, coinListPageQuerySchema])
     .optional()
     .catch(undefined),
+  ruler: rulingAuthoritySlugSchema.optional().catch(undefined),
   year: z
     .union([coinListYearSchema, coinListYearQuerySchema])
     .optional()
@@ -33,5 +35,6 @@ export function getExploreCoinListFilters(
     issuerCode: search.issuer,
     issueYear: search.year,
     page: search.page ?? COIN_LIST_DEFAULT_PAGE,
+    rulingAuthoritySlug: search.ruler,
   }
 }

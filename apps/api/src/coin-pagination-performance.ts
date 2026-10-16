@@ -24,6 +24,7 @@ interface PageScenario {
   filter:
     | { kind: "engraver"; slug: string }
     | { code: string; kind: "issuer" }
+    | { kind: "ruler"; slug: string }
     | { kind: "year"; year: string }
     | { kind: "none" }
   label: string
@@ -243,6 +244,48 @@ const scenarios: Array<PageScenario> = [
   },
   {
     expectedFirstId: 1,
+    expectedIdStep: 20,
+    expectedTotalItems: 5_000,
+    filter: { kind: "ruler", slug: "performance-authority-1" },
+    label: "ruler-first",
+    page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 30_000,
+      maxRowsRemovedByFilter: 5_000,
+      maxSharedBlocks: 30_000,
+    }),
+  },
+  {
+    expectedFirstId: 48_001,
+    expectedIdStep: 20,
+    expectedTotalItems: 5_000,
+    filter: { kind: "ruler", slug: "performance-authority-1" },
+    label: "ruler-middle",
+    page: 25,
+    planExpectation: sortedPlanExpectation({
+      maxPlanRows: 500_000,
+      maxSharedBlocks: 10_000,
+      maxSortRows: 5_000,
+      requiredIndexes: ["coin_ruling_authorities_authority_coin_index"],
+    }),
+  },
+  {
+    expectedFirstId: 98_001,
+    expectedIdStep: 20,
+    expectedTotalItems: 5_000,
+    filter: { kind: "ruler", slug: "performance-authority-1" },
+    label: "ruler-deep",
+    page: 50,
+    planExpectation: sortedPlanExpectation({
+      maxPlanRows: 500_000,
+      maxSharedBlocks: 10_000,
+      maxSortRows: 5_000,
+      requiredIndexes: ["coin_ruling_authorities_authority_coin_index"],
+    }),
+  },
+  {
+    expectedFirstId: 1,
     expectedIdStep: 2,
     expectedTotalItems: 50_000,
     filter: { kind: "year", year: "1986-1990" },
@@ -296,6 +339,9 @@ function requestPath(scenario: PageScenario) {
   if (scenario.filter.kind === "engraver") {
     query.set("engraver", scenario.filter.slug)
   }
+  if (scenario.filter.kind === "ruler") {
+    query.set("ruler", scenario.filter.slug)
+  }
   if (scenario.filter.kind === "year") {
     query.set("year", scenario.filter.year)
   }
@@ -306,7 +352,7 @@ async function seedDataset(
   client: ReturnType<typeof createDatabase>["orm"]["$client"]
 ) {
   await client.query(`
-    truncate coin_surface_engravers, coin_surfaces, engravers, coins, issuers cascade;
+    truncate coin_ruling_authorities, ruling_authorities, coin_surface_engravers, coin_surfaces, engravers, coins, issuers cascade;
 
     insert into issuers (id, name, code)
     select
@@ -347,6 +393,26 @@ async function seedDataset(
       timestamptz '2026-01-01 00:00:00+00'
     from generate_series(1, ${COIN_COUNT}, 2) as g;
 
+    insert into ruling_authorities (id, slug, name)
+    select
+      ('40000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
+      'performance-authority-' || g,
+      'Performance Authority ' || g
+    from generate_series(1, 10) as g;
+
+    insert into coin_ruling_authorities (
+      coin_id, ruling_authority_id, role, position
+    )
+    select
+      ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
+      (
+        '40000000-0000-4000-8000-' ||
+        lpad(((((g - 1) / 2) % 10) + 1)::text, 12, '0')
+      )::uuid,
+      'Performance Role',
+      1
+    from generate_series(1, ${COIN_COUNT}, 2) as g;
+
     insert into coin_surface_engravers (
       coin_surface_id, engraver_id, position, created_at, updated_at
     )
@@ -380,6 +446,7 @@ async function main() {
       listCoins: database.listCoins,
       listEngravers: database.listEngravers,
       listIssuers: database.listIssuers,
+      listRulingAuthorities: database.listRulingAuthorities,
       log: () => undefined,
     })
 
@@ -453,6 +520,8 @@ async function main() {
             engraverCredits: 50_000,
             engravers: 10,
             issuers: 10,
+            rulingAuthorities: 10,
+            rulingAuthorityAttributions: 50_000,
             pageSize: PAGE_SIZE,
             surfaces: 50_000,
           },

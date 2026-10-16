@@ -2035,6 +2035,7 @@ describe("Coin seed", () => {
         { name: "Andorra", code: "AD" },
         { name: "Austria", code: "AT" },
         { name: "Belgium", code: "BE" },
+        { name: "Croatia", code: "HR" },
         { name: "Cyprus", code: "CY" },
         { name: "Estonia", code: "EE" },
         { name: "Finland", code: "FI" },
@@ -2073,19 +2074,25 @@ describe("Coin seed", () => {
         page: 5,
         pageSize: 100,
       })
+      const sixthSeededCoinPage = await database.listCoins({
+        page: 6,
+        pageSize: 100,
+      })
       const seededCoins = [
         ...firstSeededCoinPage.coins,
         ...secondSeededCoinPage.coins,
         ...thirdSeededCoinPage.coins,
         ...fourthSeededCoinPage.coins,
         ...fifthSeededCoinPage.coins,
+        ...sixthSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(480)
-      expect(firstSeededCoinPage.totalItems).toBe(480)
-      expect(secondSeededCoinPage.totalItems).toBe(480)
-      expect(thirdSeededCoinPage.totalItems).toBe(480)
-      expect(fourthSeededCoinPage.totalItems).toBe(480)
-      expect(fifthSeededCoinPage.totalItems).toBe(480)
+      expect(seededCoins).toHaveLength(516)
+      expect(firstSeededCoinPage.totalItems).toBe(516)
+      expect(secondSeededCoinPage.totalItems).toBe(516)
+      expect(thirdSeededCoinPage.totalItems).toBe(516)
+      expect(fourthSeededCoinPage.totalItems).toBe(516)
+      expect(fifthSeededCoinPage.totalItems).toBe(516)
+      expect(sixthSeededCoinPage.totalItems).toBe(516)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -2200,6 +2207,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2022 && lastIssueYear === 2022
         )
       ).toHaveLength(49)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2023 && lastIssueYear === 2023
+        )
+      ).toHaveLength(36)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

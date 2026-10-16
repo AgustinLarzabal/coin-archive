@@ -2065,15 +2065,21 @@ describe("Coin seed", () => {
         page: 3,
         pageSize: 100,
       })
+      const fourthSeededCoinPage = await database.listCoins({
+        page: 4,
+        pageSize: 100,
+      })
       const seededCoins = [
         ...firstSeededCoinPage.coins,
         ...secondSeededCoinPage.coins,
         ...thirdSeededCoinPage.coins,
+        ...fourthSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(295)
-      expect(firstSeededCoinPage.totalItems).toBe(295)
-      expect(secondSeededCoinPage.totalItems).toBe(295)
-      expect(thirdSeededCoinPage.totalItems).toBe(295)
+      expect(seededCoins).toHaveLength(331)
+      expect(firstSeededCoinPage.totalItems).toBe(331)
+      expect(secondSeededCoinPage.totalItems).toBe(331)
+      expect(thirdSeededCoinPage.totalItems).toBe(331)
+      expect(fourthSeededCoinPage.totalItems).toBe(331)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -2158,6 +2164,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2017 && lastIssueYear === 2017
         )
       ).toHaveLength(32)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2018 && lastIssueYear === 2018
+        )
+      ).toHaveLength(36)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

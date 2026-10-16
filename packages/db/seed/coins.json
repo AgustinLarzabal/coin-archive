@@ -2972,5 +2972,365 @@
     "obverse": {
       "description": "The façade of St Mark's Basilica in Venice appears with the city's and basilica's names, the years 1617 and 2017, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000128",
+    "title": "70th Anniversary of the Universal Declaration of Human Rights",
+    "issuerCode": "AD",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Seven staircases representing Andorra's parishes form mountains and the branches of a tree whose thirty leaves represent the declaration's articles, accompanied by a 70th-anniversary inscription, Andorra's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000129",
+    "title": "Maltese Cultural Heritage",
+    "issuerCode": "MT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A student-designed composition combines prehistoric temples, a church dome and spire, and a traditional Maltese boat carrying the national flag, accompanied by Malta's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012a",
+    "title": "Finnish Sauna Culture",
+    "issuerCode": "FI",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A traditional lakeside sauna appears within a Finnish landscape, accompanied by Finland's country code, the year 2018, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012b",
+    "title": "50th Anniversary of the ESRO 2B Satellite",
+    "issuerCode": "BE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The ESRO 2B satellite, later named IRIS, orbits Earth, accompanied by Belgium's country code, the Utrecht mint mark, the mint master's mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012c",
+    "title": "50th Anniversary of the Death of Padre Pio",
+    "issuerCode": "VA",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A right-facing portrait of Padre Pio appears with his name, Vatican City's name, the years 1968 and 2018, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012d",
+    "title": "75th Anniversary of the Death of Kostis Palamas",
+    "issuerCode": "GR",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A portrait of Greek poet Kostis Palamas appears with his name and the Hellenic Republic inscription in Greek, the year 2018, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012e",
+    "title": "70th Anniversary of the Union of the Dodecanese with Greece",
+    "issuerCode": "GR",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A rose inspired by an ancient coin of Rhodes appears over stylised waves, accompanied by a Dodecanese union inscription and the Hellenic Republic inscription in Greek, the years 1948–2018, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000012f",
+    "title": "Zemgale",
+    "issuerCode": "LV",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The coat of arms of the Latvian region of Zemgale appears with Latvia's name, the region's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000130",
+    "title": "175th Anniversary of the Death of Grand Duke William I",
+    "issuerCode": "LU",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Portraits of Grand Dukes Henri and William I appear with William I's name and the dates 1772–1843, accompanied by Luxembourg's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000131",
+    "title": "420th Anniversary of the Birth of Gian Lorenzo Bernini",
+    "issuerCode": "SM",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A detail from Bernini's Bust of Costanza Bonarelli appears with Bernini's name, the years 1598–2018, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000132",
+    "title": "Mnajdra Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The prehistoric Mnajdra temple complex appears with its name, the dates 3600–2500 BC, Malta's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000133",
+    "title": "250th Anniversary of the Ajuda Botanical Garden",
+    "issuerCode": "PT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "An ancient Dracaena tree symbolises the Ajuda Botanical Garden, accompanied by a 250th-anniversary inscription, Portugal's name, the year 2018, the artist's initials, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000134",
+    "title": "250th Anniversary of the Birth of François-Joseph Bosio",
+    "issuerCode": "MC",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A portrait of sculptor François-Joseph Bosio appears before one of his statues, accompanied by his name, the years 1768 and 2018, Monaco's name, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000135",
+    "title": "250th Anniversary of the National Printing Office",
+    "issuerCode": "PT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A bicentenary inscription is arranged like books on library shelves, accompanied by the years 1768–2018, Portugal's name, the artist's name, the mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000136",
+    "title": "50th Anniversary of the May 1968 Events in Belgium",
+    "issuerCode": "BE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Students holding a pamphlet and flag stand before an auditorium, recalling Belgium's May 1968 demonstrations, accompanied by Belgium's country code, the year 2018, mint marks, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000137",
+    "title": "Simone Veil",
+    "issuerCode": "FR",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A portrait of Simone Veil appears before the European Parliament with her Auschwitz registration number on her collar, accompanied by her name, significant dates, France's country code, the year 2018, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000138",
+    "title": "European Year of Cultural Heritage — The Laocoön Group",
+    "issuerCode": "VA",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The sculpture Laocoön and His Sons represents the European Year of Cultural Heritage, accompanied by Vatican City's name, the year 2018, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000139",
+    "title": "500th Anniversary of the Birth of Tintoretto",
+    "issuerCode": "SM",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The embrace between Mary and Elizabeth from Tintoretto's The Visitation appears with the painter's name, the years 1518–2018, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013a",
+    "title": "Koli National Landscape",
+    "issuerCode": "FI",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A view from the summit of Finland's Koli national landscape appears with Finland's country code, the year 2018, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013b",
+    "title": "Lithuanian Song and Dance Celebration",
+    "issuerCode": "LT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Stylised people and birds inspired by Lithuanian paper cuttings symbolise folk dance and song, accompanied by Lithuania's name, the year 2018, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013c",
+    "title": "World Bee Day",
+    "issuerCode": "SI",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A honeycomb forms a globe showing the Eastern Hemisphere, accompanied by a World Bee Day inscription, Slovenia's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013d",
+    "title": "60th Anniversary of the Italian Ministry of Health",
+    "issuerCode": "IT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "An allegorical figure of Health appears with symbols of environment, research, nutrition, and medicine, accompanied by the ministry's name, the years 1958–2018, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013e",
+    "title": "50th Birthday of King Felipe VI",
+    "issuerCode": "ES",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "King Felipe VI's coat of arms appears with Spain's name, a 50th-anniversary inscription, the year 2018, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000013f",
+    "title": "Santiago de Compostela",
+    "issuerCode": "ES",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The sculpture of Saint James from the Holy Door of Santiago de Compostela Cathedral represents the city in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2018, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000140",
+    "title": "25th Anniversary of the Constitution of Andorra",
+    "issuerCode": "AD",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The Monument to the Men and Women of Andorra Who Launched the Constitution appears beside a map bearing the state motto, accompanied by a 25th-anniversary inscription, the years 1993–2018, Andorra's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000141",
+    "title": "100th Anniversary of the Baltic States",
+    "issuerCode": "LT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A braid symbolises the shared past, present, and future of Estonia, Latvia, and Lithuania, accompanied by a centenary numeral, the three states' heraldic signs, Lithuania's name, the year 2018, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000142",
+    "title": "100th Anniversary of the Baltic States",
+    "issuerCode": "LV",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A braid symbolises the shared past, present, and future of Estonia, Latvia, and Lithuania, accompanied by a centenary numeral, the three states' heraldic signs, Latvia's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000143",
+    "title": "100th Anniversary of the Baltic States",
+    "issuerCode": "EE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A braid symbolises the shared past, present, and future of Estonia, Latvia, and Lithuania, accompanied by a centenary numeral, the three states' heraldic signs, Estonia's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000144",
+    "title": "100th Anniversary of Estonian Independence",
+    "issuerCode": "EE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The numerals 18 and 100 merge to evoke Estonia's independence and its first century, accompanied by a centenary inscription, Estonia's name, the year 2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000145",
+    "title": "100th Anniversary of the Birth of Helmut Schmidt",
+    "issuerCode": "DE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Helmut Schmidt appears in a characteristic conversational pose, accompanied by his name, the years 1918–2015, Germany's country code, the year 2018, a German mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000146",
+    "title": "Bleuet de France",
+    "issuerCode": "FR",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A cornflower symbolises remembrance and solidarity with veterans and victims of war and terrorism, accompanied by the Bleuet de France inscription, the years 1918–2018, France's country code, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000147",
+    "title": "70th Anniversary of the Italian Constitution",
+    "issuerCode": "IT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Enrico De Nicola signs the act promulgating Italy's Constitution beside Alcide De Gasperi and Umberto Terracini, accompanied by constitutional inscriptions, the years 1948 and 2018, the Italian Republic monogram, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000148",
+    "title": "25th Anniversary of the Slovak Republic",
+    "issuerCode": "SK",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "A portal arches over a map of Slovakia and a euro symbol to represent the country's European integration, accompanied by Slovakia's coat of arms and name, the establishment date, the year 2018, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000149",
+    "title": "150th Anniversary of the Constitution of Luxembourg",
+    "issuerCode": "LU",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside an open booklet and the Luxembourg Constitution inscription, accompanied by a 150th-anniversary inscription, the years 1868–2018, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014a",
+    "title": "Berlin",
+    "issuerCode": "DE",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The main building of Charlottenburg Palace represents Berlin in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2018, a German mint mark, the engraver's mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014b",
+    "title": "100th Anniversary of the Republic of Austria",
+    "issuerCode": "AT",
+    "firstIssueYear": 2018,
+    "lastIssueYear": 2018,
+    "obverse": {
+      "description": "The statue of Pallas Athena stands before the Austrian Parliament in Vienna, accompanied by Austria's name, a 100-years inscription, the year 2018, and twelve stars."
+    }
   }
 ]

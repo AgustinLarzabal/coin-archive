@@ -3332,5 +3332,325 @@
     "obverse": {
       "description": "The statue of Pallas Athena stands before the Austrian Parliament in Vienna, accompanied by Austria's name, a 100-years inscription, the year 2018, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014c",
+    "title": "600th Anniversary of the Council of the Land",
+    "issuerCode": "AD",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The entrance of Casa de la Vall appears with Andorra's coat of arms and groups of faces symbolising social cohesion, accompanied by a Council of the Land anniversary inscription, the years 1419 and 2019, Andorra's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014d",
+    "title": "100th Anniversary of the Estonian-Language University of Tartu",
+    "issuerCode": "EE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The main building of the University of Tartu appears with inscriptions marking its centenary as an Estonian-language university and its Latin name, accompanied by the year 1632, Estonia's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014e",
+    "title": "100th Anniversary of the University of Ljubljana",
+    "issuerCode": "SI",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The University of Ljubljana's logo incorporates a centenary inscription in place of the university façade, accompanied by Slovenia's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000014f",
+    "title": "Sutartinės",
+    "issuerCode": "LT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Linear motifs expand and contract into a swirl of geometric and natural figures, symbolising the polyphonic melodies of Lithuanian multipart songs, accompanied by Lithuania's name, the Sutartinės inscription, the year 2019, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000150",
+    "title": "Samogitia",
+    "issuerCode": "LT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Samogitia's crowned shield bears a collared bear and is supported by an armoured soldier and a goddess with an anchor, accompanied by the Latin motto Patria Una, Lithuania's and Samogitia's names, the year 2019, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000151",
+    "title": "600th Anniversary of the Discovery of Madeira and Porto Santo",
+    "issuerCode": "PT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The Madeira archipelago and Porto Santo appear with an inscription marking 600 years since their discovery, accompanied by Portugal's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000152",
+    "title": "500th Anniversary of Magellan's Circumnavigation",
+    "issuerCode": "PT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of Ferdinand Magellan appears with a circumnavigation inscription, his name and the year 1519, accompanied by Portugal's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000153",
+    "title": "Nature and Environment",
+    "issuerCode": "MT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A student-designed fruit tree and stylised sun represent nature and the environment, accompanied by Malta's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000154",
+    "title": "25th Anniversary of the Completion of the Sistine Chapel Restoration",
+    "issuerCode": "VA",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The Last Judgment in the Sistine Chapel appears with an inscription marking the completion of its restoration, the years 1994–2019, Vatican City's name, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000155",
+    "title": "30th Anniversary of the Fall of the Berlin Wall",
+    "issuerCode": "FR",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The opened Berlin Wall allows doves and a jubilant crowd to pass before the Brandenburg Gate, accompanied by a bilingual 30th-anniversary inscription, France's country code, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000156",
+    "title": "30th Anniversary of the Fall of the Berlin Wall",
+    "issuerCode": "DE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The opened Berlin Wall allows doves and a jubilant crowd to pass before the Brandenburg Gate, accompanied by a German 30th-anniversary inscription, Germany's country code, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000157",
+    "title": "100th Anniversary of the Constitution Act of Finland",
+    "issuerCode": "FI",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Three circular fields meet at the centre to represent the legislative, executive, and judicial branches of government, accompanied by Finland's country code, the year 2019, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000158",
+    "title": "100th Anniversary of Universal Suffrage in Luxembourg",
+    "issuerCode": "LU",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside a hand placing a ballot into a box, accompanied by a universal-suffrage centenary inscription, the years 1919–2019, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000159",
+    "title": "The Rising Sun",
+    "issuerCode": "LV",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A rising sun from Ansis Cīrulis's early proposal for Latvia's coat of arms contains stylised initials for Free Latvia, accompanied by the Rising Sun inscription, Latvia's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015a",
+    "title": "550th Anniversary of the Death of Filippo Lippi",
+    "issuerCode": "SM",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The Madonna and Child from Filippo Lippi's Madonna and Child with Two Angels appears with his name, the years 1469 and 2019, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015b",
+    "title": "Ta' Ħaġrat Temples",
+    "issuerCode": "MT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The monumental doorway of the prehistoric Ta' Ħaġrat temple complex appears with the site's name, the dates 3600–3000 BC, Malta's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015c",
+    "title": "150th Anniversary of the Estonian Song Festival",
+    "issuerCode": "EE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A wave-like Song Celebration procession combines music, national dress, and festival venues with the opening notes of Estonia's anthem, accompanied by a 150th-anniversary inscription, Estonia's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015d",
+    "title": "150th Anniversary of the Death of Andreas Kalvos",
+    "issuerCode": "GR",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of Greek poet Andreas Kalvos appears with his name and the dates 1792–1869, the Hellenic Republic inscription in Greek, the year 2019, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015e",
+    "title": "100th Anniversary of the Birth of Manolis Andronicos",
+    "issuerCode": "GR",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of archaeologist Manolis Andronicos appears with his name and the dates 1919–1992, the Hellenic Republic inscription in Greek, the year 2019, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000015f",
+    "title": "200th Anniversary of the Accession of Prince Honoré V",
+    "issuerCode": "MC",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of Prince Honoré V appears with his name, Monaco's name, an accession inscription, the years 1819 and 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000160",
+    "title": "60th Anniversary of Asterix",
+    "issuerCode": "FR",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Asterix appears in profile wearing his winged helmet and surrounded by laurels and Roman inscriptions, accompanied by his name, France's country code, the year 2019, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000161",
+    "title": "100th Anniversary of the Death of Milan Rastislav Štefánik",
+    "issuerCode": "SK",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of Milan Rastislav Štefánik appears with his name, the years 1880 and 1919, Slovakia's name, the year 2019, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000162",
+    "title": "500th Anniversary of the Death of Leonardo da Vinci",
+    "issuerCode": "SM",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The angel painted by Leonardo da Vinci in The Baptism of Christ appears with Leonardo's name, the years 1519 and 2019, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000163",
+    "title": "2019 Alpine Skiing World Cup Finals",
+    "issuerCode": "AD",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A skier descends a slope before curved lines from the competition's logo and snowflakes, accompanied by the Andorra 2019 Alpine Skiing World Cup Finals inscription and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000164",
+    "title": "90th Anniversary of Vatican City State",
+    "issuerCode": "VA",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Pope Pius XI appears with the Lateran Palace, accompanied by Vatican City's name, the years 1929 and 2019, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000165",
+    "title": "Old Town of Ávila and Its Churches Outside the Walls",
+    "issuerCode": "ES",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A detail of Ávila's medieval walls represents the old town and its churches in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2019, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000166",
+    "title": "100th Anniversary of the First Dáil Éireann",
+    "issuerCode": "IE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The Round Room of Dublin's Mansion House arches over the first sitting of Dáil Éireann, accompanied by the First Dáil inscription in uncial lettering, the year 1919, Ireland's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000167",
+    "title": "70th Anniversary of the Bundesrat",
+    "issuerCode": "DE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "The Bundesrat building appears with the institution's name, Germany's country code, the year 2019, a German mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000168",
+    "title": "500th Anniversary of the Death of Leonardo da Vinci",
+    "issuerCode": "IT",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A detail from Leonardo da Vinci's Lady with an Ermine appears with Leonardo's name, the years 1519–2019, the Italian Republic monogram, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000169",
+    "title": "100th Anniversary of the Accession of Grand Duchess Charlotte",
+    "issuerCode": "LU",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "Portraits of Grand Duke Henri and Grand Duchess Charlotte appear with an accession-centenary inscription, Luxembourg's name, the year 2019, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016a",
+    "title": "450th Anniversary of the Death of Pieter Bruegel the Elder",
+    "issuerCode": "BE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of Pieter Bruegel the Elder appears beside a painting on an easel, accompanied by his name, the years 1569 and 2019, Belgium's country code, mint marks, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-00000000016b",
+    "title": "25th Anniversary of the European Monetary Institute",
+    "issuerCode": "BE",
+    "firstIssueYear": 2019,
+    "lastIssueYear": 2019,
+    "obverse": {
+      "description": "A portrait of the institute's first president, Alexandre Lamfalussy, appears beside its initials and coins marked with the euro, ECU, and Belgian franc, accompanied by the years 1994 and 2019, Belgium's country code, mint and designer marks, and twelve stars."
+    }
   }
 ]

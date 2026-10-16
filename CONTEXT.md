@@ -36,6 +36,22 @@ _Avoid_: Country, Mint, Manufacturer
 A unique, uppercase public identifier for an Issuer. Genuine ISO 3166-1 alpha-2 values contain exactly two ASCII letters; Archive-defined values contain 3–12 ASCII letters, digits, or hyphens.
 _Avoid_: Country Code, ISO Code
 
+**Ruling Authority**:
+A canonical person, dynasty, regime, or named political period to which a Coin's issuance is attributed. A Coin may have any number of Ruling Authorities; a Ruling Authority is distinct from both its Issuer and its Issue Period and may be shared by Coins from multiple Issuers.
+_Avoid_: Issuer, Reign, Ruler person
+
+**Ruling Authority Slug**:
+A unique, lowercase public identifier for a Ruling Authority. It contains 3–64 ASCII letters or digits, optionally separated by single hyphens, and remains stable independently of the Ruling Authority's display name.
+_Avoid_: Ruling Authority ID, Ruler ID
+
+**Ruling Authority Role**:
+A required, curated display label describing how a Ruling Authority applies to a particular Coin, such as Pope, King, Grand Duke, or Period. It belongs to the Coin's attribution rather than permanently classifying the Ruling Authority.
+_Avoid_: Ruling Authority Type, Rank
+
+**Ruling Authority Tenure Label**:
+An optional, curated description of when a Ruling Authority held the role attributed to a Coin. It is presentation text that may express open-ended, approximate, or discontinuous tenure and is independent of the Coin's Issue Period.
+_Avoid_: Issue Period, Reign Dates
+
 **Coin Surface**:
 One of a Coin's three catalogueable surfaces: its Obverse, Reverse, or Edge. Each Coin Surface may have its own description and image; only the Obverse and Reverse may have Engraver credits.
 _Avoid_: Side

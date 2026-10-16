@@ -40,6 +40,14 @@ The web application runs on port 3000 and the standalone API runs on port 3001. 
 package directly. See [ADR 0001](docs/adr/0001-standalone-api-boundary.md)
 for the boundary between client runtimes, the API, and persistence.
 
+Local development defaults to `http://localhost:3001` when
+`VITE_API_BASE_URL` is absent. Production builds require an explicit HTTP(S)
+API origin, for example:
+
+```bash
+VITE_API_BASE_URL=https://api.example.com pnpm --filter web build
+```
+
 To run the same local processes while the API connects to the personal Neon
 Staging Database, follow the [Neon staging workflow](docs/neon-staging.md) and
 use `pnpm dev:staging`.

@@ -19,11 +19,65 @@ Then run:
 
 ```bash
 DATABASE_URL=postgresql://coin_archive_test@127.0.0.1:5433/coin_archive_performance \
-  pnpm performance:coin-pagination
+  pnpm performance:coin-pagination:gate
 ```
 
 The harness truncates and rebuilds its dataset on each run. It refuses to run
 unless the database name is exactly `coin_archive_performance`.
+`performance:coin-pagination` remains an equivalent compatibility command.
+
+## Gate behavior
+
+The command prints the complete measurement JSON and a pass summary when all 12
+scenarios satisfy their bounds. On failure it still prints the measurements,
+then reports each scenario, metric, actual value, and bound before exiting
+nonzero. Response-content and deterministic-order assertions remain part of the
+same command.
+
+The primary bounds describe database work rather than one exact plan tree or
+machine speed:
+
+- `planRows` is the sum of `Actual Rows * Actual Loops` over all plan nodes.
+- `rowsRemovedByFilter` is the equivalent sum for filtered rows.
+- `sharedBlocks` is the root plan's shared hits plus reads, avoiding double
+  counting child buffers.
+- `sortRows` is the work reported by Sort and Incremental Sort nodes.
+- Required ordering/filter indexes and forbidden sequential Coin scans enforce
+  the documented structural paths while allowing legitimate bitmap scans,
+  joins, and in-memory sorts.
+
+Every scenario returns exactly 100 rows, so the returned-row bound is 100. The
+execution and in-process API ceilings are respectively 500 ms and 1,000 ms for
+all scenarios. Those are deliberately broad last-resort bounds: the recorded
+maximum warm plan and API baselines below are about 36 ms and 56 ms, while a
+cold first API request has been observed around 183 ms.
+
+The PostgreSQL 17 calibration sample and enforced work bounds are:
+
+| Scenario | Plan rows baseline / bound | Filtered rows baseline / bound | Shared blocks baseline / bound | Sort rows baseline / bound | Required Coin index |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Unfiltered first | 410 / 1,000 | 0 / 100 | 25 / 500 | 0 / 0 | `coins_created_at_id_index` |
+| Unfiltered middle | 150,110 / 250,000 | 0 / 100 | 936 / 5,000 | 0 / 0 | `coins_created_at_id_index` |
+| Unfiltered deep | 300,110 / 500,000 | 0 / 100 | 1,849 / 10,000 | 0 / 0 | `coins_created_at_id_index` |
+| Issuer first | 401 / 1,000 | 9 / 100 | 19 / 500 | 0 / 0 | `coins_issuer_id_created_at_id_index` |
+| Issuer middle | 35,101 / 75,000 | 9 / 100 | 1,465 / 5,000 | 5,000 / 10,000 | `coins_issuer_id_created_at_id_index` |
+| Issuer deep | 40,101 / 75,000 | 9 / 100 | 1,465 / 5,000 | 10,000 / 10,000 | `coins_issuer_id_created_at_id_index` |
+| Engraver first | 7,335 / 30,000 | 991 / 5,000 | 9,948 / 30,000 | 0 / 0 | `coins_created_at_id_index` |
+| Engraver middle | 232,622 / 500,000 | 9 / 100 | 2,519 / 10,000 | 2,500 / 5,000 | none; full scans are accepted |
+| Engraver deep | 235,122 / 500,000 | 9 / 100 | 2,519 / 10,000 | 5,000 / 5,000 | none; full scans are accepted |
+| Issue Period first | 405 / 1,000 | 99 / 500 | 16 / 500 | 0 / 0 | `coins_created_at_id_index` |
+| Issue Period middle | 75,105 / 150,000 | 24,999 / 75,000 | 926 / 5,000 | 0 / 0 | `coins_created_at_id_index` |
+| Issue Period deep | 150,105 / 300,000 | 49,999 / 150,000 | 1,839 / 10,000 | 0 / 0 | `coins_created_at_id_index` |
+
+The margins are generally about 1.7–5 times measured row work and at least 3
+times measured buffer work. Smaller scenarios have minimum floors to tolerate
+minor planner bookkeeping changes. The looser timing bounds guard only against
+order-of-magnitude regressions.
+
+Recalibrate only after an explained query, index, PostgreSQL, or representative
+data-shape change. Capture at least two unchanged runs, choose margins that pass
+both without depending on an exact plan tree, and update this table and the code
+in the same commit. Do not raise a bound solely to make a failing gate pass.
 
 ## Dataset
 

@@ -5,26 +5,17 @@ import { coinListResponseSchema } from "@workspace/api"
 import { createDatabase } from "@workspace/db"
 
 import { createApp } from "./app.js"
+import { analyzePaginationPlan } from "./coin-pagination-plan-analysis.js"
+import type {
+  ExplainOutput,
+  ExplainPlan,
+  PlanExpectation,
+  PlanViolation,
+} from "./coin-pagination-plan-analysis.js"
 
 const COIN_COUNT = 100_000
 const PAGE_SIZE = 100
 const PERFORMANCE_DATABASE_NAME = "coin_archive_performance"
-
-interface ExplainPlan {
-  [key: string]: unknown
-  "Actual Total Time"?: number
-  "Index Name"?: string
-  "Node Type": string
-  Plans?: Array<ExplainPlan>
-  "Relation Name"?: string
-  "Sort Method"?: string
-}
-
-interface ExplainOutput {
-  "Execution Time": number
-  Plan: ExplainPlan
-  "Planning Time": number
-}
 
 interface PageScenario {
   expectedFirstId: number
@@ -37,11 +28,65 @@ interface PageScenario {
     | { kind: "none" }
   label: string
   page: number
+  planExpectation: Omit<PlanExpectation, "label">
 }
 
 interface LoggedQuery {
   params: Array<unknown>
   query: string
+}
+
+const durationLimits = {
+  maxApiDurationMs: 1_000,
+  maxExecutionMs: 500,
+}
+
+function orderedPlanExpectation({
+  index,
+  maxPlanRows,
+  maxRowsRemovedByFilter,
+  maxSharedBlocks,
+}: {
+  index: string
+  maxPlanRows: number
+  maxRowsRemovedByFilter: number
+  maxSharedBlocks: number
+}): Omit<PlanExpectation, "label"> {
+  return {
+    ...durationLimits,
+    forbiddenSequentialScanRelations: ["coins"],
+    maxPlanRows,
+    maxReturnedRows: PAGE_SIZE,
+    maxRowsRemovedByFilter,
+    maxSharedBlocks,
+    maxSortRows: 0,
+    requiredIndexes: [index],
+  }
+}
+
+function sortedPlanExpectation({
+  forbiddenSequentialScanRelations = [],
+  maxPlanRows,
+  maxSharedBlocks,
+  maxSortRows,
+  requiredIndexes = [],
+}: {
+  forbiddenSequentialScanRelations?: Array<string>
+  maxPlanRows: number
+  maxSharedBlocks: number
+  maxSortRows: number
+  requiredIndexes?: Array<string>
+}): Omit<PlanExpectation, "label"> {
+  return {
+    ...durationLimits,
+    forbiddenSequentialScanRelations,
+    maxPlanRows,
+    maxReturnedRows: PAGE_SIZE,
+    maxRowsRemovedByFilter: 100,
+    maxSharedBlocks,
+    maxSortRows,
+    requiredIndexes,
+  }
 }
 
 function requirePerformanceDatabaseUrl() {
@@ -77,6 +122,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "none" },
     label: "unfiltered-first",
     page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 1_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 500,
+    }),
   },
   {
     expectedFirstId: 49_901,
@@ -85,6 +136,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "none" },
     label: "unfiltered-middle",
     page: 500,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 250_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 5_000,
+    }),
   },
   {
     expectedFirstId: 99_901,
@@ -93,6 +150,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "none" },
     label: "unfiltered-deep",
     page: 1_000,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 500_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 10_000,
+    }),
   },
   {
     expectedFirstId: 1,
@@ -101,6 +164,12 @@ const scenarios: Array<PageScenario> = [
     filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-first",
     page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_issuer_id_created_at_id_index",
+      maxPlanRows: 1_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 500,
+    }),
   },
   {
     expectedFirstId: 49_001,
@@ -109,6 +178,13 @@ const scenarios: Array<PageScenario> = [
     filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-middle",
     page: 50,
+    planExpectation: sortedPlanExpectation({
+      forbiddenSequentialScanRelations: ["coins"],
+      maxPlanRows: 75_000,
+      maxSharedBlocks: 5_000,
+      maxSortRows: 10_000,
+      requiredIndexes: ["coins_issuer_id_created_at_id_index"],
+    }),
   },
   {
     expectedFirstId: 99_001,
@@ -117,6 +193,13 @@ const scenarios: Array<PageScenario> = [
     filter: { code: "PERF1", kind: "issuer" },
     label: "issuer-deep",
     page: 100,
+    planExpectation: sortedPlanExpectation({
+      forbiddenSequentialScanRelations: ["coins"],
+      maxPlanRows: 75_000,
+      maxSharedBlocks: 5_000,
+      maxSortRows: 10_000,
+      requiredIndexes: ["coins_issuer_id_created_at_id_index"],
+    }),
   },
   {
     expectedFirstId: 1,
@@ -125,6 +208,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-first",
     page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 30_000,
+      maxRowsRemovedByFilter: 5_000,
+      maxSharedBlocks: 30_000,
+    }),
   },
   {
     expectedFirstId: 48_001,
@@ -133,6 +222,11 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-middle",
     page: 25,
+    planExpectation: sortedPlanExpectation({
+      maxPlanRows: 500_000,
+      maxSharedBlocks: 10_000,
+      maxSortRows: 5_000,
+    }),
   },
   {
     expectedFirstId: 98_001,
@@ -141,6 +235,11 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "engraver", slug: "performance-engraver-1" },
     label: "engraver-deep",
     page: 50,
+    planExpectation: sortedPlanExpectation({
+      maxPlanRows: 500_000,
+      maxSharedBlocks: 10_000,
+      maxSortRows: 5_000,
+    }),
   },
   {
     expectedFirstId: 1,
@@ -149,6 +248,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "year", year: "1986-1990" },
     label: "year-range-first",
     page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 1_000,
+      maxRowsRemovedByFilter: 500,
+      maxSharedBlocks: 500,
+    }),
   },
   {
     expectedFirstId: 49_801,
@@ -157,6 +262,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "year", year: "1986-1990" },
     label: "year-range-middle",
     page: 250,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 150_000,
+      maxRowsRemovedByFilter: 75_000,
+      maxSharedBlocks: 5_000,
+    }),
   },
   {
     expectedFirstId: 99_801,
@@ -165,6 +276,12 @@ const scenarios: Array<PageScenario> = [
     filter: { kind: "year", year: "1986-1990" },
     label: "year-range-deep",
     page: 500,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_created_at_id_index",
+      maxPlanRows: 300_000,
+      maxRowsRemovedByFilter: 150_000,
+      maxSharedBlocks: 10_000,
+    }),
   },
 ]
 
@@ -267,6 +384,7 @@ async function main() {
     })
 
     const measurements = []
+    const violations: Array<PlanViolation> = []
     for (const scenario of scenarios) {
       loggedQueries.length = 0
       const startedAt = performance.now()
@@ -307,12 +425,22 @@ async function main() {
       )
       const explain = explained.rows.at(0)?.["QUERY PLAN"].at(0)
       if (!explain) throw new Error(`Missing query plan for ${scenario.label}`)
+      const analysis = analyzePaginationPlan({
+        apiDurationMs: durationMs,
+        expectation: {
+          ...scenario.planExpectation,
+          label: scenario.label,
+        },
+        explain,
+      })
+      violations.push(...analysis.violations)
 
       measurements.push({
         apiDurationMs: Number(durationMs.toFixed(3)),
         executionMs: explain["Execution Time"],
         label: scenario.label,
         planNodes: collectPlanNodes(explain.Plan),
+        planWork: analysis.summary,
         planningMs: explain["Planning Time"],
       })
     }
@@ -333,6 +461,20 @@ async function main() {
         null,
         2
       )
+    )
+    if (violations.length > 0) {
+      console.error("Pagination performance gate failed:")
+      for (const violation of violations) {
+        console.error(
+          `- ${violation.label}: ${violation.metric} was ${violation.actual}; bound ${violation.bound}`
+        )
+      }
+      throw new Error(
+        `Pagination performance gate found ${violations.length} violation(s)`
+      )
+    }
+    console.log(
+      `Pagination performance gate passed (${scenarios.length} scenarios)`
     )
   } finally {
     await database.close()

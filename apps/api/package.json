@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint",
     "performance:coin-pagination": "tsx src/coin-pagination-performance.ts",
+    "performance:coin-pagination:gate": "tsx src/coin-pagination-performance.ts",
     "start": "node --env-file-if-exists=.env.local dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",

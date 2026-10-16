@@ -65,7 +65,11 @@ describe("Coin viewer route", () => {
     const router = renderCoinRoute()
 
     expect(await screen.findByText("Coin not found")).toBeInTheDocument()
-    expect(router.state.statusCode).toBe(404)
+    expect(
+      router.state.matches.find(
+        (match) => match.routeId === "/coins/$coinId"
+      )?.status
+    ).toBe("notFound")
   })
 
   it.each([
@@ -89,7 +93,11 @@ describe("Coin viewer route", () => {
 
     expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
     expect(screen.queryByText("Coin not found")).not.toBeInTheDocument()
-    expect(router.state.statusCode).not.toBe(404)
+    expect(
+      router.state.matches.find(
+        (match) => match.routeId === "/coins/$coinId"
+      )?.status
+    ).not.toBe("notFound")
   })
 
   it("distinguishes malformed success data", async () => {

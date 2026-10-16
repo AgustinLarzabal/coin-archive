@@ -506,6 +506,98 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("reads Coin details from one database snapshot", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    const concurrentDatabase = createDatabase(getDatabaseUrl())
+    let creditQueryStarted: () => void = () => {}
+    const creditQueryHasStarted = new Promise<void>((resolve) => {
+      creditQueryStarted = resolve
+    })
+    const readerDatabase = createDatabase(getDatabaseUrl(), {
+      onQuery(query) {
+        if (query.includes('from "coin_surface_engravers"')) {
+          creditQueryStarted()
+        }
+      },
+    })
+    let allowChangeCommit: () => void = () => {}
+    const changeMayCommit = new Promise<void>((resolve) => {
+      allowChangeCommit = resolve
+    })
+
+    try {
+      const issuer = await insertArgentina(database)
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          title: "Snapshot Coin",
+          issuerId: issuer.id,
+          ...TEST_ISSUE_PERIOD,
+        })
+        .returning()
+      const [obverse] = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values({
+          coinId: coin.id,
+          kind: "obverse",
+          description: "Snapshot portrait",
+        })
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({
+          slug: "snapshot-engraver",
+          fullName: "Snapshot Engraver",
+        })
+        .returning()
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values({
+        coinSurfaceId: obverse.id,
+        engraverId: engraver.id,
+        position: 1,
+      })
+
+      let changeStaged: () => void = () => {}
+      const changeIsStaged = new Promise<void>((resolve) => {
+        changeStaged = resolve
+      })
+      const concurrentChange = concurrentDatabase.orm.transaction(
+        async (transaction) => {
+          await transaction.execute(
+            sql`lock table coin_surface_engravers in access exclusive mode`
+          )
+          await transaction
+            .delete(concurrentDatabase.schema.coinSurfaceEngravers)
+            .where(
+              sql`${concurrentDatabase.schema.coinSurfaceEngravers.coinSurfaceId} = ${obverse.id}`
+            )
+          changeStaged()
+          await changeMayCommit
+        }
+      )
+
+      await changeIsStaged
+      const detail = readerDatabase.findCoinById(coin.id)
+      await creditQueryHasStarted
+      allowChangeCommit()
+      await concurrentChange
+
+      await expect(detail).resolves.toEqual({
+        ...coin,
+        issuer,
+        obverse: { ...obverse, engravers: [engraver] },
+        reverse: null,
+        edge: null,
+      })
+    } finally {
+      allowChangeCommit()
+      await Promise.all([
+        database.close(),
+        concurrentDatabase.close(),
+        readerDatabase.close(),
+      ])
+    }
+  })
+
   it("reads sparse catalogue data without creating empty Coin Surfaces", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

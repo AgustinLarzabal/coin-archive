@@ -99,82 +99,96 @@ export function createDatabase(
     },
     close: () => pool.end(),
     async findCoinById(coinId) {
-      const rows = await orm
-        .select({
-          coin: schema.coins,
-          issuer: schema.issuers,
-          obverse: obverses,
-          reverse: reverses,
-          edge: edges,
-        })
-        .from(schema.coins)
-        .innerJoin(schema.issuers, eq(schema.coins.issuerId, schema.issuers.id))
-        .leftJoin(
-          obverses,
-          and(
-            eq(obverses.coinId, schema.coins.id),
-            eq(obverses.kind, "obverse")
-          )
-        )
-        .leftJoin(
-          reverses,
-          and(
-            eq(reverses.coinId, schema.coins.id),
-            eq(reverses.kind, "reverse")
-          )
-        )
-        .leftJoin(
-          edges,
-          and(eq(edges.coinId, schema.coins.id), eq(edges.kind, "edge"))
-        )
-        .where(eq(schema.coins.id, coinId))
-        .limit(1)
-      const row = rows.at(0)
-      if (!row) return null
+      return orm.transaction(
+        async (transaction) => {
+          const rows = await transaction
+            .select({
+              coin: schema.coins,
+              issuer: schema.issuers,
+              obverse: obverses,
+              reverse: reverses,
+              edge: edges,
+            })
+            .from(schema.coins)
+            .innerJoin(
+              schema.issuers,
+              eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .leftJoin(
+              obverses,
+              and(
+                eq(obverses.coinId, schema.coins.id),
+                eq(obverses.kind, "obverse")
+              )
+            )
+            .leftJoin(
+              reverses,
+              and(
+                eq(reverses.coinId, schema.coins.id),
+                eq(reverses.kind, "reverse")
+              )
+            )
+            .leftJoin(
+              edges,
+              and(eq(edges.coinId, schema.coins.id), eq(edges.kind, "edge"))
+            )
+            .where(eq(schema.coins.id, coinId))
+            .limit(1)
+          const row = rows.at(0)
+          if (!row) return null
 
-      const engraverCreditableSurfaces = [row.obverse, row.reverse].filter(
-        (surface): surface is schema.CoinSurfaceRecord => surface !== null
+          const engraverCreditableSurfaces = [row.obverse, row.reverse].filter(
+            (surface): surface is schema.CoinSurfaceRecord => surface !== null
+          )
+          const credits =
+            engraverCreditableSurfaces.length === 0
+              ? []
+              : await transaction
+                  .select({
+                    coinSurfaceId: schema.coinSurfaceEngravers.coinSurfaceId,
+                    engraver: schema.engravers,
+                  })
+                  .from(schema.coinSurfaceEngravers)
+                  .innerJoin(
+                    schema.engravers,
+                    eq(
+                      schema.coinSurfaceEngravers.engraverId,
+                      schema.engravers.id
+                    )
+                  )
+                  .where(
+                    inArray(
+                      schema.coinSurfaceEngravers.coinSurfaceId,
+                      engraverCreditableSurfaces.map((surface) => surface.id)
+                    )
+                  )
+                  .orderBy(
+                    asc(schema.coinSurfaceEngravers.coinSurfaceId),
+                    asc(schema.coinSurfaceEngravers.position)
+                  )
+          const withEngravers = (surface: schema.CoinSurfaceRecord | null) =>
+            surface
+              ? {
+                  ...surface,
+                  engravers: credits
+                    .filter((credit) => credit.coinSurfaceId === surface.id)
+                    .map((credit) => credit.engraver),
+                }
+              : null
+
+          return {
+            ...row.coin,
+            issuer: row.issuer,
+            obverse: withEngravers(row.obverse),
+            reverse: withEngravers(row.reverse),
+            edge: row.edge,
+          }
+        },
+        {
+          accessMode: "read only",
+          isolationLevel: "repeatable read",
+        }
       )
-      const credits =
-        engraverCreditableSurfaces.length === 0
-          ? []
-          : await orm
-              .select({
-                coinSurfaceId: schema.coinSurfaceEngravers.coinSurfaceId,
-                engraver: schema.engravers,
-              })
-              .from(schema.coinSurfaceEngravers)
-              .innerJoin(
-                schema.engravers,
-                eq(schema.coinSurfaceEngravers.engraverId, schema.engravers.id)
-              )
-              .where(
-                inArray(
-                  schema.coinSurfaceEngravers.coinSurfaceId,
-                  engraverCreditableSurfaces.map((surface) => surface.id)
-                )
-              )
-              .orderBy(
-                asc(schema.coinSurfaceEngravers.coinSurfaceId),
-                asc(schema.coinSurfaceEngravers.position)
-              )
-      const withEngravers = (surface: schema.CoinSurfaceRecord | null) =>
-        surface
-          ? {
-              ...surface,
-              engravers: credits
-                .filter((credit) => credit.coinSurfaceId === surface.id)
-                .map((credit) => credit.engraver),
-            }
-          : null
-
-      return {
-        ...row.coin,
-        issuer: row.issuer,
-        obverse: withEngravers(row.obverse),
-        reverse: withEngravers(row.reverse),
-        edge: row.edge,
-      }
     },
     async listCoins(listOptions = {}) {
       const page = listOptions.page ?? 1

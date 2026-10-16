@@ -225,15 +225,13 @@ it("canonicalizes an invalid directly opened Year URL", async () => {
   expect(router.state.location.searchStr).toBe("?issuer=AR")
 })
 
-it("shows an informative empty state for a valid Year", async () => {
+it("shows the filtered empty state for a valid Issue Year", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
 
   renderArchiveRoute("/?year=1986")
 
   expect(
-    await screen.findByText(
-      "No coins found with an Issue Period containing 1986."
-    )
+    await screen.findByText("No coins match the selected filters.")
   ).toBeVisible()
   expect(screen.queryByRole("alert")).not.toBeInTheDocument()
 })
@@ -246,13 +244,11 @@ it("restores and displays a canonical BCE Issue Year without exposing its sign",
   expect(await screen.findByRole("textbox", { name: "Year" })).toHaveValue(
     "44 BCE"
   )
-  expect(
-    screen.getByText("No coins found with an Issue Period containing 44 BCE.")
-  ).toBeVisible()
+  expect(screen.getByText("No coins match the selected filters.")).toBeVisible()
   expect(screen.queryByText(/-44/)).not.toBeInTheDocument()
 })
 
-it("describes a combined-filter cross-era range empty state as Issue Period overlap", async () => {
+it("shows the filtered empty state for combined Issuer, Engraver, and Issue Year results", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(
@@ -266,9 +262,7 @@ it("describes a combined-filter cross-era range empty state as Issue Period over
   renderArchiveRoute("/?issuer=AR&engraver=first-engraver&year=-25-19")
 
   expect(
-    await screen.findByText(
-      "No coins found for Argentina engraved by First Engraver with an Issue Period overlapping 25 BCE–19 CE."
-    )
+    await screen.findByText("No coins match the selected filters.")
   ).toBeVisible()
 })
 
@@ -286,9 +280,7 @@ it.each([
       displayYear
     )
     expect(
-      screen.getByText(
-        `No coins found with an Issue Period overlapping ${displayYear}.`
-      )
+      screen.getByText("No coins match the selected filters.")
     ).toBeVisible()
     expect(screen.queryByText(canonicalYear)).not.toBeInTheDocument()
   }

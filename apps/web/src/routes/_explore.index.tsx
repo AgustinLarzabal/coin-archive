@@ -68,11 +68,7 @@ function ExploreRoute() {
   ) : filters.engraverSlug && !selectedEngraver ? (
     <RouteMessage>Engraver not found</RouteMessage>
   ) : (
-    <Explore
-      filters={filters}
-      issuer={selectedIssuer}
-      engraver={selectedEngraver}
-    />
+    <Explore filters={filters} />
   )
 }
 

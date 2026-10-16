@@ -266,7 +266,7 @@ describe("Explore pagination", () => {
     const router = renderArchiveRoute("/?issuer=AR&page=8")
 
     expect(
-      await screen.findByText("No coins found for Argentina")
+      await screen.findByText("No coins match the selected filters.")
     ).toBeVisible()
     expect(router.state.location.searchStr).toBe("?issuer=AR")
     expect(

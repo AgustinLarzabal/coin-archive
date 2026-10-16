@@ -325,25 +325,23 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?engraver=unknown-engraver")
   })
 
-  it("names the selected Engraver in an Engraver-only empty state", async () => {
+  it("shows the filtered empty state for an Engraver-only result", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
 
     renderArchiveRoute("/?engraver=first-engraver")
 
     expect(
-      await screen.findByText("No coins found engraved by First Engraver.")
+      await screen.findByText("No coins match the selected filters.")
     ).toBeVisible()
   })
 
-  it("names the selected Issuer and Engraver in a combined empty state", async () => {
+  it("shows the filtered empty state for combined Issuer and Engraver results", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
 
     renderArchiveRoute("/?issuer=ROMAN&engraver=first-engraver")
 
     expect(
-      await screen.findByText(
-        "No coins found for Roman Empire engraved by First Engraver."
-      )
+      await screen.findByText("No coins match the selected filters.")
     ).toBeVisible()
   })
 
@@ -499,13 +497,13 @@ describe("Archive landing route", () => {
     )
   })
 
-  it("names a known selected Issuer when it has no Coins", async () => {
+  it("shows the filtered empty state for an Issuer-only result", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
 
     renderArchiveRoute("/?issuer=AR")
 
     expect(
-      await screen.findByText("No coins found for Argentina")
+      await screen.findByText("No coins match the selected filters.")
     ).toBeVisible()
     expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
       "Argentina"

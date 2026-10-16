@@ -2080,12 +2080,12 @@ describe("Coin seed", () => {
         ...fourthSeededCoinPage.coins,
         ...fifthSeededCoinPage.coins,
       ]
-      expect(seededCoins).toHaveLength(431)
-      expect(firstSeededCoinPage.totalItems).toBe(431)
-      expect(secondSeededCoinPage.totalItems).toBe(431)
-      expect(thirdSeededCoinPage.totalItems).toBe(431)
-      expect(fourthSeededCoinPage.totalItems).toBe(431)
-      expect(fifthSeededCoinPage.totalItems).toBe(431)
+      expect(seededCoins).toHaveLength(480)
+      expect(firstSeededCoinPage.totalItems).toBe(480)
+      expect(secondSeededCoinPage.totalItems).toBe(480)
+      expect(thirdSeededCoinPage.totalItems).toBe(480)
+      expect(fourthSeededCoinPage.totalItems).toBe(480)
+      expect(fifthSeededCoinPage.totalItems).toBe(480)
       expect(
         seededCoins.filter(
           ({ firstIssueYear, lastIssueYear }) =>
@@ -2194,6 +2194,12 @@ describe("Coin seed", () => {
             firstIssueYear === 2021 && lastIssueYear === 2021
         )
       ).toHaveLength(33)
+      expect(
+        seededCoins.filter(
+          ({ firstIssueYear, lastIssueYear }) =>
+            firstIssueYear === 2022 && lastIssueYear === 2022
+        )
+      ).toHaveLength(49)
       await expect(
         database.findCoinById(SEEDED_COIN_ID)
       ).resolves.toMatchObject({

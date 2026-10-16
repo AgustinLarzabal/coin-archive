@@ -4332,5 +4332,495 @@
     "obverse": {
       "description": "Photographic portraits of Grand Dukes Jean and Henri appear above the outline of Luxembourg City using an embossed minting technique, accompanied by their names, Jean's birth year 1921, a Grand Dukes of Luxembourg inscription, the year 2021, and twelve stars."
     }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b0",
+    "title": "The Legend of Charlemagne",
+    "issuerCode": "AD",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A detail from Albrecht Dürer's portrait of Charlemagne appears before an Andorran mountain and river landscape, recalling the legend that the emperor founded Andorra, accompanied by Andorra's name, the year 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b1",
+    "title": "10th Anniversary of the Andorra–European Union Monetary Agreement",
+    "issuerCode": "AD",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Puzzle pieces symbolise Andorra and the European Union countries beneath stars surrounding the euro symbol, accompanied by Andorra's name, the years 2012 and 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b2",
+    "title": "Suvalkija",
+    "issuerCode": "LT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A bull appears on Suvalkija's shield between oak branches joined by a ribbon bearing the motto Unity May Blossom, accompanied by the region's and Lithuania's names, the year 2022, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b3",
+    "title": "Ukraine and Freedom",
+    "issuerCode": "EE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A woman's silhouette holds a bird beside an ear of wheat, accompanied by the inscription Slava Ukraini, Estonia's name, the year 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b4",
+    "title": "Climate Research in Finland",
+    "issuerCode": "FI",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A stylised beard lichen with an embossed root structure represents climate research, accompanied by the subject in Finnish and Swedish, Finland's country code, the year 2022, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b5",
+    "title": "Women, Peace and Security",
+    "issuerCode": "MT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Three female faces appear with the words Women, Peace, and Security and a reference to United Nations Security Council Resolution 1325, accompanied by Malta's name, the year 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b6",
+    "title": "530th Anniversary of the Death of Piero della Francesca",
+    "issuerCode": "SM",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Federico da Montefeltro's profile from Piero della Francesca's Diptych of the Dukes of Urbino appears with the painter's name, the years 1492 and 2022, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b7",
+    "title": "200th Anniversary of the Death of Antonio Canova",
+    "issuerCode": "SM",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The goddess Hebe from Antonio Canova's sculpture appears with his name, the years 1822 and 2022, San Marino's name, the Rome mint mark, the artist's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b8",
+    "title": "300th Anniversary of Continental Europe's First Atmospheric Steam Engine",
+    "issuerCode": "SK",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The atmospheric steam engine built to drain mines at Nová Baňa appears with engineer Isaac Potter's signature, accompanied by Slovakia's name, the years 1722 and 2022, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001b9",
+    "title": "100th Anniversary of the Death of Prince Albert I",
+    "issuerCode": "MC",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Prince Albert I appears with his name, the years 1848–1922, Monaco's name, the year 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ba",
+    "title": "Paris 2024 Olympic Games",
+    "issuerCode": "FR",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The Genius throws a discus in an ancient style and merges with the Arc de Triomphe before an athletics track and the Paris 2024 emblem, accompanied by France's country code, the year 2022, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001bb",
+    "title": "25th Anniversary of the Death of Mother Teresa",
+    "issuerCode": "VA",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Mother Teresa appears with a child, accompanied by her name, the years 1997 and 2022, Vatican City's name, the Rome mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001bc",
+    "title": "200th Anniversary of the First Greek Constitution",
+    "issuerCode": "GR",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The temple of Asclepius at Epidaurus and the god's statue reproduce a medal of the First National Assembly, accompanied by the First Greek Constitution and Hellenic Republic inscriptions, the years 1822 and 2022, the Greek mint mark, the artist's monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001bd",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "AT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Austria's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001be",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "BE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Belgium's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001bf",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "CY",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Cyprus's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c0",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "EE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Estonia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c1",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "FI",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Finland's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c2",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "FR",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, France's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c3",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "DE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Germany's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c4",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "GR",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Greece's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c5",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "IE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Ireland's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c6",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "IT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Italy's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c7",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "LV",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Latvia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c8",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "LT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Lithuania's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001c9",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "LU",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ca",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "MT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Malta's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001cb",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "NL",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, the Netherlands' name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001cc",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "PT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Portugal's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001cd",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "SK",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Slovakia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001ce",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "SI",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Slovenia's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001cf",
+    "title": "35th Anniversary of the Erasmus Programme",
+    "issuerCode": "ES",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Erasmus appears beside links crossing Europe and forming stars, symbolising the programme's intellectual and human exchanges, accompanied by a stylised number 35, Spain's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d0",
+    "title": "100th Anniversary of Basketball in Lithuania",
+    "issuerCode": "LT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The outline of Lithuania forms a basketball court, accompanied by Lithuania's name, the years 1922–2022, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d1",
+    "title": "100th Anniversary of the Finnish National Ballet",
+    "issuerCode": "FI",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A dancer moves beneath flowing fabric that emphasises the pose's freedom and fluidity, accompanied by Finland's country code, the year 2022, a mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d2",
+    "title": "Recognition of the Healthcare Sector During the COVID-19 Pandemic",
+    "issuerCode": "BE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Healthcare workers appear beside thanks in German, French, and Dutch and symbols including a cross, stethoscope, heart, syringe, wheelchair, and flask, accompanied by Belgium's country code, the year 2022, mint and designer marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d3",
+    "title": "Ħal Saflieni Hypogeum",
+    "issuerCode": "MT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A detail of the prehistoric Ħal Saflieni Hypogeum appears with the site's name and the dates 4000–2500 BC, accompanied by Malta's name, the year 2022, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d4",
+    "title": "100th Anniversary of Latvijas Banka",
+    "issuerCode": "LV",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A tree symbolises financial literacy and lifelong knowledge, accompanied by Latvia's name, the year 2022, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d5",
+    "title": "10th Anniversary of the Marriage of Hereditary Grand Duke Guillaume",
+    "issuerCode": "LU",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Portraits of Hereditary Grand Duke Guillaume and Hereditary Grand Duchess Stéphanie appear beside two wedding rings, accompanied by their names and wedding date, Luxembourg's name, the year 2022, Grand Duke Henri's crowned monogram, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d6",
+    "title": "150th Anniversary of the Society of Estonian Literati",
+    "issuerCode": "EE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The pages of a book and the tip of a quill appear with the Society of Estonian Literati's name and a quotation about greatness of spirit, accompanied by the year 2022 and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d7",
+    "title": "500th Anniversary of the First Circumnavigation",
+    "issuerCode": "ES",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Juan Sebastián Elcano appears before a globe with his name, the motto First to Circumnavigate Me, and the dates 1519–1522, accompanied by Spain's name, the year 2022, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d8",
+    "title": "Garajonay National Park",
+    "issuerCode": "ES",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "The Roque de Agando and laurel forest represent Garajonay National Park in Spain's UNESCO World Heritage series, accompanied by Spain's name, the year 2022, the Madrid mint mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001d9",
+    "title": "100th Anniversary of the First South Atlantic Aerial Crossing",
+    "issuerCode": "PT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A Fairey III biplane recalls the South Atlantic flight by Gago Coutinho and Sacadura Cabral, accompanied by a crossing inscription, Portugal's name, the years 1922–2022, the mint's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001da",
+    "title": "125th Anniversary of the Birth of Pope Paul VI",
+    "issuerCode": "VA",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A portrait of Pope Paul VI appears with his name, the years 1897 and 2022, Vatican City's name, the Rome mint mark, the artist's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001db",
+    "title": "90th Anniversary of the Birth of Jacques Chirac",
+    "issuerCode": "FR",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A profile of Jacques Chirac appears with a euro symbol and a heraldic French flag, accompanied by his name and dates, France's country code, the year 2022, mint marks, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001dc",
+    "title": "30th Anniversary of the Deaths of Giovanni Falcone and Paolo Borsellino",
+    "issuerCode": "IT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Portraits of judges Giovanni Falcone and Paolo Borsellino appear with their names and the years 1992 and 2022, accompanied by the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001dd",
+    "title": "170th Anniversary of the Italian National Police",
+    "issuerCode": "IT",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A female and male Italian State Police officer stand before a police car, accompanied by the force's name, the years 1852–2022, the Italian Republic monogram, the Rome mint mark, the designer's initials, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001de",
+    "title": "Thuringia",
+    "issuerCode": "DE",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Wartburg Castle represents Thuringia in Germany's Länder series, accompanied by the state's name, Germany's country code, the year 2022, a German mint mark, the engraver's mark, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001df",
+    "title": "50th Anniversary of the Legal Protection of the Luxembourg Flag",
+    "issuerCode": "LU",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "Grand Duke Henri appears beside Luxembourg's tricolour flag, accompanied by the years 1972 and 2022, Luxembourg's name, and twelve stars."
+    }
+  },
+  {
+    "id": "00000000-0000-4000-8000-0000000001e0",
+    "title": "150th Anniversary of the Birth of Jože Plečnik",
+    "issuerCode": "SI",
+    "firstIssueYear": 2022,
+    "lastIssueYear": 2022,
+    "obverse": {
+      "description": "A window and pillar from the National and University Library reading room integrate letters spelling architect Jože Plečnik's name, accompanied by his name, the year 1872, Slovenia's name, the year 2022, and twelve stars."
+    }
   }
 ]

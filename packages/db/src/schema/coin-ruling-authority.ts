@@ -31,6 +31,9 @@ export const coinRulingAuthorityAttributions = pgTable(
       table.coinId,
       table.position
     ),
+    unique("coin_ruling_authorities_context_unique")
+      .on(table.coinId, table.rulingAuthorityId, table.role, table.tenure)
+      .nullsNotDistinct(),
     index("coin_ruling_authorities_authority_coin_index").on(
       table.rulingAuthorityId,
       table.coinId

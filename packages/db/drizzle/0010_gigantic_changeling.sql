@@ -1,0 +1,1 @@
+ALTER TABLE "coin_ruling_authorities" ADD CONSTRAINT "coin_ruling_authorities_context_unique" UNIQUE NULLS NOT DISTINCT("coin_id","ruling_authority_id","role","tenure");

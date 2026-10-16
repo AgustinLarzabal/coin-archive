@@ -314,13 +314,46 @@ describe("Ruling Authority persistence", () => {
           position: 1,
         })
 
+      await expect(
+        database.orm
+          .insert(database.schema.coinRulingAuthorityAttributions)
+          .values({
+            coinId: coin.id,
+            rulingAuthorityId: authority.id,
+            role: "Role",
+            tenure: null,
+            position: 2,
+          })
+      ).rejects.toThrow()
+
+      await expect(
+        database.orm
+          .insert(database.schema.coinRulingAuthorityAttributions)
+          .values([
+            {
+              coinId: coin.id,
+              rulingAuthorityId: authority.id,
+              role: "Different Role",
+              tenure: null,
+              position: 2,
+            },
+            {
+              coinId: coin.id,
+              rulingAuthorityId: authority.id,
+              role: "Role",
+              tenure: "Different tenure",
+              position: 3,
+            },
+          ])
+      ).resolves.toBeDefined()
+
       for (const attribution of [
-        { role: "", tenure: null, position: 2 },
-        { role: " padded", tenure: null, position: 2 },
-        { role: "Role", tenure: "", position: 2 },
-        { role: "Role", tenure: "padded ", position: 2 },
-        { role: "Role", tenure: null, position: 0 },
-        { role: "Role", tenure: null, position: 1 },
+        { role: "", tenure: null, position: 4 },
+        { role: " padded", tenure: null, position: 4 },
+        { role: "Role", tenure: "", position: 4 },
+        { role: "Role", tenure: "padded ", position: 4 },
+        { role: "Invalid Position Role", tenure: null, position: 0 },
+        { role: "Duplicate Position Role", tenure: null, position: 1 },
       ]) {
         await expect(
           database.orm
@@ -463,6 +496,26 @@ describe("Ruling Authority persistence", () => {
         ],
       },
       "Duplicate Ruling Authority position: 1",
+    ],
+    [
+      "duplicate contextual attributions",
+      {
+        authorities: [{ slug: "known-authority", name: "Authority" }],
+        coins: [
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            title: "Duplicate attribution",
+            issuerCode: "TI",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
+            rulingAuthorityAttributions: [
+              { slug: "known-authority", role: "Role", position: 1 },
+              { slug: "known-authority", role: "Role", position: 2 },
+            ],
+          },
+        ],
+      },
+      "Duplicate Ruling Authority attribution: known-authority / Role / no tenure",
     ],
     [
       "an unknown authority reference",

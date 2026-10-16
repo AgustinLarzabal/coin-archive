@@ -177,6 +177,7 @@ const seedDocumentSchema = z
         })
       }
       const attributionPositions = new Set<number>()
+      const contextualAttributions = new Set<string>()
       coin.rulingAuthorityAttributions.forEach(
         (attribution, attributionIndex) => {
           if (!authoritySlugs.has(attribution.slug)) {
@@ -206,6 +207,24 @@ const seedDocumentSchema = z
             })
           }
           attributionPositions.add(attribution.position)
+          const contextualAttribution = JSON.stringify([
+            attribution.slug,
+            attribution.role,
+            attribution.tenure ?? null,
+          ])
+          if (contextualAttributions.has(contextualAttribution)) {
+            context.addIssue({
+              code: "custom",
+              message: `Duplicate Ruling Authority attribution: ${attribution.slug} / ${attribution.role} / ${attribution.tenure ?? "no tenure"}`,
+              path: [
+                "coins",
+                index,
+                "rulingAuthorityAttributions",
+                attributionIndex,
+              ],
+            })
+          }
+          contextualAttributions.add(contextualAttribution)
         }
       )
       for (const kind of ["obverse", "reverse"] as const) {

@@ -71,6 +71,13 @@
       "when": 1792169300621,
       "tag": "0009_vengeful_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792171928497,
+      "tag": "0010_gigantic_changeling",
+      "breakpoints": true
     }
   ]
 }

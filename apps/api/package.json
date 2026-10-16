@@ -24,7 +24,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@tanstack/eslint-config": "latest",
+    "@tanstack/eslint-config": "catalog:",
     "@types/node": "^22",
     "eslint": "^9",
     "prettier": "^3.8.4",

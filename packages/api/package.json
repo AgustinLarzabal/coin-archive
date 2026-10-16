@@ -12,7 +12,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@tanstack/eslint-config": "latest",
+    "@tanstack/eslint-config": "catalog:",
     "eslint": "^9",
     "prettier": "^3.8.4",
     "typescript": "^6"

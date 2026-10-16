@@ -1,4 +1,13 @@
-import { resolveDatabaseUrl } from "../database-url.js"
-import { rebuildDatabase } from "../reset.js"
+import { parseArgs } from "node:util"
 
-await rebuildDatabase(resolveDatabaseUrl(process.env))
+import { resolveDatabaseUrl } from "../database-url.js"
+import { resetStagingDatabase } from "../reset.js"
+
+const { values } = parseArgs({
+  options: {
+    confirm: { type: "string" },
+  },
+  strict: true,
+})
+
+await resetStagingDatabase(resolveDatabaseUrl(process.env), values.confirm)

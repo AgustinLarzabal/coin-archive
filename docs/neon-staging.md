@@ -86,17 +86,25 @@ restarting `pnpm dev:staging` does not remove it.
 
 ## Recovery
 
-To restore the Staging Database to the checked-in migrations and seed data:
+First print the configured database's credential-free target identity:
 
 ```bash
-pnpm db:reset:staging
+node --env-file=.env.staging.local -e 'const url = new URL(process.env.DATABASE_URL); console.log(`${url.hostname}/${decodeURIComponent(url.pathname.slice(1))}`)'
 ```
 
-> **Destructive reset warning:** this command immediately drops the configured
-> database's `public` application schema and Drizzle migration-history schema.
-> It does not prompt, validate the hostname, or verify the Neon branch. Inspect
-> the direct URL in `.env.staging.local` before every reset. An incorrect URL can
-> destroy the wrong database.
+Compare that `<host>/<database>` identity with the direct connection shown for
+the intended project and branch in the Neon Console. To restore the Staging
+Database to the checked-in migrations and seed data, pass the exact identity:
+
+```bash
+pnpm db:reset:staging --confirm '<host>/<database>'
+```
+
+> **Destructive reset warning:** this command drops the confirmed database's
+> `public` application schema and Drizzle migration-history schema. It rejects
+> local, pooled, non-Neon, host-overridden, and unconfirmed targets, but the
+> confirmation does not prove project or branch ownership. Verify the target in
+> the Neon Console before every reset.
 
 ## Manual smoke test
 
@@ -106,8 +114,9 @@ automated suite.
 1. Verify that the root staging file contains the direct URL and the API staging
    file contains the pooled URL for the same Neon default branch.
 2. Prepare the database with `pnpm db:migrate:staging` followed by
-   `pnpm db:seed:staging`, or recover it with `pnpm db:reset:staging` after
-   checking the destructive target.
+   `pnpm db:seed:staging`, or recover it with
+   `pnpm db:reset:staging --confirm '<host>/<database>'` after inspecting and
+   verifying the destructive target as described above.
 3. Run `pnpm dev:staging` and wait for both local processes to start.
 4. Check liveness with `curl --fail http://localhost:3001/health`.
 5. Check database-backed readiness with
@@ -118,5 +127,5 @@ automated suite.
 7. Add the dummy Coin above in the Neon SQL Editor, refresh the Archive, and
    confirm it appears.
 8. Stop and restart `pnpm dev:staging`, then confirm the dummy Coin remains in
-   the Archive. Use `pnpm db:reset:staging` only when that manual data should be
-   discarded.
+   the Archive. Use the confirmed `pnpm db:reset:staging --confirm
+'<host>/<database>'` command only when that manual data should be discarded.

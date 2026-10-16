@@ -143,20 +143,24 @@ Staging seed is intentionally non-idempotent and is meant for an empty,
 migrated database. If committed or manually entered records conflict, it fails
 and rolls back instead of updating or overwriting them.
 
-To completely rebuild the configured database from the checked-in migrations
-and seed data, run:
+To inspect the configured database's credential-free target identity, run:
 
 ```bash
-pnpm db:reset:staging
+node --env-file=.env.staging.local -e 'const url = new URL(process.env.DATABASE_URL); console.log(`${url.hostname}/${decodeURIComponent(url.pathname.slice(1))}`)'
 ```
 
-**Warning:** this command immediately drops the configured `public` application
-schema and Drizzle migration-history schema. It does not prompt, require a
-confirmation token, validate the hostname, or verify that the URL identifies a
-Neon default branch. Manually inspect the direct URL in `.env.staging.local`
-before every destructive reset; an incorrect URL can destroy the wrong
-database. Ordinary `db:migrate`, `db:seed`, and loopback-only `db:reset`
-continue to use `.env.local`.
+Then pass that exact `<host>/<database>` identity to the reset command:
+
+```bash
+pnpm db:reset:staging --confirm '<host>/<database>'
+```
+
+**Warning:** this command drops the confirmed database's `public` application
+schema and Drizzle migration-history schema. It rejects local, pooled,
+non-Neon, host-overridden, and unconfirmed targets, but the confirmation does
+not prove project or branch ownership. Verify the target in the Neon Console
+before every destructive reset. Ordinary `db:migrate`, `db:seed`, and
+loopback-only `db:reset` continue to use `.env.local`.
 
 The real Drizzle/`pg` readiness path has a separate integration command. It
 starts and stops its own local Compose service while retaining its volume. The

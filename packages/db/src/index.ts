@@ -4,6 +4,7 @@ export type {
   CoinListItem,
   CoinListOptions,
   CoinListPage,
+  CoinRulingAuthorityAttribution,
   CoinSurfaceWithEngravers,
   Database,
   DatabaseOptions,
@@ -13,11 +14,13 @@ export {
   coinRecordSchema,
   engraverRecordSchema,
   issuerRecordSchema,
+  rulingAuthorityRecordSchema,
 } from "./schema/index.js"
 export type {
   CoinRecord,
   EngraverRecord,
   IssuerRecord,
+  RulingAuthorityRecord,
 } from "./schema/index.js"
 export { rebuildDatabase } from "./reset.js"
 export { readCoinSeed, seedCoins } from "./seed.js"

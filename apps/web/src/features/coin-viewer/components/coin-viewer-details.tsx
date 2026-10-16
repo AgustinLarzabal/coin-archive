@@ -4,7 +4,26 @@ import type { CoinDetailResponse } from "@workspace/api"
 
 import { formatIssuePeriod } from "@/features/issue-period"
 
+function groupRulingAuthorityAttributionsByConsecutiveRole(
+  coin: CoinDetailResponse
+) {
+  return coin.rulers.reduce<
+    Array<{ role: string; attributions: CoinDetailResponse["rulers"] }>
+  >((groups, attribution) => {
+    const currentGroup = groups.at(-1)
+    if (currentGroup?.role === attribution.role) {
+      currentGroup.attributions.push(attribution)
+    } else {
+      groups.push({ role: attribution.role, attributions: [attribution] })
+    }
+    return groups
+  }, [])
+}
+
 export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
+  const attributionGroups =
+    groupRulingAuthorityAttributionsByConsecutiveRole(coin)
+
   return (
     <aside className="flex-1 border-l bg-sidebar">
       <div className="mb-2 p-6 pb-3">
@@ -16,8 +35,6 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
             )}
             <span>{coin.issuer.name}</span>
           </div>
-          <span>•</span>
-          <span>Ruler / Period</span>
         </div>
         <dl className="mt-6 font-mono text-xs">
           <div className="flex justify-between gap-4 border-t pt-3">
@@ -26,6 +43,22 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               {formatIssuePeriod(coin.firstIssueYear, coin.lastIssueYear)}
             </dd>
           </div>
+          {attributionGroups.map((group, groupIndex) => (
+            <div
+              className="flex justify-between gap-4 border-t pt-3"
+              key={`${group.role}-${groupIndex}`}
+            >
+              <dt className="text-muted-foreground">{group.role}</dt>
+              <dd className="text-right">
+                {group.attributions.map((attribution, attributionIndex) => (
+                  <div key={`${attribution.slug}-${attributionIndex}`}>
+                    {attribution.name}
+                    {attribution.tenure ? ` (${attribution.tenure})` : ""}
+                  </div>
+                ))}
+              </dd>
+            </div>
+          ))}
         </dl>
       </div>
     </aside>

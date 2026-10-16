@@ -33,6 +33,20 @@ describe("Coin routes", () => {
       },
       createdAt: new Date("2026-09-16T10:00:00.000Z"),
       updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+      rulingAuthorityAttributions: [
+        {
+          slug: "first-authority",
+          name: "First Authority",
+          role: "Period",
+          tenure: "2000–present",
+        },
+        {
+          slug: "second-authority",
+          name: "Second Authority",
+          role: "Co-ruler",
+          tenure: null,
+        },
+      ],
       obverse: {
         id: "20000000-0000-4000-8000-000000000001",
         coinId,
@@ -105,6 +119,20 @@ describe("Coin routes", () => {
         issuer: { name: "Argentina", code: "AR" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
+        rulers: [
+          {
+            slug: "first-authority",
+            name: "First Authority",
+            role: "Period",
+            tenure: "2000–present",
+          },
+          {
+            slug: "second-authority",
+            name: "Second Authority",
+            role: "Co-ruler",
+            tenure: null,
+          },
+        ],
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -178,6 +206,7 @@ describe("Coin routes", () => {
         checkReadiness: successfulReadinessCheck,
         findCoinById: async () => ({
           ...coin,
+          rulingAuthorityAttributions: [],
           obverse: null,
           reverse: null,
           edge: null,
@@ -194,6 +223,7 @@ describe("Coin routes", () => {
         issuer: { name: "Argentina", code: "AR" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
+        rulers: [],
         obverse: {
           description: null,
           imageUrl: null,
@@ -318,6 +348,7 @@ describe("Coin routes", () => {
         issuer: { name: "Roman Empire", code: "ROMAN" },
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
+        rulers: coin.rulingAuthorityAttributions,
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -518,10 +549,45 @@ describe("Coin routes", () => {
             properties: expect.objectContaining({
               ...issueYearProperties,
               issuer: { $ref: "#/components/schemas/Issuer" },
+              rulers: expect.objectContaining({
+                type: "array",
+                items: expect.objectContaining({
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    slug: expect.objectContaining({
+                      minLength: 3,
+                      maxLength: 64,
+                      pattern: expect.any(String),
+                    }),
+                    name: {
+                      type: "string",
+                      minLength: 1,
+                      maxLength: 200,
+                      pattern: expect.any(String),
+                    },
+                    role: {
+                      type: "string",
+                      minLength: 1,
+                      maxLength: 100,
+                      pattern: expect.any(String),
+                    },
+                    tenure: {
+                      type: "string",
+                      minLength: 1,
+                      maxLength: 200,
+                      pattern: expect.any(String),
+                      nullable: true,
+                    },
+                  },
+                  required: ["slug", "name", "role", "tenure"],
+                }),
+              }),
             }),
             required: expect.arrayContaining([
               "firstIssueYear",
               "lastIssueYear",
+              "rulers",
             ]),
           }),
           CoinListResponse: expect.objectContaining({
@@ -563,6 +629,14 @@ describe("Coin routes", () => {
           InternalError: expect.any(Object),
         })
       )
+      const coinListItemSchema = (
+        document.components.schemas.CoinListResponse as {
+          properties: {
+            coins: { items: { properties: Record<string, unknown> } }
+          }
+        }
+      ).properties.coins.items
+      expect(coinListItemSchema.properties).not.toHaveProperty("rulers")
     })
   })
 

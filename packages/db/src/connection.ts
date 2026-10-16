@@ -32,9 +32,18 @@ export interface Database {
 
 export type Coin = schema.CoinRecord & {
   issuer: schema.IssuerRecord
+  rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
   obverse: CoinSurfaceWithEngravers | null
   reverse: CoinSurfaceWithEngravers | null
   edge: schema.CoinSurfaceRecord | null
+}
+
+export type CoinRulingAuthorityAttribution = Pick<
+  schema.RulingAuthorityRecord,
+  "slug" | "name"
+> & {
+  role: string
+  tenure: string | null
 }
 
 export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
@@ -175,10 +184,30 @@ export function createDatabase(
                     .map((credit) => credit.engraver),
                 }
               : null
+          const rulingAuthorityAttributions = await transaction
+            .select({
+              slug: schema.rulingAuthorities.slug,
+              name: schema.rulingAuthorities.name,
+              role: schema.coinRulingAuthorityAttributions.role,
+              tenure: schema.coinRulingAuthorityAttributions.tenure,
+            })
+            .from(schema.coinRulingAuthorityAttributions)
+            .innerJoin(
+              schema.rulingAuthorities,
+              eq(
+                schema.coinRulingAuthorityAttributions.rulingAuthorityId,
+                schema.rulingAuthorities.id
+              )
+            )
+            .where(
+              eq(schema.coinRulingAuthorityAttributions.coinId, row.coin.id)
+            )
+            .orderBy(asc(schema.coinRulingAuthorityAttributions.position))
 
           return {
             ...row.coin,
             issuer: row.issuer,
+            rulingAuthorityAttributions,
             obverse: withEngravers(row.obverse),
             reverse: withEngravers(row.reverse),
             edge: row.edge,

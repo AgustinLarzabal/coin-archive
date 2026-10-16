@@ -5,6 +5,14 @@
     "issuerCode": "IT",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "italian-republic",
+        "role": "Period",
+        "tenure": "1946–present",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "A globe bearing the World Food Programme inscription, accompanied by ears of wheat, maize, and rice. The design also includes the Italian Republic monogram, the Rome mint mark, and the year 2004.",
       "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Obverse.jpg"
@@ -19,6 +27,14 @@
     "issuerCode": "VA",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "john-paul-ii",
+        "role": "Pope",
+        "tenure": "1978–2005",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "A schematic view of the Vatican City walls and St Peter's Basilica, surrounded by anniversary dates and inscriptions marking 75 years since the state's founding.",
       "imageKey": "Vatican City/John Paul II (Ioannes Paulus II) (1978-2005)/2004/John Paul II State anniversary - Obverse.jpg"
@@ -33,6 +49,14 @@
     "issuerCode": "SM",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "republic-of-san-marino",
+        "role": "Period",
+        "tenure": "301–present",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "A bust of historian and numismatist Bartolomeo Borghesi, encircled by the twelve stars of the European Union, his name, San Marino, and the year 2004.",
       "imageKey": "San Marino/Republic (301-date)/2004/Bartolomeo Borghesi - Obverse.jpg"
@@ -47,6 +71,14 @@
     "issuerCode": "LU",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "henri-of-luxembourg",
+        "role": "Grand Duke",
+        "tenure": "2000–2025",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "Grand Duke Henri's right-facing portrait appears beside his crowned monogram. The surrounding inscriptions include Luxembourg's name, his title, the year 2004, mint marks, and twelve stars.",
       "imageKey": "Luxembourg/Henry (2000-2025)/2004/Henri I Monogramme - Obverse.jpg"
@@ -61,6 +93,14 @@
     "issuerCode": "FI",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "republic-of-finland",
+        "role": "Period",
+        "tenure": "1919–present",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "A stylised pillar supports upward-growing shoots, symbolising the European Union's enlargement and its foundation for growth. The design includes the letters EU, the year 2004, and twelve stars.",
       "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Obverse.jpg"
@@ -75,6 +115,14 @@
     "issuerCode": "GR",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "third-hellenic-republic",
+        "role": "Period",
+        "tenure": "1974–present",
+        "position": 1
+      }
+    ],
     "obverse": {
       "description": "An ancient statue of a discobolus preparing to throw the discus, accompanied by the Athens 2004 Olympic emblem, the Greek euro denomination, the yearmark, and twelve stars.",
       "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Obverse.jpg"

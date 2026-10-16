@@ -26,6 +26,19 @@ export const engraverSlugSchema = z
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
+export const rulingAuthoritySlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
+const trimmedDisplayTextSchema = (maximumLength: number) =>
+  z
+    .string()
+    .min(1)
+    .max(maximumLength)
+    .regex(/^\S(?:[\s\S]*\S)?$/)
+
 export function isIsoIssuerCode(code: string) {
   return /^[A-Z]{2}$/.test(code)
 }
@@ -205,12 +218,24 @@ export type CoinSurfaceWithEngraversResponse = z.infer<
   typeof coinSurfaceWithEngraversResponseSchema
 >
 
+export const rulingAuthorityAttributionResponseSchema = z.strictObject({
+  slug: rulingAuthoritySlugSchema,
+  name: trimmedDisplayTextSchema(200),
+  role: trimmedDisplayTextSchema(100),
+  tenure: trimmedDisplayTextSchema(200).nullable(),
+})
+
+export type RulingAuthorityAttributionResponse = z.infer<
+  typeof rulingAuthorityAttributionResponseSchema
+>
+
 export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
     obverse: coinSurfaceWithEngraversResponseSchema,
     reverse: coinSurfaceWithEngraversResponseSchema,
     edge: coinSurfaceResponseSchema,
+    rulers: z.array(rulingAuthorityAttributionResponseSchema),
   })
   .refine(hasOrderedIssuePeriod, "Issue Period must be ordered")
 

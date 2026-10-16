@@ -57,6 +57,20 @@
       "when": 1792049911003,
       "tag": "0007_eminent_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792169251464,
+      "tag": "0008_light_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792169300621,
+      "tag": "0009_vengeful_harpoon",
+      "breakpoints": true
     }
   ]
 }

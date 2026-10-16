@@ -303,6 +303,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(coin.id)).resolves.toEqual({
         ...coin,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [first, second] },
         reverse: { ...reverse, engravers: [first] },
         edge: null,
@@ -584,6 +585,7 @@ describe("Coin persistence", () => {
       await expect(detail).resolves.toEqual({
         ...coin,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [engraver] },
         reverse: null,
         edge: null,
@@ -670,6 +672,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
         ...withAllSurfaces,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [] },
         reverse: { ...reverse, engravers: [] },
         edge,
@@ -679,6 +682,7 @@ describe("Coin persistence", () => {
       ).resolves.toEqual({
         ...withPartialReverse,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: null,
         reverse: { ...partialReverse, engravers: [] },
         edge: null,
@@ -686,6 +690,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
         ...withPartialEdge,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,
         edge: partialEdge,
@@ -693,6 +698,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
         ...withoutSurfaces,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,
         edge: null,
@@ -1621,6 +1627,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(inserted.id)).resolves.toEqual({
         ...inserted,
         issuer,
+        rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,
         edge: null,

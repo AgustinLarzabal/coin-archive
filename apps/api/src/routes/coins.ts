@@ -37,7 +37,6 @@ import type {
   CoinListPage,
 } from "@workspace/db"
 
-
 interface CoinRouteOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
@@ -224,6 +223,9 @@ function toCoinDetailResponse(
 ): CoinDetailResponse {
   return {
     ...toCoinResponseFields(coin),
+    rulers: coin.rulingAuthorityAttributions.map(
+      ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })
+    ),
     obverse: coin.obverse
       ? toCoinSurfaceWithEngraversResponse(coin.obverse, imageBaseUrl)
       : { ...missingCoinSurfaceWithEngraversResponse },

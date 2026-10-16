@@ -66,9 +66,8 @@ describe("Coin viewer route", () => {
 
     expect(await screen.findByText("Coin not found")).toBeInTheDocument()
     expect(
-      router.state.matches.find(
-        (match) => match.routeId === "/coins/$coinId"
-      )?.status
+      router.state.matches.find((match) => match.routeId === "/coins/$coinId")
+        ?.status
     ).toBe("notFound")
   })
 
@@ -94,9 +93,8 @@ describe("Coin viewer route", () => {
     expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
     expect(screen.queryByText("Coin not found")).not.toBeInTheDocument()
     expect(
-      router.state.matches.find(
-        (match) => match.routeId === "/coins/$coinId"
-      )?.status
+      router.state.matches.find((match) => match.routeId === "/coins/$coinId")
+        ?.status
     ).not.toBe("notFound")
   })
 
@@ -245,6 +243,70 @@ describe("Coin viewer route", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       `http://localhost:3001/v1/coins/${coinId}`
     )
+  })
+
+  it("groups consecutive Ruling Authorities by Role in curated order", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({
+              rulers: [
+                {
+                  slug: "first-co-ruler",
+                  name: "First Co-ruler",
+                  role: "King",
+                  tenure: "2000–2002",
+                },
+                {
+                  slug: "second-co-ruler",
+                  name: "Second Co-ruler",
+                  role: "King",
+                  tenure: null,
+                },
+                {
+                  slug: "shared-period",
+                  name: "Shared Period",
+                  role: "Period",
+                  tenure: "circa 2001",
+                },
+                {
+                  slug: "later-king",
+                  name: "Later King",
+                  role: "King",
+                  tenure: "2003–present",
+                },
+              ],
+            })
+          )
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
+    expect(screen.getAllByText("King")).toHaveLength(2)
+    expect(screen.getByText("Period")).toBeInTheDocument()
+    const details = screen.getByText("Issue Period").closest("dl")
+    expect(details).toHaveTextContent(
+      "KingFirst Co-ruler (2000–2002)Second Co-rulerPeriodShared Period (circa 2001)KingLater King (2003–present)"
+    )
+    expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
+  })
+
+  it("omits Ruling Authority rows for an uncurated Coin", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
+    expect(screen.queryByText("Unknown")).not.toBeInTheDocument()
   })
 
   it("renders a multi-year CE Issue Period in Coin details", async () => {

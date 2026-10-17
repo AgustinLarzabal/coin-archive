@@ -9,11 +9,11 @@ import {
   parseIssueYearFilterValue,
 } from "@/features/explore/filters/issue-year-filter-value"
 
-type YearFilterProps = {
+type IssueYearFilterProps = {
   year?: CoinListYear
 }
 
-export function YearFilter({ year }: YearFilterProps) {
+export function IssueYearFilter({ year }: IssueYearFilterProps) {
   const { updateFilters } = useExploreSearchNavigation()
   const errorId = useId()
   const [draft, setDraft] = useState(formatIssueYearFilterValue(year))

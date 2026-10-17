@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 
-import { ExploreGrid } from "./components/explore-grid"
-import { ExplorePagination } from "./components/explore-pagination"
+import { ExploreGrid } from "./explore-grid"
+import { ExplorePagination } from "./explore-pagination"
 import type { CoinListFilters } from "@/data/archive"
 import { RouteMessage } from "@/components/route-message"
 import { coinListQueryOptions } from "@/data/archive"

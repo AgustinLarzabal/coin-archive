@@ -14,8 +14,8 @@ import {
   rulingAuthorityListQueryOptions,
   RulingAuthorityListRequestError,
 } from "@/data/archive"
-import { ExploreFilters } from "@/features/explore/components/explore-filters"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
+import { ExploreFilters } from "@/features/explore/filters/explore-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
@@ -36,12 +36,12 @@ function ExploreLayout() {
     distribution,
     engraver: engraverSlug,
     issuer: issuerCode,
-    ruler: rulerSlug,
+    ruler: rulingAuthoritySlug,
     year,
   } = Route.useSearch()
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
-  const { data: rulerList } = useSuspenseQuery(
+  const { data: rulingAuthorityList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
   )
 
@@ -53,8 +53,8 @@ function ExploreLayout() {
         engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
-        rulerSlug={rulerSlug}
-        rulers={rulerList.rulers}
+        rulingAuthoritySlug={rulingAuthoritySlug}
+        rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
       />
       <Outlet />

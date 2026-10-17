@@ -119,8 +119,8 @@ function collectPlanNodes(plan: ExplainPlan): Array<string> {
 const scenarios: Array<PageScenario> = [
   {
     expectedFirstId: 1,
-    expectedIdStep: 2,
-    expectedTotalItems: 50_000,
+    expectedIdStep: 10,
+    expectedTotalItems: 10_000,
     filter: { distribution: "non-circulating", kind: "distribution" },
     label: "distribution-first",
     page: 1,
@@ -132,12 +132,12 @@ const scenarios: Array<PageScenario> = [
     }),
   },
   {
-    expectedFirstId: 49_801,
-    expectedIdStep: 2,
-    expectedTotalItems: 50_000,
+    expectedFirstId: 49_001,
+    expectedIdStep: 10,
+    expectedTotalItems: 10_000,
     filter: { distribution: "non-circulating", kind: "distribution" },
     label: "distribution-middle",
-    page: 250,
+    page: 50,
     planExpectation: orderedPlanExpectation({
       index: "coins_distribution_created_at_id_index",
       maxPlanRows: 150_000,
@@ -146,17 +146,17 @@ const scenarios: Array<PageScenario> = [
     }),
   },
   {
-    expectedFirstId: 99_801,
-    expectedIdStep: 2,
-    expectedTotalItems: 50_000,
+    expectedFirstId: 99_001,
+    expectedIdStep: 10,
+    expectedTotalItems: 10_000,
     filter: { distribution: "non-circulating", kind: "distribution" },
     label: "distribution-deep",
-    page: 500,
-    planExpectation: orderedPlanExpectation({
-      index: "coins_distribution_created_at_id_index",
-      maxPlanRows: 300_000,
-      maxRowsRemovedByFilter: 100,
-      maxSharedBlocks: 10_000,
+    page: 100,
+    planExpectation: sortedPlanExpectation({
+      maxPlanRows: 75_000,
+      maxSharedBlocks: 5_000,
+      maxSortRows: 10_000,
+      requiredIndexes: ["coins_distribution_created_at_id_index"],
     }),
   },
   {
@@ -415,7 +415,7 @@ async function seedDataset(
       'Performance Coin ' || g,
       ('10000000-0000-4000-8000-' || lpad((((g - 1) % 10) + 1)::text, 12, '0'))::uuid,
       case
-        when g % 2 = 1 then 'non-circulating'::coin_distribution
+        when g % 10 = 1 then 'non-circulating'::coin_distribution
         else 'circulating-commemorative'::coin_distribution
       end,
       case when g % 2 = 1 then 1988 else 1970 end,

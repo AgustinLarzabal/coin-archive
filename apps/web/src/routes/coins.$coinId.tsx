@@ -9,7 +9,7 @@ import {
   InvalidCoinResponseError,
   validateCoinId,
 } from "@/data/archive"
-import { CoinViewer } from "@/features/coin-viewer/components/coin-viewer"
+import { CoinViewer } from "@/features/coin-viewer/coin-viewer"
 
 export const Route = createFileRoute("/coins/$coinId")({
   loader: async ({ context, params }) => {

@@ -35,44 +35,11 @@ export function ExploreFilters({
       aria-label="Explore filters"
       className="flex min-h-18 flex-wrap items-start gap-3 border-b px-5 py-5 md:items-center md:gap-5 md:px-10"
     >
-      <DistributionFilter
-        distribution={distribution}
-        engraverSlug={engraverSlug}
-        issuerCode={issuerCode}
-        rulerSlug={rulerSlug}
-        year={year}
-      />
-      <IssuerCombobox
-        distribution={distribution}
-        engraverSlug={engraverSlug}
-        issuerCode={issuerCode}
-        issuers={issuers}
-        rulerSlug={rulerSlug}
-        year={year}
-      />
-      <RulerCombobox
-        distribution={distribution}
-        engraverSlug={engraverSlug}
-        issuerCode={issuerCode}
-        rulerSlug={rulerSlug}
-        rulers={rulers}
-        year={year}
-      />
-      <EngraverCombobox
-        distribution={distribution}
-        engraverSlug={engraverSlug}
-        engravers={engravers}
-        issuerCode={issuerCode}
-        rulerSlug={rulerSlug}
-        year={year}
-      />
-      <YearFilter
-        distribution={distribution}
-        engraverSlug={engraverSlug}
-        issuerCode={issuerCode}
-        rulerSlug={rulerSlug}
-        year={year}
-      />
+      <DistributionFilter distribution={distribution} />
+      <IssuerCombobox issuerCode={issuerCode} issuers={issuers} />
+      <RulerCombobox rulerSlug={rulerSlug} rulers={rulers} />
+      <EngraverCombobox engraverSlug={engraverSlug} engravers={engravers} />
+      <YearFilter year={year} />
     </nav>
   )
 }

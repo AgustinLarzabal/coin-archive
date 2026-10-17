@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import { coinDistributionSchema } from "@workspace/api"
 import {
   Combobox,
@@ -8,9 +7,10 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
-import type { CoinDistribution, CoinListYear } from "@workspace/api"
+import type { CoinDistribution } from "@workspace/api"
 
 import { coinDistributionLabels } from "@/features/coin-distribution"
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 const distributionOptions = coinDistributionSchema.options.map((value) => ({
   label: coinDistributionLabels[value],
@@ -22,18 +22,10 @@ const getDistributionLabel = (value: string) =>
 
 export function DistributionFilter({
   distribution,
-  engraverSlug,
-  issuerCode,
-  rulerSlug,
-  year,
 }: {
   distribution?: CoinDistribution
-  engraverSlug?: string
-  issuerCode?: string
-  rulerSlug?: string
-  year?: CoinListYear
 }) {
-  const navigate = useNavigate({ from: "/" })
+  const { updateFilters } = useExploreSearchNavigation()
 
   return (
     <Combobox
@@ -49,16 +41,7 @@ export function DistributionFilter({
           : undefined
         if (nextDistribution === distribution) return
 
-        void navigate({
-          to: "/",
-          search: {
-            distribution: nextDistribution,
-            engraver: engraverSlug,
-            issuer: issuerCode,
-            ruler: rulerSlug,
-            year,
-          },
-        })
+        updateFilters({ distribution: nextDistribution })
       }}
     >
       <ComboboxInput

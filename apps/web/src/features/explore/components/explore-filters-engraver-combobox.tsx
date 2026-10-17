@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import {
   Combobox,
   ComboboxContent,
@@ -8,19 +7,13 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 
-import type {
-  CoinDistribution,
-  CoinListYear,
-  EngraverListItemResponse,
-} from "@workspace/api"
+import type { EngraverListItemResponse } from "@workspace/api"
+
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 type EngraverComboboxProps = {
-  distribution?: CoinDistribution
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
-  issuerCode?: string
-  rulerSlug?: string
-  year?: CoinListYear
 }
 
 type EngraverOption = {
@@ -30,14 +23,10 @@ type EngraverOption = {
 }
 
 export function EngraverCombobox({
-  distribution,
   engraverSlug,
   engravers,
-  issuerCode,
-  rulerSlug,
-  year,
 }: EngraverComboboxProps) {
-  const navigate = useNavigate({ from: "/" })
+  const { updateFilters } = useExploreSearchNavigation()
   const unknownEngraverSlug =
     engraverSlug &&
     !engravers.some((engraver) => engraver.slug === engraverSlug)
@@ -74,16 +63,7 @@ export function EngraverCombobox({
 
         if (nextEngraverSlug === engraverSlug) return
 
-        void navigate({
-          to: "/",
-          search: {
-            distribution,
-            engraver: nextEngraverSlug,
-            issuer: issuerCode,
-            ruler: rulerSlug,
-            year,
-          },
-        })
+        updateFilters({ engraver: nextEngraverSlug })
       }}
     >
       <ComboboxInput

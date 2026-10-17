@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import {
   Pagination,
   PaginationContent,
@@ -9,36 +8,22 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@workspace/ui/components/pagination"
-import type { CoinListFilters } from "@/data/archive"
 import type { CoinListPaginationResponse } from "@workspace/api"
+
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 const MAX_VISIBLE_PAGE_LINKS = 5
 
 export function ExplorePagination({
-  filters,
   pagination,
 }: {
-  filters: CoinListFilters
   pagination: CoinListPaginationResponse
 }) {
-  const navigate = useNavigate({ from: "/" })
+  const { goToPage } = useExploreSearchNavigation()
   const { page, totalPages } = pagination
   const isFirstPage = page === 1
   const isLastPage = page === totalPages
   const nearbyPages = getNearbyPages(page, totalPages)
-  const goToPage = (nextPage: number) => {
-    void navigate({
-      to: "/",
-      search: {
-        distribution: filters.distribution,
-        engraver: filters.engraverSlug,
-        issuer: filters.issuerCode,
-        ruler: filters.rulingAuthoritySlug,
-        year: filters.issueYear,
-        page: nextPage === 1 ? undefined : nextPage,
-      },
-    })
-  }
   return (
     <Pagination className="my-10 gap-6">
       <PaginationContent>

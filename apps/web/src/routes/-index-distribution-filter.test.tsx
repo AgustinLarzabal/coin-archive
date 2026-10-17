@@ -2,18 +2,50 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
+  coinListJsonResponse,
   createArchiveFetch,
+  jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-it("selects one accessible Coin Distribution while preserving filters", async () => {
-  const fetchMock = vi.fn(
-    createArchiveFetch({
-      issuers: [{ code: "AR", name: "Argentina" }],
-    })
-  )
+it("selects a Distribution, preserves filters, and returns to the first page", async () => {
+  const fetchMock = vi.fn((input: string | URL | Request) => {
+    const url = String(input)
+
+    if (url.endsWith("/v1/issuers")) {
+      return Promise.resolve(
+        jsonResponse({ issuers: [{ code: "AR", name: "Argentina" }] })
+      )
+    }
+    if (url.endsWith("/v1/engravers")) {
+      return Promise.resolve(
+        jsonResponse({
+          engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
+        })
+      )
+    }
+    if (url.endsWith("/v1/rulers")) {
+      return Promise.resolve(
+        jsonResponse({
+          rulers: [{ slug: "selected-authority", name: "Selected Authority" }],
+        })
+      )
+    }
+
+    const page = Number(new URL(url).searchParams.get("page"))
+    return Promise.resolve(
+      coinListJsonResponse([], {
+        page,
+        pageSize: 24,
+        totalItems: 49,
+        totalPages: 3,
+      })
+    )
+  })
   vi.stubGlobal("fetch", fetchMock)
-  const router = renderArchiveRoute("/?issuer=AR&year=-44")
+  const router = renderArchiveRoute(
+    "/?issuer=AR&engraver=first-engraver&ruler=selected-authority&year=-44&page=3"
+  )
   const combobox = await screen.findByRole("combobox", {
     name: "Distribution",
   })
@@ -32,11 +64,18 @@ it("selects one accessible Coin Distribution while preserving filters", async ()
     detail: 0,
   })
 
-  expect(router.state.location.search).toEqual({
-    distribution: "non-circulating",
-    issuer: "AR",
-    year: -44,
-  })
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      distribution: "non-circulating",
+      engraver: "first-engraver",
+      issuer: "AR",
+      ruler: "selected-authority",
+      year: -44,
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?distribution=non-circulating&issuer=AR&engraver=first-engraver&ruler=selected-authority&year=-44&page=1&pageSize=24"
+  )
 })
 
 it("restores one Coin Distribution and exposes its clear control", async () => {

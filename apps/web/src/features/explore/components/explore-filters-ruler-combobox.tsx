@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import {
   Combobox,
   ComboboxContent,
@@ -7,11 +6,9 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@workspace/ui/components/combobox"
-import type {
-  CoinDistribution,
-  CoinListYear,
-  RulingAuthorityListItemResponse,
-} from "@workspace/api"
+import type { RulingAuthorityListItemResponse } from "@workspace/api"
+
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 type RulerOption = {
   disabled?: boolean
@@ -20,21 +17,13 @@ type RulerOption = {
 }
 
 export function RulerCombobox({
-  distribution,
-  engraverSlug,
-  issuerCode,
   rulerSlug,
   rulers,
-  year,
 }: {
-  distribution?: CoinDistribution
-  engraverSlug?: string
-  issuerCode?: string
   rulerSlug?: string
   rulers: Array<RulingAuthorityListItemResponse>
-  year?: CoinListYear
 }) {
-  const navigate = useNavigate({ from: "/" })
+  const { updateFilters } = useExploreSearchNavigation()
   const missingSlug =
     rulerSlug && !rulers.some((ruler) => ruler.slug === rulerSlug)
       ? rulerSlug
@@ -76,16 +65,7 @@ export function RulerCombobox({
       onValueChange={(ruler: string | null) => {
         const nextRulerSlug = ruler || undefined
         if (nextRulerSlug === rulerSlug) return
-        void navigate({
-          to: "/",
-          search: {
-            distribution,
-            engraver: engraverSlug,
-            issuer: issuerCode,
-            ruler: nextRulerSlug,
-            year,
-          },
-        })
+        updateFilters({ ruler: nextRulerSlug })
       }}
     >
       <ComboboxInput

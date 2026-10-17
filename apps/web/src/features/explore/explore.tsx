@@ -25,7 +25,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
   return (
     <>
       <ExploreGrid coins={data.coins} />
-      <ExplorePagination filters={filters} pagination={data.pagination} />
+      <ExplorePagination pagination={data.pagination} />
     </>
   )
 }

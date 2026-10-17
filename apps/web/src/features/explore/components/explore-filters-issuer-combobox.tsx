@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import {
   Combobox,
   ComboboxContent,
@@ -8,19 +7,13 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 
-import type {
-  CoinDistribution,
-  CoinListYear,
-  IssuerResponse,
-} from "@workspace/api"
+import type { IssuerResponse } from "@workspace/api"
+
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 type IssuerComboboxProps = {
-  distribution?: CoinDistribution
-  engraverSlug?: string
   issuerCode?: string
-  rulerSlug?: string
   issuers: Array<IssuerResponse>
-  year?: CoinListYear
 }
 
 type IssuerOption = {
@@ -29,15 +22,8 @@ type IssuerOption = {
   value: string
 }
 
-export function IssuerCombobox({
-  distribution,
-  engraverSlug,
-  issuerCode,
-  rulerSlug,
-  issuers,
-  year,
-}: IssuerComboboxProps) {
-  const navigate = useNavigate({ from: "/" })
+export function IssuerCombobox({ issuerCode, issuers }: IssuerComboboxProps) {
+  const { updateFilters } = useExploreSearchNavigation()
   const unknownIssuerCode =
     issuerCode && !issuers.some((issuer) => issuer.code === issuerCode)
       ? issuerCode
@@ -74,16 +60,7 @@ export function IssuerCombobox({
 
         if (nextIssuerCode === issuerCode) return
 
-        void navigate({
-          to: "/",
-          search: {
-            distribution,
-            engraver: engraverSlug,
-            issuer: nextIssuerCode,
-            ruler: rulerSlug,
-            year,
-          },
-        })
+        updateFilters({ issuer: nextIssuerCode })
       }}
     >
       <ComboboxInput

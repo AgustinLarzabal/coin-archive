@@ -1,30 +1,20 @@
-import { useNavigate } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
-import type { CoinDistribution, CoinListYear } from "@workspace/api"
+import type { CoinListYear } from "@workspace/api"
 
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 import {
   formatIssueYearFilterValue,
   parseIssueYearFilterValue,
 } from "@/features/explore/filters/issue-year-filter-value"
 
 type YearFilterProps = {
-  distribution?: CoinDistribution
-  engraverSlug?: string
-  issuerCode?: string
-  rulerSlug?: string
   year?: CoinListYear
 }
 
-export function YearFilter({
-  distribution,
-  engraverSlug,
-  issuerCode,
-  rulerSlug,
-  year,
-}: YearFilterProps) {
-  const navigate = useNavigate({ from: "/" })
+export function YearFilter({ year }: YearFilterProps) {
+  const { updateFilters } = useExploreSearchNavigation()
   const errorId = useId()
   const [draft, setDraft] = useState(formatIssueYearFilterValue(year))
   const [error, setError] = useState<string>()
@@ -44,31 +34,14 @@ export function YearFilter({
     }
 
     setError(undefined)
-    void navigate({
-      to: "/",
-      search: {
-        distribution,
-        engraver: engraverSlug,
-        issuer: issuerCode,
-        ruler: rulerSlug,
-        year: issueYear,
-      },
-    })
+    updateFilters({ year: issueYear })
   }
 
   const clear = () => {
     setDraft("")
     setError(undefined)
     if (year === undefined) return
-    void navigate({
-      to: "/",
-      search: {
-        distribution,
-        engraver: engraverSlug,
-        issuer: issuerCode,
-        ruler: rulerSlug,
-      },
-    })
+    updateFilters({ year: undefined })
   }
 
   return (

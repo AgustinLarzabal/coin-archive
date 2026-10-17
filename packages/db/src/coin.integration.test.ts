@@ -16,7 +16,14 @@ import {
 const SEEDED_COIN_ID = "00000000-0000-4000-8000-000000000001"
 const FIRST_ENGRAVER_SLUG = "first-engraver"
 const SECOND_ENGRAVER_SLUG = "second-engraver"
-const TEST_ISSUE_PERIOD = { firstIssueYear: 2004, lastIssueYear: 2004 }
+const TEST_DISTRIBUTION = {
+  distribution: "circulating-commemorative" as const,
+}
+const TEST_COIN_REQUIRED_FIELDS = {
+  ...TEST_DISTRIBUTION,
+  firstIssueYear: 2004,
+  lastIssueYear: 2004,
+}
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
   const [issuer] = await database.orm
@@ -45,6 +52,67 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("requires one supported Coin Distribution and returns it from list and detail queries", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+
+      await expect(
+        database.orm.execute(sql`
+          insert into coins (
+            title,
+            issuer_id,
+            first_issue_year,
+            last_issue_year
+          ) values ('Missing Coin Distribution', ${issuer.id}, 2004, 2004)
+        `)
+      ).rejects.toThrow()
+
+      await expect(
+        database.orm.execute(sql`
+          insert into coins (
+            title,
+            issuer_id,
+            distribution,
+            first_issue_year,
+            last_issue_year
+          ) values (
+            'Unsupported Coin Distribution',
+            ${issuer.id},
+            'unknown',
+            2004,
+            2004
+          )
+        `)
+      ).rejects.toThrow()
+
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          title: "Distributed Coin",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+          distribution: "non-circulating",
+        })
+        .returning()
+
+      await expect(database.listCoins()).resolves.toEqual({
+        coins: [
+          expect.objectContaining({
+            id: coin.id,
+            distribution: "non-circulating",
+          }),
+        ],
+        totalItems: 1,
+      })
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        distribution: "non-circulating",
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("requires a valid Issue Period", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -52,8 +120,12 @@ describe("Coin persistence", () => {
 
       await expect(
         database.orm.execute(sql`
-          insert into coins (title, issuer_id)
-          values ('Missing Issue Period', ${issuer.id})
+          insert into coins (title, issuer_id, distribution)
+          values (
+            'Missing Issue Period',
+            ${issuer.id},
+            'circulating-commemorative'
+          )
         `)
       ).rejects.toThrow()
 
@@ -66,6 +138,7 @@ describe("Coin persistence", () => {
           database.orm.insert(database.schema.coins).values({
             title: "Invalid Issue Period",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             ...issuePeriod,
           })
         ).rejects.toThrow()
@@ -77,6 +150,7 @@ describe("Coin persistence", () => {
           .values({
             title: "Valid Issue Period",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: -1,
             lastIssueYear: 1,
           })
@@ -102,8 +176,14 @@ describe("Coin persistence", () => {
         first_issue_year: number
         last_issue_year: number
       }>(sql`
-        insert into coins (title, issuer_id, first_issue_year, last_issue_year)
-        select 'Manual Neon staging Coin', id, 2004, 2004
+        insert into coins (
+          title,
+          issuer_id,
+          distribution,
+          first_issue_year,
+          last_issue_year
+        )
+        select 'Manual Neon staging Coin', id, 'circulating-commemorative', 2004, 2004
         from issuers
         where code = 'IT'
         returning id, title, first_issue_year, last_issue_year
@@ -138,6 +218,7 @@ describe("Coin persistence", () => {
           .values({
             title: "Dated Coin",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear,
             lastIssueYear,
           })
@@ -227,7 +308,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Credit-only Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [engraver] = await database.orm
@@ -276,7 +357,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Credited Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [obverse, reverse] = await database.orm
@@ -322,7 +403,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Invariant Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [obverse, edge] = await database.orm
@@ -438,7 +519,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Concurrent Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [obverse] = await database.orm
@@ -533,7 +614,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Snapshot Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [obverse] = await database.orm
@@ -615,22 +696,22 @@ describe("Coin persistence", () => {
           {
             title: "Coin with all surfaces",
             issuerId: issuer.id,
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
             title: "Coin with a partial Reverse",
             issuerId: issuer.id,
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
             title: "Coin with a partial Edge",
             issuerId: issuer.id,
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
             title: "Coin without surfaces",
             issuerId: issuer.id,
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
           },
         ])
         .returning()
@@ -737,7 +818,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Three surfaces",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -774,7 +855,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Deferred surface data",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -817,7 +898,7 @@ describe("Coin persistence", () => {
           .values({
             title: "Described Coin",
             issuerId: issuer.id,
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
           })
           .returning()
 
@@ -853,7 +934,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Coin image",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -878,7 +959,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Empty Surface",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -901,7 +982,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Timestamped Surface",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [inserted] = await database.orm
@@ -964,7 +1045,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Disposable Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [surface] = await database.orm
@@ -1016,21 +1097,21 @@ describe("Coin persistence", () => {
           id: olderId,
           title: "Older coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
         },
         {
           id: secondTiedId,
           title: "Second tied coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
           id: firstTiedId,
           title: "First tied coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
       ])
@@ -1057,7 +1138,7 @@ describe("Coin persistence", () => {
           id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
           title: `Coin ${index + 1}`,
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         }))
       )
@@ -1092,7 +1173,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Coin visible to the page snapshot",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -1159,20 +1240,20 @@ describe("Coin persistence", () => {
           id: secondTiedId,
           title: "Second Roman coin",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
           title: "Argentine coin",
           issuerId: argentina.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
           id: firstTiedId,
           title: "First Roman coin",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
       ])
@@ -1206,6 +1287,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000001",
           title: "Overlaps the first boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1984,
           lastIssueYear: 1986,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
@@ -1214,6 +1296,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000002",
           title: "Contained by requested range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1987,
           lastIssueYear: 1989,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
@@ -1222,6 +1305,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000003",
           title: "Contains requested range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1984,
           lastIssueYear: 1992,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
@@ -1230,6 +1314,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000004",
           title: "Overlaps the last boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1990,
           lastIssueYear: 1992,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1238,6 +1323,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000005",
           title: "Before requested range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1984,
           lastIssueYear: 1985,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1246,6 +1332,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000006",
           title: "After requested range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 1991,
           lastIssueYear: 1992,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
@@ -1277,7 +1364,7 @@ describe("Coin persistence", () => {
       await database.orm.insert(database.schema.coins).values({
         title: "Stored Issue Year",
         issuerId: issuer.id,
-        ...TEST_ISSUE_PERIOD,
+        ...TEST_COIN_REQUIRED_FIELDS,
       })
 
       await expect(
@@ -1301,6 +1388,7 @@ describe("Coin persistence", () => {
         {
           title: "Touches first BCE boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -450,
           lastIssueYear: -400,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
@@ -1308,6 +1396,7 @@ describe("Coin persistence", () => {
         {
           title: "Contained BCE period",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -350,
           lastIssueYear: -325,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
@@ -1315,6 +1404,7 @@ describe("Coin persistence", () => {
         {
           title: "Contains BCE range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -500,
           lastIssueYear: -250,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
@@ -1322,6 +1412,7 @@ describe("Coin persistence", () => {
         {
           title: "Touches last BCE boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -300,
           lastIssueYear: -250,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1329,6 +1420,7 @@ describe("Coin persistence", () => {
         {
           title: "Before BCE range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -500,
           lastIssueYear: -401,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1336,6 +1428,7 @@ describe("Coin persistence", () => {
         {
           title: "After BCE range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -299,
           lastIssueYear: -200,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
@@ -1367,6 +1460,7 @@ describe("Coin persistence", () => {
         {
           title: "Touches BCE boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -30,
           lastIssueYear: -25,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
@@ -1374,6 +1468,7 @@ describe("Coin persistence", () => {
         {
           title: "Contained cross-era period",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -10,
           lastIssueYear: 10,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
@@ -1381,6 +1476,7 @@ describe("Coin persistence", () => {
         {
           title: "Contains cross-era range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -50,
           lastIssueYear: 50,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
@@ -1388,6 +1484,7 @@ describe("Coin persistence", () => {
         {
           title: "Touches CE boundary",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 19,
           lastIssueYear: 25,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1395,6 +1492,7 @@ describe("Coin persistence", () => {
         {
           title: "Before cross-era range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: -50,
           lastIssueYear: -26,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1402,6 +1500,7 @@ describe("Coin persistence", () => {
         {
           title: "After cross-era range",
           issuerId: issuer.id,
+          ...TEST_DISTRIBUTION,
           firstIssueYear: 20,
           lastIssueYear: 50,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
@@ -1451,6 +1550,7 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
+          distribution: "circulating-commemorative",
           firstIssueYear: -30,
           lastIssueYear: 1,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1459,6 +1559,7 @@ describe("Coin persistence", () => {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
+          distribution: "circulating-commemorative",
           firstIssueYear: -50,
           lastIssueYear: -25,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1467,21 +1568,21 @@ describe("Coin persistence", () => {
           id: reverseId,
           title: "Reverse credit",
           issuerId: argentina.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
           id: edgeOnlyId,
           title: "Edge only",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
           id: otherEngraverId,
           title: "Other Engraver",
           issuerId: romanEmpire.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
       ])
@@ -1611,7 +1712,7 @@ describe("Coin persistence", () => {
         .values({
           title: "First coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
 
@@ -1645,8 +1746,16 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
-        { title: "Shared title", issuerId: issuer.id, ...TEST_ISSUE_PERIOD },
-        { title: "Shared title", issuerId: issuer.id, ...TEST_ISSUE_PERIOD },
+        {
+          title: "Shared title",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+        },
+        {
+          title: "Shared title",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+        },
       ])
 
       const result = await database.orm.execute<{
@@ -1694,7 +1803,7 @@ describe("Coin persistence", () => {
       await expect(
         database.orm
           .insert(database.schema.coins)
-          .values({ title, issuerId: issuer.id, ...TEST_ISSUE_PERIOD })
+          .values({ title, issuerId: issuer.id, ...TEST_COIN_REQUIRED_FIELDS })
       ).rejects.toThrow()
     } finally {
       await database.close()
@@ -1710,7 +1819,7 @@ describe("Coin persistence", () => {
         .values({
           title: "Before",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       await database.orm.execute(sql`
@@ -1741,7 +1850,7 @@ describe("Issuer persistence", () => {
       await database.orm.insert(database.schema.coins).values({
         title: "First coin",
         issuerId: argentina.id,
-        ...TEST_ISSUE_PERIOD,
+        ...TEST_COIN_REQUIRED_FIELDS,
       })
 
       await expect(database.listIssuers()).resolves.toEqual([
@@ -1824,7 +1933,7 @@ describe("Issuer persistence", () => {
       await database.orm.insert(database.schema.coins).values({
         title: "First coin",
         issuerId: issuer.id,
-        ...TEST_ISSUE_PERIOD,
+        ...TEST_COIN_REQUIRED_FIELDS,
       })
       await expect(
         database.orm
@@ -1876,7 +1985,7 @@ describe("Engraver list", () => {
         .values({
           title: "Credited Coin",
           issuerId: issuer.id,
-          ...TEST_ISSUE_PERIOD,
+          ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
       const [obverse] = await database.orm
@@ -1925,7 +2034,7 @@ describe("Coin seed", () => {
         id: SEEDED_COIN_ID,
         title: "First coin",
         issuerCode: "AR",
-        ...TEST_ISSUE_PERIOD,
+        ...TEST_COIN_REQUIRED_FIELDS,
         obverse: {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
@@ -1944,6 +2053,32 @@ describe("Coin seed", () => {
     ],
   }
 
+  it.each([
+    ["missing", undefined],
+    ["unsupported", "unknown"],
+  ])(
+    "rejects a %s Coin Distribution before attempting writes",
+    async (_case, distribution) => {
+      const database = createDatabase(getDatabaseUrl())
+      try {
+        const transaction = vi.spyOn(database.orm, "transaction")
+        const { distribution: _distribution, ...coinWithoutDistribution } =
+          validSeed.coins[0]
+        const coin =
+          distribution === undefined
+            ? coinWithoutDistribution
+            : { ...coinWithoutDistribution, distribution }
+
+        await expect(
+          seedCoins(database, { ...validSeed, coins: [coin] })
+        ).rejects.toThrow()
+        expect(transaction).not.toHaveBeenCalled()
+      } finally {
+        await database.close()
+      }
+    }
+  )
+
   it("inserts a Coin Surface whose only seeded data is an Engraver credit", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -1955,7 +2090,7 @@ describe("Coin seed", () => {
             id: SEEDED_COIN_ID,
             title: "Credit-only Coin",
             issuerCode: "AR",
-            ...TEST_ISSUE_PERIOD,
+            ...TEST_COIN_REQUIRED_FIELDS,
             obverse: { engraverSlugs: [FIRST_ENGRAVER_SLUG] },
           },
         ],
@@ -2094,6 +2229,11 @@ describe("Coin seed", () => {
         ...sixthSeededCoinPage.coins,
       ]
       expect(seededCoins).toHaveLength(587)
+      expect(
+        seededCoins.every(
+          ({ distribution }) => distribution === "circulating-commemorative"
+        )
+      ).toBe(true)
       expect(firstSeededCoinPage.totalItems).toBe(587)
       expect(secondSeededCoinPage.totalItems).toBe(587)
       expect(thirdSeededCoinPage.totalItems).toBe(587)
@@ -2487,7 +2627,7 @@ describe("Coin seed", () => {
         id: duplicateId,
         title: "Existing",
         issuerId: (await insertArgentina(database)).id,
-        ...TEST_ISSUE_PERIOD,
+        ...TEST_COIN_REQUIRED_FIELDS,
       })
 
       await expect(
@@ -2500,7 +2640,7 @@ describe("Coin seed", () => {
               id: duplicateId,
               title: "Duplicate",
               issuerCode: "UY",
-              ...TEST_ISSUE_PERIOD,
+              ...TEST_COIN_REQUIRED_FIELDS,
             },
           ],
         })

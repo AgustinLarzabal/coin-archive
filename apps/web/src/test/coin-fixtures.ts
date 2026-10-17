@@ -35,6 +35,7 @@ export function coinDetailFixture(
   return {
     id: "00000000-0000-4000-8000-000000000001",
     title: "First coin",
+    distribution: "circulating-commemorative",
     firstIssueYear: 2004,
     lastIssueYear: 2004,
     issuer: { name: "Argentina", code: "AR" },

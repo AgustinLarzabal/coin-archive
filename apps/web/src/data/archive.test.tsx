@@ -25,6 +25,7 @@ const coinId = "00000000-0000-4000-8000-000000000001"
 const coin = {
   id: coinId,
   title: "First coin",
+  distribution: "circulating-commemorative" as const,
   firstIssueYear: 2004,
   lastIssueYear: 2004,
   issuer: { name: "Argentina", code: "AR" },
@@ -121,7 +122,7 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
-  it.each(["firstIssueYear", "lastIssueYear"] as const)(
+  it.each(["distribution", "firstIssueYear", "lastIssueYear"] as const)(
     "rejects a legacy Coin list response without %s",
     async (endpoint) => {
       const legacyCoin = { ...coin, [endpoint]: undefined }
@@ -256,7 +257,7 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
-  it.each(["firstIssueYear", "lastIssueYear"] as const)(
+  it.each(["distribution", "firstIssueYear", "lastIssueYear"] as const)(
     "rejects a legacy Coin detail response without %s",
     async (endpoint) => {
       vi.stubGlobal(

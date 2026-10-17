@@ -72,9 +72,18 @@ const lastIssueYearSchema = issueYearSchema.meta({
   not: { const: 0 },
 })
 
+export const coinDistributionSchema = z.enum([
+  "standard-circulation",
+  "circulating-commemorative",
+  "non-circulating",
+])
+
+export type CoinDistribution = z.infer<typeof coinDistributionSchema>
+
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
+  distribution: coinDistributionSchema,
   firstIssueYear: firstIssueYearSchema,
   lastIssueYear: lastIssueYearSchema,
   issuer: issuerResponseSchema,

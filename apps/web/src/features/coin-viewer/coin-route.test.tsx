@@ -109,6 +109,19 @@ describe("Coin viewer route", () => {
     expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
   })
 
+  it("rejects a Coin detail response without Coin Distribution", async () => {
+    const { distribution: _distribution, ...coinWithoutDistribution } =
+      coinDetailFixture()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinWithoutDistribution)))
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
+  })
+
   it("distinguishes network and server failures", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")))
 
@@ -243,6 +256,25 @@ describe("Coin viewer route", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       `http://localhost:3001/v1/coins/${coinId}`
     )
+  })
+
+  it.each([
+    ["standard-circulation", "Standard circulation"],
+    ["circulating-commemorative", "Circulating commemorative"],
+    ["non-circulating", "Non-circulating"],
+  ] as const)("renders %s as %s", async (distribution, label) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(jsonResponse(coinDetailFixture({ distribution })))
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Coin Distribution")).toBeInTheDocument()
+    expect(screen.getByText(label)).toBeInTheDocument()
+    expect(screen.queryByText(distribution)).not.toBeInTheDocument()
   })
 
   it("groups consecutive Ruling Authorities by Role in curated order", async () => {

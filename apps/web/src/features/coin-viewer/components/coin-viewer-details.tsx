@@ -5,6 +5,12 @@ import type { CoinDetailResponse } from "@workspace/api"
 
 import { formatIssuePeriod } from "@/features/issue-period"
 
+const distributionLabels = {
+  "standard-circulation": "Standard circulation",
+  "circulating-commemorative": "Circulating commemorative",
+  "non-circulating": "Non-circulating",
+} satisfies Record<CoinDetailResponse["distribution"], string>
+
 function groupRulingAuthorityAttributionsByConsecutiveRole(
   coin: CoinDetailResponse
 ) {
@@ -43,6 +49,10 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
             <dd>
               {formatIssuePeriod(coin.firstIssueYear, coin.lastIssueYear)}
             </dd>
+          </div>
+          <div className="flex justify-between gap-4 border-t pt-3">
+            <dt className="text-muted-foreground">Coin Distribution</dt>
+            <dd>{distributionLabels[coin.distribution]}</dd>
           </div>
           {attributionGroups.map((group, groupIndex) => (
             <div

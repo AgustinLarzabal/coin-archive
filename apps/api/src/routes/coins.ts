@@ -182,6 +182,7 @@ function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
     id: coin.id,
     title: coin.title,
+    distribution: coin.distribution,
     firstIssueYear: coin.firstIssueYear,
     lastIssueYear: coin.lastIssueYear,
     issuer: { name: coin.issuer.name, code: coin.issuer.code },

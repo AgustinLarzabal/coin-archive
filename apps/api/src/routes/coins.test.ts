@@ -22,6 +22,7 @@ describe("Coin routes", () => {
       id: coinId,
       title: "First coin",
       issuerId,
+      distribution: "circulating-commemorative" as const,
       firstIssueYear: 2004,
       lastIssueYear: 2004,
       issuer: {
@@ -114,6 +115,7 @@ describe("Coin routes", () => {
       await expect(response.json()).resolves.toEqual({
         id: coinId,
         title: "First coin",
+        distribution: "circulating-commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -218,6 +220,7 @@ describe("Coin routes", () => {
       await expect(response.json()).resolves.toEqual({
         id: coinId,
         title: "First coin",
+        distribution: "circulating-commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -343,6 +346,7 @@ describe("Coin routes", () => {
       const expectedCoin = {
         id: coinId,
         title: "First coin",
+        distribution: "circulating-commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Roman Empire", code: "ROMAN" },
@@ -402,6 +406,7 @@ describe("Coin routes", () => {
           {
             id: coinId,
             title: "First coin",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             issuer: { name: "Roman Empire", code: "ROMAN" },
@@ -548,6 +553,14 @@ describe("Coin routes", () => {
           Coin: expect.objectContaining({
             properties: expect.objectContaining({
               ...issueYearProperties,
+              distribution: {
+                type: "string",
+                enum: [
+                  "standard-circulation",
+                  "circulating-commemorative",
+                  "non-circulating",
+                ],
+              },
               issuer: { $ref: "#/components/schemas/Issuer" },
               rulers: expect.objectContaining({
                 type: "array",
@@ -585,6 +598,7 @@ describe("Coin routes", () => {
               }),
             }),
             required: expect.arrayContaining([
+              "distribution",
               "firstIssueYear",
               "lastIssueYear",
               "rulers",
@@ -595,8 +609,19 @@ describe("Coin routes", () => {
               coins: expect.objectContaining({
                 maxItems: 100,
                 items: expect.objectContaining({
-                  properties: expect.objectContaining(issueYearProperties),
+                  properties: expect.objectContaining({
+                    ...issueYearProperties,
+                    distribution: {
+                      type: "string",
+                      enum: [
+                        "standard-circulation",
+                        "circulating-commemorative",
+                        "non-circulating",
+                      ],
+                    },
+                  }),
                   required: expect.arrayContaining([
+                    "distribution",
                     "firstIssueYear",
                     "lastIssueYear",
                   ]),
@@ -715,6 +740,7 @@ describe("Coin routes", () => {
         id: "00000000-0000-4000-8000-000000000001",
         title: "Bounded coin",
         issuerId: "10000000-0000-4000-8000-000000000001",
+        distribution: "circulating-commemorative" as const,
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: {
@@ -1178,6 +1204,7 @@ describe("Coin routes", () => {
               id: "00000000-0000-4000-8000-000000000001",
               title: "First coin",
               issuerId: "10000000-0000-4000-8000-000000000001",
+              distribution: "standard-circulation",
               firstIssueYear: -2,
               lastIssueYear: 2,
               issuer: {
@@ -1204,6 +1231,7 @@ describe("Coin routes", () => {
           {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First coin",
+            distribution: "standard-circulation",
             firstIssueYear: -2,
             lastIssueYear: 2,
             issuer: { name: "Argentina", code: "AR" },
@@ -1234,6 +1262,7 @@ describe("Coin routes", () => {
               id: "00000000-0000-4000-8000-000000000001",
               title: "First coin",
               issuerId: "10000000-0000-4000-8000-000000000001",
+              distribution: "circulating-commemorative",
               firstIssueYear: 2004,
               lastIssueYear: 2004,
               issuer: {

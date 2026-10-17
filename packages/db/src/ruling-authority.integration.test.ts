@@ -73,6 +73,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First match",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: -30,
             lastIssueYear: 1,
             createdAt: new Date("2026-01-02T00:00:00.000Z"),
@@ -81,6 +82,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000002",
             title: "Second match",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: -25,
             lastIssueYear: 19,
             createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -89,6 +91,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000003",
             title: "Other authority",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: -25,
             lastIssueYear: 19,
           },
@@ -206,12 +209,14 @@ describe("Ruling Authority persistence", () => {
           {
             title: "Attributed Coin",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
           },
           {
             title: "Uncurated Coin",
             issuerId: issuer.id,
+            distribution: "circulating-commemorative",
             firstIssueYear: 2005,
             lastIssueYear: 2005,
           },
@@ -295,6 +300,7 @@ describe("Ruling Authority persistence", () => {
         .values({
           title: "Attributed Coin",
           issuerId: issuer.id,
+          distribution: "circulating-commemorative",
           firstIssueYear: 2004,
           lastIssueYear: 2004,
         })
@@ -401,6 +407,7 @@ describe("Ruling Authority persistence", () => {
             id: coinId,
             title: "Seeded Coin",
             issuerCode: "TI",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
@@ -459,6 +466,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "Invalid attribution",
             issuerCode: "TI",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
@@ -486,6 +494,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "Duplicate position",
             issuerCode: "TI",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
@@ -506,6 +515,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "Duplicate attribution",
             issuerCode: "TI",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
@@ -526,6 +536,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "Unknown authority",
             issuerCode: "TI",
+            distribution: "circulating-commemorative",
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [

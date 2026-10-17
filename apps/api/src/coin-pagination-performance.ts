@@ -362,12 +362,13 @@ async function seedDataset(
     from generate_series(1, 10) as g;
 
     insert into coins (
-      id, title, issuer_id, first_issue_year, last_issue_year, created_at, updated_at
+      id, title, issuer_id, distribution, first_issue_year, last_issue_year, created_at, updated_at
     )
     select
       ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
       'Performance Coin ' || g,
       ('10000000-0000-4000-8000-' || lpad((((g - 1) % 10) + 1)::text, 12, '0'))::uuid,
+      'circulating-commemorative',
       case when g % 2 = 1 then 1988 else 1970 end,
       case when g % 2 = 1 then 1988 else 1970 end,
       timestamptz '2026-01-01 00:00:00+00' - (((g - 1) / 1000) * interval '1 second'),

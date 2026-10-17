@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  pgEnum,
   pgTable,
   timestamp,
   uuid,
@@ -13,6 +14,12 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { issuers } from "./issuer.js"
 import type { z } from "zod"
 
+export const coinDistribution = pgEnum("coin_distribution", [
+  "standard-circulation",
+  "circulating-commemorative",
+  "non-circulating",
+])
+
 export const coins = pgTable(
   "coins",
   {
@@ -21,6 +28,7 @@ export const coins = pgTable(
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
+    distribution: coinDistribution().notNull(),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })

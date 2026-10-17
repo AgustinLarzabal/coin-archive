@@ -1,4 +1,9 @@
-export { coinRecordSchema, coins, coinSeedRecordSchema } from "./coin.js"
+export {
+  coinDistribution,
+  coinRecordSchema,
+  coins,
+  coinSeedRecordSchema,
+} from "./coin.js"
 export type { CoinRecord } from "./coin.js"
 export { coinRulingAuthorityAttributions } from "./coin-ruling-authority.js"
 export {

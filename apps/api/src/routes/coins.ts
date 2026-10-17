@@ -5,6 +5,7 @@ import {
   COIN_LIST_MAX_PAGE_SIZE,
   COIN_LIST_YEAR_QUERY_PATTERN,
   coinDetailResponseSchema,
+  coinDistributionSchema,
   coinIdSchema,
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
@@ -14,6 +15,7 @@ import {
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   engraverSlugSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
+  invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
@@ -53,6 +55,10 @@ const coinListResponseSchema =
   sharedCoinListResponseSchema.openapi("CoinListResponse")
 
 const coinListQuerySchema = z.object({
+  distribution: coinDistributionSchema.optional().openapi({
+    description: "Exact, case-sensitive Coin Distribution identifier",
+    param: { name: "distribution", in: "query" },
+  }),
   engraver: engraverSlugSchema.optional().openapi({
     description: "Exact, case-sensitive Engraver Slug",
     param: { name: "engraver", in: "query" },
@@ -101,6 +107,8 @@ const coinPathParametersSchema = z
 
 const invalidCoinIdErrorSchema =
   sharedInvalidCoinIdErrorSchema.openapi("InvalidCoinIdError")
+const invalidDistributionErrorSchema =
+  sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
   "InvalidIssuerCodeError"
 )
@@ -116,6 +124,7 @@ const invalidRulingAuthoritySlugErrorSchema =
 const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
+  invalidDistributionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
   invalidRulingAuthoritySlugErrorSchema,
@@ -272,6 +281,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
     coinListRoute,
     async (context) => {
       const {
+        distribution,
         engraver: engraverSlug,
         issuer: issuerCode,
         ruler: rulingAuthoritySlug,
@@ -282,6 +292,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
+        ...(distribution === undefined ? {} : { distribution }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
         ...(rulingAuthoritySlug === undefined ? {} : { rulingAuthoritySlug }),
@@ -307,6 +318,9 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
     },
     (result, context) => {
       if (!result.success) {
+        const invalidDistribution = result.error.issues.some(
+          (issue) => issue.path[0] === "distribution"
+        )
         const invalidEngraver = result.error.issues.some(
           (issue) => issue.path[0] === "engraver"
         )
@@ -320,40 +334,47 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
           (issue) => issue.path[0] === "year"
         )
         return context.json(
-          invalidRulingAuthority
+          invalidDistribution
             ? {
                 error: {
-                  code: "invalid_ruler_slug" as const,
-                  message: "Ruling Authority Slug is invalid" as const,
+                  code: "invalid_distribution" as const,
+                  message: "Coin Distribution is invalid" as const,
                 },
               }
-            : invalidEngraver
+            : invalidRulingAuthority
               ? {
                   error: {
-                    code: "invalid_engraver_slug" as const,
-                    message: "Engraver Slug is invalid" as const,
+                    code: "invalid_ruler_slug" as const,
+                    message: "Ruling Authority Slug is invalid" as const,
                   },
                 }
-              : invalidYear
+              : invalidEngraver
                 ? {
                     error: {
-                      code: "invalid_year" as const,
-                      message: "Issue Year is invalid" as const,
+                      code: "invalid_engraver_slug" as const,
+                      message: "Engraver Slug is invalid" as const,
                     },
                   }
-                : invalidPagination
+                : invalidYear
                   ? {
                       error: {
-                        code: "invalid_pagination" as const,
-                        message: "Pagination is invalid" as const,
+                        code: "invalid_year" as const,
+                        message: "Issue Year is invalid" as const,
                       },
                     }
-                  : {
-                      error: {
-                        code: "invalid_issuer_code" as const,
-                        message: "Issuer Code is invalid" as const,
+                  : invalidPagination
+                    ? {
+                        error: {
+                          code: "invalid_pagination" as const,
+                          message: "Pagination is invalid" as const,
+                        },
+                      }
+                    : {
+                        error: {
+                          code: "invalid_issuer_code" as const,
+                          message: "Issuer Code is invalid" as const,
+                        },
                       },
-                    },
           400
         )
       }

@@ -73,7 +73,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000001",
             title: "First match",
             issuerId: issuer.id,
-            distribution: "circulating-commemorative",
+            distribution: "standard-circulation",
             firstIssueYear: -30,
             lastIssueYear: 1,
             createdAt: new Date("2026-01-02T00:00:00.000Z"),
@@ -82,7 +82,7 @@ describe("Ruling Authority persistence", () => {
             id: "00000000-0000-4000-8000-000000000002",
             title: "Second match",
             issuerId: issuer.id,
-            distribution: "circulating-commemorative",
+            distribution: "non-circulating",
             firstIssueYear: -25,
             lastIssueYear: 19,
             createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -145,16 +145,17 @@ describe("Ruling Authority persistence", () => {
 
       await expect(
         database.listCoins({
+          distribution: "non-circulating",
           issuerCode: "ROMAN",
           rulingAuthoritySlug: "selected-authority",
           engraverSlug: "selected-engraver",
           issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
-          page: 2,
+          page: 1,
           pageSize: 1,
         })
       ).resolves.toEqual({
         coins: [expect.objectContaining({ id: coins[1].id })],
-        totalItems: 2,
+        totalItems: 1,
       })
       await expect(
         database.listCoins({ rulingAuthoritySlug: "missing-authority" })

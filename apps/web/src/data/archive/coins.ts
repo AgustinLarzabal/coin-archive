@@ -3,6 +3,7 @@ import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
   coinDetailResponseSchema,
+  coinDistributionSchema,
   coinIdSchema,
   coinListPageSchema,
   coinListResponseSchema,
@@ -14,6 +15,7 @@ import {
 } from "@workspace/api"
 import type {
   CoinDetailResponse,
+  CoinDistribution,
   CoinListResponse,
   CoinListYear,
 } from "@workspace/api"
@@ -32,6 +34,7 @@ export class InvalidRulingAuthoritySlugError extends Error {}
 export class InvalidIssueYearError extends Error {}
 
 export type CoinListFilters = Readonly<{
+  distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
   issueYear?: CoinListYear
@@ -40,6 +43,7 @@ export type CoinListFilters = Readonly<{
 }>
 
 type ValidatedCoinListFilters = Readonly<{
+  distribution?: CoinDistribution
   engraverSlug: string | null
   issuerCode: string | null
   issueYear?: CoinListYear
@@ -49,6 +53,7 @@ type ValidatedCoinListFilters = Readonly<{
 }>
 
 async function getCoins({
+  distribution,
   engraverSlug,
   issuerCode,
   issueYear,
@@ -60,6 +65,9 @@ async function getCoins({
 
   try {
     const search = new URLSearchParams()
+    if (distribution !== undefined) {
+      search.set("distribution", distribution)
+    }
     if (issuerCode !== null) {
       search.set("issuer", issuerCode)
     }
@@ -133,12 +141,19 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const {
+    distribution,
     engraverSlug,
     issuerCode,
     issueYear,
     page = COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug,
   } = filters
+  if (
+    distribution !== undefined &&
+    !coinDistributionSchema.safeParse(distribution).success
+  ) {
+    throw new TypeError("Invalid Coin Distribution")
+  }
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
@@ -168,6 +183,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
 
   const validatedFilters: ValidatedCoinListFilters = {
+    ...(distribution === undefined ? {} : { distribution }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
     ...(issueYear === undefined ? {} : { issueYear }),

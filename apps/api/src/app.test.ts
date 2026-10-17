@@ -135,6 +135,7 @@ describe("API composition", () => {
       "HealthResponse",
       "InternalError",
       "InvalidCoinIdError",
+      "InvalidDistributionError",
       "InvalidEngraverSlugError",
       "InvalidIssuerCodeError",
       "InvalidPaginationError",

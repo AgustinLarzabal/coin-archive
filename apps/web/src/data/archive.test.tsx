@@ -44,6 +44,21 @@ function createQueryClient() {
 }
 
 describe("Archive data module", () => {
+  it("maps a selected Distribution to the Coin list request", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    await queryClient.fetchQuery(
+      coinListQueryOptions({ distribution: "non-circulating" })
+    )
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3001/v1/coins?distribution=non-circulating&page=1&pageSize=24"
+    )
+    queryClient.clear()
+  })
+
   it("accepts both surface images in a Coin list response", async () => {
     vi.stubGlobal(
       "fetch",

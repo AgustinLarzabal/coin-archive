@@ -1278,6 +1278,73 @@ describe("Coin persistence", () => {
     }
   })
 
+  it("filters by one exact Distribution with ordered pagination, totals, and empty results", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values([
+        {
+          id: "00000000-0000-4000-8000-000000000002",
+          title: "Second non-circulating Coin",
+          issuerId: issuer.id,
+          distribution: "non-circulating",
+          firstIssueYear: 2004,
+          lastIssueYear: 2004,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          title: "First non-circulating Coin",
+          issuerId: issuer.id,
+          distribution: "non-circulating",
+          firstIssueYear: 2004,
+          lastIssueYear: 2004,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000003",
+          title: "Older non-circulating Coin",
+          issuerId: issuer.id,
+          distribution: "non-circulating",
+          firstIssueYear: 2004,
+          lastIssueYear: 2004,
+          createdAt: new Date("2026-09-15T10:00:00.000Z"),
+        },
+        {
+          title: "Standard Coin",
+          issuerId: issuer.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2004,
+          lastIssueYear: 2004,
+          createdAt: new Date("2026-09-17T10:00:00.000Z"),
+        },
+      ])
+
+      await expect(
+        database.listCoins({
+          distribution: "non-circulating",
+          page: 1,
+          pageSize: 2,
+        })
+      ).resolves.toEqual({
+        coins: [
+          expect.objectContaining({
+            id: "00000000-0000-4000-8000-000000000001",
+          }),
+          expect.objectContaining({
+            id: "00000000-0000-4000-8000-000000000002",
+          }),
+        ],
+        totalItems: 3,
+      })
+      await expect(
+        database.listCoins({ distribution: "circulating-commemorative" })
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("lists Coins whose inclusive Issue Period overlaps the requested closed range", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

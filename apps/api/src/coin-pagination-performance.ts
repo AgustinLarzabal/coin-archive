@@ -22,6 +22,7 @@ interface PageScenario {
   expectedIdStep: number
   expectedTotalItems: number
   filter:
+    | { distribution: "non-circulating"; kind: "distribution" }
     | { kind: "engraver"; slug: string }
     | { code: string; kind: "issuer" }
     | { kind: "ruler"; slug: string }
@@ -116,6 +117,48 @@ function collectPlanNodes(plan: ExplainPlan): Array<string> {
 }
 
 const scenarios: Array<PageScenario> = [
+  {
+    expectedFirstId: 1,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { distribution: "non-circulating", kind: "distribution" },
+    label: "distribution-first",
+    page: 1,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_distribution_created_at_id_index",
+      maxPlanRows: 1_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 500,
+    }),
+  },
+  {
+    expectedFirstId: 49_801,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { distribution: "non-circulating", kind: "distribution" },
+    label: "distribution-middle",
+    page: 250,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_distribution_created_at_id_index",
+      maxPlanRows: 150_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 5_000,
+    }),
+  },
+  {
+    expectedFirstId: 99_801,
+    expectedIdStep: 2,
+    expectedTotalItems: 50_000,
+    filter: { distribution: "non-circulating", kind: "distribution" },
+    label: "distribution-deep",
+    page: 500,
+    planExpectation: orderedPlanExpectation({
+      index: "coins_distribution_created_at_id_index",
+      maxPlanRows: 300_000,
+      maxRowsRemovedByFilter: 100,
+      maxSharedBlocks: 10_000,
+    }),
+  },
   {
     expectedFirstId: 1,
     expectedIdStep: 1,
@@ -336,6 +379,9 @@ function requestPath(scenario: PageScenario) {
   if (scenario.filter.kind === "issuer") {
     query.set("issuer", scenario.filter.code)
   }
+  if (scenario.filter.kind === "distribution") {
+    query.set("distribution", scenario.filter.distribution)
+  }
   if (scenario.filter.kind === "engraver") {
     query.set("engraver", scenario.filter.slug)
   }
@@ -368,7 +414,10 @@ async function seedDataset(
       ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
       'Performance Coin ' || g,
       ('10000000-0000-4000-8000-' || lpad((((g - 1) % 10) + 1)::text, 12, '0'))::uuid,
-      'circulating-commemorative',
+      case
+        when g % 2 = 1 then 'non-circulating'::coin_distribution
+        else 'circulating-commemorative'::coin_distribution
+      end,
       case when g % 2 = 1 then 1988 else 1970 end,
       case when g % 2 = 1 then 1988 else 1970 end,
       timestamptz '2026-01-01 00:00:00+00' - (((g - 1) / 1000) * interval '1 second'),

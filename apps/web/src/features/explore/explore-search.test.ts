@@ -6,6 +6,32 @@ import {
 } from "./explore-search"
 
 describe("Explore search schema", () => {
+  it("accepts and maps one exact Coin Distribution", () => {
+    const search = exploreSearchSchema.parse({
+      distribution: "non-circulating",
+    })
+
+    expect(search).toEqual({ distribution: "non-circulating" })
+    expect(getExploreCoinListFilters(search)).toEqual({
+      distribution: "non-circulating",
+      engraverSlug: undefined,
+      issuerCode: undefined,
+      page: 1,
+    })
+  })
+
+  it.each(["", "Non-circulating", "unknown", ["non-circulating"]])(
+    "ignores the invalid Coin Distribution %j",
+    (distribution) => {
+      expect(exploreSearchSchema.parse({ issuer: "AR", distribution })).toEqual(
+        {
+          distribution: undefined,
+          issuer: "AR",
+        }
+      )
+    }
+  )
+
   it("accepts a valid Issuer Code", () => {
     expect(exploreSearchSchema.parse({ issuer: "ROMAN" })).toEqual({
       issuer: "ROMAN",

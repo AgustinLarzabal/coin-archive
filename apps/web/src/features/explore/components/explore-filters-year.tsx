@@ -3,11 +3,12 @@ import { coinListYearQuerySchema } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
-import type { CoinListYear } from "@workspace/api"
+import type { CoinDistribution, CoinListYear } from "@workspace/api"
 
 import { formatCoinListYear } from "@/features/issue-period"
 
 type YearFilterProps = {
+  distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
   rulerSlug?: string
@@ -47,6 +48,7 @@ function formatYearFilterDraft(year: CoinListYear | undefined) {
 }
 
 export function YearFilter({
+  distribution,
   engraverSlug,
   issuerCode,
   rulerSlug,
@@ -75,6 +77,7 @@ export function YearFilter({
     void navigate({
       to: "/",
       search: {
+        distribution,
         engraver: engraverSlug,
         issuer: issuerCode,
         ruler: rulerSlug,
@@ -90,6 +93,7 @@ export function YearFilter({
     void navigate({
       to: "/",
       search: {
+        distribution,
         engraver: engraverSlug,
         issuer: issuerCode,
         ruler: rulerSlug,

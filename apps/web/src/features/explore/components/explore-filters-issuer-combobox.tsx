@@ -8,9 +8,14 @@ import {
   ComboboxList,
 } from "@workspace/ui/components/combobox"
 
-import type { CoinListYear, IssuerResponse } from "@workspace/api"
+import type {
+  CoinDistribution,
+  CoinListYear,
+  IssuerResponse,
+} from "@workspace/api"
 
 type IssuerComboboxProps = {
+  distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
   rulerSlug?: string
@@ -25,6 +30,7 @@ type IssuerOption = {
 }
 
 export function IssuerCombobox({
+  distribution,
   engraverSlug,
   issuerCode,
   rulerSlug,
@@ -71,6 +77,7 @@ export function IssuerCombobox({
         void navigate({
           to: "/",
           search: {
+            distribution,
             engraver: engraverSlug,
             issuer: nextIssuerCode,
             ruler: rulerSlug,

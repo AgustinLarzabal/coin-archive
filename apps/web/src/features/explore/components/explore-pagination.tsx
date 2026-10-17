@@ -30,6 +30,7 @@ export function ExplorePagination({
     void navigate({
       to: "/",
       search: {
+        distribution: filters.distribution,
         engraver: filters.engraverSlug,
         issuer: filters.issuerCode,
         ruler: filters.rulingAuthoritySlug,

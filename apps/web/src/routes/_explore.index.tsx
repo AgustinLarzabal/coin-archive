@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          distribution: search.distribution,
           issuer: search.issuer,
           engraver: search.engraver,
           ruler: search.ruler,
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          distribution: filters.distribution,
           issuer: filters.issuerCode,
           engraver: filters.engraverSlug,
           ruler: filters.rulingAuthoritySlug,

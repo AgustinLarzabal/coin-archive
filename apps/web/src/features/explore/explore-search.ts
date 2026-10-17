@@ -1,5 +1,6 @@
 import {
   COIN_LIST_DEFAULT_PAGE,
+  coinDistributionSchema,
   coinListPageQuerySchema,
   coinListPageSchema,
   coinListYearQuerySchema,
@@ -12,6 +13,7 @@ import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
 
 export const exploreSearchSchema = z.object({
+  distribution: coinDistributionSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
   issuer: issuerCodeSchema.optional().catch(undefined),
   page: z
@@ -31,6 +33,7 @@ export function getExploreCoinListFilters(
   search: ExploreSearch
 ): CoinListFilters {
   return {
+    distribution: search.distribution,
     engraverSlug: search.engraver,
     issuerCode: search.issuer,
     issueYear: search.year,

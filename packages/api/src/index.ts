@@ -307,6 +307,11 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
   "Issuer Code is invalid"
 )
 
+export const invalidDistributionErrorSchema = errorResponseSchema(
+  "invalid_distribution",
+  "Coin Distribution is invalid"
+)
+
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(
   "invalid_engraver_slug",
   "Engraver Slug is invalid"

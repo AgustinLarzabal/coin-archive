@@ -58,6 +58,7 @@ export type CoinListItem = schema.CoinRecord & {
 }
 
 export interface CoinListOptions {
+  distribution?: schema.CoinRecord["distribution"]
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
@@ -288,6 +289,9 @@ export function createDatabase(
                 ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
+              listOptions.distribution === undefined
+                ? undefined
+                : eq(schema.coins.distribution, listOptions.distribution),
               issuerId === undefined
                 ? undefined
                 : issuerId === null

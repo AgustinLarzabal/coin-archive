@@ -842,6 +842,79 @@ describe("Coin routes", () => {
       })
     })
 
+    it("passes one exact Distribution with every other filter", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?distribution=non-circulating&issuer=ROMAN&ruler=augustus&engraver=first-archive-engraver&year=-25-19&page=2&pageSize=12"
+      )
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        distribution: "non-circulating",
+        issuerCode: "ROMAN",
+        rulingAuthoritySlug: "augustus",
+        engraverSlug: "first-archive-engraver",
+        issueYearInterval: { firstIssueYear: -25, lastIssueYear: 19 },
+        page: 2,
+        pageSize: 12,
+      })
+      await expect(response.json()).resolves.toEqual({
+        coins: [],
+        pagination: {
+          page: 2,
+          pageSize: 12,
+          totalItems: 0,
+          totalPages: 0,
+        },
+      })
+    })
+
+    it.each(["", "Non-circulating", "unknown", "standard_circulation"])(
+      "rejects the invalid Distribution %j without listing Coins",
+      async (distribution) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?distribution=${encodeURIComponent(distribution)}`)
+
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: {
+            code: "invalid_distribution",
+            message: "Coin Distribution is invalid",
+          },
+        })
+      }
+    )
+
+    it("rejects repeated Distribution filters without listing Coins", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?distribution=standard-circulation&distribution=non-circulating"
+      )
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_distribution",
+          message: "Coin Distribution is invalid",
+        },
+      })
+    })
+
     it("returns an empty page for a well-formed missing Ruling Authority Slug", async () => {
       const listCoins = vi.fn(emptyCoinPage)
 
@@ -1353,6 +1426,20 @@ describe("Coin routes", () => {
 
       expect(document.paths["/v1/coins"].get.parameters).toEqual([
         expect.objectContaining({
+          description: "Exact, case-sensitive Coin Distribution identifier",
+          in: "query",
+          name: "distribution",
+          required: false,
+          schema: expect.objectContaining({
+            type: "string",
+            enum: [
+              "standard-circulation",
+              "circulating-commemorative",
+              "non-circulating",
+            ],
+          }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Engraver Slug",
           in: "query",
           name: "engraver",
@@ -1421,6 +1508,7 @@ describe("Coin routes", () => {
               "application/json": {
                 schema: {
                   anyOf: [
+                    { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
                     {
@@ -1445,6 +1533,7 @@ describe("Coin routes", () => {
       expect(document.components.schemas).toEqual(
         expect.objectContaining({
           CoinListResponse: expect.any(Object),
+          InvalidDistributionError: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
           InvalidRulingAuthoritySlugError: expect.any(Object),

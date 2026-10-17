@@ -48,6 +48,11 @@ export const coins = pgTable(
       table.createdAt.desc().nullsFirst(),
       table.id.asc()
     ),
+    index("coins_distribution_created_at_id_index").on(
+      table.distribution,
+      table.createdAt.desc().nullsFirst(),
+      table.id.asc()
+    ),
     check("coins_title_not_empty", sql`length(${table.title}) >= 1`),
     check(
       "coins_title_trimmed",

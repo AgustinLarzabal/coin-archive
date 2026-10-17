@@ -12,6 +12,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
   if (data.coins.length === 0) {
     const message =
       filters.issuerCode !== undefined ||
+      filters.distribution !== undefined ||
       filters.engraverSlug !== undefined ||
       filters.rulingAuthoritySlug !== undefined ||
       filters.issueYear !== undefined

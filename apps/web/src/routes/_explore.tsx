@@ -33,6 +33,7 @@ export const Route = createFileRoute("/_explore")({
 
 function ExploreLayout() {
   const {
+    distribution,
     engraver: engraverSlug,
     issuer: issuerCode,
     ruler: rulerSlug,
@@ -47,6 +48,7 @@ function ExploreLayout() {
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreFilters
+        distribution={distribution}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
         issuerCode={issuerCode}

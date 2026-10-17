@@ -1,11 +1,13 @@
 import { useNavigate } from "@tanstack/react-router"
-import { coinListYearQuerySchema } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { useEffect, useId, useState } from "react"
 import type { CoinDistribution, CoinListYear } from "@workspace/api"
 
-import { formatCoinListYear } from "@/features/issue-period"
+import {
+  formatIssueYearFilterValue,
+  parseIssueYearFilterValue,
+} from "@/features/explore/filters/issue-year-filter-value"
 
 type YearFilterProps = {
   distribution?: CoinDistribution
@@ -13,38 +15,6 @@ type YearFilterProps = {
   issuerCode?: string
   rulerSlug?: string
   year?: CoinListYear
-}
-
-function parseYearFilterDraft(draft: string) {
-  const trimmedDraft = draft.trim()
-  const rangeMatch =
-    /^([1-9]\d*)\s*(BCE|CE)?\s*[-–]\s*([1-9]\d*)\s*(BCE|CE)?$/i.exec(
-      trimmedDraft
-    )
-  if (rangeMatch) {
-    const [, first, rawFirstEra = "", last, rawLastEra = ""] = rangeMatch
-    const lastEra = rawLastEra.toUpperCase()
-    const firstEra = rawFirstEra.toUpperCase() || lastEra || "CE"
-    const firstIssueYear = Number(first) * (firstEra === "BCE" ? -1 : 1)
-    const lastIssueYear = Number(last) * (lastEra === "BCE" ? -1 : 1)
-    const result = coinListYearQuerySchema.safeParse(
-      `${firstIssueYear}-${lastIssueYear}`
-    )
-    return result.success ? result.data : undefined
-  }
-
-  const singleYearMatch = /^([1-9]\d*)\s*(BCE|CE)?$/i.exec(trimmedDraft)
-  if (!singleYearMatch) return undefined
-
-  const [, magnitude, rawEra = ""] = singleYearMatch
-  const year = Number(magnitude) * (rawEra.toUpperCase() === "BCE" ? -1 : 1)
-  const result = coinListYearQuerySchema.safeParse(String(year))
-  return result.success ? result.data : undefined
-}
-
-function formatYearFilterDraft(year: CoinListYear | undefined) {
-  if (year === undefined) return ""
-  return formatCoinListYear(year)
 }
 
 export function YearFilter({
@@ -56,16 +26,16 @@ export function YearFilter({
 }: YearFilterProps) {
   const navigate = useNavigate({ from: "/" })
   const errorId = useId()
-  const [draft, setDraft] = useState(formatYearFilterDraft(year))
+  const [draft, setDraft] = useState(formatIssueYearFilterValue(year))
   const [error, setError] = useState<string>()
 
   useEffect(() => {
-    setDraft(formatYearFilterDraft(year))
+    setDraft(formatIssueYearFilterValue(year))
     setError(undefined)
   }, [year])
 
   const apply = () => {
-    const issueYear = parseYearFilterDraft(draft)
+    const issueYear = parseIssueYearFilterValue(draft)
     if (issueYear === undefined) {
       setError(
         "Enter one Issue Year or an ordered range, such as 400–300 BCE, 25 BCE–19 CE, or 1986–1990."

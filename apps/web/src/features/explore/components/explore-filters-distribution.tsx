@@ -1,8 +1,24 @@
 import { useNavigate } from "@tanstack/react-router"
 import { coinDistributionSchema } from "@workspace/api"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@workspace/ui/components/combobox"
 import type { CoinDistribution, CoinListYear } from "@workspace/api"
 
 import { coinDistributionLabels } from "@/features/coin-distribution"
+
+const distributionOptions = coinDistributionSchema.options.map((value) => ({
+  label: coinDistributionLabels[value],
+  value,
+}))
+const distributionItems = distributionOptions.map(({ value }) => value)
+const getDistributionLabel = (value: string) =>
+  distributionOptions.find((option) => option.value === value)?.label ?? value
 
 export function DistributionFilter({
   distribution,
@@ -20,14 +36,16 @@ export function DistributionFilter({
   const navigate = useNavigate({ from: "/" })
 
   return (
-    <select
-      aria-label="Distribution"
-      className="h-8 w-full border border-input bg-transparent px-2.5 text-xs md:w-auto"
-      value={distribution ?? ""}
-      onChange={(event) => {
-        const selectedValue = event.target.value
-        const nextDistribution = selectedValue
-          ? (selectedValue as CoinDistribution)
+    <Combobox
+      autoHighlight
+      items={distributionItems}
+      itemToStringLabel={getDistributionLabel}
+      modal={false}
+      name="distribution"
+      value={distribution ?? null}
+      onValueChange={(selectedDistribution: string | null) => {
+        const nextDistribution = selectedDistribution
+          ? (selectedDistribution as CoinDistribution)
           : undefined
         if (nextDistribution === distribution) return
 
@@ -43,12 +61,22 @@ export function DistributionFilter({
         })
       }}
     >
-      <option value="">All distributions</option>
-      {coinDistributionSchema.options.map((distributionOption) => (
-        <option key={distributionOption} value={distributionOption}>
-          {coinDistributionLabels[distributionOption]}
-        </option>
-      ))}
-    </select>
+      <ComboboxInput
+        aria-label="Distribution"
+        placeholder="All distributions"
+        showClear
+        className="w-full md:w-[calc(33.3vw-(--spacing(10)))] lg:w-[calc(25vw-(--spacing(10)))] xl:w-[calc(20vw-(--spacing(20)))] 2xl:w-[calc(16.7vw-(--spacing(20)))]"
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>No distributions found.</ComboboxEmpty>
+        <ComboboxList>
+          {(value: string) => (
+            <ComboboxItem key={value} value={value}>
+              {getDistributionLabel(value)}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }

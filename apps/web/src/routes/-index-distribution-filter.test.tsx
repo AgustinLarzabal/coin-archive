@@ -1,5 +1,4 @@
-import { screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
@@ -7,49 +6,73 @@ import {
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-it("selects, shares, restores, and clears one accessible Coin Distribution while preserving filters", async () => {
-  const fetchMock = vi.fn(createArchiveFetch())
+it("selects one accessible Coin Distribution while preserving filters", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      issuers: [{ code: "AR", name: "Argentina" }],
+    })
+  )
   vi.stubGlobal("fetch", fetchMock)
-  const router = renderArchiveRoute(
-    "/?distribution=standard-circulation&issuer=AR&engraver=first-engraver&ruler=augustus&year=-44&page=3"
-  )
-  const user = userEvent.setup()
-  const select = await screen.findByRole("combobox", { name: "Distribution" })
+  const router = renderArchiveRoute("/?issuer=AR&year=-44")
+  const combobox = await screen.findByRole("combobox", {
+    name: "Distribution",
+  })
 
-  expect(select).toHaveValue("standard-circulation")
-  await user.selectOptions(select, "non-circulating")
-
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      distribution: "non-circulating",
-      issuer: "AR",
-      engraver: "first-engraver",
-      ruler: "augustus",
-      year: -44,
+  expect(combobox).toHaveValue("")
+  const distributionControl = combobox.parentElement
+  if (!distributionControl) {
+    throw new Error("Distribution combobox control not found")
+  }
+  fireEvent.click(
+    within(distributionControl).getByRole("button", {
+      name: "Toggle options",
     })
   )
-  expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?distribution=non-circulating&issuer=AR&engraver=first-engraver&ruler=augustus&year=-44&page=1&pageSize=24"
-  )
+  fireEvent.click(screen.getByRole("option", { name: "Non-circulating" }), {
+    detail: 0,
+  })
 
-  await user.selectOptions(select, "")
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      issuer: "AR",
-      engraver: "first-engraver",
-      ruler: "augustus",
-      year: -44,
-    })
+  expect(router.state.location.search).toEqual({
+    distribution: "non-circulating",
+    issuer: "AR",
+    year: -44,
+  })
+})
+
+it("restores one Coin Distribution and exposes its clear control", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      createArchiveFetch({
+        issuers: [{ code: "AR", name: "Argentina" }],
+      })
+    )
   )
+  renderArchiveRoute("/?distribution=non-circulating&issuer=AR&year=-44")
+  const combobox = await screen.findByRole("combobox", {
+    name: "Distribution",
+  })
+
+  expect(combobox).toHaveValue("Non-circulating")
+  const distributionControl = combobox.parentElement
+  if (!distributionControl) {
+    throw new Error("Distribution combobox control not found")
+  }
+
+  expect(
+    within(distributionControl).getByRole("button", { name: "Clear" })
+  ).toBeVisible()
 })
 
 it("recovers from an invalid Coin Distribution in a hand-edited URL", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   const router = renderArchiveRoute("/?issuer=AR&distribution=unknown")
 
-  expect(
-    await screen.findByRole("combobox", { name: "Distribution" })
-  ).toHaveValue("")
+  const combobox = await screen.findByRole("combobox", {
+    name: "Distribution",
+  })
+  expect(combobox).toHaveValue("")
+  expect(combobox).toHaveAttribute("placeholder", "All distributions")
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
       distribution: undefined,

@@ -3,13 +3,8 @@ import { isIsoIssuerCode } from "@workspace/api"
 import { Flag } from "@workspace/ui/components/flags/flag"
 import type { CoinDetailResponse } from "@workspace/api"
 
+import { coinDistributionLabels } from "@/features/coin-distribution"
 import { formatIssuePeriod } from "@/features/issue-period"
-
-const distributionLabels = {
-  "standard-circulation": "Standard circulation",
-  "circulating-commemorative": "Circulating commemorative",
-  "non-circulating": "Non-circulating",
-} satisfies Record<CoinDetailResponse["distribution"], string>
 
 function groupRulingAuthorityAttributionsByConsecutiveRole(
   coin: CoinDetailResponse
@@ -52,7 +47,7 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
           </div>
           <div className="flex justify-between gap-4 border-t pt-3">
             <dt className="text-muted-foreground">Coin Distribution</dt>
-            <dd>{distributionLabels[coin.distribution]}</dd>
+            <dd>{coinDistributionLabels[coin.distribution]}</dd>
           </div>
           {attributionGroups.map((group, groupIndex) => (
             <div

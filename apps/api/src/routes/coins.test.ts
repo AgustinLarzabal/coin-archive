@@ -842,7 +842,7 @@ describe("Coin routes", () => {
       })
     })
 
-    it("passes one exact Distribution with every other filter", async () => {
+    it("passes one exact Coin Distribution with every other filter", async () => {
       const listCoins = vi.fn(emptyCoinPage)
 
       const response = await createApp({
@@ -875,7 +875,7 @@ describe("Coin routes", () => {
     })
 
     it.each(["", "Non-circulating", "unknown", "standard_circulation"])(
-      "rejects the invalid Distribution %j without listing Coins",
+      "rejects the invalid Coin Distribution %j without listing Coins",
       async (distribution) => {
         const listCoins = vi.fn(emptyCoinPage)
         const response = await createApp({
@@ -895,7 +895,7 @@ describe("Coin routes", () => {
       }
     )
 
-    it("rejects repeated Distribution filters without listing Coins", async () => {
+    it("rejects repeated Coin Distribution filters without listing Coins", async () => {
       const listCoins = vi.fn(emptyCoinPage)
       const response = await createApp({
         allowedOrigins: [],

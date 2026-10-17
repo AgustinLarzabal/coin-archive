@@ -2,11 +2,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { coinDistributionSchema } from "@workspace/api"
 import type { CoinDistribution, CoinListYear } from "@workspace/api"
 
-const DISTRIBUTION_LABELS = {
-  "standard-circulation": "Standard circulation",
-  "circulating-commemorative": "Circulating commemorative",
-  "non-circulating": "Non-circulating",
-} satisfies Record<CoinDistribution, string>
+import { coinDistributionLabels } from "@/features/coin-distribution"
 
 export function DistributionFilter({
   distribution,
@@ -50,7 +46,7 @@ export function DistributionFilter({
       <option value="">All distributions</option>
       {coinDistributionSchema.options.map((distributionOption) => (
         <option key={distributionOption} value={distributionOption}>
-          {DISTRIBUTION_LABELS[distributionOption]}
+          {coinDistributionLabels[distributionOption]}
         </option>
       ))}
     </select>

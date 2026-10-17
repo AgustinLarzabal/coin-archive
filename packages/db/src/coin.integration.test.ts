@@ -1278,7 +1278,7 @@ describe("Coin persistence", () => {
     }
   })
 
-  it("filters by one exact Distribution with ordered pagination, totals, and empty results", async () => {
+  it("filters by one exact Coin Distribution with ordered pagination, totals, and empty results", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)

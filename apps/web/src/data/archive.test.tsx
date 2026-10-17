@@ -44,7 +44,7 @@ function createQueryClient() {
 }
 
 describe("Archive data module", () => {
-  it("maps a selected Distribution to the Coin list request", async () => {
+  it("maps a selected Coin Distribution to the Coin list request", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)
     const queryClient = createQueryClient()

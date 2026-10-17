@@ -7,7 +7,7 @@ import {
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-it("selects, shares, restores, and clears one accessible Distribution while preserving filters", async () => {
+it("selects, shares, restores, and clears one accessible Coin Distribution while preserving filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
@@ -43,7 +43,7 @@ it("selects, shares, restores, and clears one accessible Distribution while pres
   )
 })
 
-it("recovers from an invalid Distribution in a hand-edited URL", async () => {
+it("recovers from an invalid Coin Distribution in a hand-edited URL", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   const router = renderArchiveRoute("/?issuer=AR&distribution=unknown")
 

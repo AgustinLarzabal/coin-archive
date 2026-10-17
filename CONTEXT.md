@@ -9,8 +9,12 @@ The complete catalogue of historical Coins maintained by Coin Archive.
 _Avoid_: Collection
 
 **Coin**:
-A catalogue entry representing a historical kind of coin that collectors can identify as the same issue or type. Every Coin has exactly one Issuer; it is not a physical specimen or an item in a user's collection.
+A catalogue entry representing a historical kind of coin or coin-like object that collectors can identify as the same issue or type. Every Coin is associated with exactly one Issuer; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
+
+**Coin Distribution**:
+A curated classification of a Coin's numismatic role or status, such as standard circulation, circulating commemorative, non-circulating, pattern, or contemporary counterfeit; it does not describe the channels or geography through which the Coin was released. An editor assigns every Coin exactly one value from Coin Archive's flat, controlled vocabulary; values have no parent-child relationships. Coin Archive owns this vocabulary even when a value is based on terminology used by another catalogue.
+_Avoid_: Coin Category, Coin Type
 
 **Issue Year**:
 A conventional BCE or CE calendar year used to express when a Coin was issued. It is a chronological attribution, not necessarily a year inscribed on the Coin.
@@ -29,7 +33,7 @@ The latest asserted BCE or CE year in a Coin's Issue Period, using the conventio
 _Avoid_: Maximum Year, Max Year
 
 **Issuer**:
-The canonical political entity under whose authority one or more Coins were issued. Every Issuer has an Issuer Code; an Issuer may be a present-day or historical state, territory, or similar polity, and is not the central bank, mint, or place that manufactured a Coin.
+The canonical political entity whose coinage one or more Coins belong to or purport to belong to, whether or not that entity authorized their production. Every Issuer has an Issuer Code; an Issuer may be a present-day or historical state, territory, or similar polity, and is not the central bank, mint, or place that manufactured a Coin.
 _Avoid_: Country, Mint, Manufacturer
 
 **Issuer Code**:

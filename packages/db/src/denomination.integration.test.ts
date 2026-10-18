@@ -29,6 +29,71 @@ beforeEach(async () => {
 })
 
 describe("Face Value persistence", () => {
+  it("returns populated and absent Face Values from the paginated Coin list", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [currency] = await database.orm
+        .insert(database.schema.currencies)
+        .values({
+          slug: "argentine-peso-convertible",
+          name: "Peso",
+          periodLabel: "1992–2001",
+        })
+        .returning()
+      const [denomination] = await database.orm
+        .insert(database.schema.denominations)
+        .values({ currencyId: currency.id, label: "1 peso", amount: "1" })
+        .returning()
+      const [issuer] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ code: "AR", name: "Argentina" })
+        .returning()
+      const [withoutFaceValue, withFaceValue] = await database.orm
+        .insert(database.schema.coins)
+        .values([
+          {
+            id: "00000000-0000-4000-8000-000000000002",
+            title: "Uncurated Coin",
+            issuerId: issuer.id,
+            distribution: "standard-circulation",
+            firstIssueYear: 2000,
+            lastIssueYear: 2000,
+            createdAt: new Date("2026-09-16T10:00:00.000Z"),
+          },
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            title: "1 peso",
+            issuerId: issuer.id,
+            denominationId: denomination.id,
+            distribution: "standard-circulation",
+            firstIssueYear: 1994,
+            lastIssueYear: 1994,
+            createdAt: new Date("2026-09-16T10:00:00.000Z"),
+          },
+        ])
+        .returning()
+
+      await expect(database.listCoins()).resolves.toEqual({
+        coins: [
+          expect.objectContaining({
+            id: withFaceValue.id,
+            denomination: {
+              ...denomination,
+              currency,
+            },
+          }),
+          expect.objectContaining({
+            id: withoutFaceValue.id,
+            denomination: null,
+          }),
+        ],
+        totalItems: 2,
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("reuses a constrained Denomination and returns it from Coin detail", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

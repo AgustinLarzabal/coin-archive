@@ -56,6 +56,7 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
       )}
       <span className="absolute right-5 bottom-4 left-5 flex flex-col items-center gap-0.5 text-center font-mono text-xs tracking-wider text-balance text-muted-foreground">
         <span className="h-[2lh]">{coin.title}</span>
+        {coin.faceValue && <span>{coin.faceValue.label}</span>}
         <span>
           {formatIssuePeriod(coin.firstIssueYear, coin.lastIssueYear)}
         </span>

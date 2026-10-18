@@ -58,6 +58,7 @@ export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
 
 export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
   issuer: schema.IssuerRecord
+  denomination: CoinDenomination | null
   obverseImageKey: string | null
   reverseImageKey: string | null
 }
@@ -396,11 +397,21 @@ export function createDatabase(
             .select({
               coin: schema.coins,
               issuer: schema.issuers,
+              denomination: schema.denominations,
+              currency: schema.currencies,
             })
             .from(schema.coins)
             .innerJoin(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .leftJoin(
+              schema.denominations,
+              eq(schema.coins.denominationId, schema.denominations.id)
+            )
+            .leftJoin(
+              schema.currencies,
+              eq(schema.denominations.currencyId, schema.currencies.id)
             )
             .where(coinFilterPredicate())
             .orderBy(desc(schema.coins.createdAt), asc(schema.coins.id))
@@ -436,11 +447,16 @@ export function createDatabase(
           }
 
           return {
-            coins: rows.map(({ coin, issuer }) => {
+            coins: rows.map(({ coin, currency, denomination, issuer }) => {
               const images = imagesByCoinId.get(coin.id)
+              const { denominationId: _denominationId, ...publicCoin } = coin
               return {
-                ...coin,
+                ...publicCoin,
                 issuer,
+                denomination:
+                  denomination && currency
+                    ? { ...denomination, currency }
+                    : null,
                 obverseImageKey: images?.obverse ?? null,
                 reverseImageKey: images?.reverse ?? null,
               }

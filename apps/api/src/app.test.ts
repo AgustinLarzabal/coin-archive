@@ -128,6 +128,7 @@ describe("API composition", () => {
     ])
     expect(Object.keys(document.components.schemas).sort()).toEqual([
       "Coin",
+      "CoinListItem",
       "CoinListResponse",
       "CoinNotFoundError",
       "CoinPathParameters",

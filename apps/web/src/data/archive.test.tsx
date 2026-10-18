@@ -19,7 +19,7 @@ import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$coinId"
 import { startInstance } from "@/start"
 import { coinListJsonResponse, jsonResponse } from "@/test/archive-route-test"
-import { coinDetailFixture } from "@/test/coin-fixtures"
+import { coinDetailFixture, coinFaceValueFixture } from "@/test/coin-fixtures"
 
 const coinId = "00000000-0000-4000-8000-000000000001"
 const coin = {
@@ -29,6 +29,7 @@ const coin = {
   firstIssueYear: 2004,
   lastIssueYear: 2004,
   issuer: { name: "Argentina", code: "AR" },
+  faceValue: null,
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
 }
@@ -93,6 +94,74 @@ describe("Archive data module", () => {
         totalPages: 1,
       },
     })
+    queryClient.clear()
+  })
+
+  it("accepts populated and null Face Values in a Coin list response", async () => {
+    const populatedFaceValue = coinFaceValueFixture()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          coinListJsonResponse([
+            {
+              ...coin,
+              faceValue: populatedFaceValue,
+              obverseImageUrl: null,
+              reverseImageUrl: null,
+            },
+            {
+              ...coin,
+              id: "00000000-0000-4000-8000-000000000002",
+              faceValue: null,
+              obverseImageUrl: null,
+              reverseImageUrl: null,
+            },
+          ])
+        )
+      )
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinListQueryOptions())
+    ).resolves.toEqual(
+      expect.objectContaining({
+        coins: [
+          expect.objectContaining({ faceValue: populatedFaceValue }),
+          expect.objectContaining({ faceValue: null }),
+        ],
+      })
+    )
+    queryClient.clear()
+  })
+
+  it("rejects a malformed Face Value in a Coin list response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          coinListJsonResponse([
+            {
+              ...coin,
+              faceValue: {
+                label: "1 peso",
+                value: 1,
+                currencySlug: "argentine-peso-convertible",
+                currencyName: "Peso",
+              },
+              obverseImageUrl: null,
+              reverseImageUrl: null,
+            },
+          ])
+        )
+      )
+    )
+    const queryClient = createQueryClient()
+
+    await expect(
+      queryClient.fetchQuery(coinListQueryOptions())
+    ).rejects.toBeInstanceOf(InvalidCoinListResponseError)
     queryClient.clear()
   })
 

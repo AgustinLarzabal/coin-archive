@@ -1,7 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
-import type { CoinListItemResponse } from "@workspace/api"
 
 import {
   coinListJsonResponse,
@@ -9,19 +8,9 @@ import {
   jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
+import { coinListItemFixture } from "@/test/coin-fixtures"
 
-const coin: CoinListItemResponse = {
-  id: "00000000-0000-4000-8000-000000000001",
-  title: "First coin",
-  distribution: "circulating-commemorative",
-  firstIssueYear: 2004,
-  lastIssueYear: 2004,
-  issuer: { name: "Argentina", code: "AR" },
-  createdAt: "2026-09-16T10:00:00.000Z",
-  updatedAt: "2026-09-16T11:00:00.000Z",
-  obverseImageUrl: null,
-  reverseImageUrl: null,
-}
+const coin = coinListItemFixture()
 
 const issuers = [{ name: "Argentina", code: "AR" }]
 const engravers = [{ slug: "first-engraver", fullName: "First Engraver" }]

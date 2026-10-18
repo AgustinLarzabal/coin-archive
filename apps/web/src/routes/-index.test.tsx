@@ -2,7 +2,6 @@ import { createMemoryHistory } from "@tanstack/react-router"
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { CoinListItemResponse } from "@workspace/api"
 
 import {
   coinDetailQueryOptions,
@@ -17,21 +16,14 @@ import {
   jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
-import { coinDetailFixture } from "@/test/coin-fixtures"
+import {
+  coinDetailFixture,
+  coinFaceValueFixture,
+  coinListItemFixture,
+} from "@/test/coin-fixtures"
 
 const coinId = "00000000-0000-4000-8000-000000000001"
-const coin: CoinListItemResponse = {
-  id: coinId,
-  title: "First coin",
-  distribution: "circulating-commemorative",
-  firstIssueYear: 2004,
-  lastIssueYear: 2004,
-  issuer: { name: "Argentina", code: "AR" },
-  createdAt: "2026-09-16T10:00:00.000Z",
-  updatedAt: "2026-09-16T11:00:00.000Z",
-  obverseImageUrl: null,
-  reverseImageUrl: null,
-}
+const coin = coinListItemFixture({ id: coinId })
 const detailCoin = coinDetailFixture({
   id: coin.id,
   title: coin.title,
@@ -617,6 +609,33 @@ describe("Archive landing route", () => {
     expect(
       screen.queryByRole("img", { name: "Obverse of First coin" })
     ).not.toBeInTheDocument()
+  })
+
+  it("shows a normalized Face Value on an Explore card and omits it when absent", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetch([
+          {
+            ...coin,
+            faceValue: coinFaceValueFixture(),
+          },
+          {
+            ...coin,
+            id: "00000000-0000-4000-8000-000000000002",
+            title: "Uncurated coin",
+            faceValue: null,
+          },
+        ])
+      )
+    )
+
+    renderArchiveRoute()
+
+    const curatedCoin = await screen.findByRole("link", { name: "First coin" })
+    const uncuratedCoin = screen.getByRole("link", { name: "Uncurated coin" })
+    expect(within(curatedCoin).getByText("1 peso")).toBeVisible()
+    expect(within(uncuratedCoin).queryByText("1 peso")).not.toBeInTheDocument()
   })
 
   it("renders a multi-year CE Issue Period on an Explore card", async () => {

@@ -7,6 +7,7 @@ import {
   coinDetailResponseSchema,
   coinDistributionSchema,
   coinIdSchema,
+  coinListItemResponseSchema as sharedCoinListItemResponseSchema,
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
   coinListResponseSchema as sharedCoinListResponseSchema,
@@ -31,6 +32,7 @@ import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
 import type {
   CoinDetailResponse,
+  CoinFaceValueResponse,
   CoinListItemResponse,
   CoinListResponse,
 } from "@workspace/api"
@@ -51,8 +53,14 @@ const issuerSchema = issuerResponseSchema.openapi("Issuer")
 const coinSchema = coinDetailResponseSchema
   .safeExtend({ issuer: issuerSchema })
   .openapi("Coin")
-const coinListResponseSchema =
-  sharedCoinListResponseSchema.openapi("CoinListResponse")
+const coinListItemResponseSchema = sharedCoinListItemResponseSchema
+  .safeExtend({ issuer: issuerSchema })
+  .openapi("CoinListItem")
+const coinListResponseSchema = sharedCoinListResponseSchema
+  .safeExtend({
+    coins: z.array(coinListItemResponseSchema).max(COIN_LIST_MAX_PAGE_SIZE),
+  })
+  .openapi("CoinListResponse")
 
 const coinListQuerySchema = z.object({
   distribution: coinDistributionSchema.optional().openapi({
@@ -244,15 +252,7 @@ function toCoinDetailResponse(
 ): CoinDetailResponse {
   return {
     ...toCoinResponseFields(coin),
-    faceValue: coin.denomination
-      ? {
-          label: coin.denomination.label,
-          value: Number(coin.denomination.amount),
-          currencySlug: coin.denomination.currency.slug,
-          currencyName: coin.denomination.currency.name,
-          currencyFullName: `${coin.denomination.currency.name} (${coin.denomination.currency.periodLabel})`,
-        }
-      : null,
+    faceValue: toCoinFaceValueResponse(coin.denomination),
     rulers: coin.rulingAuthorityAttributions.map(
       ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })
     ),
@@ -268,12 +268,27 @@ function toCoinDetailResponse(
   }
 }
 
+function toCoinFaceValueResponse(
+  denomination: Coin["denomination"] | CoinListItem["denomination"]
+): CoinFaceValueResponse | null {
+  return denomination
+    ? {
+        label: denomination.label,
+        value: Number(denomination.amount),
+        currencySlug: denomination.currency.slug,
+        currencyName: denomination.currency.name,
+        currencyFullName: `${denomination.currency.name} (${denomination.currency.periodLabel})`,
+      }
+    : null
+}
+
 function toCoinListItemResponse(
   coin: CoinListItem,
   imageBaseUrl: string | undefined
 ): CoinListItemResponse {
   return {
     ...toCoinResponseFields(coin),
+    faceValue: toCoinFaceValueResponse(coin.denomination),
     obverseImageUrl: coin.obverseImageKey
       ? toPublicImageUrl(imageBaseUrl, coin.obverseImageKey)
       : null,

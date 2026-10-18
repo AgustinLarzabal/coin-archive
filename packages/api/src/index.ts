@@ -98,9 +98,29 @@ function hasOrderedIssuePeriod(coin: {
   return coin.firstIssueYear <= coin.lastIssueYear
 }
 
+export const currencySlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
+export const coinFaceValueResponseSchema = z.strictObject({
+  label: trimmedDisplayTextSchema(200),
+  value: z.number().positive().meta({
+    description:
+      "Positive JSON numeric value derived from a fixed-precision decimal with up to 18 integer and 12 fractional digits; repeating historical values are curated fixed-precision approximations.",
+  }),
+  currencySlug: currencySlugSchema,
+  currencyName: trimmedDisplayTextSchema(200),
+  currencyFullName: trimmedDisplayTextSchema(403),
+})
+
+export type CoinFaceValueResponse = z.infer<typeof coinFaceValueResponseSchema>
+
 export const coinListItemResponseSchema = z
   .strictObject({
     ...coinResponseShape,
+    faceValue: coinFaceValueResponseSchema.nullable(),
     obverseImageUrl: z.url().nullable(),
     reverseImageUrl: z.url().nullable(),
   })
@@ -254,25 +274,6 @@ export const rulingAuthorityAttributionResponseSchema = z.strictObject({
 export type RulingAuthorityAttributionResponse = z.infer<
   typeof rulingAuthorityAttributionResponseSchema
 >
-
-export const currencySlugSchema = z
-  .string()
-  .min(3)
-  .max(64)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-
-export const coinFaceValueResponseSchema = z.strictObject({
-  label: trimmedDisplayTextSchema(200),
-  value: z.number().positive().meta({
-    description:
-      "Positive JSON numeric value derived from a fixed-precision decimal with up to 18 integer and 12 fractional digits; repeating historical values are curated fixed-precision approximations.",
-  }),
-  currencySlug: currencySlugSchema,
-  currencyName: trimmedDisplayTextSchema(200),
-  currencyFullName: trimmedDisplayTextSchema(403),
-})
-
-export type CoinFaceValueResponse = z.infer<typeof coinFaceValueResponseSchema>
 
 export const coinDetailResponseSchema = z
   .strictObject({

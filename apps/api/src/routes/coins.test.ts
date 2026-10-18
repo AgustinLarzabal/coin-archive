@@ -460,6 +460,7 @@ describe("Coin routes", () => {
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             issuer: { name: "Roman Empire", code: "ROMAN" },
+            faceValue: null,
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",
             obverseImageUrl:
@@ -683,24 +684,7 @@ describe("Coin routes", () => {
             properties: expect.objectContaining({
               coins: expect.objectContaining({
                 maxItems: 100,
-                items: expect.objectContaining({
-                  properties: expect.objectContaining({
-                    ...issueYearProperties,
-                    distribution: {
-                      type: "string",
-                      enum: [
-                        "standard-circulation",
-                        "circulating-commemorative",
-                        "non-circulating",
-                      ],
-                    },
-                  }),
-                  required: expect.arrayContaining([
-                    "distribution",
-                    "firstIssueYear",
-                    "lastIssueYear",
-                  ]),
-                }),
+                items: { $ref: "#/components/schemas/CoinListItem" },
               }),
               pagination: expect.objectContaining({
                 additionalProperties: false,
@@ -713,6 +697,49 @@ describe("Coin routes", () => {
                 required: ["page", "pageSize", "totalItems", "totalPages"],
               }),
             }),
+          }),
+          CoinListItem: expect.objectContaining({
+            properties: expect.objectContaining({
+              ...issueYearProperties,
+              distribution: {
+                type: "string",
+                enum: [
+                  "standard-circulation",
+                  "circulating-commemorative",
+                  "non-circulating",
+                ],
+              },
+              faceValue: expect.objectContaining({
+                nullable: true,
+                properties: {
+                  label: expect.objectContaining({ type: "string" }),
+                  value: expect.objectContaining({
+                    type: "number",
+                    description: expect.stringContaining(
+                      "fixed-precision approximation"
+                    ),
+                  }),
+                  currencySlug: expect.objectContaining({ type: "string" }),
+                  currencyName: expect.objectContaining({ type: "string" }),
+                  currencyFullName: expect.objectContaining({
+                    type: "string",
+                  }),
+                },
+                required: [
+                  "label",
+                  "value",
+                  "currencySlug",
+                  "currencyName",
+                  "currencyFullName",
+                ],
+              }),
+            }),
+            required: expect.arrayContaining([
+              "distribution",
+              "firstIssueYear",
+              "lastIssueYear",
+              "faceValue",
+            ]),
           }),
           Issuer: {
             type: "object",
@@ -729,18 +756,96 @@ describe("Coin routes", () => {
           InternalError: expect.any(Object),
         })
       )
-      const coinListItemSchema = (
-        document.components.schemas.CoinListResponse as {
-          properties: {
-            coins: { items: { properties: Record<string, unknown> } }
-          }
-        }
-      ).properties.coins.items
+      const coinListItemSchema = document.components.schemas.CoinListItem as {
+        properties: Record<string, unknown>
+      }
       expect(coinListItemSchema.properties).not.toHaveProperty("rulers")
+      expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
+      expect(coinListItemSchema.properties).not.toHaveProperty("reverse")
+      expect(coinListItemSchema.properties).not.toHaveProperty("edge")
     })
   })
 
   describe("GET /v1/coins", () => {
+    it("returns required populated and null Face Values without catalogue identities", async () => {
+      const baseCoin = {
+        id: "00000000-0000-4000-8000-000000000001",
+        title: "1 peso",
+        issuerId: "10000000-0000-4000-8000-000000000001",
+        distribution: "standard-circulation" as const,
+        firstIssueYear: 1994,
+        lastIssueYear: 1994,
+        issuer: {
+          id: "10000000-0000-4000-8000-000000000001",
+          name: "Argentina",
+          code: "AR",
+          createdAt: new Date("2026-09-16T09:00:00.000Z"),
+          updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+        },
+        createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+        denomination: null,
+        obverseImageKey: null,
+        reverseImageKey: null,
+      }
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: async () => ({
+          coins: [
+            {
+              ...baseCoin,
+              denomination: {
+                id: "40000000-0000-4000-8000-000000000001",
+                currencyId: "50000000-0000-4000-8000-000000000001",
+                label: "1 peso",
+                amount: "1.000000000000",
+                createdAt: new Date("2026-09-16T08:00:00.000Z"),
+                updatedAt: new Date("2026-09-16T08:00:00.000Z"),
+                currency: {
+                  id: "50000000-0000-4000-8000-000000000001",
+                  slug: "argentine-peso-convertible",
+                  name: "Peso",
+                  periodLabel: "1992–2001",
+                  createdAt: new Date("2026-09-16T08:00:00.000Z"),
+                  updatedAt: new Date("2026-09-16T08:00:00.000Z"),
+                },
+              },
+            },
+            {
+              ...baseCoin,
+              id: "00000000-0000-4000-8000-000000000002",
+              title: "Uncurated Coin",
+              denomination: null,
+            },
+          ],
+          totalItems: 2,
+        }),
+      }).request("/v1/coins")
+
+      expect(response.status).toBe(200)
+      const body = await response.json()
+      expect(body).toEqual(
+        expect.objectContaining({
+          coins: [
+            expect.objectContaining({
+              faceValue: {
+                label: "1 peso",
+                value: 1,
+                currencySlug: "argentine-peso-convertible",
+                currencyName: "Peso",
+                currencyFullName: "Peso (1992–2001)",
+              },
+            }),
+            expect.objectContaining({ faceValue: null }),
+          ],
+        })
+      )
+      expect(JSON.stringify(body)).not.toMatch(
+        /denomination|40000000|50000000/i
+      )
+    })
+
     it("uses bounded pagination defaults and returns exact metadata", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 49 }))
 
@@ -827,6 +932,7 @@ describe("Coin routes", () => {
         },
         createdAt: new Date("2026-09-16T10:00:00.000Z"),
         updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+        denomination: null,
         obverseImageKey: null,
         reverseImageKey: null,
       }
@@ -1364,6 +1470,7 @@ describe("Coin routes", () => {
               },
               createdAt: new Date("2026-09-16T10:00:00.000Z"),
               updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+              denomination: null,
               obverseImageKey: "coins/first/obverse.webp",
               reverseImageKey: "coins/first/reverse.webp",
             },
@@ -1383,6 +1490,7 @@ describe("Coin routes", () => {
             firstIssueYear: -2,
             lastIssueYear: 2,
             issuer: { name: "Argentina", code: "AR" },
+            faceValue: null,
             createdAt: "2026-09-16T10:00:00.000Z",
             updatedAt: "2026-09-16T11:00:00.000Z",
             obverseImageUrl:
@@ -1422,6 +1530,7 @@ describe("Coin routes", () => {
               },
               createdAt: new Date("2026-09-16T10:00:00.000Z"),
               updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+              denomination: null,
               obverseImageKey: null,
               reverseImageKey: null,
             },

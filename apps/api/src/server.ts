@@ -41,6 +41,7 @@ const app = createApp({
   findCoinById: database.findCoinById,
   imageBaseUrl: config.imageBaseUrl,
   listCoins: database.listCoins,
+  listCurrencies: database.listCurrencies,
   listEngravers: database.listEngravers,
   listIssuers: database.listIssuers,
   listRulingAuthorities: database.listRulingAuthorities,

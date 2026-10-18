@@ -4,6 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
 
 import { registerCoinRoutes } from "./routes/coins.js"
+import { registerCurrencyRoutes } from "./routes/currencies.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
 import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
@@ -13,6 +14,7 @@ import type {
   Coin,
   CoinListOptions,
   CoinListPage,
+  CurrencyRecord,
   EngraverRecord,
   IssuerRecord,
   RulingAuthorityRecord,
@@ -24,6 +26,7 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
+  listCurrencies?: () => Promise<Array<CurrencyRecord>>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
@@ -36,6 +39,7 @@ const noStorePaths = new Set([
   "/openapi.json",
   "/ready",
   "/v1/coins",
+  "/v1/currencies",
   "/v1/engravers",
   "/v1/issuers",
   "/v1/rulers",
@@ -97,6 +101,7 @@ export function createApp(options: AppOptions) {
     imageBaseUrl: options.imageBaseUrl,
     listCoins: options.listCoins,
   })
+  registerCurrencyRoutes(app, { listCurrencies: options.listCurrencies })
   registerIssuerRoutes(app, { listIssuers: options.listIssuers })
   registerEngraverRoutes(app, { listEngravers: options.listEngravers })
   registerRulingAuthorityRoutes(app, {

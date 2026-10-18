@@ -5,6 +5,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 import { RouteMessage } from "@/components/route-message"
 import {
   coinListQueryOptions,
+  currencyListQueryOptions,
   engraverListQueryOptions,
   InvalidCoinListResponseError,
   issuerListQueryOptions,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          currency: search.currency,
           distribution: search.distribution,
           issuer: search.issuer,
           engraver: search.engraver,
@@ -41,6 +43,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          currency: filters.currencySlug,
           distribution: filters.distribution,
           issuer: filters.issuerCode,
           engraver: filters.engraverSlug,
@@ -59,6 +62,7 @@ export const Route = createFileRoute("/_explore/")({
 
 function ExploreRoute() {
   const filters = Route.useLoaderDeps()
+  const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulerList } = useSuspenseQuery(
@@ -66,6 +70,9 @@ function ExploreRoute() {
   )
   const selectedIssuer = issuerList.issuers.find(
     (issuer) => issuer.code === filters.issuerCode
+  )
+  const selectedCurrency = currencyList.currencies.find(
+    (currency) => currency.slug === filters.currencySlug
   )
   const selectedEngraver = engraverList.engravers.find(
     (engraver) => engraver.slug === filters.engraverSlug
@@ -76,6 +83,8 @@ function ExploreRoute() {
 
   return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
+  ) : filters.currencySlug && !selectedCurrency ? (
+    <RouteMessage>Currency not found</RouteMessage>
   ) : filters.engraverSlug && !selectedEngraver ? (
     <RouteMessage>Engraver not found</RouteMessage>
   ) : filters.rulingAuthoritySlug && !selectedRuler ? (

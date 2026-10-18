@@ -92,6 +92,7 @@ describe("Archive landing route", () => {
         "coins",
         "list",
         {
+          currencySlug: null,
           engraverSlug: null,
           issuerCode: null,
           page: 3,
@@ -356,15 +357,29 @@ describe("Archive landing route", () => {
 
     const queryClient = router.options.context.queryClient
     for (const filters of [
-      { issuerCode: null, engraverSlug: null, page: 1, pageSize: 24 },
-      { issuerCode: "AR", engraverSlug: null, page: 1, pageSize: 24 },
       {
+        currencySlug: null,
+        issuerCode: null,
+        engraverSlug: null,
+        page: 1,
+        pageSize: 24,
+      },
+      {
+        currencySlug: null,
+        issuerCode: "AR",
+        engraverSlug: null,
+        page: 1,
+        pageSize: 24,
+      },
+      {
+        currencySlug: null,
         issuerCode: null,
         engraverSlug: "first-engraver",
         page: 1,
         pageSize: 24,
       },
       {
+        currencySlug: null,
         issuerCode: "AR",
         engraverSlug: "first-engraver",
         page: 1,

@@ -1610,6 +1610,13 @@ describe("Coin routes", () => {
 
       expect(document.paths["/v1/coins"].get.parameters).toEqual([
         expect.objectContaining({
+          description: expect.stringContaining("empty successful page"),
+          in: "query",
+          name: "currency",
+          required: false,
+          schema: expect.objectContaining({ pattern: expect.any(String) }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Coin Distribution identifier",
           in: "query",
           name: "distribution",
@@ -1692,6 +1699,7 @@ describe("Coin routes", () => {
               "application/json": {
                 schema: {
                   anyOf: [
+                    { $ref: "#/components/schemas/InvalidCurrencySlugError" },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
@@ -1727,5 +1735,88 @@ describe("Coin routes", () => {
         })
       )
     })
+  })
+})
+
+describe("Currency Coin filter", () => {
+  it("passes one Currency Slug to the paginated Coin list", async () => {
+    const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+    const response = await createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+      listCoins,
+    }).request("/v1/coins?currency=argentine-peso-convertible")
+
+    expect(response.status).toBe(200)
+    expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+      currencySlug: "argentine-peso-convertible",
+      page: 1,
+      pageSize: 24,
+    })
+    await expect(response.json()).resolves.toMatchObject({
+      coins: [],
+      pagination: { totalItems: 0, totalPages: 0 },
+    })
+  })
+
+  it.each(["INVALID", "ab", "peso--nuevo"])(
+    "rejects malformed Currency Slug %j before listing Coins",
+    async (currency) => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?currency=${currency}`)
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_currency_slug",
+          message: "Currency Slug is invalid",
+        },
+      })
+    }
+  )
+
+  it("rejects repeated Currency parameters before listing Coins", async () => {
+    const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+    const response = await createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+      listCoins,
+    }).request("/v1/coins?currency=euro&currency=us-dollar")
+
+    expect(response.status).toBe(400)
+    expect(listCoins).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "invalid_currency_slug" },
+    })
+  })
+
+  it("documents the Currency query and malformed response", async () => {
+    const response = await createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+    }).request("/openapi.json")
+    const document = (await response.json()) as {
+      paths: {
+        "/v1/coins": {
+          get: {
+            parameters: Array<{ name: string; description?: string }>
+            responses: Record<string, unknown>
+          }
+        }
+      }
+    }
+
+    expect(document.paths["/v1/coins"].get.parameters).toContainEqual(
+      expect.objectContaining({
+        name: "currency",
+        description: expect.stringContaining("empty"),
+      })
+    )
+    expect(document.paths["/v1/coins"].get.responses).toHaveProperty("400")
   })
 })

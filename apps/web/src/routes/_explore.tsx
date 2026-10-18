@@ -4,8 +4,11 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
 import {
+  currencyListQueryOptions,
+  CurrencyListRequestError,
   engraverListQueryOptions,
   EngraverListRequestError,
+  InvalidCurrencyListResponseError,
   InvalidEngraverListResponseError,
   InvalidIssuerListResponseError,
   InvalidRulingAuthorityListResponseError,
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
   loader: async ({ context }) => {
     await Promise.all([
+      context.queryClient.query(currencyListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(rulingAuthorityListQueryOptions()),
@@ -33,12 +37,14 @@ export const Route = createFileRoute("/_explore")({
 
 function ExploreLayout() {
   const {
+    currency: currencySlug,
     distribution,
     engraver: engraverSlug,
     issuer: issuerCode,
     ruler: rulingAuthoritySlug,
     year,
   } = Route.useSearch()
+  const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulingAuthorityList } = useSuspenseQuery(
@@ -48,6 +54,8 @@ function ExploreLayout() {
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreFilters
+        currencies={currencyList.currencies}
+        currencySlug={currencySlug}
         distribution={distribution}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
@@ -67,6 +75,14 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
 }
 
 function getExploreLayoutErrorMessage(error: unknown) {
+  if (error instanceof InvalidCurrencyListResponseError) {
+    return "Invalid Currency list response"
+  }
+
+  if (error instanceof CurrencyListRequestError) {
+    return "Unable to load Currencies"
+  }
+
   if (error instanceof InvalidEngraverListResponseError) {
     return "Invalid engraver list response"
   }

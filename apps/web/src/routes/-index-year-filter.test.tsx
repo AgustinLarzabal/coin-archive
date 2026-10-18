@@ -36,6 +36,7 @@ it("applies, restores, and independently clears an accessible BCE Issue Year fil
       "coins",
       "list",
       {
+        currencySlug: null,
         engraverSlug: "first-engraver",
         issuerCode: "AR",
         issueYear: -44,

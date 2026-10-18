@@ -1,3 +1,4 @@
+import { CurrencyFilter } from "./currency-filter"
 import { DistributionFilter } from "./distribution-filter"
 import { EngraverFilter } from "./engraver-filter"
 import { IssueYearFilter } from "./issue-year-filter"
@@ -6,6 +7,7 @@ import { RulingAuthorityFilter } from "./ruling-authority-filter"
 import type {
   CoinDistribution,
   CoinListYear,
+  CurrencyResponse,
   EngraverListItemResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
@@ -13,6 +15,8 @@ import type {
 
 export function ExploreFilters({
   distribution,
+  currencies,
+  currencySlug,
   engraverSlug,
   engravers,
   issuerCode,
@@ -22,6 +26,8 @@ export function ExploreFilters({
   year,
 }: {
   distribution?: CoinDistribution
+  currencies: Array<CurrencyResponse>
+  currencySlug?: string
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
   issuerCode?: string
@@ -37,6 +43,7 @@ export function ExploreFilters({
     >
       <DistributionFilter distribution={distribution} />
       <IssuerFilter issuerCode={issuerCode} issuers={issuers} />
+      <CurrencyFilter currencies={currencies} currencySlug={currencySlug} />
       <RulingAuthorityFilter
         rulingAuthoritySlug={rulingAuthoritySlug}
         rulingAuthorities={rulingAuthorities}

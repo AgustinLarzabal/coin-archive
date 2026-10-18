@@ -24,6 +24,7 @@ export interface Database {
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
+  listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   listRulingAuthorities: () => Promise<Array<schema.RulingAuthorityRecord>>
@@ -64,6 +65,7 @@ export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
 }
 
 export interface CoinListOptions {
+  currencySlug?: string
   distribution?: schema.CoinRecord["distribution"]
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
@@ -292,6 +294,16 @@ export function createDatabase(
                     .where(eq(schema.issuers.code, listOptions.issuerCode))
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const currencyId =
+            listOptions.currencySlug === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.currencies.id })
+                    .from(schema.currencies)
+                    .where(eq(schema.currencies.slug, listOptions.currencySlug))
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const rulingAuthorityId =
             listOptions.rulingAuthoritySlug === undefined
               ? undefined
@@ -312,6 +324,24 @@ export function createDatabase(
               listOptions.distribution === undefined
                 ? undefined
                 : eq(schema.coins.distribution, listOptions.distribution),
+              currencyId === undefined
+                ? undefined
+                : currencyId === null
+                  ? sql`false`
+                  : exists(
+                      transaction
+                        .select({ id: schema.denominations.id })
+                        .from(schema.denominations)
+                        .where(
+                          and(
+                            eq(
+                              schema.denominations.id,
+                              schema.coins.denominationId
+                            ),
+                            eq(schema.denominations.currencyId, currencyId)
+                          )
+                        )
+                    ),
               issuerId === undefined
                 ? undefined
                 : issuerId === null
@@ -467,6 +497,15 @@ export function createDatabase(
         { accessMode: "read only", isolationLevel: "repeatable read" }
       )
     },
+    listCurrencies: () =>
+      orm
+        .select()
+        .from(schema.currencies)
+        .orderBy(
+          asc(
+            sql`${schema.currencies.name} || ' (' || ${schema.currencies.periodLabel} || ')'`
+          )
+        ),
     listEngravers: () =>
       orm
         .select()

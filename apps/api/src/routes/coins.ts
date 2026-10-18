@@ -14,8 +14,10 @@ import {
   coinListYearQuerySchema,
   coinListYearToInterval,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
+  currencySlugSchema,
   engraverSlugSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
+  invalidCurrencySlugErrorSchema as sharedInvalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
@@ -63,6 +65,11 @@ const coinListResponseSchema = sharedCoinListResponseSchema
   .openapi("CoinListResponse")
 
 const coinListQuerySchema = z.object({
+  currency: currencySlugSchema.optional().openapi({
+    description:
+      "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_currency_slug",
+    param: { name: "currency", in: "query" },
+  }),
   distribution: coinDistributionSchema.optional().openapi({
     description: "Exact, case-sensitive Coin Distribution identifier",
     param: { name: "distribution", in: "query" },
@@ -117,6 +124,8 @@ const invalidCoinIdErrorSchema =
   sharedInvalidCoinIdErrorSchema.openapi("InvalidCoinIdError")
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
+const invalidCurrencySlugErrorSchema =
+  sharedInvalidCurrencySlugErrorSchema.openapi("InvalidCurrencySlugError")
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
   "InvalidIssuerCodeError"
 )
@@ -132,6 +141,7 @@ const invalidRulingAuthoritySlugErrorSchema =
 const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
+  invalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
@@ -305,6 +315,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
     coinListRoute,
     async (context) => {
       const {
+        currency: currencySlug,
         distribution,
         engraver: engraverSlug,
         issuer: issuerCode,
@@ -316,6 +327,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
+        ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
@@ -345,6 +357,9 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
         const invalidDistribution = result.error.issues.some(
           (issue) => issue.path[0] === "distribution"
         )
+        const invalidCurrency = result.error.issues.some(
+          (issue) => issue.path[0] === "currency"
+        )
         const invalidEngraver = result.error.issues.some(
           (issue) => issue.path[0] === "engraver"
         )
@@ -358,47 +373,54 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
           (issue) => issue.path[0] === "year"
         )
         return context.json(
-          invalidDistribution
+          invalidCurrency
             ? {
                 error: {
-                  code: "invalid_distribution" as const,
-                  message: "Coin Distribution is invalid" as const,
+                  code: "invalid_currency_slug" as const,
+                  message: "Currency Slug is invalid" as const,
                 },
               }
-            : invalidRulingAuthority
+            : invalidDistribution
               ? {
                   error: {
-                    code: "invalid_ruler_slug" as const,
-                    message: "Ruling Authority Slug is invalid" as const,
+                    code: "invalid_distribution" as const,
+                    message: "Coin Distribution is invalid" as const,
                   },
                 }
-              : invalidEngraver
+              : invalidRulingAuthority
                 ? {
                     error: {
-                      code: "invalid_engraver_slug" as const,
-                      message: "Engraver Slug is invalid" as const,
+                      code: "invalid_ruler_slug" as const,
+                      message: "Ruling Authority Slug is invalid" as const,
                     },
                   }
-                : invalidYear
+                : invalidEngraver
                   ? {
                       error: {
-                        code: "invalid_year" as const,
-                        message: "Issue Year is invalid" as const,
+                        code: "invalid_engraver_slug" as const,
+                        message: "Engraver Slug is invalid" as const,
                       },
                     }
-                  : invalidPagination
+                  : invalidYear
                     ? {
                         error: {
-                          code: "invalid_pagination" as const,
-                          message: "Pagination is invalid" as const,
+                          code: "invalid_year" as const,
+                          message: "Issue Year is invalid" as const,
                         },
                       }
-                    : {
-                        error: {
-                          code: "invalid_issuer_code" as const,
-                          message: "Issuer Code is invalid" as const,
+                    : invalidPagination
+                      ? {
+                          error: {
+                            code: "invalid_pagination" as const,
+                            message: "Pagination is invalid" as const,
+                          },
+                        }
+                      : {
+                          error: {
+                            code: "invalid_issuer_code" as const,
+                            message: "Issuer Code is invalid" as const,
+                          },
                         },
-                      },
           400
         )
       }

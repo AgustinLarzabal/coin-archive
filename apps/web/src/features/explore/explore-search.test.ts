@@ -38,6 +38,26 @@ describe("Explore search schema", () => {
     })
   })
 
+  it("accepts and maps one Currency Slug", () => {
+    const search = exploreSearchSchema.parse({ currency: "argentine-peso" })
+
+    expect(search).toEqual({ currency: "argentine-peso" })
+    expect(getExploreCoinListFilters(search)).toMatchObject({
+      currencySlug: "argentine-peso",
+      page: 1,
+    })
+  })
+
+  it.each(["", "Peso", "ab", "peso--nuevo", ["euro", "peso"]])(
+    "ignores the malformed Currency filter %j",
+    (currency) => {
+      expect(exploreSearchSchema.parse({ currency, issuer: "AR" })).toEqual({
+        currency: undefined,
+        issuer: "AR",
+      })
+    }
+  )
+
   it("allows the Issuer filter to be omitted", () => {
     expect(exploreSearchSchema.parse({})).toEqual({})
   })

@@ -104,6 +104,20 @@ export const currencySlugSchema = z
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
+export const currencyResponseSchema = z.strictObject({
+  slug: currencySlugSchema,
+  name: trimmedDisplayTextSchema(200),
+  fullName: trimmedDisplayTextSchema(403),
+})
+
+export type CurrencyResponse = z.infer<typeof currencyResponseSchema>
+
+export const currencyListResponseSchema = z.strictObject({
+  currencies: z.array(currencyResponseSchema),
+})
+
+export type CurrencyListResponse = z.infer<typeof currencyListResponseSchema>
+
 export const coinFaceValueResponseSchema = z.strictObject({
   label: trimmedDisplayTextSchema(200),
   value: z.number().positive().meta({
@@ -341,6 +355,11 @@ export const invalidEngraverSlugErrorSchema = errorResponseSchema(
 export const invalidRulingAuthoritySlugErrorSchema = errorResponseSchema(
   "invalid_ruler_slug",
   "Ruling Authority Slug is invalid"
+)
+
+export const invalidCurrencySlugErrorSchema = errorResponseSchema(
+  "invalid_currency_slug",
+  "Currency Slug is invalid"
 )
 
 export const invalidYearErrorSchema = errorResponseSchema(

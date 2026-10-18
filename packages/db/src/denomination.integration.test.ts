@@ -29,6 +29,148 @@ beforeEach(async () => {
 })
 
 describe("Face Value persistence", () => {
+  it("lists every Currency by derived Full Name, including unused Currencies", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await database.orm.insert(database.schema.currencies).values([
+        { slug: "z-unit", name: "Zed", periodLabel: "old" },
+        { slug: "a-unit", name: "Alpha", periodLabel: "new" },
+      ])
+
+      await expect(database.listCurrencies()).resolves.toMatchObject([
+        { slug: "a-unit", name: "Alpha", periodLabel: "new" },
+        { slug: "z-unit", name: "Zed", periodLabel: "old" },
+      ])
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("filters Coins by Currency Slug and composes with existing filters", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [peso, euro] = await database.orm
+        .insert(database.schema.currencies)
+        .values([
+          { slug: "argentine-peso", name: "Peso", periodLabel: "present" },
+          { slug: "euro", name: "Euro", periodLabel: "present" },
+        ])
+        .returning()
+      const [pesoDenomination, euroDenomination] = await database.orm
+        .insert(database.schema.denominations)
+        .values([
+          { currencyId: peso.id, label: "1 peso", amount: "1" },
+          { currencyId: euro.id, label: "1 euro", amount: "1" },
+        ])
+        .returning()
+      const [argentina, italy] = await database.orm
+        .insert(database.schema.issuers)
+        .values([
+          { code: "AR", name: "Argentina" },
+          { code: "IT", name: "Italy" },
+        ])
+        .returning()
+      const [engraver] = await database.orm
+        .insert(database.schema.engravers)
+        .values({ slug: "selected-engraver", fullName: "Selected Engraver" })
+        .returning()
+      const [ruler] = await database.orm
+        .insert(database.schema.rulingAuthorities)
+        .values({ slug: "selected-ruler", name: "Selected Ruler" })
+        .returning()
+      const firstMatchingId = "00000000-0000-4000-8000-000000000001"
+      const secondMatchingId = "00000000-0000-4000-8000-000000000002"
+      await database.orm.insert(database.schema.coins).values([
+        {
+          id: firstMatchingId,
+          title: "First matching peso",
+          issuerId: argentina.id,
+          denominationId: pesoDenomination.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          id: secondMatchingId,
+          title: "Second matching peso",
+          issuerId: argentina.id,
+          denominationId: pesoDenomination.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 1999,
+          lastIssueYear: 2001,
+          createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        },
+        {
+          title: "Wrong issuer peso",
+          issuerId: italy.id,
+          denominationId: pesoDenomination.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+        {
+          title: "Euro",
+          issuerId: argentina.id,
+          denominationId: euroDenomination.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+      ])
+      const surfaces = await database.orm
+        .insert(database.schema.coinSurfaces)
+        .values([
+          {
+            coinId: firstMatchingId,
+            kind: "obverse",
+            description: "Portrait",
+          },
+          {
+            coinId: secondMatchingId,
+            kind: "obverse",
+            description: "Portrait",
+          },
+        ])
+        .returning()
+      await database.orm.insert(database.schema.coinSurfaceEngravers).values(
+        surfaces.map((surface) => ({
+          coinSurfaceId: surface.id,
+          engraverId: engraver.id,
+          position: 1,
+        }))
+      )
+      await database.orm
+        .insert(database.schema.coinRulingAuthorityAttributions)
+        .values(
+          [firstMatchingId, secondMatchingId].map((coinId) => ({
+            coinId,
+            rulingAuthorityId: ruler.id,
+            role: "President",
+            position: 1,
+          }))
+        )
+
+      const page = await database.listCoins({
+        currencySlug: "argentine-peso",
+        distribution: "standard-circulation",
+        engraverSlug: "selected-engraver",
+        issueYearInterval: { firstIssueYear: 2000, lastIssueYear: 2000 },
+        issuerCode: "AR",
+        page: 1,
+        pageSize: 1,
+        rulingAuthoritySlug: "selected-ruler",
+      })
+      expect(page.totalItems).toBe(2)
+      expect(page.coins.map((coin) => coin.id)).toEqual([firstMatchingId])
+      await expect(
+        database.listCoins({ currencySlug: "unknown-currency" })
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("returns populated and absent Face Values from the paginated Coin list", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

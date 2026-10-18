@@ -9,6 +9,7 @@ import {
   coinListResponseSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
+  currencySlugSchema,
   engraverSlugSchema,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
@@ -32,8 +33,10 @@ export class InvalidIssuerCodeError extends Error {}
 export class InvalidEngraverSlugError extends Error {}
 export class InvalidRulingAuthoritySlugError extends Error {}
 export class InvalidIssueYearError extends Error {}
+export class InvalidCurrencySlugError extends Error {}
 
 export type CoinListFilters = Readonly<{
+  currencySlug?: string
   distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
@@ -43,6 +46,7 @@ export type CoinListFilters = Readonly<{
 }>
 
 type ValidatedCoinListFilters = Readonly<{
+  currencySlug: string | null
   distribution?: CoinDistribution
   engraverSlug: string | null
   issuerCode: string | null
@@ -53,6 +57,7 @@ type ValidatedCoinListFilters = Readonly<{
 }>
 
 async function getCoins({
+  currencySlug,
   distribution,
   engraverSlug,
   issuerCode,
@@ -70,6 +75,9 @@ async function getCoins({
     }
     if (issuerCode !== null) {
       search.set("issuer", issuerCode)
+    }
+    if (currencySlug !== null) {
+      search.set("currency", currencySlug)
     }
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
@@ -141,6 +149,7 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const {
+    currencySlug,
     distribution,
     engraverSlug,
     issuerCode,
@@ -148,6 +157,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     page = COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug,
   } = filters
+  if (
+    currencySlug !== undefined &&
+    !currencySlugSchema.safeParse(currencySlug).success
+  ) {
+    throw new InvalidCurrencySlugError("Invalid Currency Slug")
+  }
   if (
     distribution !== undefined &&
     !coinDistributionSchema.safeParse(distribution).success
@@ -183,6 +198,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
 
   const validatedFilters: ValidatedCoinListFilters = {
+    currencySlug: currencySlug ?? null,
     ...(distribution === undefined ? {} : { distribution }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,

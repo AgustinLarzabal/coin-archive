@@ -3,6 +3,7 @@ import { render } from "@testing-library/react"
 import { vi } from "vitest"
 import type {
   CoinListPaginationResponse,
+  CurrencyResponse,
   EngraverListItemResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
@@ -34,12 +35,14 @@ export function coinListJsonResponse(
 
 export function createArchiveFetch({
   coins = [],
+  currencies = [],
   engravers = [],
   pagination,
   issuers = [],
   rulers = [],
 }: {
   coins?: Array<unknown>
+  currencies?: Array<CurrencyResponse>
   engravers?: Array<EngraverListItemResponse>
   pagination?: CoinListPaginationResponse
   issuers?: Array<IssuerResponse>
@@ -51,26 +54,33 @@ export function createArchiveFetch({
     return Promise.resolve(
       url.endsWith("/v1/issuers")
         ? jsonResponse({ issuers })
-        : url.endsWith("/v1/rulers")
-          ? jsonResponse({ rulers })
-          : url.endsWith("/v1/engravers")
-            ? jsonResponse({ engravers })
-            : coinListJsonResponse(coins, pagination)
+        : url.endsWith("/v1/currencies")
+          ? jsonResponse({ currencies })
+          : url.endsWith("/v1/rulers")
+            ? jsonResponse({ rulers })
+            : url.endsWith("/v1/engravers")
+              ? jsonResponse({ engravers })
+              : coinListJsonResponse(coins, pagination)
     )
   }
 }
 
 export function renderArchiveRoute(
   initialEntry = "/",
-  rulers: Array<RulingAuthorityListItemResponse> = []
+  rulers: Array<RulingAuthorityListItemResponse> = [],
+  currencies: Array<CurrencyResponse> | Promise<Response> | Response = []
 ) {
-  const fetchWithoutRulerFixture = globalThis.fetch
+  const fetchWithoutReferenceFixtures = globalThis.fetch
   vi.stubGlobal("fetch", (input: string | URL | Request, init?: RequestInit) =>
     String(input).endsWith("/v1/rulers")
       ? Promise.resolve(jsonResponse({ rulers }))
-      : init === undefined
-        ? fetchWithoutRulerFixture(input)
-        : fetchWithoutRulerFixture(input, init)
+      : String(input).endsWith("/v1/currencies")
+        ? Array.isArray(currencies)
+          ? Promise.resolve(jsonResponse({ currencies }))
+          : Promise.resolve(currencies)
+        : init === undefined
+          ? fetchWithoutReferenceFixtures(input)
+          : fetchWithoutReferenceFixtures(input, init)
   )
   const history = createMemoryHistory({ initialEntries: [initialEntry] })
   const router = getRouter({ history })

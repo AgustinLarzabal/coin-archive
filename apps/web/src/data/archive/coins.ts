@@ -11,6 +11,7 @@ import {
   coinNotFoundErrorSchema,
   currencySlugSchema,
   engraverSlugSchema,
+  faceValueAmountQuerySchema,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
 } from "@workspace/api"
@@ -37,6 +38,7 @@ export class InvalidCurrencySlugError extends Error {}
 
 export type CoinListFilters = Readonly<{
   currencySlug?: string
+  faceValueAmount?: string
   distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
@@ -47,6 +49,7 @@ export type CoinListFilters = Readonly<{
 
 type ValidatedCoinListFilters = Readonly<{
   currencySlug: string | null
+  faceValueAmount: string | null
   distribution?: CoinDistribution
   engraverSlug: string | null
   issuerCode: string | null
@@ -58,6 +61,7 @@ type ValidatedCoinListFilters = Readonly<{
 
 async function getCoins({
   currencySlug,
+  faceValueAmount,
   distribution,
   engraverSlug,
   issuerCode,
@@ -78,6 +82,9 @@ async function getCoins({
     }
     if (currencySlug !== null) {
       search.set("currency", currencySlug)
+    }
+    if (faceValueAmount !== null) {
+      search.set("amount", faceValueAmount)
     }
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
@@ -150,6 +157,7 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const {
     currencySlug,
+    faceValueAmount,
     distribution,
     engraverSlug,
     issuerCode,
@@ -162,6 +170,13 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     !currencySlugSchema.safeParse(currencySlug).success
   ) {
     throw new InvalidCurrencySlugError("Invalid Currency Slug")
+  }
+  if (
+    faceValueAmount !== undefined &&
+    (currencySlug === undefined ||
+      !faceValueAmountQuerySchema.safeParse(faceValueAmount).success)
+  ) {
+    throw new TypeError("Invalid Face Value Amount")
   }
   if (
     distribution !== undefined &&
@@ -199,6 +214,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
 
   const validatedFilters: ValidatedCoinListFilters = {
     currencySlug: currencySlug ?? null,
+    faceValueAmount: faceValueAmount ?? null,
     ...(distribution === undefined ? {} : { distribution }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,

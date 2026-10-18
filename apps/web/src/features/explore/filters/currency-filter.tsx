@@ -44,7 +44,7 @@ export function CurrencyFilter({
       onValueChange={(currency: string | null) => {
         const nextCurrencySlug = currency || undefined
         if (nextCurrencySlug === currencySlug) return
-        updateFilters({ currency: nextCurrencySlug })
+        updateFilters({ currency: nextCurrencySlug, amount: undefined })
       }}
     />
   )

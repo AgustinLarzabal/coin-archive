@@ -7,13 +7,15 @@ import {
   coinListYearSchema,
   currencySlugSchema,
   engraverSlugSchema,
+  faceValueAmountQuerySchema,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
 } from "@workspace/api"
 import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
 
-export const exploreSearchSchema = z.object({
+const exploreSearchObjectSchema = z.object({
+  amount: faceValueAmountQuerySchema.optional().catch(undefined),
   currency: currencySlugSchema.optional().catch(undefined),
   distribution: coinDistributionSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
@@ -29,6 +31,13 @@ export const exploreSearchSchema = z.object({
     .catch(undefined),
 })
 
+export const exploreSearchSchema = exploreSearchObjectSchema.transform(
+  (search): z.infer<typeof exploreSearchObjectSchema> => ({
+    ...search,
+    amount: search.currency === undefined ? undefined : search.amount,
+  })
+)
+
 export type ExploreSearch = z.infer<typeof exploreSearchSchema>
 
 export function getExploreCoinListFilters(
@@ -36,6 +45,7 @@ export function getExploreCoinListFilters(
 ): CoinListFilters {
   return {
     currencySlug: search.currency,
+    faceValueAmount: search.amount,
     distribution: search.distribution,
     engraverSlug: search.engraver,
     issuerCode: search.issuer,

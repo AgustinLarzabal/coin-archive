@@ -31,7 +31,9 @@ it("clears only the selected Ruling Authority and returns to the first page", as
   expect(control).not.toBeNull()
 
   fireEvent.click(
-    within(control as HTMLElement).getByRole("button", { name: "Clear" })
+    within(control as HTMLElement).getByRole("button", {
+      name: "Clear Ruler / Period",
+    })
   )
 
   await waitFor(() =>

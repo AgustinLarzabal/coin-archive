@@ -93,6 +93,7 @@ describe("Archive landing route", () => {
         "list",
         {
           currencySlug: null,
+          faceValueAmount: null,
           engraverSlug: null,
           issuerCode: null,
           page: 3,
@@ -226,7 +227,7 @@ describe("Archive landing route", () => {
     if (!engraverControl) throw new Error("Engraver combobox control not found")
 
     fireEvent.click(
-      within(engraverControl).getByRole("button", { name: "Clear" })
+      within(engraverControl).getByRole("button", { name: "Clear Engraver" })
     )
 
     await waitFor(() =>
@@ -359,6 +360,7 @@ describe("Archive landing route", () => {
     for (const filters of [
       {
         currencySlug: null,
+        faceValueAmount: null,
         issuerCode: null,
         engraverSlug: null,
         page: 1,
@@ -366,6 +368,7 @@ describe("Archive landing route", () => {
       },
       {
         currencySlug: null,
+        faceValueAmount: null,
         issuerCode: "AR",
         engraverSlug: null,
         page: 1,
@@ -373,6 +376,7 @@ describe("Archive landing route", () => {
       },
       {
         currencySlug: null,
+        faceValueAmount: null,
         issuerCode: null,
         engraverSlug: "first-engraver",
         page: 1,
@@ -380,6 +384,7 @@ describe("Archive landing route", () => {
       },
       {
         currencySlug: null,
+        faceValueAmount: null,
         issuerCode: "AR",
         engraverSlug: "first-engraver",
         page: 1,

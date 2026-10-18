@@ -16,10 +16,13 @@ import {
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   currencySlugSchema,
   engraverSlugSchema,
+  FACE_VALUE_AMOUNT_QUERY_PATTERN,
+  faceValueAmountQuerySchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
   invalidCurrencySlugErrorSchema as sharedInvalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
+  invalidFaceValueFilterErrorSchema as sharedInvalidFaceValueFilterErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
@@ -64,53 +67,69 @@ const coinListResponseSchema = sharedCoinListResponseSchema
   })
   .openapi("CoinListResponse")
 
-const coinListQuerySchema = z.object({
-  currency: currencySlugSchema.optional().openapi({
-    description:
-      "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_currency_slug",
-    param: { name: "currency", in: "query" },
-  }),
-  distribution: coinDistributionSchema.optional().openapi({
-    description: "Exact, case-sensitive Coin Distribution identifier",
-    param: { name: "distribution", in: "query" },
-  }),
-  engraver: engraverSlugSchema.optional().openapi({
-    description: "Exact, case-sensitive Engraver Slug",
-    param: { name: "engraver", in: "query" },
-  }),
-  issuer: issuerCodeSchema.optional().openapi({
-    description: "Exact, case-sensitive Issuer Code",
-    param: { name: "issuer", in: "query" },
-  }),
-  ruler: rulingAuthoritySlugSchema.optional().openapi({
-    description: "Exact, case-sensitive Ruling Authority Slug",
-    param: { name: "ruler", in: "query" },
-  }),
-  year: coinListYearQuerySchema.optional().openapi({
-    description:
-      "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
-    param: { name: "year", in: "query" },
-    type: "string",
-    pattern: COIN_LIST_YEAR_QUERY_PATTERN,
-  }),
-  page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
-    description: "One-based page number",
-    default: COIN_LIST_DEFAULT_PAGE,
-    param: { name: "page", in: "query" },
-    type: "integer",
-    minimum: 1,
-  }),
-  pageSize: coinListPageSizeQuerySchema
-    .default(COIN_LIST_DEFAULT_PAGE_SIZE)
-    .openapi({
-      description: "Number of Coins per page (maximum 100)",
-      default: COIN_LIST_DEFAULT_PAGE_SIZE,
-      maximum: COIN_LIST_MAX_PAGE_SIZE,
-      minimum: 1,
-      param: { name: "pageSize", in: "query" },
-      type: "integer",
+const coinListQuerySchema = z
+  .object({
+    amount: faceValueAmountQuerySchema.optional().openapi({
+      description:
+        "Exact positive canonical Face Value Amount with at most 18 integer and 12 fractional digits. Requires currency; malformed or repeated values return invalid_face_value_filter",
+      param: { name: "amount", in: "query" },
+      type: "string",
+      pattern: FACE_VALUE_AMOUNT_QUERY_PATTERN,
+      example: "0.5",
     }),
-})
+    currency: currencySlugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_currency_slug",
+      param: { name: "currency", in: "query" },
+    }),
+    distribution: coinDistributionSchema.optional().openapi({
+      description: "Exact, case-sensitive Coin Distribution identifier",
+      param: { name: "distribution", in: "query" },
+    }),
+    engraver: engraverSlugSchema.optional().openapi({
+      description: "Exact, case-sensitive Engraver Slug",
+      param: { name: "engraver", in: "query" },
+    }),
+    issuer: issuerCodeSchema.optional().openapi({
+      description: "Exact, case-sensitive Issuer Code",
+      param: { name: "issuer", in: "query" },
+    }),
+    ruler: rulingAuthoritySlugSchema.optional().openapi({
+      description: "Exact, case-sensitive Ruling Authority Slug",
+      param: { name: "ruler", in: "query" },
+    }),
+    year: coinListYearQuerySchema.optional().openapi({
+      description:
+        "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
+      param: { name: "year", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_YEAR_QUERY_PATTERN,
+    }),
+    page: coinListPageQuerySchema.default(COIN_LIST_DEFAULT_PAGE).openapi({
+      description: "One-based page number",
+      default: COIN_LIST_DEFAULT_PAGE,
+      param: { name: "page", in: "query" },
+      type: "integer",
+      minimum: 1,
+    }),
+    pageSize: coinListPageSizeQuerySchema
+      .default(COIN_LIST_DEFAULT_PAGE_SIZE)
+      .openapi({
+        description: "Number of Coins per page (maximum 100)",
+        default: COIN_LIST_DEFAULT_PAGE_SIZE,
+        maximum: COIN_LIST_MAX_PAGE_SIZE,
+        minimum: 1,
+        param: { name: "pageSize", in: "query" },
+        type: "integer",
+      }),
+  })
+  .refine(
+    ({ amount, currency }) => amount === undefined || currency !== undefined,
+    {
+      message: "Amount requires Currency",
+      path: ["amount"],
+    }
+  )
 
 const coinPathParametersSchema = z
   .object({
@@ -126,6 +145,8 @@ const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
 const invalidCurrencySlugErrorSchema =
   sharedInvalidCurrencySlugErrorSchema.openapi("InvalidCurrencySlugError")
+const invalidFaceValueFilterErrorSchema =
+  sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
   "InvalidIssuerCodeError"
 )
@@ -141,6 +162,7 @@ const invalidRulingAuthoritySlugErrorSchema =
 const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
+  invalidFaceValueFilterErrorSchema,
   invalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema,
   invalidIssuerCodeErrorSchema,
@@ -186,13 +208,44 @@ const coinListRoute = createRoute({
   request: { query: coinListQuerySchema },
   responses: {
     200: {
-      content: { "application/json": { schema: coinListResponseSchema } },
+      content: {
+        "application/json": {
+          schema: coinListResponseSchema,
+          examples: {
+            filteredByFaceValue: {
+              summary: "No Coins match the selected Currency and Amount",
+              value: {
+                coins: [],
+                pagination: {
+                  page: 1,
+                  pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,
+                  totalItems: 0,
+                  totalPages: 0,
+                },
+              },
+            },
+          },
+        },
+      },
       description: "A list of Coins",
       headers: responseHeaders,
     },
     400: {
       content: {
-        "application/json": { schema: invalidCoinListFilterErrorSchema },
+        "application/json": {
+          schema: invalidCoinListFilterErrorSchema,
+          examples: {
+            invalidFaceValueFilter: {
+              summary: "Amount is missing Currency or is not canonical",
+              value: {
+                error: {
+                  code: "invalid_face_value_filter",
+                  message: "Face Value filter is invalid",
+                },
+              },
+            },
+          },
+        },
       },
       description: "A Coin list filter is malformed",
       headers: responseHeaders,
@@ -315,6 +368,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
     coinListRoute,
     async (context) => {
       const {
+        amount: faceValueAmount,
         currency: currencySlug,
         distribution,
         engraver: engraverSlug,
@@ -327,6 +381,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
+        ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
@@ -357,6 +412,9 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
         const invalidDistribution = result.error.issues.some(
           (issue) => issue.path[0] === "distribution"
         )
+        const invalidFaceValue = result.error.issues.some(
+          (issue) => issue.path[0] === "amount"
+        )
         const invalidCurrency = result.error.issues.some(
           (issue) => issue.path[0] === "currency"
         )
@@ -373,54 +431,61 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
           (issue) => issue.path[0] === "year"
         )
         return context.json(
-          invalidCurrency
+          invalidFaceValue
             ? {
                 error: {
-                  code: "invalid_currency_slug" as const,
-                  message: "Currency Slug is invalid" as const,
+                  code: "invalid_face_value_filter" as const,
+                  message: "Face Value filter is invalid" as const,
                 },
               }
-            : invalidDistribution
+            : invalidCurrency
               ? {
                   error: {
-                    code: "invalid_distribution" as const,
-                    message: "Coin Distribution is invalid" as const,
+                    code: "invalid_currency_slug" as const,
+                    message: "Currency Slug is invalid" as const,
                   },
                 }
-              : invalidRulingAuthority
+              : invalidDistribution
                 ? {
                     error: {
-                      code: "invalid_ruler_slug" as const,
-                      message: "Ruling Authority Slug is invalid" as const,
+                      code: "invalid_distribution" as const,
+                      message: "Coin Distribution is invalid" as const,
                     },
                   }
-                : invalidEngraver
+                : invalidRulingAuthority
                   ? {
                       error: {
-                        code: "invalid_engraver_slug" as const,
-                        message: "Engraver Slug is invalid" as const,
+                        code: "invalid_ruler_slug" as const,
+                        message: "Ruling Authority Slug is invalid" as const,
                       },
                     }
-                  : invalidYear
+                  : invalidEngraver
                     ? {
                         error: {
-                          code: "invalid_year" as const,
-                          message: "Issue Year is invalid" as const,
+                          code: "invalid_engraver_slug" as const,
+                          message: "Engraver Slug is invalid" as const,
                         },
                       }
-                    : invalidPagination
+                    : invalidYear
                       ? {
                           error: {
-                            code: "invalid_pagination" as const,
-                            message: "Pagination is invalid" as const,
+                            code: "invalid_year" as const,
+                            message: "Issue Year is invalid" as const,
                           },
                         }
-                      : {
-                          error: {
-                            code: "invalid_issuer_code" as const,
-                            message: "Issuer Code is invalid" as const,
+                      : invalidPagination
+                        ? {
+                            error: {
+                              code: "invalid_pagination" as const,
+                              message: "Pagination is invalid" as const,
+                            },
+                          }
+                        : {
+                            error: {
+                              code: "invalid_issuer_code" as const,
+                              message: "Issuer Code is invalid" as const,
+                            },
                           },
-                        },
           400
         )
       }

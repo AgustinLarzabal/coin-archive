@@ -8,11 +8,14 @@ export function updateExploreFilters(
   search: ExploreSearch,
   patch: ExploreFilterPatch
 ): ExploreSearch {
-  return {
+  const nextSearch = {
     ...search,
     ...patch,
     page: undefined,
   }
+  return patch.currency === undefined && "currency" in patch
+    ? { ...nextSearch, amount: undefined }
+    : nextSearch
 }
 
 export function setExplorePage(

@@ -66,6 +66,7 @@ export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
 
 export interface CoinListOptions {
   currencySlug?: string
+  faceValueAmount?: string
   distribution?: schema.CoinRecord["distribution"]
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
@@ -253,6 +254,12 @@ export function createDatabase(
       if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
         throw new RangeError("pageSize must be an integer between 1 and 100")
       }
+      if (
+        listOptions.faceValueAmount !== undefined &&
+        listOptions.currencySlug === undefined
+      ) {
+        throw new RangeError("faceValueAmount requires currencySlug")
+      }
       const issueYearInterval = listOptions.issueYearInterval
       if (
         issueYearInterval &&
@@ -338,7 +345,13 @@ export function createDatabase(
                               schema.denominations.id,
                               schema.coins.denominationId
                             ),
-                            eq(schema.denominations.currencyId, currencyId)
+                            eq(schema.denominations.currencyId, currencyId),
+                            listOptions.faceValueAmount === undefined
+                              ? undefined
+                              : eq(
+                                  schema.denominations.amount,
+                                  listOptions.faceValueAmount
+                                )
                           )
                         )
                     ),

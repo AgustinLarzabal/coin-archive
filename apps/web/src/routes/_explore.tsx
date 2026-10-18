@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_explore")({
 
 function ExploreLayout() {
   const {
+    amount,
     currency: currencySlug,
     distribution,
     engraver: engraverSlug,
@@ -54,6 +55,7 @@ function ExploreLayout() {
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreFilters
+        amount={amount}
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
         distribution={distribution}

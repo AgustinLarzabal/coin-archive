@@ -99,7 +99,9 @@ it("restores one Coin Distribution and exposes its clear control", async () => {
   }
 
   expect(
-    within(distributionControl).getByRole("button", { name: "Clear" })
+    within(distributionControl).getByRole("button", {
+      name: "Clear Distribution",
+    })
   ).toBeVisible()
 })
 

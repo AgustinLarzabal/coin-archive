@@ -18,7 +18,9 @@ it("keeps an unknown Currency available to clear without losing other filters", 
   expect(combobox).toHaveValue("Unknown Currency (missing-currency)")
   const control = combobox.closest('[data-slot="input-group"]')
   fireEvent.click(
-    within(control as HTMLElement).getByRole("button", { name: "Clear" })
+    within(control as HTMLElement).getByRole("button", {
+      name: "Clear Currency",
+    })
   )
 
   await waitFor(() =>

@@ -46,7 +46,7 @@ describe("Face Value persistence", () => {
     }
   })
 
-  it("filters Coins by Currency Slug and composes with existing filters", async () => {
+  it("composes Currency and Amount with every filter, ordering, totals, and pagination", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const [peso, euro] = await database.orm
@@ -155,6 +155,7 @@ describe("Face Value persistence", () => {
         currencySlug: "argentine-peso",
         distribution: "standard-circulation",
         engraverSlug: "selected-engraver",
+        faceValueAmount: "1",
         issueYearInterval: { firstIssueYear: 2000, lastIssueYear: 2000 },
         issuerCode: "AR",
         page: 1,
@@ -166,6 +167,85 @@ describe("Face Value persistence", () => {
       await expect(
         database.listCoins({ currencySlug: "unknown-currency" })
       ).resolves.toEqual({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("filters every Denomination at one exact Amount within the selected Currency", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const [peso, euro] = await database.orm
+        .insert(database.schema.currencies)
+        .values([
+          { slug: "argentine-peso", name: "Peso", periodLabel: "present" },
+          { slug: "euro", name: "Euro", periodLabel: "present" },
+        ])
+        .returning()
+      const [onePeso, pesoAlternative, twoPesos, oneEuro] = await database.orm
+        .insert(database.schema.denominations)
+        .values([
+          { currencyId: peso.id, label: "1 peso", amount: "1" },
+          {
+            currencyId: peso.id,
+            label: "100 centavos",
+            amount: "1.000000000000",
+          },
+          { currencyId: peso.id, label: "2 pesos", amount: "2" },
+          { currencyId: euro.id, label: "1 euro", amount: "1" },
+        ])
+        .returning()
+      const [issuer] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ code: "AR", name: "Argentina" })
+        .returning()
+      await database.orm.insert(database.schema.coins).values([
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          title: "One peso",
+          issuerId: issuer.id,
+          denominationId: onePeso.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000002",
+          title: "Alternative peso label",
+          issuerId: issuer.id,
+          denominationId: pesoAlternative.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+        {
+          title: "Two pesos",
+          issuerId: issuer.id,
+          denominationId: twoPesos.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+        {
+          title: "One euro",
+          issuerId: issuer.id,
+          denominationId: oneEuro.id,
+          distribution: "standard-circulation",
+          firstIssueYear: 2000,
+          lastIssueYear: 2000,
+        },
+      ])
+
+      const page = await database.listCoins({
+        currencySlug: "argentine-peso",
+        faceValueAmount: "1",
+      })
+
+      expect(page.totalItems).toBe(2)
+      expect(page.coins.map((coin) => coin.title)).toEqual([
+        "One peso",
+        "Alternative peso label",
+      ])
     } finally {
       await database.close()
     }

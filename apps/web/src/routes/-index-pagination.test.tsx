@@ -289,7 +289,7 @@ describe("Explore pagination", () => {
     if (!issuerControl) throw new Error("Issuer combobox control not found")
     const user = userEvent.setup()
     await user.click(
-      within(issuerControl).getByRole("button", { name: "Clear" })
+      within(issuerControl).getByRole("button", { name: "Clear Issuer" })
     )
 
     await waitFor(() =>
@@ -320,7 +320,7 @@ describe("Explore pagination", () => {
     if (!engraverControl) throw new Error("Engraver combobox control not found")
     const user = userEvent.setup()
     await user.click(
-      within(engraverControl).getByRole("button", { name: "Clear" })
+      within(engraverControl).getByRole("button", { name: "Clear Engraver" })
     )
 
     await waitFor(() =>

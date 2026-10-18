@@ -48,6 +48,47 @@ describe("Explore search schema", () => {
     })
   })
 
+  it("accepts and maps one canonical Amount only with Currency", () => {
+    const search = exploreSearchSchema.parse({
+      currency: "argentine-peso",
+      amount: "0.000000000001",
+    })
+
+    expect(search).toEqual({
+      currency: "argentine-peso",
+      amount: "0.000000000001",
+    })
+    expect(getExploreCoinListFilters(search)).toMatchObject({
+      currencySlug: "argentine-peso",
+      faceValueAmount: "0.000000000001",
+      page: 1,
+    })
+  })
+
+  it.each(["0", "-1", "01", "1.0", "0.0000000000001", "1e2"])(
+    "normalizes invalid Amount %j without discarding unrelated filters",
+    (amount) => {
+      expect(
+        exploreSearchSchema.parse({
+          currency: "argentine-peso",
+          amount,
+          issuer: "AR",
+        })
+      ).toEqual({
+        currency: "argentine-peso",
+        amount: undefined,
+        issuer: "AR",
+      })
+    }
+  )
+
+  it("normalizes Amount without Currency while preserving unrelated filters", () => {
+    expect(exploreSearchSchema.parse({ amount: "1", issuer: "AR" })).toEqual({
+      amount: undefined,
+      issuer: "AR",
+    })
+  })
+
   it.each(["", "Peso", "ab", "peso--nuevo", ["euro", "peso"]])(
     "ignores the malformed Currency filter %j",
     (currency) => {

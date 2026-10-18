@@ -141,6 +141,7 @@ describe("API composition", () => {
       "InvalidCurrencySlugError",
       "InvalidDistributionError",
       "InvalidEngraverSlugError",
+      "InvalidFaceValueFilterError",
       "InvalidIssuerCodeError",
       "InvalidPaginationError",
       "InvalidRulingAuthoritySlugError",

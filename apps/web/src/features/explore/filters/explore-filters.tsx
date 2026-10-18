@@ -1,3 +1,4 @@
+import { AmountFilter } from "./amount-filter"
 import { CurrencyFilter } from "./currency-filter"
 import { DistributionFilter } from "./distribution-filter"
 import { EngraverFilter } from "./engraver-filter"
@@ -14,6 +15,7 @@ import type {
 } from "@workspace/api"
 
 export function ExploreFilters({
+  amount,
   distribution,
   currencies,
   currencySlug,
@@ -25,6 +27,7 @@ export function ExploreFilters({
   rulingAuthoritySlug,
   year,
 }: {
+  amount?: string
   distribution?: CoinDistribution
   currencies: Array<CurrencyResponse>
   currencySlug?: string
@@ -44,6 +47,10 @@ export function ExploreFilters({
       <DistributionFilter distribution={distribution} />
       <IssuerFilter issuerCode={issuerCode} issuers={issuers} />
       <CurrencyFilter currencies={currencies} currencySlug={currencySlug} />
+      <AmountFilter
+        amount={amount}
+        currencySelected={currencySlug !== undefined}
+      />
       <RulingAuthorityFilter
         rulingAuthoritySlug={rulingAuthoritySlug}
         rulingAuthorities={rulingAuthorities}

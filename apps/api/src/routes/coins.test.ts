@@ -1610,6 +1610,16 @@ describe("Coin routes", () => {
 
       expect(document.paths["/v1/coins"].get.parameters).toEqual([
         expect.objectContaining({
+          description: expect.stringContaining("Requires currency"),
+          in: "query",
+          name: "amount",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: expect.any(String),
+            example: "0.5",
+          }),
+        }),
+        expect.objectContaining({
           description: expect.stringContaining("empty successful page"),
           in: "query",
           name: "currency",
@@ -1689,16 +1699,19 @@ describe("Coin routes", () => {
         expect.objectContaining({
           "200": expect.objectContaining({
             content: {
-              "application/json": {
+              "application/json": expect.objectContaining({
                 schema: { $ref: "#/components/schemas/CoinListResponse" },
-              },
+              }),
             },
           }),
           "400": expect.objectContaining({
             content: {
-              "application/json": {
+              "application/json": expect.objectContaining({
                 schema: {
                   anyOf: [
+                    {
+                      $ref: "#/components/schemas/InvalidFaceValueFilterError",
+                    },
                     { $ref: "#/components/schemas/InvalidCurrencySlugError" },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
@@ -1710,7 +1723,7 @@ describe("Coin routes", () => {
                     { $ref: "#/components/schemas/InvalidPaginationError" },
                   ],
                 },
-              },
+              }),
             },
           }),
           "500": expect.objectContaining({
@@ -1727,6 +1740,7 @@ describe("Coin routes", () => {
           CoinListResponse: expect.any(Object),
           InvalidDistributionError: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
+          InvalidFaceValueFilterError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
           InvalidRulingAuthoritySlugError: expect.any(Object),
           InvalidYearError: expect.any(Object),
@@ -1739,6 +1753,64 @@ describe("Coin routes", () => {
 })
 
 describe("Currency Coin filter", () => {
+  it("passes one canonical Face Value Amount with Currency and every other filter", async () => {
+    const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+    const response = await createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+      listCoins,
+    }).request(
+      "/v1/coins?currency=argentine-peso-convertible&amount=0.000000000001&distribution=non-circulating&issuer=AR&ruler=first-ruler&engraver=first-engraver&year=1992&page=2&pageSize=12"
+    )
+
+    expect(response.status).toBe(200)
+    expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+      currencySlug: "argentine-peso-convertible",
+      faceValueAmount: "0.000000000001",
+      distribution: "non-circulating",
+      issuerCode: "AR",
+      rulingAuthoritySlug: "first-ruler",
+      engraverSlug: "first-engraver",
+      issueYearInterval: { firstIssueYear: 1992, lastIssueYear: 1992 },
+      page: 2,
+      pageSize: 12,
+    })
+  })
+
+  it.each([
+    ["Amount without Currency", "/v1/coins?amount=1"],
+    ["zero Amount", "/v1/coins?currency=euro&amount=0"],
+    ["negative Amount", "/v1/coins?currency=euro&amount=-1"],
+    ["leading-zero Amount", "/v1/coins?currency=euro&amount=01"],
+    ["trailing-zero Amount", "/v1/coins?currency=euro&amount=1.0"],
+    [
+      "excess-precision Amount",
+      "/v1/coins?currency=euro&amount=0.0000000000001",
+    ],
+    [
+      "excess-integer Amount",
+      `/v1/coins?currency=euro&amount=${"1".repeat(19)}`,
+    ],
+    ["malformed Amount", "/v1/coins?currency=euro&amount=1e2"],
+    ["repeated Amount", "/v1/coins?currency=euro&amount=1&amount=2"],
+  ])("rejects %s before listing Coins", async (_description, path) => {
+    const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
+    const response = await createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+      listCoins,
+    }).request(path)
+
+    expect(response.status).toBe(400)
+    expect(listCoins).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_face_value_filter",
+        message: "Face Value filter is invalid",
+      },
+    })
+  })
+
   it("passes one Currency Slug to the paginated Coin list", async () => {
     const listCoins = vi.fn(async () => ({ coins: [], totalItems: 0 }))
     const response = await createApp({
@@ -1805,7 +1877,12 @@ describe("Currency Coin filter", () => {
         "/v1/coins": {
           get: {
             parameters: Array<{ name: string; description?: string }>
-            responses: Record<string, unknown>
+            responses: Record<
+              string,
+              {
+                content?: Record<string, { examples?: Record<string, unknown> }>
+              }
+            >
           }
         }
       }
@@ -1818,5 +1895,15 @@ describe("Currency Coin filter", () => {
       })
     )
     expect(document.paths["/v1/coins"].get.responses).toHaveProperty("400")
+    expect(
+      document.paths["/v1/coins"].get.responses["200"].content?.[
+        "application/json"
+      ].examples
+    ).toHaveProperty("filteredByFaceValue")
+    expect(
+      document.paths["/v1/coins"].get.responses["400"].content?.[
+        "application/json"
+      ].examples
+    ).toHaveProperty("invalidFaceValueFilter")
   })
 })

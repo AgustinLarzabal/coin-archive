@@ -22,7 +22,7 @@ it("preserves the selected Ruling Authority when the Issuer changes", async () =
   const user = userEvent.setup()
 
   await user.click(
-    within(control as HTMLElement).getByRole("button", { name: "Clear" })
+    within(control as HTMLElement).getByRole("button", { name: "Clear Issuer" })
   )
 
   await waitFor(() =>
@@ -54,7 +54,9 @@ it("preserves the selected Ruling Authority when the Engraver changes", async ()
   const user = userEvent.setup()
 
   await user.click(
-    within(control as HTMLElement).getByRole("button", { name: "Clear" })
+    within(control as HTMLElement).getByRole("button", {
+      name: "Clear Engraver",
+    })
   )
 
   await waitFor(() =>

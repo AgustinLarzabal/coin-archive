@@ -1174,11 +1174,20 @@ describe("Coin persistence", () => {
 
     try {
       const issuer = await insertArgentina(database)
+      const [currency] = await database.orm
+        .insert(database.schema.currencies)
+        .values({ slug: "snapshot-unit", name: "Unit", periodLabel: "test" })
+        .returning()
+      const [denomination] = await database.orm
+        .insert(database.schema.denominations)
+        .values({ currencyId: currency.id, label: "1 unit", amount: "1" })
+        .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
           title: "Coin visible to the page snapshot",
           issuerId: issuer.id,
+          denominationId: denomination.id,
           ...TEST_COIN_REQUIRED_FIELDS,
         })
         .returning()
@@ -1187,7 +1196,10 @@ describe("Coin persistence", () => {
       await lockClient.query('lock table "issuers" in access exclusive mode')
       issuerLockHeld = true
 
-      const page = database.listCoins()
+      const page = database.listCoins({
+        currencySlug: "snapshot-unit",
+        faceValueAmount: "1",
+      })
       let pageReadIsBlocked = false
       for (let attempt = 0; attempt < 100; attempt += 1) {
         const result = await lockClient.query<{ waiting: boolean }>(`

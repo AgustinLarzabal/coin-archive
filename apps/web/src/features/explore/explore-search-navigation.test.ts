@@ -7,6 +7,8 @@ import {
 import type { ExploreSearch } from "./explore-search"
 
 const search: ExploreSearch = {
+  amount: "1",
+  currency: "argentine-peso",
   distribution: "circulating-commemorative",
   engraver: "first-engraver",
   issuer: "AR",
@@ -30,6 +32,15 @@ describe("updateExploreFilters", () => {
     expect(updateExploreFilters(search, { engraver: undefined })).toEqual({
       ...search,
       engraver: undefined,
+      page: undefined,
+    })
+  })
+
+  it("clears the dependent Amount when Currency is cleared", () => {
+    expect(updateExploreFilters(search, { currency: undefined })).toEqual({
+      ...search,
+      amount: undefined,
+      currency: undefined,
       page: undefined,
     })
   })

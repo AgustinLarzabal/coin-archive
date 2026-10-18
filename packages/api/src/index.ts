@@ -104,6 +104,13 @@ export const currencySlugSchema = z
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
+export const FACE_VALUE_AMOUNT_QUERY_PATTERN =
+  "^(?:[1-9]\\d{0,17}|0\\.\\d{0,11}[1-9]|[1-9]\\d{0,17}\\.\\d{0,11}[1-9])$"
+
+export const faceValueAmountQuerySchema = z
+  .string()
+  .regex(new RegExp(FACE_VALUE_AMOUNT_QUERY_PATTERN))
+
 export const currencyResponseSchema = z.strictObject({
   slug: currencySlugSchema,
   name: trimmedDisplayTextSchema(200),
@@ -360,6 +367,11 @@ export const invalidRulingAuthoritySlugErrorSchema = errorResponseSchema(
 export const invalidCurrencySlugErrorSchema = errorResponseSchema(
   "invalid_currency_slug",
   "Currency Slug is invalid"
+)
+
+export const invalidFaceValueFilterErrorSchema = errorResponseSchema(
+  "invalid_face_value_filter",
+  "Face Value filter is invalid"
 )
 
 export const invalidYearErrorSchema = errorResponseSchema(

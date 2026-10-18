@@ -63,6 +63,7 @@ it("searches and selects a Currency while preserving filters and resetting pagin
       "list",
       {
         currencySlug: null,
+        faceValueAmount: null,
         engraverSlug: null,
         issuerCode: "AR",
         issueYear: 1999,
@@ -77,6 +78,7 @@ it("searches and selects a Currency while preserving filters and resetting pagin
       "list",
       {
         currencySlug: "argentine-peso-convertible",
+        faceValueAmount: null,
         engraverSlug: null,
         issuerCode: "AR",
         issueYear: 1999,

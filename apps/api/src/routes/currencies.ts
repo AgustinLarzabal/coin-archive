@@ -3,6 +3,7 @@ import {
   currencyListResponseSchema as sharedCurrencyListResponseSchema,
   currencyResponseSchema,
 } from "@workspace/api"
+import { toCurrencyResponse } from "./currency-response.js"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
 import type { CurrencyListResponse } from "@workspace/api"
@@ -13,7 +14,9 @@ interface CurrencyRouteOptions {
 }
 
 const currencyListResponseSchema = sharedCurrencyListResponseSchema
-  .safeExtend({ currencies: z.array(currencyResponseSchema.openapi("Currency")) })
+  .safeExtend({
+    currencies: z.array(currencyResponseSchema.openapi("Currency")),
+  })
   .openapi("CurrencyListResponse")
 
 const currencyListRoute = createRoute({
@@ -40,11 +43,7 @@ export function registerCurrencyRoutes(
   app.openapi(currencyListRoute, async (context) => {
     const currencies = await (options.listCurrencies ?? (async () => []))()
     const response = {
-      currencies: currencies.map(({ slug, name, periodLabel }) => ({
-        slug,
-        name,
-        fullName: `${name} (${periodLabel})`,
-      })),
+      currencies: currencies.map(toCurrencyResponse),
     } satisfies CurrencyListResponse
 
     return context.json(response, 200)

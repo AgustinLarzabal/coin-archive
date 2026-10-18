@@ -2,9 +2,11 @@ import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
+  coinListJsonResponse,
   createArchiveFetch,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
+import { coinListItemFixture } from "@/test/coin-fixtures"
 
 const currencies = [
   {
@@ -16,18 +18,30 @@ const currencies = [
 ]
 
 it("searches and selects a Currency while preserving filters and resetting pagination", async () => {
-  const fetchMock = vi.fn(
-    createArchiveFetch({
-      currencies,
-      issuers: [{ code: "AR", name: "Argentina" }],
-      pagination: {
-        page: 3,
-        pageSize: 24,
-        totalItems: 49,
-        totalPages: 3,
-      },
-    })
-  )
+  const referenceFetch = createArchiveFetch({
+    currencies,
+    issuers: [{ code: "AR", name: "Argentina" }],
+    pagination: {
+      page: 3,
+      pageSize: 24,
+      totalItems: 49,
+      totalPages: 3,
+    },
+  })
+  const fetchMock = vi.fn((input: string | URL | Request) => {
+    const url = new URL(String(input))
+    if (url.pathname === "/v1/coins") {
+      const selected = url.searchParams.has("currency")
+      return Promise.resolve(
+        coinListJsonResponse([
+          coinListItemFixture({
+            title: selected ? "Peso coin" : "Unfiltered coin",
+          }),
+        ])
+      )
+    }
+    return referenceFetch(input)
+  })
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
     "/?issuer=AR&year=1999&page=3",
@@ -35,6 +49,9 @@ it("searches and selects a Currency while preserving filters and resetting pagin
     currencies
   )
   const combobox = await screen.findByRole("combobox", { name: "Currency" })
+  expect(
+    await screen.findByRole("link", { name: "Unfiltered coin" })
+  ).toBeVisible()
 
   combobox.focus()
   fireEvent.input(combobox, { target: { value: "1992" } })
@@ -56,36 +73,6 @@ it("searches and selects a Currency while preserving filters and resetting pagin
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?issuer=AR&currency=argentine-peso-convertible&year=1999&page=1&pageSize=24"
   )
-  const queryClient = router.options.context.queryClient
-  expect(
-    queryClient.getQueryState([
-      "coins",
-      "list",
-      {
-        currencySlug: null,
-        faceValueAmount: null,
-        engraverSlug: null,
-        issuerCode: "AR",
-        issueYear: 1999,
-        page: 3,
-        pageSize: 24,
-      },
-    ])?.status
-  ).toBe("success")
-  expect(
-    queryClient.getQueryState([
-      "coins",
-      "list",
-      {
-        currencySlug: "argentine-peso-convertible",
-        faceValueAmount: null,
-        engraverSlug: null,
-        issuerCode: "AR",
-        issueYear: 1999,
-        page: 1,
-        pageSize: 24,
-      },
-    ])?.status
-  ).toBe("success")
+  expect(await screen.findByRole("link", { name: "Peso coin" })).toBeVisible()
   expect(combobox).toHaveFocus()
 })

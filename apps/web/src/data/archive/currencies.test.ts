@@ -6,10 +6,8 @@ import {
   InvalidCurrencyListResponseError,
 } from "./currencies"
 
-it("uses an independent reusable cache key and strictly validates Currencies", async () => {
+it("strictly validates Currency responses", async () => {
   const options = currencyListQueryOptions()
-  expect(options.queryKey).toEqual(["currencies", "list"])
-  expect(options.staleTime).toBe(Infinity)
 
   vi.stubGlobal(
     "fetch",

@@ -1,6 +1,7 @@
 export { createDatabase } from "./connection.js"
 export type {
   Coin,
+  CoinDenomination,
   CoinListItem,
   CoinListOptions,
   CoinListPage,
@@ -12,12 +13,16 @@ export type {
 } from "./connection.js"
 export {
   coinRecordSchema,
+  currencyRecordSchema,
+  denominationRecordSchema,
   engraverRecordSchema,
   issuerRecordSchema,
   rulingAuthorityRecordSchema,
 } from "./schema/index.js"
 export type {
   CoinRecord,
+  CurrencyRecord,
+  DenominationRecord,
   EngraverRecord,
   IssuerRecord,
   RulingAuthorityRecord,

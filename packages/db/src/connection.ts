@@ -33,10 +33,15 @@ export interface Database {
 
 export type Coin = schema.CoinRecord & {
   issuer: schema.IssuerRecord
+  denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
   obverse: CoinSurfaceWithEngravers | null
   reverse: CoinSurfaceWithEngravers | null
   edge: schema.CoinSurfaceRecord | null
+}
+
+export type CoinDenomination = schema.DenominationRecord & {
+  currency: schema.CurrencyRecord
 }
 
 export type CoinRulingAuthorityAttribution = Pick<
@@ -51,7 +56,7 @@ export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
   engravers: Array<schema.EngraverRecord>
 }
 
-export type CoinListItem = schema.CoinRecord & {
+export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
   issuer: schema.IssuerRecord
   obverseImageKey: string | null
   reverseImageKey: string | null
@@ -117,6 +122,8 @@ export function createDatabase(
             .select({
               coin: schema.coins,
               issuer: schema.issuers,
+              denomination: schema.denominations,
+              currency: schema.currencies,
               obverse: obverses,
               reverse: reverses,
               edge: edges,
@@ -125,6 +132,14 @@ export function createDatabase(
             .innerJoin(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .leftJoin(
+              schema.denominations,
+              eq(schema.coins.denominationId, schema.denominations.id)
+            )
+            .leftJoin(
+              schema.currencies,
+              eq(schema.denominations.currencyId, schema.currencies.id)
             )
             .leftJoin(
               obverses,
@@ -210,6 +225,10 @@ export function createDatabase(
           return {
             ...row.coin,
             issuer: row.issuer,
+            denomination:
+              row.denomination && row.currency
+                ? { ...row.denomination, currency: row.currency }
+                : null,
             rulingAuthorityAttributions,
             obverse: withEngravers(row.obverse),
             reverse: withEngravers(row.reverse),

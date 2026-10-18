@@ -5,6 +5,14 @@ export {
   coinSeedRecordSchema,
 } from "./coin.js"
 export type { CoinRecord } from "./coin.js"
+export {
+  currencies,
+  currencyRecordSchema,
+  currencySeedRecordSchema,
+} from "./currency.js"
+export type { CurrencyRecord } from "./currency.js"
+export { denominationRecordSchema, denominations } from "./denomination.js"
+export type { DenominationRecord } from "./denomination.js"
 export { coinRulingAuthorityAttributions } from "./coin-ruling-authority.js"
 export {
   coinSurfaceKind,

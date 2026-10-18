@@ -49,6 +49,18 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
             <dt className="text-muted-foreground">Coin Distribution</dt>
             <dd>{coinDistributionLabels[coin.distribution]}</dd>
           </div>
+          {coin.faceValue && (
+            <>
+              <div className="flex justify-between gap-4 border-t pt-3">
+                <dt className="text-muted-foreground">Face Value</dt>
+                <dd>{coin.faceValue.label}</dd>
+              </div>
+              <div className="flex justify-between gap-4 border-t pt-3">
+                <dt className="text-muted-foreground">Currency</dt>
+                <dd>{coin.faceValue.currencyFullName}</dd>
+              </div>
+            </>
+          )}
           {attributionGroups.map((group, groupIndex) => (
             <div
               className="flex justify-between gap-4 border-t pt-3"

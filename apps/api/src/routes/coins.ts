@@ -244,6 +244,15 @@ function toCoinDetailResponse(
 ): CoinDetailResponse {
   return {
     ...toCoinResponseFields(coin),
+    faceValue: coin.denomination
+      ? {
+          label: coin.denomination.label,
+          value: Number(coin.denomination.amount),
+          currencySlug: coin.denomination.currency.slug,
+          currencyName: coin.denomination.currency.name,
+          currencyFullName: `${coin.denomination.currency.name} (${coin.denomination.currency.periodLabel})`,
+        }
+      : null,
     rulers: coin.rulingAuthorityAttributions.map(
       ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })
     ),

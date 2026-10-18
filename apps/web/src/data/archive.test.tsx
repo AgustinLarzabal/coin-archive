@@ -203,6 +203,7 @@ describe("Archive data module", () => {
         Promise.resolve(
           jsonResponse({
             ...coin,
+            faceValue: null,
             rulers: [],
             obverse: {
               description: "A portrait",
@@ -234,6 +235,7 @@ describe("Archive data module", () => {
       queryClient.fetchQuery(coinDetailQueryOptions(coinId))
     ).resolves.toEqual({
       ...coin,
+      faceValue: null,
       rulers: [],
       obverse: {
         description: "A portrait",
@@ -262,7 +264,9 @@ describe("Archive data module", () => {
   it("rejects the legacy Coin detail response without fixed surfaces", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(() => Promise.resolve(jsonResponse({ ...coin, rulers: [] })))
+      vi.fn(() =>
+        Promise.resolve(jsonResponse({ ...coin, faceValue: null, rulers: [] }))
+      )
     )
     const queryClient = createQueryClient()
 
@@ -272,7 +276,12 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
-  it.each(["distribution", "firstIssueYear", "lastIssueYear"] as const)(
+  it.each([
+    "distribution",
+    "firstIssueYear",
+    "lastIssueYear",
+    "faceValue",
+  ] as const)(
     "rejects a legacy Coin detail response without %s",
     async (endpoint) => {
       vi.stubGlobal(

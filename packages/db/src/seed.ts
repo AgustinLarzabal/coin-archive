@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises"
 
+import { sql } from "drizzle-orm"
 import { z } from "zod"
 
 import {
@@ -8,6 +9,9 @@ import {
   coinSeedRecordSchema,
   coinSurfaceEngravers,
   coinSurfaces,
+  currencies,
+  currencySeedRecordSchema,
+  denominations,
   engravers,
   issuers,
   issuerSeedRecordSchema,
@@ -39,6 +43,12 @@ const engraverSlugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
 const rulingAuthoritySlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
+const currencySlugSchema = z
   .string()
   .min(3)
   .max(64)
@@ -103,6 +113,12 @@ const coinSurfaceWithEngraversSeedRecordSchema = z
   )
 
 const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
+  denomination: z
+    .strictObject({
+      currencySlug: currencySlugSchema,
+      label: trimmedDisplayText(200, "Denomination label"),
+    })
+    .optional(),
   obverse: coinSurfaceWithEngraversSeedRecordSchema.optional(),
   reverse: coinSurfaceWithEngraversSeedRecordSchema.optional(),
   edge: coinSurfaceSeedRecordSchema.optional(),
@@ -111,9 +127,28 @@ const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
     .default([]),
 })
 
+const denominationAmountSchema = z
+  .string()
+  .regex(/^(?:0|[1-9]\d{0,17})(?:\.\d{1,12})?$/)
+  .refine((amount) => !/^0(?:\.0+)?$/.test(amount), {
+    message: "Denomination amount must be positive",
+  })
+
+const denominationSeedRecordSchema = z.strictObject({
+  currencySlug: currencySlugSchema,
+  label: trimmedDisplayText(200, "Denomination label"),
+  amount: denominationAmountSchema,
+})
+
+function denominationKey(currencyIdentity: string, normalizedLabel: string) {
+  return JSON.stringify([currencyIdentity, normalizedLabel])
+}
+
 const seedDocumentSchema = z
   .object({
     issuers: z.array(issuerSeedRecordSchema),
+    currencies: z.array(currencySeedRecordSchema).default([]),
+    denominations: z.array(denominationSeedRecordSchema).default([]),
     authorities: z.array(authoritySeedRecordSchema).default([]),
     engravers: z.array(
       z.strictObject({
@@ -132,6 +167,7 @@ const seedDocumentSchema = z
   .strict()
   .superRefine((document, context) => {
     const issuerCodes = new Set<string>()
+    const currencySlugs = new Set<string>()
     const engraverSlugs = new Set<string>()
     const authoritySlugs = new Set<string>()
 
@@ -144,6 +180,27 @@ const seedDocumentSchema = z
         })
       }
       issuerCodes.add(issuer.code)
+    })
+
+    document.currencies.forEach((currency, index) => {
+      if (currencySlugs.has(currency.slug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate Currency Slug: ${currency.slug}`,
+          path: ["currencies", index, "slug"],
+        })
+      }
+      currencySlugs.add(currency.slug)
+    })
+
+    document.denominations.forEach((denomination, index) => {
+      if (!currencySlugs.has(denomination.currencySlug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Denomination references unknown Currency Slug: ${denomination.currencySlug}`,
+          path: ["denominations", index, "currencySlug"],
+        })
+      }
     })
 
     document.engravers.forEach((engraver, index) => {
@@ -256,10 +313,116 @@ function parseCoinSeedDocument(input: unknown): CoinSeedDocument {
   return seedDocumentSchema.parse(input)
 }
 
+async function normalizeDenominationLabels(
+  database: Database,
+  document: CoinSeedDocument
+) {
+  const labels = new Set([
+    ...document.denominations.map(({ label }) => label),
+    ...document.coins.flatMap(({ denomination }) =>
+      denomination ? [denomination.label] : []
+    ),
+  ])
+  const normalizedLabels = await Promise.all(
+    [...labels].map(async (label) => {
+      const result = await database.orm.execute<{ normalizedLabel: string }>(
+        sql`select lower(${label}) as "normalizedLabel"`
+      )
+      const normalizedLabel = result.rows.at(0)?.normalizedLabel
+      if (normalizedLabel === undefined) {
+        throw new Error(`Failed to normalize Denomination label: ${label}`)
+      }
+      return [label, normalizedLabel] as const
+    })
+  )
+  return new Map(normalizedLabels)
+}
+
+function validateDenominationReferences(
+  document: CoinSeedDocument,
+  normalizedLabels: ReadonlyMap<string, string>
+) {
+  const denominationKeys = new Set<string>()
+  for (const denomination of document.denominations) {
+    const normalizedLabel = normalizedLabels.get(denomination.label)
+    if (normalizedLabel === undefined) {
+      throw new Error(
+        `Failed to normalize Denomination label: ${denomination.label}`
+      )
+    }
+    const key = denominationKey(denomination.currencySlug, normalizedLabel)
+    if (denominationKeys.has(key)) {
+      throw new Error(
+        `Duplicate Denomination label for Currency: ${denomination.currencySlug} / ${denomination.label}`
+      )
+    }
+    denominationKeys.add(key)
+  }
+  for (const coin of document.coins) {
+    if (!coin.denomination) continue
+    const normalizedLabel = normalizedLabels.get(coin.denomination.label)
+    if (
+      normalizedLabel === undefined ||
+      !denominationKeys.has(
+        denominationKey(coin.denomination.currencySlug, normalizedLabel)
+      )
+    ) {
+      throw new Error(
+        `Coin references unknown Denomination: ${coin.denomination.currencySlug} / ${coin.denomination.label}`
+      )
+    }
+  }
+}
+
 export async function seedCoins(database: Database, input: unknown) {
   const document = parseCoinSeedDocument(input)
+  const normalizedDenominationLabels = await normalizeDenominationLabels(
+    database,
+    document
+  )
+  validateDenominationReferences(document, normalizedDenominationLabels)
 
   await database.orm.transaction(async (transaction) => {
+    const insertedCurrencies =
+      document.currencies.length === 0
+        ? []
+        : await transaction
+            .insert(currencies)
+            .values(document.currencies)
+            .returning({ id: currencies.id, slug: currencies.slug })
+    const currencyIdsBySlug = new Map(
+      insertedCurrencies.map((currency) => [currency.slug, currency.id])
+    )
+    const insertedDenominations =
+      document.denominations.length === 0
+        ? []
+        : await transaction
+            .insert(denominations)
+            .values(
+              document.denominations.map(({ currencySlug, label, amount }) => {
+                const currencyId = currencyIdsBySlug.get(currencySlug)
+                if (!currencyId) {
+                  throw new Error(
+                    `Denomination references unknown Currency Slug: ${currencySlug}`
+                  )
+                }
+                return { currencyId, label, amount }
+              })
+            )
+            .returning({
+              id: denominations.id,
+              currencyId: denominations.currencyId,
+              label: denominations.label,
+            })
+    const denominationIdsByKey = new Map(
+      insertedDenominations.map((denomination) => [
+        denominationKey(
+          denomination.currencyId,
+          normalizedDenominationLabels.get(denomination.label) ?? ""
+        ),
+        denomination.id,
+      ])
+    )
     const insertedAuthorities =
       document.authorities.length === 0
         ? []
@@ -294,6 +457,7 @@ export async function seedCoins(database: Database, input: unknown) {
     const coinRecords = document.coins.map(
       ({
         issuerCode,
+        denomination,
         obverse: _obverse,
         reverse: _reverse,
         edge: _edge,
@@ -304,7 +468,24 @@ export async function seedCoins(database: Database, input: unknown) {
         if (!issuerId) {
           throw new Error(`Coin references unknown Issuer Code: ${issuerCode}`)
         }
-        return { ...coin, issuerId }
+        const currencyId = denomination
+          ? currencyIdsBySlug.get(denomination.currencySlug)
+          : undefined
+        const denominationId =
+          denomination && currencyId
+            ? denominationIdsByKey.get(
+                denominationKey(
+                  currencyId,
+                  normalizedDenominationLabels.get(denomination.label) ?? ""
+                )
+              )
+            : undefined
+        if (denomination && !denominationId) {
+          throw new Error(
+            `Coin references unknown Denomination: ${denomination.currencySlug} / ${denomination.label}`
+          )
+        }
+        return { ...coin, issuerId, denominationId: denominationId ?? null }
       }
     )
     if (coinRecords.length > 0) {
@@ -405,16 +586,26 @@ async function readSeedFile(path: URL) {
 export async function readCoinSeed(
   seedDirectory = new URL("../seed/", import.meta.url)
 ) {
-  const [issuerSeedData, engraverSeedData, authoritySeedData, coinSeedData] =
-    await Promise.all([
-      readSeedFile(new URL("issuers.json", seedDirectory)),
-      readSeedFile(new URL("engravers.json", seedDirectory)),
-      readSeedFile(new URL("authorities.json", seedDirectory)),
-      readSeedFile(new URL("coins.json", seedDirectory)),
-    ])
+  const [
+    issuerSeedData,
+    currencySeedData,
+    denominationSeedData,
+    engraverSeedData,
+    authoritySeedData,
+    coinSeedData,
+  ] = await Promise.all([
+    readSeedFile(new URL("issuers.json", seedDirectory)),
+    readSeedFile(new URL("currencies.json", seedDirectory)),
+    readSeedFile(new URL("denominations.json", seedDirectory)),
+    readSeedFile(new URL("engravers.json", seedDirectory)),
+    readSeedFile(new URL("authorities.json", seedDirectory)),
+    readSeedFile(new URL("coins.json", seedDirectory)),
+  ])
 
   return {
     issuers: issuerSeedData,
+    currencies: currencySeedData,
+    denominations: denominationSeedData,
     engravers: engraverSeedData,
     authorities: authoritySeedData,
     coins: coinSeedData,

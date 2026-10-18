@@ -384,6 +384,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(coin.id)).resolves.toEqual({
         ...coin,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [first, second] },
         reverse: { ...reverse, engravers: [first] },
@@ -666,6 +667,7 @@ describe("Coin persistence", () => {
       await expect(detail).resolves.toEqual({
         ...coin,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [engraver] },
         reverse: null,
@@ -753,6 +755,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
         ...withAllSurfaces,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: { ...obverse, engravers: [] },
         reverse: { ...reverse, engravers: [] },
@@ -763,6 +766,7 @@ describe("Coin persistence", () => {
       ).resolves.toEqual({
         ...withPartialReverse,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: null,
         reverse: { ...partialReverse, engravers: [] },
@@ -771,6 +775,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
         ...withPartialEdge,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,
@@ -779,6 +784,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
         ...withoutSurfaces,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,
@@ -1795,6 +1801,7 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(inserted.id)).resolves.toEqual({
         ...inserted,
         issuer,
+        denomination: null,
         rulingAuthorityAttributions: [],
         obverse: null,
         reverse: null,

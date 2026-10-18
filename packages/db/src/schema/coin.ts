@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
+import { denominations } from "./denomination.js"
 import { issuers } from "./issuer.js"
 import type { z } from "zod"
 
@@ -28,6 +29,9 @@ export const coins = pgTable(
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
+    denominationId: uuid("denomination_id").references(() => denominations.id, {
+      onDelete: "restrict",
+    }),
     distribution: coinDistribution().notNull(),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
@@ -88,7 +92,12 @@ export const coinSeedRecordSchema = createInsertSchema(coins, {
       .min(1)
       .refine((title) => title === title.trim(), "Coin title must be trimmed"),
 })
-  .omit({ issuerId: true, createdAt: true, updatedAt: true })
+  .omit({
+    issuerId: true,
+    denominationId: true,
+    createdAt: true,
+    updatedAt: true,
+  })
   .extend({ issuerCode: varcharIssuerCodeSchema })
   .required()
   .strict()

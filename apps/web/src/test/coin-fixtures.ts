@@ -39,6 +39,7 @@ export function coinDetailFixture(
     firstIssueYear: 2004,
     lastIssueYear: 2004,
     issuer: { name: "Argentina", code: "AR" },
+    faceValue: null,
     createdAt: "2026-09-16T10:00:00.000Z",
     updatedAt: "2026-09-16T10:00:00.000Z",
     rulers: [],

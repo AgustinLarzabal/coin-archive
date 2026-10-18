@@ -5,6 +5,47 @@ import { coinDetailFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it("renders separate Face Value and Currency rows", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({
+              faceValue: {
+                label: "2 euro",
+                value: 2,
+                currencySlug: "euro",
+                currencyName: "Euro",
+                currencyFullName: "Euro (1999–present)",
+              },
+            })
+          )
+        )
+      )
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Face Value")).toBeInTheDocument()
+    expect(screen.getByText("2 euro")).toBeInTheDocument()
+    expect(screen.getByText("Currency")).toBeInTheDocument()
+    expect(screen.getByText("Euro (1999–present)")).toBeInTheDocument()
+  })
+
+  it("omits Face Value and Currency rows when uncurated", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.queryByText("Face Value")).not.toBeInTheDocument()
+    expect(screen.queryByText("Currency")).not.toBeInTheDocument()
+  })
+
   it.each([
     ["standard-circulation", "Standard circulation"],
     ["circulating-commemorative", "Circulating commemorative"],

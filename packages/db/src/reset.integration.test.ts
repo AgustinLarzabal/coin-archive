@@ -205,6 +205,36 @@ describe("database rebuild lifecycle", () => {
         last_issue_year: 2025,
       })
 
+      const faceValues = await databaseAfterReset.query<{
+        amount: string
+        currency_name: string
+        currency_slug: string
+        denomination_label: string
+        coin_id: string
+        period_label: string
+      }>(`
+        select coins.id as coin_id,
+          denominations.label as denomination_label,
+          denominations.amount,
+          currencies.slug as currency_slug,
+          currencies.name as currency_name,
+          currencies.period_label
+        from coins
+        join denominations on denominations.id = coins.denomination_id
+        join currencies on currencies.id = denominations.currency_id
+        order by coins.id
+      `)
+      expect(faceValues.rows).toEqual([
+        {
+          coin_id: "00000000-0000-4000-8000-000000000001",
+          denomination_label: "2 euro",
+          amount: "2",
+          currency_slug: "euro",
+          currency_name: "Euro",
+          period_label: "1999–present",
+        },
+      ])
+
       const issuers = await databaseAfterReset.query<{
         code: string
         coin_count: number

@@ -22,6 +22,8 @@ describe("Coin routes", () => {
       id: coinId,
       title: "First coin",
       issuerId,
+      denominationId: null,
+      denomination: null,
       distribution: "circulating-commemorative" as const,
       firstIssueYear: 2004,
       lastIssueYear: 2004,
@@ -119,6 +121,7 @@ describe("Coin routes", () => {
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
+        faceValue: null,
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: [
@@ -181,6 +184,51 @@ describe("Coin routes", () => {
       })
     })
 
+    it("returns a populated Face Value without internal catalogue identities", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        imageBaseUrl: "https://images.coin-archive.example",
+        findCoinById: async () => ({
+          ...coin,
+          denominationId: "40000000-0000-4000-8000-000000000001",
+          denomination: {
+            id: "40000000-0000-4000-8000-000000000001",
+            currencyId: "50000000-0000-4000-8000-000000000001",
+            label: "2 euro",
+            amount: "2.000000000000",
+            createdAt: new Date("2026-09-16T08:00:00.000Z"),
+            updatedAt: new Date("2026-09-16T08:00:00.000Z"),
+            currency: {
+              id: "50000000-0000-4000-8000-000000000001",
+              slug: "euro",
+              name: "Euro",
+              periodLabel: "1999–present",
+              createdAt: new Date("2026-09-16T08:00:00.000Z"),
+              updatedAt: new Date("2026-09-16T08:00:00.000Z"),
+            },
+          },
+        }),
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      const visibilityResponse = response.clone()
+      await expect(response.json()).resolves.toEqual(
+        expect.objectContaining({
+          faceValue: {
+            label: "2 euro",
+            value: 2,
+            currencySlug: "euro",
+            currencyName: "Euro",
+            currencyFullName: "Euro (1999–present)",
+          },
+        })
+      )
+      expect(JSON.stringify(await visibilityResponse.json())).not.toMatch(
+        /denomination|numerator|denominator|40000000|50000000/i
+      )
+    })
+
     it("returns a BCE Issue Period unchanged", async () => {
       const response = await createApp({
         allowedOrigins: [],
@@ -224,6 +272,7 @@ describe("Coin routes", () => {
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
+        faceValue: null,
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: [],
@@ -350,6 +399,7 @@ describe("Coin routes", () => {
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Roman Empire", code: "ROMAN" },
+        faceValue: null,
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: coin.rulingAuthorityAttributions,
@@ -562,6 +612,30 @@ describe("Coin routes", () => {
                 ],
               },
               issuer: { $ref: "#/components/schemas/Issuer" },
+              faceValue: expect.objectContaining({
+                nullable: true,
+                properties: {
+                  label: expect.objectContaining({ type: "string" }),
+                  value: expect.objectContaining({
+                    type: "number",
+                    description: expect.stringContaining(
+                      "fixed-precision approximation"
+                    ),
+                  }),
+                  currencySlug: expect.objectContaining({ type: "string" }),
+                  currencyName: expect.objectContaining({ type: "string" }),
+                  currencyFullName: expect.objectContaining({
+                    type: "string",
+                  }),
+                },
+                required: [
+                  "label",
+                  "value",
+                  "currencySlug",
+                  "currencyName",
+                  "currencyFullName",
+                ],
+              }),
               rulers: expect.objectContaining({
                 type: "array",
                 items: expect.objectContaining({
@@ -601,6 +675,7 @@ describe("Coin routes", () => {
               "distribution",
               "firstIssueYear",
               "lastIssueYear",
+              "faceValue",
               "rulers",
             ]),
           }),

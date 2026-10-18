@@ -11,10 +11,12 @@ export function coinFaceValueFixture(
 ): CoinFaceValueResponse {
   return {
     label: "1 peso",
-    value: 1,
-    currencySlug: "argentine-peso-convertible",
-    currencyName: "Peso",
-    currencyFullName: "Peso (1992–2001)",
+    numericValue: 1,
+    currency: {
+      slug: "argentine-peso-convertible",
+      name: "Peso",
+      fullName: "Peso (1992–2001)",
+    },
     ...overrides,
   }
 }

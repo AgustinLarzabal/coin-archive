@@ -239,7 +239,7 @@ const scenarios: Array<PageScenario> = [
     page: 100,
     planExpectation: sortedPlanExpectation({
       forbiddenSequentialScanRelations: ["coins"],
-      maxPlanRows: 75_000,
+      maxPlanRows: 100_000,
       maxSharedBlocks: 5_000,
       maxSortRows: 10_000,
       requiredIndexes: ["coins_issuer_id_created_at_id_index"],

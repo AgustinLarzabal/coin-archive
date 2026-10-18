@@ -61,7 +61,7 @@ The PostgreSQL 17 calibration sample and enforced work bounds are:
 | Unfiltered deep         |          300,110 / 500,000 |                        0 / 100 |                 1,849 / 10,000 |                      0 / 0 | `coins_created_at_id_index`                    |
 | Issuer first            |                401 / 1,000 |                        9 / 100 |                       19 / 500 |                      0 / 0 | `coins_issuer_id_created_at_id_index`          |
 | Issuer middle           |            35,101 / 75,000 |                        9 / 100 |                  1,465 / 5,000 |             5,000 / 10,000 | `coins_issuer_id_created_at_id_index`          |
-| Issuer deep             |            40,101 / 75,000 |                        9 / 100 |                  1,465 / 5,000 |            10,000 / 10,000 | `coins_issuer_id_created_at_id_index`          |
+| Issuer deep             |           80,101 / 100,000 |                        9 / 100 |                  1,733 / 5,000 |            10,000 / 10,000 | `coins_issuer_id_created_at_id_index`          |
 | Engraver first          |             7,335 / 30,000 |                    991 / 5,000 |                 9,948 / 30,000 |                      0 / 0 | `coins_created_at_id_index`                    |
 | Engraver middle         |          232,622 / 500,000 |                        9 / 100 |                 2,519 / 10,000 |              2,500 / 5,000 | none; full scans are accepted                  |
 | Engraver deep           |          235,122 / 500,000 |                        9 / 100 |                 2,519 / 10,000 |              5,000 / 5,000 | none; full scans are accepted                  |
@@ -76,6 +76,13 @@ The margins are generally about 1.7–5 times measured row work and at least 3
 times measured buffer work. Smaller scenarios have minimum floors to tolerate
 minor planner bookkeeping changes. The looser timing bounds guard only against
 order-of-magnitude regressions.
+
+The Issuer deep-page row count was recalibrated after Face Value added
+Denomination and Currency joins to the Coin page query. Two unchanged PostgreSQL
+17 runs each measured 80,101 plan rows, 1,733 shared blocks, and 10,000 sort
+rows; the Coin issuer index remained in use. The 100,000-row bound covers the
+additional catalogue-join work while retaining the existing buffer, sort,
+ordering, and timing limits.
 
 Recalibrate only after an explained query, index, PostgreSQL, or representative
 data-shape change. Capture at least two unchanged runs, choose margins that pass

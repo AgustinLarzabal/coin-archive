@@ -14,10 +14,12 @@ describe("Coin viewer route details", () => {
             coinDetailFixture({
               faceValue: {
                 label: "2 euro",
-                value: 2,
-                currencySlug: "euro",
-                currencyName: "Euro",
-                currencyFullName: "Euro (1999–present)",
+                numericValue: 2,
+                currency: {
+                  slug: "euro",
+                  name: "Euro",
+                  fullName: "Euro (1999–present)",
+                },
               },
             })
           )

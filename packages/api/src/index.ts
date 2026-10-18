@@ -127,13 +127,11 @@ export type CurrencyListResponse = z.infer<typeof currencyListResponseSchema>
 
 export const coinFaceValueResponseSchema = z.strictObject({
   label: trimmedDisplayTextSchema(200),
-  value: z.number().positive().meta({
+  numericValue: z.number().positive().meta({
     description:
       "Positive JSON numeric value derived from a fixed-precision decimal with up to 18 integer and 12 fractional digits; repeating historical values are curated fixed-precision approximations.",
   }),
-  currencySlug: currencySlugSchema,
-  currencyName: trimmedDisplayTextSchema(200),
-  currencyFullName: trimmedDisplayTextSchema(403),
+  currency: currencyResponseSchema,
 })
 
 export type CoinFaceValueResponse = z.infer<typeof coinFaceValueResponseSchema>

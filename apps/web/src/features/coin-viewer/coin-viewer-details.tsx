@@ -57,7 +57,7 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               </div>
               <div className="flex justify-between gap-4 border-t pt-3">
                 <dt className="text-muted-foreground">Currency</dt>
-                <dd>{coin.faceValue.currencyFullName}</dd>
+                <dd>{coin.faceValue.currency.fullName}</dd>
               </div>
             </>
           )}

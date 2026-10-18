@@ -217,10 +217,12 @@ describe("Coin routes", () => {
         expect.objectContaining({
           faceValue: {
             label: "2 euro",
-            value: 2,
-            currencySlug: "euro",
-            currencyName: "Euro",
-            currencyFullName: "Euro (1999–present)",
+            numericValue: 2,
+            currency: {
+              slug: "euro",
+              name: "Euro",
+              fullName: "Euro (1999–present)",
+            },
           },
         })
       )
@@ -613,30 +615,12 @@ describe("Coin routes", () => {
                 ],
               },
               issuer: { $ref: "#/components/schemas/Issuer" },
-              faceValue: expect.objectContaining({
-                nullable: true,
-                properties: {
-                  label: expect.objectContaining({ type: "string" }),
-                  value: expect.objectContaining({
-                    type: "number",
-                    description: expect.stringContaining(
-                      "fixed-precision approximation"
-                    ),
-                  }),
-                  currencySlug: expect.objectContaining({ type: "string" }),
-                  currencyName: expect.objectContaining({ type: "string" }),
-                  currencyFullName: expect.objectContaining({
-                    type: "string",
-                  }),
-                },
-                required: [
-                  "label",
-                  "value",
-                  "currencySlug",
-                  "currencyName",
-                  "currencyFullName",
+              faceValue: {
+                anyOf: [
+                  { $ref: "#/components/schemas/FaceValue" },
+                  { nullable: true },
                 ],
-              }),
+              },
               rulers: expect.objectContaining({
                 type: "array",
                 items: expect.objectContaining({
@@ -709,30 +693,12 @@ describe("Coin routes", () => {
                   "non-circulating",
                 ],
               },
-              faceValue: expect.objectContaining({
-                nullable: true,
-                properties: {
-                  label: expect.objectContaining({ type: "string" }),
-                  value: expect.objectContaining({
-                    type: "number",
-                    description: expect.stringContaining(
-                      "fixed-precision approximation"
-                    ),
-                  }),
-                  currencySlug: expect.objectContaining({ type: "string" }),
-                  currencyName: expect.objectContaining({ type: "string" }),
-                  currencyFullName: expect.objectContaining({
-                    type: "string",
-                  }),
-                },
-                required: [
-                  "label",
-                  "value",
-                  "currencySlug",
-                  "currencyName",
-                  "currencyFullName",
+              faceValue: {
+                anyOf: [
+                  { $ref: "#/components/schemas/FaceValue" },
+                  { nullable: true },
                 ],
-              }),
+              },
             }),
             required: expect.arrayContaining([
               "distribution",
@@ -740,6 +706,27 @@ describe("Coin routes", () => {
               "lastIssueYear",
               "faceValue",
             ]),
+          }),
+          FaceValue: expect.objectContaining({
+            properties: expect.objectContaining({
+              label: expect.objectContaining({ type: "string" }),
+              numericValue: expect.objectContaining({
+                type: "number",
+                description: expect.stringContaining(
+                  "fixed-precision approximation"
+                ),
+              }),
+              currency: { $ref: "#/components/schemas/Currency" },
+            }),
+            required: ["label", "numericValue", "currency"],
+          }),
+          Currency: expect.objectContaining({
+            properties: expect.objectContaining({
+              slug: expect.objectContaining({ type: "string" }),
+              name: expect.objectContaining({ type: "string" }),
+              fullName: expect.objectContaining({ type: "string" }),
+            }),
+            required: ["slug", "name", "fullName"],
           }),
           Issuer: {
             type: "object",
@@ -831,10 +818,12 @@ describe("Coin routes", () => {
             expect.objectContaining({
               faceValue: {
                 label: "1 peso",
-                value: 1,
-                currencySlug: "argentine-peso-convertible",
-                currencyName: "Peso",
-                currencyFullName: "Peso (1992–2001)",
+                numericValue: 1,
+                currency: {
+                  slug: "argentine-peso-convertible",
+                  name: "Peso",
+                  fullName: "Peso (1992–2001)",
+                },
               },
             }),
             expect.objectContaining({ faceValue: null }),
@@ -1712,7 +1701,6 @@ describe("Coin routes", () => {
                     {
                       $ref: "#/components/schemas/InvalidFaceValueFilterError",
                     },
-                    { $ref: "#/components/schemas/InvalidCurrencySlugError" },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
@@ -1845,8 +1833,8 @@ describe("Currency Coin filter", () => {
       expect(listCoins).not.toHaveBeenCalled()
       await expect(response.json()).resolves.toEqual({
         error: {
-          code: "invalid_currency_slug",
-          message: "Currency Slug is invalid",
+          code: "invalid_face_value_filter",
+          message: "Face Value filter is invalid",
         },
       })
     }
@@ -1863,7 +1851,7 @@ describe("Currency Coin filter", () => {
     expect(response.status).toBe(400)
     expect(listCoins).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toMatchObject({
-      error: { code: "invalid_currency_slug" },
+      error: { code: "invalid_face_value_filter" },
     })
   })
 

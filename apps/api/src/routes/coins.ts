@@ -6,6 +6,7 @@ import {
   COIN_LIST_YEAR_QUERY_PATTERN,
   coinDetailResponseSchema,
   coinDistributionSchema,
+  coinFaceValueResponseSchema,
   coinIdSchema,
   coinListItemResponseSchema as sharedCoinListItemResponseSchema,
   coinListPageQuerySchema,
@@ -14,12 +15,12 @@ import {
   coinListYearQuerySchema,
   coinListYearToInterval,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
+  currencyResponseSchema,
   currencySlugSchema,
   engraverSlugSchema,
   FACE_VALUE_AMOUNT_QUERY_PATTERN,
   faceValueAmountQuerySchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
-  invalidCurrencySlugErrorSchema as sharedInvalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidFaceValueFilterErrorSchema as sharedInvalidFaceValueFilterErrorSchema,
@@ -55,11 +56,15 @@ interface CoinRouteOptions {
 }
 
 const issuerSchema = issuerResponseSchema.openapi("Issuer")
+const currencySchema = currencyResponseSchema.openapi("Currency")
+const faceValueSchema = coinFaceValueResponseSchema
+  .safeExtend({ currency: currencySchema })
+  .openapi("FaceValue")
 const coinSchema = coinDetailResponseSchema
-  .safeExtend({ issuer: issuerSchema })
+  .safeExtend({ issuer: issuerSchema, faceValue: z.union([faceValueSchema, z.null()]) })
   .openapi("Coin")
 const coinListItemResponseSchema = sharedCoinListItemResponseSchema
-  .safeExtend({ issuer: issuerSchema })
+  .safeExtend({ issuer: issuerSchema, faceValue: z.union([faceValueSchema, z.null()]) })
   .openapi("CoinListItem")
 const coinListResponseSchema = sharedCoinListResponseSchema
   .safeExtend({
@@ -79,7 +84,7 @@ const coinListQuerySchema = z
     }),
     currency: currencySlugSchema.optional().openapi({
       description:
-        "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_currency_slug",
+        "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_face_value_filter",
       param: { name: "currency", in: "query" },
     }),
     distribution: coinDistributionSchema.optional().openapi({
@@ -143,8 +148,6 @@ const invalidCoinIdErrorSchema =
   sharedInvalidCoinIdErrorSchema.openapi("InvalidCoinIdError")
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
-const invalidCurrencySlugErrorSchema =
-  sharedInvalidCurrencySlugErrorSchema.openapi("InvalidCurrencySlugError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
@@ -163,7 +166,6 @@ const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
-  invalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidEngraverSlugErrorSchema,
@@ -337,10 +339,12 @@ function toCoinFaceValueResponse(
   return denomination
     ? {
         label: denomination.label,
-        value: Number(denomination.amount),
-        currencySlug: denomination.currency.slug,
-        currencyName: denomination.currency.name,
-        currencyFullName: `${denomination.currency.name} (${denomination.currency.periodLabel})`,
+        numericValue: Number(denomination.amount),
+        currency: {
+          slug: denomination.currency.slug,
+          name: denomination.currency.name,
+          fullName: `${denomination.currency.name} (${denomination.currency.periodLabel})`,
+        },
       }
     : null
 }
@@ -413,10 +417,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
           (issue) => issue.path[0] === "distribution"
         )
         const invalidFaceValue = result.error.issues.some(
-          (issue) => issue.path[0] === "amount"
-        )
-        const invalidCurrency = result.error.issues.some(
-          (issue) => issue.path[0] === "currency"
+          (issue) => issue.path[0] === "amount" || issue.path[0] === "currency"
         )
         const invalidEngraver = result.error.issues.some(
           (issue) => issue.path[0] === "engraver"
@@ -438,14 +439,7 @@ export function registerCoinRoutes(app: ApiApp, options: CoinRouteOptions) {
                   message: "Face Value filter is invalid" as const,
                 },
               }
-            : invalidCurrency
-              ? {
-                  error: {
-                    code: "invalid_currency_slug" as const,
-                    message: "Currency Slug is invalid" as const,
-                  },
-                }
-              : invalidDistribution
+            : invalidDistribution
                 ? {
                     error: {
                       code: "invalid_distribution" as const,

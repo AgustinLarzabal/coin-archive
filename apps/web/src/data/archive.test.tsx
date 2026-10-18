@@ -146,9 +146,11 @@ describe("Archive data module", () => {
               ...coin,
               faceValue: {
                 label: "1 peso",
-                value: 1,
-                currencySlug: "argentine-peso-convertible",
-                currencyName: "Peso",
+                numericValue: 1,
+                currency: {
+                  slug: "argentine-peso-convertible",
+                  name: "Peso",
+                },
               },
               obverseImageUrl: null,
               reverseImageUrl: null,

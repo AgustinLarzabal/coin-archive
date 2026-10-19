@@ -1,21 +1,18 @@
 import appCss from "@coin-archive/ui/globals.css?url"
 import { cn } from "@coin-archive/ui/lib/utils"
+import { TanStackDevtools } from "@tanstack/react-devtools"
 import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
   useMatchRoute,
 } from "@tanstack/react-router"
-import { lazy, Suspense } from "react"
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 
 import type { RouterContext } from "@/router"
 import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
 import { NotFound } from "@/components/not-found"
-
-const DevelopmentTools = import.meta.env.DEV
-  ? lazy(() => import("@/components/development-tools"))
-  : null
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
@@ -60,11 +57,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {!isCoinDetailsPage && <Header />}
         {children}
         <Footer />
-        {DevelopmentTools && (
-          <Suspense fallback={null}>
-            <DevelopmentTools />
-          </Suspense>
-        )}
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
         <Scripts />
       </body>
     </html>

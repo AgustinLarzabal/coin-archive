@@ -17,12 +17,7 @@ const config = defineConfig(({ mode }) => {
   return {
     define: applicationVersionDefine,
     resolve: { tsconfigPaths: true },
-    plugins: [
-      ...(mode === "development" ? [devtools()] : []),
-      tailwindcss(),
-      tanstackStart(),
-      viteReact(),
-    ],
+    plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
   }
 })
 

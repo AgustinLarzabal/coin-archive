@@ -3,6 +3,8 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
 import appCss from "@coin-archive/ui/globals.css?url"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 
 export const Route = createRootRoute({
   head: () => ({
@@ -40,8 +42,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="flex min-h-svh flex-col font-sans antialiased">
+        <Header />
         {children}
+        <Footer />
         <TanStackDevtools
           config={{
             position: "bottom-right",

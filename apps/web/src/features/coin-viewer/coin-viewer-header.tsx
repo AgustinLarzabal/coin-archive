@@ -7,14 +7,23 @@ import {
   BreadcrumbSeparator,
 } from "@coin-archive/ui/components/breadcrumb"
 import { Link } from "@tanstack/react-router"
+import type { ExploreSearch } from "@/features/explore/explore-search"
 
-export function CoinViewerHeader({ title }: { title: string }) {
+export function CoinViewerHeader({
+  title,
+  search,
+}: {
+  title: string
+  search: ExploreSearch
+}) {
   return (
     <header className="flex h-18 items-center border-b px-5 md:px-10">
       <Breadcrumb className="min-w-0">
         <BreadcrumbList className="flex-nowrap gap-2 font-mono text-xs tracking-widest text-muted uppercase">
           <BreadcrumbItem className="shrink-0">
-            <BreadcrumbLink render={<Link to="/" />}>Archive</BreadcrumbLink>
+            <BreadcrumbLink render={<Link to="/" search={search} />}>
+              Archive
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="shrink-0">/</BreadcrumbSeparator>
           <BreadcrumbItem className="min-w-0">

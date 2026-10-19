@@ -10,8 +10,10 @@ import {
   validateCoinId,
 } from "@/data/archive"
 import { CoinViewer } from "@/features/coin-viewer/coin-viewer"
+import { exploreSearchSchema } from "@/features/explore/explore-search"
 
 export const Route = createFileRoute("/coins/$coinId")({
+  validateSearch: exploreSearchSchema,
   loader: async ({ context, params }) => {
     const coinId = validateCoinId(params.coinId)
     try {
@@ -31,7 +33,8 @@ export const Route = createFileRoute("/coins/$coinId")({
 
 function CoinViewerRoute() {
   const { coinId } = Route.useParams()
-  return <CoinViewer coinId={coinId} />
+  const search = Route.useSearch()
+  return <CoinViewer coinId={coinId} search={search} />
 }
 
 function CoinViewerError({ error }: ErrorComponentProps) {

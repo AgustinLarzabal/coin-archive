@@ -1,7 +1,7 @@
 import { isIsoIssuerCode } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { cn } from "@coin-archive/ui/lib/utils"
-import { Link } from "@tanstack/react-router"
+import { Link, useSearch } from "@tanstack/react-router"
 import type { CoinListItemResponse } from "@coin-archive/api"
 import type { ComponentProps } from "react"
 
@@ -12,6 +12,7 @@ type ExploreCoinProps = Omit<ComponentProps<"a">, "children" | "href"> & {
 }
 
 export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
+  const search = useSearch({ from: "/_explore" })
   const image = coin.obverseImageUrl
     ? { surface: "Obverse", url: coin.obverseImageUrl }
     : coin.reverseImageUrl
@@ -22,6 +23,7 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
     <Link
       to="/coins/$coinId"
       params={{ coinId: coin.id }}
+      search={search}
       aria-label={coin.title}
       className={cn(
         "group relative flex aspect-square animate-fade-in flex-col items-center justify-center border-r border-b p-5 transition-colors hover:bg-sidebar max-md:nth-[2n]:border-r-0 md:max-lg:nth-[3n]:border-r-0 lg:max-xl:nth-[4n]:border-r-0 xl:max-2xl:nth-[5n]:border-r-0 2xl:nth-[6n]:border-r-0",

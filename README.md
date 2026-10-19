@@ -30,13 +30,13 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Start both development tasks with:
+Start the development tasks with:
 
 ```bash
 pnpm dev
 ```
 
-The web application runs on port 3000 and the standalone API runs on port 3001. Browser clients use the API rather than connecting to the database
+The web application runs on port 3000, the standalone API on port 3001, and the admin application on port 3002. Browser clients use the API rather than connecting to the database
 package directly. See [ADR 0001](docs/adr/0001-standalone-api-boundary.md)
 for the boundary between client runtimes, the API, and persistence.
 

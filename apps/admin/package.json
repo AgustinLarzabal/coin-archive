@@ -1,0 +1,40 @@
+{
+  "name": "admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 3002",
+    "generate-routes": "tsr generate",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
+    "check": "prettier --check \"**/*.{ts,tsx,js,jsx}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coin-archive/ui": "workspace:*",
+    "@tailwindcss/vite": "^4",
+    "@tanstack/react-devtools": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^4"
+  },
+  "devDependencies": {
+    "@tanstack/devtools-vite": "catalog:",
+    "@tanstack/eslint-config": "catalog:",
+    "@tanstack/router-cli": "^1.167.39",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6",
+    "eslint": "^10",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "^6.0.2",
+    "vite": "^8"
+  }
+}

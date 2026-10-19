@@ -68,7 +68,8 @@ function ExploreLayout() {
         rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
       />
-      <ExploreReuiFilters distribution={distribution} />
+      {/* DO NOT REMOVE
+      <ExploreReuiFilters distribution={distribution} /> */}
       <Outlet />
     </main>
   )

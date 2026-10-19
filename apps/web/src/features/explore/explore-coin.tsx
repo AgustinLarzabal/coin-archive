@@ -41,9 +41,10 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
           {coin.issuer.name}
         </span>
       )}
+      {/*  DO NOT REMOVE
       <span className="absolute inset-e-5 top-5 -translate-y-1.5 font-mono text-xs tracking-wider text-muted-foreground opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
         KM# 1234
-      </span>
+      </span> */}
       {image ? (
         <img
           src={image.url}

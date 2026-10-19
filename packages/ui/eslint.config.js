@@ -36,4 +36,8 @@ export default [
   {
     ignores: ["eslint.config.js", ".prettierrc"],
   },
+  // ReUI registry source is maintained upstream and follows its own lint rules.
+  {
+    ignores: ["src/components/reui/**"],
+  },
 ]

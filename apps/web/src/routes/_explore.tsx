@@ -19,6 +19,7 @@ import {
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
 import { ExploreFilters } from "@/features/explore/filters/explore-filters"
+import { ExploreReuiFilters } from "@/features/explore/filters/explore-reui-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
@@ -67,6 +68,7 @@ function ExploreLayout() {
         rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
       />
+      <ExploreReuiFilters distribution={distribution} />
       <Outlet />
     </main>
   )

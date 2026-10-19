@@ -32,9 +32,16 @@ export function ExploreFilterCombobox({
   placeholder: string
   value: string | null
 }) {
-  const items = options.map((option) => option.value)
+  const items: Array<string> = []
+  const optionsByValue = new Map<string, ExploreFilterOption>()
+  for (const option of options) {
+    items.push(option.value)
+    if (!optionsByValue.has(option.value)) {
+      optionsByValue.set(option.value, option)
+    }
+  }
   const getLabel = (itemValue: string) =>
-    options.find((option) => option.value === itemValue)?.label ?? itemValue
+    optionsByValue.get(itemValue)?.label ?? itemValue
 
   return (
     <Combobox
@@ -58,9 +65,7 @@ export function ExploreFilterCombobox({
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
         <ComboboxList>
           {(itemValue: string) => {
-            const option = options.find(
-              (candidate) => candidate.value === itemValue
-            )
+            const option = optionsByValue.get(itemValue)
 
             return (
               <ComboboxItem

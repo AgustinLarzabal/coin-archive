@@ -1,13 +1,13 @@
 import { Button } from "@coin-archive/ui/components/button"
 import { Input } from "@coin-archive/ui/components/input"
 import { useEffect, useId, useState } from "react"
-import type { CoinListYear } from "@coin-archive/api"
-
-import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 import {
   formatIssueYearFilterValue,
   parseIssueYearFilterValue,
-} from "@/features/explore/filters/issue-year-filter-value"
+} from "./issue-year-filter-value"
+import type { CoinListYear } from "@coin-archive/api"
+
+import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 type IssueYearFilterProps = {
   year?: CoinListYear

@@ -26,41 +26,44 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
             query.rules.length === 0
               ? [
                   {
-                    id: "test-distribution",
+                    id: "test-issuer",
                     type: "rule",
-                    path: ["distribution"],
+                    path: ["issuer"],
                     operator: "is",
-                    value: "non-circulating",
+                    value: "AR",
                   },
                 ]
               : [],
         })
       }}
     >
-      Toggle ReUI Distribution
+      Toggle Advanced Issuer
     </button>
   ),
 }))
 
-it("applies and clears a ReUI Coin Distribution rule through the Explore URL", async () => {
-  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+it("applies and clears an advanced Issuer rule through the Explore URL", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(createArchiveFetch({ issuers: [{ name: "Argentina", code: "AR" }] }))
+  )
   const router = renderArchiveRoute("/")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle ReUI Distribution",
+    name: "Toggle Advanced Issuer",
   })
 
   fireEvent.click(toggle)
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
-      distribution: "non-circulating",
+      issuer: "AR",
     })
   )
-  expect(screen.getByRole("combobox", { name: "Distribution" })).toHaveValue(
-    "Non-circulating"
+  expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
+    "Argentina"
   )
 
   fireEvent.click(toggle)
   await waitFor(() =>
-    expect(router.state.location.search).toEqual({ distribution: undefined })
+    expect(router.state.location.search).toEqual({ issuer: undefined })
   )
 })

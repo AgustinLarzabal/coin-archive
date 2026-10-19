@@ -14,7 +14,7 @@ import type {
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
 
-export function ExploreFilters({
+export function ExploreBasicFilters({
   amount,
   distribution,
   currencies,

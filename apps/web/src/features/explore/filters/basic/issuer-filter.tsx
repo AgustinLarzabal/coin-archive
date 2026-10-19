@@ -1,7 +1,7 @@
+import { ExploreFilterCombobox } from "./explore-filter-combobox"
 import type { IssuerResponse } from "@coin-archive/api"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
-import { ExploreFilterCombobox } from "@/features/explore/filters/explore-filter-combobox"
 
 type IssuerFilterProps = {
   issuerCode?: string

@@ -18,8 +18,8 @@ import {
   RulingAuthorityListRequestError,
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
-import { ExploreFilters } from "@/features/explore/filters/explore-filters"
-import { ExploreReuiFilters } from "@/features/explore/filters/explore-reui-filters"
+import { ExploreAdvancedFilters } from "@/features/explore/filters/advanced/explore-advanced-filters"
+import { ExploreBasicFilters } from "@/features/explore/filters/basic/explore-basic-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
@@ -55,7 +55,7 @@ function ExploreLayout() {
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <ExploreFilters
+      <ExploreBasicFilters
         amount={amount}
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
@@ -69,7 +69,11 @@ function ExploreLayout() {
         year={year}
       />
       {/* DO NOT REMOVE
-      <ExploreReuiFilters distribution={distribution} /> */}
+      <ExploreAdvancedFilters issuerCode={issuerCode} issuers={issuerList.issuers} /> */}
+      <ExploreAdvancedFilters
+        issuerCode={issuerCode}
+        issuers={issuerList.issuers}
+      />
       <Outlet />
     </main>
   )

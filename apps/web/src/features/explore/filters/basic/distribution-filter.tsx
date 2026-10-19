@@ -1,9 +1,9 @@
 import { coinDistributionSchema } from "@coin-archive/api"
+import { ExploreFilterCombobox } from "./explore-filter-combobox"
 import type { CoinDistribution } from "@coin-archive/api"
 
 import { coinDistributionLabels } from "@/features/coin-distribution"
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
-import { ExploreFilterCombobox } from "@/features/explore/filters/explore-filter-combobox"
 
 const distributionOptions = coinDistributionSchema.options.map((value) => ({
   label: coinDistributionLabels[value],

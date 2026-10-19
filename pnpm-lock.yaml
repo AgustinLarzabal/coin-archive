@@ -62,10 +62,10 @@ importers:
       '@hono/zod-openapi':
         specifier: ^1.6.3
         version: 1.6.3(hono@4.13.7)(zod@4.4.3)
-      '@workspace/api':
+      '@coin-archive/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@workspace/db':
+      '@coin-archive/db':
         specifier: workspace:*
         version: link:../../packages/db
       hono:
@@ -120,10 +120,10 @@ importers:
       '@tanstack/router-plugin':
         specifier: 'catalog:'
         version: 1.168.42(@tanstack/react-router@1.170.41(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(esbuild@0.27.7)(rolldown@1.0.3)(vite@8.0.16(@types/node@22.19.19)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1))
-      '@workspace/api':
+      '@coin-archive/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@workspace/ui':
+      '@coin-archive/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:

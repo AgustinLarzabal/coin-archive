@@ -1,7 +1,7 @@
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import { Button } from "@coin-archive/ui/components/button"
+import { Input } from "@coin-archive/ui/components/input"
 import { useEffect, useId, useState } from "react"
-import type { CoinListYear } from "@workspace/api"
+import type { CoinListYear } from "@coin-archive/api"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 import {

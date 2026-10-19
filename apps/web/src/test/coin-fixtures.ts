@@ -4,7 +4,7 @@ import type {
   CoinListItemResponse,
   CoinSurfaceResponse,
   CoinSurfaceWithEngraversResponse,
-} from "@workspace/api"
+} from "@coin-archive/api"
 
 export function coinFaceValueFixture(
   overrides: Partial<CoinFaceValueResponse> = {}

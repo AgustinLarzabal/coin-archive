@@ -1,5 +1,5 @@
-import { coinListYearToInterval } from "@workspace/api"
-import type { CoinListYear } from "@workspace/api"
+import { coinListYearToInterval } from "@coin-archive/api"
+import type { CoinListYear } from "@coin-archive/api"
 
 export function formatIssueYear(year: number) {
   return year < 0 ? `${Math.abs(year)} BCE` : String(year)

@@ -1,13 +1,13 @@
-import { createRoute, z } from "@hono/zod-openapi"
 import {
   currencyListResponseSchema as sharedCurrencyListResponseSchema,
   currencyResponseSchema,
-} from "@workspace/api"
+} from "@coin-archive/api"
+import { createRoute, z } from "@hono/zod-openapi"
 import { toCurrencyResponse } from "./currency-response.js"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
-import type { CurrencyListResponse } from "@workspace/api"
-import type { CurrencyRecord } from "@workspace/db"
+import type { CurrencyListResponse } from "@coin-archive/api"
+import type { CurrencyRecord } from "@coin-archive/db"
 
 interface CurrencyRouteOptions {
   listCurrencies?: () => Promise<Array<CurrencyRecord>>

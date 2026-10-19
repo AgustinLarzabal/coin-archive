@@ -12,7 +12,7 @@ import type {
   EngraverListItemResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
-} from "@workspace/api"
+} from "@coin-archive/api"
 
 export function ExploreFilters({
   amount,

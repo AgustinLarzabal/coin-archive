@@ -8,7 +8,7 @@ import {
 import { cn } from "cn"
 import * as React from "react"
 
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

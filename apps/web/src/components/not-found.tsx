@@ -1,12 +1,12 @@
-import { Link } from "@tanstack/react-router"
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@workspace/ui/components/empty"
+} from "@coin-archive/ui/components/empty"
+import { Link } from "@tanstack/react-router"
 
 export function NotFound() {
   return (

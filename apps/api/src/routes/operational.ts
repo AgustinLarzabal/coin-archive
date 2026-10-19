@@ -1,8 +1,8 @@
-import { createRoute } from "@hono/zod-openapi"
 import {
   operationalOkResponseSchema as sharedOperationalOkResponseSchema,
   operationalUnavailableResponseSchema as sharedOperationalUnavailableResponseSchema,
-} from "@workspace/api"
+} from "@coin-archive/api"
+import { createRoute } from "@hono/zod-openapi"
 
 import { responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"

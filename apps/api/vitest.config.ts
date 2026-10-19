@@ -5,7 +5,7 @@ import { defineConfig } from "vitest/config"
 export default defineConfig({
   resolve: {
     alias: {
-      "@workspace/api": fileURLToPath(
+      "@coin-archive/api": fileURLToPath(
         new URL("../../packages/api/src/index.ts", import.meta.url)
       ),
     },

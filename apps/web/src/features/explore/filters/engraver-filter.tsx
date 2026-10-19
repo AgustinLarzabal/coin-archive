@@ -1,4 +1,4 @@
-import type { EngraverListItemResponse } from "@workspace/api"
+import type { EngraverListItemResponse } from "@coin-archive/api"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 import { ExploreFilterCombobox } from "@/features/explore/filters/explore-filter-combobox"

@@ -1,6 +1,6 @@
+import { engraverListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
-import { engraverListResponseSchema } from "@workspace/api"
-import type { EngraverListResponse } from "@workspace/api"
+import type { EngraverListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
 

@@ -10,7 +10,7 @@ import {
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
-} from "@workspace/api"
+} from "@coin-archive/api"
 import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
 

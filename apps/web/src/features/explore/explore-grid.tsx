@@ -1,5 +1,5 @@
 import { ExploreCoin } from "./explore-coin"
-import type { CoinListItemResponse } from "@workspace/api"
+import type { CoinListItemResponse } from "@coin-archive/api"
 
 const COIN_ANIMATION_STAGGER_MS = 60
 const MAX_COIN_ANIMATION_DELAY_MS = 240

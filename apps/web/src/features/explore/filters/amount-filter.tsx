@@ -1,6 +1,6 @@
-import { faceValueAmountQuerySchema } from "@workspace/api"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import { faceValueAmountQuerySchema } from "@coin-archive/api"
+import { Button } from "@coin-archive/ui/components/button"
+import { Input } from "@coin-archive/ui/components/input"
 import { useEffect, useId, useState } from "react"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"

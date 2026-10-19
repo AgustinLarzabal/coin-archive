@@ -1,7 +1,7 @@
 import { createServer } from "node:http"
 
+import { createDatabase } from "@coin-archive/db"
 import { serve } from "@hono/node-server"
-import { createDatabase } from "@workspace/db"
 
 import { createApp } from "./app.js"
 import { loadConfig } from "./config.js"

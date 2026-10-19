@@ -18,7 +18,7 @@ import type {
   EngraverRecord,
   IssuerRecord,
   RulingAuthorityRecord,
-} from "@workspace/db"
+} from "@coin-archive/db"
 
 export interface AppOptions {
   allowedOrigins: ReadonlyArray<string>

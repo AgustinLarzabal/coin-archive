@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,7 +5,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@workspace/ui/components/breadcrumb"
+} from "@coin-archive/ui/components/breadcrumb"
+import { Link } from "@tanstack/react-router"
 
 export function CoinViewerHeader({ title }: { title: string }) {
   return (

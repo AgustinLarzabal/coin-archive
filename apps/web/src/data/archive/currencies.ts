@@ -1,6 +1,6 @@
+import { currencyListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
-import { currencyListResponseSchema } from "@workspace/api"
-import type { CurrencyListResponse } from "@workspace/api"
+import type { CurrencyListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
 

@@ -1,4 +1,3 @@
-import { createRoute, z } from "@hono/zod-openapi"
 import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
@@ -33,7 +32,8 @@ import {
   missingCoinSurfaceResponse,
   missingCoinSurfaceWithEngraversResponse,
   rulingAuthoritySlugSchema,
-} from "@workspace/api"
+} from "@coin-archive/api"
+import { createRoute, z } from "@hono/zod-openapi"
 import { toCurrencyResponse } from "./currency-response.js"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
@@ -42,13 +42,13 @@ import type {
   CoinFaceValueResponse,
   CoinListItemResponse,
   CoinListResponse,
-} from "@workspace/api"
+} from "@coin-archive/api"
 import type {
   Coin,
   CoinListItem,
   CoinListOptions,
   CoinListPage,
-} from "@workspace/db"
+} from "@coin-archive/db"
 
 interface CoinRouteOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>

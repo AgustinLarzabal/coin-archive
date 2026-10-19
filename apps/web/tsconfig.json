@@ -15,7 +15,7 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["./src/*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@coin-archive/ui/*": ["../../packages/ui/src/*"]
     },
 
     /* Bundler mode */

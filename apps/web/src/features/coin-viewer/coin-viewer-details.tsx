@@ -1,7 +1,7 @@
+import { isIsoIssuerCode } from "@coin-archive/api"
+import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { Link } from "@tanstack/react-router"
-import { isIsoIssuerCode } from "@workspace/api"
-import { Flag } from "@workspace/ui/components/flags/flag"
-import type { CoinDetailResponse } from "@workspace/api"
+import type { CoinDetailResponse } from "@coin-archive/api"
 
 import { coinDistributionLabels } from "@/features/coin-distribution"
 import { formatIssuePeriod } from "@/features/issue-period"

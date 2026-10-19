@@ -1,8 +1,8 @@
 import { performance } from "node:perf_hooks"
 
 import "@hono/zod-openapi"
-import { coinListResponseSchema } from "@workspace/api"
-import { createDatabase } from "@workspace/db"
+import { coinListResponseSchema } from "@coin-archive/api"
+import { createDatabase } from "@coin-archive/db"
 
 import { createApp } from "./app.js"
 import { analyzePaginationPlan } from "./coin-pagination-plan-analysis.js"

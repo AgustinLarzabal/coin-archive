@@ -1,9 +1,9 @@
+import { issuerListResponseSchema as sharedIssuerListResponseSchema } from "@coin-archive/api"
 import { createRoute } from "@hono/zod-openapi"
-import { issuerListResponseSchema as sharedIssuerListResponseSchema } from "@workspace/api"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
-import type { IssuerListResponse } from "@workspace/api"
-import type { IssuerRecord } from "@workspace/db"
+import type { IssuerListResponse } from "@coin-archive/api"
+import type { IssuerRecord } from "@coin-archive/db"
 
 
 interface IssuerRouteOptions {

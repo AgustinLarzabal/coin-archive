@@ -6,7 +6,7 @@ import {
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 
-vi.mock("@workspace/ui/components/combobox", () => ({
+vi.mock("@coin-archive/ui/components/combobox", () => ({
   Combobox: ({
     name,
     onValueChange,

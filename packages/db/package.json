@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/db",
+  "name": "@coin-archive/db",
   "type": "module",
   "private": true,
   "browser": false,

@@ -7,7 +7,7 @@ import type {
   EngraverListItemResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
-} from "@workspace/api"
+} from "@coin-archive/api"
 
 import { getRouter } from "@/router"
 

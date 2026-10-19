@@ -99,7 +99,7 @@ pnpm db:start
 pnpm db:stop
 ```
 
-Database schemas live in the private `@workspace/db` package. Generate and
+Database schemas live in the private `@coin-archive/db` package. Generate and
 commit SQL migrations after changing its schema, then apply migrations
 explicitly. API startup never applies migrations. The migration command loads
 the root `.env.local` file and builds its connection URL from the same
@@ -194,5 +194,5 @@ This will place the ui components in the `packages/ui/src/components` directory.
 To use the components in your app, import them from the `ui` package.
 
 ```tsx
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 ```

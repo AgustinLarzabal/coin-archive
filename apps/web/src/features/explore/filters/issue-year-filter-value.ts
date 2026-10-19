@@ -1,5 +1,5 @@
-import { coinListYearQuerySchema } from "@workspace/api"
-import type { CoinListYear } from "@workspace/api"
+import { coinListYearQuerySchema } from "@coin-archive/api"
+import type { CoinListYear } from "@coin-archive/api"
 
 import { formatCoinListYear } from "@/features/issue-period"
 

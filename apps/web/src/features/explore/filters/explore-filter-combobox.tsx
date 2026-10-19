@@ -5,7 +5,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@workspace/ui/components/combobox"
+} from "@coin-archive/ui/components/combobox"
 
 type ExploreFilterOption = {
   disabled?: boolean

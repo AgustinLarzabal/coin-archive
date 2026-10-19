@@ -1,9 +1,9 @@
+import { engraverListResponseSchema as sharedEngraverListResponseSchema } from "@coin-archive/api"
 import { createRoute } from "@hono/zod-openapi"
-import { engraverListResponseSchema as sharedEngraverListResponseSchema } from "@workspace/api"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
-import type { EngraverListResponse } from "@workspace/api"
-import type { EngraverRecord } from "@workspace/db"
+import type { EngraverListResponse } from "@coin-archive/api"
+import type { EngraverRecord } from "@coin-archive/db"
 
 
 interface EngraverRouteOptions {

@@ -11,11 +11,11 @@
   },
   "iconLibrary": "phosphor",
   "aliases": {
-    "components": "@workspace/ui/components",
-    "utils": "@workspace/ui/lib/utils",
-    "hooks": "@workspace/ui/hooks",
-    "lib": "@workspace/ui/lib",
-    "ui": "@workspace/ui/components"
+    "components": "@coin-archive/ui/components",
+    "utils": "@coin-archive/ui/lib/utils",
+    "hooks": "@coin-archive/ui/hooks",
+    "lib": "@coin-archive/ui/lib",
+    "ui": "@coin-archive/ui/components"
   },
   "rtl": true,
   "menuColor": "default",

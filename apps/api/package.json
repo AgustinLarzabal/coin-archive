@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "predev": "pnpm --filter @workspace/api build && pnpm --filter @workspace/db build",
+    "predev": "pnpm --filter @coin-archive/api build && pnpm --filter @coin-archive/db build",
     "dev": "node --env-file-if-exists=.env.local --import tsx --watch src/server.ts",
     "dev:staging": "sh scripts/run-with-staging-environment.sh",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -17,8 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/api": "workspace:*",
-    "@workspace/db": "workspace:*",
+    "@coin-archive/api": "workspace:*",
+    "@coin-archive/db": "workspace:*",
     "@hono/node-server": "^2.1.1",
     "@hono/zod-openapi": "^1.6.3",
     "hono": "^4.13.7",

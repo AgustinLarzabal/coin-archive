@@ -1,13 +1,13 @@
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@workspace/ui/components/toggle-group"
-import { cn } from "@workspace/ui/lib/utils"
+} from "@coin-archive/ui/components/toggle-group"
+import { cn } from "@coin-archive/ui/lib/utils"
 import { useState } from "react"
 
 import { CoinViewerDetails } from "./coin-viewer-details"
 import { CoinViewerPreview } from "./coin-viewer-preview"
-import type { CoinDetailResponse } from "@workspace/api"
+import type { CoinDetailResponse } from "@coin-archive/api"
 
 type ViewerPanel = "preview" | "details"
 

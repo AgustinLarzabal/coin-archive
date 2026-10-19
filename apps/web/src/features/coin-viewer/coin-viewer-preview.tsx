@@ -1,12 +1,12 @@
-import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import { ScrollArea } from "@coin-archive/ui/components/scroll-area"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@workspace/ui/components/tabs"
+} from "@coin-archive/ui/components/tabs"
 import { CoinSurfacePreview } from "./coin-surface-preview"
-import type { CoinDetailResponse } from "@workspace/api"
+import type { CoinDetailResponse } from "@coin-archive/api"
 
 export function CoinViewerPreview({ coin }: { coin: CoinDetailResponse }) {
   const hasEdgeCatalogueData = Boolean(

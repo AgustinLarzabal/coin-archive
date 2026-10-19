@@ -1,6 +1,6 @@
+import { rulingAuthorityListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
-import { rulingAuthorityListResponseSchema } from "@workspace/api"
-import type { RulingAuthorityListResponse } from "@workspace/api"
+import type { RulingAuthorityListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
 

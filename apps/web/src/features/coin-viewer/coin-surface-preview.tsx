@@ -1,7 +1,7 @@
 import type {
   CoinSurfaceResponse,
   CoinSurfaceWithEngraversResponse,
-} from "@workspace/api"
+} from "@coin-archive/api"
 
 export function CoinSurfacePreview({
   coinTitle,

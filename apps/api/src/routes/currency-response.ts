@@ -1,5 +1,5 @@
-import type { CurrencyResponse } from "@workspace/api"
-import type { CurrencyRecord } from "@workspace/db"
+import type { CurrencyResponse } from "@coin-archive/api"
+import type { CurrencyRecord } from "@coin-archive/db"
 
 export function toCurrencyResponse({
   slug,

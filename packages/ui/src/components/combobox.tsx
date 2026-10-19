@@ -5,13 +5,13 @@ import { CaretDownIcon, CheckIcon, XIcon } from "@phosphor-icons/react"
 import { cn } from "cn"
 import * as React from "react"
 
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@coin-archive/ui/components/button"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@workspace/ui/components/input-group"
+} from "@coin-archive/ui/components/input-group"
 
 const Combobox = ComboboxPrimitive.Root
 

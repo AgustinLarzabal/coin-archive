@@ -1,4 +1,4 @@
-import type { CoinDistribution } from "@workspace/api"
+import type { CoinDistribution } from "@coin-archive/api"
 
 export const coinDistributionLabels = {
   "standard-circulation": "Standard circulation",

@@ -1,8 +1,8 @@
 import { readdir, readFile } from "node:fs/promises"
 import path from "node:path"
 
-const serverOnlyPackage = "@workspace/db"
-const trustedConsumers = new Set(["@workspace/db", "api"])
+const serverOnlyPackage = "@coin-archive/db"
+const trustedConsumers = new Set(["@coin-archive/db", "api"])
 const dependencyFields = [
   "dependencies",
   "devDependencies",

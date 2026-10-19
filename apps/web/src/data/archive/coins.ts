@@ -1,4 +1,3 @@
-import { queryOptions } from "@tanstack/react-query"
 import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
@@ -14,13 +13,14 @@ import {
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
-} from "@workspace/api"
+} from "@coin-archive/api"
+import { queryOptions } from "@tanstack/react-query"
 import type {
   CoinDetailResponse,
   CoinDistribution,
   CoinListResponse,
   CoinListYear,
-} from "@workspace/api"
+} from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
 

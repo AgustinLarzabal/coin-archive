@@ -1,9 +1,9 @@
+import { rulingAuthorityListResponseSchema as sharedRulingAuthorityListResponseSchema } from "@coin-archive/api"
 import { createRoute } from "@hono/zod-openapi"
-import { rulingAuthorityListResponseSchema as sharedRulingAuthorityListResponseSchema } from "@workspace/api"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
-import type { RulingAuthorityListResponse } from "@workspace/api"
-import type { RulingAuthorityRecord } from "@workspace/db"
+import type { RulingAuthorityListResponse } from "@coin-archive/api"
+import type { RulingAuthorityRecord } from "@coin-archive/db"
 
 const rulingAuthorityListResponseSchema =
   sharedRulingAuthorityListResponseSchema.openapi("RulingAuthorityListResponse")

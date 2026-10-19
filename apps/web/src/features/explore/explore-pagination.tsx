@@ -7,8 +7,8 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@workspace/ui/components/pagination"
-import type { CoinListPaginationResponse } from "@workspace/api"
+} from "@coin-archive/ui/components/pagination"
+import type { CoinListPaginationResponse } from "@coin-archive/api"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 

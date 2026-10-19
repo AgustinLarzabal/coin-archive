@@ -1,4 +1,4 @@
-import { internalErrorSchema as sharedInternalErrorSchema } from "@workspace/api"
+import { internalErrorSchema as sharedInternalErrorSchema } from "@coin-archive/api"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 
 export type AppEnvironment = {

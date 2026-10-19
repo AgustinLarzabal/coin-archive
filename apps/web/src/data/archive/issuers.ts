@@ -1,6 +1,6 @@
+import { issuerListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
-import { issuerListResponseSchema } from "@workspace/api"
-import type { IssuerListResponse } from "@workspace/api"
+import type { IssuerListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
 

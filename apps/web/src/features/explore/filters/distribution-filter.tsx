@@ -1,5 +1,5 @@
-import { coinDistributionSchema } from "@workspace/api"
-import type { CoinDistribution } from "@workspace/api"
+import { coinDistributionSchema } from "@coin-archive/api"
+import type { CoinDistribution } from "@coin-archive/api"
 
 import { coinDistributionLabels } from "@/features/coin-distribution"
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"

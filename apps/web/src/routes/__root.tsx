@@ -1,11 +1,11 @@
+import appCss from "@coin-archive/ui/globals.css?url"
+import { cn } from "@coin-archive/ui/lib/utils"
 import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
   useMatchRoute,
 } from "@tanstack/react-router"
-import appCss from "@workspace/ui/globals.css?url"
-import { cn } from "@workspace/ui/lib/utils"
 import { lazy, Suspense } from "react"
 
 import type { RouterContext } from "@/router"

@@ -138,7 +138,7 @@ it("applies and clears an advanced Engraver rule while preserving Issuer", async
     "First Engraver"
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
   )
 
   fireEvent.click(toggle)

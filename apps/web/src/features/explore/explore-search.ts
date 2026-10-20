@@ -20,13 +20,13 @@ const exploreSearchObjectSchema = z.object({
   distribution: coinDistributionSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
   issuer: issuerCodeSchema.optional().catch(undefined),
-  page: z
-    .union([coinListPageSchema, coinListPageQuerySchema])
-    .optional()
-    .catch(undefined),
   ruler: rulingAuthoritySlugSchema.optional().catch(undefined),
   year: z
     .union([coinListYearSchema, coinListYearQuerySchema])
+    .optional()
+    .catch(undefined),
+  page: z
+    .union([coinListPageSchema, coinListPageQuerySchema])
     .optional()
     .catch(undefined),
 })

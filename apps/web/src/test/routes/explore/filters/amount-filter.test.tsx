@@ -63,7 +63,7 @@ it("applies Amount with Currency, preserves other filters, and resets pagination
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&currency=euro&amount=0.5&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?amount=0.5&currency=euro&issuer=AR&page=1&pageSize=24"
   )
 })
 
@@ -113,7 +113,7 @@ it("clearing Currency and Back and Forward restore distinct filter results", asy
     await screen.findByRole("link", { name: "One-euro coin" })
   ).toBeVisible()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?currency=euro&amount=1&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?amount=1&currency=euro&page=1&pageSize=24"
   )
 
   router.history.forward()
@@ -144,7 +144,7 @@ it.each(["0.000000000001", "100000000000000001", "999999999999999999"])(
     )
     expect(router.state.location.search.amount).toBe(amountValue)
     expect(fetchMock).toHaveBeenCalledWith(
-      `http://localhost:3001/v1/coins?currency=euro&amount=${amountValue}&page=1&pageSize=24`
+      `http://localhost:3001/v1/coins?amount=${amountValue}&currency=euro&page=1&pageSize=24`
     )
   }
 )

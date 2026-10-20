@@ -74,20 +74,20 @@ async function getCoins({
 
   try {
     const search = new URLSearchParams()
-    if (distribution !== undefined) {
-      search.set("distribution", distribution)
-    }
-    if (issuerCode !== null) {
-      search.set("issuer", issuerCode)
+    if (faceValueAmount !== null) {
+      search.set("amount", faceValueAmount)
     }
     if (currencySlug !== null) {
       search.set("currency", currencySlug)
     }
-    if (faceValueAmount !== null) {
-      search.set("amount", faceValueAmount)
+    if (distribution !== undefined) {
+      search.set("distribution", distribution)
     }
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
+    }
+    if (issuerCode !== null) {
+      search.set("issuer", issuerCode)
     }
     if (rulingAuthoritySlug !== undefined) {
       search.set("ruler", rulingAuthoritySlug)

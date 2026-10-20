@@ -71,7 +71,7 @@ it("searches and selects a Currency while preserving filters and resetting pagin
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&currency=argentine-peso-convertible&year=1999&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?currency=argentine-peso-convertible&issuer=AR&year=1999&page=1&pageSize=24"
   )
   expect(await screen.findByRole("link", { name: "Peso coin" })).toBeVisible()
   expect(combobox).toHaveFocus()

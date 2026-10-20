@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import {
   createRouter as createTanStackRouter,
   defaultParseSearch,
+  defaultStringifySearch,
 } from "@tanstack/react-router"
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query"
 import { routeTree } from "./routeTree.gen"
@@ -36,6 +37,17 @@ function parseSearchPreservingAmount(searchString: string) {
   return search
 }
 
+function stringifySearchWithPaginationLast(search: Record<string, unknown>) {
+  const order = (key: string) =>
+    key === "page" ? 1 : key === "pageSize" ? 2 : 0
+  const entries = Object.entries(search).sort(([left], [right]) => {
+    const rank = order(left) - order(right)
+    return rank || (left < right ? -1 : left > right ? 1 : 0)
+  })
+
+  return defaultStringifySearch(Object.fromEntries(entries))
+}
+
 export function getRouter(options: { history?: RouterHistory } = {}) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -50,6 +62,7 @@ export function getRouter(options: { history?: RouterHistory } = {}) {
     context: { queryClient },
     history: options.history,
     parseSearch: parseSearchPreservingAmount,
+    stringifySearch: stringifySearchWithPaginationLast,
     routeTree,
 
     scrollRestoration: true,

@@ -60,6 +60,30 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
+  it("orders API request filters alphabetically before pagination", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    await queryClient.fetchQuery(
+      coinListQueryOptions({
+        currencySlug: "euro",
+        faceValueAmount: "0.5",
+        distribution: "non-circulating",
+        engraverSlug: "first-engraver",
+        issuerCode: "AR",
+        issueYear: 1986,
+        page: 3,
+        rulingAuthoritySlug: "selected-authority",
+      })
+    )
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3001/v1/coins?amount=0.5&currency=euro&distribution=non-circulating&engraver=first-engraver&issuer=AR&ruler=selected-authority&year=1986&page=3&pageSize=24"
+    )
+    queryClient.clear()
+  })
+
   it("accepts both surface images in a Coin list response", async () => {
     vi.stubGlobal(
       "fetch",

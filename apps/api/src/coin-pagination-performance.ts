@@ -372,18 +372,15 @@ const scenarios: Array<PageScenario> = [
 ]
 
 function requestPath(scenario: PageScenario) {
-  const query = new URLSearchParams({
-    page: String(scenario.page),
-    pageSize: String(PAGE_SIZE),
-  })
-  if (scenario.filter.kind === "issuer") {
-    query.set("issuer", scenario.filter.code)
-  }
+  const query = new URLSearchParams()
   if (scenario.filter.kind === "distribution") {
     query.set("distribution", scenario.filter.distribution)
   }
   if (scenario.filter.kind === "engraver") {
     query.set("engraver", scenario.filter.slug)
+  }
+  if (scenario.filter.kind === "issuer") {
+    query.set("issuer", scenario.filter.code)
   }
   if (scenario.filter.kind === "ruler") {
     query.set("ruler", scenario.filter.slug)
@@ -391,6 +388,8 @@ function requestPath(scenario: PageScenario) {
   if (scenario.filter.kind === "year") {
     query.set("year", scenario.filter.year)
   }
+  query.set("page", String(scenario.page))
+  query.set("pageSize", String(PAGE_SIZE))
   return `/v1/coins?${query}`
 }
 

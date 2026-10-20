@@ -74,7 +74,7 @@ it("selects a Distribution, preserves filters, and returns to the first page", a
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?distribution=non-circulating&issuer=AR&engraver=first-engraver&ruler=selected-authority&year=-44&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?distribution=non-circulating&engraver=first-engraver&issuer=AR&ruler=selected-authority&year=-44&page=1&pageSize=24"
   )
 })
 

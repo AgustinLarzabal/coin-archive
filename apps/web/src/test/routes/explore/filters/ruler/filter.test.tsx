@@ -49,6 +49,6 @@ it("selects a global Ruling Authority, disambiguates duplicate names, and preser
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&ruler=shared-b&year=1986&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&ruler=shared-b&year=1986&page=1&pageSize=24"
   )
 })

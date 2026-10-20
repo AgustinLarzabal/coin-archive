@@ -41,6 +41,23 @@ function createPageAwareArchiveFetch(totalPages = 3) {
 }
 
 describe("Explore pagination", () => {
+  it("orders generated page URL filters alphabetically before the page", async () => {
+    vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
+    const router = renderArchiveRoute(
+      "/?year=1986&issuer=AR&engraver=first-engraver"
+    )
+    const user = userEvent.setup()
+
+    await screen.findByRole("link", { name: "Coin on page 1" })
+    await user.click(screen.getByRole("button", { name: "Go to next page" }))
+
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toBe(
+        "?engraver=first-engraver&issuer=AR&year=1986&page=2"
+      )
+    )
+  })
+
   it("renders accessible boundary and nearby-page controls", async () => {
     vi.stubGlobal(
       "fetch",

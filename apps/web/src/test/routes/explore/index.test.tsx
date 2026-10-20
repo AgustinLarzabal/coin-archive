@@ -239,7 +239,7 @@ describe("Archive landing route", () => {
     router.history.back()
     await waitFor(() =>
       expect(router.state.location.searchStr).toBe(
-        "?issuer=AR&engraver=first-engraver"
+        "?engraver=first-engraver&issuer=AR"
       )
     )
     expect(combobox).toHaveValue("First Engraver")
@@ -277,7 +277,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=ROMAN&engraver=first-engraver&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=ROMAN&page=1&pageSize=24"
     )
     expect(router.state.location.search).toEqual({
       issuer: "ROMAN",
@@ -405,7 +405,7 @@ describe("Archive landing route", () => {
       "http://localhost:3001/v1/coins?engraver=first-engraver&page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
     )
   })
 

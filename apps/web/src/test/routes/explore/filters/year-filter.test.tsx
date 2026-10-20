@@ -29,7 +29,7 @@ it("applies, restores, and independently clears an accessible BCE Issue Year fil
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&year=-44&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&year=-44&page=1&pageSize=24"
   )
   expect(
     router.options.context.queryClient.getQueryState([
@@ -179,7 +179,7 @@ it.each([
     )
     expect(yearInput).toHaveValue(displayYear)
     expect(fetchMock).toHaveBeenCalledWith(
-      `http://localhost:3001/v1/coins?issuer=AR&engraver=first-engraver&year=${canonicalYear}&page=1&pageSize=24`
+      `http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&year=${canonicalYear}&page=1&pageSize=24`
     )
     router.history.back()
     await waitFor(() => expect(yearInput).toHaveValue(""))

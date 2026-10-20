@@ -7,7 +7,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
-import { createSelectSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import type { z } from "zod"
 
@@ -39,5 +39,23 @@ export const engravers = pgTable(
   ]
 )
 
-export const engraverRecordSchema = createSelectSchema(engravers)
-export type EngraverRecord = z.infer<typeof engraverRecordSchema>
+export const engraverSelectSchema = createSelectSchema(engravers)
+export const engraverInsertSchema = createInsertSchema(engravers, {
+  slug: (schema) =>
+    schema
+      .min(3)
+      .max(64)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  fullName: (schema) =>
+    schema
+      .min(1)
+      .max(200)
+      .refine((fullName) => fullName === fullName.trim(), {
+        message: "Engraver full name must be trimmed",
+      }),
+})
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .required()
+  .strict()
+
+export type EngraverRecord = z.infer<typeof engraverSelectSchema>

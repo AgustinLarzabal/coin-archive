@@ -12,6 +12,7 @@ import {
   currencies,
   currencySeedRecordSchema,
   denominations,
+  engraverInsertSchema,
   engravers,
   issuerInsertSchema,
   issuers,
@@ -35,12 +36,6 @@ const imageKeySchema = z
         .some((segment) => segment === "." || segment === ".."),
     { message: "Coin Surface image location must be an R2 object key" }
   )
-
-const engraverSlugSchema = z
-  .string()
-  .min(3)
-  .max(64)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
 const rulingAuthoritySlugSchema = z
   .string()
@@ -101,7 +96,7 @@ const coinSurfaceSeedRecordSchema = z
 const coinSurfaceWithEngraversSeedRecordSchema = z
   .strictObject({
     ...coinSurfaceSeedShape,
-    engraverSlugs: z.array(engraverSlugSchema).optional(),
+    engraverSlugs: z.array(engraverInsertSchema.shape.slug).optional(),
   })
   .refine(
     (surface) =>
@@ -150,18 +145,7 @@ const seedDocumentSchema = z
     currencies: z.array(currencySeedRecordSchema).default([]),
     denominations: z.array(denominationSeedRecordSchema).default([]),
     authorities: z.array(authoritySeedRecordSchema).default([]),
-    engravers: z.array(
-      z.strictObject({
-        slug: engraverSlugSchema,
-        fullName: z
-          .string()
-          .min(1)
-          .max(200)
-          .refine((fullName) => fullName === fullName.trim(), {
-            message: "Engraver full name must be trimmed",
-          }),
-      })
-    ),
+    engravers: z.array(engraverInsertSchema),
     coins: z.array(coinSeedWithSurfacesSchema),
   })
   .strict()

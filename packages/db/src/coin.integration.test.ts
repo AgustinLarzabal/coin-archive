@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   coinRecordSchema,
   createDatabase,
-  engraverRecordSchema,
+  engraverSelectSchema,
   issuerSelectSchema,
   readCoinSeed,
   seedCoins,
@@ -422,7 +422,7 @@ describe("Coin persistence", () => {
         ])
         .returning()
 
-      expect(engraverRecordSchema.parse(engraver)).toEqual(engraver)
+      expect(engraverSelectSchema.parse(engraver)).toEqual(engraver)
       expect(engraver.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
       )

@@ -13,13 +13,15 @@ export type {
 } from "./connection.js"
 export {
   coinRecordSchema,
-  currencyRecordSchema,
+  currencyInsertSchema,
+  currencySelectSchema,
   denominationRecordSchema,
   engraverInsertSchema,
   engraverSelectSchema,
   issuerInsertSchema,
   issuerSelectSchema,
-  rulingAuthorityRecordSchema,
+  rulingAuthorityInsertSchema,
+  rulingAuthoritySelectSchema,
 } from "./schema/index.js"
 export type {
   CoinRecord,

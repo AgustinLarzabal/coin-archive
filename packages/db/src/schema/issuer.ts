@@ -8,6 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const issuers = pgTable(
@@ -39,11 +40,7 @@ export const issuers = pgTable(
 
 export const issuerSelectSchema = createSelectSchema(issuers)
 export const issuerInsertSchema = createInsertSchema(issuers, {
-  name: (schema) =>
-    schema
-      .min(1)
-      .max(200)
-      .refine((name) => name === name.trim(), "Issuer name must be trimmed"),
+  name: (schema) => trimmedInsertText("Issuer name")(schema.max(200)),
   code: (schema) =>
     schema.regex(
       /^(?:[A-Z]{2}|[A-Z0-9-]{3,12})$/,

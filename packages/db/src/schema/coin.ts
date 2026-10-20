@@ -13,6 +13,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { denominations } from "./denomination.js"
 import { issuerInsertSchema, issuers } from "./issuer.js"
+import { trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const coinDistribution = pgEnum("coin_distribution", [
@@ -84,10 +85,7 @@ function rejectFutureIssueYear(schema: z.ZodNumber) {
 export const coinSeedRecordSchema = createInsertSchema(coins, {
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
-  title: (schema) =>
-    schema
-      .min(1)
-      .refine((title) => title === title.trim(), "Coin title must be trimmed"),
+  title: trimmedInsertText("Coin title"),
 })
   .omit({
     issuerId: true,

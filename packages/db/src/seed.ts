@@ -10,14 +10,16 @@ import {
   coinSurfaceEngravers,
   coinSurfaces,
   currencies,
-  currencySeedRecordSchema,
+  currencyInsertSchema,
   denominations,
   engraverInsertSchema,
   engravers,
   issuerInsertSchema,
   issuers,
   rulingAuthorities,
+  rulingAuthorityInsertSchema,
 } from "./schema/index.js"
+import { trimmedInsertText } from "./schema/validation.js"
 import type { Database } from "./connection.js"
 
 const imageKeySchema = z
@@ -50,18 +52,7 @@ const currencySlugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
 const trimmedDisplayText = (maximumLength: number, label: string) =>
-  z
-    .string()
-    .min(1)
-    .max(maximumLength)
-    .refine((value) => value === value.trim(), {
-      message: `${label} must be trimmed`,
-    })
-
-const authoritySeedRecordSchema = z.strictObject({
-  slug: rulingAuthoritySlugSchema,
-  name: trimmedDisplayText(200, "Ruling Authority name"),
-})
+  trimmedInsertText(label)(z.string().max(maximumLength))
 
 const coinRulingAuthoritySeedRecordSchema = z.strictObject({
   slug: rulingAuthoritySlugSchema,
@@ -142,9 +133,9 @@ function denominationKey(currencyIdentity: string, normalizedLabel: string) {
 const seedDocumentSchema = z
   .object({
     issuers: z.array(issuerInsertSchema),
-    currencies: z.array(currencySeedRecordSchema).default([]),
+    currencies: z.array(currencyInsertSchema).default([]),
     denominations: z.array(denominationSeedRecordSchema).default([]),
-    authorities: z.array(authoritySeedRecordSchema).default([]),
+    authorities: z.array(rulingAuthorityInsertSchema).default([]),
     engravers: z.array(engraverInsertSchema),
     coins: z.array(coinSeedWithSurfacesSchema),
   })

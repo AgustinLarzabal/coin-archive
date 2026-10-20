@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import {
   createDatabase,
-  rulingAuthorityRecordSchema,
+  rulingAuthoritySelectSchema,
   seedCoins,
 } from "./index.js"
 
@@ -176,7 +176,7 @@ describe("Ruling Authority persistence", () => {
         ])
         .returning()
 
-      expect(rulingAuthorityRecordSchema.parse(authority)).toEqual(authority)
+      expect(rulingAuthoritySelectSchema.parse(authority)).toEqual(authority)
       expect(authority.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
       )

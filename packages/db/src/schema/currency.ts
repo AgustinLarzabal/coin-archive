@@ -8,6 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const currencies = pgTable(
@@ -47,23 +48,18 @@ export const currencies = pgTable(
   ]
 )
 
-export const currencyRecordSchema = createSelectSchema(currencies)
-export type CurrencyRecord = z.infer<typeof currencyRecordSchema>
-
-const trimmedCurrencyText = (label: string) => (schema: z.ZodString) =>
-  schema
-    .min(1)
-    .refine((value) => value === value.trim(), `${label} must be trimmed`)
-
-export const currencySeedRecordSchema = createInsertSchema(currencies, {
+export const currencySelectSchema = createSelectSchema(currencies)
+export const currencyInsertSchema = createInsertSchema(currencies, {
   slug: (schema) =>
     schema
       .min(3)
       .max(64)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  name: trimmedCurrencyText("Currency Name"),
-  periodLabel: trimmedCurrencyText("Currency Period Label"),
+  name: trimmedInsertText("Currency Name"),
+  periodLabel: trimmedInsertText("Currency Period Label"),
 })
   .omit({ id: true, createdAt: true, updatedAt: true })
   .required()
   .strict()
+
+export type CurrencyRecord = z.infer<typeof currencySelectSchema>

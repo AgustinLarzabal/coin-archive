@@ -12,7 +12,7 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { denominations } from "./denomination.js"
-import { issuers } from "./issuer.js"
+import { issuerInsertSchema, issuers } from "./issuer.js"
 import type { z } from "zod"
 
 export const coinDistribution = pgEnum("coin_distribution", [
@@ -74,9 +74,6 @@ export const coins = pgTable(
 export const coinRecordSchema = createSelectSchema(coins)
 export type CoinRecord = z.infer<typeof coinRecordSchema>
 
-const varcharIssuerCodeSchema = createInsertSchema(issuers).pick({ code: true })
-  .shape.code
-
 function rejectFutureIssueYear(schema: z.ZodNumber) {
   return schema.refine(
     (year) => year <= new Date().getFullYear(),
@@ -98,6 +95,6 @@ export const coinSeedRecordSchema = createInsertSchema(coins, {
     createdAt: true,
     updatedAt: true,
   })
-  .extend({ issuerCode: varcharIssuerCodeSchema })
+  .extend({ issuerCode: issuerInsertSchema.shape.code })
   .required()
   .strict()

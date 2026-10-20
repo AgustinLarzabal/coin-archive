@@ -16,7 +16,8 @@ export {
   currencyRecordSchema,
   denominationRecordSchema,
   engraverRecordSchema,
-  issuerRecordSchema,
+  issuerInsertSchema,
+  issuerSelectSchema,
   rulingAuthorityRecordSchema,
 } from "./schema/index.js"
 export type {

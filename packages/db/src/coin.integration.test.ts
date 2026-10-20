@@ -8,7 +8,7 @@ import {
   coinRecordSchema,
   createDatabase,
   engraverRecordSchema,
-  issuerRecordSchema,
+  issuerSelectSchema,
   readCoinSeed,
   seedCoins,
 } from "./index.js"
@@ -1958,7 +1958,7 @@ describe("Issuer persistence", () => {
         .values({ name: "Argentina", code: "ARG-HIST" })
         .returning()
 
-      expect(issuerRecordSchema.parse(argentina)).toEqual(argentina)
+      expect(issuerSelectSchema.parse(argentina)).toEqual(argentina)
       expect(argentina).toMatchObject({
         name: "Argentina",
         code: "AR",

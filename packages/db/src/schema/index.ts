@@ -24,9 +24,9 @@ export { coinSurfaceEngravers } from "./coin-surface-engraver.js"
 export { engraverRecordSchema, engravers } from "./engraver.js"
 export type { EngraverRecord } from "./engraver.js"
 export {
-  issuerRecordSchema,
+  issuerInsertSchema,
   issuers,
-  issuerSeedRecordSchema,
+  issuerSelectSchema,
 } from "./issuer.js"
 export type { IssuerRecord } from "./issuer.js"
 export {

@@ -13,8 +13,8 @@ import {
   currencySeedRecordSchema,
   denominations,
   engravers,
+  issuerInsertSchema,
   issuers,
-  issuerSeedRecordSchema,
   rulingAuthorities,
 } from "./schema/index.js"
 import type { Database } from "./connection.js"
@@ -146,7 +146,7 @@ function denominationKey(currencyIdentity: string, normalizedLabel: string) {
 
 const seedDocumentSchema = z
   .object({
-    issuers: z.array(issuerSeedRecordSchema),
+    issuers: z.array(issuerInsertSchema),
     currencies: z.array(currencySeedRecordSchema).default([]),
     denominations: z.array(denominationSeedRecordSchema).default([]),
     authorities: z.array(authoritySeedRecordSchema).default([]),

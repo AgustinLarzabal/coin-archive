@@ -37,10 +37,8 @@ export const issuers = pgTable(
   ]
 )
 
-export const issuerRecordSchema = createSelectSchema(issuers)
-export type IssuerRecord = z.infer<typeof issuerRecordSchema>
-
-export const issuerSeedRecordSchema = createInsertSchema(issuers, {
+export const issuerSelectSchema = createSelectSchema(issuers)
+export const issuerInsertSchema = createInsertSchema(issuers, {
   name: (schema) =>
     schema
       .min(1)
@@ -55,3 +53,5 @@ export const issuerSeedRecordSchema = createInsertSchema(issuers, {
   .omit({ id: true, createdAt: true, updatedAt: true })
   .required()
   .strict()
+
+export type IssuerRecord = z.infer<typeof issuerSelectSchema>

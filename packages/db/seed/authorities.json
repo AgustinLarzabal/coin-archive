@@ -22,5 +22,13 @@
   {
     "slug": "third-hellenic-republic",
     "name": "Third Hellenic Republic"
+  },
+  {
+    "slug": "juan-carlos-i",
+    "name": "Juan Carlos I"
+  },
+  {
+    "slug": "felipe-vi",
+    "name": "Felipe VI"
   }
 ]

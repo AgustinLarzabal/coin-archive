@@ -205,7 +205,19 @@
     "obverse": {
       "description": "Don Quixote holding a lance with windmills in the background, accompanied by Spain's name, the Madrid mint mark, the year 2005, and twelve stars."
     },
-    "distribution": "circulating-commemorative"
+    "distribution": "circulating-commemorative",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "juan-carlos-i",
+        "role": "King",
+        "tenure": "1975–2014",
+        "position": 1
+      }
+    ]
   },
   {
     "id": "00000000-0000-4000-8000-00000000000d",
@@ -896,9 +908,22 @@
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
     "obverse": {
-      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Spain's name, the local EMU 1999–2009 legend, and twelve stars."
+      "description": "A stick figure merging into the euro symbol represents the single currency and European economic integration, accompanied by Spain's name, the local EMU 1999–2009 legend, and twelve stars.",
+      "engraverSlugs": ["george-stamatopoulos"]
     },
-    "distribution": "circulating-commemorative"
+    "distribution": "circulating-commemorative",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "juan-carlos-i",
+        "role": "King",
+        "tenure": "1975–2014",
+        "position": 1
+      }
+    ]
   },
   {
     "id": "00000000-0000-4000-8000-00000000004c",
@@ -1523,9 +1548,22 @@
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
     "obverse": {
-      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Spain's name, the years 2002–2012, the designer's initials, and twelve stars."
+      "description": "A globe shaped as a euro symbol is surrounded by a family, the Eurotower, a ship, a factory, and wind turbines representing the currency's importance, accompanied by Spain's name, the years 2002–2012, the designer's initials, and twelve stars.",
+      "engraverSlugs": ["helmut-andexlinger"]
     },
-    "distribution": "circulating-commemorative"
+    "distribution": "circulating-commemorative",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "juan-carlos-i",
+        "role": "King",
+        "tenure": "1975–2014",
+        "position": 1
+      }
+    ]
   },
   {
     "id": "00000000-0000-4000-8000-000000000085",
@@ -1811,7 +1849,25 @@
     "obverse": {
       "description": "Overlapping portraits of King Felipe VI and King Juan Carlos I are accompanied by Spain's name, the year 2014, the Madrid mint mark, and twelve stars."
     },
-    "distribution": "circulating-commemorative"
+    "distribution": "circulating-commemorative",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "felipe-vi",
+        "role": "King",
+        "tenure": "2014–present",
+        "position": 1
+      },
+      {
+        "slug": "juan-carlos-i",
+        "role": "King",
+        "tenure": "1975–2014",
+        "position": 2
+      }
+    ]
   },
   {
     "id": "00000000-0000-4000-8000-00000000009f",
@@ -3571,7 +3627,19 @@
     "obverse": {
       "description": "King Felipe VI's coat of arms appears with Spain's name, a 50th-anniversary inscription, the year 2018, the Madrid mint mark, and twelve stars."
     },
-    "distribution": "circulating-commemorative"
+    "distribution": "circulating-commemorative",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
+    "rulingAuthorityAttributions": [
+      {
+        "slug": "felipe-vi",
+        "role": "King",
+        "tenure": "2014–present",
+        "position": 1
+      }
+    ]
   },
   {
     "id": "00000000-0000-4000-8000-00000000013f",

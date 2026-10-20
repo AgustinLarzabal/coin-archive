@@ -68,8 +68,6 @@ function ExploreLayout() {
         rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
       />
-      {/* DO NOT REMOVE
-      <ExploreAdvancedFilters issuerCode={issuerCode} issuers={issuerList.issuers} /> */}
       <ExploreAdvancedFilters
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}

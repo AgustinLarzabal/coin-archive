@@ -82,6 +82,8 @@ pnpm --filter api dev
 The API defaults to port 3001. Its liveness contract is available at
 `GET /health`, PostgreSQL-backed readiness is available at `GET /ready`, and
 its generated contract is available at `GET /openapi.json`.
+See the [API usage guide](apps/api/README.md) for routes, filtering, pagination,
+errors, and request examples.
 
 Coin image URLs use the API's required `IMAGE_BASE_URL` setting. Local setup
 points it at the web application's public assets; deployment setup for the

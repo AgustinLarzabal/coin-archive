@@ -12,10 +12,12 @@ export type {
   IssueYearInterval,
 } from "./connection.js"
 export {
-  coinRecordSchema,
+  coinInsertSchema,
+  coinSelectSchema,
   currencyInsertSchema,
   currencySelectSchema,
-  denominationRecordSchema,
+  denominationInsertSchema,
+  denominationSelectSchema,
   engraverInsertSchema,
   engraverSelectSchema,
   issuerInsertSchema,

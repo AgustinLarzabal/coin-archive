@@ -1,8 +1,9 @@
 export {
   coinDistribution,
-  coinRecordSchema,
+  coinInsertSchema,
+  coinSelectSchema,
   coins,
-  coinSeedRecordSchema,
+  coinSeedSchema,
 } from "./coin.js"
 export type { CoinRecord } from "./coin.js"
 export {
@@ -11,7 +12,11 @@ export {
   currencySelectSchema,
 } from "./currency.js"
 export type { CurrencyRecord } from "./currency.js"
-export { denominationRecordSchema, denominations } from "./denomination.js"
+export {
+  denominationInsertSchema,
+  denominationSelectSchema,
+  denominations,
+} from "./denomination.js"
 export type { DenominationRecord } from "./denomination.js"
 export { coinRulingAuthorityAttributions } from "./coin-ruling-authority.js"
 export {

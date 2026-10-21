@@ -5,7 +5,7 @@ import { Pool } from "pg"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
-  coinRecordSchema,
+  coinSelectSchema,
   createDatabase,
   engraverSelectSchema,
   issuerSelectSchema,
@@ -1806,7 +1806,7 @@ describe("Coin persistence", () => {
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
       })
-      expect(coinRecordSchema.parse(inserted)).toEqual(inserted)
+      expect(coinSelectSchema.parse(inserted)).toEqual(inserted)
       expect(inserted.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
       )

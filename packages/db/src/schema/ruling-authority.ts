@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { trimmedInsertText } from "./validation.js"
+import { slugInsertText, trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const rulingAuthorities = pgTable(
@@ -46,11 +46,7 @@ export const rulingAuthoritySelectSchema = createSelectSchema(rulingAuthorities)
 export const rulingAuthorityInsertSchema = createInsertSchema(
   rulingAuthorities,
   {
-    slug: (schema) =>
-      schema
-        .min(3)
-        .max(64)
-        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    slug: slugInsertText,
     name: trimmedInsertText("Ruling Authority name"),
   }
 )

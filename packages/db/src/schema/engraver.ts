@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { trimmedInsertText } from "./validation.js"
+import { slugInsertText, trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const engravers = pgTable(
@@ -41,11 +41,7 @@ export const engravers = pgTable(
 
 export const engraverSelectSchema = createSelectSchema(engravers)
 export const engraverInsertSchema = createInsertSchema(engravers, {
-  slug: (schema) =>
-    schema
-      .min(3)
-      .max(64)
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: slugInsertText,
   fullName: (schema) =>
     trimmedInsertText("Engraver full name")(schema.max(200)),
 })

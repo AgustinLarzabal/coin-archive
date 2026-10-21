@@ -72,9 +72,6 @@ export const coins = pgTable(
   ]
 )
 
-export const coinRecordSchema = createSelectSchema(coins)
-export type CoinRecord = z.infer<typeof coinRecordSchema>
-
 function rejectFutureIssueYear(schema: z.ZodNumber) {
   return schema.refine(
     (year) => year <= new Date().getFullYear(),
@@ -82,11 +79,18 @@ function rejectFutureIssueYear(schema: z.ZodNumber) {
   )
 }
 
-export const coinSeedRecordSchema = createInsertSchema(coins, {
+const coinInsertBaseSchema = createInsertSchema(coins, {
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),
 })
+
+export const coinSelectSchema = createSelectSchema(coins)
+export const coinInsertSchema = coinInsertBaseSchema
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .strict()
+
+export const coinSeedSchema = coinInsertBaseSchema
   .omit({
     issuerId: true,
     denominationId: true,
@@ -96,3 +100,5 @@ export const coinSeedRecordSchema = createInsertSchema(coins, {
   .extend({ issuerCode: issuerInsertSchema.shape.code })
   .required()
   .strict()
+
+export type CoinRecord = z.infer<typeof coinSelectSchema>

@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { trimmedInsertText } from "./validation.js"
+import { slugInsertText, trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const currencies = pgTable(
@@ -50,11 +50,7 @@ export const currencies = pgTable(
 
 export const currencySelectSchema = createSelectSchema(currencies)
 export const currencyInsertSchema = createInsertSchema(currencies, {
-  slug: (schema) =>
-    schema
-      .min(3)
-      .max(64)
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: slugInsertText,
   name: trimmedInsertText("Currency Name"),
   periodLabel: trimmedInsertText("Currency Period Label"),
 })

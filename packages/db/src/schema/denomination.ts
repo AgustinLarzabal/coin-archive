@@ -8,8 +8,12 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
-import { createSelectSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { currencies } from "./currency.js"
+import {
+  denominationAmountInsertText,
+  trimmedInsertText,
+} from "./validation.js"
 import type { z } from "zod"
 
 export const denominations = pgTable(
@@ -50,5 +54,13 @@ export const denominations = pgTable(
   ]
 )
 
-export const denominationRecordSchema = createSelectSchema(denominations)
-export type DenominationRecord = z.infer<typeof denominationRecordSchema>
+export const denominationSelectSchema = createSelectSchema(denominations)
+export const denominationInsertSchema = createInsertSchema(denominations, {
+  label: trimmedInsertText("Denomination label"),
+  amount: denominationAmountInsertText,
+})
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .required()
+  .strict()
+
+export type DenominationRecord = z.infer<typeof denominationSelectSchema>

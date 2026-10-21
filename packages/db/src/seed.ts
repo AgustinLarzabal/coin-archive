@@ -6,12 +6,13 @@ import { z } from "zod"
 import {
   coinRulingAuthorityAttributions,
   coins,
-  coinSeedRecordSchema,
+  coinSeedSchema,
   coinSurfaceEngravers,
   coinSurfaces,
   currencies,
   currencyInsertSchema,
   denominations,
+  denominationInsertSchema,
   engraverInsertSchema,
   engravers,
   issuerInsertSchema,
@@ -39,23 +40,11 @@ const imageKeySchema = z
     { message: "Coin Surface image location must be an R2 object key" }
   )
 
-const rulingAuthoritySlugSchema = z
-  .string()
-  .min(3)
-  .max(64)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-
-const currencySlugSchema = z
-  .string()
-  .min(3)
-  .max(64)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-
 const trimmedDisplayText = (maximumLength: number, label: string) =>
   trimmedInsertText(label)(z.string().max(maximumLength))
 
 const coinRulingAuthoritySeedRecordSchema = z.strictObject({
-  slug: rulingAuthoritySlugSchema,
+  slug: rulingAuthorityInsertSchema.shape.slug,
   role: trimmedDisplayText(100, "Ruling Authority Role"),
   tenure: trimmedDisplayText(200, "Ruling Authority Tenure Label").optional(),
   position: z.int().positive(),
@@ -98,10 +87,10 @@ const coinSurfaceWithEngraversSeedRecordSchema = z
     }
   )
 
-const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
+const coinSeedWithSurfacesSchema = coinSeedSchema.extend({
   denomination: z
     .strictObject({
-      currencySlug: currencySlugSchema,
+      currencySlug: currencyInsertSchema.shape.slug,
       label: trimmedDisplayText(200, "Denomination label"),
     })
     .optional(),
@@ -113,17 +102,10 @@ const coinSeedWithSurfacesSchema = coinSeedRecordSchema.extend({
     .default([]),
 })
 
-const denominationAmountSchema = z
-  .string()
-  .regex(/^(?:0|[1-9]\d{0,17})(?:\.\d{1,12})?$/)
-  .refine((amount) => !/^0(?:\.0+)?$/.test(amount), {
-    message: "Denomination amount must be positive",
-  })
-
 const denominationSeedRecordSchema = z.strictObject({
-  currencySlug: currencySlugSchema,
-  label: trimmedDisplayText(200, "Denomination label"),
-  amount: denominationAmountSchema,
+  currencySlug: currencyInsertSchema.shape.slug,
+  label: denominationInsertSchema.shape.label,
+  amount: denominationInsertSchema.shape.amount,
 })
 
 function denominationKey(currencyIdentity: string, normalizedLabel: string) {

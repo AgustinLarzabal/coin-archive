@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
+  distributionListQueryOptions,
   engraverListQueryOptions,
   issuerListQueryOptions,
 } from "@/data/archive"
@@ -1087,6 +1088,7 @@ describe("Archive landing route", () => {
     ).toBe(30 * 60 * 1_000)
     expect(coinListQueryOptions().staleTime).toBe(30_000)
     expect(coinDetailQueryOptions(coinId).staleTime).toBe(30_000)
+    expect(distributionListQueryOptions().staleTime).toBe(Infinity)
     expect(engraverListQueryOptions().staleTime).toBe(Infinity)
     expect(issuerListQueryOptions().staleTime).toBe(Infinity)
   })

@@ -140,9 +140,9 @@ export function createDatabase(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
             )
-            .leftJoin(
+            .innerJoin(
               schema.distributions,
-              sql`${schema.coins.distribution}::text = ${schema.distributions.slug}`
+              eq(schema.coins.distribution, schema.distributions.slug)
             )
             .leftJoin(
               schema.denominations,
@@ -174,9 +174,6 @@ export function createDatabase(
             .limit(1)
           const row = rows.at(0)
           if (!row) return null
-          if (!row.distributionName) {
-            throw new Error("Coin Distribution catalogue entry is missing")
-          }
 
           const engraverCreditableSurfaces = [row.obverse, row.reverse].filter(
             (surface): surface is schema.CoinSurfaceRecord => surface !== null

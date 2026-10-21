@@ -72,19 +72,15 @@ const lastIssueYearSchema = issueYearSchema.meta({
   not: { const: 0 },
 })
 
-export const coinDistributionSchema = z.enum([
-  "standard-circulation",
-  "circulating-commemorative",
-  "non-circulating",
-])
-
-export type CoinDistribution = z.infer<typeof coinDistributionSchema>
-
-export const distributionSlugSchema = z
+export const coinDistributionSchema = z
   .string()
   .min(3)
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
+export type CoinDistribution = z.infer<typeof coinDistributionSchema>
+
+export const distributionSlugSchema = coinDistributionSchema
 
 export const distributionListItemResponseSchema = z.strictObject({
   slug: distributionSlugSchema,

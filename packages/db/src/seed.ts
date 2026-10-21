@@ -13,6 +13,7 @@ import {
   currencyInsertSchema,
   denominationInsertSchema,
   denominations,
+  distributions,
   engraverInsertSchema,
   engravers,
   issuerInsertSchema,
@@ -340,6 +341,20 @@ export async function seedCoins(database: Database, input: unknown) {
   validateDenominationReferences(document, normalizedDenominationLabels)
 
   await database.orm.transaction(async (transaction) => {
+    const availableDistributions = new Set(
+      (
+        await transaction
+          .select({ slug: distributions.slug })
+          .from(distributions)
+      ).map(({ slug }) => slug)
+    )
+    for (const coin of document.coins) {
+      if (!availableDistributions.has(coin.distribution)) {
+        throw new Error(
+          `Coin references unknown Coin Distribution Slug: ${coin.distribution}`
+        )
+      }
+    }
     const insertedCurrencies =
       document.currencies.length === 0
         ? []

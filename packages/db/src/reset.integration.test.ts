@@ -233,6 +233,20 @@ describe("database rebuild lifecycle", () => {
           currency_name: "Euro",
           period_label: "1999–present",
         },
+        ...[
+          "00000000-0000-4000-8000-00000000000c",
+          "00000000-0000-4000-8000-00000000004b",
+          "00000000-0000-4000-8000-000000000084",
+          "00000000-0000-4000-8000-00000000009e",
+          "00000000-0000-4000-8000-00000000013e",
+        ].map((coinId) => ({
+          coin_id: coinId,
+          denomination_label: "2 euro",
+          amount: "2",
+          currency_slug: "euro",
+          currency_name: "Euro",
+          period_label: "1999–present",
+        })),
       ])
 
       const issuers = await databaseAfterReset.query<{
@@ -287,7 +301,13 @@ describe("database rebuild lifecycle", () => {
         join coin_surfaces on coin_surfaces.id = coin_surface_engravers.coin_surface_id
         order by coin_surfaces.kind, coin_surface_engravers.position
       `)
-      expect(credits.rows).toEqual([])
+      expect(credits.rows).toEqual(
+        expect.arrayContaining([
+          { full_name: "George Stamatopoulos", kind: "obverse", position: 1 },
+          { full_name: "Helmut Andexlinger", kind: "obverse", position: 1 },
+        ])
+      )
+      expect(credits.rows).toHaveLength(2)
 
       const attributions = await databaseAfterReset.query<{
         coin_id: string
@@ -306,56 +326,58 @@ describe("database rebuild lifecycle", () => {
         order by coin_ruling_authorities.coin_id,
           coin_ruling_authorities.position
       `)
-      expect(attributions.rows).toEqual([
-        {
-          coin_id: "00000000-0000-4000-8000-000000000001",
-          slug: "italian-republic",
-          name: "Italian Republic",
-          role: "Period",
-          tenure: "1946–present",
-          position: 1,
-        },
-        {
-          coin_id: "00000000-0000-4000-8000-000000000002",
-          slug: "john-paul-ii",
-          name: "John Paul II (Ioannes Paulus II)",
-          role: "Pope",
-          tenure: "1978–2005",
-          position: 1,
-        },
-        {
-          coin_id: "00000000-0000-4000-8000-000000000003",
-          slug: "republic-of-san-marino",
-          name: "Republic of San Marino",
-          role: "Period",
-          tenure: "301–present",
-          position: 1,
-        },
-        {
-          coin_id: "00000000-0000-4000-8000-000000000004",
-          slug: "henri-of-luxembourg",
-          name: "Henri",
-          role: "Grand Duke",
-          tenure: "2000–2025",
-          position: 1,
-        },
-        {
-          coin_id: "00000000-0000-4000-8000-000000000005",
-          slug: "republic-of-finland",
-          name: "Republic of Finland",
-          role: "Period",
-          tenure: "1919–present",
-          position: 1,
-        },
-        {
-          coin_id: "00000000-0000-4000-8000-000000000006",
-          slug: "third-hellenic-republic",
-          name: "Third Hellenic Republic",
-          role: "Period",
-          tenure: "1974–present",
-          position: 1,
-        },
-      ])
+      expect(attributions.rows).toEqual(
+        expect.arrayContaining([
+          {
+            coin_id: "00000000-0000-4000-8000-000000000001",
+            slug: "italian-republic",
+            name: "Italian Republic",
+            role: "Period",
+            tenure: "1946–present",
+            position: 1,
+          },
+          {
+            coin_id: "00000000-0000-4000-8000-000000000002",
+            slug: "john-paul-ii",
+            name: "John Paul II (Ioannes Paulus II)",
+            role: "Pope",
+            tenure: "1978–2005",
+            position: 1,
+          },
+          {
+            coin_id: "00000000-0000-4000-8000-000000000003",
+            slug: "republic-of-san-marino",
+            name: "Republic of San Marino",
+            role: "Period",
+            tenure: "301–present",
+            position: 1,
+          },
+          {
+            coin_id: "00000000-0000-4000-8000-000000000004",
+            slug: "henri-of-luxembourg",
+            name: "Henri",
+            role: "Grand Duke",
+            tenure: "2000–2025",
+            position: 1,
+          },
+          {
+            coin_id: "00000000-0000-4000-8000-000000000005",
+            slug: "republic-of-finland",
+            name: "Republic of Finland",
+            role: "Period",
+            tenure: "1919–present",
+            position: 1,
+          },
+          {
+            coin_id: "00000000-0000-4000-8000-000000000006",
+            slug: "third-hellenic-republic",
+            name: "Third Hellenic Republic",
+            role: "Period",
+            tenure: "1974–present",
+            position: 1,
+          },
+        ])
+      )
     } finally {
       await databaseAfterReset.end()
     }

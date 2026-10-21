@@ -105,9 +105,9 @@ it("restores one Coin Distribution and exposes its clear control", async () => {
   ).toBeVisible()
 })
 
-it("recovers from an invalid Coin Distribution in a hand-edited URL", async () => {
+it("recovers from a malformed Coin Distribution in a hand-edited URL", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
-  const router = renderArchiveRoute("/?issuer=AR&distribution=unknown")
+  const router = renderArchiveRoute("/?issuer=AR&distribution=bad_slug")
 
   const combobox = await screen.findByRole("combobox", {
     name: "Distribution",

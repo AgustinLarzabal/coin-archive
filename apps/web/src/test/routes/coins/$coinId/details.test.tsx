@@ -52,6 +52,7 @@ describe("Coin viewer route details", () => {
     ["standard-circulation", "Standard circulation"],
     ["circulating-commemorative", "Circulating commemorative"],
     ["non-circulating", "Non-circulating"],
+    ["pattern-issue", "Pattern issue"],
   ] as const)("renders %s as %s", async (distribution, label) => {
     vi.stubGlobal(
       "fetch",

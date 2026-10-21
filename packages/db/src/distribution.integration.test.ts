@@ -4,7 +4,7 @@ import { migrate } from "drizzle-orm/node-postgres/migrator"
 import { Pool } from "pg"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { createDatabase, distributionInsertSchema } from "./index.js"
+import { createDatabase, distributionInsertSchema, seedCoins } from "./index.js"
 
 function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL
@@ -25,6 +25,99 @@ beforeEach(async () => {
 })
 
 describe("Coin Distribution catalogue", () => {
+  it("uses a new Distribution for Coin list and detail and restricts deletion while used", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await database.orm.insert(database.schema.distributions).values({
+        slug: "pattern-issue",
+        name: "Pattern issue",
+      })
+      const [issuer] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ code: "AR", name: "Argentina" })
+        .returning()
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          title: "Pattern Coin",
+          issuerId: issuer.id,
+          distribution: "pattern-issue",
+          firstIssueYear: 2004,
+          lastIssueYear: 2004,
+        })
+        .returning()
+
+      await expect(
+        database.listCoins({ distribution: "pattern-issue" })
+      ).resolves.toMatchObject({
+        coins: [
+          expect.objectContaining({
+            id: coin.id,
+            distribution: "pattern-issue",
+          }),
+        ],
+        totalItems: 1,
+      })
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        distribution: "pattern-issue",
+        distributionName: "Pattern issue",
+      })
+      await expect(
+        database.orm
+          .delete(database.schema.distributions)
+          .where(sql`${database.schema.distributions.slug} = 'pattern-issue'`)
+      ).rejects.toThrow()
+      await expect(
+        database.listCoins({ distribution: "unknown-pattern" })
+      ).resolves.toMatchObject({
+        coins: [],
+        totalItems: 0,
+      })
+      await database.orm.insert(database.schema.distributions).values({
+        slug: "unused-pattern",
+        name: "Unused pattern",
+      })
+      await expect(
+        database.orm
+          .delete(database.schema.distributions)
+          .where(sql`${database.schema.distributions.slug} = 'unused-pattern'`)
+      ).resolves.toBeDefined()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("seeds a Coin with a newly curated Distribution Slug", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await database.orm.insert(database.schema.distributions).values({
+        slug: "pattern-issue",
+        name: "Pattern issue",
+      })
+      const coinId = "00000000-0000-4000-8000-000000000077"
+      await seedCoins(database, {
+        issuers: [{ code: "AR", name: "Argentina" }],
+        engravers: [],
+        coins: [
+          {
+            id: coinId,
+            title: "Seeded pattern Coin",
+            issuerCode: "AR",
+            distribution: "pattern-issue",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
+          },
+        ],
+      })
+      await expect(database.findCoinById(coinId)).resolves.toMatchObject({
+        distribution: "pattern-issue",
+        distributionName: "Pattern issue",
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("seeds the three existing values and lists unused records by name then slug", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

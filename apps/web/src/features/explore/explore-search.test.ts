@@ -20,7 +20,7 @@ describe("Explore search schema", () => {
     })
   })
 
-  it.each(["", "Non-circulating", "unknown", ["non-circulating"]])(
+  it.each(["", "Non-circulating", "bad_slug", ["non-circulating"]])(
     "ignores the invalid Coin Distribution %j",
     (distribution) => {
       expect(exploreSearchSchema.parse({ issuer: "AR", distribution })).toEqual(

@@ -414,8 +414,8 @@ async function seedDataset(
       'Performance Coin ' || g,
       ('10000000-0000-4000-8000-' || lpad((((g - 1) % 10) + 1)::text, 12, '0'))::uuid,
       case
-        when g % 10 = 1 then 'non-circulating'::coin_distribution
-        else 'circulating-commemorative'::coin_distribution
+        when g % 10 = 1 then 'non-circulating'
+        else 'circulating-commemorative'
       end,
       case when g % 2 = 1 then 1988 else 1970 end,
       case when g % 2 = 1 then 1988 else 1970 end,

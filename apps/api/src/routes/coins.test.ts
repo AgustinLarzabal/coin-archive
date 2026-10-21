@@ -105,6 +105,25 @@ describe("Coin routes", () => {
       },
     }
 
+    it("returns a newly curated Coin Distribution Slug and name", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({
+          ...coin,
+          distribution: "pattern-issue",
+          distributionName: "Pattern issue",
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        distribution: "pattern-issue",
+        distributionName: "Pattern issue",
+      })
+    })
+
     it("returns the Coin contract with UTC timestamps and no caching", async () => {
       const response = await createApp({
         allowedOrigins: [],
@@ -610,14 +629,10 @@ describe("Coin routes", () => {
           Coin: expect.objectContaining({
             properties: expect.objectContaining({
               ...issueYearProperties,
-              distribution: {
+              distribution: expect.objectContaining({
                 type: "string",
-                enum: [
-                  "standard-circulation",
-                  "circulating-commemorative",
-                  "non-circulating",
-                ],
-              },
+                pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
               distributionName: expect.objectContaining({
                 type: "string",
                 minLength: 1,
@@ -694,14 +709,10 @@ describe("Coin routes", () => {
           CoinListItem: expect.objectContaining({
             properties: expect.objectContaining({
               ...issueYearProperties,
-              distribution: {
+              distribution: expect.objectContaining({
                 type: "string",
-                enum: [
-                  "standard-circulation",
-                  "circulating-commemorative",
-                  "non-circulating",
-                ],
-              },
+                pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
               faceValue: {
                 anyOf: [
                   { $ref: "#/components/schemas/FaceValue" },
@@ -763,6 +774,43 @@ describe("Coin routes", () => {
   })
 
   describe("GET /v1/coins", () => {
+    it("returns a newly curated Coin Distribution Slug from the list", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: async () => ({
+          coins: [
+            {
+              id: "00000000-0000-4000-8000-000000000001",
+              title: "Pattern Coin",
+              issuerId: "10000000-0000-4000-8000-000000000001",
+              issuer: {
+                id: "10000000-0000-4000-8000-000000000001",
+                name: "Argentina",
+                code: "AR",
+                createdAt: new Date("2026-09-16T09:00:00.000Z"),
+                updatedAt: new Date("2026-09-16T09:00:00.000Z"),
+              },
+              distribution: "pattern-issue",
+              denomination: null,
+              firstIssueYear: 2004,
+              lastIssueYear: 2004,
+              createdAt: new Date("2026-09-16T10:00:00.000Z"),
+              updatedAt: new Date("2026-09-16T11:00:00.000Z"),
+              obverseImageKey: null,
+              reverseImageKey: null,
+            },
+          ],
+          totalItems: 1,
+        }),
+      }).request("/v1/coins?distribution=pattern-issue")
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        coins: [{ distribution: "pattern-issue" }],
+        pagination: { totalItems: 1 },
+      })
+    })
     it("returns required populated and null Face Values without catalogue identities", async () => {
       const baseCoin = {
         id: "00000000-0000-4000-8000-000000000001",
@@ -1053,7 +1101,7 @@ describe("Coin routes", () => {
       })
     })
 
-    it.each(["", "Non-circulating", "unknown", "standard_circulation"])(
+    it.each(["", "Non-circulating", "bad_slug", "standard_circulation"])(
       "rejects the invalid Coin Distribution %j without listing Coins",
       async (distribution) => {
         const listCoins = vi.fn(emptyCoinPage)
@@ -1091,6 +1139,29 @@ describe("Coin routes", () => {
           code: "invalid_distribution",
           message: "Coin Distribution is invalid",
         },
+      })
+    })
+
+    it("passes a new or unknown well-formed Coin Distribution Slug through exactly", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      for (const slug of ["unused-pattern", "unknown-pattern"]) {
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?distribution=${slug}`)
+        expect(response.status).toBe(200)
+        await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+      }
+      expect(listCoins).toHaveBeenNthCalledWith(1, {
+        distribution: "unused-pattern",
+        page: 1,
+        pageSize: 24,
+      })
+      expect(listCoins).toHaveBeenNthCalledWith(2, {
+        distribution: "unknown-pattern",
+        page: 1,
+        pageSize: 24,
       })
     })
 
@@ -1625,17 +1696,13 @@ describe("Coin routes", () => {
           schema: expect.objectContaining({ pattern: expect.any(String) }),
         }),
         expect.objectContaining({
-          description: "Exact, case-sensitive Coin Distribution identifier",
+          description: expect.stringContaining("Coin Distribution Slug"),
           in: "query",
           name: "distribution",
           required: false,
           schema: expect.objectContaining({
             type: "string",
-            enum: [
-              "standard-circulation",
-              "circulating-commemorative",
-              "non-circulating",
-            ],
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
           }),
         }),
         expect.objectContaining({

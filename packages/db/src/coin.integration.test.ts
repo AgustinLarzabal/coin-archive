@@ -383,6 +383,7 @@ describe("Coin persistence", () => {
 
       await expect(database.findCoinById(coin.id)).resolves.toEqual({
         ...coin,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -666,6 +667,7 @@ describe("Coin persistence", () => {
 
       await expect(detail).resolves.toEqual({
         ...coin,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -754,6 +756,7 @@ describe("Coin persistence", () => {
 
       await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
         ...withAllSurfaces,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -765,6 +768,7 @@ describe("Coin persistence", () => {
         database.findCoinById(withPartialReverse.id)
       ).resolves.toEqual({
         ...withPartialReverse,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -774,6 +778,7 @@ describe("Coin persistence", () => {
       })
       await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
         ...withPartialEdge,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -783,6 +788,7 @@ describe("Coin persistence", () => {
       })
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
         ...withoutSurfaces,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -1812,6 +1818,7 @@ describe("Coin persistence", () => {
       )
       await expect(database.findCoinById(inserted.id)).resolves.toEqual({
         ...inserted,
+        distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
         rulingAuthorityAttributions: [],
@@ -2141,7 +2148,7 @@ describe("Coin seed", () => {
 
   it.each([
     ["missing", undefined],
-    ["unsupported", "unknown"],
+    ["malformed", "bad_slug"],
   ])(
     "rejects a %s Coin Distribution before attempting writes",
     async (_case, distribution) => {
@@ -2164,6 +2171,20 @@ describe("Coin seed", () => {
       }
     }
   )
+
+  it("rejects a well-formed unknown Coin Distribution Slug in the seed path", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], distribution: "unknown-pattern" }],
+        })
+      ).rejects.toThrow("unknown Coin Distribution Slug: unknown-pattern")
+    } finally {
+      await database.close()
+    }
+  })
 
   it("inserts a Coin Surface whose only seeded data is an Engraver credit", async () => {
     const database = createDatabase(getDatabaseUrl())

@@ -1,5 +1,4 @@
 export {
-  coinDistribution,
   coinInsertSchema,
   coins,
   coinSeedSchema,

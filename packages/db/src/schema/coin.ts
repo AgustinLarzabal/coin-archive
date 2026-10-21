@@ -3,7 +3,6 @@ import {
   check,
   index,
   integer,
-  pgEnum,
   pgTable,
   timestamp,
   uuid,
@@ -12,15 +11,10 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { denominations } from "./denomination.js"
+import { distributions } from "./distribution.js"
 import { issuerInsertSchema, issuers } from "./issuer.js"
-import { trimmedInsertText } from "./validation.js"
+import { slugInsertText, trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
-
-export const coinDistribution = pgEnum("coin_distribution", [
-  "standard-circulation",
-  "circulating-commemorative",
-  "non-circulating",
-])
 
 export const coins = pgTable(
   "coins",
@@ -33,7 +27,9 @@ export const coins = pgTable(
     denominationId: uuid("denomination_id").references(() => denominations.id, {
       onDelete: "restrict",
     }),
-    distribution: coinDistribution().notNull(),
+    distribution: varchar({ length: 64 })
+      .notNull()
+      .references(() => distributions.slug, { onDelete: "restrict" }),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -80,6 +76,7 @@ function rejectFutureIssueYear(schema: z.ZodNumber) {
 }
 
 const coinInsertBaseSchema = createInsertSchema(coins, {
+  distribution: slugInsertText,
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),

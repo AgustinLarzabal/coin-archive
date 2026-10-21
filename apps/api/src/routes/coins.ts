@@ -95,7 +95,8 @@ const coinListQuerySchema = z
       param: { name: "currency", in: "query" },
     }),
     distribution: coinDistributionSchema.optional().openapi({
-      description: "Exact, case-sensitive Coin Distribution identifier",
+      description:
+        "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
     }),
     engraver: engraverSlugSchema.optional().openapi({

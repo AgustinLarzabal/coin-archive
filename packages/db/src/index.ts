@@ -13,7 +13,10 @@ export type {
 } from "./connection.js"
 export {
   coinInsertSchema,
+  coinRulingAuthorityAttributionInsertSchema,
+  coinRulingAuthorityAttributionSelectSchema,
   coinSelectSchema,
+  coinSurfaceInsertSchema,
   currencyInsertSchema,
   currencySelectSchema,
   denominationInsertSchema,
@@ -29,6 +32,7 @@ export {
 } from "./schema/index.js"
 export type {
   CoinRecord,
+  CoinRulingAuthorityAttributionRecord,
   CurrencyRecord,
   DenominationRecord,
   DistributionRecord,

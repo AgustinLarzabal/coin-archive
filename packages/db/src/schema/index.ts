@@ -23,8 +23,14 @@ export {
   denominationSelectSchema,
 } from "./denomination.js"
 export type { DenominationRecord } from "./denomination.js"
-export { coinRulingAuthorityAttributions } from "./coin-ruling-authority.js"
 export {
+  coinRulingAuthorityAttributionInsertSchema,
+  coinRulingAuthorityAttributions,
+  coinRulingAuthorityAttributionSelectSchema,
+} from "./coin-ruling-authority.js"
+export type { CoinRulingAuthorityAttributionRecord } from "./coin-ruling-authority.js"
+export {
+  coinSurfaceInsertSchema,
   coinSurfaceKind,
   coinSurfaceRecordSchema,
   coinSurfaces,

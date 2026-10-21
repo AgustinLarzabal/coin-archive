@@ -8,10 +8,37 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core"
-import { createSelectSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { z } from "zod"
 
 import { coins } from "./coin.js"
-import type { z } from "zod"
+
+export const coinSurfaceDescriptionInsertSchema = z
+  .string()
+  .min(1)
+  .max(10_000)
+  .refine((description) => description === description.trim(), {
+    message: "Coin Surface description must be trimmed",
+  })
+
+export const coinSurfaceImageKeyInsertSchema = z
+  .string()
+  .min(1)
+  .refine((imageKey) => new TextEncoder().encode(imageKey).length <= 1_024, {
+    message: "Coin Surface image key must be at most 1,024 bytes",
+  })
+  .refine((imageKey) => imageKey === imageKey.trim(), {
+    message: "Coin Surface image key must be trimmed",
+  })
+  .refine(
+    (imageKey) =>
+      !imageKey.startsWith("/") &&
+      !/^[a-z][a-z0-9+.-]*:/i.test(imageKey) &&
+      !imageKey
+        .split("/")
+        .some((segment) => segment === "." || segment === ".."),
+    { message: "Coin Surface image location must be an R2 object key" }
+  )
 
 export const coinSurfaceKind = pgEnum("coin_surface_kind", [
   "obverse",
@@ -62,4 +89,11 @@ export const coinSurfaces = pgTable(
 )
 
 export const coinSurfaceRecordSchema = createSelectSchema(coinSurfaces)
+export const coinSurfaceInsertSchema = createInsertSchema(coinSurfaces, {
+  description: () => coinSurfaceDescriptionInsertSchema,
+  imageKey: () => coinSurfaceImageKeyInsertSchema,
+})
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .strict()
+
 export type CoinSurfaceRecord = z.infer<typeof coinSurfaceRecordSchema>

@@ -40,6 +40,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/coins`          | A page of Coins with summary fields, Face Value, and Obverse and Reverse image URLs           |
 | `GET /v1/coins/{coinId}` | One Coin by UUID, including its surfaces, Engraver credits, and Ruling Authority attributions |
 | `GET /v1/currencies`     | Currencies and their public slugs                                                             |
+| `GET /v1/distributions`  | Coin Distributions and their public slugs                                                     |
 | `GET /v1/engravers`      | Engravers and their public slugs                                                              |
 | `GET /v1/issuers`        | Issuers and their public codes                                                                |
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
@@ -48,15 +49,15 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 
 `GET /v1/coins` accepts one exact value for each optional filter:
 
-| Parameter      | Value                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| `amount`       | Exact positive Face Value Amount; requires `currency`                                                   |
-| `currency`     | Case-sensitive Currency Slug                                                                            |
-| `distribution` | Coin Distribution identifier: `standard-circulation`, `circulating-commemorative`, or `non-circulating` |
-| `issuer`       | Case-sensitive Issuer Code, such as `AR`                                                                |
-| `engraver`     | Case-sensitive Engraver Slug                                                                            |
-| `ruler`        | Case-sensitive Ruling Authority Slug                                                                    |
-| `year`         | One Issue Year or a closed Issue Year range                                                             |
+| Parameter      | Value                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------- |
+| `amount`       | Exact positive Face Value Amount; requires `currency`                                  |
+| `currency`     | Case-sensitive Currency Slug                                                           |
+| `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
+| `issuer`       | Case-sensitive Issuer Code, such as `AR`                                               |
+| `engraver`     | Case-sensitive Engraver Slug                                                           |
+| `ruler`        | Case-sensitive Ruling Authority Slug                                                   |
+| `year`         | One Issue Year or a closed Issue Year range                                            |
 
 Filters can be combined. For example:
 
@@ -103,6 +104,30 @@ For a catalogue containing the Argentine convertible peso, the response is:
 `fullName` combines the Currency Name and its period label.
 An empty catalogue returns `{"currencies":[]}`.
 Use a returned `slug` as the `currency` filter on `GET /v1/coins`.
+
+## List Coin Distributions
+
+`GET /v1/distributions` returns every Coin Distribution's public `slug` and `name`, ordered by name and then slug. It has no defined query parameters.
+
+```bash
+curl 'http://localhost:3001/v1/distributions'
+```
+
+For a catalogue containing Standard circulation, the response is:
+
+```json
+{
+  "distributions": [
+    {
+      "slug": "standard-circulation",
+      "name": "Standard circulation"
+    }
+  ]
+}
+```
+
+An empty catalogue returns `{"distributions":[]}`.
+Use a returned `slug` as the `distribution` filter on `GET /v1/coins`.
 
 ## List Engravers
 

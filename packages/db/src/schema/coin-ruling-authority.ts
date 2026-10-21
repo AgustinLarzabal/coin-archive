@@ -8,9 +8,17 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { z } from "zod"
 
 import { coins } from "./coin.js"
 import { rulingAuthorities } from "./ruling-authority.js"
+import { trimmedInsertText } from "./validation.js"
+
+const tenureMaximumLength = 200
+export const coinRulingAuthorityTenureInsertSchema = trimmedInsertText(
+  "Ruling Authority Tenure Label"
+)(z.string().max(tenureMaximumLength))
 
 export const coinRulingAuthorityAttributions = pgTable(
   "coin_ruling_authorities",
@@ -23,7 +31,7 @@ export const coinRulingAuthorityAttributions = pgTable(
       .notNull()
       .references(() => rulingAuthorities.id, { onDelete: "restrict" }),
     role: varchar({ length: 100 }).notNull(),
-    tenure: varchar({ length: 200 }),
+    tenure: varchar({ length: tenureMaximumLength }),
     position: integer().notNull(),
   },
   (table) => [
@@ -60,3 +68,21 @@ export const coinRulingAuthorityAttributions = pgTable(
     ),
   ]
 )
+
+export const coinRulingAuthorityAttributionSelectSchema = createSelectSchema(
+  coinRulingAuthorityAttributions
+)
+export const coinRulingAuthorityAttributionInsertSchema = createInsertSchema(
+  coinRulingAuthorityAttributions,
+  {
+    role: trimmedInsertText("Ruling Authority Role"),
+    tenure: () => coinRulingAuthorityTenureInsertSchema,
+    position: (schema) => schema.positive(),
+  }
+)
+  .omit({ id: true })
+  .strict()
+
+export type CoinRulingAuthorityAttributionRecord = z.infer<
+  typeof coinRulingAuthorityAttributionSelectSchema
+>

@@ -42,8 +42,7 @@ export const engravers = pgTable(
 export const engraverSelectSchema = createSelectSchema(engravers)
 export const engraverInsertSchema = createInsertSchema(engravers, {
   slug: slugInsertText,
-  fullName: (schema) =>
-    trimmedInsertText("Engraver full name")(schema.max(200)),
+  fullName: trimmedInsertText("Engraver full name"),
 })
   .omit({ id: true, createdAt: true, updatedAt: true })
   .required()

@@ -3,11 +3,18 @@ import { readFile } from "node:fs/promises"
 import { sql } from "drizzle-orm"
 import { z } from "zod"
 
+import { coinRulingAuthorityTenureInsertSchema } from "./schema/coin-ruling-authority.js"
 import {
+  coinSurfaceDescriptionInsertSchema,
+  coinSurfaceImageKeyInsertSchema,
+} from "./schema/coin-surface.js"
+import {
+  coinRulingAuthorityAttributionInsertSchema,
   coinRulingAuthorityAttributions,
   coins,
   coinSeedSchema,
   coinSurfaceEngravers,
+  coinSurfaceInsertSchema,
   coinSurfaces,
   currencies,
   currencyInsertSchema,
@@ -24,59 +31,38 @@ import {
 import { trimmedInsertText } from "./schema/validation.js"
 import type { Database } from "./connection.js"
 
-const imageKeySchema = z
-  .string()
-  .min(1)
-  .max(1_024)
-  .refine((imageKey) => imageKey === imageKey.trim(), {
-    message: "Coin Surface image key must be trimmed",
-  })
-  .refine(
-    (imageKey) =>
-      !imageKey.startsWith("/") &&
-      !/^[a-z][a-z0-9+.-]*:/i.test(imageKey) &&
-      !imageKey
-        .split("/")
-        .some((segment) => segment === "." || segment === ".."),
-    { message: "Coin Surface image location must be an R2 object key" }
-  )
-
 const trimmedDisplayText = (maximumLength: number, label: string) =>
   trimmedInsertText(label)(z.string().max(maximumLength))
 
-const coinRulingAuthoritySeedRecordSchema = z.strictObject({
-  slug: rulingAuthorityInsertSchema.shape.slug,
-  role: trimmedDisplayText(100, "Ruling Authority Role"),
-  tenure: trimmedDisplayText(200, "Ruling Authority Tenure Label").optional(),
-  position: z.int().positive(),
-})
-
-const coinSurfaceSeedShape = {
-  description: z
-    .string()
-    .min(1)
-    .max(10_000)
-    .refine((description) => description === description.trim(), {
-      message: "Coin Surface description must be trimmed",
+const coinRulingAuthoritySeedRecordSchema =
+  coinRulingAuthorityAttributionInsertSchema
+    .omit({ coinId: true, rulingAuthorityId: true })
+    .extend({
+      slug: rulingAuthorityInsertSchema.shape.slug,
+      tenure: coinRulingAuthorityTenureInsertSchema.optional(),
     })
-    .optional(),
-  imageKey: imageKeySchema.optional(),
-}
+
+const coinSurfaceSeedBaseSchema = coinSurfaceInsertSchema
+  .omit({ coinId: true, kind: true })
+  .extend({
+    description: coinSurfaceDescriptionInsertSchema.optional(),
+    imageKey: coinSurfaceImageKeyInsertSchema.optional(),
+  })
 
 const hasDescriptionOrImage = (surface: {
   description?: string
   imageKey?: string
 }) => surface.description !== undefined || surface.imageKey !== undefined
 
-const coinSurfaceSeedRecordSchema = z
-  .strictObject(coinSurfaceSeedShape)
-  .refine(hasDescriptionOrImage, {
+const coinSurfaceSeedRecordSchema = coinSurfaceSeedBaseSchema.refine(
+  hasDescriptionOrImage,
+  {
     message: "Coin Surface must contain catalogue data",
-  })
+  }
+)
 
-const coinSurfaceWithEngraversSeedRecordSchema = z
-  .strictObject({
-    ...coinSurfaceSeedShape,
+const coinSurfaceWithEngraversSeedRecordSchema = coinSurfaceSeedBaseSchema
+  .extend({
     engraverSlugs: z.array(engraverInsertSchema.shape.slug).optional(),
   })
   .refine(

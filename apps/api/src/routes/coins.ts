@@ -324,6 +324,7 @@ function toCoinDetailResponse(
 ): CoinDetailResponse {
   return {
     ...toCoinResponseFields(coin),
+    distributionName: coin.distributionName,
     faceValue: toCoinFaceValueResponse(coin.denomination),
     rulers: coin.rulingAuthorityAttributions.map(
       ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })

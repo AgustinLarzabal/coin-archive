@@ -42,6 +42,10 @@ _Avoid_: Currency Code, Currency ID
 A curated classification of a Coin's numismatic role or status, such as standard circulation, circulating commemorative, non-circulating, pattern, or contemporary counterfeit; it does not describe the channels or geography through which the Coin was released. An editor assigns every Coin exactly one value from Coin Archive's flat, controlled vocabulary; values have no parent-child relationships. Coin Archive owns this vocabulary even when a value is based on terminology used by another catalogue.
 _Avoid_: Coin Category, Coin Type
 
+**Coin Distribution Slug**:
+A unique, lowercase public identifier for a Coin Distribution that remains stable independently of its editable display name.
+_Avoid_: Coin Distribution ID
+
 **Issue Year**:
 A conventional BCE or CE calendar year used to express when a Coin was issued. It is a chronological attribution, not necessarily a year inscribed on the Coin.
 _Avoid_: Date, Inscribed Year

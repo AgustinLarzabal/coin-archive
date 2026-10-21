@@ -6,9 +6,12 @@ import { RouteMessage } from "@/components/route-message"
 import {
   currencyListQueryOptions,
   CurrencyListRequestError,
+  distributionListQueryOptions,
+  DistributionListRequestError,
   engraverListQueryOptions,
   EngraverListRequestError,
   InvalidCurrencyListResponseError,
+  InvalidDistributionListResponseError,
   InvalidEngraverListResponseError,
   InvalidIssuerListResponseError,
   InvalidRulingAuthorityListResponseError,
@@ -26,6 +29,7 @@ export const Route = createFileRoute("/_explore")({
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.query(currencyListQueryOptions()),
+      context.queryClient.query(distributionListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(rulingAuthorityListQueryOptions()),
@@ -47,6 +51,9 @@ function ExploreLayout() {
     year,
   } = Route.useSearch()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
+  const { data: distributionList } = useSuspenseQuery(
+    distributionListQueryOptions()
+  )
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulingAuthorityList } = useSuspenseQuery(
@@ -60,6 +67,7 @@ function ExploreLayout() {
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
         distribution={distribution}
+        distributions={distributionList.distributions}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
         issuerCode={issuerCode}
@@ -86,6 +94,14 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
 function getExploreLayoutErrorMessage(error: unknown) {
   if (error instanceof InvalidCurrencyListResponseError) {
     return "Invalid Currency list response"
+  }
+
+  if (error instanceof InvalidDistributionListResponseError) {
+    return "Invalid Coin Distribution list response"
+  }
+
+  if (error instanceof DistributionListRequestError) {
+    return "Unable to load Coin Distributions"
   }
 
   if (error instanceof CurrencyListRequestError) {

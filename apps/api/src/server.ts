@@ -42,6 +42,7 @@ const app = createApp({
   imageBaseUrl: config.imageBaseUrl,
   listCoins: database.listCoins,
   listCurrencies: database.listCurrencies,
+  listDistributions: database.listDistributions,
   listEngravers: database.listEngravers,
   listIssuers: database.listIssuers,
   listRulingAuthorities: database.listRulingAuthorities,

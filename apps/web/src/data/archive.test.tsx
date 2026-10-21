@@ -298,6 +298,7 @@ describe("Archive data module", () => {
         Promise.resolve(
           jsonResponse({
             ...coin,
+            distributionName: "Circulating commemorative",
             faceValue: null,
             rulers: [],
             obverse: {
@@ -330,6 +331,7 @@ describe("Archive data module", () => {
       queryClient.fetchQuery(coinDetailQueryOptions(coinId))
     ).resolves.toEqual({
       ...coin,
+      distributionName: "Circulating commemorative",
       faceValue: null,
       rulers: [],
       obverse: {

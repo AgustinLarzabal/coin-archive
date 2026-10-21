@@ -3,7 +3,6 @@ import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { Link } from "@tanstack/react-router"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
-import { coinDistributionLabels } from "@/features/coin-distribution"
 import { formatIssuePeriod } from "@/features/issue-period"
 
 function groupRulingAuthorityAttributionsByConsecutiveRole(
@@ -47,7 +46,7 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
           </div>
           <div className="flex justify-between gap-4 border-t pt-3">
             <dt className="text-muted-foreground">Coin Distribution</dt>
-            <dd>{coinDistributionLabels[coin.distribution]}</dd>
+            <dd>{coin.distributionName}</dd>
           </div>
           {coin.faceValue && (
             <>

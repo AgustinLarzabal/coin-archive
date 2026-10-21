@@ -5,6 +5,7 @@ import { cors } from "hono/cors"
 
 import { registerCoinRoutes } from "./routes/coins.js"
 import { registerCurrencyRoutes } from "./routes/currencies.js"
+import { registerDistributionRoutes } from "./routes/distributions.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
 import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
@@ -15,6 +16,7 @@ import type {
   CoinListOptions,
   CoinListPage,
   CurrencyRecord,
+  DistributionRecord,
   EngraverRecord,
   IssuerRecord,
   RulingAuthorityRecord,
@@ -27,6 +29,7 @@ export interface AppOptions {
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
+  listDistributions?: () => Promise<Array<DistributionRecord>>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
@@ -40,6 +43,7 @@ const noStorePaths = new Set([
   "/ready",
   "/v1/coins",
   "/v1/currencies",
+  "/v1/distributions",
   "/v1/engravers",
   "/v1/issuers",
   "/v1/rulers",
@@ -102,6 +106,9 @@ export function createApp(options: AppOptions) {
     listCoins: options.listCoins,
   })
   registerCurrencyRoutes(app, { listCurrencies: options.listCurrencies })
+  registerDistributionRoutes(app, {
+    listDistributions: options.listDistributions,
+  })
   registerIssuerRoutes(app, { listIssuers: options.listIssuers })
   registerEngraverRoutes(app, { listEngravers: options.listEngravers })
   registerRulingAuthorityRoutes(app, {

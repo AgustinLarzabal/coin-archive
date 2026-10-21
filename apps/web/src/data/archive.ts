@@ -14,6 +14,10 @@ import {
   InvalidCurrencyListResponseError,
 } from "./archive/currencies"
 import {
+  DistributionListRequestError,
+  InvalidDistributionListResponseError,
+} from "./archive/distributions"
+import {
   EngraverListRequestError,
   InvalidEngraverListResponseError,
 } from "./archive/engravers"
@@ -45,6 +49,11 @@ export {
   CurrencyListRequestError,
   InvalidCurrencyListResponseError,
 } from "./archive/currencies"
+export {
+  distributionListQueryOptions,
+  DistributionListRequestError,
+  InvalidDistributionListResponseError,
+} from "./archive/distributions"
 export {
   engraverListQueryOptions,
   EngraverListRequestError,
@@ -80,6 +89,11 @@ export const archiveErrorSerializationAdapters = [
     InvalidCurrencyListResponseError
   ),
   errorAdapter("CurrencyListRequestError", CurrencyListRequestError),
+  errorAdapter(
+    "InvalidDistributionListResponseError",
+    InvalidDistributionListResponseError
+  ),
+  errorAdapter("DistributionListRequestError", DistributionListRequestError),
   errorAdapter(
     "InvalidEngraverListResponseError",
     InvalidEngraverListResponseError

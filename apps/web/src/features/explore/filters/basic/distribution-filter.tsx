@@ -1,18 +1,18 @@
 import { coinDistributionSchema } from "@coin-archive/api"
 import { ExploreFilterCombobox } from "./explore-filter-combobox"
-import type { CoinDistribution } from "@coin-archive/api"
+import type {
+  CoinDistribution,
+  DistributionListItemResponse,
+} from "@coin-archive/api"
 
-import { coinDistributionLabels } from "@/features/coin-distribution"
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
-const distributionOptions = coinDistributionSchema.options.map((value) => ({
-  label: coinDistributionLabels[value],
-  value,
-}))
 export function DistributionFilter({
   distribution,
+  distributions,
 }: {
   distribution?: CoinDistribution
+  distributions: Array<DistributionListItemResponse>
 }) {
   const { updateFilters } = useExploreSearchNavigation()
 
@@ -21,7 +21,11 @@ export function DistributionFilter({
       label="Distribution"
       placeholder="All distributions"
       emptyMessage="No distributions found."
-      options={distributionOptions}
+      options={distributions.map(({ slug, name }) => ({
+        label: name,
+        value: slug,
+        disabled: !coinDistributionSchema.safeParse(slug).success,
+      }))}
       name="distribution"
       value={distribution ?? null}
       onValueChange={(selectedDistribution: string | null) => {

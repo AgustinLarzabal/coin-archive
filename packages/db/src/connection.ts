@@ -25,6 +25,7 @@ export interface Database {
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
+  listDistributions: () => Promise<Array<schema.DistributionRecord>>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   listRulingAuthorities: () => Promise<Array<schema.RulingAuthorityRecord>>
@@ -33,6 +34,7 @@ export interface Database {
 }
 
 export type Coin = schema.CoinRecord & {
+  distributionName: string
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
@@ -125,6 +127,7 @@ export function createDatabase(
           const rows = await transaction
             .select({
               coin: schema.coins,
+              distributionName: schema.distributions.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -136,6 +139,10 @@ export function createDatabase(
             .innerJoin(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .leftJoin(
+              schema.distributions,
+              sql`${schema.coins.distribution}::text = ${schema.distributions.slug}`
             )
             .leftJoin(
               schema.denominations,
@@ -167,6 +174,9 @@ export function createDatabase(
             .limit(1)
           const row = rows.at(0)
           if (!row) return null
+          if (!row.distributionName) {
+            throw new Error("Coin Distribution catalogue entry is missing")
+          }
 
           const engraverCreditableSurfaces = [row.obverse, row.reverse].filter(
             (surface): surface is schema.CoinSurfaceRecord => surface !== null
@@ -228,6 +238,7 @@ export function createDatabase(
 
           return {
             ...row.coin,
+            distributionName: row.distributionName,
             issuer: row.issuer,
             denomination:
               row.denomination && row.currency
@@ -518,6 +529,14 @@ export function createDatabase(
           asc(
             sql`${schema.currencies.name} || ' (' || ${schema.currencies.periodLabel} || ')'`
           )
+        ),
+    listDistributions: () =>
+      orm
+        .select()
+        .from(schema.distributions)
+        .orderBy(
+          asc(schema.distributions.name),
+          asc(schema.distributions.slug)
         ),
     listEngravers: () =>
       orm

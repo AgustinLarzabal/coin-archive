@@ -499,8 +499,10 @@ describe("Archive landing route", () => {
     await filteredCoinsRequested.promise
     await act(() => vi.advanceTimersByTimeAsync(201))
 
-    expect(screen.getByRole("navigation")).toBeVisible()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
+    expect(
+      screen.getAllByRole("navigation", { name: "Explore filters" })[0]
+    ).toBeVisible()
+    expect(screen.getAllByRole("combobox", { name: "Issuer" })[0]).toBeVisible()
 
     filteredCoinsResponse.resolve(coinListJsonResponse([coin]))
     await act(() => vi.advanceTimersByTimeAsync(500))

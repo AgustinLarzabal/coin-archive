@@ -9,6 +9,7 @@ import type {
   CoinDistribution,
   CoinListYear,
   CurrencyResponse,
+  DistributionListItemResponse,
   EngraverListItemResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
@@ -17,6 +18,7 @@ import type {
 export function ExploreBasicFilters({
   amount,
   distribution,
+  distributions,
   currencies,
   currencySlug,
   engraverSlug,
@@ -29,6 +31,7 @@ export function ExploreBasicFilters({
 }: {
   amount?: string
   distribution?: CoinDistribution
+  distributions: Array<DistributionListItemResponse>
   currencies: Array<CurrencyResponse>
   currencySlug?: string
   engraverSlug?: string
@@ -44,7 +47,10 @@ export function ExploreBasicFilters({
       aria-label="Explore filters"
       className="flex min-h-18 flex-wrap items-start gap-3 border-b px-5 py-5 md:items-center md:gap-5 md:px-10"
     >
-      <DistributionFilter distribution={distribution} />
+      <DistributionFilter
+        distribution={distribution}
+        distributions={distributions}
+      />
       <IssuerFilter issuerCode={issuerCode} issuers={issuers} />
       <CurrencyFilter currencies={currencies} currencySlug={currencySlug} />
       <AmountFilter

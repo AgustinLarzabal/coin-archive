@@ -122,3 +122,18 @@ it("recovers from an invalid Coin Distribution in a hand-edited URL", async () =
   )
   expect(router.state.location.searchStr).toBe("?issuer=AR")
 })
+
+it("shows the current catalogue name for a selected Distribution", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  renderArchiveRoute(
+    "/?distribution=non-circulating",
+    [],
+    [],
+    [
+      { slug: "non-circulating", name: "Collector issue" },
+      { slug: "unused-pattern", name: "Pattern" },
+    ]
+  )
+  const combobox = await screen.findByRole("combobox", { name: "Distribution" })
+  expect(combobox).toHaveValue("Collector issue")
+})

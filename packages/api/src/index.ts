@@ -80,6 +80,29 @@ export const coinDistributionSchema = z.enum([
 
 export type CoinDistribution = z.infer<typeof coinDistributionSchema>
 
+export const distributionSlugSchema = z
+  .string()
+  .min(3)
+  .max(64)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
+export const distributionListItemResponseSchema = z.strictObject({
+  slug: distributionSlugSchema,
+  name: trimmedDisplayTextSchema(200),
+})
+
+export type DistributionListItemResponse = z.infer<
+  typeof distributionListItemResponseSchema
+>
+
+export const distributionListResponseSchema = z.strictObject({
+  distributions: z.array(distributionListItemResponseSchema),
+})
+
+export type DistributionListResponse = z.infer<
+  typeof distributionListResponseSchema
+>
+
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
@@ -297,6 +320,7 @@ export type RulingAuthorityAttributionResponse = z.infer<
 export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
+    distributionName: trimmedDisplayTextSchema(200),
     faceValue: coinFaceValueResponseSchema.nullable(),
     obverse: coinSurfaceWithEngraversResponseSchema,
     reverse: coinSurfaceWithEngraversResponseSchema,

@@ -25,6 +25,7 @@ describe("Coin routes", () => {
       denominationId: null,
       denomination: null,
       distribution: "circulating-commemorative" as const,
+      distributionName: "Circulating commemorative",
       firstIssueYear: 2004,
       lastIssueYear: 2004,
       issuer: {
@@ -118,6 +119,7 @@ describe("Coin routes", () => {
         id: coinId,
         title: "First coin",
         distribution: "circulating-commemorative",
+        distributionName: "Circulating commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -271,6 +273,7 @@ describe("Coin routes", () => {
         id: coinId,
         title: "First coin",
         distribution: "circulating-commemorative",
+        distributionName: "Circulating commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -398,6 +401,7 @@ describe("Coin routes", () => {
         id: coinId,
         title: "First coin",
         distribution: "circulating-commemorative",
+        distributionName: "Circulating commemorative",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Roman Empire", code: "ROMAN" },
@@ -614,6 +618,11 @@ describe("Coin routes", () => {
                   "non-circulating",
                 ],
               },
+              distributionName: expect.objectContaining({
+                type: "string",
+                minLength: 1,
+                maxLength: 200,
+              }),
               issuer: { $ref: "#/components/schemas/Issuer" },
               faceValue: {
                 anyOf: [

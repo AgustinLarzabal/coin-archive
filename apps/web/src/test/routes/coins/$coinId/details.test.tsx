@@ -56,7 +56,11 @@ describe("Coin viewer route details", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(jsonResponse(coinDetailFixture({ distribution })))
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({ distribution, distributionName: label })
+          )
+        )
       )
     )
 
@@ -65,6 +69,24 @@ describe("Coin viewer route details", () => {
     expect(await screen.findByText("Coin Distribution")).toBeInTheDocument()
     expect(screen.getByText(label)).toBeInTheDocument()
     expect(screen.queryByText(distribution)).not.toBeInTheDocument()
+  })
+
+  it("shows the current catalogue name for a Coin Distribution", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        jsonResponse(
+          coinDetailFixture({
+            distribution: "non-circulating",
+            distributionName: "Collector issue",
+          })
+        )
+      )
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    renderCoinRoute()
+    expect(await screen.findByText("Collector issue")).toBeInTheDocument()
+    expect(screen.queryByText("Non-circulating")).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("groups consecutive Ruling Authorities by Role in curated order", async () => {

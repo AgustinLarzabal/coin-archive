@@ -2,11 +2,7 @@ import { screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import { coinDetailFixture } from "@/test/coin-fixtures"
-import {
-  coinId,
-  jsonResponse,
-  renderCoinRoute,
-} from "@/test/coin-route-test"
+import { coinId, jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route errors", () => {
   it("shows loading feedback while Coin data is pending", async () => {
@@ -98,6 +94,19 @@ describe("Coin viewer route errors", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() => Promise.resolve(jsonResponse(coinWithoutDistribution)))
+    )
+
+    renderCoinRoute()
+
+    expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
+  })
+
+  it("rejects a Coin detail response without its Distribution name", async () => {
+    const { distributionName: _distributionName, ...coinWithoutName } =
+      coinDetailFixture()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinWithoutName)))
     )
 
     renderCoinRoute()

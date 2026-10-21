@@ -25,6 +25,19 @@ beforeEach(async () => {
 })
 
 describe("Coin Distribution catalogue", () => {
+  it("stores each Coin reference using the catalogue identity", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const columns = await database.orm.execute<{ column_name: string }>(sql`
+        select column_name from information_schema.columns
+        where table_name = 'coins' and column_name = 'distribution_id'
+      `)
+      expect(columns.rows).toHaveLength(1)
+    } finally {
+      await database.close()
+    }
+  })
+
   it("uses a new Distribution for Coin list and detail and restricts deletion while used", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -41,7 +54,7 @@ describe("Coin Distribution catalogue", () => {
         .values({
           title: "Pattern Coin",
           issuerId: issuer.id,
-          distribution: "pattern-issue",
+          distributionId: sql`(select id from distributions where slug = ${"pattern-issue"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
         })
@@ -197,7 +210,7 @@ describe("Coin Distribution catalogue", () => {
         .values({
           title: "Test coin",
           issuerId: issuer.id,
-          distribution: "non-circulating",
+          distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
         })

@@ -33,7 +33,8 @@ export interface Database {
   schema: typeof schema
 }
 
-export type Coin = schema.CoinRecord & {
+export type Coin = Omit<schema.CoinRecord, "distributionId"> & {
+  distribution: string
   distributionName: string
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
@@ -59,7 +60,11 @@ export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
   engravers: Array<schema.EngraverRecord>
 }
 
-export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
+export type CoinListItem = Omit<
+  schema.CoinRecord,
+  "denominationId" | "distributionId"
+> & {
+  distribution: string
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   obverseImageKey: string | null
@@ -69,7 +74,7 @@ export type CoinListItem = Omit<schema.CoinRecord, "denominationId"> & {
 export interface CoinListOptions {
   currencySlug?: string
   faceValueAmount?: string
-  distribution?: schema.CoinRecord["distribution"]
+  distribution?: string
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
@@ -127,6 +132,7 @@ export function createDatabase(
           const rows = await transaction
             .select({
               coin: schema.coins,
+              distribution: schema.distributions.slug,
               distributionName: schema.distributions.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
@@ -142,7 +148,7 @@ export function createDatabase(
             )
             .innerJoin(
               schema.distributions,
-              eq(schema.coins.distribution, schema.distributions.slug)
+              eq(schema.coins.distributionId, schema.distributions.id)
             )
             .leftJoin(
               schema.denominations,
@@ -233,8 +239,10 @@ export function createDatabase(
             )
             .orderBy(asc(schema.coinRulingAuthorityAttributions.position))
 
+          const { distributionId: _distributionId, ...publicCoin } = row.coin
           return {
-            ...row.coin,
+            ...publicCoin,
+            distribution: row.distribution,
             distributionName: row.distributionName,
             issuer: row.issuer,
             denomination:
@@ -334,11 +342,25 @@ export function createDatabase(
                     )
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const distributionId =
+            listOptions.distribution === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.distributions.id })
+                    .from(schema.distributions)
+                    .where(
+                      eq(schema.distributions.slug, listOptions.distribution)
+                    )
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
-              listOptions.distribution === undefined
+              distributionId === undefined
                 ? undefined
-                : eq(schema.coins.distribution, listOptions.distribution),
+                : distributionId === null
+                  ? sql`false`
+                  : eq(schema.coins.distributionId, distributionId),
               currencyId === undefined
                 ? undefined
                 : currencyId === null
@@ -447,6 +469,7 @@ export function createDatabase(
           const rows = await transaction
             .select({
               coin: schema.coins,
+              distribution: schema.distributions.slug,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -455,6 +478,10 @@ export function createDatabase(
             .innerJoin(
               schema.issuers,
               eq(schema.coins.issuerId, schema.issuers.id)
+            )
+            .innerJoin(
+              schema.distributions,
+              eq(schema.coins.distributionId, schema.distributions.id)
             )
             .leftJoin(
               schema.denominations,
@@ -498,20 +525,27 @@ export function createDatabase(
           }
 
           return {
-            coins: rows.map(({ coin, currency, denomination, issuer }) => {
-              const images = imagesByCoinId.get(coin.id)
-              const { denominationId: _denominationId, ...publicCoin } = coin
-              return {
-                ...publicCoin,
-                issuer,
-                denomination:
-                  denomination && currency
-                    ? { ...denomination, currency }
-                    : null,
-                obverseImageKey: images?.obverse ?? null,
-                reverseImageKey: images?.reverse ?? null,
+            coins: rows.map(
+              ({ coin, distribution, currency, denomination, issuer }) => {
+                const images = imagesByCoinId.get(coin.id)
+                const {
+                  denominationId: _denominationId,
+                  distributionId: _distributionId,
+                  ...publicCoin
+                } = coin
+                return {
+                  ...publicCoin,
+                  distribution,
+                  issuer,
+                  denomination:
+                    denomination && currency
+                      ? { ...denomination, currency }
+                      : null,
+                  obverseImageKey: images?.obverse ?? null,
+                  reverseImageKey: images?.reverse ?? null,
+                }
               }
-            }),
+            ),
             totalItems,
           }
         },

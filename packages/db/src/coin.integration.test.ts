@@ -17,12 +17,17 @@ const SEEDED_COIN_ID = "00000000-0000-4000-8000-000000000001"
 const FIRST_ENGRAVER_SLUG = "first-engraver"
 const SECOND_ENGRAVER_SLUG = "second-engraver"
 const TEST_DISTRIBUTION = {
-  distribution: "circulating-commemorative" as const,
+  distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
 }
 const TEST_COIN_REQUIRED_FIELDS = {
   ...TEST_DISTRIBUTION,
   firstIssueYear: 2004,
   lastIssueYear: 2004,
+}
+
+function publicCoin<T extends { distributionId: string }>(coin: T) {
+  const { distributionId: _distributionId, ...fields } = coin
+  return { ...fields, distribution: "circulating-commemorative" }
 }
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
@@ -92,7 +97,7 @@ describe("Coin persistence", () => {
           title: "Distributed Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
-          distribution: "non-circulating",
+          distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,
         })
         .returning()
 
@@ -138,7 +143,7 @@ describe("Coin persistence", () => {
           database.orm.insert(database.schema.coins).values({
             title: "Invalid Issue Period",
             issuerId: issuer.id,
-            distribution: "circulating-commemorative",
+            distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
             ...issuePeriod,
           })
         ).rejects.toThrow()
@@ -150,7 +155,7 @@ describe("Coin persistence", () => {
           .values({
             title: "Valid Issue Period",
             issuerId: issuer.id,
-            distribution: "circulating-commemorative",
+            distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
             firstIssueYear: -1,
             lastIssueYear: 1,
           })
@@ -179,13 +184,14 @@ describe("Coin persistence", () => {
         insert into coins (
           title,
           issuer_id,
-          distribution,
+          distribution_id,
           first_issue_year,
           last_issue_year
         )
-        select 'Manual Neon staging Coin', id, 'circulating-commemorative', 2004, 2004
-        from issuers
+        select 'Manual Neon staging Coin', issuers.id, distributions.id, 2004, 2004
+        from issuers cross join distributions
         where code = 'IT'
+          and distributions.slug = 'circulating-commemorative'
         returning id, title, first_issue_year, last_issue_year
       `)
 
@@ -218,7 +224,7 @@ describe("Coin persistence", () => {
           .values({
             title: "Dated Coin",
             issuerId: issuer.id,
-            distribution: "circulating-commemorative",
+            distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
             firstIssueYear,
             lastIssueYear,
           })
@@ -382,7 +388,7 @@ describe("Coin persistence", () => {
       ])
 
       await expect(database.findCoinById(coin.id)).resolves.toEqual({
-        ...coin,
+        ...publicCoin(coin),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -666,7 +672,7 @@ describe("Coin persistence", () => {
       await concurrentChange
 
       await expect(detail).resolves.toEqual({
-        ...coin,
+        ...publicCoin(coin),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -755,7 +761,7 @@ describe("Coin persistence", () => {
           .returning()
 
       await expect(database.findCoinById(withAllSurfaces.id)).resolves.toEqual({
-        ...withAllSurfaces,
+        ...publicCoin(withAllSurfaces),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -767,7 +773,7 @@ describe("Coin persistence", () => {
       await expect(
         database.findCoinById(withPartialReverse.id)
       ).resolves.toEqual({
-        ...withPartialReverse,
+        ...publicCoin(withPartialReverse),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -777,7 +783,7 @@ describe("Coin persistence", () => {
         edge: null,
       })
       await expect(database.findCoinById(withPartialEdge.id)).resolves.toEqual({
-        ...withPartialEdge,
+        ...publicCoin(withPartialEdge),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -787,7 +793,7 @@ describe("Coin persistence", () => {
         edge: partialEdge,
       })
       await expect(database.findCoinById(withoutSurfaces.id)).resolves.toEqual({
-        ...withoutSurfaces,
+        ...publicCoin(withoutSurfaces),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -1311,7 +1317,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000002",
           title: "Second non-circulating Coin",
           issuerId: issuer.id,
-          distribution: "non-circulating",
+          distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1320,7 +1326,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000001",
           title: "First non-circulating Coin",
           issuerId: issuer.id,
-          distribution: "non-circulating",
+          distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1329,7 +1335,7 @@ describe("Coin persistence", () => {
           id: "00000000-0000-4000-8000-000000000003",
           title: "Older non-circulating Coin",
           issuerId: issuer.id,
-          distribution: "non-circulating",
+          distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
@@ -1337,7 +1343,7 @@ describe("Coin persistence", () => {
         {
           title: "Standard Coin",
           issuerId: issuer.id,
-          distribution: "standard-circulation",
+          distributionId: sql`(select id from distributions where slug = ${"standard-circulation"})`,
           firstIssueYear: 2004,
           lastIssueYear: 2004,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1641,7 +1647,7 @@ describe("Coin persistence", () => {
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
-          distribution: "circulating-commemorative",
+          distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
           firstIssueYear: -30,
           lastIssueYear: 1,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
@@ -1650,7 +1656,7 @@ describe("Coin persistence", () => {
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
-          distribution: "circulating-commemorative",
+          distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
           firstIssueYear: -50,
           lastIssueYear: -25,
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
@@ -1817,7 +1823,7 @@ describe("Coin persistence", () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
       )
       await expect(database.findCoinById(inserted.id)).resolves.toEqual({
-        ...inserted,
+        ...publicCoin(inserted),
         distributionName: "Circulating commemorative",
         issuer,
         denomination: null,
@@ -2127,7 +2133,9 @@ describe("Coin seed", () => {
         id: SEEDED_COIN_ID,
         title: "First coin",
         issuerCode: "AR",
-        ...TEST_COIN_REQUIRED_FIELDS,
+        distribution: "circulating-commemorative",
+        firstIssueYear: 2004,
+        lastIssueYear: 2004,
         obverse: {
           description: "A sun with a human face",
           imageKey: "coins/first/obverse.webp",
@@ -2197,7 +2205,9 @@ describe("Coin seed", () => {
             id: SEEDED_COIN_ID,
             title: "Credit-only Coin",
             issuerCode: "AR",
-            ...TEST_COIN_REQUIRED_FIELDS,
+            distribution: "circulating-commemorative",
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
             obverse: { engraverSlugs: [FIRST_ENGRAVER_SLUG] },
           },
         ],

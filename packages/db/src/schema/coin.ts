@@ -11,9 +11,9 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { denominations } from "./denomination.js"
-import { distributions } from "./distribution.js"
+import { distributionInsertSchema, distributions } from "./distribution.js"
 import { issuerInsertSchema, issuers } from "./issuer.js"
-import { slugInsertText, trimmedInsertText } from "./validation.js"
+import { trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const coins = pgTable(
@@ -27,9 +27,9 @@ export const coins = pgTable(
     denominationId: uuid("denomination_id").references(() => denominations.id, {
       onDelete: "restrict",
     }),
-    distribution: varchar({ length: 64 })
+    distributionId: uuid("distribution_id")
       .notNull()
-      .references(() => distributions.slug, { onDelete: "restrict" }),
+      .references(() => distributions.id, { onDelete: "restrict" }),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -50,7 +50,7 @@ export const coins = pgTable(
       table.id.asc()
     ),
     index("coins_distribution_created_at_id_index").on(
-      table.distribution,
+      table.distributionId,
       table.createdAt.desc().nullsFirst(),
       table.id.asc()
     ),
@@ -76,7 +76,6 @@ function rejectFutureIssueYear(schema: z.ZodNumber) {
 }
 
 const coinInsertBaseSchema = createInsertSchema(coins, {
-  distribution: slugInsertText,
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),
@@ -90,11 +89,15 @@ export const coinInsertSchema = coinInsertBaseSchema
 export const coinSeedSchema = coinInsertBaseSchema
   .omit({
     issuerId: true,
+    distributionId: true,
     denominationId: true,
     createdAt: true,
     updatedAt: true,
   })
-  .extend({ issuerCode: issuerInsertSchema.shape.code })
+  .extend({
+    issuerCode: issuerInsertSchema.shape.code,
+    distribution: distributionInsertSchema.shape.slug,
+  })
   .required()
   .strict()
 

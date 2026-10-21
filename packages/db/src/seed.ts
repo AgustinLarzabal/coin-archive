@@ -341,20 +341,13 @@ export async function seedCoins(database: Database, input: unknown) {
   validateDenominationReferences(document, normalizedDenominationLabels)
 
   await database.orm.transaction(async (transaction) => {
-    const availableDistributions = new Set(
+    const distributionIdsBySlug = new Map(
       (
         await transaction
-          .select({ slug: distributions.slug })
+          .select({ slug: distributions.slug, id: distributions.id })
           .from(distributions)
-      ).map(({ slug }) => slug)
+      ).map(({ slug, id }) => [slug, id])
     )
-    for (const coin of document.coins) {
-      if (!availableDistributions.has(coin.distribution)) {
-        throw new Error(
-          `Coin references unknown Coin Distribution Slug: ${coin.distribution}`
-        )
-      }
-    }
     const insertedCurrencies =
       document.currencies.length === 0
         ? []
@@ -434,6 +427,7 @@ export async function seedCoins(database: Database, input: unknown) {
         reverse: _reverse,
         edge: _edge,
         rulingAuthorityAttributions: _rulingAuthorityAttributions,
+        distribution,
         ...coin
       }) => {
         const issuerId = issuerIdsByCode.get(issuerCode)
@@ -457,7 +451,18 @@ export async function seedCoins(database: Database, input: unknown) {
             `Coin references unknown Denomination: ${denomination.currencySlug} / ${denomination.label}`
           )
         }
-        return { ...coin, issuerId, denominationId: denominationId ?? null }
+        const distributionId = distributionIdsBySlug.get(distribution)
+        if (!distributionId) {
+          throw new Error(
+            `Coin references unknown Coin Distribution Slug: ${distribution}`
+          )
+        }
+        return {
+          ...coin,
+          issuerId,
+          distributionId,
+          denominationId: denominationId ?? null,
+        }
       }
     )
     if (coinRecords.length > 0) {

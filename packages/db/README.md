@@ -12,7 +12,7 @@ All tables except `coin_surface_engravers` use a database-generated UUID `id` as
 | `title`            | `varchar(200)` | Required; nonempty, with no surrounding whitespace.                                            |
 | `issuer_id`        | UUID           | Required reference to `issuers.id`; deletion of a referenced Issuer is restricted.             |
 | `denomination_id`  | UUID           | Optional reference to `denominations.id`; deletion of a referenced Denomination is restricted. |
-| `distribution`     | `varchar(64)`  | Required reference to `distributions.slug`; deletion of a used Distribution is restricted.     |
+| `distribution_id`  | UUID           | Required reference to `distributions.id`; deletion of a used Distribution is restricted.       |
 | `first_issue_year` | `integer`      | Required; nonzero BCE/CE year.                                                                 |
 | `last_issue_year`  | `integer`      | Required; nonzero BCE/CE year, greater than or equal to `first_issue_year`.                    |
 | `created_at`       | `timestamptz`  | Required; defaults to now.                                                                     |

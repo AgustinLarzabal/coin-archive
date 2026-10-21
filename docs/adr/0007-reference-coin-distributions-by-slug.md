@@ -1,6 +1,6 @@
 # ADR 0007: Reference Coin Distributions by slug
 
-- Status: Accepted
+- Status: Superseded by ADR 0008
 - Date: 2026-10-21
 
 ## Context

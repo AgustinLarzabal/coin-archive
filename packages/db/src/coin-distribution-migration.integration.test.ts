@@ -56,7 +56,7 @@ it("migrates existing Coin Distribution assignments to required catalogue refere
     await migrate(drizzle(pool), { migrationsFolder: "drizzle" })
 
     const { rows } = await pool.query<{ title: string; distribution: string }>(
-      "select title, distribution from coins order by title"
+      "select coins.title, distributions.slug as distribution from coins join distributions on distributions.id = coins.distribution_id order by coins.title"
     )
     expect(rows).toEqual([
       { title: "First", distribution: "standard-circulation" },

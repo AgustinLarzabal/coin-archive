@@ -66,7 +66,7 @@ Filters can be combined. For example:
 ```bash
 curl 'http://localhost:3001/v1/coins?issuer=AR&distribution=standard-circulation&year=1992-1994'
 curl 'http://localhost:3001/v1/coins?currency=argentine-peso-convertible&amount=0.5'
-curl 'http://localhost:3001/v1/coins?mint=rome-italy&issuer=IT&page=1'
+curl 'http://localhost:3001/v1/coins?mint=rome-state-mint-italy&issuer=IT&page=1'
 ```
 
 The Currency Slug in the second example is illustrative; use a value returned
@@ -127,11 +127,11 @@ curl 'http://localhost:3001/v1/mints'
   "mints": [
     {
       "id": "40000000-0000-4000-8000-000000000001",
-      "slug": "rome-italy",
-      "name": "Rome Mint",
+      "slug": "rome-state-mint-italy",
+      "name": "Zecca dello Stato",
       "place": "Rome",
       "country": { "code": "IT", "name": "Italy" },
-      "startYear": 1900,
+      "startYear": null,
       "endYear": null,
       "operating": true
     }

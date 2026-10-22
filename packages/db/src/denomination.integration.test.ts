@@ -421,8 +421,8 @@ describe("Face Value persistence", () => {
       const coinId = "00000000-0000-4000-8000-000000000070"
       await pool.query(
         `insert into coins (
-          id, title, issuer_id, distribution, first_issue_year, last_issue_year
-        ) values ($1, 'Existing Coin', $2, 'standard-circulation', 2000, 2000)`,
+          id, title, issuer_id, distribution_id, first_issue_year, last_issue_year
+        ) values ($1, 'Existing Coin', $2, (select id from distributions where slug = 'standard-circulation'), 2000, 2000)`,
         [coinId, issuer.rows[0].id]
       )
 

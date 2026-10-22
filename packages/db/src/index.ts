@@ -13,6 +13,7 @@ export type {
 } from "./connection.js"
 export {
   coinInsertSchema,
+  coinMints,
   coinRulingAuthorityAttributionInsertSchema,
   coinRulingAuthorityAttributionSelectSchema,
   coinSelectSchema,
@@ -27,6 +28,9 @@ export {
   engraverSelectSchema,
   issuerInsertSchema,
   issuerSelectSchema,
+  mintInsertSchema,
+  mints,
+  mintSelectSchema,
   rulingAuthorityInsertSchema,
   rulingAuthoritySelectSchema,
 } from "./schema/index.js"
@@ -38,6 +42,7 @@ export type {
   DistributionRecord,
   EngraverRecord,
   IssuerRecord,
+  MintRecord,
   RulingAuthorityRecord,
 } from "./schema/index.js"
 export { rebuildDatabase } from "./reset.js"

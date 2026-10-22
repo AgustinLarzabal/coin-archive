@@ -5,6 +5,92 @@ import { coinDetailFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it("shows multiple confirmed Mints with place, country, and operation period", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({
+              mints: [
+                {
+                  id: "40000000-0000-4000-8000-000000000001",
+                  slug: "rome-state-mint-italy",
+                  name: "Zecca dello Stato",
+                  place: "Rome",
+                  country: { name: "Italy", code: "IT" },
+                  startYear: null,
+                  endYear: null,
+                  operating: true,
+                },
+                {
+                  id: "40000000-0000-4000-8000-000000000002",
+                  slug: "ancient-mint",
+                  name: "Ancient Mint",
+                  place: "Athens",
+                  country: { name: "Greece", code: "GR" },
+                  startYear: -44,
+                  endYear: -42,
+                  operating: false,
+                },
+                {
+                  id: "40000000-0000-4000-8000-000000000003",
+                  slug: "closed-mint",
+                  name: "Closed Mint",
+                  place: "Milan",
+                  country: { name: "Italy", code: "IT" },
+                  startYear: null,
+                  endYear: null,
+                  operating: false,
+                },
+                {
+                  id: "40000000-0000-4000-8000-000000000004",
+                  slug: "unknown-mint",
+                  name: "Unknown Mint",
+                  place: "Naples",
+                  country: { name: "Italy", code: "IT" },
+                  startYear: null,
+                  endYear: null,
+                  operating: null,
+                },
+                {
+                  id: "40000000-0000-4000-8000-000000000005",
+                  slug: "partly-known-mint",
+                  name: "Partly Known Mint",
+                  place: "Turin",
+                  country: { name: "Italy", code: "IT" },
+                  startYear: 1900,
+                  endYear: null,
+                  operating: null,
+                },
+              ],
+            })
+          )
+        )
+      )
+    )
+    renderCoinRoute()
+    expect(await screen.findByText("Mint")).toBeInTheDocument()
+    expect(screen.getByText("Zecca dello Stato")).toBeInTheDocument()
+    expect(screen.getByText("Rome, Italy")).toBeInTheDocument()
+    expect(screen.getByText("Unknown–ongoing")).toBeInTheDocument()
+    expect(screen.getByText("Ancient Mint")).toBeInTheDocument()
+    expect(screen.getByText("Athens, Greece")).toBeInTheDocument()
+    expect(screen.getByText("44–42 BCE")).toBeInTheDocument()
+    expect(screen.getByText("Unknown (closed)")).toBeInTheDocument()
+    expect(screen.getByText("Unknown")).toBeInTheDocument()
+    expect(screen.getByText("1900–unknown")).toBeInTheDocument()
+  })
+
+  it("omits Mint details for a Coin with no confirmed Mint", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
+    )
+    renderCoinRoute()
+    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(screen.queryByText("Mint")).not.toBeInTheDocument()
+  })
   it("renders separate Face Value and Currency rows", async () => {
     vi.stubGlobal(
       "fetch",

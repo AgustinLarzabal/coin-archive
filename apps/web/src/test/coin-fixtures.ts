@@ -80,6 +80,7 @@ export function coinDetailFixture(
     createdAt: "2026-09-16T10:00:00.000Z",
     updatedAt: "2026-09-16T10:00:00.000Z",
     rulers: [],
+    mints: [],
     obverse: coinSurfaceWithEngraversFixture(),
     reverse: coinSurfaceWithEngraversFixture(),
     edge: coinEdgeFixture(),

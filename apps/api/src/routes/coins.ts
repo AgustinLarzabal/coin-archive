@@ -330,6 +330,18 @@ function toCoinDetailResponse(
     rulers: coin.rulingAuthorityAttributions.map(
       ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })
     ),
+    mints: coin.mints.map(
+      ({ id, slug, name, place, country, startYear, endYear, operating }) => ({
+        id,
+        slug,
+        name,
+        place,
+        country: { name: country.name, code: country.code },
+        startYear,
+        endYear,
+        operating,
+      })
+    ),
     obverse: coin.obverse
       ? toCoinSurfaceWithEngraversResponse(coin.obverse, imageBaseUrl)
       : { ...missingCoinSurfaceWithEngraversResponse },

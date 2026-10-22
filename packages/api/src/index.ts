@@ -313,6 +313,38 @@ export type RulingAuthorityAttributionResponse = z.infer<
   typeof rulingAuthorityAttributionResponseSchema
 >
 
+export const mintResponseSchema = z
+  .strictObject({
+    id: z.uuid(),
+    slug: rulingAuthoritySlugSchema,
+    name: trimmedDisplayTextSchema(200),
+    place: trimmedDisplayTextSchema(200),
+    country: issuerResponseSchema,
+    startYear: issueYearSchema.nullable().meta({
+      description:
+        "Inclusive signed BCE/CE year without year zero; null when unknown.",
+      not: { const: 0 },
+    }),
+    endYear: issueYearSchema.nullable().meta({
+      description:
+        "Inclusive signed BCE/CE year without year zero; null when unknown or ongoing.",
+      not: { const: 0 },
+    }),
+    operating: z.boolean().nullable().meta({
+      description:
+        "True if operating, false if closed, null if status is unknown. A known end year requires false.",
+    }),
+  })
+  .refine(
+    ({ startYear, endYear, operating }) =>
+      (startYear === null || endYear === null || startYear <= endYear) &&
+      (operating !== true || endYear === null) &&
+      (endYear === null || operating === false),
+    "Mint Operation Period is invalid"
+  )
+
+export type MintResponse = z.infer<typeof mintResponseSchema>
+
 export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
@@ -322,6 +354,7 @@ export const coinDetailResponseSchema = z
     reverse: coinSurfaceWithEngraversResponseSchema,
     edge: coinSurfaceResponseSchema,
     rulers: z.array(rulingAuthorityAttributionResponseSchema),
+    mints: z.array(mintResponseSchema),
   })
   .refine(hasOrderedIssuePeriod, "Issue Period must be ordered")
 

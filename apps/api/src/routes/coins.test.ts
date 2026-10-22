@@ -51,6 +51,7 @@ describe("Coin routes", () => {
           tenure: null,
         },
       ],
+      mints: [],
       obverse: {
         id: "20000000-0000-4000-8000-000000000001",
         coinId,
@@ -104,6 +105,84 @@ describe("Coin routes", () => {
         updatedAt: new Date("2026-09-16T10:47:00.000Z"),
       },
     }
+
+    it("returns every confirmed Mint with its own country and operation period", async () => {
+      const mint = {
+        id: "40000000-0000-4000-8000-000000000001",
+        slug: "rome-state-mint-italy",
+        name: "Zecca dello Stato",
+        place: "Rome",
+        countryId: issuerId,
+        country: { ...coin.issuer, name: "Italy", code: "IT" },
+        startYear: null,
+        endYear: null,
+        operating: true,
+        createdAt: coin.createdAt,
+        updatedAt: coin.updatedAt,
+      }
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({
+          ...coin,
+          mints: [
+            mint,
+            {
+              ...mint,
+              id: "40000000-0000-4000-8000-000000000002",
+              slug: "second-mint",
+              name: "Second Mint",
+              startYear: 2000,
+              endYear: 2005,
+              operating: false,
+            },
+            {
+              ...mint,
+              id: "40000000-0000-4000-8000-000000000003",
+              slug: "unknown-status-mint",
+              operating: null,
+            },
+          ],
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        mints: [
+          {
+            id: mint.id,
+            slug: "rome-state-mint-italy",
+            name: "Zecca dello Stato",
+            place: "Rome",
+            country: { name: "Italy", code: "IT" },
+            startYear: null,
+            endYear: null,
+            operating: true,
+          },
+          {
+            id: "40000000-0000-4000-8000-000000000002",
+            slug: "second-mint",
+            name: "Second Mint",
+            place: "Rome",
+            country: { name: "Italy", code: "IT" },
+            startYear: 2000,
+            endYear: 2005,
+            operating: false,
+          },
+          {
+            id: "40000000-0000-4000-8000-000000000003",
+            slug: "unknown-status-mint",
+            name: "Zecca dello Stato",
+            place: "Rome",
+            country: { name: "Italy", code: "IT" },
+            startYear: null,
+            endYear: null,
+            operating: null,
+          },
+        ],
+      })
+    })
 
     it("returns a newly curated Coin Distribution Slug and name", async () => {
       const response = await createApp({
@@ -159,6 +238,7 @@ describe("Coin routes", () => {
             tenure: null,
           },
         ],
+        mints: [],
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -300,6 +380,7 @@ describe("Coin routes", () => {
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: [],
+        mints: [],
         obverse: {
           description: null,
           imageUrl: null,
@@ -428,6 +509,7 @@ describe("Coin routes", () => {
         createdAt: "2026-09-16T10:00:00.000Z",
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: coin.rulingAuthorityAttributions,
+        mints: [],
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -679,6 +761,22 @@ describe("Coin routes", () => {
                   required: ["slug", "name", "role", "tenure"],
                 }),
               }),
+              mints: expect.objectContaining({
+                type: "array",
+                items: expect.objectContaining({
+                  type: "object",
+                  required: [
+                    "id",
+                    "slug",
+                    "name",
+                    "place",
+                    "country",
+                    "startYear",
+                    "endYear",
+                    "operating",
+                  ],
+                }),
+              }),
             }),
             required: expect.arrayContaining([
               "distribution",
@@ -686,6 +784,7 @@ describe("Coin routes", () => {
               "lastIssueYear",
               "faceValue",
               "rulers",
+              "mints",
             ]),
           }),
           CoinListResponse: expect.objectContaining({
@@ -767,6 +866,7 @@ describe("Coin routes", () => {
         properties: Record<string, unknown>
       }
       expect(coinListItemSchema.properties).not.toHaveProperty("rulers")
+      expect(coinListItemSchema.properties).not.toHaveProperty("mints")
       expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("reverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("edge")

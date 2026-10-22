@@ -2,6 +2,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000001",
     "title": "50th Anniversary of the World Food Programme",
+    "mintSlugs": ["rome-state-mint-italy"],
     "issuerCode": "IT",
     "denomination": {
       "currencySlug": "euro",
@@ -166,6 +167,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000009",
     "title": "1st Anniversary of the Signing of the European Constitution",
+    "mintSlugs": ["rome-state-mint-italy"],
     "issuerCode": "IT",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,

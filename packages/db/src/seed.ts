@@ -9,6 +9,7 @@ import {
   coinSurfaceImageKeyInsertSchema,
 } from "./schema/coin-surface.js"
 import {
+  coinMints,
   coinRulingAuthorityAttributionInsertSchema,
   coinRulingAuthorityAttributions,
   coins,
@@ -25,6 +26,8 @@ import {
   engravers,
   issuerInsertSchema,
   issuers,
+  mintInsertSchema,
+  mints,
   rulingAuthorities,
   rulingAuthorityInsertSchema,
 } from "./schema/index.js"
@@ -87,6 +90,7 @@ const coinSeedWithSurfacesSchema = coinSeedSchema.extend({
   rulingAuthorityAttributions: z
     .array(coinRulingAuthoritySeedRecordSchema)
     .default([]),
+  mintSlugs: z.array(mintInsertSchema.shape.slug).default([]),
 })
 
 const denominationSeedRecordSchema = z.strictObject({
@@ -105,6 +109,13 @@ const seedDocumentSchema = z
     currencies: z.array(currencyInsertSchema).default([]),
     denominations: z.array(denominationSeedRecordSchema).default([]),
     authorities: z.array(rulingAuthorityInsertSchema).default([]),
+    mints: z
+      .array(
+        mintInsertSchema
+          .omit({ countryId: true })
+          .extend({ countryCode: issuerInsertSchema.shape.code })
+      )
+      .default([]),
     engravers: z.array(engraverInsertSchema),
     coins: z.array(coinSeedWithSurfacesSchema),
   })
@@ -114,6 +125,7 @@ const seedDocumentSchema = z
     const currencySlugs = new Set<string>()
     const engraverSlugs = new Set<string>()
     const authoritySlugs = new Set<string>()
+    const mintSlugs = new Set<string>()
 
     document.issuers.forEach((issuer, index) => {
       if (issuerCodes.has(issuer.code)) {
@@ -169,7 +181,50 @@ const seedDocumentSchema = z
       authoritySlugs.add(authority.slug)
     })
 
+    document.mints.forEach((mint, index) => {
+      if (mintSlugs.has(mint.slug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate Mint Slug: ${mint.slug}`,
+          path: ["mints", index, "slug"],
+        })
+      }
+      mintSlugs.add(mint.slug)
+      if (!issuerCodes.has(mint.countryCode)) {
+        context.addIssue({
+          code: "custom",
+          message: `Mint references unknown Issuer Code: ${mint.countryCode}`,
+          path: ["mints", index, "countryCode"],
+        })
+      }
+    })
+
     document.coins.forEach((coin, index) => {
+      const coinMintSlugs = new Set<string>()
+      coin.mintSlugs.forEach((slug, mintIndex) => {
+        const mint = document.mints.find((candidate) => candidate.slug === slug)
+        if (!mint || coinMintSlugs.has(slug)) {
+          context.addIssue({
+            code: "custom",
+            message: `Unknown or duplicate Mint Slug: ${slug}`,
+            path: ["coins", index, "mintSlugs", mintIndex],
+          })
+        } else if (
+          (mint.startYear !== undefined &&
+            mint.startYear !== null &&
+            mint.startYear > coin.lastIssueYear) ||
+          (mint.endYear !== undefined &&
+            mint.endYear !== null &&
+            mint.endYear < coin.firstIssueYear)
+        ) {
+          context.addIssue({
+            code: "custom",
+            message: `Mint Operation Period does not overlap Coin Issue Period: ${slug}`,
+            path: ["coins", index, "mintSlugs", mintIndex],
+          })
+        }
+        coinMintSlugs.add(slug)
+      })
       if (!issuerCodes.has(coin.issuerCode)) {
         context.addIssue({
           code: "custom",
@@ -405,6 +460,22 @@ export async function seedCoins(database: Database, input: unknown) {
       insertedIssuers.map((issuer) => [issuer.code, issuer.id])
     )
 
+    const insertedMints =
+      document.mints.length === 0
+        ? []
+        : await transaction
+            .insert(mints)
+            .values(
+              document.mints.map(({ countryCode, ...mint }) => ({
+                ...mint,
+                countryId: issuerIdsByCode.get(countryCode)!,
+              }))
+            )
+            .returning({ id: mints.id, slug: mints.slug })
+    const mintIdsBySlug = new Map(
+      insertedMints.map(({ id, slug }) => [slug, id])
+    )
+
     const coinRecords = document.coins.map(
       ({
         issuerCode,
@@ -413,6 +484,7 @@ export async function seedCoins(database: Database, input: unknown) {
         reverse: _reverse,
         edge: _edge,
         rulingAuthorityAttributions: _rulingAuthorityAttributions,
+        mintSlugs: _mintSlugs,
         distribution,
         ...coin
       }) => {
@@ -454,6 +526,15 @@ export async function seedCoins(database: Database, input: unknown) {
     if (coinRecords.length > 0) {
       await transaction.insert(coins).values(coinRecords)
     }
+
+    const mintAssociations = document.coins.flatMap((coin) =>
+      coin.mintSlugs.map((slug) => ({
+        coinId: coin.id,
+        mintId: mintIdsBySlug.get(slug)!,
+      }))
+    )
+    if (mintAssociations.length > 0)
+      await transaction.insert(coinMints).values(mintAssociations)
 
     const attributions = document.coins.flatMap((coin) =>
       coin.rulingAuthorityAttributions.map((attribution) => {
@@ -555,6 +636,7 @@ export async function readCoinSeed(
     denominationSeedData,
     engraverSeedData,
     authoritySeedData,
+    mintSeedData,
     coinSeedData,
   ] = await Promise.all([
     readSeedFile(new URL("issuers.json", seedDirectory)),
@@ -562,6 +644,7 @@ export async function readCoinSeed(
     readSeedFile(new URL("denominations.json", seedDirectory)),
     readSeedFile(new URL("engravers.json", seedDirectory)),
     readSeedFile(new URL("authorities.json", seedDirectory)),
+    readSeedFile(new URL("mints.json", seedDirectory)),
     readSeedFile(new URL("coins.json", seedDirectory)),
   ])
 
@@ -571,6 +654,7 @@ export async function readCoinSeed(
     denominations: denominationSeedData,
     engravers: engraverSeedData,
     authorities: authoritySeedData,
+    mints: mintSeedData,
     coins: coinSeedData,
   }
 }

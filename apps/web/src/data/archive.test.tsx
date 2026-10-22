@@ -301,6 +301,7 @@ describe("Archive data module", () => {
             distributionName: "Circulating commemorative",
             faceValue: null,
             rulers: [],
+            mints: [],
             obverse: {
               description: "A portrait",
               imageUrl: "https://images.example/obverse.webp",
@@ -334,6 +335,7 @@ describe("Archive data module", () => {
       distributionName: "Circulating commemorative",
       faceValue: null,
       rulers: [],
+      mints: [],
       obverse: {
         description: "A portrait",
         imageUrl: "https://images.example/obverse.webp",

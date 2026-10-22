@@ -396,7 +396,7 @@ describe("Face Value persistence", () => {
   })
 
   it("upgrades an existing Coin without fabricating a Face Value", async () => {
-    const olderMigrations = await mkdtemp(join(tmpdir(), "mica-migrations-"))
+    const olderMigrations = await mkdtemp(join(tmpdir(), "coin-archive-migrations-"))
     const pool = new Pool({ connectionString: getDatabaseUrl() })
     try {
       await cp(new URL("../drizzle/", import.meta.url), olderMigrations, {

@@ -72,6 +72,9 @@ describe("Coin viewer route details", () => {
     renderCoinRoute()
     expect(await screen.findByText("Mint")).toBeInTheDocument()
     expect(screen.getByText("Zecca dello Stato")).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: "Zecca dello Stato" })
+    ).toHaveAttribute("href", "/?mint=rome-state-mint-italy")
     expect(screen.getByText("Rome, Italy")).toBeInTheDocument()
     expect(screen.getByText("Unknown–ongoing")).toBeInTheDocument()
     expect(screen.getByText("Ancient Mint")).toBeInTheDocument()

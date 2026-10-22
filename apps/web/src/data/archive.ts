@@ -7,6 +7,7 @@ import {
   InvalidCurrencySlugError,
   InvalidEngraverSlugError,
   InvalidIssuerCodeError,
+  InvalidMintSlugError,
   InvalidRulingAuthoritySlugError,
 } from "./archive/coins"
 import {
@@ -26,6 +27,10 @@ import {
   IssuerListRequestError,
 } from "./archive/issuers"
 import {
+  InvalidMintListResponseError,
+  MintListRequestError,
+} from "./archive/mints"
+import {
   InvalidRulingAuthorityListResponseError,
   RulingAuthorityListRequestError,
 } from "./archive/rulers"
@@ -40,10 +45,16 @@ export {
   InvalidCurrencySlugError,
   InvalidEngraverSlugError,
   InvalidIssuerCodeError,
+  InvalidMintSlugError,
   InvalidRulingAuthoritySlugError,
   validateCoinId,
 } from "./archive/coins"
 export type { CoinListFilters } from "./archive/coins"
+export {
+  InvalidMintListResponseError,
+  mintListQueryOptions,
+  MintListRequestError,
+} from "./archive/mints"
 export {
   currencyListQueryOptions,
   CurrencyListRequestError,
@@ -81,6 +92,8 @@ function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
 }
 
 export const archiveErrorSerializationAdapters = [
+  errorAdapter("InvalidMintListResponseError", InvalidMintListResponseError),
+  errorAdapter("MintListRequestError", MintListRequestError),
   errorAdapter("InvalidCoinIdError", InvalidCoinIdError),
   errorAdapter("InvalidCoinResponseError", InvalidCoinResponseError),
   errorAdapter("InvalidCoinListResponseError", InvalidCoinListResponseError),
@@ -105,6 +118,7 @@ export const archiveErrorSerializationAdapters = [
   ),
   errorAdapter("IssuerListRequestError", IssuerListRequestError),
   errorAdapter("InvalidIssuerCodeError", InvalidIssuerCodeError),
+  errorAdapter("InvalidMintSlugError", InvalidMintSlugError),
   errorAdapter("InvalidCurrencySlugError", InvalidCurrencySlugError),
   errorAdapter("InvalidEngraverSlugError", InvalidEngraverSlugError),
   errorAdapter(

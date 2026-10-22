@@ -8,6 +8,7 @@ import { registerCurrencyRoutes } from "./routes/currencies.js"
 import { registerDistributionRoutes } from "./routes/distributions.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
 import { registerIssuerRoutes } from "./routes/issuers.js"
+import { registerMintRoutes } from "./routes/mints.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
 import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
 import type { AppEnvironment } from "./routes/shared.js"
@@ -19,6 +20,7 @@ import type {
   DistributionRecord,
   EngraverRecord,
   IssuerRecord,
+  MintRecord,
   RulingAuthorityRecord,
 } from "@coin-archive/db"
 
@@ -32,6 +34,7 @@ export interface AppOptions {
   listDistributions?: () => Promise<Array<DistributionRecord>>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
+  listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
   log?: (line: string) => void
 }
@@ -46,6 +49,7 @@ const noStorePaths = new Set([
   "/v1/distributions",
   "/v1/engravers",
   "/v1/issuers",
+  "/v1/mints",
   "/v1/rulers",
 ])
 
@@ -110,6 +114,7 @@ export function createApp(options: AppOptions) {
     listDistributions: options.listDistributions,
   })
   registerIssuerRoutes(app, { listIssuers: options.listIssuers })
+  registerMintRoutes(app, { listMints: options.listMints })
   registerEngraverRoutes(app, { listEngravers: options.listEngravers })
   registerRulingAuthorityRoutes(app, {
     listRulingAuthorities: options.listRulingAuthorities,

@@ -40,6 +40,13 @@ The web application runs on port 3000, the standalone API on port 3001, and the 
 package directly. See [ADR 0001](docs/adr/0001-standalone-api-boundary.md)
 for the boundary between client runtimes, the API, and persistence.
 
+Explore can filter Coins by one Mint's stable, globally unique slug. A Mint is
+a physical facility identified by its name, place, and country; its public
+record also includes an ID, operation start and end years, and operating status.
+`GET /v1/mints` lists those records, and `GET /v1/coins?mint=<slug>` finds Coins
+associated with one Mint. A Coin can have multiple confirmed Mints or none.
+The Coin viewer links each confirmed Mint name to its Explore filter.
+
 Local development defaults to `http://localhost:3001` when
 `VITE_API_BASE_URL` is absent. Production builds require an explicit HTTP(S)
 API origin, for example:

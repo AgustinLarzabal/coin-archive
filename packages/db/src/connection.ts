@@ -28,6 +28,9 @@ export interface Database {
   listDistributions: () => Promise<Array<schema.DistributionRecord>>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
+  listMints: () => Promise<
+    Array<schema.MintRecord & { country: schema.IssuerRecord }>
+  >
   listRulingAuthorities: () => Promise<Array<schema.RulingAuthorityRecord>>
   orm: ReturnType<typeof drizzle<typeof schema>>
   schema: typeof schema
@@ -79,6 +82,7 @@ export interface CoinListOptions {
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
+  mintSlug?: string
   page?: number
   pageSize?: number
   rulingAuthoritySlug?: string
@@ -406,6 +410,23 @@ export function createDatabase(
                 : issuerId === null
                   ? sql`false`
                   : eq(schema.coins.issuerId, issuerId),
+              listOptions.mintSlug === undefined
+                ? undefined
+                : exists(
+                    transaction
+                      .select({ coinId: schema.coinMints.coinId })
+                      .from(schema.coinMints)
+                      .innerJoin(
+                        schema.mints,
+                        eq(schema.coinMints.mintId, schema.mints.id)
+                      )
+                      .where(
+                        and(
+                          eq(schema.coinMints.coinId, schema.coins.id),
+                          eq(schema.mints.slug, listOptions.mintSlug)
+                        )
+                      )
+                  ),
               persistedIssueYearInterval === undefined
                 ? undefined
                 : and(
@@ -585,6 +606,17 @@ export function createDatabase(
           asc(schema.distributions.name),
           asc(schema.distributions.slug)
         ),
+    listMints: async () =>
+      (
+        await orm
+          .select({ mint: schema.mints, country: schema.issuers })
+          .from(schema.mints)
+          .innerJoin(
+            schema.issuers,
+            eq(schema.mints.countryId, schema.issuers.id)
+          )
+          .orderBy(asc(schema.mints.name), asc(schema.mints.slug))
+      ).map(({ mint, country }) => ({ ...mint, country })),
     listEngravers: () =>
       orm
         .select()

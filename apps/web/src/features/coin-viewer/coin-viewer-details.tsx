@@ -110,7 +110,13 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               <dd className="text-right">
                 {coin.mints.map((mint) => (
                   <div key={mint.slug}>
-                    <div>{mint.name}</div>
+                    <Link
+                      to="/"
+                      search={{ mint: mint.slug }}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {mint.name}
+                    </Link>
                     <div>
                       {mint.place}, {mint.country.name}
                     </div>

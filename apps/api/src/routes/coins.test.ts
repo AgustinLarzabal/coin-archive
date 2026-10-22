@@ -15,6 +15,64 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin routes", () => {
+  describe("GET /v1/coins?mint", () => {
+    it("passes the Mint Slug alongside pagination and other filters", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?mint=rome-italy&issuer=IT&page=2")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mintSlug: "rome-italy",
+          issuerCode: "IT",
+          page: 2,
+        })
+      )
+    })
+
+    it.each(["mint=bad_slug", "mint=Rome", "mint=rome-italy&mint=rome-italy"])(
+      "rejects malformed or repeated Mint filters: %s",
+      async (query) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?${query}`)
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: { code: "invalid_mint_slug", message: "Mint Slug is invalid" },
+        })
+      }
+    )
+
+    it("documents the Mint query and error response", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+      }).request("/openapi.json")
+      const document = (await response.json()) as {
+        paths: Record<
+          string,
+          {
+            get: {
+              parameters: Array<{ name: string }>
+              responses: Record<string, unknown>
+            }
+          }
+        >
+        components: { schemas: Record<string, unknown> }
+      }
+      expect(document.paths["/v1/coins"].get.parameters).toContainEqual(
+        expect.objectContaining({ name: "mint" })
+      )
+      expect(document.components.schemas).toHaveProperty("InvalidMintSlugError")
+    })
+  })
   describe("GET /v1/coins/{coinId}", () => {
     const coinId = "00000000-0000-4000-8000-000000000001"
     const issuerId = "10000000-0000-4000-8000-000000000001"
@@ -1820,6 +1878,15 @@ describe("Coin routes", () => {
           schema: expect.objectContaining({ pattern: expect.any(String) }),
         }),
         expect.objectContaining({
+          description: expect.stringContaining("Mint Slug"),
+          in: "query",
+          name: "mint",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Ruling Authority Slug",
           in: "query",
           name: "ruler",
@@ -1879,6 +1946,7 @@ describe("Coin routes", () => {
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
+                    { $ref: "#/components/schemas/InvalidMintSlugError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },
                     {
                       $ref: "#/components/schemas/InvalidRulingAuthoritySlugError",
@@ -1906,6 +1974,7 @@ describe("Coin routes", () => {
           InvalidEngraverSlugError: expect.any(Object),
           InvalidFaceValueFilterError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
+          InvalidMintSlugError: expect.any(Object),
           InvalidRulingAuthoritySlugError: expect.any(Object),
           InvalidYearError: expect.any(Object),
           InvalidPaginationError: expect.any(Object),

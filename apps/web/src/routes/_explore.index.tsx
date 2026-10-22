@@ -9,6 +9,7 @@ import {
   engraverListQueryOptions,
   InvalidCoinListResponseError,
   issuerListQueryOptions,
+  mintListQueryOptions,
   rulingAuthorityListQueryOptions,
 } from "@/data/archive"
 import { Explore } from "@/features/explore/explore"
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/_explore/")({
           currency: search.currency,
           distribution: search.distribution,
           issuer: search.issuer,
+          mint: search.mint,
           engraver: search.engraver,
           ruler: search.ruler,
           year: search.year,
@@ -48,6 +50,7 @@ export const Route = createFileRoute("/_explore/")({
           currency: filters.currencySlug,
           distribution: filters.distribution,
           issuer: filters.issuerCode,
+          mint: filters.mintSlug,
           engraver: filters.engraverSlug,
           ruler: filters.rulingAuthoritySlug,
           year: filters.issueYear,
@@ -66,12 +69,16 @@ function ExploreRoute() {
   const filters = Route.useLoaderDeps()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
+  const { data: mintList } = useSuspenseQuery(mintListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulerList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
   )
   const selectedIssuer = issuerList.issuers.find(
     (issuer) => issuer.code === filters.issuerCode
+  )
+  const selectedMint = mintList.mints.find(
+    (mint) => mint.slug === filters.mintSlug
   )
   const selectedCurrency = currencyList.currencies.find(
     (currency) => currency.slug === filters.currencySlug
@@ -85,6 +92,8 @@ function ExploreRoute() {
 
   return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
+  ) : filters.mintSlug && !selectedMint ? (
+    <RouteMessage>Mint not found</RouteMessage>
   ) : filters.currencySlug && !selectedCurrency ? (
     <RouteMessage>Currency not found</RouteMessage>
   ) : filters.engraverSlug && !selectedEngraver ? (

@@ -126,6 +126,7 @@ describe("API composition", () => {
       "/v1/distributions",
       "/v1/engravers",
       "/v1/issuers",
+      "/v1/mints",
       "/v1/rulers",
     ])
     expect(Object.keys(document.components.schemas).sort()).toEqual([
@@ -147,11 +148,14 @@ describe("API composition", () => {
       "InvalidEngraverSlugError",
       "InvalidFaceValueFilterError",
       "InvalidIssuerCodeError",
+      "InvalidMintSlugError",
       "InvalidPaginationError",
       "InvalidRulingAuthoritySlugError",
       "InvalidYearError",
       "Issuer",
       "IssuerListResponse",
+      "Mint",
+      "MintListResponse",
       "RulingAuthorityListResponse",
       "UnavailableResponse",
     ])

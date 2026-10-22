@@ -12,6 +12,7 @@ import {
   engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
+  mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
@@ -31,6 +32,7 @@ export class InvalidCoinListResponseError extends Error {}
 class CoinListRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 export class InvalidIssuerCodeError extends Error {}
+export class InvalidMintSlugError extends Error {}
 export class InvalidEngraverSlugError extends Error {}
 export class InvalidRulingAuthoritySlugError extends Error {}
 export class InvalidIssueYearError extends Error {}
@@ -42,6 +44,7 @@ export type CoinListFilters = Readonly<{
   distribution?: CoinDistribution
   engraverSlug?: string
   issuerCode?: string
+  mintSlug?: string
   issueYear?: CoinListYear
   page?: number
   rulingAuthoritySlug?: string
@@ -53,6 +56,7 @@ type ValidatedCoinListFilters = Readonly<{
   distribution?: CoinDistribution
   engraverSlug: string | null
   issuerCode: string | null
+  mintSlug?: string
   issueYear?: CoinListYear
   page: number
   pageSize: number
@@ -65,6 +69,7 @@ async function getCoins({
   distribution,
   engraverSlug,
   issuerCode,
+  mintSlug,
   issueYear,
   page,
   pageSize,
@@ -88,6 +93,9 @@ async function getCoins({
     }
     if (issuerCode !== null) {
       search.set("issuer", issuerCode)
+    }
+    if (mintSlug !== undefined) {
+      search.set("mint", mintSlug)
     }
     if (rulingAuthoritySlug !== undefined) {
       search.set("ruler", rulingAuthoritySlug)
@@ -161,6 +169,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     distribution,
     engraverSlug,
     issuerCode,
+    mintSlug,
     issueYear,
     page = COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug,
@@ -190,6 +199,9 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   ) {
     throw new InvalidIssuerCodeError("Invalid issuer code")
   }
+  if (mintSlug !== undefined && !mintSlugSchema.safeParse(mintSlug).success) {
+    throw new InvalidMintSlugError("Invalid Mint Slug")
+  }
   if (
     issueYear !== undefined &&
     !coinListYearSchema.safeParse(issueYear).success
@@ -218,6 +230,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     ...(distribution === undefined ? {} : { distribution }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
+    ...(mintSlug === undefined ? {} : { mintSlug }),
     ...(issueYear === undefined ? {} : { issueYear }),
     page,
     pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,

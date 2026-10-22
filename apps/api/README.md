@@ -43,6 +43,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/distributions`  | Coin Distributions and their public slugs                                                     |
 | `GET /v1/engravers`      | Engravers and their public slugs                                                              |
 | `GET /v1/issuers`        | Issuers and their public codes                                                                |
+| `GET /v1/mints`          | Mints and their stable public slugs                                                           |
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
 
 ## Find Coins
@@ -55,6 +56,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `currency`     | Case-sensitive Currency Slug                                                           |
 | `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
 | `issuer`       | Case-sensitive Issuer Code, such as `AR`                                               |
+| `mint`         | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`               |
 | `engraver`     | Case-sensitive Engraver Slug                                                           |
 | `ruler`        | Case-sensitive Ruling Authority Slug                                                   |
 | `year`         | One Issue Year or a closed Issue Year range                                            |
@@ -64,6 +66,7 @@ Filters can be combined. For example:
 ```bash
 curl 'http://localhost:3001/v1/coins?issuer=AR&distribution=standard-circulation&year=1992-1994'
 curl 'http://localhost:3001/v1/coins?currency=argentine-peso-convertible&amount=0.5'
+curl 'http://localhost:3001/v1/coins?mint=rome-italy&issuer=IT&page=1'
 ```
 
 The Currency Slug in the second example is illustrative; use a value returned
@@ -71,6 +74,10 @@ by `GET /v1/currencies` for your catalogue. `amount` uses a canonical decimal
 string with up to 18 integer and 12 fractional digits. For example, `0.5` is
 valid, while `0.50`, `0`, and scientific notation are invalid. A valid filter
 that matches no Coins returns `200` with an empty `coins` array.
+The `mint` filter matches only Coins associated with that physical Mint and
+combines with other filters and pagination. A valid unknown slug returns an
+empty successful page; malformed or repeated values return `400` with
+`invalid_mint_slug`.
 
 Issue Years use signed conventional BCE/CE numbering: `-44` means 44 BCE,
 `2026` means 2026 CE, and year zero is invalid. A single year matches a Coin
@@ -104,6 +111,39 @@ For a catalogue containing the Argentine convertible peso, the response is:
 `fullName` combines the Currency Name and its period label.
 An empty catalogue returns `{"currencies":[]}`.
 Use a returned `slug` as the `currency` filter on `GET /v1/coins`.
+
+## List Mints
+
+`GET /v1/mints` returns public Mint records ordered by name and then slug. The
+slug is globally unique and stable independently of the Mint's display name.
+It has no defined query parameters.
+
+```bash
+curl 'http://localhost:3001/v1/mints'
+```
+
+```json
+{
+  "mints": [
+    {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "slug": "rome-italy",
+      "name": "Rome Mint",
+      "place": "Rome",
+      "country": { "code": "IT", "name": "Italy" },
+      "startYear": 1900,
+      "endYear": null,
+      "operating": true
+    }
+  ]
+}
+```
+
+`startYear` and `endYear` are inclusive signed BCE/CE years without year zero;
+either can be `null` when unknown. `operating` is `true`, `false`, or `null`
+when unknown. A known end year requires `operating: false`. An empty catalogue
+returns `{"mints":[]}`. A Coin may have multiple confirmed Mints or none;
+each Mint name in the Coin viewer links to Explore with that Mint selected.
 
 ## List Coin Distributions
 

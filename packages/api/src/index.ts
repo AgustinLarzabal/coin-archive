@@ -32,6 +32,8 @@ export const rulingAuthoritySlugSchema = z
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
+export const mintSlugSchema = rulingAuthoritySlugSchema
+
 const trimmedDisplayTextSchema = (maximumLength: number) =>
   z
     .string()
@@ -316,7 +318,7 @@ export type RulingAuthorityAttributionResponse = z.infer<
 export const mintResponseSchema = z
   .strictObject({
     id: z.uuid(),
-    slug: rulingAuthoritySlugSchema,
+    slug: mintSlugSchema,
     name: trimmedDisplayTextSchema(200),
     place: trimmedDisplayTextSchema(200),
     country: issuerResponseSchema,
@@ -344,6 +346,12 @@ export const mintResponseSchema = z
   )
 
 export type MintResponse = z.infer<typeof mintResponseSchema>
+
+export const mintListResponseSchema = z.strictObject({
+  mints: z.array(mintResponseSchema),
+})
+
+export type MintListResponse = z.infer<typeof mintListResponseSchema>
 
 export const coinDetailResponseSchema = z
   .strictObject({
@@ -413,6 +421,11 @@ export const invalidEngraverSlugErrorSchema = errorResponseSchema(
 export const invalidRulingAuthoritySlugErrorSchema = errorResponseSchema(
   "invalid_ruler_slug",
   "Ruling Authority Slug is invalid"
+)
+
+export const invalidMintSlugErrorSchema = errorResponseSchema(
+  "invalid_mint_slug",
+  "Mint Slug is invalid"
 )
 
 export const invalidCurrencySlugErrorSchema = errorResponseSchema(

@@ -14,9 +14,12 @@ import {
   InvalidDistributionListResponseError,
   InvalidEngraverListResponseError,
   InvalidIssuerListResponseError,
+  InvalidMintListResponseError,
   InvalidRulingAuthorityListResponseError,
   issuerListQueryOptions,
   IssuerListRequestError,
+  mintListQueryOptions,
+  MintListRequestError,
   rulingAuthorityListQueryOptions,
   RulingAuthorityListRequestError,
 } from "@/data/archive"
@@ -31,6 +34,7 @@ export const Route = createFileRoute("/_explore")({
       context.queryClient.query(currencyListQueryOptions()),
       context.queryClient.query(distributionListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
+      context.queryClient.query(mintListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(rulingAuthorityListQueryOptions()),
     ])
@@ -47,6 +51,7 @@ function ExploreLayout() {
     distribution,
     engraver: engraverSlug,
     issuer: issuerCode,
+    mint: mintSlug,
     ruler: rulingAuthoritySlug,
     year,
   } = Route.useSearch()
@@ -55,6 +60,7 @@ function ExploreLayout() {
     distributionListQueryOptions()
   )
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
+  const { data: mintList } = useSuspenseQuery(mintListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulingAuthorityList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
@@ -72,6 +78,8 @@ function ExploreLayout() {
         engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
+        mintSlug={mintSlug}
+        mints={mintList.mints}
         rulingAuthoritySlug={rulingAuthoritySlug}
         rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
@@ -94,6 +102,14 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
 function getExploreLayoutErrorMessage(error: unknown) {
   if (error instanceof InvalidCurrencyListResponseError) {
     return "Invalid Currency list response"
+  }
+
+  if (error instanceof InvalidMintListResponseError) {
+    return "Invalid Mint list response"
+  }
+
+  if (error instanceof MintListRequestError) {
+    return "Unable to load Mints"
   }
 
   if (error instanceof InvalidDistributionListResponseError) {

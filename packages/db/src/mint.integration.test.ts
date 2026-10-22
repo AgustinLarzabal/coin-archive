@@ -99,6 +99,33 @@ describe("confirmed Coin Mints", () => {
         []
       )
       expect((await database.listCoins()).coins[0]).not.toHaveProperty("mints")
+      expect((await database.listMints()).map(({ slug }) => slug)).toEqual([
+        "other-italy",
+        "rome-italy",
+      ])
+      expect(
+        (await database.listCoins({ mintSlug: "rome-italy" })).coins
+          .map(({ id }) => id)
+          .sort()
+      ).toEqual([firstCoin.id, secondCoin.id].sort())
+      expect(
+        (
+          await database.listCoins({
+            mintSlug: "rome-italy",
+            issuerCode: "VA",
+            pageSize: 1,
+          })
+        ).coins.map(({ id }) => id)
+      ).toEqual([firstCoin.id])
+      expect(await database.listCoins({ mintSlug: "unknown-mint" })).toEqual({
+        coins: [],
+        totalItems: 0,
+      })
+      expect(
+        (await database.listCoins({ mintSlug: "other-italy" })).coins.map(
+          ({ id }) => id
+        )
+      ).toEqual([firstCoin.id])
     } finally {
       await database.close()
     }

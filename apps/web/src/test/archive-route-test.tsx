@@ -7,6 +7,7 @@ import type {
   DistributionListItemResponse,
   EngraverListItemResponse,
   IssuerResponse,
+  MintResponse,
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
 
@@ -47,6 +48,7 @@ export function createArchiveFetch({
   engravers = [],
   pagination,
   issuers = [],
+  mints = [],
   rulers = [],
 }: {
   coins?: Array<unknown>
@@ -55,6 +57,7 @@ export function createArchiveFetch({
   engravers?: Array<EngraverListItemResponse>
   pagination?: CoinListPaginationResponse
   issuers?: Array<IssuerResponse>
+  mints?: Array<MintResponse>
   rulers?: Array<RulingAuthorityListItemResponse>
 } = {}) {
   return (input: string | URL | Request) => {
@@ -63,15 +66,17 @@ export function createArchiveFetch({
     return Promise.resolve(
       url.endsWith("/v1/issuers")
         ? jsonResponse({ issuers })
-        : url.endsWith("/v1/distributions")
-          ? jsonResponse({ distributions })
-          : url.endsWith("/v1/currencies")
-            ? jsonResponse({ currencies })
-            : url.endsWith("/v1/rulers")
-              ? jsonResponse({ rulers })
-              : url.endsWith("/v1/engravers")
-                ? jsonResponse({ engravers })
-                : coinListJsonResponse(coins, pagination)
+        : url.endsWith("/v1/mints")
+          ? jsonResponse({ mints })
+          : url.endsWith("/v1/distributions")
+            ? jsonResponse({ distributions })
+            : url.endsWith("/v1/currencies")
+              ? jsonResponse({ currencies })
+              : url.endsWith("/v1/rulers")
+                ? jsonResponse({ rulers })
+                : url.endsWith("/v1/engravers")
+                  ? jsonResponse({ engravers })
+                  : coinListJsonResponse(coins, pagination)
     )
   }
 }
@@ -83,23 +88,28 @@ export function renderArchiveRoute(
   distributions:
     | Array<DistributionListItemResponse>
     | Promise<Response>
-    | Response = defaultDistributions
+    | Response = defaultDistributions,
+  mints: Array<MintResponse> | Promise<Response> | Response = []
 ) {
   const fetchWithoutReferenceFixtures = globalThis.fetch
   vi.stubGlobal("fetch", (input: string | URL | Request, init?: RequestInit) =>
     String(input).endsWith("/v1/rulers")
       ? Promise.resolve(jsonResponse({ rulers }))
-      : String(input).endsWith("/v1/distributions")
-        ? Array.isArray(distributions)
-          ? Promise.resolve(jsonResponse({ distributions }))
-          : Promise.resolve(distributions)
-        : String(input).endsWith("/v1/currencies")
-          ? Array.isArray(currencies)
-            ? Promise.resolve(jsonResponse({ currencies }))
-            : Promise.resolve(currencies)
-          : init === undefined
-            ? fetchWithoutReferenceFixtures(input)
-            : fetchWithoutReferenceFixtures(input, init)
+      : String(input).endsWith("/v1/mints")
+        ? Array.isArray(mints)
+          ? Promise.resolve(jsonResponse({ mints }))
+          : Promise.resolve(mints)
+        : String(input).endsWith("/v1/distributions")
+          ? Array.isArray(distributions)
+            ? Promise.resolve(jsonResponse({ distributions }))
+            : Promise.resolve(distributions)
+          : String(input).endsWith("/v1/currencies")
+            ? Array.isArray(currencies)
+              ? Promise.resolve(jsonResponse({ currencies }))
+              : Promise.resolve(currencies)
+            : init === undefined
+              ? fetchWithoutReferenceFixtures(input)
+              : fetchWithoutReferenceFixtures(input, init)
   )
   const history = createMemoryHistory({ initialEntries: [initialEntry] })
   const router = getRouter({ history })

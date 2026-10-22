@@ -9,6 +9,7 @@ import {
   engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
+  mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
 import { z } from "zod"
@@ -20,6 +21,7 @@ const exploreSearchObjectSchema = z.object({
   distribution: coinDistributionSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
   issuer: issuerCodeSchema.optional().catch(undefined),
+  mint: mintSlugSchema.optional().catch(undefined),
   ruler: rulingAuthoritySlugSchema.optional().catch(undefined),
   year: z
     .union([coinListYearSchema, coinListYearQuerySchema])
@@ -49,6 +51,7 @@ export function getExploreCoinListFilters(
     distribution: search.distribution,
     engraverSlug: search.engraver,
     issuerCode: search.issuer,
+    mintSlug: search.mint,
     issueYear: search.year,
     page: search.page ?? COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug: search.ruler,

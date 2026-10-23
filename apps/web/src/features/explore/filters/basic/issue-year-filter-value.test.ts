@@ -13,13 +13,15 @@ describe("Issue Year filter value", () => {
     ["1986-1990", "1986-1990"],
     ["1986 – 1990", "1986-1990"],
     ["400-300 BCE", "-400--300"],
+    ["400 BCE-300", "-400--300"],
+    ["400 BCE–300", "-400--300"],
     ["25 BCE-19 CE", "-25-19"],
     ["1986-1986", "1986-1986"],
   ] as const)("parses %j as %j", (draft, expected) => {
     expect(parseIssueYearFilterValue(draft)).toEqual(expected)
   })
 
-  it.each(["", "0", "-44", "44 AD", "1986-", "1990-1986"])(
+  it.each(["", "0", "-44", "44 AD", "1986-", "1990-1986", "400 CE-300"])(
     "rejects %j",
     (draft) => {
       expect(parseIssueYearFilterValue(draft)).toBeUndefined()

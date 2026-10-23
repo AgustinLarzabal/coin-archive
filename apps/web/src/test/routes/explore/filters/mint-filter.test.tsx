@@ -18,6 +18,15 @@ const mint = {
   operating: true,
 }
 
+it("shows the filtered empty state for a Mint with no Coins", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch({ mints: [mint] })))
+  renderArchiveRoute("/?mint=rome-italy", [], [], undefined, [mint])
+
+  expect(
+    await screen.findByText("No coins match the selected filters.")
+  ).toBeVisible()
+})
+
 it("selects one Mint, preserves other filters, and resets pagination", async () => {
   const fetchMock = vi.fn(createArchiveFetch({ mints: [mint] }))
   vi.stubGlobal("fetch", fetchMock)

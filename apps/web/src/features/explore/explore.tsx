@@ -16,6 +16,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
       filters.faceValueAmount !== undefined ||
       filters.distribution !== undefined ||
       filters.engraverSlug !== undefined ||
+      filters.mintSlug !== undefined ||
       filters.rulingAuthoritySlug !== undefined ||
       filters.issueYear !== undefined
         ? "No coins match the selected filters."

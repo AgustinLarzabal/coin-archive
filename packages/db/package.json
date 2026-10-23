@@ -14,7 +14,7 @@
     "db:seed:staging": "sh scripts/run-with-staging-environment.sh src/cli/seed.ts",
     "format": "prettier --write \"**/*.{ts,json}\"",
     "lint": "eslint",
-    "test": "vitest run src/database-url.test.ts src/reset.test.ts",
+    "test": "vitest run src/database-url.test.ts src/integration-target.test.ts src/reset.test.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit"
   },

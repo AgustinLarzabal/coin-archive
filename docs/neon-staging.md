@@ -71,13 +71,15 @@ Staging Database.
 
 Until the application exposes a Coin-writing workflow, add disposable records
 with the Neon SQL Editor. This example associates a new Coin with the seeded
-Italy Issuer and returns the new identifier:
+Italy Issuer and returns the new identifier. It requires the committed migrations
+and seed data:
 
 ```sql
-INSERT INTO coins (title, issuer_id, first_issue_year, last_issue_year)
-SELECT 'Manual Neon staging Coin', id, 2004, 2004
-FROM issuers
-WHERE code = 'IT'
+INSERT INTO coins (title, issuer_id, distribution_id, first_issue_year, last_issue_year)
+SELECT 'Manual Neon staging Coin', issuers.id, distributions.id, 2004, 2004
+FROM issuers CROSS JOIN distributions
+WHERE issuers.code = 'IT'
+  AND distributions.slug = 'circulating-commemorative'
 RETURNING id, title, first_issue_year, last_issue_year;
 ```
 

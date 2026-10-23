@@ -9,7 +9,7 @@ The complete catalogue of historical Coins maintained by Coin Archive.
 _Avoid_: Collection
 
 **Coin**:
-A catalogue entry representing a historical kind of coin or coin-like object that collectors can identify as the same issue or type. Every Coin is associated with exactly one Issuer; it is not a physical specimen or an item in a user's collection.
+A catalogue entry representing a historical kind of coin or coin-like object that collectors can identify as the same issue or type. Every Coin is associated with exactly one Issuer and may be associated with any number of Mints; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
 
 **Face Value**:
@@ -69,6 +69,17 @@ _Avoid_: Country, Mint, Manufacturer
 **Issuer Code**:
 A unique, uppercase public identifier for an Issuer. Genuine ISO 3166-1 alpha-2 values contain exactly two ASCII letters; Archive-defined values contain 3–12 ASCII letters, digits, or hyphens.
 _Avoid_: Country Code, ISO Code
+
+**Mint**:
+A physical facility where Coins were struck, identified by its name and locality for one period under a particular polity. Its country is the existing Issuer representing that polity, which may differ from the Issuer of a Coin struck there; a change of country begins a distinct Mint identity.
+_Avoid_: Mint mark, Minting organization
+
+**Mint Slug**:
+A unique, lowercase public identifier for a Mint that remains stable independently of its name and place. Distinct Mint identities have distinct slugs.
+_Avoid_: Mint ID
+
+**Mint Operation Period**:
+The inclusive span from the first through the last year a Mint operated under its recorded country, using the same BCE/CE convention as Issue Years. It may include temporary pauses; either boundary may be unknown, and an unknown last year is distinct from a Mint that is still operating.
 
 **Ruling Authority**:
 A canonical person, dynasty, regime, or named political period to which a Coin's issuance is attributed. A Coin may have any number of Ruling Authorities; a Ruling Authority is distinct from both its Issuer and its Issue Period and may be shared by Coins from multiple Issuers.

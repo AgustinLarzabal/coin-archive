@@ -308,10 +308,6 @@ const seedDocumentSchema = z
 
 export type CoinSeedDocument = z.infer<typeof seedDocumentSchema>
 
-function parseCoinSeedDocument(input: unknown): CoinSeedDocument {
-  return seedDocumentSchema.parse(input)
-}
-
 async function normalizeDenominationLabels(
   database: Database,
   document: CoinSeedDocument
@@ -373,13 +369,25 @@ function validateDenominationReferences(
   }
 }
 
-export async function seedCoins(database: Database, input: unknown) {
-  const document = parseCoinSeedDocument(input)
+export async function validateCoinSeed(
+  database: Database,
+  input: unknown
+): Promise<CoinSeedDocument> {
+  const document = seedDocumentSchema.parse(input)
   const normalizedDenominationLabels = await normalizeDenominationLabels(
     database,
     document
   )
   validateDenominationReferences(document, normalizedDenominationLabels)
+  return document
+}
+
+export async function seedCoins(database: Database, input: unknown) {
+  const document = await validateCoinSeed(database, input)
+  const normalizedDenominationLabels = await normalizeDenominationLabels(
+    database,
+    document
+  )
 
   await database.orm.transaction(async (transaction) => {
     const distributionIdsBySlug = new Map(

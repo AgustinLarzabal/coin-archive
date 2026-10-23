@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 
 import { createDatabase } from "./connection.js"
-import { readCoinSeed, seedCoins } from "./seed.js"
+import { readCoinSeed, seedCoins, validateCoinSeed } from "./seed.js"
 
 const INVALID_DATABASE_URL_MESSAGE =
   "A valid local PostgreSQL DATABASE_URL with a database name is required"
@@ -155,15 +155,22 @@ export async function resetStagingDatabase(
   await rebuild(target.databaseUrl)
 }
 
-export async function rebuildDatabase(databaseUrl: string) {
+export async function rebuildDatabase(
+  databaseUrl: string,
+  seedInput?: unknown
+) {
   const database = createDatabase(databaseUrl)
 
   try {
+    const document = await validateCoinSeed(
+      database,
+      seedInput === undefined ? await readCoinSeed() : seedInput
+    )
     await database.orm.execute(sql`drop schema if exists drizzle cascade`)
     await database.orm.execute(sql`drop schema if exists public cascade`)
     await database.orm.execute(sql`create schema public`)
     await migrate(database.orm, { migrationsFolder })
-    await seedCoins(database, await readCoinSeed())
+    await seedCoins(database, document)
   } finally {
     await database.close()
   }

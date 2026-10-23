@@ -1,9 +1,9 @@
 import { fileURLToPath } from "node:url"
 
 import { Pool } from "pg"
-import { afterAll, beforeAll, describe, expect, it } from "vitest"
+import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
-import { rebuildDatabase } from "./index.js"
+import { readCoinSeed, rebuildDatabase } from "./index.js"
 
 const RESET_DATABASE_NAME = "coin_archive_reset_test"
 const repositoryRoot = fileURLToPath(new URL("../../..", import.meta.url))
@@ -51,10 +51,51 @@ async function withAdministrationDatabase(
   }
 }
 
-beforeAll(recreateResetDatabase)
+beforeEach(recreateResetDatabase)
 afterAll(dropResetDatabase)
 
 describe("database rebuild lifecycle", () => {
+  it.each([
+    {
+      name: "a malformed seed document",
+      input: () => ({}),
+      error: /issuers/,
+    },
+    {
+      name: "an unknown Denomination reference",
+      input: async () => {
+        const seed = await readCoinSeed()
+        const coins = seed.coins as Array<{
+          denomination?: { currencySlug: string; label: string }
+        }>
+        coins[0].denomination = {
+          currencySlug: "euro",
+          label: "missing denomination",
+        }
+        return seed
+      },
+      error: /Coin references unknown Denomination/,
+    },
+  ])("preserves prior state for $name", async ({ input, error }) => {
+    const resetDatabaseUrl = getResetDatabaseUrl()
+    const database = new Pool({ connectionString: resetDatabaseUrl })
+    try {
+      await database.query("create table reset_marker (id integer)")
+      await database.query("insert into reset_marker (id) values (42)")
+
+      await expect(
+        rebuildDatabase(resetDatabaseUrl, await input())
+      ).rejects.toThrow(error)
+
+      const marker = await database.query<{ id: number }>(
+        "select id from reset_marker"
+      )
+      expect(marker.rows).toEqual([{ id: 42 }])
+    } finally {
+      await database.end()
+    }
+  })
+
   it("removes prior state and restores the migrated seed state", async () => {
     const resetDatabaseUrl = getResetDatabaseUrl()
     const databaseBeforeReset = new Pool({ connectionString: resetDatabaseUrl })

@@ -1,4 +1,5 @@
 import {
+  coinDistributionSchema,
   currencySlugSchema,
   isIsoIssuerCode,
   issuerCodeSchema,
@@ -16,10 +17,12 @@ import {
   CrownIcon,
   GlobeIcon,
   MapPinIcon,
+  StackIcon,
 } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type {
   CurrencyResponse,
+  DistributionListItemResponse,
   IssuerResponse,
   MintResponse,
   RulingAuthorityListItemResponse,
@@ -34,6 +37,7 @@ import { useExploreSearchNavigation } from "@/features/explore/explore-search-na
 
 function queryFromFilters(
   currencySlug: string | undefined,
+  distribution: string | undefined,
   issuerCode: string | undefined,
   mintSlug: string | undefined,
   rulingAuthoritySlug: string | undefined
@@ -47,6 +51,16 @@ function queryFromFilters(
             path: ["currency"],
             operator: "is",
             value: currencySlug,
+          }),
+        ]),
+    ...(distribution === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-distribution",
+            path: ["distribution"],
+            operator: "is",
+            value: distribution,
           }),
         ]),
     ...(issuerCode === undefined
@@ -85,6 +99,8 @@ function queryFromFilters(
 export function ExploreAdvancedFilters({
   currencies,
   currencySlug,
+  distribution,
+  distributions,
   issuerCode,
   issuers,
   mintSlug,
@@ -94,6 +110,8 @@ export function ExploreAdvancedFilters({
 }: {
   currencies: Array<CurrencyResponse>
   currencySlug?: string
+  distribution?: string
+  distributions: Array<DistributionListItemResponse>
   issuerCode?: string
   issuers: Array<IssuerResponse>
   mintSlug?: string
@@ -103,7 +121,13 @@ export function ExploreAdvancedFilters({
 }) {
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() =>
-    queryFromFilters(currencySlug, issuerCode, mintSlug, rulingAuthoritySlug)
+    queryFromFilters(
+      currencySlug,
+      distribution,
+      issuerCode,
+      mintSlug,
+      rulingAuthoritySlug
+    )
   )
   const mintNameCounts = new Map<string, number>()
   for (const mint of mints) {
@@ -129,6 +153,34 @@ export function ExploreAdvancedFilters({
         label: currency.fullName,
         value: currency.slug,
       })),
+    },
+    {
+      id: "distribution",
+      label: "Distribution",
+      icon: <StackIcon />,
+      pinSelected: true,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "distribution"
+      ),
+      type: "select",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      options: [
+        ...distributions.map(({ slug, name }) => ({
+          label: name,
+          value: slug,
+        })),
+        ...(distribution &&
+        !distributions.some(({ slug }) => slug === distribution)
+          ? [
+              {
+                label: `Unknown Distribution (${distribution})`,
+                value: distribution,
+                disabled: true,
+              },
+            ]
+          : []),
+      ],
     },
     {
       id: "issuer",
@@ -202,9 +254,15 @@ export function ExploreAdvancedFilters({
 
   useEffect(() => {
     setQuery(
-      queryFromFilters(currencySlug, issuerCode, mintSlug, rulingAuthoritySlug)
+      queryFromFilters(
+        currencySlug,
+        distribution,
+        issuerCode,
+        mintSlug,
+        rulingAuthoritySlug
+      )
     )
-  }, [currencySlug, issuerCode, mintSlug, rulingAuthoritySlug])
+  }, [currencySlug, distribution, issuerCode, mintSlug, rulingAuthoritySlug])
 
   return (
     <nav
@@ -222,15 +280,20 @@ export function ExploreAdvancedFilters({
                 node.type === "rule" && node.path[0] === field
             )
           const issuer = rule("issuer")
+          const distributionRule = rule("distribution")
           const mint = rule("mint")
           const ruler = rule("ruler")
           const currency = rule("currency")
           const nextCurrency = currencySlugSchema.safeParse(currency?.value)
+          const nextDistribution = coinDistributionSchema.safeParse(
+            distributionRule?.value
+          )
           const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
           const nextMint = mintSlugSchema.safeParse(mint?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
           const patch: {
             currency?: string
+            distribution?: string
             issuer?: string
             mint?: string
             ruler?: string
@@ -241,6 +304,13 @@ export function ExploreAdvancedFilters({
           ) {
             if (nextCurrency.data !== currencySlug)
               patch.currency = nextCurrency.data
+          }
+          if (
+            !distributionRule ||
+            (distributionRule.operator === "is" && nextDistribution.success)
+          ) {
+            if (nextDistribution.data !== distribution)
+              patch.distribution = nextDistribution.data
           }
           if (!issuer || (issuer.operator === "is" && nextIssuer.success)) {
             if (nextIssuer.data !== issuerCode) patch.issuer = nextIssuer.data

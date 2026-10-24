@@ -58,6 +58,51 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <button
         type="button"
         onClick={() => {
+          const hasDistribution = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "distribution"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasDistribution
+              ? query.rules.filter(
+                  (rule) =>
+                    rule.type !== "rule" || rule.path[0] !== "distribution"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-distribution",
+                    type: "rule",
+                    path: ["distribution"],
+                    operator: "is",
+                    value:
+                      fields
+                        .find((field) => field.id === "distribution")
+                        ?.options?.find(
+                          (option) => option.value === "unused-pattern"
+                        )?.value ?? "non-circulating",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Distribution
+      </button>
+      <output data-testid="advanced-distribution-options">
+        {fields
+          .find((field) => field.id === "distribution")
+          ?.options?.map((option) => option.label)
+          .join(", ")}
+      </output>
+      <output data-testid="advanced-distribution-selection">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "distribution"
+        )?.value ?? ""}
+      </output>
+      <button
+        type="button"
+        onClick={() => {
           const hasIssuer = query.rules.some(
             (rule) => rule.type === "rule" && rule.path[0] === "issuer"
           )
@@ -174,6 +219,96 @@ const mint = {
   endYear: null,
   operating: true,
 }
+
+it("applies and clears Distribution in advanced filters while preserving other filters", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&page=3")
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Distribution",
+  })
+  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+    "Non-circulating"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      distribution: "non-circulating",
+      issuer: "AR",
+    })
+  )
+  expect(screen.queryByRole("combobox", { name: "Distribution" })).toBeNull()
+  expect(
+    screen.getByTestId("advanced-distribution-selection")
+  ).toHaveTextContent("non-circulating")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?distribution=non-circulating&issuer=AR&page=1&pageSize=24"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      distribution: undefined,
+      issuer: "AR",
+    })
+  )
+})
+
+it("restores an unknown Distribution in advanced filters from the URL", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  renderArchiveRoute("/?distribution=unknown-pattern")
+
+  expect(
+    await screen.findByTestId("advanced-distribution-selection")
+  ).toHaveTextContent("unknown-pattern")
+  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+    "Unknown Distribution (unknown-pattern)"
+  )
+})
+
+it("uses the catalogue name and slug for an advanced Distribution", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute(
+    "/",
+    [],
+    [],
+    [{ slug: "unused-pattern", name: "Pattern" }]
+  )
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Distribution",
+  })
+  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+    "Pattern"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      distribution: "unused-pattern",
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?distribution=unused-pattern&page=1&pageSize=24"
+  )
+})
+
+it("discards a malformed Distribution slug from a hand-edited URL", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/?issuer=AR&distribution=bad_slug")
+
+  expect(
+    await screen.findByTestId("advanced-distribution-selection")
+  ).toHaveTextContent("")
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      distribution: undefined,
+      issuer: "AR",
+    })
+  )
+  expect(router.state.location.searchStr).toBe("?issuer=AR")
+})
 
 it("applies and clears Mint in advanced filters while preserving other filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch({ mints: [mint] }))

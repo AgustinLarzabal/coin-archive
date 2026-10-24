@@ -71,8 +71,6 @@ function ExploreLayout() {
       <ExploreBasicFilters
         amount={amount}
         currencySlug={currencySlug}
-        distribution={distribution}
-        distributions={distributionList.distributions}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
         year={year}
@@ -80,6 +78,8 @@ function ExploreLayout() {
       <ExploreAdvancedFilters
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
+        distribution={distribution}
+        distributions={distributionList.distributions}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
         mintSlug={mintSlug}

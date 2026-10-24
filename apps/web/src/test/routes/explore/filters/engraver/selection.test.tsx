@@ -29,14 +29,9 @@ it("navigates duplicate names by keyboard and selects an Engraver by pointer", a
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?issuer=AR")
 
-  const distributionCombobox = await screen.findByRole("combobox", {
-    name: "Distribution",
+  const engraverCombobox = await screen.findByRole("combobox", {
+    name: "Engraver",
   })
-  const engraverCombobox = screen.getByRole("combobox", { name: "Engraver" })
-  expect(
-    distributionCombobox.compareDocumentPosition(engraverCombobox) &
-      Node.DOCUMENT_POSITION_FOLLOWING
-  ).toBeTruthy()
 
   engraverCombobox.focus()
   fireEvent.input(engraverCombobox, { target: { value: "Shared" } })

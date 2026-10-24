@@ -163,14 +163,16 @@ export interface FilterField<V = unknown, O = unknown> {
     | FilterOperator[]
     | ((field: FilterField<V, O>) => FilterOperator[])
   /**
-   * The operator this field FALLS BACK to, not a way to preselect one. Both
-   * create paths deliberately start a rule on `operator: ""` so the condition
-   * menu opens with nothing chosen, so this is read when an existing rule
-   * changes field, and it is the value `FilterFieldPicker` hands to `onSelect`.
+   * The operator this field FALLS BACK to, not a way to preselect one. New
+   * rules start with an empty operator unless `autoSelectOperator` applies.
+   * This is read when an existing rule changes field, and it is the value
+   * `FilterFieldPicker` hands to `onSelect`.
    * Ignored, with a dev warning, when it names an operator the field does not
    * offer; the first visible operator wins instead.
    */
   defaultOperator?: string
+  /** Select the operator on creation when this field offers exactly one. */
+  autoSelectOperator?: boolean
 
   /** Overrides the editor chosen from `type`. See `FilterEditorProps`. */
   editor?: FilterEditorRef<V, O>

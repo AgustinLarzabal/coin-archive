@@ -68,7 +68,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coin-archive/ui/components/tooltip"
-import { CaretRightIcon, ArrowBendDownRightIcon, CopyIcon, ArrowsLeftRightIcon, StackIcon, SlidersHorizontalIcon, TrashIcon, XIcon, DotsThreeVerticalIcon } from "@phosphor-icons/react"
+import {
+  CaretRightIcon,
+  ArrowBendDownRightIcon,
+  StackIcon,
+  SlidersHorizontalIcon,
+  TrashIcon,
+  XIcon,
+  DotsThreeVerticalIcon,
+} from "@phosphor-icons/react"
 
 /** Which part of the chip a pointer or key is aimed at. No `field`: the chip's
  *  attribute segment is display only, and only the builder re-picks one. */
@@ -145,7 +153,11 @@ function valueWithIcon<V>(
  *  `formatFilterPath` joins for the chip's accessible name and `title`. */
 function FilterPathSeparator() {
   return (
-    <CaretRightIcon aria-hidden="true" data-slot="filter-path-separator" className="text-muted-foreground mx-[3px] inline-block size-3 shrink-0 self-center align-[calc(0.3635em_-_0.375rem)]" />
+    <CaretRightIcon
+      aria-hidden="true"
+      data-slot="filter-path-separator"
+      className="mx-[3px] inline-block size-3 shrink-0 self-center align-[calc(0.3635em_-_0.375rem)] text-muted-foreground"
+    />
   )
 }
 
@@ -166,7 +178,7 @@ function FilterPathEllipsis({ full }: { full: string }) {
                  is all that parts a name from the next, and this used to STACK
                  an `mx` on it. Plain inline, no `vertical-align`: `middle` sat
                  the dots 1.7px low and inline-block grew the run to 21.17px. */
-              className="text-muted-foreground shrink-0 self-center"
+              className="shrink-0 self-center text-muted-foreground"
             >
               ...
             </span>
@@ -780,7 +792,7 @@ export function FilterRuleMenuItems({
        under five icon sets; no size class, because each style already sizes an
        unsized svg in a menu row; `aria-hidden`, the label IS the name. */
     <>
-      <DropdownMenuItem
+      {/* <DropdownMenuItem
         disabled={locked}
         onClick={() => actions.duplicateNode(ruleId)}
       >
@@ -788,15 +800,14 @@ export function FilterRuleMenuItems({
         <span className={FILTER_MENU_LABEL_CLASS}>
           {actions.labels.duplicate}
         </span>
-      </DropdownMenuItem>
-      <DropdownMenuItem
+      </DropdownMenuItem> */}
+      {/* <DropdownMenuItem
         disabled={locked}
         onClick={() => actions.negateRule(ruleId)}
       >
-        {/* Two arrows swapping: negation flips to the declared inverse. */}
         <ArrowsLeftRightIcon aria-hidden="true" />
         <span className={FILTER_MENU_LABEL_CLASS}>{actions.labels.negate}</span>
-      </DropdownMenuItem>
+      </DropdownMenuItem> */}
       {allowGrouping ? (
         <DropdownMenuItem
           disabled={locked}
@@ -901,7 +912,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
             focusStore.set({ id: rule.id, segment: null, autoOpen: false })
         }}
       >
-        <ButtonGroupText className="bg-background dark:bg-input/30 text-muted-foreground">
+        <ButtonGroupText className="bg-background text-muted-foreground dark:bg-input/30">
           {rule.path.join(actions.labels.pathSeparator)}
         </ButtonGroupText>
         <Button
@@ -915,8 +926,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
           {...filterReadOnlyProps(actions)}
           onClick={() => actions.removeNode(rule.id)}
         >
-          <XIcon
-          />
+          <XIcon />
         </Button>
       </ButtonGroup>
     )
@@ -970,7 +980,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
         /* Dropped while the path is collapsed: the ellipsis inside carries the
            same sentence as a tooltip, and the two would stack. */
         title={pathCollapsed ? undefined : pathText}
-        className="bg-background dark:bg-input/30 cursor-default gap-1.5"
+        className="cursor-default gap-1.5 bg-background dark:bg-input/30"
       >
         {field.icon}
         {/* Zero gap INSIDE the path, so the separator's own margin is the only
@@ -985,7 +995,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
           <ButtonGroupText
             render={<button type="button" />}
             className={cn(
-              "hover:bg-accent bg-background dark:bg-input/30 cursor-default",
+              "cursor-default bg-background hover:bg-accent dark:bg-input/30",
               /* The operator is connective tissue between the field and the
                  value, so it reads quieter than either - unless it is still
                  the prompt "Select condition", the one thing to act on. */
@@ -1017,7 +1027,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
                  more to say than the segment already says. */
               title={valueFullText === valueText ? undefined : valueFullText}
               className={cn(
-                "hover:bg-accent bg-background dark:bg-input/30 cursor-default",
+                "cursor-default bg-background hover:bg-accent dark:bg-input/30",
                 valueEmpty && "text-muted-foreground"
               )}
               onPointerDown={() => focusSegment("value")}
@@ -1051,8 +1061,7 @@ function FilterChipImpl<V, O>({ rule, index }: FilterChipProps<V>) {
             />
           }
         >
-          <DotsThreeVerticalIcon
-          />
+          <DotsThreeVerticalIcon />
         </DropdownMenuTrigger>
         {/* The SAME sizing the builder's menus use, from one constant: a menu
             that cuts "Convert to group" in one chrome is one defect twice. */}

@@ -85,8 +85,6 @@ function ExploreLayout() {
         year={year}
       />
       <ExploreAdvancedFilters
-        engraverSlug={engraverSlug}
-        engravers={engraverList.engravers}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
       />

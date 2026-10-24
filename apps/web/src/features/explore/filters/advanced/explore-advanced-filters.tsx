@@ -1,20 +1,13 @@
-import {
-  engraverSlugSchema,
-  isIsoIssuerCode,
-  issuerCodeSchema,
-} from "@coin-archive/api"
+import { isIsoIssuerCode, issuerCodeSchema } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { Filters } from "@coin-archive/ui/components/reui/filters/filters"
 import {
   createFilterQuery,
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
-import { GlobeIcon, PenNibIcon } from "@phosphor-icons/react"
+import { GlobeIcon } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
-import type {
-  EngraverListItemResponse,
-  IssuerResponse,
-} from "@coin-archive/api"
+import type { IssuerResponse } from "@coin-archive/api"
 import type {
   FilterField,
   FilterQuery,
@@ -23,10 +16,7 @@ import type {
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
-function queryFromFilters(
-  issuerCode: string | undefined,
-  engraverSlug: string | undefined
-): FilterQuery<string> {
+function queryFromFilters(issuerCode: string | undefined): FilterQuery<string> {
   return createFilterQuery([
     ...(issuerCode === undefined
       ? []
@@ -38,34 +28,18 @@ function queryFromFilters(
             value: issuerCode,
           }),
         ]),
-    ...(engraverSlug === undefined
-      ? []
-      : [
-          createFilterRule({
-            id: "explore-engraver",
-            path: ["engraver"],
-            operator: "is",
-            value: engraverSlug,
-          }),
-        ]),
   ])
 }
 
 export function ExploreAdvancedFilters({
-  engraverSlug,
-  engravers,
   issuerCode,
   issuers,
 }: {
-  engraverSlug?: string
-  engravers: Array<EngraverListItemResponse>
   issuerCode?: string
   issuers: Array<IssuerResponse>
 }) {
   const { updateFilters } = useExploreSearchNavigation()
-  const [query, setQuery] = useState(() =>
-    queryFromFilters(issuerCode, engraverSlug)
-  )
+  const [query, setQuery] = useState(() => queryFromFilters(issuerCode))
   const fields: FilterField<string>[] = [
     {
       id: "issuer",
@@ -76,6 +50,7 @@ export function ExploreAdvancedFilters({
         (node) => node.type === "rule" && node.path[0] === "issuer"
       ),
       type: "select",
+      autoSelectOperator: true,
       operators: [{ value: "is", label: "is" }],
       options: issuers.map((issuer) => ({
         label: issuer.name,
@@ -85,38 +60,11 @@ export function ExploreAdvancedFilters({
         ) : undefined,
       })),
     },
-    {
-      id: "engraver",
-      label: "Engraver",
-      icon: <PenNibIcon />,
-      pinSelected: true,
-      disabled: query.rules.some(
-        (node) => node.type === "rule" && node.path[0] === "engraver"
-      ),
-      type: "select",
-      operators: [{ value: "is", label: "is" }],
-      options: [
-        ...engravers.map((engraver) => ({
-          label: engraver.fullName,
-          value: engraver.slug,
-        })),
-        ...(engraverSlug &&
-        !engravers.some((engraver) => engraver.slug === engraverSlug)
-          ? [
-              {
-                label: `Unknown engraver (${engraverSlug})`,
-                value: engraverSlug,
-                disabled: true,
-              },
-            ]
-          : []),
-      ],
-    },
   ]
 
   useEffect(() => {
-    setQuery(queryFromFilters(issuerCode, engraverSlug))
-  }, [issuerCode, engraverSlug])
+    setQuery(queryFromFilters(issuerCode))
+  }, [issuerCode])
 
   return (
     <nav
@@ -128,24 +76,17 @@ export function ExploreAdvancedFilters({
         query={query}
         onQueryChange={(next) => {
           setQuery(next)
-          const patch: { issuer?: string; engraver?: string } = {}
-          for (const [field, current, schema] of [
-            ["issuer", issuerCode, issuerCodeSchema],
-            ["engraver", engraverSlug, engraverSlugSchema],
-          ] as const) {
-            const rule = next.rules.find(
-              (node): node is FilterRule<string> =>
-                node.type === "rule" && node.path[0] === field
-            )
-            if (rule && (rule.operator !== "is" || rule.value === undefined)) {
-              continue
-            }
-            const parsed = schema.safeParse(rule?.value)
-            if (rule && !parsed.success) continue
-            const value = parsed.success ? parsed.data : undefined
-            if (value !== current) patch[field] = value
+          const rule = next.rules.find(
+            (node): node is FilterRule<string> =>
+              node.type === "rule" && node.path[0] === "issuer"
+          )
+          if (rule && (rule.operator !== "is" || rule.value === undefined)) {
+            return
           }
-          if (Object.keys(patch).length > 0) updateFilters(patch)
+          const parsed = issuerCodeSchema.safeParse(rule?.value)
+          if (rule && !parsed.success) return
+          const value = parsed.success ? parsed.data : undefined
+          if (value !== issuerCode) updateFilters({ issuer: value })
         }}
         showClear
       />

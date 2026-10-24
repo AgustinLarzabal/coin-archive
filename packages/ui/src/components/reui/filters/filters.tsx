@@ -46,6 +46,7 @@ import {
   createFilterOperators,
   DEFAULT_FILTER_OPERATOR_LABELS,
   DEFAULT_FILTER_OPERATORS,
+  getAutoSelectedFilterOperator,
   getFilterOperator,
   negateFilterOperator,
   operatorTakesValue,
@@ -800,19 +801,26 @@ export function Filters<V = unknown, O = unknown>({
       // Asked here too: this branch burns an id and points the focus store at
       // it, and a store naming a chip that never existed eats the tab stop.
       const id = nextId()
+      const field = getFilterField(index, draft.path)
+      const operators = field ? resolveOperators(field) : []
+      const operator = getAutoSelectedFilterOperator(field, operators)
+      const needsValue = operator ? operatorTakesValue(operator) : false
       addRule(
         createFilterRule<V>({
           id,
           path: draft.path,
-          // Empty on purpose: the chip renders "Select condition" and opens.
-          operator: "",
+          operator: operator?.value ?? "",
           value: undefined,
         })
       )
-      focusStore.set({ id, segment: "operator", autoOpen: true })
+      focusStore.set({
+        id,
+        segment: operator ? (needsValue ? "value" : null) : "operator",
+        autoOpen: !operator || needsValue,
+      })
     }
     dispatchDraftRaw({ type: "close" })
-  }, [draft, addRule, updateRule, nextId, focusStore, locked])
+  }, [draft, addRule, updateRule, nextId, focusStore, locked, index, resolveOperators])
 
   /* ---------------------------- dev diagnostics --------------------------- */
 

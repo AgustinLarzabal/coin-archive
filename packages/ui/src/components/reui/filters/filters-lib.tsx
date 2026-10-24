@@ -98,6 +98,8 @@ export function computeFilterSchemaSignature<V, O>(
           "|" +
           (field.defaultOperator ?? "") +
           "|" +
+          (field.autoSelectOperator ? "1" : "0") +
+          "|" +
           (field.column ?? "") +
           "|" +
           (field.selectable ? "1" : "0") +

@@ -184,6 +184,15 @@ export function getDefaultFilterOperator<V, O>(
   return visible[0]?.value ?? operators[0]?.value ?? null
 }
 
+export function getAutoSelectedFilterOperator<V, O>(
+  field: FilterField<V, O> | undefined,
+  operators: readonly FilterOperator[]
+): FilterOperator | undefined {
+  return field?.autoSelectOperator && operators.length === 1
+    ? operators[0]
+    : undefined
+}
+
 /**
  * Negating a rule: swap to the declared `inverse` so the chip reads "does not
  * contain", else toggle `negated` so Negate still works without an inverse.

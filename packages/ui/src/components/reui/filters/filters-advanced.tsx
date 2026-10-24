@@ -40,6 +40,7 @@ import {
   joinFilterPath,
 } from "@coin-archive/ui/components/reui/filters/filters-lib"
 import {
+  getAutoSelectedFilterOperator,
   getFilterArity,
   getFilterOperator,
   operatorTakesValue,
@@ -879,23 +880,41 @@ function FilterAdvancedRowImpl<V, O>({
                 onQueryChange={setPickerQuery}
                 onSelect={(path, defaultOperator) => {
                   setPickerOpen(false)
+                  const selectedField = getFilterField(actions.index, path)
+                  const autoOperator = getAutoSelectedFilterOperator(
+                    selectedField,
+                    selectedField ? actions.resolveOperators(selectedField) : []
+                  )
+                  const openValue = Boolean(
+                    pending && autoOperator && operatorTakesValue(autoOperator)
+                  )
                   // BUILDING versus AMENDING, the fork of the stepped
                   // flow. Naming `operator` retires the field handoff.
                   focusStore.set({
                     id: rule.id,
-                    segment: pending ? "operator" : "field",
-                    autoOpen: pending,
+                    segment: pending
+                      ? openValue
+                        ? "value"
+                        : autoOperator
+                          ? "field"
+                          : "operator"
+                      : "field",
+                    autoOpen: pending && (!autoOperator || openValue),
                   })
                   // BEFORE the same-path early return, or a row minted
                   // on a guessed field the user then picks stays pending.
                   rowStateStore.resolvePending(rule.id)
                   // Re-picking the field it has is a dismissal.
-                  if (joinFilterPath(path) === joinFilterPath(rule.path)) return
-                  // On the create path the condition stays UNSET, so the
-                  // menu opening next has nothing selected.
+                  if (
+                    !pending &&
+                    joinFilterPath(path) === joinFilterPath(rule.path)
+                  )
+                    return
                   actions.updateRule(rule.id, {
                     path,
-                    operator: pending ? "" : (defaultOperator ?? ""),
+                    operator: pending
+                      ? (autoOperator?.value ?? "")
+                      : (defaultOperator ?? ""),
                     value: undefined,
                   })
                 }}

@@ -140,7 +140,7 @@ function queryFromFilters(
   ])
 }
 
-export function ExploreAdvancedFilters({
+export function ExploreFilters({
   amount,
   currencies,
   currencySlug,

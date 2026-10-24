@@ -52,9 +52,9 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Amount
+        Toggle Amount
       </button>
-      <output data-testid="advanced-amount-selection">
+      <output data-testid="amount-selection">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
             rule.type === "rule" && rule.path[0] === "amount"
@@ -85,9 +85,9 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Currency
+        Toggle Currency
       </button>
-      <output data-testid="advanced-currency-options">
+      <output data-testid="currency-options">
         {fields
           .find((field) => field.id === "currency")
           ?.options?.map((option) => option.label)
@@ -124,15 +124,15 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Distribution
+        Toggle Distribution
       </button>
-      <output data-testid="advanced-distribution-options">
+      <output data-testid="distribution-options">
         {fields
           .find((field) => field.id === "distribution")
           ?.options?.map((option) => option.label)
           .join(", ")}
       </output>
-      <output data-testid="advanced-distribution-selection">
+      <output data-testid="distribution-selection">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
             rule.type === "rule" && rule.path[0] === "distribution"
@@ -163,15 +163,15 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Year
+        Toggle Year
       </button>
-      <output data-testid="advanced-year-selection">
+      <output data-testid="year-selection">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
             rule.type === "rule" && rule.path[0] === "year"
         )?.value ?? ""}
       </output>
-      <output data-testid="advanced-year-field">
+      <output data-testid="year-field">
         {fields.find((field) => field.id === "year")?.label ?? ""}
       </output>
       <button
@@ -199,15 +199,15 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Engraver
+        Toggle Engraver
       </button>
-      <output data-testid="advanced-engraver-options">
+      <output data-testid="engraver-options">
         {fields
           .find((field) => field.id === "engraver")
           ?.options?.map((option) => option.label)
           .join(", ")}
       </output>
-      <output data-testid="advanced-engraver-selection">
+      <output data-testid="engraver-selection">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
             rule.type === "rule" && rule.path[0] === "engraver"
@@ -238,9 +238,9 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Issuer
+        Toggle Issuer
       </button>
-      <output data-testid="advanced-issuer-options">
+      <output data-testid="issuer-options">
         {fields
           .find((field) => field.id === "issuer")
           ?.options?.map((option) => option.label)
@@ -271,15 +271,15 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Mint
+        Toggle Mint
       </button>
-      <output data-testid="advanced-mint-options">
+      <output data-testid="mint-options">
         {fields
           .find((field) => field.id === "mint")
           ?.options?.map((option) => option.label)
           .join(", ")}
       </output>
-      <output data-testid="advanced-mint-selection">
+      <output data-testid="mint-selection">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
             rule.type === "rule" && rule.path[0] === "mint"
@@ -310,9 +310,9 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           })
         }}
       >
-        Toggle Advanced Ruler / Period
+        Toggle Ruler / Period
       </button>
-      <output data-testid="advanced-ruler-options">
+      <output data-testid="ruler-options">
         {fields
           .find((field) => field.id === "ruler")
           ?.options?.map((option) => option.label)
@@ -333,19 +333,17 @@ const mint = {
   operating: true,
 }
 
-it("enables Amount with Currency and applies and clears it in advanced filters", async () => {
+it("enables Amount with Currency and applies and clears it in filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?issuer=AR&page=3")
   const amountToggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Amount",
+    name: "Toggle Amount",
   })
   expect(amountToggle).toBeDisabled()
   expect(screen.queryByRole("button", { name: "Apply Amount" })).toBeNull()
 
-  fireEvent.click(
-    screen.getByRole("button", { name: "Toggle Advanced Currency" })
-  )
+  fireEvent.click(screen.getByRole("button", { name: "Toggle Currency" }))
   await waitFor(() => expect(amountToggle).toBeEnabled())
   fireEvent.click(amountToggle)
   await waitFor(() =>
@@ -355,9 +353,7 @@ it("enables Amount with Currency and applies and clears it in advanced filters",
       issuer: "AR",
     })
   )
-  expect(screen.getByTestId("advanced-amount-selection")).toHaveTextContent(
-    "0.5"
-  )
+  expect(screen.getByTestId("amount-selection")).toHaveTextContent("0.5")
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?amount=0.5&currency=euro&issuer=AR&page=1&pageSize=24"
   )
@@ -372,14 +368,14 @@ it("enables Amount with Currency and applies and clears it in advanced filters",
   )
 })
 
-it("applies, restores, and clears Year in advanced filters", async () => {
+it("applies, restores, and clears Year in filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?issuer=AR&page=3")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Year",
+    name: "Toggle Year",
   })
-  expect(screen.getByTestId("advanced-year-field")).toHaveTextContent("Year")
+  expect(screen.getByTestId("year-field")).toHaveTextContent("Year")
   expect(screen.queryByRole("button", { name: "Apply Year" })).toBeNull()
   expect(screen.queryByRole("button", { name: "Clear Year" })).toBeNull()
 
@@ -390,20 +386,18 @@ it("applies, restores, and clears Year in advanced filters", async () => {
       year: "-25-19",
     })
   )
-  expect(screen.getByTestId("advanced-year-selection")).toHaveTextContent(
-    "25 BCE–19 CE"
-  )
+  expect(screen.getByTestId("year-selection")).toHaveTextContent("25 BCE–19 CE")
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=1&pageSize=24"
   )
 
   router.history.back()
   await waitFor(() =>
-    expect(screen.getByTestId("advanced-year-selection")).toBeEmptyDOMElement()
+    expect(screen.getByTestId("year-selection")).toBeEmptyDOMElement()
   )
   router.history.forward()
   await waitFor(() =>
-    expect(screen.getByTestId("advanced-year-selection")).toHaveTextContent(
+    expect(screen.getByTestId("year-selection")).toHaveTextContent(
       "25 BCE–19 CE"
     )
   )
@@ -417,13 +411,13 @@ it("applies, restores, and clears Year in advanced filters", async () => {
   )
 })
 
-it("restores a BCE Year in the advanced filter", async () => {
+it("restores a BCE Year in the filter", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   renderArchiveRoute("/?year=-44")
 
-  expect(
-    await screen.findByTestId("advanced-year-selection")
-  ).toHaveTextContent("44 BCE")
+  expect(await screen.findByTestId("year-selection")).toHaveTextContent(
+    "44 BCE"
+  )
   expect(screen.getByText("No coins match the selected filters.")).toBeVisible()
 })
 
@@ -431,14 +425,14 @@ it("removes an invalid Year from a directly opened URL", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   const router = renderArchiveRoute("/?issuer=AR&year=-044")
 
-  await screen.findByTestId("advanced-year-selection")
+  await screen.findByTestId("year-selection")
   await waitFor(() =>
     expect(router.state.location.search).toEqual({ issuer: "AR" })
   )
   expect(router.state.location.searchStr).toBe("?issuer=AR")
 })
 
-it("applies and clears Engraver in advanced filters", async () => {
+it("applies and clears Engraver in filters", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({
       engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
@@ -447,9 +441,9 @@ it("applies and clears Engraver in advanced filters", async () => {
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?issuer=AR&page=3")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Engraver",
+    name: "Toggle Engraver",
   })
-  expect(screen.getByTestId("advanced-engraver-options")).toHaveTextContent(
+  expect(screen.getByTestId("engraver-options")).toHaveTextContent(
     "First Engraver"
   )
 
@@ -460,7 +454,7 @@ it("applies and clears Engraver in advanced filters", async () => {
       issuer: "AR",
     })
   )
-  expect(screen.getByTestId("advanced-engraver-selection")).toHaveTextContent(
+  expect(screen.getByTestId("engraver-selection")).toHaveTextContent(
     "first-engraver"
   )
   expect(screen.queryByRole("combobox", { name: "Engraver" })).toBeNull()
@@ -482,22 +476,22 @@ it("restores an unknown Engraver from the URL for recovery", async () => {
   renderArchiveRoute("/?engraver=unknown-engraver")
 
   expect(await screen.findByText("Engraver not found")).toBeVisible()
-  expect(screen.getByTestId("advanced-engraver-selection")).toHaveTextContent(
+  expect(screen.getByTestId("engraver-selection")).toHaveTextContent(
     "unknown-engraver"
   )
-  expect(screen.getByTestId("advanced-engraver-options")).toHaveTextContent(
+  expect(screen.getByTestId("engraver-options")).toHaveTextContent(
     "Unknown engraver (unknown-engraver)"
   )
 })
 
-it("applies and clears Distribution in advanced filters while preserving other filters", async () => {
+it("applies and clears Distribution in filters while preserving other filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?issuer=AR&page=3")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Distribution",
+    name: "Toggle Distribution",
   })
-  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+  expect(screen.getByTestId("distribution-options")).toHaveTextContent(
     "Non-circulating"
   )
 
@@ -509,9 +503,9 @@ it("applies and clears Distribution in advanced filters while preserving other f
     })
   )
   expect(screen.queryByRole("combobox", { name: "Distribution" })).toBeNull()
-  expect(
-    screen.getByTestId("advanced-distribution-selection")
-  ).toHaveTextContent("non-circulating")
+  expect(screen.getByTestId("distribution-selection")).toHaveTextContent(
+    "non-circulating"
+  )
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?distribution=non-circulating&issuer=AR&page=1&pageSize=24"
   )
@@ -525,19 +519,19 @@ it("applies and clears Distribution in advanced filters while preserving other f
   )
 })
 
-it("restores an unknown Distribution in advanced filters from the URL", async () => {
+it("restores an unknown Distribution in filters from the URL", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   renderArchiveRoute("/?distribution=unknown-pattern")
 
-  expect(
-    await screen.findByTestId("advanced-distribution-selection")
-  ).toHaveTextContent("unknown-pattern")
-  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+  expect(await screen.findByTestId("distribution-selection")).toHaveTextContent(
+    "unknown-pattern"
+  )
+  expect(screen.getByTestId("distribution-options")).toHaveTextContent(
     "Unknown Distribution (unknown-pattern)"
   )
 })
 
-it("uses the catalogue name and slug for an advanced Distribution", async () => {
+it("uses the catalogue name and slug for an Distribution", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
@@ -547,9 +541,9 @@ it("uses the catalogue name and slug for an advanced Distribution", async () => 
     [{ slug: "unused-pattern", name: "Pattern" }]
   )
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Distribution",
+    name: "Toggle Distribution",
   })
-  expect(screen.getByTestId("advanced-distribution-options")).toHaveTextContent(
+  expect(screen.getByTestId("distribution-options")).toHaveTextContent(
     "Pattern"
   )
 
@@ -568,9 +562,9 @@ it("discards a malformed Distribution slug from a hand-edited URL", async () => 
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
   const router = renderArchiveRoute("/?issuer=AR&distribution=bad_slug")
 
-  expect(
-    await screen.findByTestId("advanced-distribution-selection")
-  ).toHaveTextContent("")
+  expect(await screen.findByTestId("distribution-selection")).toHaveTextContent(
+    ""
+  )
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
       distribution: undefined,
@@ -580,7 +574,7 @@ it("discards a malformed Distribution slug from a hand-edited URL", async () => 
   expect(router.state.location.searchStr).toBe("?issuer=AR")
 })
 
-it("applies and clears Mint in advanced filters while preserving other filters", async () => {
+it("applies and clears Mint in filters while preserving other filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch({ mints: [mint] }))
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
@@ -591,11 +585,9 @@ it("applies and clears Mint in advanced filters while preserving other filters",
     [mint]
   )
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Mint",
+    name: "Toggle Mint",
   })
-  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
-    "Rome Mint"
-  )
+  expect(screen.getByTestId("mint-options")).toHaveTextContent("Rome Mint")
 
   fireEvent.click(toggle)
   await waitFor(() =>
@@ -637,10 +629,10 @@ it("restores a Mint from the URL and distinguishes Mints with the same name", as
     secondMint,
   ])
 
-  expect(
-    await screen.findByTestId("advanced-mint-selection")
-  ).toHaveTextContent("rome-mint-vatican")
-  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
+  expect(await screen.findByTestId("mint-selection")).toHaveTextContent(
+    "rome-mint-vatican"
+  )
+  expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "Rome Mint (Rome, Italy; rome-italy), Rome Mint (Vatican City, Vatican City; rome-mint-vatican)"
   )
 })
@@ -650,15 +642,13 @@ it("shows an unknown Mint and keeps its URL slug for recovery", async () => {
   renderArchiveRoute("/?mint=missing-mint", [], [], undefined, [mint])
 
   expect(await screen.findByText("Mint not found")).toBeVisible()
-  expect(screen.getByTestId("advanced-mint-selection")).toHaveTextContent(
-    "missing-mint"
-  )
-  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
+  expect(screen.getByTestId("mint-selection")).toHaveTextContent("missing-mint")
+  expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "Unknown Mint (missing-mint)"
   )
 })
 
-it("applies and clears Currency from the advanced filters", async () => {
+it("applies and clears Currency from the filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute(
@@ -667,9 +657,9 @@ it("applies and clears Currency from the advanced filters", async () => {
     [{ slug: "euro", name: "Euro", fullName: "Euro (1999–present)" }]
   )
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Currency",
+    name: "Toggle Currency",
   })
-  expect(screen.getByTestId("advanced-currency-options")).toHaveTextContent(
+  expect(screen.getByTestId("currency-options")).toHaveTextContent(
     "Euro (1999–present)"
   )
 
@@ -702,7 +692,7 @@ it("restores Currency from the URL and clears its dependent Amount", async () =>
     [{ slug: "euro", name: "Euro", fullName: "Euro (1999–present)" }]
   )
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Currency",
+    name: "Toggle Currency",
   })
 
   fireEvent.click(toggle)
@@ -712,12 +702,10 @@ it("restores Currency from the URL and clears its dependent Amount", async () =>
       currency: undefined,
     })
   )
-  expect(
-    screen.getByRole("button", { name: "Toggle Advanced Amount" })
-  ).toBeDisabled()
+  expect(screen.getByRole("button", { name: "Toggle Amount" })).toBeDisabled()
 })
 
-it("applies and clears an advanced Ruler / Period rule with duplicate names", async () => {
+it("applies and clears an Ruler / Period rule with duplicate names", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({ issuers: [{ name: "Argentina", code: "AR" }] })
   )
@@ -727,9 +715,9 @@ it("applies and clears an advanced Ruler / Period rule with duplicate names", as
     { slug: "shared-b", name: "Shared Name" },
   ])
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Ruler / Period",
+    name: "Toggle Ruler / Period",
   })
-  expect(screen.getByTestId("advanced-ruler-options")).toHaveTextContent(
+  expect(screen.getByTestId("ruler-options")).toHaveTextContent(
     "Shared Name (shared-a), Shared Name (shared-b)"
   )
 
@@ -753,18 +741,16 @@ it("applies and clears an advanced Ruler / Period rule with duplicate names", as
   )
 })
 
-it("applies and clears an advanced Issuer rule through the Explore URL", async () => {
+it("applies and clears an Issuer rule through the Explore URL", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(createArchiveFetch({ issuers: [{ name: "Argentina", code: "AR" }] }))
   )
   const router = renderArchiveRoute("/")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Issuer",
+    name: "Toggle Issuer",
   })
-  expect(screen.getByTestId("advanced-issuer-options")).toHaveTextContent(
-    "Argentina"
-  )
+  expect(screen.getByTestId("issuer-options")).toHaveTextContent("Argentina")
 
   fireEvent.click(toggle)
   await waitFor(() =>
@@ -792,7 +778,7 @@ it("restores an Engraver rule from the URL when Issuer changes", async () => {
   )
   const router = renderArchiveRoute("/?engraver=first-engraver")
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Issuer",
+    name: "Toggle Issuer",
   })
 
   fireEvent.click(toggle)
@@ -812,7 +798,7 @@ it("restores an Engraver rule from the URL when Issuer changes", async () => {
   )
 })
 
-it("clears advanced Issuer without losing other filters and resets pagination", async () => {
+it("clears Issuer without losing other filters and resets pagination", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({
       engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
@@ -825,7 +811,7 @@ it("clears advanced Issuer without losing other filters and resets pagination", 
     [{ slug: "selected-authority", name: "Selected Authority" }]
   )
   const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Issuer",
+    name: "Toggle Issuer",
   })
 
   fireEvent.click(toggle)

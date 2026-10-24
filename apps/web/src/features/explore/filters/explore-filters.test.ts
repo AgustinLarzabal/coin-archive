@@ -6,6 +6,13 @@ it("selects only an opted-in field's sole operator", () => {
   const field = { id: "issuer", label: "Issuer", autoSelectOperator: true }
 
   expect(getAutoSelectedFilterOperator(field, [is])).toBe(is)
-  expect(getAutoSelectedFilterOperator(field, [is, { value: "is_not", label: "is not" }])).toBeUndefined()
-  expect(getAutoSelectedFilterOperator({ ...field, autoSelectOperator: false }, [is])).toBeUndefined()
+  expect(
+    getAutoSelectedFilterOperator(field, [
+      is,
+      { value: "is_not", label: "is not" },
+    ])
+  ).toBeUndefined()
+  expect(
+    getAutoSelectedFilterOperator({ ...field, autoSelectOperator: false }, [is])
+  ).toBeUndefined()
 })

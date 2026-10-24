@@ -413,7 +413,7 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?engraver=second-engraver")
   })
 
-  it("shows the advanced Explore filters", async () => {
+  it("shows the Explore filters", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
 
     renderArchiveRoute()

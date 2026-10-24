@@ -24,7 +24,7 @@ import {
   RulingAuthorityListRequestError,
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
-import { ExploreAdvancedFilters } from "@/features/explore/filters/advanced/explore-advanced-filters"
+import { ExploreFilters } from "@/features/explore/filters/explore-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
@@ -67,7 +67,7 @@ function ExploreLayout() {
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <ExploreAdvancedFilters
+      <ExploreFilters
         amount={amount}
         currencies={currencyList.currencies}
         currencySlug={currencySlug}

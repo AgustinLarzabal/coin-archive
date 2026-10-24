@@ -156,7 +156,7 @@ function FilterPathSeparator() {
     <CaretRightIcon
       aria-hidden="true"
       data-slot="filter-path-separator"
-      className="mx-[3px] inline-block size-3 shrink-0 self-center align-[calc(0.3635em_-_0.375rem)] text-muted-foreground"
+      className="mx-0.75 inline-block size-3 shrink-0 self-center align-[calc(0.3635em-0.375rem)] text-muted-foreground"
     />
   )
 }

@@ -11,8 +11,10 @@ export function parseIssueYearFilterValue(draft: string) {
     )
   if (rangeMatch) {
     const [, first, rawFirstEra = "", last, rawLastEra = ""] = rangeMatch
-    const firstEra = rawFirstEra.toUpperCase() || rawLastEra.toUpperCase() || "CE"
-    const lastEra = rawLastEra.toUpperCase() || rawFirstEra.toUpperCase() || "CE"
+    const firstEra =
+      rawFirstEra.toUpperCase() || rawLastEra.toUpperCase() || "CE"
+    const lastEra =
+      rawLastEra.toUpperCase() || rawFirstEra.toUpperCase() || "CE"
     const firstIssueYear = Number(first) * (firstEra === "BCE" ? -1 : 1)
     const lastIssueYear = Number(last) * (lastEra === "BCE" ? -1 : 1)
     const result = coinListYearQuerySchema.safeParse(

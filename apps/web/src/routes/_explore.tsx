@@ -68,11 +68,7 @@ function ExploreLayout() {
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <ExploreBasicFilters
-        amount={amount}
-        currencySlug={currencySlug}
-        year={year}
-      />
+      <ExploreBasicFilters amount={amount} currencySlug={currencySlug} />
       <ExploreAdvancedFilters
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
@@ -86,6 +82,7 @@ function ExploreLayout() {
         mints={mintList.mints}
         rulingAuthoritySlug={rulingAuthoritySlug}
         rulingAuthorities={rulingAuthorityList.rulers}
+        year={year}
       />
       <Outlet />
     </main>

@@ -103,6 +103,42 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <button
         type="button"
         onClick={() => {
+          const hasYear = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "year"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasYear
+              ? query.rules.filter(
+                  (rule) => rule.type !== "rule" || rule.path[0] !== "year"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-year",
+                    type: "rule",
+                    path: ["year"],
+                    operator: "is",
+                    value: "25 BCE–19 CE",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Year
+      </button>
+      <output data-testid="advanced-year-selection">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "year"
+        )?.value ?? ""}
+      </output>
+      <output data-testid="advanced-year-field">
+        {fields.find((field) => field.id === "year")?.label ?? ""}
+      </output>
+      <button
+        type="button"
+        onClick={() => {
           const hasEngraver = query.rules.some(
             (rule) => rule.type === "rule" && rule.path[0] === "engraver"
           )
@@ -258,6 +294,72 @@ const mint = {
   endYear: null,
   operating: true,
 }
+
+it("applies, restores, and clears Year in advanced filters", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&page=3")
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Year",
+  })
+  expect(screen.getByTestId("advanced-year-field")).toHaveTextContent("Year")
+  expect(screen.queryByRole("button", { name: "Apply Year" })).toBeNull()
+  expect(screen.queryByRole("button", { name: "Clear Year" })).toBeNull()
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      year: "-25-19",
+    })
+  )
+  expect(screen.getByTestId("advanced-year-selection")).toHaveTextContent(
+    "25 BCE–19 CE"
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=1&pageSize=24"
+  )
+
+  router.history.back()
+  await waitFor(() =>
+    expect(screen.getByTestId("advanced-year-selection")).toBeEmptyDOMElement()
+  )
+  router.history.forward()
+  await waitFor(() =>
+    expect(screen.getByTestId("advanced-year-selection")).toHaveTextContent(
+      "25 BCE–19 CE"
+    )
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      year: undefined,
+    })
+  )
+})
+
+it("restores a BCE Year in the advanced filter", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  renderArchiveRoute("/?year=-44")
+
+  expect(
+    await screen.findByTestId("advanced-year-selection")
+  ).toHaveTextContent("44 BCE")
+  expect(screen.getByText("No coins match the selected filters.")).toBeVisible()
+})
+
+it("removes an invalid Year from a directly opened URL", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/?issuer=AR&year=-044")
+
+  await screen.findByTestId("advanced-year-selection")
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({ issuer: "AR" })
+  )
+  expect(router.state.location.searchStr).toBe("?issuer=AR")
+})
 
 it("applies and clears Engraver in advanced filters", async () => {
   const fetchMock = vi.fn(

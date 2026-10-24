@@ -14,6 +14,7 @@ import {
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
 import {
+  CalendarBlankIcon,
   CoinsIcon,
   CrownIcon,
   GlobeIcon,
@@ -23,6 +24,7 @@ import {
 } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type {
+  CoinListYear,
   CurrencyResponse,
   DistributionListItemResponse,
   EngraverListItemResponse,
@@ -37,6 +39,10 @@ import type {
 } from "@coin-archive/ui/components/reui/filters/filters-types"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
+import {
+  formatIssueYearFilterValue,
+  parseIssueYearFilterValue,
+} from "@/features/explore/filters/issue-year-filter-value"
 
 function queryFromFilters(
   currencySlug: string | undefined,
@@ -44,7 +50,8 @@ function queryFromFilters(
   engraverSlug: string | undefined,
   issuerCode: string | undefined,
   mintSlug: string | undefined,
-  rulingAuthoritySlug: string | undefined
+  rulingAuthoritySlug: string | undefined,
+  year: CoinListYear | undefined
 ): FilterQuery<string> {
   return createFilterQuery([
     ...(currencySlug === undefined
@@ -107,6 +114,16 @@ function queryFromFilters(
             value: rulingAuthoritySlug,
           }),
         ]),
+    ...(year === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-year",
+            path: ["year"],
+            operator: "is",
+            value: formatIssueYearFilterValue(year),
+          }),
+        ]),
   ])
 }
 
@@ -123,6 +140,7 @@ export function ExploreAdvancedFilters({
   mints,
   rulingAuthoritySlug,
   rulingAuthorities,
+  year,
 }: {
   currencies: Array<CurrencyResponse>
   currencySlug?: string
@@ -136,6 +154,7 @@ export function ExploreAdvancedFilters({
   mints: Array<MintResponse>
   rulingAuthoritySlug?: string
   rulingAuthorities: Array<RulingAuthorityListItemResponse>
+  year?: CoinListYear
 }) {
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() =>
@@ -145,7 +164,8 @@ export function ExploreAdvancedFilters({
       engraverSlug,
       issuerCode,
       mintSlug,
-      rulingAuthoritySlug
+      rulingAuthoritySlug,
+      year
     )
   )
   const mintNameCounts = new Map<string, number>()
@@ -279,6 +299,18 @@ export function ExploreAdvancedFilters({
       ],
     },
     {
+      id: "year",
+      label: "Year",
+      icon: <CalendarBlankIcon />,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "year"
+      ),
+      type: "text",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      placeholder: "1986 or 25 BCE–19 CE",
+    },
+    {
       id: "ruler",
       label: "Ruler / Period",
       icon: <CrownIcon />,
@@ -307,7 +339,8 @@ export function ExploreAdvancedFilters({
         engraverSlug,
         issuerCode,
         mintSlug,
-        rulingAuthoritySlug
+        rulingAuthoritySlug,
+        year
       )
     )
   }, [
@@ -317,6 +350,7 @@ export function ExploreAdvancedFilters({
     issuerCode,
     mintSlug,
     rulingAuthoritySlug,
+    year,
   ])
 
   return (
@@ -340,6 +374,7 @@ export function ExploreAdvancedFilters({
           const mint = rule("mint")
           const ruler = rule("ruler")
           const currency = rule("currency")
+          const yearRule = rule("year")
           const nextCurrency = currencySlugSchema.safeParse(currency?.value)
           const nextDistribution = coinDistributionSchema.safeParse(
             distributionRule?.value
@@ -348,6 +383,9 @@ export function ExploreAdvancedFilters({
           const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
           const nextMint = mintSlugSchema.safeParse(mint?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
+          const nextYear = yearRule
+            ? parseIssueYearFilterValue(yearRule.value ?? "")
+            : undefined
           const patch: {
             currency?: string
             distribution?: string
@@ -355,6 +393,7 @@ export function ExploreAdvancedFilters({
             issuer?: string
             mint?: string
             ruler?: string
+            year?: CoinListYear
           } = {}
           if (
             !currency ||
@@ -386,6 +425,12 @@ export function ExploreAdvancedFilters({
           if (!ruler || (ruler.operator === "is" && nextRuler.success)) {
             if (nextRuler.data !== rulingAuthoritySlug)
               patch.ruler = nextRuler.data
+          }
+          if (
+            !yearRule ||
+            (yearRule.operator === "is" && nextYear !== undefined)
+          ) {
+            if (nextYear !== year) patch.year = nextYear
           }
           if (Object.keys(patch).length) updateFilters(patch)
         }}

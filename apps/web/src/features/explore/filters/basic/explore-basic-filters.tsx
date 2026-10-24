@@ -1,15 +1,11 @@
 import { AmountFilter } from "./amount-filter"
-import { IssueYearFilter } from "./issue-year-filter"
-import type { CoinListYear } from "@coin-archive/api"
 
 export function ExploreBasicFilters({
   amount,
   currencySlug,
-  year,
 }: {
   amount?: string
   currencySlug?: string
-  year?: CoinListYear
 }) {
   return (
     <nav
@@ -20,7 +16,6 @@ export function ExploreBasicFilters({
         amount={amount}
         currencySelected={currencySlug !== undefined}
       />
-      <IssueYearFilter year={year} />
     </nav>
   )
 }

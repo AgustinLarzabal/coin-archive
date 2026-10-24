@@ -1,4 +1,5 @@
 import {
+  currencySlugSchema,
   isIsoIssuerCode,
   issuerCodeSchema,
   rulingAuthoritySlugSchema,
@@ -9,9 +10,10 @@ import {
   createFilterQuery,
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
-import { CrownIcon, GlobeIcon } from "@phosphor-icons/react"
+import { CoinsIcon, CrownIcon, GlobeIcon } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type {
+  CurrencyResponse,
   IssuerResponse,
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
@@ -24,10 +26,21 @@ import type {
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
 function queryFromFilters(
+  currencySlug: string | undefined,
   issuerCode: string | undefined,
   rulingAuthoritySlug: string | undefined
 ): FilterQuery<string> {
   return createFilterQuery([
+    ...(currencySlug === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-currency",
+            path: ["currency"],
+            operator: "is",
+            value: currencySlug,
+          }),
+        ]),
     ...(issuerCode === undefined
       ? []
       : [
@@ -52,11 +65,15 @@ function queryFromFilters(
 }
 
 export function ExploreAdvancedFilters({
+  currencies,
+  currencySlug,
   issuerCode,
   issuers,
   rulingAuthoritySlug,
   rulingAuthorities,
 }: {
+  currencies: Array<CurrencyResponse>
+  currencySlug?: string
   issuerCode?: string
   issuers: Array<IssuerResponse>
   rulingAuthoritySlug?: string
@@ -64,13 +81,29 @@ export function ExploreAdvancedFilters({
 }) {
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() =>
-    queryFromFilters(issuerCode, rulingAuthoritySlug)
+    queryFromFilters(currencySlug, issuerCode, rulingAuthoritySlug)
   )
   const nameCounts = new Map<string, number>()
   for (const ruler of rulingAuthorities) {
     nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
   }
   const fields: FilterField<string>[] = [
+    {
+      id: "currency",
+      label: "Currency",
+      icon: <CoinsIcon />,
+      pinSelected: true,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "currency"
+      ),
+      type: "select",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      options: currencies.map((currency) => ({
+        label: currency.fullName,
+        value: currency.slug,
+      })),
+    },
     {
       id: "issuer",
       label: "Issuer",
@@ -112,8 +145,8 @@ export function ExploreAdvancedFilters({
   ]
 
   useEffect(() => {
-    setQuery(queryFromFilters(issuerCode, rulingAuthoritySlug))
-  }, [issuerCode, rulingAuthoritySlug])
+    setQuery(queryFromFilters(currencySlug, issuerCode, rulingAuthoritySlug))
+  }, [currencySlug, issuerCode, rulingAuthoritySlug])
 
   return (
     <nav
@@ -132,9 +165,19 @@ export function ExploreAdvancedFilters({
             )
           const issuer = rule("issuer")
           const ruler = rule("ruler")
+          const currency = rule("currency")
+          const nextCurrency = currencySlugSchema.safeParse(currency?.value)
           const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
-          const patch: { issuer?: string; ruler?: string } = {}
+          const patch: { currency?: string; issuer?: string; ruler?: string } =
+            {}
+          if (
+            !currency ||
+            (currency.operator === "is" && nextCurrency.success)
+          ) {
+            if (nextCurrency.data !== currencySlug)
+              patch.currency = nextCurrency.data
+          }
           if (!issuer || (issuer.operator === "is" && nextIssuer.success)) {
             if (nextIssuer.data !== issuerCode) patch.issuer = nextIssuer.data
           }

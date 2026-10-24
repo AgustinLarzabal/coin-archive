@@ -27,7 +27,9 @@ it("uses the route error state for an invalid Currency response", async () => {
   expect(
     await screen.findByText("Invalid Currency list response")
   ).toBeVisible()
-  expect(screen.queryByRole("combobox", { name: "Currency" })).toBeNull()
+  expect(
+    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+  ).toBeNull()
 })
 
 it("uses the route error state when the Currency request fails", async () => {
@@ -35,5 +37,7 @@ it("uses the route error state when the Currency request fails", async () => {
   renderArchiveRoute("/", [], new Response(null, { status: 503 }))
 
   expect(await screen.findByText("Unable to load Currencies")).toBeVisible()
-  expect(screen.queryByRole("combobox", { name: "Currency" })).toBeNull()
+  expect(
+    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+  ).toBeNull()
 })

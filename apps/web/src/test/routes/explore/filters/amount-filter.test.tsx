@@ -90,7 +90,7 @@ it("clearing Currency and Back and Forward restore distinct filter results", asy
   const user = userEvent.setup()
   expect(screen.getByRole("link", { name: "One-euro coin" })).toBeVisible()
 
-  await user.click(screen.getByRole("button", { name: "Clear Currency" }))
+  await user.click(screen.getByRole("button", { name: "Clear" }))
 
   await waitFor(() =>
     expect(router.state.location.search.currency).toBeUndefined()

@@ -1,5 +1,4 @@
 import { AmountFilter } from "./amount-filter"
-import { CurrencyFilter } from "./currency-filter"
 import { DistributionFilter } from "./distribution-filter"
 import { EngraverFilter } from "./engraver-filter"
 import { IssueYearFilter } from "./issue-year-filter"
@@ -7,7 +6,6 @@ import { MintFilter } from "./mint-filter"
 import type {
   CoinDistribution,
   CoinListYear,
-  CurrencyResponse,
   DistributionListItemResponse,
   EngraverListItemResponse,
   MintResponse,
@@ -17,7 +15,6 @@ export function ExploreBasicFilters({
   amount,
   distribution,
   distributions,
-  currencies,
   currencySlug,
   engraverSlug,
   engravers,
@@ -28,7 +25,6 @@ export function ExploreBasicFilters({
   amount?: string
   distribution?: CoinDistribution
   distributions: Array<DistributionListItemResponse>
-  currencies: Array<CurrencyResponse>
   currencySlug?: string
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
@@ -46,7 +42,6 @@ export function ExploreBasicFilters({
         distributions={distributions}
       />
       <MintFilter mintSlug={mintSlug} mints={mints} />
-      <CurrencyFilter currencies={currencies} currencySlug={currencySlug} />
       <AmountFilter
         amount={amount}
         currencySelected={currencySlug !== undefined}

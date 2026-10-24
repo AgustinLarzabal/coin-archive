@@ -70,7 +70,6 @@ function ExploreLayout() {
     <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreBasicFilters
         amount={amount}
-        currencies={currencyList.currencies}
         currencySlug={currencySlug}
         distribution={distribution}
         distributions={distributionList.distributions}
@@ -81,6 +80,8 @@ function ExploreLayout() {
         year={year}
       />
       <ExploreAdvancedFilters
+        currencies={currencyList.currencies}
+        currencySlug={currencySlug}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
         rulingAuthoritySlug={rulingAuthoritySlug}

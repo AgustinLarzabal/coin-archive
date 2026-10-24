@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
@@ -14,14 +14,13 @@ it("keeps an unknown Currency available to clear without losing other filters", 
   const router = renderArchiveRoute("/?currency=missing-currency&issuer=AR")
 
   expect(await screen.findByText("Currency not found")).toBeVisible()
-  const combobox = screen.getByRole("combobox", { name: "Currency" })
-  expect(combobox).toHaveValue("Unknown Currency (missing-currency)")
-  const control = combobox.closest('[data-slot="input-group"]')
+  expect(
+    screen.getByRole("group", { name: /Currency.*missing-currency/ })
+  ).toBeVisible()
   fireEvent.click(
-    within(control as HTMLElement).getByRole("button", {
-      name: "Clear Currency",
-    })
+    screen.getByRole("button", { name: "Currency filter options" })
   )
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Remove" }))
 
   await waitFor(() =>
     expect(router.state.location.search).toEqual({ issuer: "AR" })

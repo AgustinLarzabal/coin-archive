@@ -16,10 +16,12 @@ it("keeps Explore loading until Currency reference data is ready", async () => {
   renderArchiveRoute("/", [], currenciesResponse)
 
   expect(await screen.findByText("Loading coins…")).toBeVisible()
-  expect(screen.queryByRole("combobox", { name: "Currency" })).toBeNull()
+  expect(
+    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+  ).toBeNull()
 
   resolveCurrencies?.(jsonResponse({ currencies: [] }))
   expect(
-    await screen.findByRole("combobox", { name: "Currency" })
+    await screen.findByRole("navigation", { name: "ReUI filter experiment" })
   ).toBeVisible()
 })

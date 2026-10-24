@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
@@ -14,14 +14,8 @@ it("restores the Currency filter and results with browser Back and Forward", asy
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/", [], currencies)
-  const combobox = await screen.findByRole("combobox", { name: "Currency" })
-
-  fireEvent.input(combobox, { target: { value: "Euro" } })
-  fireEvent.keyDown(combobox, { key: "ArrowDown" })
-  fireEvent.click(
-    await screen.findByRole("option", { name: "Euro (1999–present)" }),
-    { detail: 0 }
-  )
+  await screen.findByRole("button", { name: "Add filter" })
+  await router.navigate({ to: "/", search: { currency: "euro" } })
   await waitFor(() =>
     expect(router.state.location.search.currency).toBe("euro")
   )
@@ -30,12 +24,12 @@ it("restores the Currency filter and results with browser Back and Forward", asy
   await waitFor(() =>
     expect(router.state.location.search.currency).toBeUndefined()
   )
-  expect(combobox).toHaveValue("")
+  expect(screen.queryByRole("group", { name: /Currency is Euro/ })).toBeNull()
   router.history.forward()
   await waitFor(() =>
     expect(router.state.location.search.currency).toBe("euro")
   )
-  expect(combobox).toHaveValue("Euro (1999–present)")
+  expect(screen.getByRole("group", { name: /Currency is Euro/ })).toBeVisible()
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?page=1&pageSize=24"
   )

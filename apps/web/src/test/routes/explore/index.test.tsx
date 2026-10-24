@@ -413,20 +413,15 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?engraver=second-engraver")
   })
 
-  it("keeps Issuer out of the basic Explore filters", async () => {
+  it("shows the advanced Explore filters", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
 
     renderArchiveRoute()
 
-    const filters = await screen.findByRole("navigation", {
+    await screen.findByRole("navigation", {
       name: "Explore filters",
     })
-    expect(
-      within(filters).queryByRole("combobox", { name: "Issuer" })
-    ).not.toBeInTheDocument()
-    expect(
-      screen.getByRole("navigation", { name: "ReUI filter experiment" })
-    ).toBeVisible()
+    expect(screen.getByRole("button", { name: "Add filter" })).toBeVisible()
   })
 
   it("keeps the Explore filters visible while a newly selected Issuer loads", async () => {
@@ -464,9 +459,6 @@ describe("Archive landing route", () => {
 
     expect(
       screen.getAllByRole("navigation", { name: "Explore filters" })[0]
-    ).toBeVisible()
-    expect(
-      screen.getAllByRole("navigation", { name: "ReUI filter experiment" })[0]
     ).toBeVisible()
 
     filteredCoinsResponse.resolve(coinListJsonResponse([coin]))

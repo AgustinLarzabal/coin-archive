@@ -24,6 +24,44 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
     <>
       <button
         type="button"
+        disabled={
+          !query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "amount"
+          ) && fields.find((field) => field.id === "amount")?.disabled
+        }
+        onClick={() => {
+          const hasAmount = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "amount"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasAmount
+              ? query.rules.filter(
+                  (rule) => rule.type !== "rule" || rule.path[0] !== "amount"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-amount",
+                    type: "rule",
+                    path: ["amount"],
+                    operator: "is",
+                    value: "0.5",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Amount
+      </button>
+      <output data-testid="advanced-amount-selection">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "amount"
+        )?.value ?? ""}
+      </output>
+      <button
+        type="button"
         onClick={() => {
           const hasCurrency = query.rules.some(
             (rule) => rule.type === "rule" && rule.path[0] === "currency"
@@ -294,6 +332,45 @@ const mint = {
   endYear: null,
   operating: true,
 }
+
+it("enables Amount with Currency and applies and clears it in advanced filters", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&page=3")
+  const amountToggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Amount",
+  })
+  expect(amountToggle).toBeDisabled()
+  expect(screen.queryByRole("button", { name: "Apply Amount" })).toBeNull()
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Toggle Advanced Currency" })
+  )
+  await waitFor(() => expect(amountToggle).toBeEnabled())
+  fireEvent.click(amountToggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      amount: "0.5",
+      currency: "euro",
+      issuer: "AR",
+    })
+  )
+  expect(screen.getByTestId("advanced-amount-selection")).toHaveTextContent(
+    "0.5"
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?amount=0.5&currency=euro&issuer=AR&page=1&pageSize=24"
+  )
+
+  fireEvent.click(amountToggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      amount: undefined,
+      currency: "euro",
+      issuer: "AR",
+    })
+  )
+})
 
 it("applies, restores, and clears Year in advanced filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
@@ -635,7 +712,9 @@ it("restores Currency from the URL and clears its dependent Amount", async () =>
       currency: undefined,
     })
   )
-  expect(screen.getByRole("textbox", { name: "Amount" })).toBeDisabled()
+  expect(
+    screen.getByRole("button", { name: "Toggle Advanced Amount" })
+  ).toBeDisabled()
 })
 
 it("applies and clears an advanced Ruler / Period rule with duplicate names", async () => {

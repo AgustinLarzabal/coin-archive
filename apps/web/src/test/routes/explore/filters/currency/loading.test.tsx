@@ -17,11 +17,11 @@ it("keeps Explore loading until Currency reference data is ready", async () => {
 
   expect(await screen.findByText("Loading coins…")).toBeVisible()
   expect(
-    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+    screen.queryByRole("navigation", { name: "Explore filters" })
   ).toBeNull()
 
   resolveCurrencies?.(jsonResponse({ currencies: [] }))
   expect(
-    await screen.findByRole("navigation", { name: "ReUI filter experiment" })
+    await screen.findByRole("navigation", { name: "Explore filters" })
   ).toBeVisible()
 })

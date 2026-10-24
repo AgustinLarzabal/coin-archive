@@ -25,7 +25,6 @@ import {
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
 import { ExploreAdvancedFilters } from "@/features/explore/filters/advanced/explore-advanced-filters"
-import { ExploreBasicFilters } from "@/features/explore/filters/basic/explore-basic-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
@@ -68,8 +67,8 @@ function ExploreLayout() {
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <ExploreBasicFilters amount={amount} currencySlug={currencySlug} />
       <ExploreAdvancedFilters
+        amount={amount}
         currencies={currencyList.currencies}
         currencySlug={currencySlug}
         distribution={distribution}

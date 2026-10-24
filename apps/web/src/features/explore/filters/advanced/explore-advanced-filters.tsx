@@ -2,6 +2,7 @@ import {
   coinDistributionSchema,
   currencySlugSchema,
   engraverSlugSchema,
+  faceValueAmountQuerySchema,
   isIsoIssuerCode,
   issuerCodeSchema,
   mintSlugSchema,
@@ -18,6 +19,7 @@ import {
   CoinsIcon,
   CrownIcon,
   GlobeIcon,
+  HashIcon,
   MapPinIcon,
   PencilSimpleIcon,
   StackIcon,
@@ -45,6 +47,7 @@ import {
 } from "@/features/explore/filters/issue-year-filter-value"
 
 function queryFromFilters(
+  amount: string | undefined,
   currencySlug: string | undefined,
   distribution: string | undefined,
   engraverSlug: string | undefined,
@@ -54,6 +57,16 @@ function queryFromFilters(
   year: CoinListYear | undefined
 ): FilterQuery<string> {
   return createFilterQuery([
+    ...(amount === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-amount",
+            path: ["amount"],
+            operator: "is",
+            value: amount,
+          }),
+        ]),
     ...(currencySlug === undefined
       ? []
       : [
@@ -128,6 +141,7 @@ function queryFromFilters(
 }
 
 export function ExploreAdvancedFilters({
+  amount,
   currencies,
   currencySlug,
   distribution,
@@ -142,6 +156,7 @@ export function ExploreAdvancedFilters({
   rulingAuthorities,
   year,
 }: {
+  amount?: string
   currencies: Array<CurrencyResponse>
   currencySlug?: string
   distribution?: string
@@ -159,6 +174,7 @@ export function ExploreAdvancedFilters({
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() =>
     queryFromFilters(
+      amount,
       currencySlug,
       distribution,
       engraverSlug,
@@ -177,6 +193,30 @@ export function ExploreAdvancedFilters({
     nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
   }
   const fields: FilterField<string>[] = [
+    {
+      id: "amount",
+      label: "Amount",
+      icon: <HashIcon />,
+      disabled:
+        !query.rules.some(
+          (node) =>
+            node.type === "rule" &&
+            node.path[0] === "currency" &&
+            node.operator === "is" &&
+            currencySlugSchema.safeParse(node.value).success
+        ) ||
+        query.rules.some(
+          (node) => node.type === "rule" && node.path[0] === "amount"
+        ),
+      type: "text",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      placeholder: "0.5",
+      validate: ({ value }) =>
+        faceValueAmountQuerySchema.safeParse(value).success
+          ? null
+          : "Enter a positive decimal with up to 12 fractional digits.",
+    },
     {
       id: "currency",
       label: "Currency",
@@ -334,6 +374,7 @@ export function ExploreAdvancedFilters({
   useEffect(() => {
     setQuery(
       queryFromFilters(
+        amount,
         currencySlug,
         distribution,
         engraverSlug,
@@ -344,6 +385,7 @@ export function ExploreAdvancedFilters({
       )
     )
   }, [
+    amount,
     currencySlug,
     distribution,
     engraverSlug,
@@ -355,7 +397,7 @@ export function ExploreAdvancedFilters({
 
   return (
     <nav
-      aria-label="ReUI filter experiment"
+      aria-label="Explore filters"
       className="flex flex-wrap items-start gap-3 border-b px-5 py-4 md:items-center md:gap-5 md:px-10"
     >
       <Filters
@@ -374,7 +416,11 @@ export function ExploreAdvancedFilters({
           const mint = rule("mint")
           const ruler = rule("ruler")
           const currency = rule("currency")
+          const amountRule = rule("amount")
           const yearRule = rule("year")
+          const nextAmount = faceValueAmountQuerySchema.safeParse(
+            amountRule?.value
+          )
           const nextCurrency = currencySlugSchema.safeParse(currency?.value)
           const nextDistribution = coinDistributionSchema.safeParse(
             distributionRule?.value
@@ -387,6 +433,7 @@ export function ExploreAdvancedFilters({
             ? parseIssueYearFilterValue(yearRule.value ?? "")
             : undefined
           const patch: {
+            amount?: string
             currency?: string
             distribution?: string
             engraver?: string
@@ -395,6 +442,12 @@ export function ExploreAdvancedFilters({
             ruler?: string
             year?: CoinListYear
           } = {}
+          if (
+            !amountRule ||
+            (amountRule.operator === "is" && nextAmount.success)
+          ) {
+            if (nextAmount.data !== amount) patch.amount = nextAmount.data
+          }
           if (
             !currency ||
             (currency.operator === "is" && nextCurrency.success)

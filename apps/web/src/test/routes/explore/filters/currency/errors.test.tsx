@@ -28,7 +28,7 @@ it("uses the route error state for an invalid Currency response", async () => {
     await screen.findByText("Invalid Currency list response")
   ).toBeVisible()
   expect(
-    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+    screen.queryByRole("navigation", { name: "Explore filters" })
   ).toBeNull()
 })
 
@@ -38,6 +38,6 @@ it("uses the route error state when the Currency request fails", async () => {
 
   expect(await screen.findByText("Unable to load Currencies")).toBeVisible()
   expect(
-    screen.queryByRole("navigation", { name: "ReUI filter experiment" })
+    screen.queryByRole("navigation", { name: "Explore filters" })
   ).toBeNull()
 })

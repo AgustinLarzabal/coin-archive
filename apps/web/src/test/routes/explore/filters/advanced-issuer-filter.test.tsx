@@ -54,9 +54,78 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           ?.options?.map((option) => option.label)
           .join(", ")}
       </output>
+      <button
+        type="button"
+        onClick={() => {
+          const hasRuler = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "ruler"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasRuler
+              ? query.rules.filter(
+                  (rule) => rule.type !== "rule" || rule.path[0] !== "ruler"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-ruler",
+                    type: "rule",
+                    path: ["ruler"],
+                    operator: "is",
+                    value: "shared-b",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Ruler / Period
+      </button>
+      <output data-testid="advanced-ruler-options">
+        {fields
+          .find((field) => field.id === "ruler")
+          ?.options?.map((option) => option.label)
+          .join(", ")}
+      </output>
     </>
   ),
 }))
+
+it("applies and clears an advanced Ruler / Period rule with duplicate names", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({ issuers: [{ name: "Argentina", code: "AR" }] })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&page=3", [
+    { slug: "shared-a", name: "Shared Name" },
+    { slug: "shared-b", name: "Shared Name" },
+  ])
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Ruler / Period",
+  })
+  expect(screen.getByTestId("advanced-ruler-options")).toHaveTextContent(
+    "Shared Name (shared-a), Shared Name (shared-b)"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      ruler: "shared-b",
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?issuer=AR&ruler=shared-b&page=1&pageSize=24"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+      ruler: undefined,
+    })
+  )
+})
 
 it("applies and clears an advanced Issuer rule through the Explore URL", async () => {
   vi.stubGlobal(

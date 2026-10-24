@@ -78,13 +78,13 @@ function ExploreLayout() {
         engravers={engraverList.engravers}
         mintSlug={mintSlug}
         mints={mintList.mints}
-        rulingAuthoritySlug={rulingAuthoritySlug}
-        rulingAuthorities={rulingAuthorityList.rulers}
         year={year}
       />
       <ExploreAdvancedFilters
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
+        rulingAuthoritySlug={rulingAuthoritySlug}
+        rulingAuthorities={rulingAuthorityList.rulers}
       />
       <Outlet />
     </main>

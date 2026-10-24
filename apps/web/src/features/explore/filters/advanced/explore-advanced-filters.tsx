@@ -1,13 +1,20 @@
-import { isIsoIssuerCode, issuerCodeSchema } from "@coin-archive/api"
+import {
+  isIsoIssuerCode,
+  issuerCodeSchema,
+  rulingAuthoritySlugSchema,
+} from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { Filters } from "@coin-archive/ui/components/reui/filters/filters"
 import {
   createFilterQuery,
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
-import { GlobeIcon } from "@phosphor-icons/react"
+import { CrownIcon, GlobeIcon } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
-import type { IssuerResponse } from "@coin-archive/api"
+import type {
+  IssuerResponse,
+  RulingAuthorityListItemResponse,
+} from "@coin-archive/api"
 import type {
   FilterField,
   FilterQuery,
@@ -16,7 +23,10 @@ import type {
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 
-function queryFromFilters(issuerCode: string | undefined): FilterQuery<string> {
+function queryFromFilters(
+  issuerCode: string | undefined,
+  rulingAuthoritySlug: string | undefined
+): FilterQuery<string> {
   return createFilterQuery([
     ...(issuerCode === undefined
       ? []
@@ -28,18 +38,38 @@ function queryFromFilters(issuerCode: string | undefined): FilterQuery<string> {
             value: issuerCode,
           }),
         ]),
+    ...(rulingAuthoritySlug === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-ruler",
+            path: ["ruler"],
+            operator: "is",
+            value: rulingAuthoritySlug,
+          }),
+        ]),
   ])
 }
 
 export function ExploreAdvancedFilters({
   issuerCode,
   issuers,
+  rulingAuthoritySlug,
+  rulingAuthorities,
 }: {
   issuerCode?: string
   issuers: Array<IssuerResponse>
+  rulingAuthoritySlug?: string
+  rulingAuthorities: Array<RulingAuthorityListItemResponse>
 }) {
   const { updateFilters } = useExploreSearchNavigation()
-  const [query, setQuery] = useState(() => queryFromFilters(issuerCode))
+  const [query, setQuery] = useState(() =>
+    queryFromFilters(issuerCode, rulingAuthoritySlug)
+  )
+  const nameCounts = new Map<string, number>()
+  for (const ruler of rulingAuthorities) {
+    nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
+  }
   const fields: FilterField<string>[] = [
     {
       id: "issuer",
@@ -60,11 +90,30 @@ export function ExploreAdvancedFilters({
         ) : undefined,
       })),
     },
+    {
+      id: "ruler",
+      label: "Ruler / Period",
+      icon: <CrownIcon />,
+      pinSelected: true,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "ruler"
+      ),
+      type: "select",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      options: rulingAuthorities.map((ruler) => ({
+        label:
+          nameCounts.get(ruler.name) === 1
+            ? ruler.name
+            : `${ruler.name} (${ruler.slug})`,
+        value: ruler.slug,
+      })),
+    },
   ]
 
   useEffect(() => {
-    setQuery(queryFromFilters(issuerCode))
-  }, [issuerCode])
+    setQuery(queryFromFilters(issuerCode, rulingAuthoritySlug))
+  }, [issuerCode, rulingAuthoritySlug])
 
   return (
     <nav
@@ -76,17 +125,24 @@ export function ExploreAdvancedFilters({
         query={query}
         onQueryChange={(next) => {
           setQuery(next)
-          const rule = next.rules.find(
-            (node): node is FilterRule<string> =>
-              node.type === "rule" && node.path[0] === "issuer"
-          )
-          if (rule && (rule.operator !== "is" || rule.value === undefined)) {
-            return
+          const rule = (field: string) =>
+            next.rules.find(
+              (node): node is FilterRule<string> =>
+                node.type === "rule" && node.path[0] === field
+            )
+          const issuer = rule("issuer")
+          const ruler = rule("ruler")
+          const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
+          const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
+          const patch: { issuer?: string; ruler?: string } = {}
+          if (!issuer || (issuer.operator === "is" && nextIssuer.success)) {
+            if (nextIssuer.data !== issuerCode) patch.issuer = nextIssuer.data
           }
-          const parsed = issuerCodeSchema.safeParse(rule?.value)
-          if (rule && !parsed.success) return
-          const value = parsed.success ? parsed.data : undefined
-          if (value !== issuerCode) updateFilters({ issuer: value })
+          if (!ruler || (ruler.operator === "is" && nextRuler.success)) {
+            if (nextRuler.data !== rulingAuthoritySlug)
+              patch.ruler = nextRuler.data
+          }
+          if (Object.keys(patch).length) updateFilters(patch)
         }}
         showClear
       />

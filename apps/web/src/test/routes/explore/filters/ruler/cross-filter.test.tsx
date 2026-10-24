@@ -20,8 +20,9 @@ it("preserves the selected Ruling Authority when the Engraver changes", async ()
     "/?ruler=selected-authority&engraver=first-engraver&year=1986&page=3",
     [{ slug: "selected-authority", name: "Selected Authority" }]
   )
-  await screen.findByRole("combobox", { name: "Ruler / Period" })
-  const engraverCombobox = screen.getByRole("combobox", { name: "Engraver" })
+  const engraverCombobox = await screen.findByRole("combobox", {
+    name: "Engraver",
+  })
   const control = engraverCombobox.closest('[data-slot="input-group"]')
   expect(control).not.toBeNull()
   const user = userEvent.setup()
@@ -46,8 +47,7 @@ it("preserves the selected Ruling Authority when the Year changes", async () => 
     "/?ruler=selected-authority&year=1986&page=3",
     [{ slug: "selected-authority", name: "Selected Authority" }]
   )
-  await screen.findByRole("combobox", { name: "Ruler / Period" })
-  const year = screen.getByRole("textbox", { name: "Year" })
+  const year = await screen.findByRole("textbox", { name: "Year" })
   const user = userEvent.setup()
 
   await user.clear(year)

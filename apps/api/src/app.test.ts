@@ -5,6 +5,19 @@ import { createApp } from "./app.js"
 const successfulReadinessCheck = async () => {}
 
 describe("API composition", () => {
+  it("prevents caching on routes without a path-specific rule", async () => {
+    const app = createApp({
+      allowedOrigins: [],
+      checkReadiness: successfulReadinessCheck,
+    })
+    app.get("/future-route", (context) => context.json({ status: "ok" }))
+
+    for (const path of ["/future-route", "/openapi.json", "/unknown"]) {
+      const response = await app.request(path)
+      expect(response.headers.get("cache-control")).toBe("no-store")
+    }
+  })
+
   it("preserves bounded request IDs and replaces missing or invalid IDs", async () => {
     const app = createApp({
       allowedOrigins: ["http://localhost:3000"],
@@ -85,10 +98,12 @@ describe("API composition", () => {
     )
 
     expect(notFound.status).toBe(404)
+    expect(notFound.headers.get("cache-control")).toBe("no-store")
     await expect(notFound.json()).resolves.toEqual({
       error: { code: "not_found", message: "Not found" },
     })
     expect(unexpected.status).toBe(500)
+    expect(unexpected.headers.get("cache-control")).toBe("no-store")
     await expect(unexpected.json()).resolves.toEqual({
       error: { code: "internal_error", message: "Internal server error" },
     })

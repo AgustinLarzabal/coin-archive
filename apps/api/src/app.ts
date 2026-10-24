@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto"
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
 
-import { registerCoinRoutes } from "./routes/coins.js"
+import { registerCoinDetailRoute } from "./routes/coins-detail.js"
+import { registerCoinListRoute } from "./routes/coins-list.js"
 import { registerCurrencyRoutes } from "./routes/currencies.js"
 import { registerDistributionRoutes } from "./routes/distributions.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
@@ -40,19 +41,6 @@ export interface AppOptions {
 }
 
 const validRequestIdPattern = /^[A-Za-z0-9._:-]{1,128}$/
-const noStorePaths = new Set([
-  "/health",
-  "/openapi.json",
-  "/ready",
-  "/v1/coins",
-  "/v1/currencies",
-  "/v1/distributions",
-  "/v1/engravers",
-  "/v1/issuers",
-  "/v1/mints",
-  "/v1/rulers",
-])
-
 export function createApp(options: AppOptions) {
   const app = new OpenAPIHono<AppEnvironment>()
   const log = options.log ?? console.log
@@ -83,12 +71,7 @@ export function createApp(options: AppOptions) {
 
   app.use("*", async (context, next) => {
     await next()
-    if (
-      noStorePaths.has(context.req.path) ||
-      context.req.path.startsWith("/v1/coins/")
-    ) {
-      context.header("Cache-Control", "no-store")
-    }
+    context.header("Cache-Control", "no-store")
   })
 
   app.use(
@@ -104,10 +87,13 @@ export function createApp(options: AppOptions) {
     checkReadiness: options.checkReadiness,
     log,
   })
-  registerCoinRoutes(app, {
-    findCoinById: options.findCoinById,
+  registerCoinListRoute(app, {
     imageBaseUrl: options.imageBaseUrl,
     listCoins: options.listCoins,
+  })
+  registerCoinDetailRoute(app, {
+    findCoinById: options.findCoinById,
+    imageBaseUrl: options.imageBaseUrl,
   })
   registerCurrencyRoutes(app, { listCurrencies: options.listCurrencies })
   registerDistributionRoutes(app, {
@@ -129,7 +115,6 @@ export function createApp(options: AppOptions) {
   })
 
   app.notFound((context) => {
-    context.header("Cache-Control", "no-store")
     return context.json(
       { error: { code: "not_found", message: "Not found" } },
       404
@@ -137,7 +122,6 @@ export function createApp(options: AppOptions) {
   })
 
   app.onError((_error, context) => {
-    context.header("Cache-Control", "no-store")
     log(
       JSON.stringify({
         timestamp: new Date().toISOString(),

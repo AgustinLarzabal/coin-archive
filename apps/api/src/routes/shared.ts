@@ -11,7 +11,7 @@ export type ApiApp = OpenAPIHono<AppEnvironment>
 
 export const responseHeaders = {
   "Cache-Control": {
-    description: "Prevents caching of operational state",
+    description: "Prevents caching of API responses",
     schema: { type: "string" as const, enum: ["no-store"] },
   },
   "x-request-id": {

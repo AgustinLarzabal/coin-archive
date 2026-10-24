@@ -75,8 +75,6 @@ function ExploreLayout() {
         distributions={distributionList.distributions}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
-        mintSlug={mintSlug}
-        mints={mintList.mints}
         year={year}
       />
       <ExploreAdvancedFilters
@@ -84,6 +82,8 @@ function ExploreLayout() {
         currencySlug={currencySlug}
         issuerCode={issuerCode}
         issuers={issuerList.issuers}
+        mintSlug={mintSlug}
+        mints={mintList.mints}
         rulingAuthoritySlug={rulingAuthoritySlug}
         rulingAuthorities={rulingAuthorityList.rulers}
       />

@@ -3,6 +3,7 @@ import { expect, it, vi } from "vitest"
 import type {
   FilterField,
   FilterQuery,
+  FilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-types"
 
 import {
@@ -90,6 +91,45 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <button
         type="button"
         onClick={() => {
+          const hasMint = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "mint"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasMint
+              ? query.rules.filter(
+                  (rule) => rule.type !== "rule" || rule.path[0] !== "mint"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-mint",
+                    type: "rule",
+                    path: ["mint"],
+                    operator: "is",
+                    value: "rome-italy",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Mint
+      </button>
+      <output data-testid="advanced-mint-options">
+        {fields
+          .find((field) => field.id === "mint")
+          ?.options?.map((option) => option.label)
+          .join(", ")}
+      </output>
+      <output data-testid="advanced-mint-selection">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "mint"
+        )?.value ?? ""}
+      </output>
+      <button
+        type="button"
+        onClick={() => {
           const hasRuler = query.rules.some(
             (rule) => rule.type === "rule" && rule.path[0] === "ruler"
           )
@@ -123,6 +163,95 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
     </>
   ),
 }))
+
+const mint = {
+  id: "40000000-0000-4000-8000-000000000001",
+  slug: "rome-italy",
+  name: "Rome Mint",
+  place: "Rome",
+  country: { code: "IT", name: "Italy" },
+  startYear: 1900,
+  endYear: null,
+  operating: true,
+}
+
+it("applies and clears Mint in advanced filters while preserving other filters", async () => {
+  const fetchMock = vi.fn(createArchiveFetch({ mints: [mint] }))
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute(
+    "/?issuer=IT&year=2004&page=3",
+    [],
+    [],
+    undefined,
+    [mint]
+  )
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Mint",
+  })
+  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
+    "Rome Mint"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "IT",
+      mint: "rome-italy",
+      year: 2004,
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?issuer=IT&mint=rome-italy&year=2004&page=1&pageSize=24"
+  )
+  expect(screen.queryByRole("combobox", { name: "Mint" })).toBeNull()
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "IT",
+      mint: undefined,
+      year: 2004,
+    })
+  )
+})
+
+it("restores a Mint from the URL and distinguishes Mints with the same name", async () => {
+  const secondMint = {
+    ...mint,
+    id: "40000000-0000-4000-8000-000000000002",
+    slug: "rome-mint-vatican",
+    place: "Vatican City",
+    country: { code: "VA", name: "Vatican City" },
+  }
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(createArchiveFetch({ mints: [mint, secondMint] }))
+  )
+  renderArchiveRoute("/?mint=rome-mint-vatican", [], [], undefined, [
+    mint,
+    secondMint,
+  ])
+
+  expect(
+    await screen.findByTestId("advanced-mint-selection")
+  ).toHaveTextContent("rome-mint-vatican")
+  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
+    "Rome Mint (Rome, Italy; rome-italy), Rome Mint (Vatican City, Vatican City; rome-mint-vatican)"
+  )
+})
+
+it("shows an unknown Mint and keeps its URL slug for recovery", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch({ mints: [mint] })))
+  renderArchiveRoute("/?mint=missing-mint", [], [], undefined, [mint])
+
+  expect(await screen.findByText("Mint not found")).toBeVisible()
+  expect(screen.getByTestId("advanced-mint-selection")).toHaveTextContent(
+    "missing-mint"
+  )
+  expect(screen.getByTestId("advanced-mint-options")).toHaveTextContent(
+    "Unknown Mint (missing-mint)"
+  )
+})
 
 it("applies and clears Currency from the advanced filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())

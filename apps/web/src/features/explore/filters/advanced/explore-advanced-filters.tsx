@@ -2,6 +2,7 @@ import {
   currencySlugSchema,
   isIsoIssuerCode,
   issuerCodeSchema,
+  mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
@@ -10,11 +11,17 @@ import {
   createFilterQuery,
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
-import { CoinsIcon, CrownIcon, GlobeIcon } from "@phosphor-icons/react"
+import {
+  CoinsIcon,
+  CrownIcon,
+  GlobeIcon,
+  MapPinIcon,
+} from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type {
   CurrencyResponse,
   IssuerResponse,
+  MintResponse,
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
 import type {
@@ -28,6 +35,7 @@ import { useExploreSearchNavigation } from "@/features/explore/explore-search-na
 function queryFromFilters(
   currencySlug: string | undefined,
   issuerCode: string | undefined,
+  mintSlug: string | undefined,
   rulingAuthoritySlug: string | undefined
 ): FilterQuery<string> {
   return createFilterQuery([
@@ -51,6 +59,16 @@ function queryFromFilters(
             value: issuerCode,
           }),
         ]),
+    ...(mintSlug === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-mint",
+            path: ["mint"],
+            operator: "is",
+            value: mintSlug,
+          }),
+        ]),
     ...(rulingAuthoritySlug === undefined
       ? []
       : [
@@ -69,6 +87,8 @@ export function ExploreAdvancedFilters({
   currencySlug,
   issuerCode,
   issuers,
+  mintSlug,
+  mints,
   rulingAuthoritySlug,
   rulingAuthorities,
 }: {
@@ -76,13 +96,19 @@ export function ExploreAdvancedFilters({
   currencySlug?: string
   issuerCode?: string
   issuers: Array<IssuerResponse>
+  mintSlug?: string
+  mints: Array<MintResponse>
   rulingAuthoritySlug?: string
   rulingAuthorities: Array<RulingAuthorityListItemResponse>
 }) {
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() =>
-    queryFromFilters(currencySlug, issuerCode, rulingAuthoritySlug)
+    queryFromFilters(currencySlug, issuerCode, mintSlug, rulingAuthoritySlug)
   )
+  const mintNameCounts = new Map<string, number>()
+  for (const mint of mints) {
+    mintNameCounts.set(mint.name, (mintNameCounts.get(mint.name) ?? 0) + 1)
+  }
   const nameCounts = new Map<string, number>()
   for (const ruler of rulingAuthorities) {
     nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
@@ -124,6 +150,36 @@ export function ExploreAdvancedFilters({
       })),
     },
     {
+      id: "mint",
+      label: "Mint",
+      icon: <MapPinIcon />,
+      pinSelected: true,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "mint"
+      ),
+      type: "select",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      options: [
+        ...mints.map((mint) => ({
+          label:
+            mintNameCounts.get(mint.name) === 1
+              ? mint.name
+              : `${mint.name} (${mint.place}, ${mint.country.name}; ${mint.slug})`,
+          value: mint.slug,
+        })),
+        ...(mintSlug && !mints.some((mint) => mint.slug === mintSlug)
+          ? [
+              {
+                label: `Unknown Mint (${mintSlug})`,
+                value: mintSlug,
+                disabled: true,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
       id: "ruler",
       label: "Ruler / Period",
       icon: <CrownIcon />,
@@ -145,8 +201,10 @@ export function ExploreAdvancedFilters({
   ]
 
   useEffect(() => {
-    setQuery(queryFromFilters(currencySlug, issuerCode, rulingAuthoritySlug))
-  }, [currencySlug, issuerCode, rulingAuthoritySlug])
+    setQuery(
+      queryFromFilters(currencySlug, issuerCode, mintSlug, rulingAuthoritySlug)
+    )
+  }, [currencySlug, issuerCode, mintSlug, rulingAuthoritySlug])
 
   return (
     <nav
@@ -164,13 +222,19 @@ export function ExploreAdvancedFilters({
                 node.type === "rule" && node.path[0] === field
             )
           const issuer = rule("issuer")
+          const mint = rule("mint")
           const ruler = rule("ruler")
           const currency = rule("currency")
           const nextCurrency = currencySlugSchema.safeParse(currency?.value)
           const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
+          const nextMint = mintSlugSchema.safeParse(mint?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
-          const patch: { currency?: string; issuer?: string; ruler?: string } =
-            {}
+          const patch: {
+            currency?: string
+            issuer?: string
+            mint?: string
+            ruler?: string
+          } = {}
           if (
             !currency ||
             (currency.operator === "is" && nextCurrency.success)
@@ -180,6 +244,9 @@ export function ExploreAdvancedFilters({
           }
           if (!issuer || (issuer.operator === "is" && nextIssuer.success)) {
             if (nextIssuer.data !== issuerCode) patch.issuer = nextIssuer.data
+          }
+          if (!mint || (mint.operator === "is" && nextMint.success)) {
+            if (nextMint.data !== mintSlug) patch.mint = nextMint.data
           }
           if (!ruler || (ruler.operator === "is" && nextRuler.success)) {
             if (nextRuler.data !== rulingAuthoritySlug)

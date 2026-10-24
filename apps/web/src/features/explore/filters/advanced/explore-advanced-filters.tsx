@@ -1,6 +1,7 @@
 import {
   coinDistributionSchema,
   currencySlugSchema,
+  engraverSlugSchema,
   isIsoIssuerCode,
   issuerCodeSchema,
   mintSlugSchema,
@@ -17,12 +18,14 @@ import {
   CrownIcon,
   GlobeIcon,
   MapPinIcon,
+  PencilSimpleIcon,
   StackIcon,
 } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import type {
   CurrencyResponse,
   DistributionListItemResponse,
+  EngraverListItemResponse,
   IssuerResponse,
   MintResponse,
   RulingAuthorityListItemResponse,
@@ -38,6 +41,7 @@ import { useExploreSearchNavigation } from "@/features/explore/explore-search-na
 function queryFromFilters(
   currencySlug: string | undefined,
   distribution: string | undefined,
+  engraverSlug: string | undefined,
   issuerCode: string | undefined,
   mintSlug: string | undefined,
   rulingAuthoritySlug: string | undefined
@@ -61,6 +65,16 @@ function queryFromFilters(
             path: ["distribution"],
             operator: "is",
             value: distribution,
+          }),
+        ]),
+    ...(engraverSlug === undefined
+      ? []
+      : [
+          createFilterRule({
+            id: "explore-engraver",
+            path: ["engraver"],
+            operator: "is",
+            value: engraverSlug,
           }),
         ]),
     ...(issuerCode === undefined
@@ -101,6 +115,8 @@ export function ExploreAdvancedFilters({
   currencySlug,
   distribution,
   distributions,
+  engraverSlug,
+  engravers,
   issuerCode,
   issuers,
   mintSlug,
@@ -112,6 +128,8 @@ export function ExploreAdvancedFilters({
   currencySlug?: string
   distribution?: string
   distributions: Array<DistributionListItemResponse>
+  engraverSlug?: string
+  engravers: Array<EngraverListItemResponse>
   issuerCode?: string
   issuers: Array<IssuerResponse>
   mintSlug?: string
@@ -124,6 +142,7 @@ export function ExploreAdvancedFilters({
     queryFromFilters(
       currencySlug,
       distribution,
+      engraverSlug,
       issuerCode,
       mintSlug,
       rulingAuthoritySlug
@@ -176,6 +195,34 @@ export function ExploreAdvancedFilters({
               {
                 label: `Unknown Distribution (${distribution})`,
                 value: distribution,
+                disabled: true,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      id: "engraver",
+      label: "Engraver",
+      icon: <PencilSimpleIcon />,
+      pinSelected: true,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === "engraver"
+      ),
+      type: "select",
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      options: [
+        ...engravers.map((engraver) => ({
+          label: engraver.fullName,
+          value: engraver.slug,
+        })),
+        ...(engraverSlug &&
+        !engravers.some((engraver) => engraver.slug === engraverSlug)
+          ? [
+              {
+                label: `Unknown engraver (${engraverSlug})`,
+                value: engraverSlug,
                 disabled: true,
               },
             ]
@@ -257,12 +304,20 @@ export function ExploreAdvancedFilters({
       queryFromFilters(
         currencySlug,
         distribution,
+        engraverSlug,
         issuerCode,
         mintSlug,
         rulingAuthoritySlug
       )
     )
-  }, [currencySlug, distribution, issuerCode, mintSlug, rulingAuthoritySlug])
+  }, [
+    currencySlug,
+    distribution,
+    engraverSlug,
+    issuerCode,
+    mintSlug,
+    rulingAuthoritySlug,
+  ])
 
   return (
     <nav
@@ -281,6 +336,7 @@ export function ExploreAdvancedFilters({
             )
           const issuer = rule("issuer")
           const distributionRule = rule("distribution")
+          const engraver = rule("engraver")
           const mint = rule("mint")
           const ruler = rule("ruler")
           const currency = rule("currency")
@@ -288,12 +344,14 @@ export function ExploreAdvancedFilters({
           const nextDistribution = coinDistributionSchema.safeParse(
             distributionRule?.value
           )
+          const nextEngraver = engraverSlugSchema.safeParse(engraver?.value)
           const nextIssuer = issuerCodeSchema.safeParse(issuer?.value)
           const nextMint = mintSlugSchema.safeParse(mint?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
           const patch: {
             currency?: string
             distribution?: string
+            engraver?: string
             issuer?: string
             mint?: string
             ruler?: string
@@ -311,6 +369,13 @@ export function ExploreAdvancedFilters({
           ) {
             if (nextDistribution.data !== distribution)
               patch.distribution = nextDistribution.data
+          }
+          if (
+            !engraver ||
+            (engraver.operator === "is" && nextEngraver.success)
+          ) {
+            if (nextEngraver.data !== engraverSlug)
+              patch.engraver = nextEngraver.data
           }
           if (!issuer || (issuer.operator === "is" && nextIssuer.success)) {
             if (nextIssuer.data !== issuerCode) patch.issuer = nextIssuer.data

@@ -1,5 +1,5 @@
 import { createMemoryHistory } from "@tanstack/react-router"
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
+import { act, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -209,40 +209,6 @@ describe("Archive landing route", () => {
 
     router.history.forward()
     await waitFor(() => expect(router.state.location.searchStr).toBe(""))
-  })
-
-  it("clears only the selected Engraver", async () => {
-    vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
-    const router = renderArchiveRoute("/?issuer=AR&engraver=first-engraver")
-    const combobox = await screen.findByRole("combobox", { name: "Engraver" })
-
-    expect(combobox).toHaveValue("First Engraver")
-    const engraverControl = combobox.parentElement
-    if (!engraverControl) throw new Error("Engraver combobox control not found")
-
-    fireEvent.click(
-      within(engraverControl).getByRole("button", { name: "Clear Engraver" })
-    )
-
-    await waitFor(() =>
-      expect(router.state.location.searchStr).toBe("?issuer=AR")
-    )
-    expect(combobox).toHaveValue("")
-    expect(combobox).toHaveAttribute("placeholder", "All engravers")
-
-    router.history.back()
-    await waitFor(() =>
-      expect(router.state.location.searchStr).toBe(
-        "?engraver=first-engraver&issuer=AR"
-      )
-    )
-    expect(combobox).toHaveValue("First Engraver")
-
-    router.history.forward()
-    await waitFor(() =>
-      expect(router.state.location.searchStr).toBe("?issuer=AR")
-    )
-    expect(combobox).toHaveValue("")
   })
 
   it("filters Coins by a valid Engraver Slug and combines it with an Issuer", async () => {

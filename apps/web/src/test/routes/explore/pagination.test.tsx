@@ -292,32 +292,4 @@ describe("Explore pagination", () => {
       screen.queryByRole("navigation", { name: "Pagination" })
     ).not.toBeInTheDocument()
   })
-
-  it("resets page navigation when the Engraver filter changes", async () => {
-    const fetchMock = vi.fn(createPageAwareArchiveFetch())
-    vi.stubGlobal("fetch", fetchMock)
-    const router = renderArchiveRoute(
-      "/?issuer=AR&engraver=first-engraver&year=1986&page=3"
-    )
-
-    await screen.findByRole("link", { name: "Coin on page 3" })
-    const engraverCombobox = screen.getByRole("combobox", {
-      name: "Engraver",
-    })
-    const engraverControl = engraverCombobox.parentElement
-    if (!engraverControl) throw new Error("Engraver combobox control not found")
-    const user = userEvent.setup()
-    await user.click(
-      within(engraverControl).getByRole("button", { name: "Clear Engraver" })
-    )
-
-    await waitFor(() =>
-      expect(router.state.location.search).toEqual({ issuer: "AR", year: 1986 })
-    )
-    await screen.findByRole("link", { name: "Coin on page 1" })
-    await waitFor(() => expect(router.state.status).toBe("idle"))
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&year=1986&page=1&pageSize=24"
-    )
-  })
 })

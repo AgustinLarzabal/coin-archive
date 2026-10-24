@@ -103,6 +103,45 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <button
         type="button"
         onClick={() => {
+          const hasEngraver = query.rules.some(
+            (rule) => rule.type === "rule" && rule.path[0] === "engraver"
+          )
+          onQueryChange({
+            ...query,
+            rules: hasEngraver
+              ? query.rules.filter(
+                  (rule) => rule.type !== "rule" || rule.path[0] !== "engraver"
+                )
+              : [
+                  ...query.rules,
+                  {
+                    id: "test-engraver",
+                    type: "rule",
+                    path: ["engraver"],
+                    operator: "is",
+                    value: "first-engraver",
+                  },
+                ],
+          })
+        }}
+      >
+        Toggle Advanced Engraver
+      </button>
+      <output data-testid="advanced-engraver-options">
+        {fields
+          .find((field) => field.id === "engraver")
+          ?.options?.map((option) => option.label)
+          .join(", ")}
+      </output>
+      <output data-testid="advanced-engraver-selection">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "engraver"
+        )?.value ?? ""}
+      </output>
+      <button
+        type="button"
+        onClick={() => {
           const hasIssuer = query.rules.some(
             (rule) => rule.type === "rule" && rule.path[0] === "issuer"
           )
@@ -219,6 +258,58 @@ const mint = {
   endYear: null,
   operating: true,
 }
+
+it("applies and clears Engraver in advanced filters", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?issuer=AR&page=3")
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Engraver",
+  })
+  expect(screen.getByTestId("advanced-engraver-options")).toHaveTextContent(
+    "First Engraver"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      engraver: "first-engraver",
+      issuer: "AR",
+    })
+  )
+  expect(screen.getByTestId("advanced-engraver-selection")).toHaveTextContent(
+    "first-engraver"
+  )
+  expect(screen.queryByRole("combobox", { name: "Engraver" })).toBeNull()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
+  )
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      engraver: undefined,
+      issuer: "AR",
+    })
+  )
+})
+
+it("restores an unknown Engraver from the URL for recovery", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  renderArchiveRoute("/?engraver=unknown-engraver")
+
+  expect(await screen.findByText("Engraver not found")).toBeVisible()
+  expect(screen.getByTestId("advanced-engraver-selection")).toHaveTextContent(
+    "unknown-engraver"
+  )
+  expect(screen.getByTestId("advanced-engraver-options")).toHaveTextContent(
+    "Unknown engraver (unknown-engraver)"
+  )
+})
 
 it("applies and clears Distribution in advanced filters while preserving other filters", async () => {
   const fetchMock = vi.fn(createArchiveFetch())

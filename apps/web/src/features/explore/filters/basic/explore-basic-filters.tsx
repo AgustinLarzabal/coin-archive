@@ -1,19 +1,14 @@
 import { AmountFilter } from "./amount-filter"
-import { EngraverFilter } from "./engraver-filter"
 import { IssueYearFilter } from "./issue-year-filter"
-import type { CoinListYear, EngraverListItemResponse } from "@coin-archive/api"
+import type { CoinListYear } from "@coin-archive/api"
 
 export function ExploreBasicFilters({
   amount,
   currencySlug,
-  engraverSlug,
-  engravers,
   year,
 }: {
   amount?: string
   currencySlug?: string
-  engraverSlug?: string
-  engravers: Array<EngraverListItemResponse>
   year?: CoinListYear
 }) {
   return (
@@ -25,7 +20,6 @@ export function ExploreBasicFilters({
         amount={amount}
         currencySelected={currencySlug !== undefined}
       />
-      <EngraverFilter engraverSlug={engraverSlug} engravers={engravers} />
       <IssueYearFilter year={year} />
     </nav>
   )

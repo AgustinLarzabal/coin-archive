@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, it, vi } from "vitest"
 
@@ -6,40 +6,6 @@ import {
   createArchiveFetch,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
-
-it("preserves the selected Ruling Authority when the Engraver changes", async () => {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(
-      createArchiveFetch({
-        engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
-      })
-    )
-  )
-  const router = renderArchiveRoute(
-    "/?ruler=selected-authority&engraver=first-engraver&year=1986&page=3",
-    [{ slug: "selected-authority", name: "Selected Authority" }]
-  )
-  const engraverCombobox = await screen.findByRole("combobox", {
-    name: "Engraver",
-  })
-  const control = engraverCombobox.closest('[data-slot="input-group"]')
-  expect(control).not.toBeNull()
-  const user = userEvent.setup()
-
-  await user.click(
-    within(control as HTMLElement).getByRole("button", {
-      name: "Clear Engraver",
-    })
-  )
-
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      ruler: "selected-authority",
-      year: 1986,
-    })
-  )
-})
 
 it("preserves the selected Ruling Authority when the Year changes", async () => {
   vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))

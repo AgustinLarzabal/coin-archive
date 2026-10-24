@@ -3,7 +3,6 @@ import { CurrencyFilter } from "./currency-filter"
 import { DistributionFilter } from "./distribution-filter"
 import { EngraverFilter } from "./engraver-filter"
 import { IssueYearFilter } from "./issue-year-filter"
-import { IssuerFilter } from "./issuer-filter"
 import { MintFilter } from "./mint-filter"
 import { RulingAuthorityFilter } from "./ruling-authority-filter"
 import type {
@@ -12,7 +11,6 @@ import type {
   CurrencyResponse,
   DistributionListItemResponse,
   EngraverListItemResponse,
-  IssuerResponse,
   MintResponse,
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
@@ -25,8 +23,6 @@ export function ExploreBasicFilters({
   currencySlug,
   engraverSlug,
   engravers,
-  issuerCode,
-  issuers,
   mintSlug,
   mints,
   rulingAuthorities,
@@ -40,8 +36,6 @@ export function ExploreBasicFilters({
   currencySlug?: string
   engraverSlug?: string
   engravers: Array<EngraverListItemResponse>
-  issuerCode?: string
-  issuers: Array<IssuerResponse>
   mintSlug?: string
   mints: Array<MintResponse>
   rulingAuthorities: Array<RulingAuthorityListItemResponse>
@@ -57,7 +51,6 @@ export function ExploreBasicFilters({
         distribution={distribution}
         distributions={distributions}
       />
-      <IssuerFilter issuerCode={issuerCode} issuers={issuers} />
       <MintFilter mintSlug={mintSlug} mints={mints} />
       <CurrencyFilter currencies={currencies} currencySlug={currencySlug} />
       <AmountFilter

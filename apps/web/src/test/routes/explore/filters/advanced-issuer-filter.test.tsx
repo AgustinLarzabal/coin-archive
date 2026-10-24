@@ -48,36 +48,9 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       >
         Toggle Advanced Issuer
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          const hasEngraver = query.rules.some(
-            (rule) => rule.type === "rule" && rule.path[0] === "engraver"
-          )
-          onQueryChange({
-            ...query,
-            rules: hasEngraver
-              ? query.rules.filter(
-                  (rule) => rule.type !== "rule" || rule.path[0] !== "engraver"
-                )
-              : [
-                  ...query.rules,
-                  {
-                    id: "test-engraver",
-                    type: "rule",
-                    path: ["engraver"],
-                    operator: "is",
-                    value: "first-engraver",
-                  },
-                ],
-          })
-        }}
-      >
-        Toggle Advanced Engraver
-      </button>
-      <output data-testid="advanced-engraver-options">
+      <output data-testid="advanced-issuer-options">
         {fields
-          .find((field) => field.id === "engraver")
+          .find((field) => field.id === "issuer")
           ?.options?.map((option) => option.label)
           .join(", ")}
       </output>
@@ -94,59 +67,21 @@ it("applies and clears an advanced Issuer rule through the Explore URL", async (
   const toggle = await screen.findByRole("button", {
     name: "Toggle Advanced Issuer",
   })
-
-  fireEvent.click(toggle)
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      issuer: "AR",
-    })
-  )
-  expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
+  expect(screen.getByTestId("advanced-issuer-options")).toHaveTextContent(
     "Argentina"
   )
 
   fireEvent.click(toggle)
   await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: "AR",
+    })
+  )
+  expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
     expect(router.state.location.search).toEqual({ issuer: undefined })
-  )
-})
-
-it("applies and clears an advanced Engraver rule while preserving Issuer", async () => {
-  const fetchMock = vi.fn(
-    createArchiveFetch({
-      engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
-      issuers: [{ name: "Argentina", code: "AR" }],
-    })
-  )
-  vi.stubGlobal("fetch", fetchMock)
-  const router = renderArchiveRoute("/?issuer=AR&page=3")
-  const toggle = await screen.findByRole("button", {
-    name: "Toggle Advanced Engraver",
-  })
-  expect(screen.getByTestId("advanced-engraver-options")).toHaveTextContent(
-    "First Engraver"
-  )
-
-  fireEvent.click(toggle)
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      issuer: "AR",
-      engraver: "first-engraver",
-    })
-  )
-  expect(screen.getByRole("combobox", { name: "Engraver" })).toHaveValue(
-    "First Engraver"
-  )
-  expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
-  )
-
-  fireEvent.click(toggle)
-  await waitFor(() =>
-    expect(router.state.location.search).toEqual({
-      issuer: "AR",
-      engraver: undefined,
-    })
   )
 })
 
@@ -179,5 +114,35 @@ it("restores an Engraver rule from the URL when Issuer changes", async () => {
       engraver: "first-engraver",
       issuer: undefined,
     })
+  )
+})
+
+it("clears advanced Issuer without losing other filters and resets pagination", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
+      issuers: [{ name: "Argentina", code: "AR" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute(
+    "/?issuer=AR&ruler=selected-authority&engraver=first-engraver&year=1986&page=3",
+    [{ slug: "selected-authority", name: "Selected Authority" }]
+  )
+  const toggle = await screen.findByRole("button", {
+    name: "Toggle Advanced Issuer",
+  })
+
+  fireEvent.click(toggle)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      issuer: undefined,
+      ruler: "selected-authority",
+      engraver: "first-engraver",
+      year: 1986,
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?engraver=first-engraver&ruler=selected-authority&year=1986&page=1&pageSize=24"
   )
 })

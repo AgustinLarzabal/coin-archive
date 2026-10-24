@@ -76,8 +76,6 @@ function ExploreLayout() {
         distributions={distributionList.distributions}
         engraverSlug={engraverSlug}
         engravers={engraverList.engravers}
-        issuerCode={issuerCode}
-        issuers={issuerList.issuers}
         mintSlug={mintSlug}
         mints={mintList.mints}
         rulingAuthoritySlug={rulingAuthoritySlug}

@@ -159,9 +159,9 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(router.state.status).toBe("idle")
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
-      "Argentina"
-    )
+    expect(
+      screen.queryByRole("combobox", { name: "Issuer" })
+    ).not.toBeInTheDocument()
     expect(router.state.location.searchStr).toBe("?issuer=AR")
 
     const navigation = router.navigate({
@@ -190,14 +190,10 @@ describe("Archive landing route", () => {
     const fetchMock = vi.fn(createArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
     const router = renderArchiveRoute()
-    const select = await screen.findByRole("combobox", { name: "Issuer" })
-
-    expect(select).toHaveValue("")
-    expect(select).toHaveAttribute("placeholder", "All issuers")
+    await screen.findByRole("navigation", { name: "Explore filters" })
     await router.navigate({ to: "/", search: { issuer: "ROMAN" } })
 
     expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
-    expect(select).toHaveValue("Roman Empire")
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
     )
@@ -205,17 +201,14 @@ describe("Archive landing route", () => {
     await router.navigate({ to: "/", search: {} })
 
     expect(router.state.location.searchStr).toBe("")
-    expect(select).toHaveValue("")
 
     router.history.back()
     await waitFor(() =>
       expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
     )
-    expect(select).toHaveValue("Roman Empire")
 
     router.history.forward()
     await waitFor(() => expect(router.state.location.searchStr).toBe(""))
-    expect(select).toHaveValue("")
   })
 
   it("clears only the selected Engraver", async () => {
@@ -454,7 +447,7 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?engraver=second-engraver")
   })
 
-  it("places the Issuer select in the Explore filters navigation", async () => {
+  it("keeps Issuer out of the basic Explore filters", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
 
     renderArchiveRoute()
@@ -462,9 +455,12 @@ describe("Archive landing route", () => {
     const filters = await screen.findByRole("navigation", {
       name: "Explore filters",
     })
-    expect(filters).toContainElement(
-      screen.getByRole("combobox", { name: "Issuer" })
-    )
+    expect(
+      within(filters).queryByRole("combobox", { name: "Issuer" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("navigation", { name: "ReUI filter experiment" })
+    ).toBeVisible()
   })
 
   it("keeps the Explore filters visible while a newly selected Issuer loads", async () => {
@@ -503,14 +499,14 @@ describe("Archive landing route", () => {
     expect(
       screen.getAllByRole("navigation", { name: "Explore filters" })[0]
     ).toBeVisible()
-    expect(screen.getAllByRole("combobox", { name: "Issuer" })[0]).toBeVisible()
+    expect(
+      screen.getAllByRole("navigation", { name: "ReUI filter experiment" })[0]
+    ).toBeVisible()
 
     filteredCoinsResponse.resolve(coinListJsonResponse([coin]))
     await act(() => vi.advanceTimersByTimeAsync(500))
     await navigation
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
-      "Roman Empire"
-    )
+    expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
   })
 
   it("shows the filtered empty state for an Issuer-only result", async () => {
@@ -521,18 +517,15 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByText("No coins match the selected filters.")
     ).toBeVisible()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue(
-      "Argentina"
-    )
+    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
   })
 
-  it("keeps the populated select available when the URL Issuer is unknown", async () => {
+  it("shows the route message when the URL Issuer is unknown", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
     renderArchiveRoute("/?issuer=ZZ")
 
     expect(await screen.findByText("Issuer not found")).toBeVisible()
-    const combobox = screen.getByRole("combobox", { name: "Issuer" })
-    expect(combobox).toHaveValue("Unknown issuer (ZZ)")
+    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
   })
 
   it("keeps filtered and unfiltered Coin collections distinct", async () => {
@@ -570,7 +563,7 @@ describe("Archive landing route", () => {
       expect(fetchMock).not.toHaveBeenCalledWith(
         `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}&page=1&pageSize=24`
       )
-      expect(screen.getByRole("combobox", { name: "Issuer" })).toHaveValue("")
+      expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
       expect(router.state.location.searchStr).toBe("")
     }
   )
@@ -758,7 +751,9 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByText("Invalid coin list response")
     ).toBeInTheDocument()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
+    expect(
+      screen.getByRole("navigation", { name: "Explore filters" })
+    ).toBeVisible()
   })
 
   it("shows Coin request failures while preserving the filters", async () => {
@@ -779,7 +774,9 @@ describe("Archive landing route", () => {
     renderArchiveRoute()
 
     expect(await screen.findByText("Unable to load coins")).toBeInTheDocument()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
+    expect(
+      screen.getByRole("navigation", { name: "Explore filters" })
+    ).toBeVisible()
   })
 
   it("shows Coin server failures while preserving the filters", async () => {
@@ -799,7 +796,9 @@ describe("Archive landing route", () => {
     renderArchiveRoute()
 
     expect(await screen.findByText("Unable to load coins")).toBeInTheDocument()
-    expect(screen.getByRole("combobox", { name: "Issuer" })).toBeVisible()
+    expect(
+      screen.getByRole("navigation", { name: "Explore filters" })
+    ).toBeVisible()
   })
 
   it("uses the route error state for an invalid Issuer response", async () => {
@@ -821,7 +820,9 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByText("Invalid issuer list response")
     ).toBeVisible()
-    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
+    expect(
+      screen.queryByRole("navigation", { name: "Explore filters" })
+    ).toBeNull()
   })
 
   it("uses the route error state when the Issuer request fails", async () => {
@@ -842,7 +843,9 @@ describe("Archive landing route", () => {
     renderArchiveRoute()
 
     expect(await screen.findByText("Unable to load issuers")).toBeVisible()
-    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
+    expect(
+      screen.queryByRole("navigation", { name: "Explore filters" })
+    ).toBeNull()
   })
 
   it("uses the route error state for an invalid Engraver response", async () => {
@@ -869,7 +872,9 @@ describe("Archive landing route", () => {
     expect(
       await screen.findByText("Invalid engraver list response")
     ).toBeVisible()
-    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
+    expect(
+      screen.queryByRole("navigation", { name: "Explore filters" })
+    ).toBeNull()
   })
 
   it("uses the route error state when the Engraver request fails", async () => {
@@ -891,7 +896,9 @@ describe("Archive landing route", () => {
     renderArchiveRoute()
 
     expect(await screen.findByText("Unable to load engravers")).toBeVisible()
-    expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
+    expect(
+      screen.queryByRole("navigation", { name: "Explore filters" })
+    ).toBeNull()
   })
 
   it("accepts expanded rollout responses while navigating to Coin detail", async () => {

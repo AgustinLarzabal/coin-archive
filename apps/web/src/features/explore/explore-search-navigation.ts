@@ -32,16 +32,18 @@ export function useExploreSearchNavigation() {
   const navigate = useNavigate({ from: "/" })
 
   return {
-    updateFilters: (patch: ExploreFilterPatch) => {
+    updateFilters: (patch: ExploreFilterPatch, order: string[]) => {
       void navigate({
         to: "/",
         search: (search) => updateExploreFilters(search, patch),
+        state: (previous) => ({ ...previous, exploreFilterOrder: order }),
       })
     },
     goToPage: (page: number) => {
       void navigate({
         to: "/",
         search: (search) => setExplorePage(search, page),
+        state: true,
       })
     },
   }

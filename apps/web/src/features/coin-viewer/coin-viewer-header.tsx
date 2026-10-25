@@ -21,7 +21,9 @@ export function CoinViewerHeader({
       <Breadcrumb className="min-w-0">
         <BreadcrumbList className="flex-nowrap gap-2 font-mono text-xs tracking-widest text-muted uppercase">
           <BreadcrumbItem className="shrink-0">
-            <BreadcrumbLink render={<Link to="/" search={search} />}>
+            <BreadcrumbLink
+              render={<Link to="/" search={search} state={true} />}
+            >
               Archive
             </BreadcrumbLink>
           </BreadcrumbItem>

@@ -24,6 +24,7 @@ import {
   PencilSimpleIcon,
   StackIcon,
 } from "@phosphor-icons/react"
+import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import type {
   CoinListYear,
@@ -36,6 +37,7 @@ import type {
 } from "@coin-archive/api"
 import type {
   FilterField,
+  FilterNode,
   FilterQuery,
   FilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-types"
@@ -46,6 +48,10 @@ import {
   parseIssueYearFilterValue,
 } from "@/features/explore/filters/issue-year-filter-value"
 
+function filterField(node: FilterNode<string>) {
+  return node.type === "rule" ? node.path[0] : ""
+}
+
 function queryFromFilters(
   amount: string | undefined,
   currencySlug: string | undefined,
@@ -54,9 +60,10 @@ function queryFromFilters(
   issuerCode: string | undefined,
   mintSlug: string | undefined,
   rulingAuthoritySlug: string | undefined,
-  year: CoinListYear | undefined
+  year: CoinListYear | undefined,
+  order?: string[]
 ): FilterQuery<string> {
-  return createFilterQuery([
+  const query = createFilterQuery<string>([
     ...(amount === undefined
       ? []
       : [
@@ -138,6 +145,17 @@ function queryFromFilters(
           }),
         ]),
   ])
+  if (order) {
+    query.rules.sort((a, b) => {
+      const first = order.indexOf(filterField(a))
+      const second = order.indexOf(filterField(b))
+      return (
+        (first < 0 ? order.length : first) -
+        (second < 0 ? order.length : second)
+      )
+    })
+  }
+  return query
 }
 
 export function ExploreFilters({
@@ -172,6 +190,12 @@ export function ExploreFilters({
   year?: CoinListYear
 }) {
   const { updateFilters } = useExploreSearchNavigation()
+  const filterOrder = useLocation({
+    select: (location) =>
+      Array.isArray(location.state.exploreFilterOrder)
+        ? location.state.exploreFilterOrder
+        : undefined,
+  })
   const [query, setQuery] = useState(() =>
     queryFromFilters(
       amount,
@@ -381,7 +405,8 @@ export function ExploreFilters({
         issuerCode,
         mintSlug,
         rulingAuthoritySlug,
-        year
+        year,
+        filterOrder
       )
     )
   }, [
@@ -389,6 +414,7 @@ export function ExploreFilters({
     currencySlug,
     distribution,
     engraverSlug,
+    filterOrder,
     issuerCode,
     mintSlug,
     rulingAuthoritySlug,
@@ -485,7 +511,9 @@ export function ExploreFilters({
           ) {
             if (nextYear !== year) patch.year = nextYear
           }
-          if (Object.keys(patch).length) updateFilters(patch)
+          if (Object.keys(patch).length) {
+            updateFilters(patch, next.rules.map(filterField))
+          }
         }}
         showClear
       />

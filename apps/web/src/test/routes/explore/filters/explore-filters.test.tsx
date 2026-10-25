@@ -8,8 +8,10 @@ import type {
 
 import {
   createArchiveFetch,
+  jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
+import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 
 vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
   Filters: ({
@@ -22,6 +24,11 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
     query: FilterQuery<string>
   }) => (
     <>
+      <output data-testid="filter-order">
+        {query.rules
+          .map((rule) => (rule.type === "rule" ? rule.path[0] : "group"))
+          .join(",")}
+      </output>
       <button
         type="button"
         disabled={
@@ -517,6 +524,82 @@ it("applies and clears Distribution in filters while preserving other filters", 
       issuer: "AR",
     })
   )
+})
+
+it("keeps filters in selection order after the URL updates", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/")
+
+  fireEvent.click(await screen.findByRole("button", { name: "Toggle Issuer" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toMatchObject({ issuer: "AR" })
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Toggle Distribution" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toMatchObject({
+      distribution: "non-circulating",
+      issuer: "AR",
+    })
+  )
+  expect(screen.getByTestId("filter-order")).toHaveTextContent(
+    "issuer,distribution"
+  )
+  expect(router.state.location.searchStr).not.toContain("filterOrder")
+  expect(router.state.location.state.exploreFilterOrder).toEqual([
+    "issuer",
+    "distribution",
+  ])
+
+  router.history.back()
+  await waitFor(() =>
+    expect(screen.getByTestId("filter-order")).toHaveTextContent("issuer")
+  )
+  router.history.forward()
+  await waitFor(() =>
+    expect(screen.getByTestId("filter-order")).toHaveTextContent(
+      "issuer,distribution"
+    )
+  )
+})
+
+it("keeps chip order after opening a coin and returning to Explore", async () => {
+  const coin = coinListItemFixture()
+  const fetchArchive = createArchiveFetch({
+    coins: [coin],
+    issuers: [coin.issuer],
+  })
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((input: string | URL | Request) =>
+      String(input).includes(`/v1/coins/${coin.id}`)
+        ? Promise.resolve(jsonResponse(coinDetailFixture()))
+        : fetchArchive(input)
+    )
+  )
+  const router = renderArchiveRoute("/")
+
+  fireEvent.click(await screen.findByRole("button", { name: "Toggle Issuer" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toMatchObject({ issuer: "AR" })
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Toggle Distribution" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toMatchObject({
+      distribution: "non-circulating",
+      issuer: "AR",
+    })
+  )
+
+  fireEvent.click(await screen.findByRole("link", { name: coin.title }))
+  await waitFor(() =>
+    expect(router.state.location.pathname).toBe(`/coins/${coin.id}`)
+  )
+  fireEvent.click(await screen.findByRole("link", { name: "Archive" }))
+  await waitFor(() => expect(router.state.location.pathname).toBe("/"))
+  expect(screen.getByTestId("filter-order")).toHaveTextContent(
+    "issuer,distribution"
+  )
+  expect(router.state.location.searchStr).not.toContain("filterOrder")
 })
 
 it("restores an unknown Distribution in filters from the URL", async () => {

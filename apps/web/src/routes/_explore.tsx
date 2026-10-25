@@ -53,6 +53,12 @@ function ExploreLayout() {
     mint: mintSlug,
     ruler: rulingAuthoritySlug,
     year,
+    sizeMin,
+    sizeMax,
+    thicknessMin,
+    thicknessMax,
+    weightMin,
+    weightMax,
   } = Route.useSearch()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
   const { data: distributionList } = useSuspenseQuery(
@@ -68,6 +74,12 @@ function ExploreLayout() {
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
       <ExploreFilters
+        sizeMin={sizeMin}
+        sizeMax={sizeMax}
+        thicknessMin={thicknessMin}
+        thicknessMax={thicknessMax}
+        weightMin={weightMin}
+        weightMax={weightMax}
         amount={amount}
         currencies={currencyList.currencies}
         currencySlug={currencySlug}

@@ -15,23 +15,32 @@ export interface RouterContext {
 // Tune both thresholds together when production navigation traces are available.
 const ROUTE_PENDING_FEEDBACK_MS = 200
 const BROWSER_QUERY_RETENTION_MS = 30 * 60 * 1_000
-function parseSearchPreservingAmount(searchString: string) {
+function parseSearchPreservingDecimals(searchString: string) {
   const search: Record<string, unknown> = defaultParseSearch(searchString)
   const searchParams = new URLSearchParams(
     searchString.startsWith("?") ? searchString.slice(1) : searchString
   )
-  const amountValues = searchParams.getAll("amount")
-
-  if (amountValues.length === 1) {
-    const [amount] = amountValues
-    try {
-      const parsedAmount = JSON.parse(amount)
-      search.amount = typeof parsedAmount === "string" ? parsedAmount : amount
-    } catch {
-      search.amount = amount
+  for (const key of [
+    "amount",
+    "sizeMin",
+    "sizeMax",
+    "thicknessMin",
+    "thicknessMax",
+    "weightMin",
+    "weightMax",
+  ]) {
+    const values = searchParams.getAll(key)
+    if (values.length === 1) {
+      const [value] = values
+      try {
+        const parsed = JSON.parse(value)
+        search[key] = typeof parsed === "string" ? parsed : value
+      } catch {
+        search[key] = value
+      }
+    } else if (values.length > 1) {
+      search[key] = values
     }
-  } else if (amountValues.length > 1) {
-    search.amount = amountValues
   }
 
   return search
@@ -61,7 +70,7 @@ export function getRouter(options: { history?: RouterHistory } = {}) {
   const router = createTanStackRouter({
     context: { queryClient },
     history: options.history,
-    parseSearch: parseSearchPreservingAmount,
+    parseSearch: parseSearchPreservingDecimals,
     stringifySearch: stringifySearchWithPaginationLast,
     routeTree,
 

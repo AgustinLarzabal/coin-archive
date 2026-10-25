@@ -12,6 +12,8 @@ import {
   engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
+  measurementMinExceedsMax,
+  measurementQuerySchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
@@ -39,6 +41,12 @@ export class InvalidIssueYearError extends Error {}
 export class InvalidCurrencySlugError extends Error {}
 
 export type CoinListFilters = Readonly<{
+  sizeMin?: string
+  sizeMax?: string
+  thicknessMin?: string
+  thicknessMax?: string
+  weightMin?: string
+  weightMax?: string
   currencySlug?: string
   faceValueAmount?: string
   distribution?: CoinDistribution
@@ -51,6 +59,12 @@ export type CoinListFilters = Readonly<{
 }>
 
 type ValidatedCoinListFilters = Readonly<{
+  sizeMin?: string
+  sizeMax?: string
+  thicknessMin?: string
+  thicknessMax?: string
+  weightMin?: string
+  weightMax?: string
   currencySlug: string | null
   faceValueAmount: string | null
   distribution?: CoinDistribution
@@ -64,6 +78,12 @@ type ValidatedCoinListFilters = Readonly<{
 }>
 
 async function getCoins({
+  sizeMin,
+  sizeMax,
+  thicknessMin,
+  thicknessMax,
+  weightMin,
+  weightMax,
   currencySlug,
   faceValueAmount,
   distribution,
@@ -79,6 +99,16 @@ async function getCoins({
 
   try {
     const search = new URLSearchParams()
+    for (const [name, value] of Object.entries({
+      sizeMin,
+      sizeMax,
+      thicknessMin,
+      thicknessMax,
+      weightMin,
+      weightMax,
+    })) {
+      if (value !== undefined) search.set(name, value)
+    }
     if (faceValueAmount !== null) {
       search.set("amount", faceValueAmount)
     }
@@ -164,6 +194,12 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const {
+    sizeMin,
+    sizeMax,
+    thicknessMin,
+    thicknessMax,
+    weightMin,
+    weightMax,
     currencySlug,
     faceValueAmount,
     distribution,
@@ -174,6 +210,35 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     page = COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug,
   } = filters
+  for (const [name, value] of Object.entries({
+    sizeMin,
+    sizeMax,
+    thicknessMin,
+    thicknessMax,
+    weightMin,
+    weightMax,
+  })) {
+    if (
+      value !== undefined &&
+      !measurementQuerySchema(name.startsWith("weight") ? 3 : 2).safeParse(
+        value
+      ).success
+    ) {
+      throw new TypeError("Invalid Coin measurement")
+    }
+  }
+  for (const [min, max] of [
+    [sizeMin, sizeMax],
+    [thicknessMin, thicknessMax],
+    [weightMin, weightMax],
+  ]) {
+    if (
+      min !== undefined &&
+      max !== undefined &&
+      measurementMinExceedsMax(min, max)
+    )
+      throw new RangeError("Invalid Coin measurement range")
+  }
   if (
     currencySlug !== undefined &&
     !currencySlugSchema.safeParse(currencySlug).success
@@ -225,6 +290,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
 
   const validatedFilters: ValidatedCoinListFilters = {
+    ...(sizeMin === undefined ? {} : { sizeMin }),
+    ...(sizeMax === undefined ? {} : { sizeMax }),
+    ...(thicknessMin === undefined ? {} : { thicknessMin }),
+    ...(thicknessMax === undefined ? {} : { thicknessMax }),
+    ...(weightMin === undefined ? {} : { weightMin }),
+    ...(weightMax === undefined ? {} : { weightMax }),
     currencySlug: currencySlug ?? null,
     faceValueAmount: faceValueAmount ?? null,
     ...(distribution === undefined ? {} : { distribution }),

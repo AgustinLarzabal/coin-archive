@@ -22,6 +22,12 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          sizeMin: search.sizeMin,
+          sizeMax: search.sizeMax,
+          thicknessMin: search.thicknessMin,
+          thicknessMax: search.thicknessMax,
+          weightMin: search.weightMin,
+          weightMax: search.weightMax,
           amount: search.amount,
           currency: search.currency,
           distribution: search.distribution,
@@ -46,6 +52,12 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          sizeMin: filters.sizeMin,
+          sizeMax: filters.sizeMax,
+          thicknessMin: filters.thicknessMin,
+          thicknessMax: filters.thicknessMax,
+          weightMin: filters.weightMin,
+          weightMax: filters.weightMax,
           amount: filters.faceValueAmount,
           currency: filters.currencySlug,
           distribution: filters.distribution,

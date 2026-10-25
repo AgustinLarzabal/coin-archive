@@ -132,6 +132,20 @@ export const faceValueAmountQuerySchema = z
   .string()
   .regex(new RegExp(FACE_VALUE_AMOUNT_QUERY_PATTERN))
 
+export const measurementQuerySchema = (precision: 2 | 3) =>
+  z
+    .string()
+    .regex(new RegExp(`^(?:[1-9]\\d{0,17}|0)(?:\\.\\d{1,${precision}})?$`))
+    .refine((value) => Number(value) > 0)
+
+export function measurementMinExceedsMax(min: string, max: string) {
+  const scaled = (value: string) => {
+    const [whole, fraction = ""] = value.split(".")
+    return BigInt(whole) * 1000n + BigInt(fraction.padEnd(3, "0"))
+  }
+  return scaled(min) > scaled(max)
+}
+
 export const currencyResponseSchema = z.strictObject({
   slug: currencySlugSchema,
   name: trimmedDisplayTextSchema(200),
@@ -362,13 +376,9 @@ export const coinDetailResponseSchema = z
       .positive()
       .nullable()
       .meta({ description: "Coin Size in millimetres; null when unknown." }),
-    thickness: z
-      .number()
-      .positive()
-      .nullable()
-      .meta({
-        description: "Coin Thickness in millimetres; null when unknown.",
-      }),
+    thickness: z.number().positive().nullable().meta({
+      description: "Coin Thickness in millimetres; null when unknown.",
+    }),
     weight: z
       .number()
       .positive()
@@ -453,6 +463,11 @@ export const invalidCurrencySlugErrorSchema = errorResponseSchema(
 export const invalidFaceValueFilterErrorSchema = errorResponseSchema(
   "invalid_face_value_filter",
   "Face Value filter is invalid"
+)
+
+export const invalidMeasurementFilterErrorSchema = errorResponseSchema(
+  "invalid_measurement_filter",
+  "Measurement filter is invalid"
 )
 
 export const invalidYearErrorSchema = errorResponseSchema(

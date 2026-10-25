@@ -15,6 +15,82 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin list route", () => {
+  describe("measurement bounds", () => {
+    it("passes inclusive bounds and other filters to the list and keeps the exact total", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 7 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(
+        "/v1/coins?sizeMin=20&sizeMax=20&thicknessMax=2.25&weightMin=8.125&issuer=AR&page=2&pageSize=3"
+      )
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        sizeMin: "20",
+        sizeMax: "20",
+        thicknessMax: "2.25",
+        weightMin: "8.125",
+        issuerCode: "AR",
+        page: 2,
+        pageSize: 3,
+      })
+      await expect(response.json()).resolves.toMatchObject({
+        pagination: { totalItems: 7, totalPages: 3 },
+      })
+    })
+
+    it.each([
+      "sizeMin=0",
+      "sizeMax=-1",
+      "weightMin=1.0001",
+      "thicknessMax=1e2",
+      "sizeMin=2&sizeMin=2",
+      "weightMin=9&weightMax=8",
+      "sizeMin=abc",
+    ])("rejects invalid measurement query %s", async (query) => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_measurement_filter",
+          message: "Measurement filter is invalid",
+        },
+      })
+    })
+
+    it("documents all six bounds and the client error", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+      }).request("/openapi.json")
+      const document = (await response.json()) as {
+        paths: Record<string, { get: { parameters: Array<{ name: string }> } }>
+        components: { schemas: Record<string, unknown> }
+      }
+      expect(
+        document.paths["/v1/coins"].get.parameters.map(({ name }) => name)
+      ).toEqual(
+        expect.arrayContaining([
+          "sizeMin",
+          "sizeMax",
+          "thicknessMin",
+          "thicknessMax",
+          "weightMin",
+          "weightMax",
+        ])
+      )
+      expect(document.components.schemas).toHaveProperty(
+        "InvalidMeasurementFilterError"
+      )
+    })
+  })
   describe("GET /v1/coins?mint", () => {
     it("passes the Mint Slug alongside pagination and other filters", async () => {
       const listCoins = vi.fn(emptyCoinPage)
@@ -995,7 +1071,7 @@ describe("Coin list route", () => {
         }
       }
 
-      expect(document.paths["/v1/coins"].get.parameters).toEqual([
+      expect(document.paths["/v1/coins"].get.parameters.slice(6)).toEqual([
         expect.objectContaining({
           description: expect.stringContaining("Requires currency"),
           in: "query",
@@ -1103,6 +1179,9 @@ describe("Coin list route", () => {
                   anyOf: [
                     {
                       $ref: "#/components/schemas/InvalidFaceValueFilterError",
+                    },
+                    {
+                      $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },

@@ -5,6 +5,8 @@ import {
   faceValueAmountQuerySchema,
   isIsoIssuerCode,
   issuerCodeSchema,
+  measurementMinExceedsMax,
+  measurementQuerySchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
@@ -26,6 +28,7 @@ import {
 } from "@phosphor-icons/react"
 import { useLocation } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
+import type { ExploreSearch } from "@/features/explore/explore-search"
 import type {
   CoinListYear,
   CurrencyResponse,
@@ -52,6 +55,16 @@ function filterField(node: FilterNode<string>) {
   return node.type === "rule" ? node.path[0] : ""
 }
 
+const measurementFields = [
+  { id: "sizeMin", label: "Size minimum (mm)", precision: 2 },
+  { id: "sizeMax", label: "Size maximum (mm)", precision: 2 },
+  { id: "thicknessMin", label: "Thickness minimum (mm)", precision: 2 },
+  { id: "thicknessMax", label: "Thickness maximum (mm)", precision: 2 },
+  { id: "weightMin", label: "Weight minimum (g)", precision: 3 },
+  { id: "weightMax", label: "Weight maximum (g)", precision: 3 },
+] as const
+type MeasurementKey = (typeof measurementFields)[number]["id"]
+
 function queryFromFilters(
   amount: string | undefined,
   currencySlug: string | undefined,
@@ -61,9 +74,22 @@ function queryFromFilters(
   mintSlug: string | undefined,
   rulingAuthoritySlug: string | undefined,
   year: CoinListYear | undefined,
+  measurements: Pick<ExploreSearch, MeasurementKey>,
   order?: string[]
 ): FilterQuery<string> {
   const query = createFilterQuery<string>([
+    ...measurementFields.flatMap(({ id }) =>
+      measurements[id] === undefined
+        ? []
+        : [
+            createFilterRule({
+              id: `explore-${id}`,
+              path: [id],
+              operator: "is",
+              value: measurements[id],
+            }),
+          ]
+    ),
     ...(amount === undefined
       ? []
       : [
@@ -173,7 +199,19 @@ export function ExploreFilters({
   rulingAuthoritySlug,
   rulingAuthorities,
   year,
+  sizeMin,
+  sizeMax,
+  thicknessMin,
+  thicknessMax,
+  weightMin,
+  weightMax,
 }: {
+  sizeMin?: string
+  sizeMax?: string
+  thicknessMin?: string
+  thicknessMax?: string
+  weightMin?: string
+  weightMax?: string
   amount?: string
   currencies: Array<CurrencyResponse>
   currencySlug?: string
@@ -205,7 +243,8 @@ export function ExploreFilters({
       issuerCode,
       mintSlug,
       rulingAuthoritySlug,
-      year
+      year,
+      { sizeMin, sizeMax, thicknessMin, thicknessMax, weightMin, weightMax }
     )
   )
   const mintNameCounts = new Map<string, number>()
@@ -217,6 +256,22 @@ export function ExploreFilters({
     nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
   }
   const fields: FilterField<string>[] = [
+    ...measurementFields.map(({ id, label, precision }) => ({
+      id,
+      label,
+      icon: <HashIcon />,
+      disabled: query.rules.some(
+        (node) => node.type === "rule" && node.path[0] === id
+      ),
+      type: "text" as const,
+      autoSelectOperator: true,
+      operators: [{ value: "is", label: "is" }],
+      placeholder: precision === 2 ? "25.75" : "8.125",
+      validate: ({ value }: { value?: string }) =>
+        measurementQuerySchema(precision).safeParse(value).success
+          ? null
+          : `Enter a positive decimal with up to ${precision} decimal places.`,
+    })),
     {
       id: "amount",
       label: "Amount",
@@ -406,6 +461,7 @@ export function ExploreFilters({
         mintSlug,
         rulingAuthoritySlug,
         year,
+        { sizeMin, sizeMax, thicknessMin, thicknessMax, weightMin, weightMax },
         filterOrder
       )
     )
@@ -419,6 +475,12 @@ export function ExploreFilters({
     mintSlug,
     rulingAuthoritySlug,
     year,
+    sizeMin,
+    sizeMax,
+    thicknessMin,
+    thicknessMax,
+    weightMin,
+    weightMax,
   ])
 
   return (
@@ -430,7 +492,6 @@ export function ExploreFilters({
         fields={fields}
         query={query}
         onQueryChange={(next) => {
-          setQuery(next)
           const rule = (field: string) =>
             next.rules.find(
               (node): node is FilterRule<string> =>
@@ -459,6 +520,12 @@ export function ExploreFilters({
             ? parseIssueYearFilterValue(yearRule.value ?? "")
             : undefined
           const patch: {
+            sizeMin?: string
+            sizeMax?: string
+            thicknessMin?: string
+            thicknessMax?: string
+            weightMin?: string
+            weightMax?: string
             amount?: string
             currency?: string
             distribution?: string
@@ -468,6 +535,52 @@ export function ExploreFilters({
             ruler?: string
             year?: CoinListYear
           } = {}
+          for (const { id, precision } of measurementFields) {
+            const measurementRule = rule(id)
+            const parsed = measurementQuerySchema(precision).safeParse(
+              measurementRule?.value
+            )
+            if (
+              !measurementRule ||
+              (measurementRule.operator === "is" && parsed.success)
+            ) {
+              const value = parsed.success ? parsed.data : undefined
+              if (
+                value !==
+                {
+                  sizeMin,
+                  sizeMax,
+                  thicknessMin,
+                  thicknessMax,
+                  weightMin,
+                  weightMax,
+                }[id]
+              )
+                patch[id] = value
+            }
+          }
+          for (const name of ["size", "thickness", "weight"] as const) {
+            const minKey = `${name}Min` as MeasurementKey
+            const maxKey = `${name}Max` as MeasurementKey
+            const min =
+              patch[minKey] ??
+              { sizeMin, thicknessMin, weightMin }[
+                minKey as "sizeMin" | "thicknessMin" | "weightMin"
+              ]
+            const max =
+              patch[maxKey] ??
+              { sizeMax, thicknessMax, weightMax }[
+                maxKey as "sizeMax" | "thicknessMax" | "weightMax"
+              ]
+            if (
+              min !== undefined &&
+              max !== undefined &&
+              measurementMinExceedsMax(min, max)
+            ) {
+              return
+            }
+          }
+          setQuery(next)
           if (
             !amountRule ||
             (amountRule.operator === "is" && nextAmount.success)

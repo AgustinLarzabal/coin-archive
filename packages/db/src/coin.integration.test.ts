@@ -58,6 +58,65 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("filters measurements inclusively before counting and paging, excluding unknown values only when bounded", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      await database.orm.insert(database.schema.coins).values([
+        {
+          title: "Exact",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+          size: 25.75,
+          thickness: 2.2,
+          weight: 8.125,
+        },
+        {
+          title: "Heavier",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+          size: 25.75,
+          thickness: 2.2,
+          weight: 8.126,
+        },
+        { title: "Unknown", issuerId: issuer.id, ...TEST_COIN_REQUIRED_FIELDS },
+        {
+          title: "Smaller",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+          size: 25.74,
+          thickness: 2.2,
+          weight: 8.125,
+        },
+      ])
+      expect((await database.listCoins()).totalItems).toBe(4)
+      expect(
+        await database.listCoins({
+          sizeMin: "25.75",
+          sizeMax: "25.75",
+          thicknessMax: "2.2",
+          weightMin: "8.125",
+          weightMax: "8.125",
+          issuerCode: "AR",
+          pageSize: 1,
+        })
+      ).toEqual({
+        coins: [expect.objectContaining({ title: "Exact" })],
+        totalItems: 1,
+      })
+      expect(
+        await database.listCoins({ weightMin: "8.125", page: 2, pageSize: 1 })
+      ).toEqual({
+        coins: [expect.any(Object)],
+        totalItems: 3,
+      })
+      expect(
+        (await database.listCoins({ thicknessMin: "2.21" })).totalItems
+      ).toBe(0)
+    } finally {
+      await database.close()
+    }
+  })
   it("stores independent nullable measurements and rejects invalid values at both write boundaries", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -80,7 +139,8 @@ describe("Coin persistence", () => {
         ["weight", 1.0001],
       ] as const) {
         expect(
-          coinInsertSchema.safeParse({ ...schemaValues, [field]: invalid }).success
+          coinInsertSchema.safeParse({ ...schemaValues, [field]: invalid })
+            .success
         ).toBe(false)
         await expect(
           database.orm

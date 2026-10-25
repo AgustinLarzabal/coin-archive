@@ -76,6 +76,12 @@ export type CoinListItem = Omit<
 }
 
 export interface CoinListOptions {
+  sizeMin?: string
+  sizeMax?: string
+  thicknessMin?: string
+  thicknessMax?: string
+  weightMin?: string
+  weightMax?: string
   currencySlug?: string
   faceValueAmount?: string
   distribution?: string
@@ -376,6 +382,24 @@ export function createDatabase(
                 ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
+              listOptions.sizeMin === undefined
+                ? undefined
+                : gte(schema.coins.size, sql`${listOptions.sizeMin}`),
+              listOptions.sizeMax === undefined
+                ? undefined
+                : lte(schema.coins.size, sql`${listOptions.sizeMax}`),
+              listOptions.thicknessMin === undefined
+                ? undefined
+                : gte(schema.coins.thickness, sql`${listOptions.thicknessMin}`),
+              listOptions.thicknessMax === undefined
+                ? undefined
+                : lte(schema.coins.thickness, sql`${listOptions.thicknessMax}`),
+              listOptions.weightMin === undefined
+                ? undefined
+                : gte(schema.coins.weight, sql`${listOptions.weightMin}`),
+              listOptions.weightMax === undefined
+                ? undefined
+                : lte(schema.coins.weight, sql`${listOptions.weightMax}`),
               distributionId === undefined
                 ? undefined
                 : distributionId === null

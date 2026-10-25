@@ -18,6 +18,20 @@ const search: ExploreSearch = {
 }
 
 describe("updateExploreFilters", () => {
+  it("preserves other measurements and resets pagination when a bound changes", () => {
+    expect(
+      updateExploreFilters(
+        { ...search, sizeMin: "20", weightMax: "8.5" },
+        { sizeMax: "25.75" }
+      )
+    ).toEqual({
+      ...search,
+      sizeMin: "20",
+      sizeMax: "25.75",
+      weightMax: "8.5",
+      page: undefined,
+    })
+  })
   it("updates filters while preserving unrelated fields and resetting the page", () => {
     expect(
       updateExploreFilters(search, { distribution: "non-circulating" })

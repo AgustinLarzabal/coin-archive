@@ -16,11 +16,14 @@ import {
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidFaceValueFilterErrorSchema as sharedInvalidFaceValueFilterErrorSchema,
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
+  invalidMeasurementFilterErrorSchema as sharedInvalidMeasurementFilterErrorSchema,
   invalidMintSlugErrorSchema as sharedInvalidMintSlugErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
+  measurementMinExceedsMax,
+  measurementQuerySchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
@@ -41,6 +44,48 @@ interface CoinListRouteOptions {
 
 const coinListQuerySchema = z
   .object({
+    sizeMin: measurementQuerySchema(2)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive minimum Coin Size in millimetres (up to 2 decimal places)",
+        param: { name: "sizeMin", in: "query" },
+      }),
+    sizeMax: measurementQuerySchema(2)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive maximum Coin Size in millimetres (up to 2 decimal places)",
+        param: { name: "sizeMax", in: "query" },
+      }),
+    thicknessMin: measurementQuerySchema(2)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive minimum Coin Thickness in millimetres (up to 2 decimal places)",
+        param: { name: "thicknessMin", in: "query" },
+      }),
+    thicknessMax: measurementQuerySchema(2)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive maximum Coin Thickness in millimetres (up to 2 decimal places)",
+        param: { name: "thicknessMax", in: "query" },
+      }),
+    weightMin: measurementQuerySchema(3)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive minimum Coin Weight in grams (up to 3 decimal places)",
+        param: { name: "weightMin", in: "query" },
+      }),
+    weightMax: measurementQuerySchema(3)
+      .optional()
+      .openapi({
+        description:
+          "Inclusive maximum Coin Weight in grams (up to 3 decimal places)",
+        param: { name: "weightMax", in: "query" },
+      }),
     amount: faceValueAmountQuerySchema.optional().openapi({
       description:
         "Exact positive canonical Face Value Amount with at most 18 integer and 12 fractional digits. Requires currency; malformed or repeated values return invalid_face_value_filter",
@@ -108,11 +153,32 @@ const coinListQuerySchema = z
       path: ["amount"],
     }
   )
+  .superRefine((query, context) => {
+    for (const name of ["size", "thickness", "weight"] as const) {
+      const min = query[`${name}Min`]
+      const max = query[`${name}Max`]
+      if (
+        min !== undefined &&
+        max !== undefined &&
+        measurementMinExceedsMax(min, max)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: [`${name}Min`],
+          message: "Minimum exceeds maximum",
+        })
+      }
+    }
+  })
 
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
+const invalidMeasurementFilterErrorSchema =
+  sharedInvalidMeasurementFilterErrorSchema.openapi(
+    "InvalidMeasurementFilterError"
+  )
 const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
   "InvalidIssuerCodeError"
 )
@@ -132,6 +198,7 @@ const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
+  invalidMeasurementFilterErrorSchema,
   invalidDistributionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidMintSlugErrorSchema,
@@ -197,6 +264,22 @@ const coinListRoute = createRoute({
 })
 
 const validationErrors = [
+  {
+    fields: [
+      "sizeMin",
+      "sizeMax",
+      "thicknessMin",
+      "thicknessMax",
+      "weightMin",
+      "weightMax",
+    ],
+    response: {
+      error: {
+        code: "invalid_measurement_filter",
+        message: "Measurement filter is invalid",
+      },
+    },
+  },
   {
     fields: ["amount", "currency"],
     response: {
@@ -264,6 +347,12 @@ export function registerCoinListRoute(
     coinListRoute,
     async (context) => {
       const {
+        sizeMin,
+        sizeMax,
+        thicknessMin,
+        thicknessMax,
+        weightMin,
+        weightMax,
         amount: faceValueAmount,
         currency: currencySlug,
         distribution,
@@ -278,6 +367,12 @@ export function registerCoinListRoute(
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
+        ...(sizeMin === undefined ? {} : { sizeMin }),
+        ...(sizeMax === undefined ? {} : { sizeMax }),
+        ...(thicknessMin === undefined ? {} : { thicknessMin }),
+        ...(thicknessMax === undefined ? {} : { thicknessMax }),
+        ...(weightMin === undefined ? {} : { weightMin }),
+        ...(weightMax === undefined ? {} : { weightMax }),
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),

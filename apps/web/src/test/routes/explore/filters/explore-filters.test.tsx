@@ -29,6 +29,55 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           .map((rule) => (rule.type === "rule" ? rule.path[0] : "group"))
           .join(",")}
       </output>
+      <output data-testid="measurement-choices">
+        {fields
+          .filter((field) =>
+            /^(size|thickness|weight)(Min|Max)$/.test(field.id)
+          )
+          .map((field) => field.label)
+          .join(", ")}
+      </output>
+      <output data-testid="size-min-value">
+        {query.rules.find(
+          (rule): rule is FilterRule<string> =>
+            rule.type === "rule" && rule.path[0] === "sizeMin"
+        )?.value ?? ""}
+      </output>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((rule) =>
+              rule.type === "rule" && rule.path[0] === "sizeMin"
+                ? { ...rule, value: "30" }
+                : rule
+            ),
+          })
+        }
+      >
+        Reverse Size range
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: [
+              ...query.rules,
+              {
+                id: "test-size-min",
+                type: "rule",
+                path: ["sizeMin"],
+                operator: "is",
+                value: "25.75",
+              },
+            ],
+          })
+        }
+      >
+        Add Size minimum
+      </button>
       <button
         type="button"
         disabled={
@@ -908,5 +957,46 @@ it("clears Issuer without losing other filters and resets pagination", async () 
   )
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?engraver=first-engraver&ruler=selected-authority&year=1986&page=1&pageSize=24"
+  )
+})
+
+it("offers measurement bounds with units and resets the page when selected", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      pagination: { page: 2, pageSize: 24, totalItems: 72, totalPages: 3 },
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?page=2&weightMax=8.5")
+
+  const add = await screen.findByRole("button", { name: "Add Size minimum" })
+  expect(screen.getByTestId("measurement-choices")).toHaveTextContent(
+    "Size minimum (mm), Size maximum (mm), Thickness minimum (mm), Thickness maximum (mm), Weight minimum (g), Weight maximum (g)"
+  )
+  fireEvent.click(add)
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      sizeMin: "25.75",
+      weightMax: "8.5",
+    })
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?sizeMin=25.75&weightMax=8.5&page=1&pageSize=24"
+  )
+})
+
+it("keeps the displayed measurement aligned with results when a new bound reverses the range", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?sizeMin=20&sizeMax=25")
+
+  const reverse = await screen.findByRole("button", {
+    name: "Reverse Size range",
+  })
+  fireEvent.click(reverse)
+  expect(screen.getByTestId("size-min-value")).toHaveTextContent("20")
+  expect(router.state.location.search).toEqual({ sizeMin: "20", sizeMax: "25" })
+  expect(fetchMock).not.toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?sizeMin=30&sizeMax=25&page=1&pageSize=24"
   )
 })

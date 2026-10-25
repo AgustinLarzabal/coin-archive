@@ -148,6 +148,17 @@ describe("Coin persistence", () => {
             .values({ ...values, [field]: invalid })
         ).rejects.toThrow()
       }
+      for (const invalid of [
+        sql`1.000`,
+        sql`'NaN'::numeric`,
+        sql`'Infinity'::numeric`,
+      ]) {
+        await expect(
+          database.orm
+            .insert(database.schema.coins)
+            .values({ ...values, size: invalid })
+        ).rejects.toThrow()
+      }
       const [unknown] = await database.orm
         .insert(database.schema.coins)
         .values(values)
@@ -2467,6 +2478,18 @@ describe("Coin seed", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await seedCoins(database, await readCoinSeed())
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000001")
+      ).resolves.toMatchObject({ size: 25.75, thickness: 2.2, weight: 8.5 })
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000002")
+      ).resolves.toMatchObject({ size: null, thickness: null, weight: 8.5 })
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000003")
+      ).resolves.toMatchObject({ size: 25.75, thickness: null, weight: 8.501 })
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000004")
+      ).resolves.toMatchObject({ size: null, thickness: null, weight: null })
       const issuers = await database.listIssuers()
       expect(issuers.map(({ name, code }) => ({ name, code }))).toEqual([
         { name: "Andorra", code: "AD" },

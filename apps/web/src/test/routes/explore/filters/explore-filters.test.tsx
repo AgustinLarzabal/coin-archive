@@ -37,6 +37,17 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           .map((field) => field.label)
           .join(", ")}
       </output>
+      <output data-testid="measurement-operators">
+        {fields
+          .filter((field) =>
+            /^(size|thickness|weight)(Min|Max)$/.test(field.id)
+          )
+          .map(
+            (field) =>
+              `${field.type}:${field.editor}:${Array.isArray(field.operators) ? field.operators[0]?.value : ""}`
+          )
+          .join(", ")}
+      </output>
       <output data-testid="size-min-value">
         {query.rules.find(
           (rule): rule is FilterRule<string> =>
@@ -69,7 +80,7 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
                 id: "test-size-min",
                 type: "rule",
                 path: ["sizeMin"],
-                operator: "is",
+                operator: "gte",
                 value: "25.75",
               },
             ],
@@ -972,6 +983,9 @@ it("offers measurement bounds with units and resets the page when selected", asy
   const add = await screen.findByRole("button", { name: "Add Size minimum" })
   expect(screen.getByTestId("measurement-choices")).toHaveTextContent(
     "Size minimum (mm), Size maximum (mm), Thickness minimum (mm), Thickness maximum (mm), Weight minimum (g), Weight maximum (g)"
+  )
+  expect(screen.getByTestId("measurement-operators")).toHaveTextContent(
+    "number:text:gte, number:text:lte, number:text:gte, number:text:lte, number:text:gte, number:text:lte"
   )
   fireEvent.click(add)
   await waitFor(() =>

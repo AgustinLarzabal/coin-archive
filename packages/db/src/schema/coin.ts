@@ -67,15 +67,15 @@ export const coins = pgTable(
     check("coins_last_issue_year_not_zero", sql`${table.lastIssueYear} <> 0`),
     check(
       "coins_size_valid",
-      sql`${table.size} > 0 and ${table.size} = round(${table.size}, 2)`
+      sql`${table.size} > 0 and ${table.size} < 'Infinity'::numeric and scale(${table.size}) <= 2`
     ),
     check(
       "coins_thickness_valid",
-      sql`${table.thickness} > 0 and ${table.thickness} = round(${table.thickness}, 2)`
+      sql`${table.thickness} > 0 and ${table.thickness} < 'Infinity'::numeric and scale(${table.thickness}) <= 2`
     ),
     check(
       "coins_weight_valid",
-      sql`${table.weight} > 0 and ${table.weight} = round(${table.weight}, 3)`
+      sql`${table.weight} > 0 and ${table.weight} < 'Infinity'::numeric and scale(${table.weight}) <= 3`
     ),
     check(
       "coins_issue_period_ordered",

@@ -85,7 +85,7 @@ function queryFromFilters(
             createFilterRule({
               id: `explore-${id}`,
               path: [id],
-              operator: "is",
+              operator: id.endsWith("Min") ? "gte" : "lte",
               value: measurements[id],
             }),
           ]
@@ -263,9 +263,15 @@ export function ExploreFilters({
       disabled: query.rules.some(
         (node) => node.type === "rule" && node.path[0] === id
       ),
-      type: "text" as const,
+      type: "number" as const,
+      // Keep decimal bounds exact when they exceed JavaScript's integer precision.
+      editor: "text",
       autoSelectOperator: true,
-      operators: [{ value: "is", label: "is" }],
+      operators: [
+        id.endsWith("Min")
+          ? { value: "gte", label: "is at least" }
+          : { value: "lte", label: "is at most" },
+      ],
       placeholder: precision === 2 ? "25.75" : "8.125",
       validate: ({ value }: { value?: string }) =>
         measurementQuerySchema(precision).safeParse(value).success
@@ -542,7 +548,9 @@ export function ExploreFilters({
             )
             if (
               !measurementRule ||
-              (measurementRule.operator === "is" && parsed.success)
+              (measurementRule.operator ===
+                (id.endsWith("Min") ? "gte" : "lte") &&
+                parsed.success)
             ) {
               const value = parsed.success ? parsed.data : undefined
               if (

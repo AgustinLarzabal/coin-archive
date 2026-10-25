@@ -12,6 +12,15 @@ _Avoid_: Collection
 A catalogue entry representing a historical kind of coin or coin-like object that collectors can identify as the same issue or type. Every Coin is associated with exactly one Issuer and may be associated with any number of Mints; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
 
+**Coin Size**:
+A Coin type's curated representative linear size in millimetres, including diameter when applicable. It may be unknown independently of the Coin's other measurements.
+
+**Coin Thickness**:
+A Coin type's curated representative thickness in millimetres. It may be unknown independently of the Coin's other measurements.
+
+**Coin Weight**:
+A Coin type's curated representative mass in grams. It may be unknown independently of the Coin's other measurements.
+
 **Face Value**:
 The nominal monetary value assigned to a Coin through its Denomination, distinct from its collector price, purchasing power, or intrinsic material value. A Coin may have at most one Face Value.
 _Avoid_: Value, Price, Valuation

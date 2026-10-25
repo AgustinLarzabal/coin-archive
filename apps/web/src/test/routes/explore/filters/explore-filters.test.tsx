@@ -13,15 +13,17 @@ import {
 } from "@/test/archive-route-test"
 import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 
+type FilterValue = string | [string | undefined, string | undefined]
+
 vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
   Filters: ({
     fields,
     onQueryChange,
     query,
   }: {
-    fields: FilterField<string>[]
-    onQueryChange: (query: FilterQuery<string>) => void
-    query: FilterQuery<string>
+    fields: FilterField<FilterValue>[]
+    onQueryChange: (query: FilterQuery<FilterValue>) => void
+    query: FilterQuery<FilterValue>
   }) => (
     <>
       <output data-testid="filter-order">
@@ -32,7 +34,7 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <output data-testid="measurement-choices">
         {fields
           .filter((field) =>
-            /^(size|thickness|weight)(Min|Max)$/.test(field.id)
+            /^(size|thickness|weight)(Min|Max)?$/.test(field.id)
           )
           .map((field) => field.label)
           .join(", ")}
@@ -40,19 +42,44 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       <output data-testid="measurement-operators">
         {fields
           .filter((field) =>
-            /^(size|thickness|weight)(Min|Max)$/.test(field.id)
+            /^(size|thickness|weight)(Min|Max)?$/.test(field.id)
           )
           .map(
             (field) =>
-              `${field.type}:${field.editor}:${Array.isArray(field.operators) ? field.operators[0]?.value : ""}`
+              `${field.type}:${typeof field.editor === "function" ? "custom" : field.editor}:${
+                Array.isArray(field.operators)
+                  ? field.operators
+                      .filter((operator) => !operator.hidden)
+                      .map(
+                        (operator) =>
+                          `${operator.value}${operator.arity === "range" ? ":range" : ""}`
+                      )
+                      .join("/")
+                  : ""
+              }`
           )
           .join(", ")}
       </output>
-      <output data-testid="size-min-value">
+      <output data-testid="size-value">
+        {query.rules
+          .find(
+            (rule): rule is FilterRule<FilterValue> =>
+              rule.type === "rule" && rule.path[0] === "size"
+          )
+          ?.value?.toString() ?? ""}
+      </output>
+      <output data-testid="size-operator">
         {query.rules.find(
-          (rule): rule is FilterRule<string> =>
-            rule.type === "rule" && rule.path[0] === "sizeMin"
-        )?.value ?? ""}
+          (rule): rule is FilterRule<FilterValue> =>
+            rule.type === "rule" && rule.path[0] === "size"
+        )?.operator ?? ""}
+      </output>
+      <output data-testid="size-rule-count">
+        {
+          query.rules.filter(
+            (rule) => rule.type === "rule" && rule.path[0] === "size"
+          ).length
+        }
       </output>
       <button
         type="button"
@@ -60,8 +87,10 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           onQueryChange({
             ...query,
             rules: query.rules.map((rule) =>
-              rule.type === "rule" && rule.path[0] === "sizeMin"
-                ? { ...rule, value: "30" }
+              rule.type === "rule" &&
+              rule.path[0] === "size" &&
+              rule.operator === "between"
+                ? { ...rule, value: ["30", "25"] as [string, string] }
                 : rule
             ),
           })
@@ -77,18 +106,169 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
             rules: [
               ...query.rules,
               {
-                id: "test-size-min",
+                id: "test-size-eq",
                 type: "rule",
-                path: ["sizeMin"],
-                operator: "gte",
+                path: ["size"],
+                operator: "eq",
                 value: "25.75",
               },
             ],
           })
         }
       >
-        Add Size minimum
+        Add Size equals
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: [
+              ...query.rules,
+              {
+                id: "test-size-between",
+                type: "rule",
+                path: ["size"],
+                operator: "between",
+                value: ["20", "30"] as [string, string],
+              },
+            ],
+          })
+        }
+      >
+        Add Size between
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((rule) =>
+              rule.type === "rule" &&
+              rule.path[0] === "size" &&
+              rule.operator === "eq"
+                ? {
+                    ...rule,
+                    operator: "between",
+                    value: [rule.value as string, undefined],
+                  }
+                : rule
+            ),
+          })
+        }
+      >
+        Switch Size to between
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((rule) =>
+              rule.type === "rule" &&
+              rule.path[0] === "size" &&
+              rule.operator === "between"
+                ? { ...rule, value: ["25.75", "30"] }
+                : rule
+            ),
+          })
+        }
+      >
+        Complete Size between
+      </button>
+      {(
+        [
+          { id: "thickness", equal: "2.25", from: "1.5", to: "2.75" },
+          { id: "weight", equal: "8.125", from: "7.5", to: "9.25" },
+        ] as const
+      ).map(({ id, equal, from, to }) => (
+        <div key={id}>
+          <output data-testid={`${id}-operator`}>
+            {query.rules.find(
+              (rule): rule is FilterRule<FilterValue> =>
+                rule.type === "rule" && rule.path[0] === id
+            )?.operator ?? ""}
+          </output>
+          <button
+            type="button"
+            onClick={() =>
+              onQueryChange({
+                ...query,
+                rules: [
+                  ...query.rules,
+                  {
+                    id: `test-${id}-eq`,
+                    type: "rule",
+                    path: [id],
+                    operator: "eq",
+                    value: equal,
+                  },
+                ],
+              })
+            }
+          >
+            Add {id} equals
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onQueryChange({
+                ...query,
+                rules: [
+                  ...query.rules,
+                  {
+                    id: `test-${id}-between`,
+                    type: "rule",
+                    path: [id],
+                    operator: "between",
+                    value: [from, to] as [string, string],
+                  },
+                ],
+              })
+            }
+          >
+            Add {id} between
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onQueryChange({
+                ...query,
+                rules: query.rules.map((rule) =>
+                  rule.type === "rule" &&
+                  rule.path[0] === id &&
+                  rule.operator === "eq"
+                    ? {
+                        ...rule,
+                        operator: "between",
+                        value: [rule.value as string, undefined],
+                      }
+                    : rule
+                ),
+              })
+            }
+          >
+            Switch {id} to between
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onQueryChange({
+                ...query,
+                rules: query.rules.map((rule) =>
+                  rule.type === "rule" &&
+                  rule.path[0] === id &&
+                  rule.operator === "between"
+                    ? { ...rule, value: [equal, to] as [string, string] }
+                    : rule
+                ),
+              })
+            }
+          >
+            Complete {id} between
+          </button>
+        </div>
+      ))}
       <button
         type="button"
         disabled={
@@ -980,22 +1160,91 @@ it("offers measurement bounds with units and resets the page when selected", asy
   vi.stubGlobal("fetch", fetchMock)
   const router = renderArchiveRoute("/?page=2&weightMax=8.5")
 
-  const add = await screen.findByRole("button", { name: "Add Size minimum" })
+  const add = await screen.findByRole("button", { name: "Add Size equals" })
   expect(screen.getByTestId("measurement-choices")).toHaveTextContent(
-    "Size minimum (mm), Size maximum (mm), Thickness minimum (mm), Thickness maximum (mm), Weight minimum (g), Weight maximum (g)"
+    "Size (mm), Thickness (mm), Weight (g)"
   )
   expect(screen.getByTestId("measurement-operators")).toHaveTextContent(
-    "number:text:gte, number:text:lte, number:text:gte, number:text:lte, number:text:gte, number:text:lte"
+    "number:custom:eq/between:range, number:custom:eq/between:range, number:custom:eq/between:range"
   )
   fireEvent.click(add)
   await waitFor(() =>
     expect(router.state.location.search).toEqual({
       sizeMin: "25.75",
+      sizeMax: "25.75",
       weightMax: "8.5",
     })
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?sizeMin=25.75&weightMax=8.5&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?sizeMin=25.75&sizeMax=25.75&weightMax=8.5&page=1&pageSize=24"
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Add Size between" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      sizeMin: "20",
+      sizeMax: "30",
+      weightMax: "8.5",
+    })
+  )
+})
+
+it("applies equal and between bounds for Thickness and Weight", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/")
+
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Add thickness equals" })
+  )
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      thicknessMin: "2.25",
+      thicknessMax: "2.25",
+    })
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Add weight equals" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      thicknessMin: "2.25",
+      thicknessMax: "2.25",
+      weightMin: "8.125",
+      weightMax: "8.125",
+    })
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Add thickness between" }))
+  fireEvent.click(screen.getByRole("button", { name: "Add weight between" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      thicknessMin: "1.5",
+      thicknessMax: "2.75",
+      weightMin: "7.5",
+      weightMax: "9.25",
+    })
+  )
+  expect(screen.getByTestId("thickness-operator")).toHaveTextContent("between")
+  expect(screen.getByTestId("weight-operator")).toHaveTextContent("between")
+})
+
+it("switches equal Weight to a range before its second bound is entered", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/?weightMin=8.125&weightMax=8.125")
+
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Switch weight to between" })
+  )
+  expect(screen.getByTestId("weight-operator")).toHaveTextContent("between")
+  expect(router.state.location.search).toEqual({
+    weightMin: "8.125",
+    weightMax: "8.125",
+  })
+
+  fireEvent.click(
+    screen.getByRole("button", { name: "Complete weight between" })
+  )
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      weightMin: "8.125",
+      weightMax: "9.25",
+    })
   )
 })
 
@@ -1008,9 +1257,68 @@ it("keeps the displayed measurement aligned with results when a new bound revers
     name: "Reverse Size range",
   })
   fireEvent.click(reverse)
-  expect(screen.getByTestId("size-min-value")).toHaveTextContent("20")
+  expect(screen.getByTestId("size-value")).toHaveTextContent("20,25")
   expect(router.state.location.search).toEqual({ sizeMin: "20", sizeMax: "25" })
   expect(fetchMock).not.toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?sizeMin=30&sizeMax=25&page=1&pageSize=24"
+  )
+})
+
+it("replaces a legacy one-sided Size bound without leaving a duplicate chip", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/?sizeMin=20")
+
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Add Size equals" })
+  )
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      sizeMin: "25.75",
+      sizeMax: "25.75",
+    })
+  )
+  expect(screen.getByTestId("size-rule-count")).toHaveTextContent("1")
+})
+
+it("switches an equal Size to a range before its second bound is entered", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute("/?sizeMin=25.75&sizeMax=25.75")
+
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Switch Size to between" })
+  )
+  expect(screen.getByTestId("size-operator")).toHaveTextContent("between")
+  expect(router.state.location.search).toEqual({
+    sizeMin: "25.75",
+    sizeMax: "25.75",
+  })
+
+  fireEvent.click(screen.getByRole("button", { name: "Complete Size between" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toEqual({
+      sizeMin: "25.75",
+      sizeMax: "30",
+    })
+  )
+})
+
+it("restores exact Size ranges and one-sided links", async () => {
+  vi.stubGlobal("fetch", vi.fn(createArchiveFetch()))
+  const router = renderArchiveRoute(
+    "/?sizeMin=100000000000000001&sizeMax=100000000000000002"
+  )
+
+  await screen.findByTestId("size-value")
+  expect(screen.getByTestId("size-operator")).toHaveTextContent("between")
+  expect(screen.getByTestId("size-value")).toHaveTextContent(
+    "100000000000000001,100000000000000002"
+  )
+  await router.navigate({ to: "/", search: { sizeMin: "20" } })
+  await waitFor(() =>
+    expect(screen.getByTestId("size-operator")).toHaveTextContent("gte")
+  )
+  await router.navigate({ to: "/", search: { sizeMax: "30" } })
+  await waitFor(() =>
+    expect(screen.getByTestId("size-operator")).toHaveTextContent("lte")
   )
 })

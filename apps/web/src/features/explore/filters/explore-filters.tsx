@@ -10,8 +10,11 @@ import {
   mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
+import { Button } from "@coin-archive/ui/components/button"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
+import { Input } from "@coin-archive/ui/components/input"
 import { Filters } from "@coin-archive/ui/components/reui/filters/filters"
+import { FilterTextEditor } from "@coin-archive/ui/components/reui/filters/filters-editors"
 import {
   createFilterQuery,
   createFilterRule,
@@ -39,11 +42,13 @@ import type {
   RulingAuthorityListItemResponse,
 } from "@coin-archive/api"
 import type {
+  FilterEditorProps,
   FilterField,
   FilterNode,
   FilterQuery,
   FilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-types"
+import type { KeyboardEvent } from "react"
 
 import { useExploreSearchNavigation } from "@/features/explore/explore-search-navigation"
 import {
@@ -51,19 +56,92 @@ import {
   parseIssueYearFilterValue,
 } from "@/features/explore/filters/issue-year-filter-value"
 
-function filterField(node: FilterNode<string>) {
+type FilterValue = string | [string | undefined, string | undefined]
+
+// Keep bounds as strings; the shared range editor converts them through Number.
+function MeasurementEditor(props: FilterEditorProps<FilterValue>) {
+  if (props.operator.arity !== "range") return <FilterTextEditor {...props} />
+
+  const {
+    value,
+    onValueChange,
+    autoFocusProps,
+    labels,
+    host,
+    field,
+    commit,
+    cancel,
+  } = props
+  const bounds = Array.isArray(value) ? value : ["", ""]
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+      event.preventDefault()
+      commit()
+    } else if (event.key === "Escape") {
+      event.preventDefault()
+      event.stopPropagation()
+      cancel()
+    }
+  }
+  return (
+    <div
+      data-slot="filter-editor"
+      className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-2 p-2"
+    >
+      <div className="flex items-center gap-1.5">
+        <Input
+          {...autoFocusProps}
+          inputMode="decimal"
+          value={bounds[0] ?? ""}
+          aria-label={labels.rangeFrom(field.label)}
+          onChange={(event) =>
+            onValueChange([event.target.value, bounds[1] ?? ""])
+          }
+          onKeyDown={onKeyDown}
+        />
+        <span className="text-xs text-muted-foreground">
+          {labels.rangeSeparator}
+        </span>
+        <Input
+          inputMode="decimal"
+          value={bounds[1] ?? ""}
+          aria-label={labels.rangeTo(field.label)}
+          onChange={(event) =>
+            onValueChange([bounds[0] ?? "", event.target.value])
+          }
+          onKeyDown={onKeyDown}
+        />
+      </div>
+      {host === "amend" && (
+        <div className="flex justify-end gap-1.5">
+          <Button type="button" variant="ghost" size="sm" onClick={cancel}>
+            {labels.discard}
+          </Button>
+          <Button type="button" size="sm" onClick={() => commit()}>
+            {labels.apply}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function filterField(node: FilterNode<FilterValue>) {
   return node.type === "rule" ? node.path[0] : ""
 }
 
 const measurementFields = [
-  { id: "sizeMin", label: "Size minimum (mm)", precision: 2 },
-  { id: "sizeMax", label: "Size maximum (mm)", precision: 2 },
-  { id: "thicknessMin", label: "Thickness minimum (mm)", precision: 2 },
-  { id: "thicknessMax", label: "Thickness maximum (mm)", precision: 2 },
-  { id: "weightMin", label: "Weight minimum (g)", precision: 3 },
-  { id: "weightMax", label: "Weight maximum (g)", precision: 3 },
+  { id: "size", label: "Size (mm)", precision: 2, placeholder: "25.75" },
+  {
+    id: "thickness",
+    label: "Thickness (mm)",
+    precision: 2,
+    placeholder: "2.25",
+  },
+  { id: "weight", label: "Weight (g)", precision: 3, placeholder: "8.125" },
 ] as const
-type MeasurementKey = (typeof measurementFields)[number]["id"]
+type MeasurementName = (typeof measurementFields)[number]["id"]
+type MeasurementKey = `${MeasurementName}${"Min" | "Max"}`
 
 function queryFromFilters(
   amount: string | undefined,
@@ -76,20 +154,34 @@ function queryFromFilters(
   year: CoinListYear | undefined,
   measurements: Pick<ExploreSearch, MeasurementKey>,
   order?: string[]
-): FilterQuery<string> {
-  const query = createFilterQuery<string>([
-    ...measurementFields.flatMap(({ id }) =>
-      measurements[id] === undefined
+): FilterQuery<FilterValue> {
+  const query = createFilterQuery<FilterValue>([
+    ...measurementFields.flatMap(({ id }) => {
+      const min = measurements[`${id}Min`]
+      const max = measurements[`${id}Max`]
+      return min === undefined && max === undefined
         ? []
         : [
-            createFilterRule({
+            createFilterRule<FilterValue>({
               id: `explore-${id}`,
               path: [id],
-              operator: id.endsWith("Min") ? "gte" : "lte",
-              value: measurements[id],
+              operator:
+                min === undefined
+                  ? "lte"
+                  : max === undefined
+                    ? "gte"
+                    : min === max
+                      ? "eq"
+                      : "between",
+              value:
+                min === undefined
+                  ? max
+                  : max === undefined || min === max
+                    ? min
+                    : [min, max],
             }),
           ]
-    ),
+    }),
     ...(amount === undefined
       ? []
       : [
@@ -255,8 +347,8 @@ export function ExploreFilters({
   for (const ruler of rulingAuthorities) {
     nameCounts.set(ruler.name, (nameCounts.get(ruler.name) ?? 0) + 1)
   }
-  const fields: FilterField<string>[] = [
-    ...measurementFields.map(({ id, label, precision }) => ({
+  const fields: FilterField<FilterValue>[] = [
+    ...measurementFields.map(({ id, label, precision, placeholder }) => ({
       id,
       label,
       icon: <HashIcon />,
@@ -264,17 +356,18 @@ export function ExploreFilters({
         (node) => node.type === "rule" && node.path[0] === id
       ),
       type: "number" as const,
-      // Keep decimal bounds exact when they exceed JavaScript's integer precision.
-      editor: "text",
-      autoSelectOperator: true,
+      editor: MeasurementEditor,
       operators: [
-        id.endsWith("Min")
-          ? { value: "gte", label: "is at least" }
-          : { value: "lte", label: "is at most" },
+        { value: "eq", label: "equals" },
+        { value: "between", label: "is between", arity: "range" as const },
+        { value: "gte", label: "is at least", hidden: true },
+        { value: "lte", label: "is at most", hidden: true },
       ],
-      placeholder: precision === 2 ? "25.75" : "8.125",
-      validate: ({ value }: { value?: string }) =>
-        measurementQuerySchema(precision).safeParse(value).success
+      placeholder,
+      validate: ({ values }: { values: unknown[] }) =>
+        values.every(
+          (value) => measurementQuerySchema(precision).safeParse(value).success
+        )
           ? null
           : `Enter a positive decimal with up to ${precision} decimal places.`,
     })),
@@ -497,10 +590,32 @@ export function ExploreFilters({
       <Filters
         fields={fields}
         query={query}
-        onQueryChange={(next) => {
-          const rule = (field: string) =>
+        onQueryChange={(
+          next,
+          details = { reason: "update", rule: null, field: null }
+        ) => {
+          const measurementRule = (name: MeasurementName) =>
             next.rules.find(
-              (node): node is FilterRule<string> =>
+              (node): node is FilterRule<FilterValue> =>
+                node.type === "rule" &&
+                node.path[0] === name &&
+                node.id === details.rule?.id
+            ) ??
+            [...next.rules]
+              .reverse()
+              .find(
+                (node): node is FilterRule<FilterValue> =>
+                  node.type === "rule" && node.path[0] === name
+              )
+          const rules = next.rules.filter(
+            (node) =>
+              node.type !== "rule" ||
+              !measurementFields.some(({ id }) => id === node.path[0]) ||
+              node.id === measurementRule(node.path[0] as MeasurementName)?.id
+          )
+          const rule = (field: string) =>
+            rules.find(
+              (node): node is FilterRule<FilterValue> =>
                 node.type === "rule" && node.path[0] === field
             )
           const issuer = rule("issuer")
@@ -523,7 +638,9 @@ export function ExploreFilters({
           const nextMint = mintSlugSchema.safeParse(mint?.value)
           const nextRuler = rulingAuthoritySlugSchema.safeParse(ruler?.value)
           const nextYear = yearRule
-            ? parseIssueYearFilterValue(yearRule.value ?? "")
+            ? parseIssueYearFilterValue(
+                typeof yearRule.value === "string" ? yearRule.value : ""
+              )
             : undefined
           const patch: {
             sizeMin?: string
@@ -541,45 +658,66 @@ export function ExploreFilters({
             ruler?: string
             year?: CoinListYear
           } = {}
-          for (const { id, precision } of measurementFields) {
-            const measurementRule = rule(id)
-            const parsed = measurementQuerySchema(precision).safeParse(
-              measurementRule?.value
-            )
-            if (
-              !measurementRule ||
-              (measurementRule.operator ===
-                (id.endsWith("Min") ? "gte" : "lte") &&
-                parsed.success)
-            ) {
-              const value = parsed.success ? parsed.data : undefined
-              if (
-                value !==
-                {
-                  sizeMin,
-                  sizeMax,
-                  thicknessMin,
-                  thicknessMax,
-                  weightMin,
-                  weightMax,
-                }[id]
-              )
-                patch[id] = value
-            }
+          const currentMeasurements = {
+            sizeMin,
+            sizeMax,
+            thicknessMin,
+            thicknessMax,
+            weightMin,
+            weightMax,
           }
-          for (const name of ["size", "thickness", "weight"] as const) {
-            const minKey = `${name}Min` as MeasurementKey
-            const maxKey = `${name}Max` as MeasurementKey
-            const min =
-              patch[minKey] ??
-              { sizeMin, thicknessMin, weightMin }[
-                minKey as "sizeMin" | "thicknessMin" | "weightMin"
-              ]
-            const max =
-              patch[maxKey] ??
-              { sizeMax, thicknessMax, weightMax }[
-                maxKey as "sizeMax" | "thicknessMax" | "weightMax"
-              ]
+          for (const { id, precision } of measurementFields) {
+            const selected = measurementRule(id)
+            const minKey = `${id}Min` as MeasurementKey
+            const maxKey = `${id}Max` as MeasurementKey
+            const values =
+              selected?.operator === "between" && Array.isArray(selected.value)
+                ? selected.value
+                : [selected?.value]
+            const parsedMin = measurementQuerySchema(precision).safeParse(
+              values[0]
+            )
+            const parsedMax = measurementQuerySchema(precision).safeParse(
+              values[1]
+            )
+            const completeRange =
+              values[0] !== undefined &&
+              values[0] !== "" &&
+              values[1] !== undefined &&
+              values[1] !== ""
+            if (
+              selected?.value !== undefined &&
+              (selected.operator === "between"
+                ? completeRange &&
+                  (!parsedMin.success ||
+                    !parsedMax.success ||
+                    measurementMinExceedsMax(parsedMin.data, parsedMax.data))
+                : !parsedMin.success)
+            ) {
+              return
+            }
+            let min = currentMeasurements[minKey]
+            let max = currentMeasurements[maxKey]
+            if (!selected) {
+              min = undefined
+              max = undefined
+            } else if (
+              (selected.operator === "eq" || selected.operator === "gte") &&
+              parsedMin.success
+            ) {
+              min = parsedMin.data
+              max = selected.operator === "eq" ? parsedMin.data : undefined
+            } else if (selected.operator === "lte" && parsedMin.success) {
+              min = undefined
+              max = parsedMin.data
+            } else if (
+              selected.operator === "between" &&
+              parsedMin.success &&
+              parsedMax.success
+            ) {
+              min = parsedMin.data
+              max = parsedMax.data
+            }
             if (
               min !== undefined &&
               max !== undefined &&
@@ -587,8 +725,10 @@ export function ExploreFilters({
             ) {
               return
             }
+            if (min !== currentMeasurements[minKey]) patch[minKey] = min
+            if (max !== currentMeasurements[maxKey]) patch[maxKey] = max
           }
-          setQuery(next)
+          setQuery({ ...next, rules })
           if (
             !amountRule ||
             (amountRule.operator === "is" && nextAmount.success)
@@ -633,7 +773,7 @@ export function ExploreFilters({
             if (nextYear !== year) patch.year = nextYear
           }
           if (Object.keys(patch).length) {
-            updateFilters(patch, next.rules.map(filterField))
+            updateFilters(patch, rules.map(filterField))
           }
         }}
         showClear

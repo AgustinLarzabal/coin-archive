@@ -2,6 +2,9 @@
   {
     "id": "00000000-0000-4000-8000-000000000001",
     "title": "50th Anniversary of the World Food Programme",
+    "size": 25.75,
+    "thickness": 2.2,
+    "weight": 8.5,
     "mintSlugs": ["rome-state-mint-italy"],
     "issuerCode": "IT",
     "denomination": {
@@ -30,6 +33,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000002",
     "title": "75th Anniversary of the Founding of Vatican City State",
+    "weight": 8.5,
     "issuerCode": "VA",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
@@ -53,6 +57,8 @@
   {
     "id": "00000000-0000-4000-8000-000000000003",
     "title": "Bartolomeo Borghesi",
+    "size": 25.75,
+    "weight": 8.501,
     "issuerCode": "SM",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,

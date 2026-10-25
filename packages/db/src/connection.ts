@@ -66,7 +66,7 @@ export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
 
 export type CoinListItem = Omit<
   schema.CoinRecord,
-  "denominationId" | "distributionId"
+  "denominationId" | "distributionId" | "size" | "thickness" | "weight"
 > & {
   distribution: string
   issuer: schema.IssuerRecord

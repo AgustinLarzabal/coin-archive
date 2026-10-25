@@ -46,6 +46,8 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/mints`          | Mints and their stable public slugs                                                           |
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
 
+Coin detail includes required nullable numeric `size` and `thickness` in millimetres and `weight` in grams. `null` means that measurement is unknown; each is independent. Coin list items omit these fields.
+
 ## Find Coins
 
 `GET /v1/coins` accepts one exact value for each optional filter:

@@ -357,6 +357,23 @@ export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
     distributionName: trimmedDisplayTextSchema(200),
+    size: z
+      .number()
+      .positive()
+      .nullable()
+      .meta({ description: "Coin Size in millimetres; null when unknown." }),
+    thickness: z
+      .number()
+      .positive()
+      .nullable()
+      .meta({
+        description: "Coin Thickness in millimetres; null when unknown.",
+      }),
+    weight: z
+      .number()
+      .positive()
+      .nullable()
+      .meta({ description: "Coin Weight in grams; null when unknown." }),
     faceValue: coinFaceValueResponseSchema.nullable(),
     obverse: coinSurfaceWithEngraversResponseSchema,
     reverse: coinSurfaceWithEngraversResponseSchema,

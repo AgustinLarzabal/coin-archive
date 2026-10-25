@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  numeric,
   pgTable,
   timestamp,
   uuid,
@@ -32,6 +33,9 @@ export const coins = pgTable(
       .references(() => distributions.id, { onDelete: "restrict" }),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
+    size: numeric({ mode: "number" }),
+    thickness: numeric({ mode: "number" }),
+    weight: numeric({ mode: "number" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -62,6 +66,18 @@ export const coins = pgTable(
     check("coins_first_issue_year_not_zero", sql`${table.firstIssueYear} <> 0`),
     check("coins_last_issue_year_not_zero", sql`${table.lastIssueYear} <> 0`),
     check(
+      "coins_size_valid",
+      sql`${table.size} > 0 and ${table.size} = round(${table.size}, 2)`
+    ),
+    check(
+      "coins_thickness_valid",
+      sql`${table.thickness} > 0 and ${table.thickness} = round(${table.thickness}, 2)`
+    ),
+    check(
+      "coins_weight_valid",
+      sql`${table.weight} > 0 and ${table.weight} = round(${table.weight}, 3)`
+    ),
+    check(
       "coins_issue_period_ordered",
       sql`${table.firstIssueYear} <= ${table.lastIssueYear}`
     ),
@@ -75,10 +91,24 @@ function rejectFutureIssueYear(schema: z.ZodNumber) {
   )
 }
 
+function measurement(maximumFractionDigits: number) {
+  return (schema: z.ZodNumber) =>
+    schema
+      .positive()
+      .refine((value) =>
+        new RegExp(`^\\d+(?:\\.\\d{1,${maximumFractionDigits}})?$`).test(
+          String(value)
+        )
+      )
+}
+
 const coinInsertBaseSchema = createInsertSchema(coins, {
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),
+  size: measurement(2),
+  thickness: measurement(2),
+  weight: measurement(3),
 })
 
 export const coinSelectSchema = createSelectSchema(coins)
@@ -98,7 +128,14 @@ export const coinSeedSchema = coinInsertBaseSchema
     issuerCode: issuerInsertSchema.shape.code,
     distribution: distributionInsertSchema.shape.slug,
   })
-  .required()
+  .required({
+    id: true,
+    title: true,
+    firstIssueYear: true,
+    lastIssueYear: true,
+    issuerCode: true,
+    distribution: true,
+  })
   .strict()
 
 export type CoinRecord = z.infer<typeof coinSelectSchema>

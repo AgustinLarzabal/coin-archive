@@ -127,6 +127,13 @@
       "when": 1792687216296,
       "tag": "0017_strong_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792921981214,
+      "tag": "0018_clammy_lizard",
+      "breakpoints": true
     }
   ]
 }

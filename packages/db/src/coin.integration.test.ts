@@ -5,6 +5,7 @@ import { Pool } from "pg"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
+  coinInsertSchema,
   coinSelectSchema,
   createDatabase,
   engraverSelectSchema,
@@ -57,6 +58,81 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("stores independent nullable measurements and rejects invalid values at both write boundaries", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const values = {
+        title: "Measured Coin",
+        issuerId: issuer.id,
+        ...TEST_COIN_REQUIRED_FIELDS,
+      }
+      const schemaValues = {
+        ...values,
+        distributionId: "00000000-0000-4000-8000-000000000001",
+      }
+      for (const [field, invalid] of [
+        ["size", 0],
+        ["size", 1.001],
+        ["thickness", -1],
+        ["thickness", 1.001],
+        ["weight", 0],
+        ["weight", 1.0001],
+      ] as const) {
+        expect(
+          coinInsertSchema.safeParse({ ...schemaValues, [field]: invalid }).success
+        ).toBe(false)
+        await expect(
+          database.orm
+            .insert(database.schema.coins)
+            .values({ ...values, [field]: invalid })
+        ).rejects.toThrow()
+      }
+      const [unknown] = await database.orm
+        .insert(database.schema.coins)
+        .values(values)
+        .returning()
+      const [measured] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          ...values,
+          title: "Partly measured Coin",
+          size: 25.75,
+          weight: 8.125,
+        })
+        .returning()
+      const [thick] = await database.orm
+        .insert(database.schema.coins)
+        .values({ ...values, title: "Thickness Coin", thickness: 2.2 })
+        .returning()
+      await expect(database.findCoinById(unknown.id)).resolves.toMatchObject({
+        size: null,
+        thickness: null,
+        weight: null,
+      })
+      await expect(database.findCoinById(measured.id)).resolves.toMatchObject({
+        size: 25.75,
+        thickness: null,
+        weight: 8.125,
+      })
+      await expect(database.findCoinById(thick.id)).resolves.toMatchObject({
+        size: null,
+        thickness: 2.2,
+        weight: null,
+      })
+      expect(
+        coinInsertSchema.safeParse({
+          ...schemaValues,
+          size: 25.75,
+          thickness: null,
+          weight: 8.125,
+        }).success
+      ).toBe(true)
+    } finally {
+      await database.close()
+    }
+  })
+
   it("requires one supported Coin Distribution and returns it from list and detail queries", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2160,6 +2236,41 @@ describe("Coin seed", () => {
       },
     ],
   }
+
+  it("accepts measured and unknown values through the validated seed path", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, {
+        ...validSeed,
+        coins: [{ ...validSeed.coins[0], size: 25.75, weight: 8.125 }],
+      })
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({
+        size: 25.75,
+        thickness: null,
+        weight: 8.125,
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("rejects invalid seed measurements before writing", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const transaction = vi.spyOn(database.orm, "transaction")
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], thickness: 1.001 }],
+        })
+      ).rejects.toThrow()
+      expect(transaction).not.toHaveBeenCalled()
+    } finally {
+      await database.close()
+    }
+  })
 
   it.each([
     ["missing", undefined],

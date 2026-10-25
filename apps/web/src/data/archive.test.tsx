@@ -299,6 +299,9 @@ describe("Archive data module", () => {
           jsonResponse({
             ...coin,
             distributionName: "Circulating commemorative",
+            size: null,
+            thickness: null,
+            weight: null,
             faceValue: null,
             rulers: [],
             mints: [],
@@ -333,6 +336,9 @@ describe("Archive data module", () => {
     ).resolves.toEqual({
       ...coin,
       distributionName: "Circulating commemorative",
+      size: null,
+      thickness: null,
+      weight: null,
       faceValue: null,
       rulers: [],
       mints: [],

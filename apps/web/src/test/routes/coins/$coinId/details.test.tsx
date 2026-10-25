@@ -5,6 +5,25 @@ import { coinDetailFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it("shows known measurements with units and omits unknown measurements", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({ size: 25.75, thickness: null, weight: 8.125 })
+          )
+        )
+      )
+    )
+    renderCoinRoute()
+    expect(await screen.findByText("Coin Size")).toBeInTheDocument()
+    expect(screen.getByText("25.75 mm")).toBeInTheDocument()
+    expect(screen.getByText("Coin Weight")).toBeInTheDocument()
+    expect(screen.getByText("8.125 g")).toBeInTheDocument()
+    expect(screen.queryByText("Coin Thickness")).not.toBeInTheDocument()
+  })
+
   it("shows multiple confirmed Mints with place, country, and operation period", async () => {
     vi.stubGlobal(
       "fetch",

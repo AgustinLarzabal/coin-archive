@@ -18,6 +18,9 @@ describe("Coin detail route", () => {
       distributionName: "Circulating commemorative",
       firstIssueYear: 2004,
       lastIssueYear: 2004,
+      size: null,
+      thickness: null,
+      weight: null,
       issuer: {
         id: issuerId,
         name: "Argentina",
@@ -193,6 +196,21 @@ describe("Coin detail route", () => {
       })
     })
 
+    it("returns independently known numeric measurements", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => ({ ...coin, size: 25.75, weight: 8.125 }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      }).request(`/v1/coins/${coinId}`)
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        size: 25.75,
+        thickness: null,
+        weight: 8.125,
+      })
+    })
+
     it("returns the Coin contract with UTC timestamps and no caching", async () => {
       const response = await createApp({
         allowedOrigins: [],
@@ -208,6 +226,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        size: null,
+        thickness: null,
+        weight: null,
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -363,6 +384,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        size: null,
+        thickness: null,
+        weight: null,
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Argentina", code: "AR" },
@@ -492,6 +516,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        size: null,
+        thickness: null,
+        weight: null,
         firstIssueYear: 2004,
         lastIssueYear: 2004,
         issuer: { name: "Roman Empire", code: "ROMAN" },
@@ -710,6 +737,15 @@ describe("Coin detail route", () => {
                 minLength: 1,
                 maxLength: 200,
               }),
+              size: expect.objectContaining({ type: "number", nullable: true }),
+              thickness: expect.objectContaining({
+                type: "number",
+                nullable: true,
+              }),
+              weight: expect.objectContaining({
+                type: "number",
+                nullable: true,
+              }),
               issuer: { $ref: "#/components/schemas/Issuer" },
               faceValue: {
                 anyOf: [
@@ -773,6 +809,9 @@ describe("Coin detail route", () => {
               "firstIssueYear",
               "lastIssueYear",
               "faceValue",
+              "size",
+              "thickness",
+              "weight",
               "rulers",
               "mints",
             ]),
@@ -856,6 +895,9 @@ describe("Coin detail route", () => {
         properties: Record<string, unknown>
       }
       expect(coinListItemSchema.properties).not.toHaveProperty("rulers")
+      expect(coinListItemSchema.properties).not.toHaveProperty("size")
+      expect(coinListItemSchema.properties).not.toHaveProperty("thickness")
+      expect(coinListItemSchema.properties).not.toHaveProperty("weight")
       expect(coinListItemSchema.properties).not.toHaveProperty("mints")
       expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("reverse")

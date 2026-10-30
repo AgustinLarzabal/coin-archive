@@ -22,20 +22,12 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
-          sizeMin: search.sizeMin,
-          sizeMax: search.sizeMax,
-          thicknessMin: search.thicknessMin,
-          thicknessMax: search.thicknessMax,
-          weightMin: search.weightMin,
-          weightMax: search.weightMax,
-          amount: search.amount,
           currency: search.currency,
           distribution: search.distribution,
+          engraver: search.engraver,
           issuer: search.issuer,
           mint: search.mint,
-          engraver: search.engraver,
           ruler: search.ruler,
-          year: search.year,
         },
         replace: true,
       })
@@ -52,20 +44,12 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
-          sizeMin: filters.sizeMin,
-          sizeMax: filters.sizeMax,
-          thicknessMin: filters.thicknessMin,
-          thicknessMax: filters.thicknessMax,
-          weightMin: filters.weightMin,
-          weightMax: filters.weightMax,
-          amount: filters.faceValueAmount,
           currency: filters.currencySlug,
           distribution: filters.distribution,
+          engraver: filters.engraverSlug,
           issuer: filters.issuerCode,
           mint: filters.mintSlug,
-          engraver: filters.engraverSlug,
           ruler: filters.rulingAuthoritySlug,
-          year: filters.issueYear,
           page: lastPage === 1 ? undefined : lastPage,
         },
         replace: true,
@@ -80,17 +64,11 @@ export const Route = createFileRoute("/_explore/")({
 function ExploreRoute() {
   const filters = Route.useLoaderDeps()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
+  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: mintList } = useSuspenseQuery(mintListQueryOptions())
-  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
-  const { data: rulerList } = useSuspenseQuery(
+  const { data: rulingAuthorityList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
-  )
-  const selectedIssuer = issuerList.issuers.find(
-    (issuer) => issuer.code === filters.issuerCode
-  )
-  const selectedMint = mintList.mints.find(
-    (mint) => mint.slug === filters.mintSlug
   )
   const selectedCurrency = currencyList.currencies.find(
     (currency) => currency.slug === filters.currencySlug
@@ -98,18 +76,24 @@ function ExploreRoute() {
   const selectedEngraver = engraverList.engravers.find(
     (engraver) => engraver.slug === filters.engraverSlug
   )
-  const selectedRuler = rulerList.rulers.find(
+  const selectedIssuer = issuerList.issuers.find(
+    (issuer) => issuer.code === filters.issuerCode
+  )
+  const selectedMint = mintList.mints.find(
+    (mint) => mint.slug === filters.mintSlug
+  )
+  const selectedRuler = rulingAuthorityList.rulers.find(
     (ruler) => ruler.slug === filters.rulingAuthoritySlug
   )
 
   return filters.issuerCode && !selectedIssuer ? (
     <RouteMessage>Issuer not found</RouteMessage>
-  ) : filters.mintSlug && !selectedMint ? (
-    <RouteMessage>Mint not found</RouteMessage>
   ) : filters.currencySlug && !selectedCurrency ? (
     <RouteMessage>Currency not found</RouteMessage>
   ) : filters.engraverSlug && !selectedEngraver ? (
     <RouteMessage>Engraver not found</RouteMessage>
+  ) : filters.mintSlug && !selectedMint ? (
+    <RouteMessage>Mint not found</RouteMessage>
   ) : filters.rulingAuthoritySlug && !selectedRuler ? (
     <RouteMessage>Ruler / Period not found</RouteMessage>
   ) : (

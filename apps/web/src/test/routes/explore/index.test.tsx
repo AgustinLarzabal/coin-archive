@@ -6,8 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
-  distributionListQueryOptions,
-  engraverListQueryOptions,
   issuerListQueryOptions,
 } from "@/data/archive"
 import { getRouter } from "@/router"
@@ -37,10 +35,6 @@ const issuers = [
   { name: "Roman Empire", code: "ROMAN" },
   { name: "Uruguay", code: "UY" },
 ]
-const engravers = [
-  { slug: "first-engraver", fullName: "First Engraver" },
-  { slug: "second-engraver", fullName: "Second Engraver" },
-]
 
 type CoinListResponseFixture = typeof coin & {
   obverseImageUrl: string | null
@@ -57,7 +51,7 @@ function createDeferred<T>() {
 }
 
 function createArchiveFetch(coins: Array<CoinListResponseFixture> = [coin]) {
-  return createArchiveFetchFixture({ coins, engravers, issuers })
+  return createArchiveFetchFixture({ coins, issuers })
 }
 
 afterEach(() => {
@@ -69,7 +63,6 @@ describe("Archive landing route", () => {
     const fetchMock = vi.fn(
       createArchiveFetchFixture({
         coins: [coin],
-        engravers,
         issuers,
         pagination: {
           page: 3,
@@ -105,87 +98,6 @@ describe("Archive landing route", () => {
     expect(router.state.location.searchStr).toBe("?page=3")
   })
 
-  it("loads Coins, Issuers, and Engravers concurrently and keeps loading until all are ready", async () => {
-    const coinsResponse = createDeferred<Response>()
-    const issuersResponse = createDeferred<Response>()
-    const engraversResponse = createDeferred<Response>()
-    const filteredCoinsResponse = createDeferred<Response>()
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-
-      if (url.endsWith("/v1/issuers")) return issuersResponse.promise
-      if (url.endsWith("/v1/engravers")) return engraversResponse.promise
-      if (url.endsWith("/v1/coins?issuer=ROMAN&page=1&pageSize=24")) {
-        return filteredCoinsResponse.promise
-      }
-      return coinsResponse.promise
-    })
-    vi.stubGlobal("fetch", fetchMock)
-
-    const router = renderArchiveRoute("/?issuer=AR")
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
-    )
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/issuers")
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:3001/v1/engravers")
-    expect(await screen.findByText("Loading coins…")).toBeVisible()
-
-    issuersResponse.resolve(
-      jsonResponse({ issuers: [{ name: "Argentina", code: "AR" }] })
-    )
-    await waitFor(() =>
-      expect(
-        router.options.context.queryClient.getQueryState(["issuers", "list"])
-          ?.status
-      ).toBe("success")
-    )
-    expect(router.state.status).toBe("pending")
-    expect(screen.getByText("Loading coins…")).toBeVisible()
-
-    engraversResponse.resolve(jsonResponse({ engravers }))
-    await waitFor(() =>
-      expect(
-        router.options.context.queryClient.getQueryState(["engravers", "list"])
-          ?.status
-      ).toBe("success")
-    )
-    expect(router.state.status).toBe("pending")
-    expect(screen.getByText("Loading coins…")).toBeVisible()
-
-    coinsResponse.resolve(coinListJsonResponse([coin]))
-    expect(
-      await screen.findByRole("link", { name: "First coin" })
-    ).toBeVisible()
-    expect(router.state.status).toBe("idle")
-    expect(
-      screen.queryByRole("combobox", { name: "Issuer" })
-    ).not.toBeInTheDocument()
-    expect(router.state.location.searchStr).toBe("?issuer=AR")
-
-    const navigation = router.navigate({
-      to: "/",
-      search: { issuer: "ROMAN" },
-    })
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
-      )
-    )
-    const settlement = await Promise.race([
-      navigation.then(() => "settled" as const),
-      new Promise<"pending">((resolve) => {
-        setTimeout(() => resolve("pending"), 0)
-      }),
-    ])
-
-    expect(settlement).toBe("pending")
-    filteredCoinsResponse.resolve(coinListJsonResponse([coin]))
-    await navigation
-    expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
-  })
-
   it("keeps the selected Issuer synchronized with URL state", async () => {
     const fetchMock = vi.fn(createArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
@@ -211,206 +123,148 @@ describe("Archive landing route", () => {
     await waitFor(() => expect(router.state.location.searchStr).toBe(""))
   })
 
-  it("filters Coins by a valid Engraver Slug and combines it with an Issuer", async () => {
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-
-      if (url.endsWith("/v1/issuers")) {
-        return Promise.resolve(jsonResponse({ issuers }))
-      }
-
-      if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(
-          jsonResponse({
-            engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
-          })
-        )
-      }
-
-      return Promise.resolve(coinListJsonResponse([coin]))
-    })
+  it("loads coins for a selected Distribution and preserves it with Issuer", async () => {
+    const fetchMock = vi.fn(createArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
-
-    const router = renderArchiveRoute("/?issuer=ROMAN&engraver=first-engraver")
+    const router = renderArchiveRoute(
+      "/?distribution=standard-circulation&issuer=AR"
+    )
 
     expect(
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=ROMAN&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
     )
-    expect(router.state.location.search).toEqual({
-      issuer: "ROMAN",
-      engraver: "first-engraver",
-    })
+    expect(router.state.location.searchStr).toBe(
+      "?distribution=standard-circulation&issuer=AR"
+    )
   })
 
-  it("normalizes a malformed Engraver Slug away without removing a valid Issuer", async () => {
-    const fetchMock = vi.fn(createArchiveFetch())
+  it("loads coins for a selected Currency with the other filters", async () => {
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        currencies: [
+          { slug: "argentine-peso", name: "Peso", fullName: "Argentine peso" },
+        ],
+        distributions: [
+          { slug: "standard-circulation", name: "Standard circulation" },
+        ],
+        issuers,
+      })
+    )
     vi.stubGlobal("fetch", fetchMock)
-
-    const router = renderArchiveRoute("/?issuer=AR&engraver=First--Engraver")
+    const router = renderArchiveRoute(
+      "/?currency=argentine-peso&distribution=standard-circulation&issuer=AR"
+    )
 
     expect(
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
+      "http://localhost:3001/v1/coins?currency=argentine-peso&distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
     )
-    expect(router.state.location.search).toEqual({
-      issuer: "AR",
-      engraver: undefined,
-    })
-    expect(router.state.location.searchStr).toBe("?issuer=AR")
+    expect(router.state.location.search.currency).toBe("argentine-peso")
   })
 
-  it("keeps a syntactically valid unknown Engraver Slug in URL state", async () => {
-    const fetchMock = vi.fn(createArchiveFetch([]))
+  it("loads coins for a selected Mint with the other filters", async () => {
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        issuers,
+        mints: [
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            slug: "buenos-aires",
+            name: "Buenos Aires Mint",
+            place: "Buenos Aires",
+            country: { code: "AR", name: "Argentina" },
+            startYear: null,
+            endYear: null,
+            operating: null,
+          },
+        ],
+      })
+    )
     vi.stubGlobal("fetch", fetchMock)
-
-    const router = renderArchiveRoute("/?engraver=unknown-engraver")
-
-    expect(await screen.findByText("Engraver not found")).toBeVisible()
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=unknown-engraver&page=1&pageSize=24"
-    )
-    expect(router.state.location.search).toEqual({
-      engraver: "unknown-engraver",
-    })
-    expect(router.state.location.searchStr).toBe("?engraver=unknown-engraver")
-  })
-
-  it("shows the filtered empty state for an Engraver-only result", async () => {
-    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
-
-    renderArchiveRoute("/?engraver=first-engraver")
+    const router = renderArchiveRoute("/?issuer=AR&mint=buenos-aires")
 
     expect(
-      await screen.findByText("No coins match the selected filters.")
+      await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?issuer=AR&mint=buenos-aires&page=1&pageSize=24"
+    )
+    expect(router.state.location.search.mint).toBe("buenos-aires")
   })
 
-  it("shows the filtered empty state for combined Issuer and Engraver results", async () => {
-    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
-
-    renderArchiveRoute("/?issuer=ROMAN&engraver=first-engraver")
+  it("loads coins for a selected Engraver with the other filters", async () => {
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
+        issuers,
+      })
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?engraver=first-engraver&issuer=AR")
 
     expect(
-      await screen.findByText("No coins match the selected filters.")
+      await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
-  })
-
-  it("keeps every normalized Issuer and Engraver filter combination in a distinct cache entry", async () => {
-    const fetchMock = vi.fn(createArchiveFetch())
-    vi.stubGlobal("fetch", fetchMock)
-    const router = renderArchiveRoute()
-    await screen.findByRole("link", { name: "First coin" })
-
-    await router.navigate({ to: "/", search: { issuer: "AR" } })
-    await router.navigate({
-      to: "/",
-      search: { engraver: "first-engraver" },
-    })
-    await router.navigate({
-      to: "/",
-      search: { issuer: "AR", engraver: "first-engraver" },
-    })
-
-    const queryClient = router.options.context.queryClient
-    for (const filters of [
-      {
-        currencySlug: null,
-        faceValueAmount: null,
-        issuerCode: null,
-        engraverSlug: null,
-        page: 1,
-        pageSize: 24,
-      },
-      {
-        currencySlug: null,
-        faceValueAmount: null,
-        issuerCode: "AR",
-        engraverSlug: null,
-        page: 1,
-        pageSize: 24,
-      },
-      {
-        currencySlug: null,
-        faceValueAmount: null,
-        issuerCode: null,
-        engraverSlug: "first-engraver",
-        page: 1,
-        pageSize: 24,
-      },
-      {
-        currencySlug: null,
-        faceValueAmount: null,
-        issuerCode: "AR",
-        engraverSlug: "first-engraver",
-        page: 1,
-        pageSize: 24,
-      },
-    ]) {
-      expect(
-        queryClient.getQueryState(["coins", "list", filters])?.status
-      ).toBe("success")
-    }
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?page=1&pageSize=24"
-    )
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
-    )
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=first-engraver&page=1&pageSize=24"
-    )
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
     )
+    expect(router.state.location.search.engraver).toBe("first-engraver")
   })
 
-  it("restores Engraver-filtered results with browser Back and Forward", async () => {
-    const fetchMock = vi.fn((input: string | URL | Request) => {
-      const url = String(input)
-      if (url.endsWith("/v1/issuers")) {
-        return Promise.resolve(jsonResponse({ issuers }))
-      }
-      if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
-      }
-      return Promise.resolve(
-        coinListJsonResponse([
-          url.includes("engraver=second-engraver")
-            ? { ...coin, title: "Second coin" }
-            : coin,
-        ])
-      )
-    })
+  it("loads coins for a selected Ruling Authority with the other filters", async () => {
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        issuers,
+        rulers: [{ slug: "roman-republic", name: "Roman Republic" }],
+      })
+    )
     vi.stubGlobal("fetch", fetchMock)
-    const router = renderArchiveRoute("/?engraver=first-engraver")
+    const router = renderArchiveRoute("/?issuer=AR&ruler=roman-republic")
+
     expect(
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?issuer=AR&ruler=roman-republic&page=1&pageSize=24"
+    )
+    expect(router.state.location.search.ruler).toBe("roman-republic")
+  })
 
-    await router.navigate({
-      to: "/",
-      search: { engraver: "second-engraver" },
-    })
-    expect(
-      await screen.findByRole("link", { name: "Second coin" })
-    ).toBeVisible()
+  it("shows the route message when the URL Ruling Authority is unknown", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
+    renderArchiveRoute("/?ruler=unknown-ruler")
 
-    router.history.back()
-    expect(
-      await screen.findByRole("link", { name: "First coin" })
-    ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?engraver=first-engraver")
+    expect(await screen.findByText("Ruler / Period not found")).toBeVisible()
+  })
 
-    router.history.forward()
-    expect(
-      await screen.findByRole("link", { name: "Second coin" })
-    ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?engraver=second-engraver")
+  it("shows the route message when the URL Engraver is unknown", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
+    renderArchiveRoute("/?engraver=unknown-engraver")
+
+    expect(await screen.findByText("Engraver not found")).toBeVisible()
+  })
+
+  it("shows the route message when the URL Mint is unknown", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
+    renderArchiveRoute("/?mint=unknown-mint")
+
+    expect(await screen.findByText("Mint not found")).toBeVisible()
+  })
+
+  it("shows the route message when the URL Currency is unknown", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
+    renderArchiveRoute("/?currency=unknown-currency")
+
+    expect(await screen.findByText("Currency not found")).toBeVisible()
   })
 
   it("shows the Explore filters", async () => {
@@ -433,9 +287,20 @@ describe("Archive landing route", () => {
       if (url.endsWith("/v1/issuers")) {
         return Promise.resolve(jsonResponse({ issuers }))
       }
-
+      if (url.endsWith("/v1/distributions")) {
+        return Promise.resolve(jsonResponse({ distributions: [] }))
+      }
+      if (url.endsWith("/v1/currencies")) {
+        return Promise.resolve(jsonResponse({ currencies: [] }))
+      }
+      if (url.endsWith("/v1/mints")) {
+        return Promise.resolve(jsonResponse({ mints: [] }))
+      }
       if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
+        return Promise.resolve(jsonResponse({ engravers: [] }))
+      }
+      if (url.endsWith("/v1/rulers")) {
+        return Promise.resolve(jsonResponse({ rulers: [] }))
       }
 
       if (url.endsWith("/v1/coins?issuer=ROMAN&page=1&pageSize=24")) {
@@ -500,7 +365,7 @@ describe("Archive landing route", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?page=1&pageSize=24"
     )
-    expect(fetchMock).toHaveBeenCalledTimes(4)
+    expect(fetchMock).toHaveBeenCalledTimes(8)
   })
 
   it.each(["", "ar", "A", "ABC_123"])(
@@ -541,7 +406,7 @@ describe("Archive landing route", () => {
       expect(link).toHaveAttribute("href", `/coins/${coinId}`)
       expect(screen.queryByText(coinId)).not.toBeInTheDocument()
       expect(screen.getAllByText(issuer.name).length).toBeGreaterThan(0)
-      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(fetchMock).toHaveBeenCalledTimes(7)
     }
   )
 
@@ -697,9 +562,17 @@ describe("Archive landing route", () => {
         return Promise.resolve(
           url.endsWith("/v1/issuers")
             ? jsonResponse({ issuers })
-            : url.endsWith("/v1/engravers")
-              ? jsonResponse({ engravers })
-              : coinListJsonResponse([{ id: coinId }])
+            : url.endsWith("/v1/currencies")
+              ? jsonResponse({ currencies: [] })
+              : url.endsWith("/v1/mints")
+                ? jsonResponse({ mints: [] })
+                : url.endsWith("/v1/engravers")
+                  ? jsonResponse({ engravers: [] })
+                  : url.endsWith("/v1/rulers")
+                    ? jsonResponse({ rulers: [] })
+                    : url.endsWith("/v1/distributions")
+                      ? jsonResponse({ distributions: [] })
+                      : coinListJsonResponse([{ id: coinId }])
         )
       })
     )
@@ -722,8 +595,20 @@ describe("Archive landing route", () => {
         if (url.endsWith("/v1/issuers")) {
           return Promise.resolve(jsonResponse({ issuers }))
         }
+        if (url.endsWith("/v1/distributions")) {
+          return Promise.resolve(jsonResponse({ distributions: [] }))
+        }
+        if (url.endsWith("/v1/currencies")) {
+          return Promise.resolve(jsonResponse({ currencies: [] }))
+        }
+        if (url.endsWith("/v1/mints")) {
+          return Promise.resolve(jsonResponse({ mints: [] }))
+        }
         if (url.endsWith("/v1/engravers")) {
-          return Promise.resolve(jsonResponse({ engravers }))
+          return Promise.resolve(jsonResponse({ engravers: [] }))
+        }
+        if (url.endsWith("/v1/rulers")) {
+          return Promise.resolve(jsonResponse({ rulers: [] }))
         }
         return Promise.reject(new TypeError("offline"))
       })
@@ -744,9 +629,17 @@ describe("Archive landing route", () => {
         Promise.resolve(
           String(input).endsWith("/v1/issuers")
             ? jsonResponse({ issuers })
-            : String(input).endsWith("/v1/engravers")
-              ? jsonResponse({ engravers })
-              : jsonResponse({ error: {} }, 503)
+            : String(input).endsWith("/v1/currencies")
+              ? jsonResponse({ currencies: [] })
+              : String(input).endsWith("/v1/mints")
+                ? jsonResponse({ mints: [] })
+                : String(input).endsWith("/v1/engravers")
+                  ? jsonResponse({ engravers: [] })
+                  : String(input).endsWith("/v1/rulers")
+                    ? jsonResponse({ rulers: [] })
+                    : String(input).endsWith("/v1/distributions")
+                      ? jsonResponse({ distributions: [] })
+                      : jsonResponse({ error: {} }, 503)
         )
       )
     )
@@ -766,9 +659,17 @@ describe("Archive landing route", () => {
         Promise.resolve(
           String(input).endsWith("/v1/issuers")
             ? jsonResponse({ issuers: [{ name: "Argentina", id: "internal" }] })
-            : String(input).endsWith("/v1/engravers")
-              ? jsonResponse({ engravers })
-              : coinListJsonResponse([coin])
+            : String(input).endsWith("/v1/currencies")
+              ? jsonResponse({ currencies: [] })
+              : String(input).endsWith("/v1/mints")
+                ? jsonResponse({ mints: [] })
+                : String(input).endsWith("/v1/engravers")
+                  ? jsonResponse({ engravers: [] })
+                  : String(input).endsWith("/v1/rulers")
+                    ? jsonResponse({ rulers: [] })
+                    : String(input).endsWith("/v1/distributions")
+                      ? jsonResponse({ distributions: [] })
+                      : coinListJsonResponse([coin])
         )
       )
     )
@@ -790,11 +691,17 @@ describe("Archive landing route", () => {
         const url = String(input)
         return url.endsWith("/v1/issuers")
           ? Promise.reject(new TypeError("offline"))
-          : Promise.resolve(
-              url.endsWith("/v1/engravers")
-                ? jsonResponse({ engravers })
-                : coinListJsonResponse([coin])
-            )
+          : url.endsWith("/v1/currencies")
+            ? Promise.resolve(jsonResponse({ currencies: [] }))
+            : url.endsWith("/v1/mints")
+              ? Promise.resolve(jsonResponse({ mints: [] }))
+              : url.endsWith("/v1/engravers")
+                ? Promise.resolve(jsonResponse({ engravers: [] }))
+                : url.endsWith("/v1/rulers")
+                  ? Promise.resolve(jsonResponse({ rulers: [] }))
+                  : url.endsWith("/v1/distributions")
+                    ? Promise.resolve(jsonResponse({ distributions: [] }))
+                    : Promise.resolve(coinListJsonResponse([coin]))
       })
     )
 
@@ -806,85 +713,42 @@ describe("Archive landing route", () => {
     ).toBeNull()
   })
 
-  it("uses the route error state for an invalid Engraver response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((input: string | URL | Request) => {
-        const url = String(input)
-        return Promise.resolve(
-          url.endsWith("/v1/issuers")
-            ? jsonResponse({ issuers })
-            : url.endsWith("/v1/engravers")
-              ? jsonResponse({
-                  engravers: [
-                    { slug: "Invalid-Slug", fullName: "First Engraver" },
-                  ],
-                })
-              : coinListJsonResponse([coin])
-        )
-      })
-    )
-
-    renderArchiveRoute()
-
-    expect(
-      await screen.findByText("Invalid engraver list response")
-    ).toBeVisible()
-    expect(
-      screen.queryByRole("navigation", { name: "Explore filters" })
-    ).toBeNull()
-  })
-
-  it("uses the route error state when the Engraver request fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((input: string | URL | Request) => {
-        const url = String(input)
-        if (url.endsWith("/v1/engravers")) {
-          return Promise.reject(new TypeError("offline"))
-        }
-        return Promise.resolve(
-          url.endsWith("/v1/issuers")
-            ? jsonResponse({ issuers })
-            : coinListJsonResponse([coin])
-        )
-      })
-    )
-
-    renderArchiveRoute()
-
-    expect(await screen.findByText("Unable to load engravers")).toBeVisible()
-    expect(
-      screen.queryByRole("navigation", { name: "Explore filters" })
-    ).toBeNull()
-  })
-
   it("accepts expanded rollout responses while navigating to Coin detail", async () => {
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
       return Promise.resolve(
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
-          : url.endsWith("/v1/engravers")
-            ? jsonResponse({ engravers })
-            : url.endsWith(`/v1/coins/${coinId}`)
-              ? jsonResponse({
-                  ...detailCoin,
-                  obverse: {
-                    description: "A portrait",
-                    imageUrl: "https://images.example/obverse.webp",
-                    createdAt: "2026-09-16T10:30:00.000Z",
-                    updatedAt: "2026-09-16T10:45:00.000Z",
-                    engravers: [],
-                  },
-                })
-              : coinListJsonResponse([
-                  {
-                    ...coin,
-                    obverseImageUrl: "https://images.example/obverse.webp",
-                    reverseImageUrl: "https://images.example/reverse.webp",
-                  },
-                ])
+          : url.endsWith("/v1/currencies")
+            ? jsonResponse({ currencies: [] })
+            : url.endsWith("/v1/mints")
+              ? jsonResponse({ mints: [] })
+              : url.endsWith("/v1/engravers")
+                ? jsonResponse({ engravers: [] })
+                : url.endsWith("/v1/rulers")
+                  ? jsonResponse({ rulers: [] })
+                  : url.endsWith("/v1/distributions")
+                    ? jsonResponse({ distributions: [] })
+                    : url.endsWith(`/v1/coins/${coinId}`)
+                      ? jsonResponse({
+                          ...detailCoin,
+                          obverse: {
+                            description: "A portrait",
+                            imageUrl: "https://images.example/obverse.webp",
+                            createdAt: "2026-09-16T10:30:00.000Z",
+                            updatedAt: "2026-09-16T10:45:00.000Z",
+                            engravers: [],
+                          },
+                        })
+                      : coinListJsonResponse([
+                          {
+                            ...coin,
+                            obverseImageUrl:
+                              "https://images.example/obverse.webp",
+                            reverseImageUrl:
+                              "https://images.example/reverse.webp",
+                          },
+                        ])
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -933,9 +797,17 @@ describe("Archive landing route", () => {
       return Promise.resolve(
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
-          : url.endsWith("/v1/engravers")
-            ? jsonResponse({ engravers })
-            : coinListJsonResponse([coin])
+          : url.endsWith("/v1/currencies")
+            ? jsonResponse({ currencies: [] })
+            : url.endsWith("/v1/mints")
+              ? jsonResponse({ mints: [] })
+              : url.endsWith("/v1/engravers")
+                ? jsonResponse({ engravers: [] })
+                : url.endsWith("/v1/rulers")
+                  ? jsonResponse({ rulers: [] })
+                  : url.endsWith("/v1/distributions")
+                    ? jsonResponse({ distributions: [] })
+                    : coinListJsonResponse([coin])
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -976,9 +848,17 @@ describe("Archive landing route", () => {
         return Promise.resolve(
           url.endsWith("/v1/issuers")
             ? jsonResponse({ issuers })
-            : url.endsWith("/v1/engravers")
-              ? jsonResponse({ engravers })
-              : coinListJsonResponse([coin])
+            : url.endsWith("/v1/currencies")
+              ? jsonResponse({ currencies: [] })
+              : url.endsWith("/v1/mints")
+                ? jsonResponse({ mints: [] })
+                : url.endsWith("/v1/engravers")
+                  ? jsonResponse({ engravers: [] })
+                  : url.endsWith("/v1/rulers")
+                    ? jsonResponse({ rulers: [] })
+                    : url.endsWith("/v1/distributions")
+                      ? jsonResponse({ distributions: [] })
+                      : coinListJsonResponse([coin])
         )
       })
     )
@@ -1009,11 +889,19 @@ describe("Archive landing route", () => {
       return Promise.resolve(
         url.endsWith("/v1/issuers")
           ? jsonResponse({ issuers })
-          : url.endsWith("/v1/engravers")
-            ? jsonResponse({ engravers })
-            : url.endsWith(`/v1/coins/${coinId}`)
-              ? jsonResponse(detailCoin)
-              : coinListJsonResponse([coin])
+          : url.endsWith("/v1/currencies")
+            ? jsonResponse({ currencies: [] })
+            : url.endsWith("/v1/mints")
+              ? jsonResponse({ mints: [] })
+              : url.endsWith("/v1/engravers")
+                ? jsonResponse({ engravers: [] })
+                : url.endsWith("/v1/rulers")
+                  ? jsonResponse({ rulers: [] })
+                  : url.endsWith("/v1/distributions")
+                    ? jsonResponse({ distributions: [] })
+                    : url.endsWith(`/v1/coins/${coinId}`)
+                      ? jsonResponse(detailCoin)
+                      : coinListJsonResponse([coin])
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -1053,8 +941,6 @@ describe("Archive landing route", () => {
     ).toBe(30 * 60 * 1_000)
     expect(coinListQueryOptions().staleTime).toBe(30_000)
     expect(coinDetailQueryOptions(coinId).staleTime).toBe(30_000)
-    expect(distributionListQueryOptions().staleTime).toBe(Infinity)
-    expect(engraverListQueryOptions().staleTime).toBe(Infinity)
     expect(issuerListQueryOptions().staleTime).toBe(Infinity)
   })
 

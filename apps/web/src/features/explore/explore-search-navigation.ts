@@ -8,14 +8,11 @@ export function updateExploreFilters(
   search: ExploreSearch,
   patch: ExploreFilterPatch
 ): ExploreSearch {
-  const nextSearch = {
+  return {
     ...search,
     ...patch,
     page: undefined,
   }
-  return patch.currency === undefined && "currency" in patch
-    ? { ...nextSearch, amount: undefined }
-    : nextSearch
 }
 
 export function setExplorePage(
@@ -32,11 +29,10 @@ export function useExploreSearchNavigation() {
   const navigate = useNavigate({ from: "/" })
 
   return {
-    updateFilters: (patch: ExploreFilterPatch, order: string[]) => {
+    updateFilters: (patch: ExploreFilterPatch) => {
       void navigate({
         to: "/",
         search: (search) => updateExploreFilters(search, patch),
-        state: (previous) => ({ ...previous, exploreFilterOrder: order }),
       })
     },
     goToPage: (page: number) => {

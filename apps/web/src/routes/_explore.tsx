@@ -32,9 +32,9 @@ export const Route = createFileRoute("/_explore")({
     await Promise.all([
       context.queryClient.query(currencyListQueryOptions()),
       context.queryClient.query(distributionListQueryOptions()),
+      context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(mintListQueryOptions()),
-      context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(rulingAuthorityListQueryOptions()),
     ])
   },
@@ -44,57 +44,39 @@ export const Route = createFileRoute("/_explore")({
 })
 
 function ExploreLayout() {
-  const {
-    amount,
-    currency: currencySlug,
-    distribution,
-    engraver: engraverSlug,
-    issuer: issuerCode,
-    mint: mintSlug,
-    ruler: rulingAuthoritySlug,
-    year,
-    sizeMin,
-    sizeMax,
-    thicknessMin,
-    thicknessMax,
-    weightMin,
-    weightMax,
-  } = Route.useSearch()
+  const search = Route.useSearch()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
   const { data: distributionList } = useSuspenseQuery(
     distributionListQueryOptions()
   )
+  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: mintList } = useSuspenseQuery(mintListQueryOptions())
-  const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: rulingAuthorityList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
   )
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <ExploreFilters
-        sizeMin={sizeMin}
-        sizeMax={sizeMax}
-        thicknessMin={thicknessMin}
-        thicknessMax={thicknessMax}
-        weightMin={weightMin}
-        weightMax={weightMax}
-        amount={amount}
-        currencies={currencyList.currencies}
-        currencySlug={currencySlug}
-        distribution={distribution}
-        distributions={distributionList.distributions}
-        engraverSlug={engraverSlug}
-        engravers={engraverList.engravers}
-        issuerCode={issuerCode}
-        issuers={issuerList.issuers}
-        mintSlug={mintSlug}
-        mints={mintList.mints}
-        rulingAuthoritySlug={rulingAuthoritySlug}
-        rulingAuthorities={rulingAuthorityList.rulers}
-        year={year}
-      />
+      <nav
+        aria-label="Explore filters"
+        className="flex flex-wrap items-start gap-3 border-b px-5 py-4 md:items-center md:gap-5 md:px-10"
+      >
+        <ExploreFilters
+          currencies={currencyList.currencies}
+          currencySlug={search.currency}
+          distributions={distributionList.distributions}
+          distribution={search.distribution}
+          engravers={engraverList.engravers}
+          engraverSlug={search.engraver}
+          issuers={issuerList.issuers}
+          issuerCode={search.issuer}
+          mints={mintList.mints}
+          mintSlug={search.mint}
+          rulingAuthorities={rulingAuthorityList.rulers}
+          rulingAuthoritySlug={search.ruler}
+        />
+      </nav>
       <Outlet />
     </main>
   )
@@ -105,53 +87,41 @@ function ExploreLayoutError({ error }: ErrorComponentProps) {
 }
 
 function getExploreLayoutErrorMessage(error: unknown) {
-  if (error instanceof InvalidCurrencyListResponseError) {
-    return "Invalid Currency list response"
-  }
-
-  if (error instanceof InvalidMintListResponseError) {
-    return "Invalid Mint list response"
-  }
-
-  if (error instanceof MintListRequestError) {
-    return "Unable to load Mints"
-  }
-
-  if (error instanceof InvalidDistributionListResponseError) {
-    return "Invalid Coin Distribution list response"
-  }
-
-  if (error instanceof DistributionListRequestError) {
-    return "Unable to load Coin Distributions"
-  }
-
-  if (error instanceof CurrencyListRequestError) {
-    return "Unable to load Currencies"
-  }
-
-  if (error instanceof InvalidEngraverListResponseError) {
-    return "Invalid engraver list response"
-  }
-
-  if (error instanceof InvalidIssuerListResponseError) {
-    return "Invalid issuer list response"
-  }
-
-  if (error instanceof EngraverListRequestError) {
-    return "Unable to load engravers"
-  }
-
-  if (error instanceof IssuerListRequestError) {
-    return "Unable to load issuers"
-  }
-
   if (error instanceof InvalidRulingAuthorityListResponseError) {
     return "Invalid Ruling Authority list response"
   }
-
   if (error instanceof RulingAuthorityListRequestError) {
     return "Unable to load Ruling Authorities"
   }
-
+  if (error instanceof InvalidEngraverListResponseError) {
+    return "Invalid engraver list response"
+  }
+  if (error instanceof EngraverListRequestError) {
+    return "Unable to load engravers"
+  }
+  if (error instanceof InvalidMintListResponseError) {
+    return "Invalid Mint list response"
+  }
+  if (error instanceof MintListRequestError) {
+    return "Unable to load Mints"
+  }
+  if (error instanceof InvalidCurrencyListResponseError) {
+    return "Invalid Currency list response"
+  }
+  if (error instanceof CurrencyListRequestError) {
+    return "Unable to load Currencies"
+  }
+  if (error instanceof InvalidDistributionListResponseError) {
+    return "Invalid Coin Distribution list response"
+  }
+  if (error instanceof DistributionListRequestError) {
+    return "Unable to load Coin Distributions"
+  }
+  if (error instanceof InvalidIssuerListResponseError) {
+    return "Invalid issuer list response"
+  }
+  if (error instanceof IssuerListRequestError) {
+    return "Unable to load issuers"
+  }
   return "Unable to load Explore filters"
 }

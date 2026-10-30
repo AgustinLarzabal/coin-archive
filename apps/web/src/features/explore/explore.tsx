@@ -12,19 +12,11 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
   if (data.coins.length === 0) {
     const message =
       filters.issuerCode !== undefined ||
-      filters.currencySlug !== undefined ||
-      filters.faceValueAmount !== undefined ||
       filters.distribution !== undefined ||
-      filters.engraverSlug !== undefined ||
+      filters.currencySlug !== undefined ||
       filters.mintSlug !== undefined ||
-      filters.rulingAuthoritySlug !== undefined ||
-      filters.issueYear !== undefined ||
-      filters.sizeMin !== undefined ||
-      filters.sizeMax !== undefined ||
-      filters.thicknessMin !== undefined ||
-      filters.thicknessMax !== undefined ||
-      filters.weightMin !== undefined ||
-      filters.weightMax !== undefined
+      filters.engraverSlug !== undefined ||
+      filters.rulingAuthoritySlug !== undefined
         ? "No coins match the selected filters."
         : "No coins have been added to the archive yet"
 

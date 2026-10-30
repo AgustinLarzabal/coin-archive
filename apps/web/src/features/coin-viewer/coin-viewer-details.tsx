@@ -1,6 +1,5 @@
 import { isIsoIssuerCode } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
-import { Link } from "@tanstack/react-router"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
 import { formatIssuePeriod } from "@/features/issue-period"
@@ -109,13 +108,7 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               <dd className="text-right">
                 {group.attributions.map((attribution, attributionIndex) => (
                   <div key={`${attribution.slug}-${attributionIndex}`}>
-                    <Link
-                      to="/"
-                      search={{ ruler: attribution.slug }}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {attribution.name}
-                    </Link>
+                    {attribution.name}
                     {attribution.tenure ? ` (${attribution.tenure})` : ""}
                   </div>
                 ))}
@@ -128,13 +121,7 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
               <dd className="text-right">
                 {coin.mints.map((mint) => (
                   <div key={mint.slug}>
-                    <Link
-                      to="/"
-                      search={{ mint: mint.slug }}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {mint.name}
-                    </Link>
+                    {mint.name}
                     <div>
                       {mint.place}, {mint.country.name}
                     </div>

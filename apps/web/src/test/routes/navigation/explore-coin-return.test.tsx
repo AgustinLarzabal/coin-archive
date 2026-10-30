@@ -10,7 +10,7 @@ import {
 import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 
 describe("returning from a coin to Explore", () => {
-  it("keeps the selected filters and page through the Archive breadcrumb", async () => {
+  it("keeps Issuer and page through the Archive breadcrumb", async () => {
     const user = userEvent.setup()
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = new URL(String(input))
@@ -19,8 +19,14 @@ describe("returning from a coin to Explore", () => {
           jsonResponse({ issuers: [{ code: "AR", name: "Argentina" }] })
         )
       }
+      if (url.pathname === "/v1/distributions") {
+        return Promise.resolve(jsonResponse({ distributions: [] }))
+      }
       if (url.pathname === "/v1/currencies") {
         return Promise.resolve(jsonResponse({ currencies: [] }))
+      }
+      if (url.pathname === "/v1/mints") {
+        return Promise.resolve(jsonResponse({ mints: [] }))
       }
       if (url.pathname === "/v1/engravers") {
         return Promise.resolve(jsonResponse({ engravers: [] }))
@@ -44,7 +50,7 @@ describe("returning from a coin to Explore", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    const router = renderArchiveRoute("/?issuer=AR&year=2004&page=2")
+    const router = renderArchiveRoute("/?issuer=AR&page=2")
     await user.click(await screen.findByRole("link", { name: "First coin" }))
     await screen.findByRole("heading", { name: "First coin" })
     await user.click(screen.getByRole("link", { name: "Archive" }))
@@ -53,7 +59,6 @@ describe("returning from a coin to Explore", () => {
     expect(router.state.location.pathname).toBe("/")
     expect(router.state.location.search).toMatchObject({
       issuer: "AR",
-      year: 2004,
       page: 2,
     })
   })

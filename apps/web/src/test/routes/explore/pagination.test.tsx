@@ -13,7 +13,6 @@ import { coinListItemFixture } from "@/test/coin-fixtures"
 const coin = coinListItemFixture()
 
 const issuers = [{ name: "Argentina", code: "AR" }]
-const engravers = [{ slug: "first-engraver", fullName: "First Engraver" }]
 
 function createPageAwareArchiveFetch(totalPages = 3) {
   return (input: string | URL | Request) => {
@@ -21,13 +20,21 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/issuers")) {
       return Promise.resolve(jsonResponse({ issuers }))
     }
+    if (url.endsWith("/v1/distributions")) {
+      return Promise.resolve(jsonResponse({ distributions: [] }))
+    }
+    if (url.endsWith("/v1/currencies")) {
+      return Promise.resolve(jsonResponse({ currencies: [] }))
+    }
+    if (url.endsWith("/v1/mints")) {
+      return Promise.resolve(jsonResponse({ mints: [] }))
+    }
     if (url.endsWith("/v1/engravers")) {
-      return Promise.resolve(jsonResponse({ engravers }))
+      return Promise.resolve(jsonResponse({ engravers: [] }))
     }
     if (url.endsWith("/v1/rulers")) {
       return Promise.resolve(jsonResponse({ rulers: [] }))
     }
-
     const page = Number(new URL(url).searchParams.get("page"))
     return Promise.resolve(
       coinListJsonResponse([{ ...coin, title: `Coin on page ${page}` }], {
@@ -41,20 +48,16 @@ function createPageAwareArchiveFetch(totalPages = 3) {
 }
 
 describe("Explore pagination", () => {
-  it("orders generated page URL filters alphabetically before the page", async () => {
+  it("keeps Issuer before the page in generated URLs", async () => {
     vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
-    const router = renderArchiveRoute(
-      "/?year=1986&issuer=AR&engraver=first-engraver"
-    )
+    const router = renderArchiveRoute("/?issuer=AR")
     const user = userEvent.setup()
 
     await screen.findByRole("link", { name: "Coin on page 1" })
     await user.click(screen.getByRole("button", { name: "Go to next page" }))
 
     await waitFor(() =>
-      expect(router.state.location.searchStr).toBe(
-        "?engraver=first-engraver&issuer=AR&year=1986&page=2"
-      )
+      expect(router.state.location.searchStr).toBe("?issuer=AR&page=2")
     )
   })
 
@@ -64,7 +67,6 @@ describe("Explore pagination", () => {
       vi.fn(
         createArchiveFetch({
           coins: [coin],
-          engravers,
           issuers,
           pagination: {
             page: 1,
@@ -148,7 +150,13 @@ describe("Explore pagination", () => {
       vi.fn(
         createArchiveFetch({
           coins: [coin],
-          engravers,
+          currencies: [
+            {
+              slug: "argentine-peso",
+              name: "Peso",
+              fullName: "Argentine peso",
+            },
+          ],
           issuers,
           pagination: {
             page: 1,
@@ -159,12 +167,40 @@ describe("Explore pagination", () => {
         })
       )
     )
-    const router = renderArchiveRoute("/?issuer=AR&page=1")
+    const router = renderArchiveRoute(
+      "/?currency=argentine-peso&distribution=standard-circulation&issuer=AR&page=1"
+    )
 
     expect(
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?issuer=AR")
+    expect(router.state.location.searchStr).toBe(
+      "?currency=argentine-peso&distribution=standard-circulation&issuer=AR"
+    )
+  })
+
+  it("canonicalizes an explicit first page with Mint", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch({ coins: [] })))
+    const router = renderArchiveRoute("/?mint=unknown-mint&page=1")
+
+    expect(await screen.findByText("Mint not found")).toBeVisible()
+    expect(router.state.location.searchStr).toBe("?mint=unknown-mint")
+  })
+
+  it("canonicalizes an explicit first page with Engraver", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch({ coins: [] })))
+    const router = renderArchiveRoute("/?engraver=unknown-engraver&page=1")
+
+    expect(await screen.findByText("Engraver not found")).toBeVisible()
+    expect(router.state.location.searchStr).toBe("?engraver=unknown-engraver")
+  })
+
+  it("canonicalizes an explicit first page with Ruling Authority", async () => {
+    vi.stubGlobal("fetch", vi.fn(createArchiveFetch({ coins: [] })))
+    const router = renderArchiveRoute("/?ruler=unknown-ruler&page=1")
+
+    expect(await screen.findByText("Ruler / Period not found")).toBeVisible()
+    expect(router.state.location.searchStr).toBe("?ruler=unknown-ruler")
   })
 
   it("replace-navigates a stale page to the last page while preserving filters", async () => {
@@ -174,13 +210,21 @@ describe("Explore pagination", () => {
       if (url.endsWith("/v1/issuers")) {
         return Promise.resolve(jsonResponse({ issuers }))
       }
+      if (url.endsWith("/v1/distributions")) {
+        return Promise.resolve(jsonResponse({ distributions: [] }))
+      }
+      if (url.endsWith("/v1/currencies")) {
+        return Promise.resolve(jsonResponse({ currencies: [] }))
+      }
+      if (url.endsWith("/v1/mints")) {
+        return Promise.resolve(jsonResponse({ mints: [] }))
+      }
       if (url.endsWith("/v1/engravers")) {
-        return Promise.resolve(jsonResponse({ engravers }))
+        return Promise.resolve(jsonResponse({ engravers: [] }))
       }
       if (url.endsWith("/v1/rulers")) {
         return Promise.resolve(jsonResponse({ rulers: [] }))
       }
-
       const page = Number(new URL(url).searchParams.get("page"))
       if (page === 9) {
         return Promise.resolve(
@@ -211,7 +255,7 @@ describe("Explore pagination", () => {
     await screen.findByRole("link", { name: "First coin" })
     await router.navigate({
       to: "/",
-      search: { issuer: "AR", year: "-25-19", page: 9 },
+      search: { issuer: "AR", page: 9 },
     })
 
     expect(
@@ -219,14 +263,13 @@ describe("Explore pagination", () => {
     ).toBeVisible()
     expect(router.state.location.search).toEqual({
       issuer: "AR",
-      year: "-25-19",
       page: 3,
     })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=9&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&page=9&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&year=-25-19&page=3&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&page=3&pageSize=24"
     )
 
     router.history.back()
@@ -236,9 +279,7 @@ describe("Explore pagination", () => {
 
   it("restores a filtered page URL and Coins with browser Back and Forward", async () => {
     vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
-    const router = renderArchiveRoute("/?ruler=selected-authority", [
-      { slug: "selected-authority", name: "Selected Authority" },
-    ])
+    const router = renderArchiveRoute("/?issuer=AR")
     const user = userEvent.setup()
 
     await screen.findByRole("link", { name: "Coin on page 1" })
@@ -246,23 +287,19 @@ describe("Explore pagination", () => {
     expect(
       await screen.findByRole("link", { name: "Coin on page 2" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe(
-      "?ruler=selected-authority&page=2"
-    )
+    expect(router.state.location.searchStr).toBe("?issuer=AR&page=2")
 
     router.history.back()
     expect(
       await screen.findByRole("link", { name: "Coin on page 1" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe("?ruler=selected-authority")
+    expect(router.state.location.searchStr).toBe("?issuer=AR")
 
     router.history.forward()
     expect(
       await screen.findByRole("link", { name: "Coin on page 2" })
     ).toBeVisible()
-    expect(router.state.location.searchStr).toBe(
-      "?ruler=selected-authority&page=2"
-    )
+    expect(router.state.location.searchStr).toBe("?issuer=AR&page=2")
   })
 
   it("normalizes zero matches to page 1 without pagination controls", async () => {
@@ -271,7 +308,6 @@ describe("Explore pagination", () => {
       vi.fn(
         createArchiveFetch({
           coins: [],
-          engravers,
           issuers,
           pagination: {
             page: 8,

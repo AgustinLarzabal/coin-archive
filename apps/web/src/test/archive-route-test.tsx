@@ -1,6 +1,5 @@
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
-import { vi } from "vitest"
 import type {
   CoinListPaginationResponse,
   CurrencyResponse,
@@ -12,12 +11,6 @@ import type {
 } from "@coin-archive/api"
 
 import { getRouter } from "@/router"
-
-export const defaultDistributions: Array<DistributionListItemResponse> = [
-  { slug: "standard-circulation", name: "Standard circulation" },
-  { slug: "circulating-commemorative", name: "Circulating commemorative" },
-  { slug: "non-circulating", name: "Non-circulating" },
-]
 
 export function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -43,19 +36,19 @@ export function coinListJsonResponse(
 
 export function createArchiveFetch({
   coins = [],
-  currencies = [],
-  distributions = defaultDistributions,
-  engravers = [],
   pagination,
+  currencies = [],
+  distributions = [],
+  engravers = [],
   issuers = [],
   mints = [],
   rulers = [],
 }: {
   coins?: Array<unknown>
+  pagination?: CoinListPaginationResponse
   currencies?: Array<CurrencyResponse>
   distributions?: Array<DistributionListItemResponse>
   engravers?: Array<EngraverListItemResponse>
-  pagination?: CoinListPaginationResponse
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
   rulers?: Array<RulingAuthorityListItemResponse>
@@ -63,54 +56,23 @@ export function createArchiveFetch({
   return (input: string | URL | Request) => {
     const url = String(input)
 
-    return Promise.resolve(
-      url.endsWith("/v1/issuers")
-        ? jsonResponse({ issuers })
-        : url.endsWith("/v1/mints")
-          ? jsonResponse({ mints })
-          : url.endsWith("/v1/distributions")
-            ? jsonResponse({ distributions })
-            : url.endsWith("/v1/currencies")
-              ? jsonResponse({ currencies })
-              : url.endsWith("/v1/rulers")
-                ? jsonResponse({ rulers })
-                : url.endsWith("/v1/engravers")
-                  ? jsonResponse({ engravers })
-                  : coinListJsonResponse(coins, pagination)
-    )
+    if (url.endsWith("/v1/currencies"))
+      return Promise.resolve(jsonResponse({ currencies }))
+    if (url.endsWith("/v1/distributions"))
+      return Promise.resolve(jsonResponse({ distributions }))
+    if (url.endsWith("/v1/engravers"))
+      return Promise.resolve(jsonResponse({ engravers }))
+    if (url.endsWith("/v1/issuers"))
+      return Promise.resolve(jsonResponse({ issuers }))
+    if (url.endsWith("/v1/mints"))
+      return Promise.resolve(jsonResponse({ mints }))
+    if (url.endsWith("/v1/rulers"))
+      return Promise.resolve(jsonResponse({ rulers }))
+    return Promise.resolve(coinListJsonResponse(coins, pagination))
   }
 }
 
-export function renderArchiveRoute(
-  initialEntry = "/",
-  rulers: Array<RulingAuthorityListItemResponse> = [],
-  currencies: Array<CurrencyResponse> | Promise<Response> | Response = [],
-  distributions:
-    | Array<DistributionListItemResponse>
-    | Promise<Response>
-    | Response = defaultDistributions,
-  mints: Array<MintResponse> | Promise<Response> | Response = []
-) {
-  const fetchWithoutReferenceFixtures = globalThis.fetch
-  vi.stubGlobal("fetch", (input: string | URL | Request, init?: RequestInit) =>
-    String(input).endsWith("/v1/rulers")
-      ? Promise.resolve(jsonResponse({ rulers }))
-      : String(input).endsWith("/v1/mints")
-        ? Array.isArray(mints)
-          ? Promise.resolve(jsonResponse({ mints }))
-          : Promise.resolve(mints)
-        : String(input).endsWith("/v1/distributions")
-          ? Array.isArray(distributions)
-            ? Promise.resolve(jsonResponse({ distributions }))
-            : Promise.resolve(distributions)
-          : String(input).endsWith("/v1/currencies")
-            ? Array.isArray(currencies)
-              ? Promise.resolve(jsonResponse({ currencies }))
-              : Promise.resolve(currencies)
-            : init === undefined
-              ? fetchWithoutReferenceFixtures(input)
-              : fetchWithoutReferenceFixtures(input, init)
-  )
+export function renderArchiveRoute(initialEntry = "/") {
   const history = createMemoryHistory({ initialEntries: [initialEntry] })
   const router = getRouter({ history })
   render(<RouterProvider router={router} />)

@@ -91,9 +91,7 @@ describe("Coin viewer route details", () => {
     renderCoinRoute()
     expect(await screen.findByText("Mint")).toBeInTheDocument()
     expect(screen.getByText("Zecca dello Stato")).toBeInTheDocument()
-    expect(
-      screen.getByRole("link", { name: "Zecca dello Stato" })
-    ).toHaveAttribute("href", "/?mint=rome-state-mint-italy")
+    expect(screen.queryByRole("link", { name: "Zecca dello Stato" })).toBeNull()
     expect(screen.getByText("Rome, Italy")).toBeInTheDocument()
     expect(screen.getByText("Unknown–ongoing")).toBeInTheDocument()
     expect(screen.getByText("Ancient Mint")).toBeInTheDocument()
@@ -247,9 +245,7 @@ describe("Coin viewer route details", () => {
       "KingFirst Co-ruler (2000–2002)Second Co-rulerPeriodShared Period (circa 2001)KingLater King (2003–present)"
     )
     expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
-    expect(
-      screen.getByRole("link", { name: "First Co-ruler" })
-    ).toHaveAttribute("href", "/?ruler=first-co-ruler")
+    expect(screen.queryByRole("link", { name: "First Co-ruler" })).toBeNull()
   })
 
   it("omits Ruling Authority rows for an uncurated Coin", async () => {

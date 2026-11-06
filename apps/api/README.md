@@ -52,19 +52,19 @@ Coin detail includes required nullable numeric `size` and `thickness` in millime
 
 `GET /v1/coins` accepts one exact value for each optional filter:
 
-| Parameter                | Value                                                                                  |
-| ------------------------ | -------------------------------------------------------------------------------------- |
-| `amount`                 | Exact positive Face Value Amount; requires `currency`                                  |
-| `currency`               | Case-sensitive Currency Slug                                                           |
-| `distribution`           | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
-| `issuer`                 | Case-sensitive Issuer Code, such as `AR`                                               |
-| `mint`                   | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`               |
-| `engraver`               | Case-sensitive Engraver Slug                                                           |
-| `ruler`                  | Case-sensitive Ruling Authority Slug                                                   |
-| `year`                   | One Issue Year or a closed Issue Year range                                            |
-| `size`                   | Exact Coin Size or an inclusive closed range in millimetres                            |
-| `thickness`              | Exact Coin Thickness or an inclusive closed range in millimetres                       |
-| `weightMin`, `weightMax` | Inclusive Coin Weight bounds in grams, independently optional                          |
+| Parameter      | Value                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------- |
+| `amount`       | Exact positive Face Value Amount; requires `currency`                                  |
+| `currency`     | Case-sensitive Currency Slug                                                           |
+| `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
+| `issuer`       | Case-sensitive Issuer Code, such as `AR`                                               |
+| `mint`         | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`               |
+| `engraver`     | Case-sensitive Engraver Slug                                                           |
+| `ruler`        | Case-sensitive Ruling Authority Slug                                                   |
+| `year`         | One Issue Year or a closed Issue Year range                                            |
+| `size`         | Exact Coin Size or an inclusive closed range in millimetres                            |
+| `thickness`    | Exact Coin Thickness or an inclusive closed range in millimetres                       |
+| `weight`       | Exact Coin Weight or an inclusive closed range in grams                                |
 
 Filters can be combined. For example:
 
@@ -72,7 +72,7 @@ Filters can be combined. For example:
 curl 'http://localhost:3001/v1/coins?issuer=AR&distribution=standard-circulation&year=1992-1994'
 curl 'http://localhost:3001/v1/coins?currency=argentine-peso-convertible&amount=0.5'
 curl 'http://localhost:3001/v1/coins?mint=rome-state-mint-italy&issuer=IT&page=1'
-curl 'http://localhost:3001/v1/coins?size=20-25.75&weightMin=8.125'
+curl 'http://localhost:3001/v1/coins?size=20-25.75&weight=8.125'
 curl 'http://localhost:3001/v1/coins?thickness=1.5-2.25&issuer=AR'
 ```
 
@@ -86,16 +86,15 @@ combines with other filters and pagination. A valid unknown slug returns an
 empty successful page; malformed or repeated values return `400` with
 `invalid_mint_slug`.
 
-Size and Thickness each accept one positive decimal for an exact match, or two
-positive decimals separated by a hyphen for an inclusive range, with at most
-two fractional digits. Weight bounds allow three fractional digits and may
-equal each other for an exact match. A reversed or open-ended range, a minimum
-greater than its maximum, a repeated filter, or a malformed or overly precise
-value returns `400` with
+Size, Thickness, and Weight each accept one positive decimal for an exact match,
+or two positive decimals separated by a hyphen for an inclusive range. Size and
+Thickness allow at most two fractional digits; Weight allows three. A reversed
+or open-ended range, a repeated filter, or a malformed or overly precise value
+returns `400` with
 `invalid_measurement_filter`. Filters compare stored values exactly, combine
 with the other filters before pagination and total counting, and exclude Coins
 whose selected measurement is unknown. Coins with unknown measurements remain
-in results when that measurement has no bound.
+in results when that measurement has no filter.
 
 Issue Years use signed conventional BCE/CE numbering: `-44` means 44 BCE,
 `2026` means 2026 CE, and year zero is invalid. A single year matches a Coin

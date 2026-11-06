@@ -24,6 +24,7 @@ export function ExploreFilters({
     ruler: rulingAuthoritySlug,
     size,
     thickness,
+    weight,
     year,
   } = search
   const { updateFilters } = useExploreSearchNavigation()
@@ -40,6 +41,7 @@ export function ExploreFilters({
       rulingAuthoritySlug,
       size,
       thickness,
+      weight,
       year,
     ]
   )

@@ -4,6 +4,7 @@ import {
   COIN_LIST_MAX_PAGE_SIZE,
   COIN_LIST_SIZE_QUERY_PATTERN,
   COIN_LIST_THICKNESS_QUERY_PATTERN,
+  COIN_LIST_WEIGHT_QUERY_PATTERN,
   COIN_LIST_YEAR_QUERY_PATTERN,
   coinDistributionSchema,
   coinListPageQuerySchema,
@@ -12,6 +13,8 @@ import {
   coinListSizeToInterval,
   coinListThicknessSchema,
   coinListThicknessToInterval,
+  coinListWeightSchema,
+  coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
   currencySlugSchema,
@@ -28,8 +31,6 @@ import {
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
-  measurementMinExceedsMax,
-  measurementQuerySchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
 } from "@coin-archive/api"
@@ -64,20 +65,13 @@ const coinListQuerySchema = z
       type: "string",
       pattern: COIN_LIST_THICKNESS_QUERY_PATTERN,
     }),
-    weightMin: measurementQuerySchema(3)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive minimum Coin Weight in grams (up to 3 decimal places)",
-        param: { name: "weightMin", in: "query" },
-      }),
-    weightMax: measurementQuerySchema(3)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive maximum Coin Weight in grams (up to 3 decimal places)",
-        param: { name: "weightMax", in: "query" },
-      }),
+    weight: coinListWeightSchema.optional().openapi({
+      description:
+        "Exact Coin Weight in grams or an inclusive closed range (for example, 8.125 or 8.125-8.5). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "weight", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_WEIGHT_QUERY_PATTERN,
+    }),
     amount: faceValueAmountQuerySchema.optional().openapi({
       description:
         "Exact positive canonical Face Value Amount with at most 18 integer and 12 fractional digits. Requires currency; malformed or repeated values return invalid_face_value_filter",
@@ -145,19 +139,6 @@ const coinListQuerySchema = z
       path: ["amount"],
     }
   )
-  .superRefine((query, context) => {
-    if (
-      query.weightMin !== undefined &&
-      query.weightMax !== undefined &&
-      measurementMinExceedsMax(query.weightMin, query.weightMax)
-    ) {
-      context.addIssue({
-        code: "custom",
-        path: ["weightMin"],
-        message: "Minimum exceeds maximum",
-      })
-    }
-  })
 
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
@@ -253,7 +234,7 @@ const coinListRoute = createRoute({
 
 const validationErrors = [
   {
-    fields: ["size", "thickness", "weightMin", "weightMax"],
+    fields: ["size", "thickness", "weight"],
     response: {
       error: {
         code: "invalid_measurement_filter",
@@ -330,8 +311,7 @@ export function registerCoinListRoute(
       const {
         size,
         thickness,
-        weightMin,
-        weightMax,
+        weight,
         amount: faceValueAmount,
         currency: currencySlug,
         distribution,
@@ -352,8 +332,9 @@ export function registerCoinListRoute(
         ...(thickness === undefined
           ? {}
           : { thicknessInterval: coinListThicknessToInterval(thickness) }),
-        ...(weightMin === undefined ? {} : { weightMin }),
-        ...(weightMax === undefined ? {} : { weightMax }),
+        ...(weight === undefined
+          ? {}
+          : { weightInterval: coinListWeightToInterval(weight) }),
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),

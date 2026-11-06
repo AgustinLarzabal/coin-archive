@@ -91,6 +91,22 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
+  it("sends an inclusive Coin Weight range as one query value", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    await queryClient.fetchQuery(coinListQueryOptions({ weight: "8.125-8.5" }))
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3001/v1/coins?weight=8.125-8.5&page=1&pageSize=24"
+    )
+    expect(() => coinListQueryOptions({ weight: "8.5-8.125" })).toThrow(
+      "Invalid Coin Weight"
+    )
+    queryClient.clear()
+  })
+
   it("orders API request filters alphabetically before pagination", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)

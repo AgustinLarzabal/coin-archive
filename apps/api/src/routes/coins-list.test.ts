@@ -23,13 +23,13 @@ describe("Coin list route", () => {
         checkReadiness: successfulReadinessCheck,
         listCoins,
       }).request(
-        "/v1/coins?size=20&thickness=2.25&weightMin=8.125&issuer=AR&page=2&pageSize=3"
+        "/v1/coins?size=20&thickness=2.25&weight=8.125&issuer=AR&page=2&pageSize=3"
       )
       expect(response.status).toBe(200)
       expect(listCoins).toHaveBeenCalledWith({
         sizeInterval: { min: "20", max: "20" },
         thicknessInterval: { min: "2.25", max: "2.25" },
-        weightMin: "8.125",
+        weightInterval: { min: "8.125", max: "8.125" },
         issuerCode: "AR",
         page: 2,
         pageSize: 3,
@@ -46,7 +46,12 @@ describe("Coin list route", () => {
       "size=30-20",
       "size=20-",
       "size=20-30-40",
-      "weightMin=1.0001",
+      "weight=1.0001",
+      "weight=0",
+      "weight=8.126-8.125",
+      "weight=8.125-",
+      "weight=8.125-8.5-9",
+      "weight=8&weight=8",
       "thickness=1e2",
       "thickness=0",
       "thickness=2.251",
@@ -55,7 +60,6 @@ describe("Coin list route", () => {
       "thickness=1.5-2.25-3",
       "thickness=2&thickness=2",
       "size=2&size=2",
-      "weightMin=9&weightMax=8",
       "size=abc",
     ])("rejects invalid measurement query %s", async (query) => {
       const listCoins = vi.fn(emptyCoinPage)
@@ -74,7 +78,7 @@ describe("Coin list route", () => {
       })
     })
 
-    it("documents Size, Thickness, Weight bounds, and the client error", async () => {
+    it("documents Size, Thickness, Weight, and the client error", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
@@ -85,9 +89,7 @@ describe("Coin list route", () => {
       }
       expect(
         document.paths["/v1/coins"].get.parameters.map(({ name }) => name)
-      ).toEqual(
-        expect.arrayContaining(["size", "thickness", "weightMin", "weightMax"])
-      )
+      ).toEqual(expect.arrayContaining(["size", "thickness", "weight"]))
       expect(document.components.schemas).toHaveProperty(
         "InvalidMeasurementFilterError"
       )
@@ -97,6 +99,9 @@ describe("Coin list route", () => {
       expect(
         document.paths["/v1/coins"].get.parameters.map(({ name }) => name)
       ).not.toContain("thicknessMin")
+      expect(
+        document.paths["/v1/coins"].get.parameters.map(({ name }) => name)
+      ).not.toContain("weightMin")
     })
 
     it("passes an inclusive Size range to the list", async () => {
@@ -124,6 +129,21 @@ describe("Coin list route", () => {
       expect(response.status).toBe(200)
       expect(listCoins).toHaveBeenCalledWith({
         thicknessInterval: { min: "1.5", max: "2.25" },
+        page: 1,
+        pageSize: 24,
+      })
+    })
+
+    it("passes an inclusive Weight range to the list", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?weight=8.125-8.5")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        weightInterval: { min: "8.125", max: "8.5" },
         page: 1,
         pageSize: 24,
       })
@@ -1109,7 +1129,7 @@ describe("Coin list route", () => {
         }
       }
 
-      expect(document.paths["/v1/coins"].get.parameters.slice(4)).toEqual([
+      expect(document.paths["/v1/coins"].get.parameters.slice(3)).toEqual([
         expect.objectContaining({
           description: expect.stringContaining("Requires currency"),
           in: "query",

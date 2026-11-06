@@ -18,6 +18,7 @@ describe("Explore search", () => {
       year: "1986",
       size: "20.25-30",
       thickness: "1.5-2.25",
+      weight: "8.125-8.5",
     })
 
     expect(search).toEqual({
@@ -30,6 +31,7 @@ describe("Explore search", () => {
       year: 1986,
       size: "20.25-30",
       thickness: "1.5-2.25",
+      weight: "8.125-8.5",
       page: 2,
     })
     expect(getExploreCoinListFilters(search)).toEqual({
@@ -42,6 +44,7 @@ describe("Explore search", () => {
       issueYear: 1986,
       size: "20.25-30",
       thickness: "1.5-2.25",
+      weight: "8.125-8.5",
       page: 2,
     })
   })
@@ -58,6 +61,7 @@ describe("Explore search", () => {
         year: "0",
         size: "0-20.001",
         thickness: "2.25-1.5",
+        weight: "8.1234",
         page: "0",
       })
     ).toEqual({
@@ -70,6 +74,7 @@ describe("Explore search", () => {
       year: undefined,
       size: undefined,
       thickness: undefined,
+      weight: undefined,
       page: undefined,
     })
     expect(getExploreCoinListFilters({})).toEqual({
@@ -82,6 +87,7 @@ describe("Explore search", () => {
       issueYear: undefined,
       size: undefined,
       thickness: undefined,
+      weight: undefined,
       page: 1,
     })
     expect(
@@ -92,5 +98,6 @@ describe("Explore search", () => {
     expect(exploreSearchSchema.parse({ thickness: "2.2" }).thickness).toBe(
       "2.2"
     )
+    expect(exploreSearchSchema.parse({ weight: "8.125" }).weight).toBe("8.125")
   })
 })

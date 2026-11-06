@@ -51,6 +51,7 @@ it("turns added, replaced, and cleared rules into URL patches", () => {
     ruler: undefined,
     size: undefined,
     thickness: undefined,
+    weight: undefined,
     year: undefined,
   })
   expect(filterQueryToPatch(query("ROMAN"), { issuer: "AR" })).toMatchObject({
@@ -100,6 +101,18 @@ it("round-trips exact and ranged thicknesses", () => {
   }
 })
 
+it("round-trips exact and ranged weights", () => {
+  for (const [weight, operator, value] of [
+    ["8.125", "eq", 8.125],
+    ["8.125-8.5", "between", [8.125, 8.5]],
+  ] as const) {
+    const query = searchToFilterQuery({ weight })
+    expect(query.rules).toMatchObject([{ path: ["weight"], operator, value }])
+    expect(filterQueryToPatch(query, { weight })).toEqual({})
+    expect(filterQueryToPatch(query, {})).toMatchObject({ weight })
+  }
+})
+
 it("keeps incomplete size ranges local and rejects invalid sizes", () => {
   const rule = (
     operator: string,
@@ -134,6 +147,28 @@ it("keeps incomplete thickness ranges local and rejects invalid thicknesses", ()
   expect(filterQueryToPatch(rule("eq", 0), {})).toBeNull()
   expect(filterQueryToPatch(rule("eq", 2.251), {})).toBeNull()
   expect(filterQueryToPatch(rule("between", [2.25, 1.5]), {})).toBeNull()
+})
+
+it("keeps incomplete weight ranges local and rejects invalid weights", () => {
+  const rule = (
+    operator: string,
+    value: number | [number | undefined, number | undefined]
+  ) =>
+    createFilterQuery([
+      createFilterRule({
+        id: "test-weight",
+        path: ["weight"],
+        operator,
+        value,
+      }),
+    ])
+
+  expect(filterQueryToPatch(rule("between", [8.125, undefined]), {})).toEqual(
+    {}
+  )
+  expect(filterQueryToPatch(rule("eq", 0), {})).toBeNull()
+  expect(filterQueryToPatch(rule("eq", 8.1234), {})).toBeNull()
+  expect(filterQueryToPatch(rule("between", [8.5, 8.125]), {})).toBeNull()
 })
 
 it("keeps incomplete ranges local and rejects invalid years", () => {

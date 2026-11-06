@@ -70,4 +70,12 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       { value: "between", label: "is between", arity: "range" },
     ],
   })
+  expect(fields.find(({ id }) => id === "weight")).toMatchObject({
+    type: "number",
+    label: "Weight (g)",
+    operators: [
+      { value: "eq", label: "equals" },
+      { value: "between", label: "is between", arity: "range" },
+    ],
+  })
 })

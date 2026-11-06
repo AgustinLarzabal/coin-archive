@@ -94,8 +94,7 @@ describe("Coin persistence", () => {
         await database.listCoins({
           sizeInterval: { min: "25.75", max: "25.75" },
           thicknessInterval: { min: "2.2", max: "2.2" },
-          weightMin: "8.125",
-          weightMax: "8.125",
+          weightInterval: { min: "8.125", max: "8.125" },
           issuerCode: "AR",
           pageSize: 1,
         })
@@ -111,7 +110,11 @@ describe("Coin persistence", () => {
         ).totalItems
       ).toBe(3)
       expect(
-        await database.listCoins({ weightMin: "8.125", page: 2, pageSize: 1 })
+        await database.listCoins({
+          weightInterval: { min: "8.125", max: "8.126" },
+          page: 2,
+          pageSize: 1,
+        })
       ).toEqual({
         coins: [expect.any(Object)],
         totalItems: 3,

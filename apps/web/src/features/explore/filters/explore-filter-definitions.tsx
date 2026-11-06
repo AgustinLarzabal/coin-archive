@@ -6,6 +6,7 @@ import { mintFilterDefinition } from "./definitions/mint-filter"
 import { rulerFilterDefinition } from "./definitions/ruler-filter"
 import { sizeFilterDefinition } from "./definitions/size-filter"
 import { thicknessFilterDefinition } from "./definitions/thickness-filter"
+import { weightFilterDefinition } from "./definitions/weight-filter"
 import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
@@ -56,6 +57,7 @@ export const exploreFilterDefinitions = [
   rulerFilterDefinition,
   sizeFilterDefinition,
   thicknessFilterDefinition,
+  weightFilterDefinition,
   yearFilterDefinition,
 ]
 
@@ -72,7 +74,8 @@ export function getExploreFilterFields(
     if (
       definition.id === "year" ||
       definition.id === "size" ||
-      definition.id === "thickness"
+      definition.id === "thickness" ||
+      definition.id === "weight"
     ) {
       return { ...definition, disabled: selected.has(definition.id) }
     }

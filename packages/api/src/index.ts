@@ -146,6 +146,25 @@ export function measurementMinExceedsMax(min: string, max: string) {
   return scaled(min) > scaled(max)
 }
 
+const coinListSizeValueSchema = measurementQuerySchema(2)
+const COIN_LIST_SIZE_VALUE_QUERY_PATTERN =
+  "(?:[1-9]\\d{0,17}(?:\\.\\d{1,2})?|0\\.(?:[1-9]\\d?|0[1-9]))"
+export const COIN_LIST_SIZE_QUERY_PATTERN = `^${COIN_LIST_SIZE_VALUE_QUERY_PATTERN}(?:-${COIN_LIST_SIZE_VALUE_QUERY_PATTERN})?$`
+export const coinListSizeSchema = z.string().refine((size) => {
+  const bounds = size.split("-")
+  return (
+    bounds.length <= 2 &&
+    bounds.every((bound) => coinListSizeValueSchema.safeParse(bound).success) &&
+    (bounds.length === 1 || !measurementMinExceedsMax(bounds[0], bounds[1]))
+  )
+})
+export type CoinListSize = z.infer<typeof coinListSizeSchema>
+
+export function coinListSizeToInterval(size: CoinListSize) {
+  const [min, max = min] = size.split("-")
+  return { min, max }
+}
+
 export const currencyResponseSchema = z.strictObject({
   slug: currencySlugSchema,
   name: trimmedDisplayTextSchema(200),

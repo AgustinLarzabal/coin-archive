@@ -92,8 +92,7 @@ describe("Coin persistence", () => {
       expect((await database.listCoins()).totalItems).toBe(4)
       expect(
         await database.listCoins({
-          sizeMin: "25.75",
-          sizeMax: "25.75",
+          sizeInterval: { min: "25.75", max: "25.75" },
           thicknessMax: "2.2",
           weightMin: "8.125",
           weightMax: "8.125",
@@ -104,6 +103,13 @@ describe("Coin persistence", () => {
         coins: [expect.objectContaining({ title: "Exact" })],
         totalItems: 1,
       })
+      expect(
+        (
+          await database.listCoins({
+            sizeInterval: { min: "25.74", max: "25.75" },
+          })
+        ).totalItems
+      ).toBe(3)
       expect(
         await database.listCoins({ weightMin: "8.125", page: 2, pageSize: 1 })
       ).toEqual({

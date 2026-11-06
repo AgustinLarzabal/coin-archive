@@ -2,10 +2,13 @@ import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
   COIN_LIST_MAX_PAGE_SIZE,
+  COIN_LIST_SIZE_QUERY_PATTERN,
   COIN_LIST_YEAR_QUERY_PATTERN,
   coinDistributionSchema,
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
+  coinListSizeSchema,
+  coinListSizeToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
   currencySlugSchema,
@@ -44,20 +47,13 @@ interface CoinListRouteOptions {
 
 const coinListQuerySchema = z
   .object({
-    sizeMin: measurementQuerySchema(2)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive minimum Coin Size in millimetres (up to 2 decimal places)",
-        param: { name: "sizeMin", in: "query" },
-      }),
-    sizeMax: measurementQuerySchema(2)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive maximum Coin Size in millimetres (up to 2 decimal places)",
-        param: { name: "sizeMax", in: "query" },
-      }),
+    size: coinListSizeSchema.optional().openapi({
+      description:
+        "Exact Coin Size in millimetres or an inclusive closed range (for example, 25.75 or 20-25.75). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "size", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_SIZE_QUERY_PATTERN,
+    }),
     thicknessMin: measurementQuerySchema(2)
       .optional()
       .openapi({
@@ -154,7 +150,7 @@ const coinListQuerySchema = z
     }
   )
   .superRefine((query, context) => {
-    for (const name of ["size", "thickness", "weight"] as const) {
+    for (const name of ["thickness", "weight"] as const) {
       const min = query[`${name}Min`]
       const max = query[`${name}Max`]
       if (
@@ -265,14 +261,7 @@ const coinListRoute = createRoute({
 
 const validationErrors = [
   {
-    fields: [
-      "sizeMin",
-      "sizeMax",
-      "thicknessMin",
-      "thicknessMax",
-      "weightMin",
-      "weightMax",
-    ],
+    fields: ["size", "thicknessMin", "thicknessMax", "weightMin", "weightMax"],
     response: {
       error: {
         code: "invalid_measurement_filter",
@@ -347,8 +336,7 @@ export function registerCoinListRoute(
     coinListRoute,
     async (context) => {
       const {
-        sizeMin,
-        sizeMax,
+        size,
         thicknessMin,
         thicknessMax,
         weightMin,
@@ -367,8 +355,9 @@ export function registerCoinListRoute(
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
-        ...(sizeMin === undefined ? {} : { sizeMin }),
-        ...(sizeMax === undefined ? {} : { sizeMax }),
+        ...(size === undefined
+          ? {}
+          : { sizeInterval: coinListSizeToInterval(size) }),
         ...(thicknessMin === undefined ? {} : { thicknessMin }),
         ...(thicknessMax === undefined ? {} : { thicknessMax }),
         ...(weightMin === undefined ? {} : { weightMin }),

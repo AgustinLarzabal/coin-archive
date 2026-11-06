@@ -49,6 +49,7 @@ it("turns added, replaced, and cleared rules into URL patches", () => {
     issuer: "AR",
     mint: undefined,
     ruler: undefined,
+    size: undefined,
     year: undefined,
   })
   expect(filterQueryToPatch(query("ROMAN"), { issuer: "AR" })).toMatchObject({
@@ -70,6 +71,34 @@ it("round-trips an issue year and a BCE-to-CE range", () => {
     expect(filterQueryToPatch(query, { year })).toEqual({})
     expect(filterQueryToPatch(query, {})).toMatchObject({ year })
   }
+})
+
+it("round-trips exact and ranged sizes", () => {
+  for (const [size, operator, value] of [
+    ["25.75", "eq", 25.75],
+    ["20-30", "between", [20, 30]],
+  ] as const) {
+    const query = searchToFilterQuery({ size })
+    expect(query.rules).toMatchObject([{ path: ["size"], operator, value }])
+    expect(filterQueryToPatch(query, { size })).toEqual({})
+    expect(filterQueryToPatch(query, {})).toMatchObject({ size })
+  }
+})
+
+it("keeps incomplete size ranges local and rejects invalid sizes", () => {
+  const rule = (
+    operator: string,
+    value: number | [number | undefined, number | undefined]
+  ) =>
+    createFilterQuery([
+      createFilterRule({ id: "test-size", path: ["size"], operator, value }),
+    ])
+
+  expect(filterQueryToPatch(rule("between", [20, undefined]), {})).toEqual({})
+  expect(filterQueryToPatch(rule("eq", 0), {})).toBeNull()
+  expect(filterQueryToPatch(rule("eq", 20.001), {})).toBeNull()
+  expect(filterQueryToPatch(rule("between", [30, 20]), {})).toBeNull()
+  expect(filterQueryToPatch(rule("gte", 20), {})).toBeNull()
 })
 
 it("keeps incomplete ranges local and rejects invalid years", () => {

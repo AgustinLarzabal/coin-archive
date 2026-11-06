@@ -22,6 +22,7 @@ export function ExploreFilters({
     issuer: issuerCode,
     mint: mintSlug,
     ruler: rulingAuthoritySlug,
+    size,
     year,
   } = search
   const { updateFilters } = useExploreSearchNavigation()
@@ -36,6 +37,7 @@ export function ExploreFilters({
       issuerCode,
       mintSlug,
       rulingAuthoritySlug,
+      size,
       year,
     ]
   )

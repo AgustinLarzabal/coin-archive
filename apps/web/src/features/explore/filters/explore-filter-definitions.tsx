@@ -4,6 +4,7 @@ import { engraverFilterDefinition } from "./definitions/engraver-filter"
 import { issuerFilterDefinition } from "./definitions/issuer-filter"
 import { mintFilterDefinition } from "./definitions/mint-filter"
 import { rulerFilterDefinition } from "./definitions/ruler-filter"
+import { sizeFilterDefinition } from "./definitions/size-filter"
 import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
@@ -52,6 +53,7 @@ export const exploreFilterDefinitions = [
   issuerFilterDefinition,
   mintFilterDefinition,
   rulerFilterDefinition,
+  sizeFilterDefinition,
   yearFilterDefinition,
 ]
 
@@ -65,7 +67,7 @@ export function getExploreFilterFields(
   )
 
   return exploreFilterDefinitions.map((definition) => {
-    if (definition.id === "year") {
+    if (definition.id === "year" || definition.id === "size") {
       return { ...definition, disabled: selected.has(definition.id) }
     }
 

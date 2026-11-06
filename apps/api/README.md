@@ -62,7 +62,7 @@ Coin detail includes required nullable numeric `size` and `thickness` in millime
 | `engraver`                     | Case-sensitive Engraver Slug                                                           |
 | `ruler`                        | Case-sensitive Ruling Authority Slug                                                   |
 | `year`                         | One Issue Year or a closed Issue Year range                                            |
-| `sizeMin`, `sizeMax`           | Inclusive Coin Size bounds in millimetres, independently optional                      |
+| `size`                         | Exact Coin Size or an inclusive closed range in millimetres                            |
 | `thicknessMin`, `thicknessMax` | Inclusive Coin Thickness bounds in millimetres, independently optional                 |
 | `weightMin`, `weightMax`       | Inclusive Coin Weight bounds in grams, independently optional                          |
 
@@ -72,7 +72,7 @@ Filters can be combined. For example:
 curl 'http://localhost:3001/v1/coins?issuer=AR&distribution=standard-circulation&year=1992-1994'
 curl 'http://localhost:3001/v1/coins?currency=argentine-peso-convertible&amount=0.5'
 curl 'http://localhost:3001/v1/coins?mint=rome-state-mint-italy&issuer=IT&page=1'
-curl 'http://localhost:3001/v1/coins?sizeMin=20&sizeMax=25.75&weightMin=8.125'
+curl 'http://localhost:3001/v1/coins?size=20-25.75&weightMin=8.125'
 ```
 
 The Currency Slug in the second example is illustrative; use a value returned
@@ -85,10 +85,12 @@ combines with other filters and pagination. A valid unknown slug returns an
 empty successful page; malformed or repeated values return `400` with
 `invalid_mint_slug`.
 
-Measurement bounds must be positive decimal values with at most two fractional
-digits for Size and Thickness or three for Weight. Each minimum may equal its
-maximum for an exact match. A minimum greater than its maximum, a repeated
-bound, or a malformed or overly precise value returns `400` with
+Size accepts one positive decimal for an exact match, or two positive decimals
+separated by a hyphen for an inclusive range. Thickness bounds must be positive
+decimals with at most two fractional digits; Weight bounds allow three. Each
+Thickness or Weight minimum may equal its maximum for an exact match. A reversed
+or open-ended Size range, a minimum greater than its maximum, a repeated
+filter, or a malformed or overly precise value returns `400` with
 `invalid_measurement_filter`. Filters compare stored values exactly, combine
 with the other filters before pagination and total counting, and exclude Coins
 whose selected measurement is unknown. Coins with unknown measurements remain

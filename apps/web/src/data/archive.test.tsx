@@ -57,6 +57,22 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
+  it("sends an inclusive Coin Size range as one query value", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    await queryClient.fetchQuery(coinListQueryOptions({ size: "20-25.75" }))
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3001/v1/coins?size=20-25.75&page=1&pageSize=24"
+    )
+    expect(() => coinListQueryOptions({ size: "30-20" })).toThrow(
+      "Invalid Coin Size"
+    )
+    queryClient.clear()
+  })
+
   it("orders API request filters alphabetically before pagination", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)

@@ -1,4 +1,9 @@
-import { coinListYearSchema, coinListYearToInterval } from "@coin-archive/api"
+import {
+  coinListSizeSchema,
+  coinListSizeToInterval,
+  coinListYearSchema,
+  coinListYearToInterval,
+} from "@coin-archive/api"
 import {
   createFilterQuery,
   createFilterRule,
@@ -8,7 +13,7 @@ import { exploreFilterDefinitions } from "./explore-filter-definitions"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterValue } from "./explore-filter-definitions"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
-import type { CoinListYear } from "@coin-archive/api"
+import type { CoinListSize, CoinListYear } from "@coin-archive/api"
 import type {
   FilterQuery,
   FilterRule,
@@ -36,12 +41,33 @@ function parseYearRule(
   return parsed.success ? parsed.data : null
 }
 
+function parseSizeRule(
+  rule: FilterRule<ExploreFilterValue>
+): CoinListSize | undefined | null {
+  if (rule.operator === "" && rule.value === undefined) return undefined
+  if (rule.operator !== "eq" && rule.operator !== "between") return null
+  if (
+    rule.value === undefined ||
+    (Array.isArray(rule.value) &&
+      rule.value.some((value) => value === undefined))
+  )
+    return undefined
+  if (rule.operator === "between" && !Array.isArray(rule.value)) return null
+  if (rule.operator !== "between" && typeof rule.value !== "number") return null
+
+  const size = Array.isArray(rule.value)
+    ? `${rule.value[0]}-${rule.value[1]}`
+    : String(rule.value)
+  const parsed = coinListSizeSchema.safeParse(size)
+  return parsed.success ? parsed.data : null
+}
+
 export function searchToFilterQuery(
   search: ExploreSearch
 ): FilterQuery<ExploreFilterValue> {
   const rules: ReturnType<typeof createFilterRule<ExploreFilterValue>>[] =
     exploreFilterDefinitions.flatMap(({ id }) => {
-      if (id === "year") return []
+      if (id === "year" || id === "size") return []
       const value = search[id]
       if (value === undefined) return []
 
@@ -72,6 +98,20 @@ export function searchToFilterQuery(
     )
   }
 
+  if (search.size !== undefined) {
+    const { min, max } = coinListSizeToInterval(search.size)
+    rules.push(
+      createFilterRule({
+        id: "explore-size",
+        path: ["size"],
+        operator: search.size.includes("-") ? "between" : "eq",
+        value: search.size.includes("-")
+          ? [Number(min), Number(max)]
+          : Number(min),
+      })
+    )
+  }
+
   return createFilterQuery<ExploreFilterValue>(rules)
 }
 
@@ -81,9 +121,10 @@ export function filterQueryToPatch(
 ): ExploreFilterPatch | null {
   const selected: Record<string, string | undefined> = {}
   for (const { id } of exploreFilterDefinitions) {
-    if (id !== "year") selected[id] = undefined
+    if (id !== "year" && id !== "size") selected[id] = undefined
   }
   let year: CoinListYear | undefined
+  let size: CoinListSize | undefined
   let hasIncompleteRule = false
 
   for (const rule of query.rules) {
@@ -93,6 +134,13 @@ export function filterQueryToPatch(
       if (parsed === null) return null
       if (parsed === undefined) hasIncompleteRule = true
       else year = parsed
+      continue
+    }
+    if (rule.path[0] === "size") {
+      const parsed = parseSizeRule(rule)
+      if (parsed === null) return null
+      if (parsed === undefined) hasIncompleteRule = true
+      else size = parsed
       continue
     }
     const definition = exploreFilterDefinitions.find(
@@ -112,8 +160,10 @@ export function filterQueryToPatch(
   // The filter picker creates a rule before its value is chosen.
   if (hasIncompleteRule) return {}
   return exploreFilterDefinitions.every(
-    ({ id }) => id === "year" || selected[id] === search[id]
-  ) && year === search.year
+    ({ id }) => id === "year" || id === "size" || selected[id] === search[id]
+  ) &&
+    year === search.year &&
+    size === search.size
     ? {}
-    : { ...selected, year }
+    : { ...selected, year, size }
 }

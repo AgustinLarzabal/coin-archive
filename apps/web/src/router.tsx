@@ -22,8 +22,7 @@ function parseSearchPreservingDecimals(searchString: string) {
   )
   for (const key of [
     "amount",
-    "sizeMin",
-    "sizeMax",
+    "size",
     "thicknessMin",
     "thicknessMax",
     "weightMin",

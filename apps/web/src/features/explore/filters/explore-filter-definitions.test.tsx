@@ -47,4 +47,11 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       },
     ],
   })
+  expect(fields.find(({ id }) => id === "year")).toMatchObject({
+    type: "number",
+    operators: [
+      { value: "eq", label: "equals" },
+      { value: "between", label: "is between", arity: "range" },
+    ],
+  })
 })

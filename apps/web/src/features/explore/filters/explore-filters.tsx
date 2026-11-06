@@ -2,7 +2,10 @@ import { Filters } from "@coin-archive/ui/components/reui/filters/filters"
 import { useEffect, useState } from "react"
 import { getExploreFilterFields } from "./explore-filter-definitions"
 import { filterQueryToPatch, searchToFilterQuery } from "./explore-filter-query"
-import type { ExploreFilterLists } from "./explore-filter-definitions"
+import type {
+  ExploreFilterLists,
+  ExploreFilterValue,
+} from "./explore-filter-definitions"
 import type { ExploreSearch } from "@/features/explore/explore-search"
 import type { FilterQuery } from "@coin-archive/ui/components/reui/filters/filters-types"
 
@@ -19,6 +22,7 @@ export function ExploreFilters({
     issuer: issuerCode,
     mint: mintSlug,
     ruler: rulingAuthoritySlug,
+    year,
   } = search
   const { updateFilters } = useExploreSearchNavigation()
   const [query, setQuery] = useState(() => searchToFilterQuery(search))
@@ -32,6 +36,7 @@ export function ExploreFilters({
       issuerCode,
       mintSlug,
       rulingAuthoritySlug,
+      year,
     ]
   )
 
@@ -41,7 +46,7 @@ export function ExploreFilters({
     <Filters
       fields={fields}
       query={query}
-      onQueryChange={(next: FilterQuery<string>) => {
+      onQueryChange={(next: FilterQuery<ExploreFilterValue>) => {
         const patch = filterQueryToPatch(next, search)
         if (patch === null) return
         setQuery(next)

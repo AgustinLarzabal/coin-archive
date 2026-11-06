@@ -25,6 +25,7 @@ describe("Explore search", () => {
       issuer: "AR",
       mint: "buenos-aires",
       ruler: "roman-republic",
+      year: 1986,
       page: 2,
     })
     expect(getExploreCoinListFilters(search)).toEqual({
@@ -34,6 +35,7 @@ describe("Explore search", () => {
       issuerCode: "AR",
       mintSlug: "buenos-aires",
       rulingAuthoritySlug: "roman-republic",
+      issueYear: 1986,
       page: 2,
     })
   })
@@ -47,6 +49,7 @@ describe("Explore search", () => {
         issuer: "bad code",
         mint: "BAD",
         ruler: "BAD",
+        year: "0",
         page: "0",
       })
     ).toEqual({
@@ -56,6 +59,7 @@ describe("Explore search", () => {
       issuer: undefined,
       mint: undefined,
       ruler: undefined,
+      year: undefined,
       page: undefined,
     })
     expect(getExploreCoinListFilters({})).toEqual({
@@ -65,7 +69,12 @@ describe("Explore search", () => {
       issuerCode: undefined,
       mintSlug: undefined,
       rulingAuthoritySlug: undefined,
+      issueYear: undefined,
       page: 1,
     })
+    expect(
+      exploreSearchSchema.parse({ year: "1990-1986" }).year
+    ).toBeUndefined()
+    expect(exploreSearchSchema.parse({ year: "-25-19" }).year).toBe("-25-19")
   })
 })

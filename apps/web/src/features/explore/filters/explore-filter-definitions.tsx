@@ -4,6 +4,7 @@ import { engraverFilterDefinition } from "./definitions/engraver-filter"
 import { issuerFilterDefinition } from "./definitions/issuer-filter"
 import { mintFilterDefinition } from "./definitions/mint-filter"
 import { rulerFilterDefinition } from "./definitions/ruler-filter"
+import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
 import type {
@@ -21,6 +22,11 @@ import type {
 } from "@coin-archive/ui/components/reui/filters/filters-types"
 import type { ReactNode } from "react"
 import type { ZodType } from "zod"
+
+export type ExploreFilterValue =
+  | string
+  | number
+  | [number | undefined, number | undefined]
 
 export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
@@ -46,27 +52,34 @@ export const exploreFilterDefinitions = [
   issuerFilterDefinition,
   mintFilterDefinition,
   rulerFilterDefinition,
-] satisfies ExploreFilterDefinition[]
+  yearFilterDefinition,
+]
 
 export function getExploreFilterFields(
   lists: ExploreFilterLists,
   search: ExploreSearch,
-  query: FilterQuery<string>
-): FilterField<string>[] {
+  query: FilterQuery<ExploreFilterValue>
+): FilterField<ExploreFilterValue>[] {
   const selected = new Set(
     query.rules.flatMap((node) => (node.type === "rule" ? [node.path[0]] : []))
   )
 
-  return exploreFilterDefinitions.map(({ id, label, icon, options }) => ({
-    id,
-    label,
-    icon,
-    type: "select",
-    options: options(lists, search),
-    pinSelected: true,
-    operators: [{ value: "is", label: "is" }],
-    defaultOperator: "is",
-    autoSelectOperator: true,
-    disabled: selected.has(id),
-  }))
+  return exploreFilterDefinitions.map((definition) => {
+    if (definition.id === "year") {
+      return { ...definition, disabled: selected.has(definition.id) }
+    }
+
+    return {
+      id: definition.id,
+      label: definition.label,
+      icon: definition.icon,
+      type: "select",
+      options: definition.options(lists, search),
+      pinSelected: true,
+      operators: [{ value: "is", label: "is" }],
+      defaultOperator: "is",
+      autoSelectOperator: true,
+      disabled: selected.has(definition.id),
+    }
+  })
 }

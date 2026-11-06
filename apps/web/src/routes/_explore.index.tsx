@@ -28,6 +28,7 @@ export const Route = createFileRoute("/_explore/")({
           issuer: search.issuer,
           mint: search.mint,
           ruler: search.ruler,
+          year: search.year,
         },
         replace: true,
       })
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/_explore/")({
           issuer: filters.issuerCode,
           mint: filters.mintSlug,
           ruler: filters.rulingAuthoritySlug,
+          year: filters.issueYear,
           page: lastPage === 1 ? undefined : lastPage,
         },
         replace: true,

@@ -29,4 +29,17 @@ it("offers the Explore filters in the filter picker", async () => {
   expect((await screen.findAllByText("Ruler / Period")).length).toBeGreaterThan(
     0
   )
+  expect((await screen.findAllByText("Issue year")).length).toBeGreaterThan(0)
+})
+
+it("loads a restored issue year range from the URL", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?year=-25-19")
+
+  await screen.findByRole("button", { name: "Add filter" })
+  expect(router.state.location.search.year).toBe("-25-19")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?year=-25-19&page=1&pageSize=24"
+  )
 })

@@ -1,0 +1,72 @@
+import { currencyFilterDefinition } from "./definitions/currency-filter"
+import { distributionFilterDefinition } from "./definitions/distribution-filter"
+import { engraverFilterDefinition } from "./definitions/engraver-filter"
+import { issuerFilterDefinition } from "./definitions/issuer-filter"
+import { mintFilterDefinition } from "./definitions/mint-filter"
+import { rulerFilterDefinition } from "./definitions/ruler-filter"
+import type { ExploreSearch } from "../explore-search"
+import type { ExploreFilterPatch } from "../explore-search-navigation"
+import type {
+  CurrencyResponse,
+  DistributionListItemResponse,
+  EngraverListItemResponse,
+  IssuerResponse,
+  MintResponse,
+  RulingAuthorityListItemResponse,
+} from "@coin-archive/api"
+import type {
+  FilterField,
+  FilterOption,
+  FilterQuery,
+} from "@coin-archive/ui/components/reui/filters/filters-types"
+import type { ReactNode } from "react"
+import type { ZodType } from "zod"
+
+export interface ExploreFilterLists {
+  currencies: Array<CurrencyResponse>
+  distributions: Array<DistributionListItemResponse>
+  engravers: Array<EngraverListItemResponse>
+  issuers: Array<IssuerResponse>
+  mints: Array<MintResponse>
+  rulingAuthorities: Array<RulingAuthorityListItemResponse>
+}
+
+export interface ExploreFilterDefinition {
+  id: keyof ExploreFilterPatch
+  label: string
+  icon: ReactNode
+  schema: ZodType<string>
+  options: (lists: ExploreFilterLists, search: ExploreSearch) => FilterOption[]
+}
+
+export const exploreFilterDefinitions = [
+  currencyFilterDefinition,
+  distributionFilterDefinition,
+  engraverFilterDefinition,
+  issuerFilterDefinition,
+  mintFilterDefinition,
+  rulerFilterDefinition,
+] satisfies ExploreFilterDefinition[]
+
+export function getExploreFilterFields(
+  lists: ExploreFilterLists,
+  search: ExploreSearch,
+  query: FilterQuery<string>
+): FilterField<string>[] {
+  const selected = new Set(
+    query.rules.flatMap((node) => (node.type === "rule" ? [node.path[0]] : []))
+  )
+
+  return exploreFilterDefinitions.map(({ id, label, icon, options }) => ({
+    id,
+    label,
+    icon,
+    type: "select",
+    options: options(lists, search),
+    pinSelected: true,
+    operators: [{ value: "is", label: "is" }],
+    defaultOperator: "is",
+    autoSelectOperator: true,
+    disabled: selected.has(id),
+  }))
+}

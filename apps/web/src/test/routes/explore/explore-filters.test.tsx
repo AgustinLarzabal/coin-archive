@@ -16,15 +16,18 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
     fields,
     query,
     onQueryChange,
+    onBeforeQueryChange,
   }: {
     fields: FilterField<string>[]
     query: FilterQuery<string>
     onQueryChange: (query: FilterQuery<string>) => void
+    onBeforeQueryChange: (query: FilterQuery<string>) => boolean | void
   }) => (
     <>
       <output data-testid="fields">
         {fields.map((field) => field.id).join(",")}
       </output>
+      <output data-testid="rule-count">{query.rules.length}</output>
       <output data-testid="mint-options">
         {fields
           .find((field) => field.id === "mint")
@@ -85,6 +88,27 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           )?.value
         }
       </output>
+      <button
+        type="button"
+        onClick={() => {
+          const next = {
+            ...query,
+            rules: [
+              ...query.rules,
+              {
+                type: "rule" as const,
+                id: "pending-issuer",
+                path: ["issuer"],
+                operator: "is",
+                value: undefined,
+              },
+            ],
+          }
+          if (onBeforeQueryChange(next) !== false) onQueryChange(next)
+        }}
+      >
+        Add incomplete issuer
+      </button>
       <button
         type="button"
         onClick={() =>
@@ -282,6 +306,26 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       </button>
       <button
         type="button"
+        onClick={() => {
+          const next = {
+            ...query,
+            rules: [
+              {
+                type: "rule" as const,
+                id: "test-issuer",
+                path: ["issuer"],
+                operator: "is",
+                value: "invalid issuer",
+              },
+            ],
+          }
+          if (onBeforeQueryChange(next) !== false) onQueryChange(next)
+        }}
+      >
+        Select invalid issuer
+      </button>
+      <button
+        type="button"
         onClick={() => onQueryChange({ ...query, rules: [] })}
       >
         Clear issuer
@@ -349,9 +393,17 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   expect(screen.getByTestId("ruler-options")).toHaveTextContent(
     "Rome (roman-empire)"
   )
+  fireEvent.click(screen.getByRole("button", { name: "Add incomplete issuer" }))
+  expect(screen.getByTestId("rule-count")).toHaveTextContent("1")
+  expect(router.state.location.search.issuer).toBeUndefined()
+
   fireEvent.click(screen.getByRole("button", { name: "Select issuer" }))
   await waitFor(() => expect(router.state.location.search.issuer).toBe("AR"))
   expect(screen.getByTestId("issuer-value")).toHaveTextContent("AR")
+
+  fireEvent.click(screen.getByRole("button", { name: "Select invalid issuer" }))
+  expect(screen.getByTestId("issuer-value")).toHaveTextContent("AR")
+  expect(router.state.location.search.issuer).toBe("AR")
 
   fireEvent.click(screen.getByRole("button", { name: "Select distribution" }))
   await waitFor(() =>

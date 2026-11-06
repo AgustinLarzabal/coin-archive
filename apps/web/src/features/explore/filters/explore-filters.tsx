@@ -23,6 +23,7 @@ export function ExploreFilters({
     mint: mintSlug,
     ruler: rulingAuthoritySlug,
     size,
+    thickness,
     year,
   } = search
   const { updateFilters } = useExploreSearchNavigation()
@@ -38,6 +39,7 @@ export function ExploreFilters({
       mintSlug,
       rulingAuthoritySlug,
       size,
+      thickness,
       year,
     ]
   )

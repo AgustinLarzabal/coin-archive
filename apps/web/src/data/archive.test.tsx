@@ -73,6 +73,24 @@ describe("Archive data module", () => {
     queryClient.clear()
   })
 
+  it("sends an inclusive Coin Thickness range as one query value", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    await queryClient.fetchQuery(
+      coinListQueryOptions({ thickness: "1.5-2.25" })
+    )
+
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3001/v1/coins?thickness=1.5-2.25&page=1&pageSize=24"
+    )
+    expect(() => coinListQueryOptions({ thickness: "2.25-1.5" })).toThrow(
+      "Invalid Coin Thickness"
+    )
+    queryClient.clear()
+  })
+
   it("orders API request filters alphabetically before pagination", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)

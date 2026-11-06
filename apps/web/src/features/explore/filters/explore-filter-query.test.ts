@@ -50,6 +50,7 @@ it("turns added, replaced, and cleared rules into URL patches", () => {
     mint: undefined,
     ruler: undefined,
     size: undefined,
+    thickness: undefined,
     year: undefined,
   })
   expect(filterQueryToPatch(query("ROMAN"), { issuer: "AR" })).toMatchObject({
@@ -85,6 +86,20 @@ it("round-trips exact and ranged sizes", () => {
   }
 })
 
+it("round-trips exact and ranged thicknesses", () => {
+  for (const [thickness, operator, value] of [
+    ["2.25", "eq", 2.25],
+    ["1.5-2.25", "between", [1.5, 2.25]],
+  ] as const) {
+    const query = searchToFilterQuery({ thickness })
+    expect(query.rules).toMatchObject([
+      { path: ["thickness"], operator, value },
+    ])
+    expect(filterQueryToPatch(query, { thickness })).toEqual({})
+    expect(filterQueryToPatch(query, {})).toMatchObject({ thickness })
+  }
+})
+
 it("keeps incomplete size ranges local and rejects invalid sizes", () => {
   const rule = (
     operator: string,
@@ -99,6 +114,26 @@ it("keeps incomplete size ranges local and rejects invalid sizes", () => {
   expect(filterQueryToPatch(rule("eq", 20.001), {})).toBeNull()
   expect(filterQueryToPatch(rule("between", [30, 20]), {})).toBeNull()
   expect(filterQueryToPatch(rule("gte", 20), {})).toBeNull()
+})
+
+it("keeps incomplete thickness ranges local and rejects invalid thicknesses", () => {
+  const rule = (
+    operator: string,
+    value: number | [number | undefined, number | undefined]
+  ) =>
+    createFilterQuery([
+      createFilterRule({
+        id: "test-thickness",
+        path: ["thickness"],
+        operator,
+        value,
+      }),
+    ])
+
+  expect(filterQueryToPatch(rule("between", [1.5, undefined]), {})).toEqual({})
+  expect(filterQueryToPatch(rule("eq", 0), {})).toBeNull()
+  expect(filterQueryToPatch(rule("eq", 2.251), {})).toBeNull()
+  expect(filterQueryToPatch(rule("between", [2.25, 1.5]), {})).toBeNull()
 })
 
 it("keeps incomplete ranges local and rejects invalid years", () => {

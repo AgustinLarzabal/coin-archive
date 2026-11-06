@@ -7,6 +7,7 @@ import {
   coinListPageSchema,
   coinListResponseSchema,
   coinListSizeSchema,
+  coinListThicknessSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
   currencySlugSchema,
@@ -24,6 +25,7 @@ import type {
   CoinDistribution,
   CoinListResponse,
   CoinListSize,
+  CoinListThickness,
   CoinListYear,
 } from "@coin-archive/api"
 
@@ -44,8 +46,7 @@ export class InvalidCurrencySlugError extends Error {}
 
 export type CoinListFilters = Readonly<{
   size?: CoinListSize
-  thicknessMin?: string
-  thicknessMax?: string
+  thickness?: CoinListThickness
   weightMin?: string
   weightMax?: string
   currencySlug?: string
@@ -61,8 +62,7 @@ export type CoinListFilters = Readonly<{
 
 type ValidatedCoinListFilters = Readonly<{
   size?: CoinListSize
-  thicknessMin?: string
-  thicknessMax?: string
+  thickness?: CoinListThickness
   weightMin?: string
   weightMax?: string
   currencySlug: string | null
@@ -79,8 +79,7 @@ type ValidatedCoinListFilters = Readonly<{
 
 async function getCoins({
   size,
-  thicknessMin,
-  thicknessMax,
+  thickness,
   weightMin,
   weightMax,
   currencySlug,
@@ -100,8 +99,7 @@ async function getCoins({
     const search = new URLSearchParams()
     for (const [name, value] of Object.entries({
       size,
-      thicknessMin,
-      thicknessMax,
+      thickness,
       weightMin,
       weightMax,
     })) {
@@ -193,8 +191,7 @@ async function getCoin(coinId: string): Promise<CoinDetailResponse> {
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const {
     size,
-    thicknessMin,
-    thicknessMax,
+    thickness,
     weightMin,
     weightMax,
     currencySlug,
@@ -207,32 +204,20 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     page = COIN_LIST_DEFAULT_PAGE,
     rulingAuthoritySlug,
   } = filters
-  for (const [name, value] of Object.entries({
-    thicknessMin,
-    thicknessMax,
-    weightMin,
-    weightMax,
-  })) {
+  for (const value of [weightMin, weightMax]) {
     if (
       value !== undefined &&
-      !measurementQuerySchema(name.startsWith("weight") ? 3 : 2).safeParse(
-        value
-      ).success
+      !measurementQuerySchema(3).safeParse(value).success
     ) {
       throw new TypeError("Invalid Coin measurement")
     }
   }
-  for (const [min, max] of [
-    [thicknessMin, thicknessMax],
-    [weightMin, weightMax],
-  ]) {
-    if (
-      min !== undefined &&
-      max !== undefined &&
-      measurementMinExceedsMax(min, max)
-    )
-      throw new RangeError("Invalid Coin measurement range")
-  }
+  if (
+    weightMin !== undefined &&
+    weightMax !== undefined &&
+    measurementMinExceedsMax(weightMin, weightMax)
+  )
+    throw new RangeError("Invalid Coin measurement range")
   if (
     currencySlug !== undefined &&
     !currencySlugSchema.safeParse(currencySlug).success
@@ -265,6 +250,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     throw new TypeError("Invalid Coin Size")
   }
   if (
+    thickness !== undefined &&
+    !coinListThicknessSchema.safeParse(thickness).success
+  ) {
+    throw new TypeError("Invalid Coin Thickness")
+  }
+  if (
     issueYear !== undefined &&
     !coinListYearSchema.safeParse(issueYear).success
   ) {
@@ -288,8 +279,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
 
   const validatedFilters: ValidatedCoinListFilters = {
     ...(size === undefined ? {} : { size }),
-    ...(thicknessMin === undefined ? {} : { thicknessMin }),
-    ...(thicknessMax === undefined ? {} : { thicknessMax }),
+    ...(thickness === undefined ? {} : { thickness }),
     ...(weightMin === undefined ? {} : { weightMin }),
     ...(weightMax === undefined ? {} : { weightMax }),
     currencySlug: currencySlug ?? null,

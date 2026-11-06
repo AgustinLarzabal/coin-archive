@@ -20,14 +20,7 @@ function parseSearchPreservingDecimals(searchString: string) {
   const searchParams = new URLSearchParams(
     searchString.startsWith("?") ? searchString.slice(1) : searchString
   )
-  for (const key of [
-    "amount",
-    "size",
-    "thicknessMin",
-    "thicknessMax",
-    "weightMin",
-    "weightMax",
-  ]) {
+  for (const key of ["amount", "size", "thickness", "weightMin", "weightMax"]) {
     const values = searchParams.getAll(key)
     if (values.length === 1) {
       const [value] = values

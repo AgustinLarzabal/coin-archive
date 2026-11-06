@@ -4,6 +4,7 @@ import {
   coinListPageQuerySchema,
   coinListPageSchema,
   coinListSizeSchema,
+  coinListThicknessSchema,
   coinListYearQuerySchema,
   coinListYearSchema,
   currencySlugSchema,
@@ -23,6 +24,7 @@ export const exploreSearchSchema = z.object({
   mint: mintSlugSchema.optional().catch(undefined),
   ruler: rulingAuthoritySlugSchema.optional().catch(undefined),
   size: coinListSizeSchema.optional().catch(undefined),
+  thickness: coinListThicknessSchema.optional().catch(undefined),
   year: z
     .union([coinListYearSchema, coinListYearQuerySchema])
     .optional()
@@ -46,6 +48,7 @@ export function getExploreCoinListFilters(
     mintSlug: search.mint,
     rulingAuthoritySlug: search.ruler,
     size: search.size,
+    thickness: search.thickness,
     issueYear: search.year,
     page: search.page ?? COIN_LIST_DEFAULT_PAGE,
   }

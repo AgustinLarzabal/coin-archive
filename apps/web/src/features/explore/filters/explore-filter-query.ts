@@ -13,7 +13,11 @@ import { exploreFilterDefinitions } from "./explore-filter-definitions"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterValue } from "./explore-filter-definitions"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
-import type { CoinListSize, CoinListYear } from "@coin-archive/api"
+import type {
+  CoinListSize,
+  CoinListThickness,
+  CoinListYear,
+} from "@coin-archive/api"
 import type {
   FilterQuery,
   FilterRule,
@@ -41,7 +45,7 @@ function parseYearRule(
   return parsed.success ? parsed.data : null
 }
 
-function parseSizeRule(
+function parseMillimetreRule(
   rule: FilterRule<ExploreFilterValue>
 ): CoinListSize | undefined | null {
   if (rule.operator === "" && rule.value === undefined) return undefined
@@ -67,7 +71,7 @@ export function searchToFilterQuery(
 ): FilterQuery<ExploreFilterValue> {
   const rules: ReturnType<typeof createFilterRule<ExploreFilterValue>>[] =
     exploreFilterDefinitions.flatMap(({ id }) => {
-      if (id === "year" || id === "size") return []
+      if (id === "year" || id === "size" || id === "thickness") return []
       const value = search[id]
       if (value === undefined) return []
 
@@ -98,14 +102,16 @@ export function searchToFilterQuery(
     )
   }
 
-  if (search.size !== undefined) {
-    const { min, max } = coinListSizeToInterval(search.size)
+  for (const field of ["size", "thickness"] as const) {
+    const measurement = search[field]
+    if (measurement === undefined) continue
+    const { min, max } = coinListSizeToInterval(measurement)
     rules.push(
       createFilterRule({
-        id: "explore-size",
-        path: ["size"],
-        operator: search.size.includes("-") ? "between" : "eq",
-        value: search.size.includes("-")
+        id: `explore-${field}`,
+        path: [field],
+        operator: measurement.includes("-") ? "between" : "eq",
+        value: measurement.includes("-")
           ? [Number(min), Number(max)]
           : Number(min),
       })
@@ -121,10 +127,12 @@ export function filterQueryToPatch(
 ): ExploreFilterPatch | null {
   const selected: Record<string, string | undefined> = {}
   for (const { id } of exploreFilterDefinitions) {
-    if (id !== "year" && id !== "size") selected[id] = undefined
+    if (id !== "year" && id !== "size" && id !== "thickness")
+      selected[id] = undefined
   }
   let year: CoinListYear | undefined
   let size: CoinListSize | undefined
+  let thickness: CoinListThickness | undefined
   let hasIncompleteRule = false
 
   for (const rule of query.rules) {
@@ -136,11 +144,12 @@ export function filterQueryToPatch(
       else year = parsed
       continue
     }
-    if (rule.path[0] === "size") {
-      const parsed = parseSizeRule(rule)
+    if (rule.path[0] === "size" || rule.path[0] === "thickness") {
+      const parsed = parseMillimetreRule(rule)
       if (parsed === null) return null
       if (parsed === undefined) hasIncompleteRule = true
-      else size = parsed
+      else if (rule.path[0] === "size") size = parsed
+      else thickness = parsed
       continue
     }
     const definition = exploreFilterDefinitions.find(
@@ -160,10 +169,15 @@ export function filterQueryToPatch(
   // The filter picker creates a rule before its value is chosen.
   if (hasIncompleteRule) return {}
   return exploreFilterDefinitions.every(
-    ({ id }) => id === "year" || id === "size" || selected[id] === search[id]
+    ({ id }) =>
+      id === "year" ||
+      id === "size" ||
+      id === "thickness" ||
+      selected[id] === search[id]
   ) &&
     year === search.year &&
-    size === search.size
+    size === search.size &&
+    thickness === search.thickness
     ? {}
-    : { ...selected, year, size }
+    : { ...selected, year, size, thickness }
 }

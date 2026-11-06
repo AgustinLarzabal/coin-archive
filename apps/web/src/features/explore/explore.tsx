@@ -18,6 +18,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
       filters.engraverSlug !== undefined ||
       filters.rulingAuthoritySlug !== undefined ||
       filters.size !== undefined ||
+      filters.thickness !== undefined ||
       filters.issueYear !== undefined
         ? "No coins match the selected filters."
         : "No coins have been added to the archive yet"

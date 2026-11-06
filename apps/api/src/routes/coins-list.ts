@@ -3,12 +3,15 @@ import {
   COIN_LIST_DEFAULT_PAGE_SIZE,
   COIN_LIST_MAX_PAGE_SIZE,
   COIN_LIST_SIZE_QUERY_PATTERN,
+  COIN_LIST_THICKNESS_QUERY_PATTERN,
   COIN_LIST_YEAR_QUERY_PATTERN,
   coinDistributionSchema,
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
   coinListSizeSchema,
   coinListSizeToInterval,
+  coinListThicknessSchema,
+  coinListThicknessToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
   currencySlugSchema,
@@ -54,20 +57,13 @@ const coinListQuerySchema = z
       type: "string",
       pattern: COIN_LIST_SIZE_QUERY_PATTERN,
     }),
-    thicknessMin: measurementQuerySchema(2)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive minimum Coin Thickness in millimetres (up to 2 decimal places)",
-        param: { name: "thicknessMin", in: "query" },
-      }),
-    thicknessMax: measurementQuerySchema(2)
-      .optional()
-      .openapi({
-        description:
-          "Inclusive maximum Coin Thickness in millimetres (up to 2 decimal places)",
-        param: { name: "thicknessMax", in: "query" },
-      }),
+    thickness: coinListThicknessSchema.optional().openapi({
+      description:
+        "Exact Coin Thickness in millimetres or an inclusive closed range (for example, 2.2 or 1.5-2.25). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "thickness", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_THICKNESS_QUERY_PATTERN,
+    }),
     weightMin: measurementQuerySchema(3)
       .optional()
       .openapi({
@@ -150,20 +146,16 @@ const coinListQuerySchema = z
     }
   )
   .superRefine((query, context) => {
-    for (const name of ["thickness", "weight"] as const) {
-      const min = query[`${name}Min`]
-      const max = query[`${name}Max`]
-      if (
-        min !== undefined &&
-        max !== undefined &&
-        measurementMinExceedsMax(min, max)
-      ) {
-        context.addIssue({
-          code: "custom",
-          path: [`${name}Min`],
-          message: "Minimum exceeds maximum",
-        })
-      }
+    if (
+      query.weightMin !== undefined &&
+      query.weightMax !== undefined &&
+      measurementMinExceedsMax(query.weightMin, query.weightMax)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["weightMin"],
+        message: "Minimum exceeds maximum",
+      })
     }
   })
 
@@ -261,7 +253,7 @@ const coinListRoute = createRoute({
 
 const validationErrors = [
   {
-    fields: ["size", "thicknessMin", "thicknessMax", "weightMin", "weightMax"],
+    fields: ["size", "thickness", "weightMin", "weightMax"],
     response: {
       error: {
         code: "invalid_measurement_filter",
@@ -337,8 +329,7 @@ export function registerCoinListRoute(
     async (context) => {
       const {
         size,
-        thicknessMin,
-        thicknessMax,
+        thickness,
         weightMin,
         weightMax,
         amount: faceValueAmount,
@@ -358,8 +349,9 @@ export function registerCoinListRoute(
         ...(size === undefined
           ? {}
           : { sizeInterval: coinListSizeToInterval(size) }),
-        ...(thicknessMin === undefined ? {} : { thicknessMin }),
-        ...(thicknessMax === undefined ? {} : { thicknessMax }),
+        ...(thickness === undefined
+          ? {}
+          : { thicknessInterval: coinListThicknessToInterval(thickness) }),
         ...(weightMin === undefined ? {} : { weightMin }),
         ...(weightMax === undefined ? {} : { weightMax }),
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),

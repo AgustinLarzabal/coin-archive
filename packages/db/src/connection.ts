@@ -77,8 +77,7 @@ export type CoinListItem = Omit<
 
 export interface CoinListOptions {
   sizeInterval?: { min: string; max: string }
-  thicknessMin?: string
-  thicknessMax?: string
+  thicknessInterval?: { min: string; max: string }
   weightMin?: string
   weightMax?: string
   currencySlug?: string
@@ -387,12 +386,18 @@ export function createDatabase(
               listOptions.sizeInterval === undefined
                 ? undefined
                 : lte(schema.coins.size, sql`${listOptions.sizeInterval.max}`),
-              listOptions.thicknessMin === undefined
+              listOptions.thicknessInterval === undefined
                 ? undefined
-                : gte(schema.coins.thickness, sql`${listOptions.thicknessMin}`),
-              listOptions.thicknessMax === undefined
+                : gte(
+                    schema.coins.thickness,
+                    sql`${listOptions.thicknessInterval.min}`
+                  ),
+              listOptions.thicknessInterval === undefined
                 ? undefined
-                : lte(schema.coins.thickness, sql`${listOptions.thicknessMax}`),
+                : lte(
+                    schema.coins.thickness,
+                    sql`${listOptions.thicknessInterval.max}`
+                  ),
               listOptions.weightMin === undefined
                 ? undefined
                 : gte(schema.coins.weight, sql`${listOptions.weightMin}`),

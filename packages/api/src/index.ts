@@ -165,6 +165,11 @@ export function coinListSizeToInterval(size: CoinListSize) {
   return { min, max }
 }
 
+export const COIN_LIST_THICKNESS_QUERY_PATTERN = COIN_LIST_SIZE_QUERY_PATTERN
+export const coinListThicknessSchema = coinListSizeSchema
+export type CoinListThickness = z.infer<typeof coinListThicknessSchema>
+export const coinListThicknessToInterval = coinListSizeToInterval
+
 export const currencyResponseSchema = z.strictObject({
   slug: currencySlugSchema,
   name: trimmedDisplayTextSchema(200),

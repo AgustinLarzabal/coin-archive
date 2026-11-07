@@ -21,6 +21,12 @@ A Coin type's curated representative thickness in millimetres. It may be unknown
 **Coin Weight**:
 A Coin type's curated representative mass in grams. It may be unknown independently of the Coin's other measurements.
 
+**Coin Composition**:
+A controlled classification of a Coin type's material construction, such as Bimetallic. A Coin has at most one Coin Composition, which may be unknown.
+
+**Coin Composition Detail**:
+An optional, curated description of the materials and proportions in a Coin type, including where they occur when relevant. It may be unknown independently of the Coin's Composition.
+
 **Face Value**:
 The nominal monetary value assigned to a Coin through its Denomination, distinct from its collector price, purchasing power, or intrinsic material value. A Coin may have at most one Face Value.
 _Avoid_: Value, Price, Valuation

@@ -7,5 +7,23 @@
     "startYear": null,
     "endYear": null,
     "operating": true
+  },
+  {
+    "slug": "sample-mint-finland",
+    "name": "Sample Mint of Finland",
+    "place": "Helsinki",
+    "countryCode": "FI",
+    "startYear": null,
+    "endYear": null,
+    "operating": true
+  },
+  {
+    "slug": "sample-mint-greece",
+    "name": "Sample Mint of Greece",
+    "place": "Athens",
+    "countryCode": "GR",
+    "startYear": null,
+    "endYear": null,
+    "operating": true
   }
 ]

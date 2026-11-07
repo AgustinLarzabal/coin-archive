@@ -23,10 +23,16 @@
     ],
     "obverse": {
       "description": "A globe bearing the World Food Programme inscription, accompanied by ears of wheat, maize, and rice. The design also includes the Italian Republic monogram, the Rome mint mark, and the year 2004.",
-      "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Obverse.jpg"
+      "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Obverse.jpg",
+      "engraverSlugs": ["first-archive-engraver", "second-archive-engraver"]
     },
     "reverse": {
+      "description": "Sample common 2 euro reverse showing the denomination and a map of Europe.",
+      "engraverSlugs": ["first-archive-engraver"],
       "imageKey": "Italy/Republic (1946-date)/2004/World Food Program - Reverse.jpg"
+    },
+    "edge": {
+      "description": "Sample alternating lettering and stars around the edge."
     },
     "distribution": "circulating-commemorative"
   },
@@ -105,7 +111,15 @@
   {
     "id": "00000000-0000-4000-8000-000000000005",
     "title": "Enlargement of the European Union by Ten New Member States",
+    "size": 25.75,
+    "thickness": 2.2,
+    "weight": 8.5,
+    "mintSlugs": ["sample-mint-finland"],
     "issuerCode": "FI",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
     "rulingAuthorityAttributions": [
@@ -118,17 +132,31 @@
     ],
     "obverse": {
       "description": "A stylised pillar supports upward-growing shoots, symbolising the European Union's enlargement and its foundation for growth. The design includes the letters EU, the year 2004, and twelve stars.",
-      "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Obverse.jpg"
+      "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Obverse.jpg",
+      "engraverSlugs": ["first-archive-engraver"]
     },
     "reverse": {
+      "description": "Sample common 2 euro reverse showing the denomination and a map of Europe.",
+      "engraverSlugs": ["second-archive-engraver"],
       "imageKey": "Finland/Republic (1919-date)/2004/Enlargement of the European Union - Reverse.jpg"
+    },
+    "edge": {
+      "description": "Sample alternating lettering and stars around the edge."
     },
     "distribution": "circulating-commemorative"
   },
   {
     "id": "00000000-0000-4000-8000-000000000006",
     "title": "Olympic Games in Athens 2004",
+    "size": 25.75,
+    "thickness": 2.2,
+    "weight": 8.5,
+    "mintSlugs": ["sample-mint-greece"],
     "issuerCode": "GR",
+    "denomination": {
+      "currencySlug": "euro",
+      "label": "2 euro"
+    },
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
     "rulingAuthorityAttributions": [
@@ -141,10 +169,16 @@
     ],
     "obverse": {
       "description": "An ancient statue of a discobolus preparing to throw the discus, accompanied by the Athens 2004 Olympic emblem, the Greek euro denomination, the yearmark, and twelve stars.",
-      "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Obverse.jpg"
+      "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Obverse.jpg",
+      "engraverSlugs": ["first-archive-engraver"]
     },
     "reverse": {
+      "description": "Sample common 2 euro reverse showing the denomination and a map of Europe.",
+      "engraverSlugs": ["second-archive-engraver"],
       "imageKey": "Greece/Third Hellenic Republic (1974-date)/2004/Olympic Games - Reverse.jpg"
+    },
+    "edge": {
+      "description": "Sample alternating lettering and stars around the edge."
     },
     "distribution": "circulating-commemorative"
   },

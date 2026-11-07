@@ -2716,7 +2716,11 @@ describe("Coin seed", () => {
           description: expect.stringContaining("World Food Programme"),
         }),
         reverse: expect.objectContaining({ kind: "reverse" }),
-        edge: null,
+        edge: expect.objectContaining({
+          kind: "edge",
+          description:
+            "Sample alternating lettering and stars around the edge.",
+        }),
       })
     } finally {
       await database.close()

@@ -275,6 +275,8 @@ describe("database rebuild lifecycle", () => {
           period_label: "1999–present",
         },
         ...[
+          "00000000-0000-4000-8000-000000000005",
+          "00000000-0000-4000-8000-000000000006",
           "00000000-0000-4000-8000-00000000000c",
           "00000000-0000-4000-8000-00000000004b",
           "00000000-0000-4000-8000-000000000084",
@@ -348,7 +350,7 @@ describe("database rebuild lifecycle", () => {
           { full_name: "Helmut Andexlinger", kind: "obverse", position: 1 },
         ])
       )
-      expect(credits.rows).toHaveLength(2)
+      expect(credits.rows).toHaveLength(9)
 
       const attributions = await databaseAfterReset.query<{
         coin_id: string

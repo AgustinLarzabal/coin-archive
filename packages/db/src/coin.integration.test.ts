@@ -100,14 +100,20 @@ describe("Coin persistence", () => {
           name,
         }))
       ).toContainEqual({ slug: "bimetallic", name: "Bimetallic" })
+      const firstPage = await database.listCoins({
+        composition: "bimetallic",
+        pageSize: 1,
+      })
+      const secondPage = await database.listCoins({
+        composition: "bimetallic",
+        pageSize: 1,
+        page: 2,
+      })
+      expect(firstPage.totalItems).toBe(2)
+      expect(secondPage.totalItems).toBe(2)
       expect(
-        (await database.listCoins({ composition: "bimetallic", pageSize: 1 }))
-          .totalItems
-      ).toBe(2)
-      expect(
-        (await database.listCoins({ composition: "bimetallic", pageSize: 1 }))
-          .coins
-      ).toHaveLength(1)
+        [...firstPage.coins, ...secondPage.coins].map(({ id }) => id)
+      ).toEqual([inserted[1].id, inserted[3].id].sort())
       expect(
         (await database.listCoins({ composition: "Bimetallic" })).totalItems
       ).toBe(0)

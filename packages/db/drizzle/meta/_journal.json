@@ -148,6 +148,13 @@
       "when": 1794039705237,
       "tag": "0020_high_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794041656328,
+      "tag": "0021_married_carmella_unuscione",
+      "breakpoints": true
     }
   ]
 }

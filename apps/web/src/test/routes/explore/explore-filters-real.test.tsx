@@ -55,6 +55,7 @@ it("restores Composition with another filter and sends both to the Coin API", as
   const router = renderArchiveRoute("/?composition=bimetallic&issuer=AR")
 
   await screen.findByRole("button", { name: "Add filter" })
+  expect(screen.getByText("Bimetallic")).toBeVisible()
   expect(router.state.location.search).toMatchObject({
     composition: "bimetallic",
     issuer: "AR",

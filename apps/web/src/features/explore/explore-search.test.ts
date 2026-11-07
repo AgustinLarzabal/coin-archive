@@ -8,6 +8,7 @@ import {
 describe("Explore search", () => {
   it("keeps valid Explore filters and page while dropping removed filters", () => {
     const search = exploreSearchSchema.parse({
+      amount: "0.5",
       currency: "euro",
       distribution: "standard-circulation",
       engraver: "first-engraver",
@@ -22,6 +23,7 @@ describe("Explore search", () => {
     })
 
     expect(search).toEqual({
+      amount: "0.5",
       currency: "euro",
       distribution: "standard-circulation",
       engraver: "first-engraver",
@@ -35,6 +37,7 @@ describe("Explore search", () => {
       page: 2,
     })
     expect(getExploreCoinListFilters(search)).toEqual({
+      faceValueAmount: "0.5",
       currencySlug: "euro",
       distribution: "standard-circulation",
       engraverSlug: "first-engraver",
@@ -52,6 +55,7 @@ describe("Explore search", () => {
   it("drops invalid Explore filters and page values", () => {
     expect(
       exploreSearchSchema.parse({
+        amount: "0.50",
         currency: "EURO",
         distribution: "BAD",
         engraver: "BAD",
@@ -65,6 +69,7 @@ describe("Explore search", () => {
         page: "0",
       })
     ).toEqual({
+      amount: undefined,
       currency: undefined,
       distribution: undefined,
       engraver: undefined,
@@ -78,6 +83,7 @@ describe("Explore search", () => {
       page: undefined,
     })
     expect(getExploreCoinListFilters({})).toEqual({
+      faceValueAmount: undefined,
       currencySlug: undefined,
       distribution: undefined,
       engraverSlug: undefined,
@@ -99,5 +105,9 @@ describe("Explore search", () => {
       "2.2"
     )
     expect(exploreSearchSchema.parse({ weight: "8.125" }).weight).toBe("8.125")
+    expect(
+      getExploreCoinListFilters(exploreSearchSchema.parse({ amount: "0.5" }))
+        .faceValueAmount
+    ).toBeUndefined()
   })
 })

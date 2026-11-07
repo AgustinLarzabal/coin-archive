@@ -47,6 +47,12 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       },
     ],
   })
+  expect(fields.find(({ id }) => id === "amount")).toMatchObject({
+    type: "text",
+    disabled: true,
+    description: "Choose a currency first",
+    operators: [{ value: "eq", label: "equals" }],
+  })
   expect(fields.find(({ id }) => id === "year")).toMatchObject({
     type: "number",
     operators: [
@@ -77,5 +83,56 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       { value: "eq", label: "equals" },
       { value: "between", label: "is between", arity: "range" },
     ],
+  })
+})
+
+it("enables Face Value Amount after selecting Currency", () => {
+  const fields = getExploreFilterFields(
+    {
+      currencies: [],
+      distributions: [],
+      engravers: [],
+      issuers: [],
+      mints: [],
+      rulingAuthorities: [],
+    },
+    { currency: "euro" },
+    createFilterQuery<string>([
+      createFilterRule({
+        id: "currency",
+        path: ["currency"],
+        operator: "is",
+        value: "euro",
+      }),
+    ])
+  )
+  expect(fields.find(({ id }) => id === "amount")).toMatchObject({
+    disabled: false,
+    description: undefined,
+  })
+})
+
+it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
+  const fields = getExploreFilterFields(
+    {
+      currencies: [],
+      distributions: [],
+      engravers: [],
+      issuers: [],
+      mints: [],
+      rulingAuthorities: [],
+    },
+    {},
+    createFilterQuery<string>([
+      createFilterRule({
+        id: "currency",
+        path: ["currency"],
+        operator: "is",
+        value: undefined,
+      }),
+    ])
+  )
+  expect(fields.find(({ id }) => id === "amount")).toMatchObject({
+    disabled: true,
   })
 })

@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          amount: search.amount,
           currency: search.currency,
           distribution: search.distribution,
           engraver: search.engraver,
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/_explore/")({
       throw redirect({
         to: "/",
         search: {
+          amount: filters.faceValueAmount,
           currency: filters.currencySlug,
           distribution: filters.distribution,
           engraver: filters.engraverSlug,

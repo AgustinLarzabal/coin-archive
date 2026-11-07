@@ -14,6 +14,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
       filters.issuerCode !== undefined ||
       filters.distribution !== undefined ||
       filters.currencySlug !== undefined ||
+      filters.faceValueAmount !== undefined ||
       filters.mintSlug !== undefined ||
       filters.engraverSlug !== undefined ||
       filters.rulingAuthoritySlug !== undefined ||

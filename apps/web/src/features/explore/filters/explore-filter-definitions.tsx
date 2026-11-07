@@ -1,3 +1,4 @@
+import { amountFilterDefinition } from "./definitions/amount-filter"
 import { currencyFilterDefinition } from "./definitions/currency-filter"
 import { distributionFilterDefinition } from "./definitions/distribution-filter"
 import { engraverFilterDefinition } from "./definitions/engraver-filter"
@@ -49,6 +50,7 @@ export interface ExploreFilterDefinition {
 }
 
 export const exploreFilterDefinitions = [
+  amountFilterDefinition,
   currencyFilterDefinition,
   distributionFilterDefinition,
   engraverFilterDefinition,
@@ -69,8 +71,21 @@ export function getExploreFilterFields(
   const selected = new Set(
     query.rules.flatMap((node) => (node.type === "rule" ? [node.path[0]] : []))
   )
+  const hasCurrency = query.rules.some(
+    (node) =>
+      node.type === "rule" &&
+      node.path[0] === "currency" &&
+      typeof node.value === "string"
+  )
 
   return exploreFilterDefinitions.map((definition) => {
+    if (definition.id === "amount") {
+      return {
+        ...definition,
+        disabled: selected.has("amount") || !hasCurrency,
+        description: hasCurrency ? undefined : "Choose a currency first",
+      }
+    }
     if (
       definition.id === "year" ||
       definition.id === "size" ||

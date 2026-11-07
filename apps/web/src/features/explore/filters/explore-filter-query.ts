@@ -5,6 +5,7 @@ import {
   coinListWeightToInterval,
   coinListYearSchema,
   coinListYearToInterval,
+  faceValueAmountQuerySchema,
 } from "@coin-archive/api"
 import {
   createFilterQuery,
@@ -84,6 +85,7 @@ export function searchToFilterQuery(
         id === "weight"
       )
         return []
+      if (id === "amount" && search.currency === undefined) return []
       const value = search[id]
       if (value === undefined) return []
 
@@ -91,7 +93,7 @@ export function searchToFilterQuery(
         createFilterRule({
           id: `explore-${id}`,
           path: [id],
-          operator: "is",
+          operator: id === "amount" ? "eq" : "is",
           value,
         }),
       ]
@@ -154,6 +156,21 @@ export function filterQueryToPatch(
 
   for (const rule of query.rules) {
     if (rule.type !== "rule") return null
+    if (rule.path[0] === "amount") {
+      if (rule.operator === "" && rule.value === undefined) {
+        hasIncompleteRule = true
+        continue
+      }
+      if (rule.operator !== "eq") return null
+      if (rule.value === undefined) {
+        hasIncompleteRule = true
+        continue
+      }
+      const parsed = faceValueAmountQuerySchema.safeParse(rule.value)
+      if (!parsed.success) return null
+      selected.amount = parsed.data
+      continue
+    }
     if (rule.path[0] === "year") {
       const parsed = parseYearRule(rule)
       if (parsed === null) return null
@@ -190,6 +207,7 @@ export function filterQueryToPatch(
 
   // The filter picker creates a rule before its value is chosen.
   if (hasIncompleteRule) return {}
+  if (selected.currency === undefined) selected.amount = undefined
   return exploreFilterDefinitions.every(
     ({ id }) =>
       id === "year" ||

@@ -44,4 +44,13 @@ describe("Explore navigation", () => {
       page: undefined,
     })
   })
+
+  it("resets pagination when Face Value Amount changes", () => {
+    expect(
+      updateExploreFilters(
+        { currency: "euro", amount: "0.5", page: 3 },
+        { amount: "1" }
+      )
+    ).toEqual({ currency: "euro", amount: "1", page: undefined })
+  })
 })

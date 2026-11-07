@@ -43,6 +43,7 @@ it("turns added, replaced, and cleared rules into URL patches", () => {
     )
 
   expect(filterQueryToPatch(query("AR"), {})).toEqual({
+    amount: undefined,
     currency: undefined,
     distribution: undefined,
     engraver: undefined,
@@ -73,6 +74,47 @@ it("round-trips an issue year and a BCE-to-CE range", () => {
     expect(filterQueryToPatch(query, { year })).toEqual({})
     expect(filterQueryToPatch(query, {})).toMatchObject({ year })
   }
+})
+
+it("round-trips Face Value Amount with Currency and clears it when Currency is removed", () => {
+  const search = { currency: "euro", amount: "0.5" }
+  const query = searchToFilterQuery(search)
+  expect(query.rules).toMatchObject([
+    { path: ["amount"], operator: "eq", value: "0.5" },
+    { path: ["currency"], operator: "is", value: "euro" },
+  ])
+  expect(filterQueryToPatch(query, search)).toEqual({})
+  expect(filterQueryToPatch(query, { currency: "euro" })).toMatchObject({
+    amount: "0.5",
+  })
+  expect(
+    filterQueryToPatch(createFilterQuery([query.rules[0]]), search)
+  ).toMatchObject({
+    amount: undefined,
+    currency: undefined,
+  })
+  expect(searchToFilterQuery({ amount: "0.5" }).rules).toEqual([])
+})
+
+it("rejects invalid Face Value Amount rules", () => {
+  const rule = (value: string | number | undefined) =>
+    createFilterQuery([
+      createFilterRule({
+        id: "amount",
+        path: ["amount"],
+        operator: "eq",
+        value,
+      }),
+      createFilterRule({
+        id: "currency",
+        path: ["currency"],
+        operator: "is",
+        value: "euro",
+      }),
+    ])
+  expect(filterQueryToPatch(rule("0.50"), { currency: "euro" })).toBeNull()
+  expect(filterQueryToPatch(rule(0.5), { currency: "euro" })).toBeNull()
+  expect(filterQueryToPatch(rule(undefined), { currency: "euro" })).toEqual({})
 })
 
 it("round-trips exact and ranged sizes", () => {

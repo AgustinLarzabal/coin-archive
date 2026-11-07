@@ -16,6 +16,7 @@ export function ExploreFilters({
   ...lists
 }: ExploreFilterLists & { search: ExploreSearch }) {
   const {
+    amount,
     currency: currencySlug,
     distribution,
     engraver: engraverSlug,
@@ -33,6 +34,7 @@ export function ExploreFilters({
   useEffect(
     () => setQuery(searchToFilterQuery(search)),
     [
+      amount,
       currencySlug,
       distribution,
       engraverSlug,

@@ -406,6 +406,9 @@ export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
     distributionName: trimmedDisplayTextSchema(200),
+    composition: coinDistributionSchema.nullable(),
+    compositionName: trimmedDisplayTextSchema(200).nullable(),
+    compositionDetail: trimmedDisplayTextSchema(10_000).nullable(),
     size: z
       .number()
       .positive()

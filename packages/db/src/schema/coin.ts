@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
+import { compositionInsertSchema, compositions } from "./composition.js"
 import { denominations } from "./denomination.js"
 import { distributionInsertSchema, distributions } from "./distribution.js"
 import { issuerInsertSchema, issuers } from "./issuer.js"
@@ -31,6 +32,10 @@ export const coins = pgTable(
     distributionId: uuid("distribution_id")
       .notNull()
       .references(() => distributions.id, { onDelete: "restrict" }),
+    compositionId: uuid("composition_id").references(() => compositions.id, {
+      onDelete: "restrict",
+    }),
+    compositionDetail: varchar("composition_detail", { length: 10_000 }),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
     size: numeric({ mode: "number" }),
@@ -59,6 +64,10 @@ export const coins = pgTable(
       table.id.asc()
     ),
     check("coins_title_not_empty", sql`length(${table.title}) >= 1`),
+    check(
+      "coins_composition_detail_valid",
+      sql`${table.compositionDetail} is null or (length(${table.compositionDetail}) >= 1 and ${table.compositionDetail} !~ '^[[:space:]]|[[:space:]]$')`
+    ),
     check(
       "coins_title_trimmed",
       sql`${table.title} !~ '^[[:space:]]|[[:space:]]$'`
@@ -106,6 +115,7 @@ const coinInsertBaseSchema = createInsertSchema(coins, {
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),
+  compositionDetail: trimmedInsertText("Coin Composition Detail"),
   size: measurement(2),
   thickness: measurement(2),
   weight: measurement(3),
@@ -120,6 +130,7 @@ export const coinSeedSchema = coinInsertBaseSchema
   .omit({
     issuerId: true,
     distributionId: true,
+    compositionId: true,
     denominationId: true,
     createdAt: true,
     updatedAt: true,
@@ -127,6 +138,7 @@ export const coinSeedSchema = coinInsertBaseSchema
   .extend({
     issuerCode: issuerInsertSchema.shape.code,
     distribution: distributionInsertSchema.shape.slug,
+    composition: compositionInsertSchema.shape.slug.optional(),
   })
   .required({
     id: true,

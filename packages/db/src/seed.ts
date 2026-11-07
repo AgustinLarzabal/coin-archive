@@ -17,6 +17,7 @@ import {
   coinSurfaceEngravers,
   coinSurfaceInsertSchema,
   coinSurfaces,
+  compositions,
   currencies,
   currencyInsertSchema,
   denominationInsertSchema,
@@ -397,6 +398,13 @@ export async function seedCoins(database: Database, input: unknown) {
           .from(distributions)
       ).map(({ slug, id }) => [slug, id])
     )
+    const compositionIdsBySlug = new Map(
+      (
+        await transaction
+          .select({ slug: compositions.slug, id: compositions.id })
+          .from(compositions)
+      ).map(({ slug, id }) => [slug, id])
+    )
     const insertedCurrencies =
       document.currencies.length === 0
         ? []
@@ -494,6 +502,7 @@ export async function seedCoins(database: Database, input: unknown) {
         rulingAuthorityAttributions: _rulingAuthorityAttributions,
         mintSlugs: _mintSlugs,
         distribution,
+        composition,
         ...coin
       }) => {
         const issuerId = issuerIdsByCode.get(issuerCode)
@@ -523,10 +532,19 @@ export async function seedCoins(database: Database, input: unknown) {
             `Coin references unknown Coin Distribution Slug: ${distribution}`
           )
         }
+        const compositionId = composition
+          ? compositionIdsBySlug.get(composition)
+          : null
+        if (composition && !compositionId) {
+          throw new Error(
+            `Coin references unknown Coin Composition Slug: ${composition}`
+          )
+        }
         return {
           ...coin,
           issuerId,
           distributionId,
+          compositionId,
           denominationId: denominationId ?? null,
         }
       }

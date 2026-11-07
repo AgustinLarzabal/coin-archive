@@ -26,9 +26,20 @@ const TEST_COIN_REQUIRED_FIELDS = {
   lastIssueYear: 2004,
 }
 
-function publicCoin<T extends { distributionId: string }>(coin: T) {
-  const { distributionId: _distributionId, ...fields } = coin
-  return { ...fields, distribution: "circulating-commemorative" }
+function publicCoin<
+  T extends { distributionId: string; compositionId: string | null },
+>(coin: T) {
+  const {
+    distributionId: _distributionId,
+    compositionId: _compositionId,
+    ...fields
+  } = coin
+  return {
+    ...fields,
+    distribution: "circulating-commemorative",
+    composition: null,
+    compositionName: null,
+  }
 }
 
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
@@ -58,6 +69,88 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("stores all four Composition and Detail combinations without exposing catalogue IDs", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [composition] = await database.orm
+        .select()
+        .from(database.schema.compositions)
+      const detail = "Ring: copper. Center: nickel."
+      const inputs = [
+        { compositionId: null, compositionDetail: null },
+        { compositionId: composition.id, compositionDetail: null },
+        { compositionId: null, compositionDetail: detail },
+        { compositionId: composition.id, compositionDetail: detail },
+      ]
+      const inserted = await database.orm
+        .insert(database.schema.coins)
+        .values(
+          inputs.map((input, index) => ({
+            title: `Composition ${index}`,
+            issuerId: issuer.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+            ...input,
+          }))
+        )
+        .returning({ id: database.schema.coins.id })
+      for (const [index, { id }] of inserted.entries()) {
+        const coin = await database.findCoinById(id)
+        expect(coin).toMatchObject({
+          composition: inputs[index].compositionId ? "bimetallic" : null,
+          compositionName: inputs[index].compositionId ? "Bimetallic" : null,
+          compositionDetail: inputs[index].compositionDetail,
+        })
+        expect(coin).not.toHaveProperty("compositionId")
+      }
+      await database.orm
+        .update(database.schema.compositions)
+        .set({ name: "Two metals" })
+        .where(sql`${database.schema.compositions.id} = ${composition.id}`)
+      await expect(
+        database.findCoinById(inserted[1].id)
+      ).resolves.toMatchObject({
+        composition: "bimetallic",
+        compositionName: "Two metals",
+      })
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty(
+        "compositionDetail"
+      )
+      await expect(
+        database.orm
+          .delete(database.schema.compositions)
+          .where(sql`${database.schema.compositions.id} = ${composition.id}`)
+      ).rejects.toThrow()
+      await expect(
+        database.orm.insert(database.schema.coins).values({
+          title: "Bad Composition",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+          compositionId: "00000000-0000-4000-8000-000000000099",
+        })
+      ).rejects.toThrow()
+      for (const malformed of ["", " Copper", "Copper "]) {
+        expect(
+          coinInsertSchema.safeParse({
+            title: "Bad Detail",
+            issuerId: issuer.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+            compositionDetail: malformed,
+          }).success
+        ).toBe(false)
+        await expect(
+          database.orm.insert(database.schema.coins).values({
+            title: "Bad Detail",
+            issuerId: issuer.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+            compositionDetail: malformed,
+          })
+        ).rejects.toThrow()
+      }
+    } finally {
+      await database.close()
+    }
+  })
   it("filters measurements inclusively before counting and paging, excluding unknown values only when bounded", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2321,6 +2414,75 @@ describe("Coin seed", () => {
     ],
   }
 
+  it("accepts all four Composition and Detail seed combinations", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, {
+        ...validSeed,
+        coins: [
+          validSeed.coins[0],
+          {
+            ...validSeed.coins[0],
+            id: "00000000-0000-4000-8000-000000000002",
+            composition: "bimetallic",
+          },
+          {
+            ...validSeed.coins[0],
+            id: "00000000-0000-4000-8000-000000000003",
+            compositionDetail: "Copper and nickel",
+          },
+          {
+            ...validSeed.coins[0],
+            id: "00000000-0000-4000-8000-000000000004",
+            composition: "bimetallic",
+            compositionDetail: "Copper and nickel",
+          },
+        ],
+      })
+      for (const [id, composition, compositionDetail] of [
+        [SEEDED_COIN_ID, null, null],
+        ["00000000-0000-4000-8000-000000000002", "bimetallic", null],
+        ["00000000-0000-4000-8000-000000000003", null, "Copper and nickel"],
+        [
+          "00000000-0000-4000-8000-000000000004",
+          "bimetallic",
+          "Copper and nickel",
+        ],
+      ] as const) {
+        await expect(database.findCoinById(id)).resolves.toMatchObject({
+          composition,
+          compositionDetail,
+        })
+      }
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("rejects unknown Composition and malformed Detail seed values", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], composition: "unknown-material" }],
+        })
+      ).rejects.toThrow("unknown Coin Composition Slug")
+      const transaction = vi.spyOn(database.orm, "transaction")
+      for (const compositionDetail of ["", " Copper", "Copper "]) {
+        await expect(
+          seedCoins(database, {
+            ...validSeed,
+            coins: [{ ...validSeed.coins[0], compositionDetail }],
+          })
+        ).rejects.toThrow()
+      }
+      expect(transaction).not.toHaveBeenCalled()
+    } finally {
+      await database.close()
+    }
+  })
+
   it("accepts measured and unknown values through the validated seed path", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2491,6 +2653,24 @@ describe("Coin seed", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await seedCoins(database, await readCoinSeed())
+      await expect(
+        database.findCoinById("00000000-0000-4000-8000-000000000001")
+      ).resolves.toMatchObject({
+        composition: null,
+        compositionName: null,
+        compositionDetail: null,
+      })
+      for (const id of [
+        "00000000-0000-4000-8000-000000000005",
+        "00000000-0000-4000-8000-000000000006",
+      ]) {
+        await expect(database.findCoinById(id)).resolves.toMatchObject({
+          composition: "bimetallic",
+          compositionName: "Bimetallic",
+          compositionDetail:
+            "Ring: 75% copper, 25% nickel. Center: 75% copper, 20% zinc, 5% nickel.",
+        })
+      }
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000001")
       ).resolves.toMatchObject({ size: 25.75, thickness: 2.2, weight: 8.5 })

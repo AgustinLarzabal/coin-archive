@@ -99,6 +99,9 @@ export function toCoinDetailResponse(
   return {
     ...toCoinResponseFields(coin),
     distributionName: coin.distributionName,
+    composition: coin.composition,
+    compositionName: coin.compositionName,
+    compositionDetail: coin.compositionDetail,
     size: coin.size,
     thickness: coin.thickness,
     weight: coin.weight,

@@ -69,6 +69,18 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
             <dt className="text-muted-foreground">Coin Distribution</dt>
             <dd>{coin.distributionName}</dd>
           </div>
+          {coin.compositionName !== null && (
+            <div className="flex justify-between gap-4 border-t pt-3">
+              <dt className="text-muted-foreground">Coin Composition</dt>
+              <dd>{coin.compositionName}</dd>
+            </div>
+          )}
+          {coin.compositionDetail !== null && (
+            <div className="flex justify-between gap-4 border-t pt-3">
+              <dt className="text-muted-foreground">Coin Composition Detail</dt>
+              <dd>{coin.compositionDetail}</dd>
+            </div>
+          )}
           {coin.size !== null && (
             <div className="flex justify-between gap-4 border-t pt-3">
               <dt className="text-muted-foreground">Coin Size</dt>

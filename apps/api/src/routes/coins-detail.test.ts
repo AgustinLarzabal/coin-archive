@@ -16,6 +16,9 @@ describe("Coin detail route", () => {
       denomination: null,
       distribution: "circulating-commemorative" as const,
       distributionName: "Circulating commemorative",
+      composition: null,
+      compositionName: null,
+      compositionDetail: null,
       firstIssueYear: 2004,
       lastIssueYear: 2004,
       size: null,
@@ -196,6 +199,35 @@ describe("Coin detail route", () => {
       })
     })
 
+    it.each([
+      [null, null, null],
+      ["bimetallic", "Bimetallic", null],
+      [null, null, "Copper and nickel"],
+      ["bimetallic", "Bimetallic", "Copper and nickel"],
+    ])(
+      "returns independent Composition and Detail values",
+      async (composition, compositionName, compositionDetail) => {
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          findCoinById: async () => ({
+            ...coin,
+            composition,
+            compositionName,
+            compositionDetail,
+          }),
+          imageBaseUrl: "https://images.coin-archive.example",
+        }).request(`/v1/coins/${coinId}`)
+
+        expect(response.status).toBe(200)
+        await expect(response.json()).resolves.toMatchObject({
+          composition,
+          compositionName,
+          compositionDetail,
+        })
+      }
+    )
+
     it("returns independently known numeric measurements", async () => {
       const response = await createApp({
         allowedOrigins: [],
@@ -226,6 +258,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        composition: null,
+        compositionName: null,
+        compositionDetail: null,
         size: null,
         thickness: null,
         weight: null,
@@ -384,6 +419,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        composition: null,
+        compositionName: null,
+        compositionDetail: null,
         size: null,
         thickness: null,
         weight: null,
@@ -516,6 +554,9 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        composition: null,
+        compositionName: null,
+        compositionDetail: null,
         size: null,
         thickness: null,
         weight: null,
@@ -737,6 +778,9 @@ describe("Coin detail route", () => {
                 minLength: 1,
                 maxLength: 200,
               }),
+              composition: expect.objectContaining({ nullable: true }),
+              compositionName: expect.objectContaining({ nullable: true }),
+              compositionDetail: expect.objectContaining({ nullable: true }),
               size: expect.objectContaining({ type: "number", nullable: true }),
               thickness: expect.objectContaining({
                 type: "number",
@@ -806,6 +850,9 @@ describe("Coin detail route", () => {
             }),
             required: expect.arrayContaining([
               "distribution",
+              "composition",
+              "compositionName",
+              "compositionDetail",
               "firstIssueYear",
               "lastIssueYear",
               "faceValue",
@@ -898,6 +945,13 @@ describe("Coin detail route", () => {
       expect(coinListItemSchema.properties).not.toHaveProperty("size")
       expect(coinListItemSchema.properties).not.toHaveProperty("thickness")
       expect(coinListItemSchema.properties).not.toHaveProperty("weight")
+      expect(coinListItemSchema.properties).not.toHaveProperty("composition")
+      expect(coinListItemSchema.properties).not.toHaveProperty(
+        "compositionName"
+      )
+      expect(coinListItemSchema.properties).not.toHaveProperty(
+        "compositionDetail"
+      )
       expect(coinListItemSchema.properties).not.toHaveProperty("mints")
       expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("reverse")

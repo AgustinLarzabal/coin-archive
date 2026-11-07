@@ -5,6 +5,43 @@ import { coinDetailFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it.each([
+    [null, null, null],
+    ["bimetallic", "Bimetallic", null],
+    [null, null, "Copper and nickel"],
+    ["bimetallic", "Bimetallic", "Copper and nickel"],
+  ])(
+    "shows independently known Composition and Detail",
+    async (composition, compositionName, compositionDetail) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse(
+              coinDetailFixture({
+                composition,
+                compositionName,
+                compositionDetail,
+              })
+            )
+          )
+        )
+      )
+      renderCoinRoute()
+      expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+      expect(Boolean(screen.queryByText("Coin Composition"))).toBe(
+        compositionName !== null
+      )
+      expect(Boolean(screen.queryByText("Coin Composition Detail"))).toBe(
+        compositionDetail !== null
+      )
+      if (compositionName)
+        expect(screen.getByText(compositionName)).toBeInTheDocument()
+      if (compositionDetail)
+        expect(screen.getByText(compositionDetail)).toBeInTheDocument()
+      expect(screen.queryByText("bimetallic")).not.toBeInTheDocument()
+    }
+  )
   it("shows known measurements with units and omits unknown measurements", async () => {
     vi.stubGlobal(
       "fetch",

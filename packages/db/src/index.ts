@@ -18,6 +18,9 @@ export {
   coinRulingAuthorityAttributionSelectSchema,
   coinSelectSchema,
   coinSurfaceInsertSchema,
+  compositionInsertSchema,
+  compositions,
+  compositionSelectSchema,
   currencyInsertSchema,
   currencySelectSchema,
   denominationInsertSchema,
@@ -37,6 +40,7 @@ export {
 export type {
   CoinRecord,
   CoinRulingAuthorityAttributionRecord,
+  CompositionRecord,
   CurrencyRecord,
   DenominationRecord,
   DistributionRecord,

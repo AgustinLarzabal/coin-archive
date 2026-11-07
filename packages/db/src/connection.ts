@@ -36,9 +36,14 @@ export interface Database {
   schema: typeof schema
 }
 
-export type Coin = Omit<schema.CoinRecord, "distributionId"> & {
+export type Coin = Omit<
+  schema.CoinRecord,
+  "distributionId" | "compositionId"
+> & {
   distribution: string
   distributionName: string
+  composition: string | null
+  compositionName: string | null
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
@@ -66,7 +71,13 @@ export type CoinSurfaceWithEngravers = schema.CoinSurfaceRecord & {
 
 export type CoinListItem = Omit<
   schema.CoinRecord,
-  "denominationId" | "distributionId" | "size" | "thickness" | "weight"
+  | "denominationId"
+  | "distributionId"
+  | "compositionId"
+  | "compositionDetail"
+  | "size"
+  | "thickness"
+  | "weight"
 > & {
   distribution: string
   issuer: schema.IssuerRecord
@@ -142,6 +153,8 @@ export function createDatabase(
               coin: schema.coins,
               distribution: schema.distributions.slug,
               distributionName: schema.distributions.name,
+              composition: schema.compositions.slug,
+              compositionName: schema.compositions.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -157,6 +170,10 @@ export function createDatabase(
             .innerJoin(
               schema.distributions,
               eq(schema.coins.distributionId, schema.distributions.id)
+            )
+            .leftJoin(
+              schema.compositions,
+              eq(schema.coins.compositionId, schema.compositions.id)
             )
             .leftJoin(
               schema.denominations,
@@ -261,11 +278,17 @@ export function createDatabase(
             .where(eq(schema.coinMints.coinId, row.coin.id))
             .orderBy(asc(schema.mints.name), asc(schema.mints.slug))
 
-          const { distributionId: _distributionId, ...publicCoin } = row.coin
+          const {
+            distributionId: _distributionId,
+            compositionId: _compositionId,
+            ...publicCoin
+          } = row.coin
           return {
             ...publicCoin,
             distribution: row.distribution,
             distributionName: row.distributionName,
+            composition: row.composition,
+            compositionName: row.compositionName,
             issuer: row.issuer,
             denomination:
               row.denomination && row.currency
@@ -601,6 +624,8 @@ export function createDatabase(
                 const {
                   denominationId: _denominationId,
                   distributionId: _distributionId,
+                  compositionId: _compositionId,
+                  compositionDetail: _compositionDetail,
                   ...publicCoin
                 } = coin
                 return {

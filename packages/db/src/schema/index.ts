@@ -6,6 +6,12 @@ export {
 } from "./coin.js"
 export type { CoinRecord } from "./coin.js"
 export {
+  compositionInsertSchema,
+  compositions,
+  compositionSelectSchema,
+} from "./composition.js"
+export type { CompositionRecord } from "./composition.js"
+export {
   currencies,
   currencyInsertSchema,
   currencySelectSchema,

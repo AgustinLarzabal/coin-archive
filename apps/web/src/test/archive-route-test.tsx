@@ -2,6 +2,7 @@ import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
 import type {
   CoinListPaginationResponse,
+  CompositionListItemResponse,
   CurrencyResponse,
   DistributionListItemResponse,
   EngraverListItemResponse,
@@ -39,6 +40,7 @@ export function createArchiveFetch({
   pagination,
   currencies = [],
   distributions = [],
+  compositions = [],
   engravers = [],
   issuers = [],
   mints = [],
@@ -48,6 +50,7 @@ export function createArchiveFetch({
   pagination?: CoinListPaginationResponse
   currencies?: Array<CurrencyResponse>
   distributions?: Array<DistributionListItemResponse>
+  compositions?: Array<CompositionListItemResponse>
   engravers?: Array<EngraverListItemResponse>
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
@@ -60,6 +63,8 @@ export function createArchiveFetch({
       return Promise.resolve(jsonResponse({ currencies }))
     if (url.endsWith("/v1/distributions"))
       return Promise.resolve(jsonResponse({ distributions }))
+    if (url.endsWith("/v1/compositions"))
+      return Promise.resolve(jsonResponse({ compositions }))
     if (url.endsWith("/v1/engravers"))
       return Promise.resolve(jsonResponse({ engravers }))
     if (url.endsWith("/v1/issuers"))

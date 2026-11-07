@@ -17,10 +17,12 @@ import {
   coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
+  compositionSlugSchema,
   currencySlugSchema,
   engraverSlugSchema,
   FACE_VALUE_AMOUNT_QUERY_PATTERN,
   faceValueAmountQuerySchema,
+  invalidCompositionErrorSchema as sharedInvalidCompositionErrorSchema,
   invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidFaceValueFilterErrorSchema as sharedInvalidFaceValueFilterErrorSchema,
@@ -90,6 +92,11 @@ const coinListQuerySchema = z
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
     }),
+    composition: compositionSlugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
+      param: { name: "composition", in: "query" },
+    }),
     engraver: engraverSlugSchema.optional().openapi({
       description: "Exact, case-sensitive Engraver Slug",
       param: { name: "engraver", in: "query" },
@@ -142,6 +149,8 @@ const coinListQuerySchema = z
 
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
+const invalidCompositionErrorSchema =
+  sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
 const invalidMeasurementFilterErrorSchema =
@@ -169,6 +178,7 @@ const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
   invalidMeasurementFilterErrorSchema,
   invalidDistributionErrorSchema,
+  invalidCompositionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidMintSlugErrorSchema,
   invalidEngraverSlugErrorSchema,
@@ -261,6 +271,15 @@ const validationErrors = [
     },
   },
   {
+    fields: ["composition"],
+    response: {
+      error: {
+        code: "invalid_composition",
+        message: "Coin Composition is invalid",
+      },
+    },
+  },
+  {
     fields: ["ruler"],
     response: {
       error: {
@@ -315,6 +334,7 @@ export function registerCoinListRoute(
         amount: faceValueAmount,
         currency: currencySlug,
         distribution,
+        composition,
         engraver: engraverSlug,
         issuer: issuerCode,
         mint: mintSlug,
@@ -338,6 +358,7 @@ export function registerCoinListRoute(
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),
+        ...(composition === undefined ? {} : { composition }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
         ...(mintSlug === undefined ? {} : { mintSlug }),

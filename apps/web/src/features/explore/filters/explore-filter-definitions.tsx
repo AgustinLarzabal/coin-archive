@@ -1,4 +1,5 @@
 import { amountFilterDefinition } from "./definitions/amount-filter"
+import { compositionFilterDefinition } from "./definitions/composition-filter"
 import { currencyFilterDefinition } from "./definitions/currency-filter"
 import { distributionFilterDefinition } from "./definitions/distribution-filter"
 import { engraverFilterDefinition } from "./definitions/engraver-filter"
@@ -12,6 +13,7 @@ import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
 import type {
+  CompositionListItemResponse,
   CurrencyResponse,
   DistributionListItemResponse,
   EngraverListItemResponse,
@@ -34,6 +36,7 @@ export type ExploreFilterValue =
 
 export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
+  compositions: Array<CompositionListItemResponse>
   distributions: Array<DistributionListItemResponse>
   engravers: Array<EngraverListItemResponse>
   issuers: Array<IssuerResponse>
@@ -52,6 +55,7 @@ export interface ExploreFilterDefinition {
 export const exploreFilterDefinitions = [
   amountFilterDefinition,
   currencyFilterDefinition,
+  compositionFilterDefinition,
   distributionFilterDefinition,
   engraverFilterDefinition,
   issuerFilterDefinition,

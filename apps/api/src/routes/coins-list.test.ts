@@ -15,6 +15,57 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin list route", () => {
+  describe("Composition", () => {
+    it("combines a slug with other filters and keeps pagination totals", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 5 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?composition=bimetallic&issuer=AR&page=2&pageSize=2")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        composition: "bimetallic",
+        issuerCode: "AR",
+        page: 2,
+        pageSize: 2,
+      })
+      await expect(response.json()).resolves.toMatchObject({
+        pagination: { totalItems: 5, totalPages: 3 },
+      })
+    })
+
+    it.each([
+      "composition=BAD",
+      "composition=bad slug",
+      "composition=bimetallic&composition=bimetallic",
+    ])("rejects malformed or repeated %s", async (query) => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_composition",
+          message: "Coin Composition is invalid",
+        },
+      })
+    })
+
+    it("accepts a valid unknown slug as an empty page", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: emptyCoinPage,
+      }).request("/v1/coins?composition=unknown-composition")
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+  })
   describe("measurement bounds", () => {
     it("passes inclusive bounds and other filters to the list and keeps the exact total", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 7 }))
@@ -1158,6 +1209,15 @@ describe("Coin list route", () => {
           }),
         }),
         expect.objectContaining({
+          description: expect.stringContaining("Coin Composition Slug"),
+          in: "query",
+          name: "composition",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Engraver Slug",
           in: "query",
           name: "engraver",
@@ -1242,6 +1302,7 @@ describe("Coin list route", () => {
                       $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
+                    { $ref: "#/components/schemas/InvalidCompositionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidMintSlugError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },

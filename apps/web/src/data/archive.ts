@@ -11,6 +11,10 @@ import {
   InvalidRulingAuthoritySlugError,
 } from "./archive/coins"
 import {
+  CompositionListRequestError,
+  InvalidCompositionListResponseError,
+} from "./archive/compositions"
+import {
   CurrencyListRequestError,
   InvalidCurrencyListResponseError,
 } from "./archive/currencies"
@@ -66,6 +70,11 @@ export {
   InvalidDistributionListResponseError,
 } from "./archive/distributions"
 export {
+  compositionListQueryOptions,
+  CompositionListRequestError,
+  InvalidCompositionListResponseError,
+} from "./archive/compositions"
+export {
   engraverListQueryOptions,
   EngraverListRequestError,
   InvalidEngraverListResponseError,
@@ -92,6 +101,11 @@ function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
 }
 
 export const archiveErrorSerializationAdapters = [
+  errorAdapter(
+    "InvalidCompositionListResponseError",
+    InvalidCompositionListResponseError
+  ),
+  errorAdapter("CompositionListRequestError", CompositionListRequestError),
   errorAdapter("InvalidMintListResponseError", InvalidMintListResponseError),
   errorAdapter("MintListRequestError", MintListRequestError),
   errorAdapter("InvalidCoinIdError", InvalidCoinIdError),

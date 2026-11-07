@@ -13,6 +13,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
     const message =
       filters.issuerCode !== undefined ||
       filters.distribution !== undefined ||
+      filters.composition !== undefined ||
       filters.currencySlug !== undefined ||
       filters.faceValueAmount !== undefined ||
       filters.mintSlug !== undefined ||

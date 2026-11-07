@@ -24,6 +24,7 @@ export interface Database {
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
+  listCompositions: () => Promise<Array<schema.CompositionRecord>>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
   listDistributions: () => Promise<Array<schema.DistributionRecord>>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
@@ -93,6 +94,7 @@ export interface CoinListOptions {
   currencySlug?: string
   faceValueAmount?: string
   distribution?: string
+  composition?: string
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
@@ -400,6 +402,18 @@ export function createDatabase(
                     )
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const compositionId =
+            listOptions.composition === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.compositions.id })
+                    .from(schema.compositions)
+                    .where(
+                      eq(schema.compositions.slug, listOptions.composition)
+                    )
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
               listOptions.sizeInterval === undefined
@@ -437,6 +451,11 @@ export function createDatabase(
                 : distributionId === null
                   ? sql`false`
                   : eq(schema.coins.distributionId, distributionId),
+              compositionId === undefined
+                ? undefined
+                : compositionId === null
+                  ? sql`false`
+                  : eq(schema.coins.compositionId, compositionId),
               currencyId === undefined
                 ? undefined
                 : currencyId === null
@@ -664,6 +683,11 @@ export function createDatabase(
           asc(schema.distributions.name),
           asc(schema.distributions.slug)
         ),
+    listCompositions: () =>
+      orm
+        .select()
+        .from(schema.compositions)
+        .orderBy(asc(schema.compositions.name), asc(schema.compositions.slug)),
     listMints: async () =>
       (
         await orm

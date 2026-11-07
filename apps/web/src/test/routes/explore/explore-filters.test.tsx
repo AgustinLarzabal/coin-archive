@@ -64,6 +64,14 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           )?.value
         }
       </output>
+      <output data-testid="composition-value">
+        {
+          query.rules.find(
+            (node): node is FilterRule<string> =>
+              node.type === "rule" && node.path[0] === "composition"
+          )?.value
+        }
+      </output>
       <output data-testid="mint-value">
         {
           query.rules.find(
@@ -277,6 +285,26 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
         onClick={() =>
           onQueryChange({
             ...query,
+            rules: [
+              ...query.rules,
+              {
+                type: "rule",
+                id: "test-composition",
+                path: ["composition"],
+                operator: "is",
+                value: "bimetallic",
+              },
+            ],
+          })
+        }
+      >
+        Select composition
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
             rules: query.rules.filter(
               (node) => node.type !== "rule" || node.path[0] !== "distribution"
             ),
@@ -368,6 +396,7 @@ it("combines all Explore filters and syncs them with the URL", async () => {
         distributions: [
           { slug: "standard-circulation", name: "Standard circulation" },
         ],
+        compositions: [{ slug: "bimetallic", name: "Bimetallic" }],
         engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
         rulers: [
           { slug: "roman-republic", name: "Rome" },
@@ -379,7 +408,7 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   const router = renderArchiveRoute("/")
 
   expect(await screen.findByTestId("fields")).toHaveTextContent(
-    "currency,distribution,engraver,issuer,mint,ruler,year"
+    "amount,currency,composition,distribution,engraver,issuer,mint,ruler,size,thickness,weight,year"
   )
   expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "National Mint (Buenos Aires, Argentina; buenos-aires)"
@@ -413,6 +442,14 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   )
   expect(screen.getByTestId("distribution-value")).toHaveTextContent(
     "standard-circulation"
+  )
+
+  fireEvent.click(screen.getByRole("button", { name: "Select composition" }))
+  await waitFor(() =>
+    expect(router.state.location.search.composition).toBe("bimetallic")
+  )
+  expect(screen.getByTestId("composition-value")).toHaveTextContent(
+    "bimetallic"
   )
 
   fireEvent.click(screen.getByRole("button", { name: "Select currency" }))

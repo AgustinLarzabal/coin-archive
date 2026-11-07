@@ -94,6 +94,35 @@ describe("Coin persistence", () => {
           }))
         )
         .returning({ id: database.schema.coins.id })
+      expect(
+        (await database.listCompositions()).map(({ slug, name }) => ({
+          slug,
+          name,
+        }))
+      ).toContainEqual({ slug: "bimetallic", name: "Bimetallic" })
+      expect(
+        (await database.listCoins({ composition: "bimetallic", pageSize: 1 }))
+          .totalItems
+      ).toBe(2)
+      expect(
+        (await database.listCoins({ composition: "bimetallic", pageSize: 1 }))
+          .coins
+      ).toHaveLength(1)
+      expect(
+        (await database.listCoins({ composition: "Bimetallic" })).totalItems
+      ).toBe(0)
+      expect(
+        (await database.listCoins({ composition: "unknown-composition" }))
+          .totalItems
+      ).toBe(0)
+      expect(
+        (
+          await database.listCoins({
+            composition: "bimetallic",
+            distribution: "circulating-commemorative",
+          })
+        ).totalItems
+      ).toBe(2)
       for (const [index, { id }] of inserted.entries()) {
         const coin = await database.findCoinById(id)
         expect(coin).toMatchObject({

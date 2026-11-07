@@ -19,6 +19,9 @@ describe("returning from a coin to Explore", () => {
           jsonResponse({ issuers: [{ code: "AR", name: "Argentina" }] })
         )
       }
+      if (url.pathname === "/v1/compositions") {
+        return Promise.resolve(jsonResponse({ compositions: [] }))
+      }
       if (url.pathname === "/v1/distributions") {
         return Promise.resolve(jsonResponse({ distributions: [] }))
       }

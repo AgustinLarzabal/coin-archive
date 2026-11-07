@@ -20,6 +20,9 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/issuers")) {
       return Promise.resolve(jsonResponse({ issuers }))
     }
+    if (url.endsWith("/v1/compositions")) {
+      return Promise.resolve(jsonResponse({ compositions: [] }))
+    }
     if (url.endsWith("/v1/distributions")) {
       return Promise.resolve(jsonResponse({ distributions: [] }))
     }
@@ -209,6 +212,9 @@ describe("Explore pagination", () => {
 
       if (url.endsWith("/v1/issuers")) {
         return Promise.resolve(jsonResponse({ issuers }))
+      }
+      if (url.endsWith("/v1/compositions")) {
+        return Promise.resolve(jsonResponse({ compositions: [] }))
       }
       if (url.endsWith("/v1/distributions")) {
         return Promise.resolve(jsonResponse({ distributions: [] }))

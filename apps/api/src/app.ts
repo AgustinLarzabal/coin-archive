@@ -5,6 +5,7 @@ import { cors } from "hono/cors"
 
 import { registerCoinDetailRoute } from "./routes/coins-detail.js"
 import { registerCoinListRoute } from "./routes/coins-list.js"
+import { registerCompositionRoutes } from "./routes/compositions.js"
 import { registerCurrencyRoutes } from "./routes/currencies.js"
 import { registerDistributionRoutes } from "./routes/distributions.js"
 import { registerEngraverRoutes } from "./routes/engravers.js"
@@ -17,6 +18,7 @@ import type {
   Coin,
   CoinListOptions,
   CoinListPage,
+  CompositionRecord,
   CurrencyRecord,
   DistributionRecord,
   EngraverRecord,
@@ -31,6 +33,7 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
+  listCompositions?: () => Promise<Array<CompositionRecord>>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
   listDistributions?: () => Promise<Array<DistributionRecord>>
   listEngravers?: () => Promise<Array<EngraverRecord>>
@@ -88,6 +91,7 @@ export function createApp(options: AppOptions) {
     log,
   })
   registerCoinListRoute(app, options)
+  registerCompositionRoutes(app, options)
   registerCoinDetailRoute(app, options)
   registerCurrencyRoutes(app, options)
   registerDistributionRoutes(app, options)

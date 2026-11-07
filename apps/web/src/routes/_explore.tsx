@@ -1,12 +1,16 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Outlet } from "@tanstack/react-router"
+import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
 import {
+  compositionListQueryOptions,
   currencyListQueryOptions,
   distributionListQueryOptions,
   engraverListQueryOptions,
+  InvalidIssuerListResponseError,
   issuerListQueryOptions,
+  IssuerListRequestError,
   mintListQueryOptions,
   rulingAuthorityListQueryOptions,
 } from "@/data/archive"
@@ -18,6 +22,7 @@ export const Route = createFileRoute("/_explore")({
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.query(currencyListQueryOptions()),
+      context.queryClient.query(compositionListQueryOptions()),
       context.queryClient.query(distributionListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
@@ -33,6 +38,9 @@ export const Route = createFileRoute("/_explore")({
 function ExploreLayout() {
   const search = Route.useSearch()
   const { data: currencyList } = useSuspenseQuery(currencyListQueryOptions())
+  const { data: compositionList } = useSuspenseQuery(
+    compositionListQueryOptions()
+  )
   const { data: distributionList } = useSuspenseQuery(
     distributionListQueryOptions()
   )
@@ -45,9 +53,13 @@ function ExploreLayout() {
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
-      <nav className="flex flex-wrap items-start gap-3 border-b px-5 py-4 md:items-center md:gap-5 md:px-10">
+      <nav
+        aria-label="Explore filters"
+        className="flex flex-wrap items-start gap-3 border-b px-5 py-4 md:items-center md:gap-5 md:px-10"
+      >
         <ExploreFilters
           currencies={currencyList.currencies}
+          compositions={compositionList.compositions}
           distributions={distributionList.distributions}
           engravers={engraverList.engravers}
           issuers={issuerList.issuers}
@@ -61,6 +73,14 @@ function ExploreLayout() {
   )
 }
 
-function ExploreLayoutError() {
-  return <RouteMessage>Unable to load Explore filters</RouteMessage>
+function ExploreLayoutError({ error }: ErrorComponentProps) {
+  return (
+    <RouteMessage>
+      {error instanceof InvalidIssuerListResponseError
+        ? "Invalid issuer list response"
+        : error instanceof IssuerListRequestError
+          ? "Unable to load issuers"
+          : "Unable to load Explore filters"}
+    </RouteMessage>
+  )
 }

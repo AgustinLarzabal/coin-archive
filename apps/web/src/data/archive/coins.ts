@@ -11,6 +11,7 @@ import {
   coinListWeightSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
+  compositionSlugSchema,
   currencySlugSchema,
   engraverSlugSchema,
   faceValueAmountQuerySchema,
@@ -51,6 +52,7 @@ export type CoinListFilters = Readonly<{
   currencySlug?: string
   faceValueAmount?: string
   distribution?: CoinDistribution
+  composition?: string
   engraverSlug?: string
   issuerCode?: string
   mintSlug?: string
@@ -66,6 +68,7 @@ type ValidatedCoinListFilters = Readonly<{
   currencySlug: string | null
   faceValueAmount: string | null
   distribution?: CoinDistribution
+  composition?: string
   engraverSlug: string | null
   issuerCode: string | null
   mintSlug?: string
@@ -82,6 +85,7 @@ async function getCoins({
   currencySlug,
   faceValueAmount,
   distribution,
+  composition,
   engraverSlug,
   issuerCode,
   mintSlug,
@@ -110,6 +114,7 @@ async function getCoins({
     if (distribution !== undefined) {
       search.set("distribution", distribution)
     }
+    if (composition !== undefined) search.set("composition", composition)
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
     }
@@ -192,6 +197,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     currencySlug,
     faceValueAmount,
     distribution,
+    composition,
     engraverSlug,
     issuerCode,
     mintSlug,
@@ -217,6 +223,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     !coinDistributionSchema.safeParse(distribution).success
   ) {
     throw new TypeError("Invalid Coin Distribution")
+  }
+  if (
+    composition !== undefined &&
+    !compositionSlugSchema.safeParse(composition).success
+  ) {
+    throw new TypeError("Invalid Coin Composition")
   }
   if (
     issuerCode !== undefined &&
@@ -268,6 +280,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     currencySlug: currencySlug ?? null,
     faceValueAmount: faceValueAmount ?? null,
     ...(distribution === undefined ? {} : { distribution }),
+    ...(composition === undefined ? {} : { composition }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
     ...(mintSlug === undefined ? {} : { mintSlug }),

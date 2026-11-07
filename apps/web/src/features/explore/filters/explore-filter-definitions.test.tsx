@@ -18,6 +18,7 @@ it("keeps unavailable selections visible and disables selected fields", () => {
   const fields = getExploreFilterFields(
     {
       currencies: [],
+      compositions: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -90,6 +91,7 @@ it("enables Face Value Amount after selecting Currency", () => {
   const fields = getExploreFilterFields(
     {
       currencies: [],
+      compositions: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -116,6 +118,7 @@ it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
   const fields = getExploreFilterFields(
     {
       currencies: [],
+      compositions: [],
       distributions: [],
       engravers: [],
       issuers: [],

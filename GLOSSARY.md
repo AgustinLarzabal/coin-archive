@@ -15,6 +15,9 @@ _Avoid_: Item, Specimen, Collection item
 **Coin Size**:
 A Coin type's curated representative linear size in millimetres, including diameter when applicable. It may be unknown independently of the Coin's other measurements.
 
+**Coin Shape**:
+A controlled classification of a Coin type's outline, such as circular, square, oval, or rectangular. A Coin has at most one Coin Shape, which may be unknown independently of its other physical characteristics.
+
 **Coin Thickness**:
 A Coin type's curated representative thickness in millimetres. It may be unknown independently of the Coin's other measurements.
 

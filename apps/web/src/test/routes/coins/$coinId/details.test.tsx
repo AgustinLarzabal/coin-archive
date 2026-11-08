@@ -1,10 +1,48 @@
-import { screen } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-import { coinDetailFixture } from "@/test/coin-fixtures"
+import { createArchiveFetch } from "@/test/archive-route-test"
+import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it("omits the Tags row when the Coin has no Tags", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
+    )
+    renderCoinRoute()
+    await screen.findByText("Issue Period")
+    expect(screen.queryByText("Tags")).not.toBeInTheDocument()
+  })
+
+  it("links each Tag to Explore with matching filtered Coins", async () => {
+    const archiveFetch = createArchiveFetch({
+      coins: [coinListItemFixture()],
+      tags: [{ slug: "map", name: "Map" }],
+    })
+    const fetchMock = vi.fn((input: string | URL | Request) =>
+      String(input).includes("/v1/coins/00000000-")
+        ? Promise.resolve(
+            jsonResponse(
+              coinDetailFixture({ tags: [{ slug: "map", name: "Map" }] })
+            )
+          )
+        : archiveFetch(input)
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderCoinRoute()
+
+    fireEvent.click(await screen.findByRole("link", { name: "Map" }))
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"))
+    expect(router.state.location.search).toMatchObject({ tag: "map" })
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
+      )
+    )
+  })
+
   it.each([
     [null, null, null],
     ["bimetallic", "Bimetallic", null],

@@ -47,7 +47,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
 | `GET /v1/tags`           | Tags and their public slugs                                                                   |
 
-Coin detail includes required nullable numeric `size` and `thickness` in millimetres and `weight` in grams. `null` means that measurement is unknown; each is independent. Coin list items omit these fields.
+Coin detail includes required nullable numeric `size` and `thickness` in millimetres and `weight` in grams. `null` means that measurement is unknown; each is independent. It also includes `tags`, an array of `{ "slug": "map", "name": "Map" }` entries, or `[]` for an untagged Coin. Coin list items omit these fields and Tags.
 
 ## Find Coins
 

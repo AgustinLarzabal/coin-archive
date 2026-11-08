@@ -48,6 +48,7 @@ describe("Coin detail route", () => {
         },
       ],
       mints: [],
+      tags: [],
       obverse: {
         id: "20000000-0000-4000-8000-000000000001",
         coinId,
@@ -101,6 +102,35 @@ describe("Coin detail route", () => {
         updatedAt: new Date("2026-09-16T10:47:00.000Z"),
       },
     }
+
+    it("returns assigned Tags on detail and omits them from list items", async () => {
+      const taggedCoin = { ...coin, tags: [{ slug: "map", name: "Map" }] }
+      const app = createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => taggedCoin,
+        listCoins: async () => ({
+          coins: [
+            {
+              ...taggedCoin,
+              obverseImageKey: null,
+              reverseImageKey: null,
+            },
+          ],
+          totalItems: 1,
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      })
+
+      const detail = await app.request(`/v1/coins/${coinId}`)
+      await expect(detail.json()).resolves.toMatchObject({
+        tags: [{ slug: "map", name: "Map" }],
+      })
+      const list = await app.request("/v1/coins")
+      expect(
+        ((await list.json()) as { coins: Array<unknown> }).coins[0]
+      ).not.toHaveProperty("tags")
+    })
 
     it("returns every confirmed Mint with its own country and operation period", async () => {
       const mint = {
@@ -285,6 +315,7 @@ describe("Coin detail route", () => {
           },
         ],
         mints: [],
+        tags: [],
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -433,6 +464,7 @@ describe("Coin detail route", () => {
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: [],
         mints: [],
+        tags: [],
         obverse: {
           description: null,
           imageUrl: null,
@@ -568,6 +600,7 @@ describe("Coin detail route", () => {
         updatedAt: "2026-09-16T11:00:00.000Z",
         rulers: coin.rulingAuthorityAttributions,
         mints: [],
+        tags: [],
         obverse: {
           description: "A portrait of the sovereign",
           imageUrl:
@@ -847,6 +880,13 @@ describe("Coin detail route", () => {
                   ],
                 }),
               }),
+              tags: expect.objectContaining({
+                type: "array",
+                items: expect.objectContaining({
+                  type: "object",
+                  required: ["slug", "name"],
+                }),
+              }),
             }),
             required: expect.arrayContaining([
               "distribution",
@@ -861,6 +901,7 @@ describe("Coin detail route", () => {
               "weight",
               "rulers",
               "mints",
+              "tags",
             ]),
           }),
           CoinListResponse: expect.objectContaining({
@@ -953,6 +994,7 @@ describe("Coin detail route", () => {
         "compositionDetail"
       )
       expect(coinListItemSchema.properties).not.toHaveProperty("mints")
+      expect(coinListItemSchema.properties).not.toHaveProperty("tags")
       expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("reverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("edge")

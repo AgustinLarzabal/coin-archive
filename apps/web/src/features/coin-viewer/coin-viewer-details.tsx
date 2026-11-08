@@ -1,5 +1,6 @@
 import { isIsoIssuerCode } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
+import { Link } from "@tanstack/react-router"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
 import { formatIssuePeriod } from "@/features/issue-period"
@@ -138,6 +139,20 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
                       {mint.place}, {mint.country.name}
                     </div>
                     <div>{formatMintPeriod(mint)}</div>
+                  </div>
+                ))}
+              </dd>
+            </div>
+          )}
+          {coin.tags.length > 0 && (
+            <div className="flex justify-between gap-4 border-t pt-3">
+              <dt className="text-muted-foreground">Tags</dt>
+              <dd className="text-right">
+                {coin.tags.map((tag) => (
+                  <div key={tag.slug}>
+                    <Link to="/" search={{ tag: tag.slug }}>
+                      {tag.name}
+                    </Link>
                   </div>
                 ))}
               </dd>

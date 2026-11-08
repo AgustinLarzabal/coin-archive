@@ -451,6 +451,7 @@ export const coinDetailResponseSchema = z
     edge: coinSurfaceResponseSchema,
     rulers: z.array(rulingAuthorityAttributionResponseSchema),
     mints: z.array(mintResponseSchema),
+    tags: z.array(tagListItemResponseSchema),
   })
   .refine(hasOrderedIssuePeriod, "Issue Period must be ordered")
 

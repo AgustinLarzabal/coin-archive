@@ -50,6 +50,7 @@ export type Coin = Omit<
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
   mints: Array<schema.MintRecord & { country: schema.IssuerRecord }>
+  tags: Array<Pick<schema.TagRecord, "slug" | "name">>
   obverse: CoinSurfaceWithEngravers | null
   reverse: CoinSurfaceWithEngravers | null
   edge: schema.CoinSurfaceRecord | null
@@ -282,6 +283,13 @@ export function createDatabase(
             .where(eq(schema.coinMints.coinId, row.coin.id))
             .orderBy(asc(schema.mints.name), asc(schema.mints.slug))
 
+          const tags = await transaction
+            .select({ slug: schema.tags.slug, name: schema.tags.name })
+            .from(schema.coinTags)
+            .innerJoin(schema.tags, eq(schema.coinTags.tagId, schema.tags.id))
+            .where(eq(schema.coinTags.coinId, row.coin.id))
+            .orderBy(asc(schema.tags.name), asc(schema.tags.slug))
+
           const {
             distributionId: _distributionId,
             compositionId: _compositionId,
@@ -300,6 +308,7 @@ export function createDatabase(
                 : null,
             rulingAuthorityAttributions,
             mints: mints.map(({ mint, country }) => ({ ...mint, country })),
+            tags,
             obverse: withEngravers(row.obverse),
             reverse: withEngravers(row.reverse),
             edge: row.edge,

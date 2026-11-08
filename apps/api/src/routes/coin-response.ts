@@ -121,6 +121,7 @@ export function toCoinDetailResponse(
         operating,
       })
     ),
+    tags: coin.tags.map(({ slug, name }) => ({ slug, name })),
     obverse: coin.obverse
       ? toCoinSurfaceWithEngraversResponse(coin.obverse, imageBaseUrl)
       : { ...missingCoinSurfaceWithEngraversResponse },

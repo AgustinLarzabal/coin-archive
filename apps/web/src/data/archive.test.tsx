@@ -355,6 +355,7 @@ describe("Archive data module", () => {
             faceValue: null,
             rulers: [],
             mints: [],
+            tags: [],
             obverse: {
               description: "A portrait",
               imageUrl: "https://images.example/obverse.webp",
@@ -395,6 +396,7 @@ describe("Archive data module", () => {
       faceValue: null,
       rulers: [],
       mints: [],
+      tags: [],
       obverse: {
         description: "A portrait",
         imageUrl: "https://images.example/obverse.webp",

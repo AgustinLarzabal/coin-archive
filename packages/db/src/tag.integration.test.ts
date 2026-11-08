@@ -80,6 +80,12 @@ describe("Coin Tags", () => {
       expect((await database.listCoins()).coins.map(({ id }) => id)).toContain(
         untagged.id
       )
+      expect((await database.findCoinById(first.id))?.tags).toEqual([
+        { slug: "flag", name: "Flag" },
+        { slug: "map", name: "Map" },
+      ])
+      expect((await database.findCoinById(untagged.id))?.tags).toEqual([])
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty("tags")
       await expect(
         database.orm
           .insert(database.schema.coinTags)

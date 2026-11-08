@@ -79,6 +79,8 @@ export function coinDetailFixture(
     size: null,
     thickness: null,
     weight: null,
+    shape: null,
+    shapeName: null,
     firstIssueYear: 2004,
     lastIssueYear: 2004,
     issuer: { name: "Argentina", code: "AR" },

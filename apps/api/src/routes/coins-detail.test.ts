@@ -24,6 +24,8 @@ describe("Coin detail route", () => {
       size: null,
       thickness: null,
       weight: null,
+      shape: null,
+      shapeName: null,
       issuer: {
         id: issuerId,
         name: "Argentina",
@@ -130,6 +132,29 @@ describe("Coin detail route", () => {
       expect(
         ((await list.json()) as { coins: Array<unknown> }).coins[0]
       ).not.toHaveProperty("tags")
+    })
+
+    it("returns a known Shape on detail and omits it from list items", async () => {
+      const shapedCoin = { ...coin, shape: "circular", shapeName: "Circular" }
+      const app = createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => shapedCoin,
+        listCoins: async () => ({
+          coins: [
+            { ...shapedCoin, obverseImageKey: null, reverseImageKey: null },
+          ],
+          totalItems: 1,
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      })
+
+      const detail = await app.request(`/v1/coins/${coinId}`)
+      await expect(detail.json()).resolves.toMatchObject({ shape: "circular" })
+      const list = await app.request("/v1/coins")
+      expect(
+        ((await list.json()) as { coins: Array<unknown> }).coins[0]
+      ).not.toHaveProperty("shape")
     })
 
     it("returns every confirmed Mint with its own country and operation period", async () => {
@@ -291,6 +316,8 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        shape: null,
+        shapeName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -453,6 +480,8 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        shape: null,
+        shapeName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -589,6 +618,8 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        shape: null,
+        shapeName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -814,6 +845,8 @@ describe("Coin detail route", () => {
               composition: expect.objectContaining({ nullable: true }),
               compositionName: expect.objectContaining({ nullable: true }),
               compositionDetail: expect.objectContaining({ nullable: true }),
+              shape: expect.objectContaining({ nullable: true }),
+              shapeName: expect.objectContaining({ nullable: true }),
               size: expect.objectContaining({ type: "number", nullable: true }),
               thickness: expect.objectContaining({
                 type: "number",

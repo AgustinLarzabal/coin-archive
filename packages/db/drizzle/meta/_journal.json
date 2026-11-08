@@ -169,6 +169,13 @@
       "when": 1794141103599,
       "tag": "0023_woozy_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794169164279,
+      "tag": "0024_daily_spiral",
+      "breakpoints": true
     }
   ]
 }

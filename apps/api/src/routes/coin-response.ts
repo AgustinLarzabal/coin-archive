@@ -105,6 +105,8 @@ export function toCoinDetailResponse(
     size: coin.size,
     thickness: coin.thickness,
     weight: coin.weight,
+    shape: coin.shape,
+    shapeName: coin.shapeName,
     faceValue: toCoinFaceValueResponse(coin.denomination),
     rulers: coin.rulingAuthorityAttributions.map(
       ({ slug, name, role, tenure }) => ({ slug, name, role, tenure })

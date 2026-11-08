@@ -5,6 +5,7 @@ export {
   coinSelectSchema,
 } from "./coin.js"
 export type { CoinRecord } from "./coin.js"
+export { coinShapeInsertSchema, coinShapes } from "./coin-shape.js"
 export {
   compositionInsertSchema,
   compositions,

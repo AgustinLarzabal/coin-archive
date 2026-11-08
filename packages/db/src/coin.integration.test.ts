@@ -27,11 +27,16 @@ const TEST_COIN_REQUIRED_FIELDS = {
 }
 
 function publicCoin<
-  T extends { distributionId: string; compositionId: string | null },
+  T extends {
+    distributionId: string
+    compositionId: string | null
+    shapeId: string | null
+  },
 >(coin: T) {
   const {
     distributionId: _distributionId,
     compositionId: _compositionId,
+    shapeId: _shapeId,
     ...fields
   } = coin
   return {
@@ -39,6 +44,8 @@ function publicCoin<
     distribution: "circulating-commemorative",
     composition: null,
     compositionName: null,
+    shape: null,
+    shapeName: null,
   }
 }
 
@@ -69,6 +76,77 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("stores one controlled Shape or unknown and rejects unsupported Shapes at both write boundaries", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const values = {
+        title: "Shaped Coin",
+        issuerId: issuer.id,
+        ...TEST_COIN_REQUIRED_FIELDS,
+      }
+      const schemaValues = {
+        ...values,
+        distributionId: "00000000-0000-4000-8000-000000000001",
+      }
+      const shapes = await database.orm
+        .select()
+        .from(database.schema.coinShapes)
+      expect(
+        shapes
+          .map(({ slug, name }) => ({ slug, name }))
+          .sort((a, b) => a.slug.localeCompare(b.slug))
+      ).toEqual([
+        { slug: "circular", name: "Circular" },
+        { slug: "oval", name: "Oval" },
+        { slug: "rectangular", name: "Rectangular" },
+        { slug: "square", name: "Square" },
+      ])
+      for (const shape of [
+        "circular",
+        "square",
+        "oval",
+        "rectangular",
+      ] as const) {
+        const shapeId = shapes.find(({ slug }) => slug === shape)!.id
+        expect(
+          coinInsertSchema.safeParse({ ...schemaValues, shapeId }).success
+        ).toBe(true)
+        const [coin] = await database.orm
+          .insert(database.schema.coins)
+          .values({ ...values, shapeId })
+          .returning()
+        await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+          shape,
+        })
+      }
+      const [unknown] = await database.orm
+        .insert(database.schema.coins)
+        .values(values)
+        .returning()
+      await expect(database.findCoinById(unknown.id)).resolves.toMatchObject({
+        shape: null,
+      })
+      expect(
+        coinInsertSchema.safeParse({ ...schemaValues, shapeId: null }).success
+      ).toBe(true)
+      expect(
+        coinInsertSchema.safeParse({ ...schemaValues, shapeId: "triangle" })
+          .success
+      ).toBe(false)
+      await expect(
+        database.orm.execute(sql`insert into coin_shapes (slug, name) values ('padded', ' Padded')`)
+      ).rejects.toThrow()
+      await expect(
+        database.orm.execute(
+          sql`insert into coins (title, issuer_id, distribution_id, first_issue_year, last_issue_year, shape_id) values ('Bad Shape', ${issuer.id}, (select id from distributions where slug = 'circulating-commemorative'), 2004, 2004, '00000000-0000-4000-8000-000000000099')`
+        )
+      ).rejects.toThrow()
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty("shape")
+    } finally {
+      await database.close()
+    }
+  })
   it("stores all four Composition and Detail combinations without exposing catalogue IDs", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2456,6 +2534,20 @@ describe("Coin seed", () => {
     ],
   }
 
+  it("rejects unsupported Shape in the seed document", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], shape: "triangle" }],
+        })
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
+
   it("accepts all four Composition and Detail seed combinations", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2695,9 +2787,19 @@ describe("Coin seed", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await seedCoins(database, await readCoinSeed())
+      const knownShapes = await database.orm.execute(sql`
+        select coins.id, coin_shapes.slug as shape
+        from coins join coin_shapes on coins.shape_id = coin_shapes.id
+        order by coins.id
+      `)
+      expect(knownShapes.rows).toEqual([
+        { id: "00000000-0000-4000-8000-000000000005", shape: "circular" },
+        { id: "00000000-0000-4000-8000-000000000006", shape: "circular" },
+      ])
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000001")
       ).resolves.toMatchObject({
+        shape: null,
         composition: null,
         compositionName: null,
         compositionDetail: null,
@@ -2707,6 +2809,7 @@ describe("Coin seed", () => {
         "00000000-0000-4000-8000-000000000006",
       ]) {
         await expect(database.findCoinById(id)).resolves.toMatchObject({
+          shape: "circular",
           composition: "bimetallic",
           compositionName: "Bimetallic",
           compositionDetail:

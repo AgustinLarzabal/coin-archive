@@ -6,6 +6,29 @@ import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it.each([
+    ["circular", "Circular"],
+    ["square", "Square"],
+    ["oval", "Oval"],
+    ["rectangular", "Rectangular"],
+    [null, null],
+  ] as const)(
+    "shows a known Shape and omits an unknown Shape",
+    async (shape, label) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse(coinDetailFixture({ shape, shapeName: label }))
+          )
+        )
+      )
+      renderCoinRoute()
+      await screen.findByText("Issue Period")
+      expect(Boolean(screen.queryByText("Coin Shape"))).toBe(label !== null)
+      if (label) expect(screen.getByText(label)).toBeInTheDocument()
+    }
+  )
   it("omits the Tags row when the Coin has no Tags", async () => {
     vi.stubGlobal(
       "fetch",

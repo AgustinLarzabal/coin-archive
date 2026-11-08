@@ -14,6 +14,7 @@ import {
   coinRulingAuthorityAttributions,
   coins,
   coinSeedSchema,
+  coinShapes,
   coinSurfaceEngravers,
   coinSurfaceInsertSchema,
   coinSurfaces,
@@ -433,6 +434,13 @@ export async function seedCoins(database: Database, input: unknown) {
           .from(compositions)
       ).map(({ slug, id }) => [slug, id])
     )
+    const shapeIdsBySlug = new Map(
+      (
+        await transaction
+          .select({ slug: coinShapes.slug, id: coinShapes.id })
+          .from(coinShapes)
+      ).map(({ slug, id }) => [slug, id])
+    )
     const insertedCurrencies =
       document.currencies.length === 0
         ? []
@@ -541,6 +549,7 @@ export async function seedCoins(database: Database, input: unknown) {
         tagSlugs: _tagSlugs,
         distribution,
         composition,
+        shape,
         ...coin
       }) => {
         const issuerId = issuerIdsByCode.get(issuerCode)
@@ -578,11 +587,16 @@ export async function seedCoins(database: Database, input: unknown) {
             `Coin references unknown Coin Composition Slug: ${composition}`
           )
         }
+        const shapeId = shape ? shapeIdsBySlug.get(shape) : null
+        if (shape && !shapeId) {
+          throw new Error(`Coin references unknown Coin Shape Slug: ${shape}`)
+        }
         return {
           ...coin,
           issuerId,
           distributionId,
           compositionId,
+          shapeId,
           denominationId: denominationId ?? null,
         }
       }

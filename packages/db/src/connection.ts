@@ -40,12 +40,14 @@ export interface Database {
 
 export type Coin = Omit<
   schema.CoinRecord,
-  "distributionId" | "compositionId"
+  "distributionId" | "compositionId" | "shapeId"
 > & {
   distribution: string
   distributionName: string
   composition: string | null
   compositionName: string | null
+  shape: string | null
+  shapeName: string | null
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
@@ -81,6 +83,7 @@ export type CoinListItem = Omit<
   | "size"
   | "thickness"
   | "weight"
+  | "shapeId"
 > & {
   distribution: string
   issuer: schema.IssuerRecord
@@ -160,6 +163,8 @@ export function createDatabase(
               distributionName: schema.distributions.name,
               composition: schema.compositions.slug,
               compositionName: schema.compositions.name,
+              shape: schema.coinShapes.slug,
+              shapeName: schema.coinShapes.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -179,6 +184,10 @@ export function createDatabase(
             .leftJoin(
               schema.compositions,
               eq(schema.coins.compositionId, schema.compositions.id)
+            )
+            .leftJoin(
+              schema.coinShapes,
+              eq(schema.coins.shapeId, schema.coinShapes.id)
             )
             .leftJoin(
               schema.denominations,
@@ -293,6 +302,7 @@ export function createDatabase(
           const {
             distributionId: _distributionId,
             compositionId: _compositionId,
+            shapeId: _shapeId,
             ...publicCoin
           } = row.coin
           return {
@@ -301,6 +311,8 @@ export function createDatabase(
             distributionName: row.distributionName,
             composition: row.composition,
             compositionName: row.compositionName,
+            shape: row.shape,
+            shapeName: row.shapeName,
             issuer: row.issuer,
             denomination:
               row.denomination && row.currency
@@ -673,6 +685,7 @@ export function createDatabase(
                   distributionId: _distributionId,
                   compositionId: _compositionId,
                   compositionDetail: _compositionDetail,
+                  shapeId: _shapeId,
                   ...publicCoin
                 } = coin
                 return {

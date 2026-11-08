@@ -46,6 +46,11 @@ describe("Coin Tags", () => {
           { slug: "flag", name: "Flag" },
         ])
         .returning()
+      await expect(
+        database.orm
+          .insert(database.schema.tags)
+          .values({ slug: "another-map", name: "map" })
+      ).rejects.toThrow()
       await database.orm.insert(database.schema.coinTags).values([
         { coinId: first.id, tagId: map.id },
         { coinId: first.id, tagId: flag.id },

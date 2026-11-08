@@ -162,6 +162,13 @@
       "when": 1794062517727,
       "tag": "0022_perpetual_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794141103599,
+      "tag": "0023_woozy_revanche",
+      "breakpoints": true
     }
   ]
 }

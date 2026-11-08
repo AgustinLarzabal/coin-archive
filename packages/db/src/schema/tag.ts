@@ -4,6 +4,7 @@ import {
   pgTable,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
@@ -26,6 +27,9 @@ export const tags = pgTable(
   },
   (table) => [
     unique("tags_slug_unique").on(table.slug),
+    uniqueIndex("tags_name_case_insensitive_unique").on(
+      sql`lower(${table.name})`
+    ),
     check(
       "tags_slug_format",
       sql`length(${table.slug}) >= 3 and ${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`

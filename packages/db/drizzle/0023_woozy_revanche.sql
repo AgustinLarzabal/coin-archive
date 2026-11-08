@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "tags_name_case_insensitive_unique" ON "tags" USING btree (lower("name"));

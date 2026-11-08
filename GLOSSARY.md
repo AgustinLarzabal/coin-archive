@@ -61,6 +61,9 @@ _Avoid_: Coin Category, Coin Type
 A unique, lowercase public identifier for a Coin Distribution that remains stable independently of its editable display name.
 _Avoid_: Coin Distribution ID
 
+**Tag**:
+A reusable, curated label for a visible motif on a Coin, such as Map, Flag, or Coat of Arms, regardless of which face depicts it. A Coin may have any number of Tags; Tags name broad motifs rather than specific instances and do not describe its numismatic role or status.
+
 **Issue Year**:
 A conventional BCE or CE calendar year used to express when a Coin was issued. It is a chronological attribution, not necessarily a year inscribed on the Coin.
 _Avoid_: Date, Inscribed Year

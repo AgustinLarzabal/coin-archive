@@ -23,6 +23,9 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/compositions")) {
       return Promise.resolve(jsonResponse({ compositions: [] }))
     }
+    if (url.endsWith("/v1/shapes")) {
+      return Promise.resolve(jsonResponse({ shapes: [] }))
+    }
     if (url.endsWith("/v1/tags")) {
       return Promise.resolve(jsonResponse({ tags: [] }))
     }
@@ -54,16 +57,22 @@ function createPageAwareArchiveFetch(totalPages = 3) {
 }
 
 describe("Explore pagination", () => {
-  it("keeps Issuer before the page in generated URLs", async () => {
-    vi.stubGlobal("fetch", vi.fn(createPageAwareArchiveFetch()))
-    const router = renderArchiveRoute("/?issuer=AR")
+  it("keeps Shape and Issuer when changing pages", async () => {
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?shape=square&issuer=AR")
     const user = userEvent.setup()
 
     await screen.findByRole("link", { name: "Coin on page 1" })
     await user.click(screen.getByRole("button", { name: "Go to next page" }))
 
     await waitFor(() =>
-      expect(router.state.location.searchStr).toBe("?issuer=AR&page=2")
+      expect(router.state.location.searchStr).toBe(
+        "?issuer=AR&shape=square&page=2"
+      )
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?shape=square&issuer=AR&page=2&pageSize=24"
     )
   })
 
@@ -218,6 +227,9 @@ describe("Explore pagination", () => {
       }
       if (url.endsWith("/v1/compositions")) {
         return Promise.resolve(jsonResponse({ compositions: [] }))
+      }
+      if (url.endsWith("/v1/shapes")) {
+        return Promise.resolve(jsonResponse({ shapes: [] }))
       }
       if (url.endsWith("/v1/tags")) {
         return Promise.resolve(jsonResponse({ tags: [] }))

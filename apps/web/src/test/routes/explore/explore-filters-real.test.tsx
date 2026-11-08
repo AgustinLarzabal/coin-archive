@@ -16,6 +16,7 @@ it("offers the Explore filters in the filter picker", async () => {
         ],
         issuers: [{ code: "AR", name: "Argentina" }],
         tags: [{ slug: "map", name: "Map" }],
+        shapes: [{ slug: "pentagonal", name: "Pentagonal" }],
       })
     )
   )
@@ -26,6 +27,7 @@ it("offers the Explore filters in the filter picker", async () => {
   expect((await screen.findAllByText("Distribution")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Tag")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Composition")).length).toBeGreaterThan(0)
+  expect((await screen.findAllByText("Shape")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Currency")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Mint")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Engraver")).length).toBeGreaterThan(0)
@@ -33,6 +35,29 @@ it("offers the Explore filters in the filter picker", async () => {
     0
   )
   expect((await screen.findAllByText("Issue year")).length).toBeGreaterThan(0)
+})
+
+it("restores Shape with Issuer and shows a filtered empty result", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      issuers: [{ code: "AR", name: "Argentina" }],
+      shapes: [{ slug: "oval", name: "Oval" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?shape=oval&issuer=AR")
+
+  expect(
+    await screen.findByText("No coins match the selected filters.")
+  ).toBeVisible()
+  expect(screen.getByText("Oval")).toBeVisible()
+  expect(router.state.location.search).toMatchObject({
+    shape: "oval",
+    issuer: "AR",
+  })
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?shape=oval&issuer=AR&page=1&pageSize=24"
+  )
 })
 
 it("loads a restored issue year range from the URL", async () => {

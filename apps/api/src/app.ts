@@ -13,12 +13,14 @@ import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerMintRoutes } from "./routes/mints.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
 import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
+import { registerShapeRoutes } from "./routes/shapes.js"
 import { registerTagRoutes } from "./routes/tags.js"
 import type { AppEnvironment } from "./routes/shared.js"
 import type {
   Coin,
   CoinListOptions,
   CoinListPage,
+  CoinShapeRecord,
   CompositionRecord,
   CurrencyRecord,
   DistributionRecord,
@@ -35,6 +37,8 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
+  hasShape?: (slug: string) => Promise<boolean>
+  listShapes?: () => Promise<Array<CoinShapeRecord>>
   listCompositions?: () => Promise<Array<CompositionRecord>>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
   listDistributions?: () => Promise<Array<DistributionRecord>>
@@ -95,6 +99,7 @@ export function createApp(options: AppOptions) {
   })
   registerCoinListRoute(app, options)
   registerCompositionRoutes(app, options)
+  registerShapeRoutes(app, options)
   registerCoinDetailRoute(app, options)
   registerCurrencyRoutes(app, options)
   registerDistributionRoutes(app, options)

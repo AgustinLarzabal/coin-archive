@@ -112,6 +112,14 @@ export type DistributionListResponse = z.infer<
 >
 
 export const compositionSlugSchema = coinDistributionSchema
+export const coinShapeSchema = coinDistributionSchema
+export type CoinShape = z.infer<typeof coinShapeSchema>
+export const shapeListItemResponseSchema = distributionListItemResponseSchema
+export type ShapeListItemResponse = z.infer<typeof shapeListItemResponseSchema>
+export const shapeListResponseSchema = z.strictObject({
+  shapes: z.array(shapeListItemResponseSchema),
+})
+export type ShapeListResponse = z.infer<typeof shapeListResponseSchema>
 export const compositionListItemResponseSchema =
   distributionListItemResponseSchema
 export type CompositionListItemResponse = z.infer<
@@ -511,6 +519,10 @@ export const invalidTagErrorSchema = errorResponseSchema(
 export const invalidCompositionErrorSchema = errorResponseSchema(
   "invalid_composition",
   "Coin Composition is invalid"
+)
+export const invalidShapeErrorSchema = errorResponseSchema(
+  "invalid_shape",
+  "Coin Shape is invalid"
 )
 
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(

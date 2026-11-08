@@ -92,6 +92,12 @@ describe("Coin persistence", () => {
       const shapes = await database.orm
         .select()
         .from(database.schema.coinShapes)
+      expect((await database.listShapes()).map(({ slug }) => slug)).toEqual([
+        "circular",
+        "oval",
+        "rectangular",
+        "square",
+      ])
       expect(
         shapes
           .map(({ slug, name }) => ({ slug, name }))
@@ -135,7 +141,9 @@ describe("Coin persistence", () => {
           .success
       ).toBe(false)
       await expect(
-        database.orm.execute(sql`insert into coin_shapes (slug, name) values ('padded', ' Padded')`)
+        database.orm.execute(
+          sql`insert into coin_shapes (slug, name) values ('padded', ' Padded')`
+        )
       ).rejects.toThrow()
       await expect(
         database.orm.execute(
@@ -143,6 +151,88 @@ describe("Coin persistence", () => {
         )
       ).rejects.toThrow()
       expect((await database.listCoins()).coins[0]).not.toHaveProperty("shape")
+    } finally {
+      await database.close()
+    }
+  })
+  it("filters exact Shape with other filters before counting and paging", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const shapes = await database.orm
+        .select()
+        .from(database.schema.coinShapes)
+      const squareId = shapes.find(({ slug }) => slug === "square")!.id
+      const ovalId = shapes.find(({ slug }) => slug === "oval")!.id
+      const [newShape] = await database.orm
+        .insert(database.schema.coinShapes)
+        .values({ slug: "pentagonal", name: "Pentagonal" })
+        .returning()
+      expect(await database.hasShape("pentagonal")).toBe(true)
+      expect(await database.hasShape("triangle")).toBe(false)
+      expect(await database.listShapes()).toContainEqual(
+        expect.objectContaining({ slug: "pentagonal", name: "Pentagonal" })
+      )
+      const inserted = await database.orm
+        .insert(database.schema.coins)
+        .values([
+          {
+            title: "Square one",
+            issuerId: issuer.id,
+            shapeId: squareId,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Square two",
+            issuerId: issuer.id,
+            shapeId: squareId,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Oval",
+            issuerId: issuer.id,
+            shapeId: ovalId,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Pentagonal",
+            issuerId: issuer.id,
+            shapeId: newShape.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Unknown",
+            issuerId: issuer.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+        ])
+        .returning({ id: database.schema.coins.id })
+      const filters = { shape: "square", issuerCode: "AR", pageSize: 1 }
+      const first = await database.listCoins(filters)
+      const second = await database.listCoins({ ...filters, page: 2 })
+      expect(first.totalItems).toBe(2)
+      expect(second.totalItems).toBe(2)
+      expect(
+        [...first.coins, ...second.coins].map(({ id }) => id).sort()
+      ).toEqual([inserted[0].id, inserted[1].id].sort())
+      await expect(
+        database.listCoins({ shape: "rectangular" })
+      ).resolves.toMatchObject({
+        coins: [],
+        totalItems: 0,
+      })
+      await expect(
+        database.listCoins({ shape: "Square" })
+      ).resolves.toMatchObject({
+        coins: [],
+        totalItems: 0,
+      })
+      await expect(
+        database.listCoins({ shape: "square", issuerCode: "UY" })
+      ).resolves.toMatchObject({
+        coins: [],
+        totalItems: 0,
+      })
     } finally {
       await database.close()
     }

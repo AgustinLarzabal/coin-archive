@@ -15,6 +15,56 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin list route", () => {
+  describe("Shape", () => {
+    it("combines Shape with other filters and keeps pagination totals", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 3 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+        hasShape: async (slug) => slug === "square",
+      }).request("/v1/coins?shape=square&issuer=AR&page=2&pageSize=2")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        shape: "square",
+        issuerCode: "AR",
+        page: 2,
+        pageSize: 2,
+      })
+      await expect(response.json()).resolves.toMatchObject({
+        pagination: { totalItems: 3, totalPages: 2 },
+      })
+    })
+
+    it.each(["shape=triangle", "shape=Square", "shape=square&shape=square"])(
+      "rejects unsupported or repeated %s",
+      async (query) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+          hasShape: async () => false,
+        }).request(`/v1/coins?${query}`)
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+        })
+      }
+    )
+
+    it("returns an empty page when a valid Shape has no matches", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: emptyCoinPage,
+        hasShape: async (slug) => slug === "oval",
+      }).request("/v1/coins?shape=oval")
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+  })
   describe("Tag", () => {
     it("combines Tag with other filters before pagination", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 2 }))
@@ -1274,6 +1324,15 @@ describe("Coin list route", () => {
           }),
         }),
         expect.objectContaining({
+          description: expect.stringContaining("Coin Shape Slug"),
+          in: "query",
+          name: "shape",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: expect.any(String),
+          }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Engraver Slug",
           in: "query",
           name: "engraver",
@@ -1360,6 +1419,7 @@ describe("Coin list route", () => {
                     { $ref: "#/components/schemas/InvalidDistributionError" },
                     { $ref: "#/components/schemas/InvalidTagError" },
                     { $ref: "#/components/schemas/InvalidCompositionError" },
+                    { $ref: "#/components/schemas/InvalidShapeError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidMintSlugError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },

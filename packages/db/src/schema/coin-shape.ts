@@ -22,6 +22,7 @@ export const coinShapes = pgTable(
     check("coin_shapes_name_trimmed", sql`${table.name} !~ '^[[:space:]]|[[:space:]]$'`),
   ]
 )
+export type CoinShapeRecord = typeof coinShapes.$inferSelect
 
 export const coinShapeInsertSchema = createInsertSchema(coinShapes, {
   slug: slugInsertText,

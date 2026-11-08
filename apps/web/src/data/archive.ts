@@ -39,6 +39,10 @@ import {
   RulingAuthorityListRequestError,
 } from "./archive/rulers"
 import {
+  InvalidShapeListResponseError,
+  ShapeListRequestError,
+} from "./archive/shapes"
+import {
   InvalidTagListResponseError,
   TagListRequestError,
 } from "./archive/tags"
@@ -84,6 +88,11 @@ export {
   InvalidCompositionListResponseError,
 } from "./archive/compositions"
 export {
+  InvalidShapeListResponseError,
+  shapeListQueryOptions,
+  ShapeListRequestError,
+} from "./archive/shapes"
+export {
   engraverListQueryOptions,
   EngraverListRequestError,
   InvalidEngraverListResponseError,
@@ -117,6 +126,8 @@ export const archiveErrorSerializationAdapters = [
     InvalidCompositionListResponseError
   ),
   errorAdapter("CompositionListRequestError", CompositionListRequestError),
+  errorAdapter("InvalidShapeListResponseError", InvalidShapeListResponseError),
+  errorAdapter("ShapeListRequestError", ShapeListRequestError),
   errorAdapter("InvalidMintListResponseError", InvalidMintListResponseError),
   errorAdapter("MintListRequestError", MintListRequestError),
   errorAdapter("InvalidCoinIdError", InvalidCoinIdError),

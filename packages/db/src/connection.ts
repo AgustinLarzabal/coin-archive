@@ -24,6 +24,8 @@ export interface Database {
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
+  hasShape: (slug: string) => Promise<boolean>
+  listShapes: () => Promise<Array<schema.CoinShapeRecord>>
   listCompositions: () => Promise<Array<schema.CompositionRecord>>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
   listDistributions: () => Promise<Array<schema.DistributionRecord>>
@@ -101,6 +103,7 @@ export interface CoinListOptions {
   distribution?: string
   tagSlug?: string
   composition?: string
+  shape?: string
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
@@ -437,6 +440,16 @@ export function createDatabase(
                     )
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const shapeId =
+            listOptions.shape === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.coinShapes.id })
+                    .from(schema.coinShapes)
+                    .where(eq(schema.coinShapes.slug, listOptions.shape))
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
               listOptions.sizeInterval === undefined
@@ -479,6 +492,11 @@ export function createDatabase(
                 : compositionId === null
                   ? sql`false`
                   : eq(schema.coins.compositionId, compositionId),
+              shapeId === undefined
+                ? undefined
+                : shapeId === null
+                  ? sql`false`
+                  : eq(schema.coins.shapeId, shapeId),
               listOptions.tagSlug === undefined
                 ? undefined
                 : exists(
@@ -734,6 +752,19 @@ export function createDatabase(
         .select()
         .from(schema.compositions)
         .orderBy(asc(schema.compositions.name), asc(schema.compositions.slug)),
+    hasShape: async (slug) =>
+      (
+        await orm
+          .select({ id: schema.coinShapes.id })
+          .from(schema.coinShapes)
+          .where(eq(schema.coinShapes.slug, slug))
+          .limit(1)
+      ).length > 0,
+    listShapes: () =>
+      orm
+        .select()
+        .from(schema.coinShapes)
+        .orderBy(asc(schema.coinShapes.name), asc(schema.coinShapes.slug)),
     listMints: async () =>
       (
         await orm

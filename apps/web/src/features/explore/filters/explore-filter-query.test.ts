@@ -27,6 +27,19 @@ it("turns URL filters into filter rules without including the page", () => {
   )
 })
 
+it("round-trips Shape with another selected filter", () => {
+  const search = { shape: "square" as const, issuer: "AR" }
+  const query = searchToFilterQuery(search)
+  expect(query.rules).toMatchObject([
+    { path: ["shape"], operator: "is", value: "square" },
+    { path: ["issuer"], operator: "is", value: "AR" },
+  ])
+  expect(filterQueryToPatch(query, search)).toEqual({})
+  expect(filterQueryToPatch(createFilterQuery(), search)).toMatchObject({
+    shape: undefined,
+  })
+})
+
 it("turns added, replaced, and cleared rules into URL patches", () => {
   const query = (issuer?: string) =>
     createFilterQuery(

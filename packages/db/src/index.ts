@@ -44,6 +44,7 @@ export {
 export type {
   CoinRecord,
   CoinRulingAuthorityAttributionRecord,
+  CoinShapeRecord,
   CompositionRecord,
   CurrencyRecord,
   DenominationRecord,

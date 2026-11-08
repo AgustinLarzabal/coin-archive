@@ -451,7 +451,7 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   const router = renderArchiveRoute("/")
 
   expect(await screen.findByTestId("fields")).toHaveTextContent(
-    "amount,currency,composition,distribution,engraver,issuer,mint,ruler,tag,size,thickness,weight,year"
+    "amount,currency,composition,shape,distribution,engraver,issuer,mint,ruler,tag,size,thickness,weight,year"
   )
   expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "National Mint (Buenos Aires, Argentina; buenos-aires)"

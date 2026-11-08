@@ -11,6 +11,7 @@ import {
   coinListWeightSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
+  coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
   engraverSlugSchema,
@@ -29,6 +30,7 @@ import type {
   CoinListThickness,
   CoinListWeight,
   CoinListYear,
+  CoinShape,
 } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -55,6 +57,7 @@ export type CoinListFilters = Readonly<{
   distribution?: CoinDistribution
   tagSlug?: string
   composition?: string
+  shape?: CoinShape
   engraverSlug?: string
   issuerCode?: string
   mintSlug?: string
@@ -72,6 +75,7 @@ type ValidatedCoinListFilters = Readonly<{
   distribution?: CoinDistribution
   tagSlug?: string
   composition?: string
+  shape?: CoinShape
   engraverSlug: string | null
   issuerCode: string | null
   mintSlug?: string
@@ -90,6 +94,7 @@ async function getCoins({
   distribution,
   tagSlug,
   composition,
+  shape,
   engraverSlug,
   issuerCode,
   mintSlug,
@@ -120,6 +125,7 @@ async function getCoins({
     }
     if (tagSlug !== undefined) search.set("tag", tagSlug)
     if (composition !== undefined) search.set("composition", composition)
+    if (shape !== undefined) search.set("shape", shape)
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
     }
@@ -204,6 +210,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     distribution,
     tagSlug,
     composition,
+    shape,
     engraverSlug,
     issuerCode,
     mintSlug,
@@ -238,6 +245,9 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     !compositionSlugSchema.safeParse(composition).success
   ) {
     throw new TypeError("Invalid Coin Composition")
+  }
+  if (shape !== undefined && !coinShapeSchema.safeParse(shape).success) {
+    throw new TypeError("Invalid Coin Shape")
   }
   if (
     issuerCode !== undefined &&
@@ -291,6 +301,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     ...(distribution === undefined ? {} : { distribution }),
     ...(tagSlug === undefined ? {} : { tagSlug }),
     ...(composition === undefined ? {} : { composition }),
+    ...(shape === undefined ? {} : { shape }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
     ...(mintSlug === undefined ? {} : { mintSlug }),

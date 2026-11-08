@@ -17,6 +17,7 @@ import {
   coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
+  coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
   engraverSlugSchema,
@@ -31,6 +32,7 @@ import {
   invalidMintSlugErrorSchema as sharedInvalidMintSlugErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
+  invalidShapeErrorSchema as sharedInvalidShapeErrorSchema,
   invalidTagErrorSchema as sharedInvalidTagErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
@@ -51,6 +53,7 @@ import type { CoinListOptions, CoinListPage } from "@coin-archive/db"
 interface CoinListRouteOptions {
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
+  hasShape?: (slug: string) => Promise<boolean>
 }
 
 const coinListQuerySchema = z
@@ -103,6 +106,11 @@ const coinListQuerySchema = z
       description:
         "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
       param: { name: "composition", in: "query" },
+    }),
+    shape: coinShapeSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Shape Slug. Unsupported or repeated values return invalid_shape",
+      param: { name: "shape", in: "query" },
     }),
     engraver: engraverSlugSchema.optional().openapi({
       description: "Exact, case-sensitive Engraver Slug",
@@ -160,6 +168,8 @@ const invalidTagErrorSchema =
   sharedInvalidTagErrorSchema.openapi("InvalidTagError")
 const invalidCompositionErrorSchema =
   sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
+const invalidShapeErrorSchema =
+  sharedInvalidShapeErrorSchema.openapi("InvalidShapeError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
 const invalidMeasurementFilterErrorSchema =
@@ -189,6 +199,7 @@ const invalidCoinListFilterErrorSchema = z.union([
   invalidDistributionErrorSchema,
   invalidTagErrorSchema,
   invalidCompositionErrorSchema,
+  invalidShapeErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidMintSlugErrorSchema,
   invalidEngraverSlugErrorSchema,
@@ -294,6 +305,12 @@ const validationErrors = [
     },
   },
   {
+    fields: ["shape"],
+    response: {
+      error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+    },
+  },
+  {
     fields: ["ruler"],
     response: {
       error: {
@@ -350,6 +367,7 @@ export function registerCoinListRoute(
         distribution,
         tag,
         composition,
+        shape,
         engraver: engraverSlug,
         issuer: issuerCode,
         mint: mintSlug,
@@ -358,6 +376,12 @@ export function registerCoinListRoute(
         page,
         pageSize,
       } = context.req.valid("query")
+      if (shape !== undefined && !(await options.hasShape?.(shape))) {
+        return context.json(
+          { error: { code: "invalid_shape", message: "Coin Shape is invalid" } },
+          400
+        )
+      }
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({
@@ -375,6 +399,7 @@ export function registerCoinListRoute(
         ...(distribution === undefined ? {} : { distribution }),
         ...(tag === undefined ? {} : { tagSlug: tag }),
         ...(composition === undefined ? {} : { composition }),
+        ...(shape === undefined ? {} : { shape }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
         ...(mintSlug === undefined ? {} : { mintSlug }),

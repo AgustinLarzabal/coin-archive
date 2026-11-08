@@ -290,6 +290,9 @@ describe("Archive landing route", () => {
       if (url.endsWith("/v1/compositions")) {
         return Promise.resolve(jsonResponse({ compositions: [] }))
       }
+      if (url.endsWith("/v1/shapes")) {
+        return Promise.resolve(jsonResponse({ shapes: [] }))
+      }
       if (url.endsWith("/v1/tags")) {
         return Promise.resolve(jsonResponse({ tags: [] }))
       }
@@ -371,7 +374,7 @@ describe("Archive landing route", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?page=1&pageSize=24"
     )
-    expect(fetchMock).toHaveBeenCalledTimes(10)
+    expect(fetchMock).toHaveBeenCalledTimes(11)
   })
 
   it.each(["", "ar", "A", "ABC_123"])(
@@ -412,7 +415,7 @@ describe("Archive landing route", () => {
       expect(link).toHaveAttribute("href", `/coins/${coinId}`)
       expect(screen.queryByText(coinId)).not.toBeInTheDocument()
       expect(screen.getAllByText(issuer.name).length).toBeGreaterThan(0)
-      expect(fetchMock).toHaveBeenCalledTimes(9)
+      expect(fetchMock).toHaveBeenCalledTimes(10)
     }
   )
 
@@ -578,11 +581,13 @@ describe("Archive landing route", () => {
                     ? jsonResponse({ rulers: [] })
                     : url.endsWith("/v1/compositions")
                       ? jsonResponse({ compositions: [] })
-                      : url.endsWith("/v1/tags")
-                        ? jsonResponse({ tags: [] })
-                        : url.endsWith("/v1/distributions")
-                          ? jsonResponse({ distributions: [] })
-                          : coinListJsonResponse([{ id: coinId }])
+                      : url.endsWith("/v1/shapes")
+                        ? jsonResponse({ shapes: [] })
+                        : url.endsWith("/v1/tags")
+                          ? jsonResponse({ tags: [] })
+                          : url.endsWith("/v1/distributions")
+                            ? jsonResponse({ distributions: [] })
+                            : coinListJsonResponse([{ id: coinId }])
         )
       })
     )
@@ -607,6 +612,9 @@ describe("Archive landing route", () => {
         }
         if (url.endsWith("/v1/compositions")) {
           return Promise.resolve(jsonResponse({ compositions: [] }))
+        }
+        if (url.endsWith("/v1/shapes")) {
+          return Promise.resolve(jsonResponse({ shapes: [] }))
         }
         if (url.endsWith("/v1/tags")) {
           return Promise.resolve(jsonResponse({ tags: [] }))
@@ -655,11 +663,13 @@ describe("Archive landing route", () => {
                     ? jsonResponse({ rulers: [] })
                     : String(input).endsWith("/v1/compositions")
                       ? jsonResponse({ compositions: [] })
-                      : String(input).endsWith("/v1/tags")
-                        ? jsonResponse({ tags: [] })
-                        : String(input).endsWith("/v1/distributions")
-                          ? jsonResponse({ distributions: [] })
-                          : jsonResponse({ error: {} }, 503)
+                      : String(input).endsWith("/v1/shapes")
+                        ? jsonResponse({ shapes: [] })
+                        : String(input).endsWith("/v1/tags")
+                          ? jsonResponse({ tags: [] })
+                          : String(input).endsWith("/v1/distributions")
+                            ? jsonResponse({ distributions: [] })
+                            : jsonResponse({ error: {} }, 503)
         )
       )
     )
@@ -689,11 +699,13 @@ describe("Archive landing route", () => {
                     ? jsonResponse({ rulers: [] })
                     : String(input).endsWith("/v1/compositions")
                       ? jsonResponse({ compositions: [] })
-                      : String(input).endsWith("/v1/tags")
-                        ? jsonResponse({ tags: [] })
-                        : String(input).endsWith("/v1/distributions")
-                          ? jsonResponse({ distributions: [] })
-                          : coinListJsonResponse([coin])
+                      : String(input).endsWith("/v1/shapes")
+                        ? jsonResponse({ shapes: [] })
+                        : String(input).endsWith("/v1/tags")
+                          ? jsonResponse({ tags: [] })
+                          : String(input).endsWith("/v1/distributions")
+                            ? jsonResponse({ distributions: [] })
+                            : coinListJsonResponse([coin])
         )
       )
     )
@@ -725,11 +737,13 @@ describe("Archive landing route", () => {
                   ? Promise.resolve(jsonResponse({ rulers: [] }))
                   : url.endsWith("/v1/compositions")
                     ? Promise.resolve(jsonResponse({ compositions: [] }))
-                    : url.endsWith("/v1/tags")
-                      ? Promise.resolve(jsonResponse({ tags: [] }))
-                      : url.endsWith("/v1/distributions")
-                        ? Promise.resolve(jsonResponse({ distributions: [] }))
-                        : Promise.resolve(coinListJsonResponse([coin]))
+                    : url.endsWith("/v1/shapes")
+                      ? Promise.resolve(jsonResponse({ shapes: [] }))
+                      : url.endsWith("/v1/tags")
+                        ? Promise.resolve(jsonResponse({ tags: [] }))
+                        : url.endsWith("/v1/distributions")
+                          ? Promise.resolve(jsonResponse({ distributions: [] }))
+                          : Promise.resolve(coinListJsonResponse([coin]))
       })
     )
 
@@ -757,30 +771,33 @@ describe("Archive landing route", () => {
                   ? jsonResponse({ rulers: [] })
                   : url.endsWith("/v1/compositions")
                     ? jsonResponse({ compositions: [] })
-                    : url.endsWith("/v1/tags")
-                      ? jsonResponse({ tags: [] })
-                      : url.endsWith("/v1/distributions")
-                        ? jsonResponse({ distributions: [] })
-                        : url.endsWith(`/v1/coins/${coinId}`)
-                          ? jsonResponse({
-                              ...detailCoin,
-                              obverse: {
-                                description: "A portrait",
-                                imageUrl: "https://images.example/obverse.webp",
-                                createdAt: "2026-09-16T10:30:00.000Z",
-                                updatedAt: "2026-09-16T10:45:00.000Z",
-                                engravers: [],
-                              },
-                            })
-                          : coinListJsonResponse([
-                              {
-                                ...coin,
-                                obverseImageUrl:
-                                  "https://images.example/obverse.webp",
-                                reverseImageUrl:
-                                  "https://images.example/reverse.webp",
-                              },
-                            ])
+                    : url.endsWith("/v1/shapes")
+                      ? jsonResponse({ shapes: [] })
+                      : url.endsWith("/v1/tags")
+                        ? jsonResponse({ tags: [] })
+                        : url.endsWith("/v1/distributions")
+                          ? jsonResponse({ distributions: [] })
+                          : url.endsWith(`/v1/coins/${coinId}`)
+                            ? jsonResponse({
+                                ...detailCoin,
+                                obverse: {
+                                  description: "A portrait",
+                                  imageUrl:
+                                    "https://images.example/obverse.webp",
+                                  createdAt: "2026-09-16T10:30:00.000Z",
+                                  updatedAt: "2026-09-16T10:45:00.000Z",
+                                  engravers: [],
+                                },
+                              })
+                            : coinListJsonResponse([
+                                {
+                                  ...coin,
+                                  obverseImageUrl:
+                                    "https://images.example/obverse.webp",
+                                  reverseImageUrl:
+                                    "https://images.example/reverse.webp",
+                                },
+                              ])
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -839,11 +856,13 @@ describe("Archive landing route", () => {
                   ? jsonResponse({ rulers: [] })
                   : url.endsWith("/v1/compositions")
                     ? jsonResponse({ compositions: [] })
-                    : url.endsWith("/v1/tags")
-                      ? jsonResponse({ tags: [] })
-                      : url.endsWith("/v1/distributions")
-                        ? jsonResponse({ distributions: [] })
-                        : coinListJsonResponse([coin])
+                    : url.endsWith("/v1/shapes")
+                      ? jsonResponse({ shapes: [] })
+                      : url.endsWith("/v1/tags")
+                        ? jsonResponse({ tags: [] })
+                        : url.endsWith("/v1/distributions")
+                          ? jsonResponse({ distributions: [] })
+                          : coinListJsonResponse([coin])
       )
     })
     vi.stubGlobal("fetch", fetchMock)
@@ -894,11 +913,13 @@ describe("Archive landing route", () => {
                     ? jsonResponse({ rulers: [] })
                     : url.endsWith("/v1/compositions")
                       ? jsonResponse({ compositions: [] })
-                      : url.endsWith("/v1/tags")
-                        ? jsonResponse({ tags: [] })
-                        : url.endsWith("/v1/distributions")
-                          ? jsonResponse({ distributions: [] })
-                          : coinListJsonResponse([coin])
+                      : url.endsWith("/v1/shapes")
+                        ? jsonResponse({ shapes: [] })
+                        : url.endsWith("/v1/tags")
+                          ? jsonResponse({ tags: [] })
+                          : url.endsWith("/v1/distributions")
+                            ? jsonResponse({ distributions: [] })
+                            : coinListJsonResponse([coin])
         )
       })
     )
@@ -939,13 +960,15 @@ describe("Archive landing route", () => {
                   ? jsonResponse({ rulers: [] })
                   : url.endsWith("/v1/compositions")
                     ? jsonResponse({ compositions: [] })
-                    : url.endsWith("/v1/tags")
-                      ? jsonResponse({ tags: [] })
-                      : url.endsWith("/v1/distributions")
-                        ? jsonResponse({ distributions: [] })
-                        : url.endsWith(`/v1/coins/${coinId}`)
-                          ? jsonResponse(detailCoin)
-                          : coinListJsonResponse([coin])
+                    : url.endsWith("/v1/shapes")
+                      ? jsonResponse({ shapes: [] })
+                      : url.endsWith("/v1/tags")
+                        ? jsonResponse({ tags: [] })
+                        : url.endsWith("/v1/distributions")
+                          ? jsonResponse({ distributions: [] })
+                          : url.endsWith(`/v1/coins/${coinId}`)
+                            ? jsonResponse(detailCoin)
+                            : coinListJsonResponse([coin])
       )
     })
     vi.stubGlobal("fetch", fetchMock)

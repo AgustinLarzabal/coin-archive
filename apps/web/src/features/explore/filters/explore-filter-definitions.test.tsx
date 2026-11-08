@@ -19,6 +19,7 @@ it("keeps unavailable selections visible and disables selected fields", () => {
     {
       currencies: [],
       compositions: [],
+      shapes: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -48,6 +49,10 @@ it("keeps unavailable selections visible and disables selected fields", () => {
         disabled: true,
       },
     ],
+  })
+  expect(fields.find(({ id }) => id === "shape")).toMatchObject({
+    type: "select",
+    options: [],
   })
   expect(fields.find(({ id }) => id === "amount")).toMatchObject({
     type: "text",
@@ -93,6 +98,7 @@ it("enables Face Value Amount after selecting Currency", () => {
     {
       currencies: [],
       compositions: [],
+      shapes: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -121,6 +127,7 @@ it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
     {
       currencies: [],
       compositions: [],
+      shapes: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -148,6 +155,7 @@ it("offers Map from the Tag catalogue", () => {
     {
       currencies: [],
       compositions: [],
+      shapes: [],
       distributions: [],
       engravers: [],
       issuers: [],
@@ -161,5 +169,26 @@ it("offers Map from the Tag catalogue", () => {
   expect(fields.find(({ id }) => id === "tag")).toMatchObject({
     type: "select",
     options: [{ label: "Map", value: "map" }],
+  })
+})
+
+it("offers Shapes supplied by the catalogue even without matching Coins", () => {
+  const fields = getExploreFilterFields(
+    {
+      currencies: [],
+      compositions: [],
+      distributions: [],
+      engravers: [],
+      issuers: [],
+      mints: [],
+      rulingAuthorities: [],
+      tags: [],
+      shapes: [{ slug: "pentagonal", name: "Pentagonal" }],
+    },
+    {},
+    createFilterQuery()
+  )
+  expect(fields.find(({ id }) => id === "shape")).toMatchObject({
+    options: [{ label: "Pentagonal", value: "pentagonal" }],
   })
 })

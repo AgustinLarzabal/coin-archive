@@ -1,0 +1,117 @@
+import { sql } from "drizzle-orm"
+import { drizzle } from "drizzle-orm/node-postgres"
+import { migrate } from "drizzle-orm/node-postgres/migrator"
+import { Pool } from "pg"
+import { beforeEach, describe, expect, it } from "vitest"
+import { createDatabase, readCoinSeed, seedCoins } from "./index.js"
+
+const databaseUrl = process.env.DATABASE_URL ?? ""
+
+beforeEach(async () => {
+  const pool = new Pool({ connectionString: databaseUrl })
+  try {
+    await pool.query(
+      "drop schema if exists drizzle cascade; drop schema public cascade; create schema public"
+    )
+    await migrate(drizzle(pool), { migrationsFolder: "drizzle" })
+  } finally {
+    await pool.end()
+  }
+})
+
+describe("Coin Tags", () => {
+  it("filters shared and multiple Tags before counting and pagination, and protects attributions", async () => {
+    const database = createDatabase(databaseUrl)
+    try {
+      const [issuer] = await database.orm
+        .insert(database.schema.issuers)
+        .values({ name: "Finland", code: "FI" })
+        .returning()
+      const [first, second, untagged] = await database.orm
+        .insert(database.schema.coins)
+        .values(
+          ["First", "Second", "Untagged"].map((title) => ({
+            title,
+            issuerId: issuer.id,
+            distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
+            firstIssueYear: 2004,
+            lastIssueYear: 2004,
+          }))
+        )
+        .returning()
+      const [map, flag] = await database.orm
+        .insert(database.schema.tags)
+        .values([
+          { slug: "map", name: "Map" },
+          { slug: "flag", name: "Flag" },
+        ])
+        .returning()
+      await database.orm.insert(database.schema.coinTags).values([
+        { coinId: first.id, tagId: map.id },
+        { coinId: first.id, tagId: flag.id },
+        { coinId: second.id, tagId: map.id },
+      ])
+      expect((await database.listTags()).map(({ slug }) => slug)).toEqual([
+        "flag",
+        "map",
+      ])
+      expect(
+        (
+          await database.listCoins({
+            tagSlug: "map",
+            issuerCode: "FI",
+            pageSize: 1,
+          })
+        ).totalItems
+      ).toBe(2)
+      expect(
+        (await database.listCoins({ tagSlug: "map", page: 2, pageSize: 1 }))
+          .coins
+      ).toHaveLength(1)
+      expect(
+        (await database.listCoins({ tagSlug: "flag" })).coins.map(
+          ({ id }) => id
+        )
+      ).toEqual([first.id])
+      expect(await database.listCoins({ tagSlug: "unknown-map" })).toEqual({
+        coins: [],
+        totalItems: 0,
+      })
+      expect((await database.listCoins()).coins.map(({ id }) => id)).toContain(
+        untagged.id
+      )
+      await expect(
+        database.orm
+          .insert(database.schema.coinTags)
+          .values({ coinId: first.id, tagId: map.id })
+      ).rejects.toThrow()
+      await expect(
+        database.orm
+          .delete(database.schema.tags)
+          .where(sql`${database.schema.tags.id} = ${map.id}`)
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("seeds Map on exactly the two curated Coins", async () => {
+    const database = createDatabase(databaseUrl)
+    try {
+      await seedCoins(database, await readCoinSeed())
+      expect(
+        (await database.listTags()).map(({ slug, name }) => ({ slug, name }))
+      ).toEqual([{ slug: "map", name: "Map" }])
+      const page = await database.listCoins({ tagSlug: "map" })
+      expect(page.totalItems).toBe(2)
+      expect(page.coins.map(({ title }) => title).sort()).toEqual([
+        "Enlargement of the European Union by Ten New Member States",
+        "Olympic Games in Athens 2004",
+      ])
+      const all = await database.listCoins({ pageSize: 100 })
+      expect(all.totalItems).toBeGreaterThan(2)
+    } finally {
+      await database.close()
+    }
+  })
+})

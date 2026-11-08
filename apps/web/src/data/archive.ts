@@ -38,6 +38,10 @@ import {
   InvalidRulingAuthorityListResponseError,
   RulingAuthorityListRequestError,
 } from "./archive/rulers"
+import {
+  InvalidTagListResponseError,
+  TagListRequestError,
+} from "./archive/tags"
 
 export {
   coinDetailQueryOptions,
@@ -54,6 +58,11 @@ export {
   validateCoinId,
 } from "./archive/coins"
 export type { CoinListFilters } from "./archive/coins"
+export {
+  InvalidTagListResponseError,
+  tagListQueryOptions,
+  TagListRequestError,
+} from "./archive/tags"
 export {
   InvalidMintListResponseError,
   mintListQueryOptions,
@@ -101,6 +110,8 @@ function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
 }
 
 export const archiveErrorSerializationAdapters = [
+  errorAdapter("InvalidTagListResponseError", InvalidTagListResponseError),
+  errorAdapter("TagListRequestError", TagListRequestError),
   errorAdapter(
     "InvalidCompositionListResponseError",
     InvalidCompositionListResponseError

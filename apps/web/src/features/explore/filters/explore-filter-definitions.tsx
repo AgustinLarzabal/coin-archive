@@ -7,6 +7,7 @@ import { issuerFilterDefinition } from "./definitions/issuer-filter"
 import { mintFilterDefinition } from "./definitions/mint-filter"
 import { rulerFilterDefinition } from "./definitions/ruler-filter"
 import { sizeFilterDefinition } from "./definitions/size-filter"
+import { tagFilterDefinition } from "./definitions/tag-filter"
 import { thicknessFilterDefinition } from "./definitions/thickness-filter"
 import { weightFilterDefinition } from "./definitions/weight-filter"
 import { yearFilterDefinition } from "./definitions/year-filter"
@@ -20,6 +21,7 @@ import type {
   IssuerResponse,
   MintResponse,
   RulingAuthorityListItemResponse,
+  TagListItemResponse,
 } from "@coin-archive/api"
 import type {
   FilterField,
@@ -42,6 +44,7 @@ export interface ExploreFilterLists {
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>
   rulingAuthorities: Array<RulingAuthorityListItemResponse>
+  tags: Array<TagListItemResponse>
 }
 
 export interface ExploreFilterDefinition {
@@ -61,6 +64,7 @@ export const exploreFilterDefinitions = [
   issuerFilterDefinition,
   mintFilterDefinition,
   rulerFilterDefinition,
+  tagFilterDefinition,
   sizeFilterDefinition,
   thicknessFilterDefinition,
   weightFilterDefinition,

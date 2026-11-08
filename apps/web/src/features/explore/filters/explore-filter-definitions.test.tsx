@@ -24,6 +24,7 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       issuers: [],
       mints: [],
       rulingAuthorities: [],
+      tags: [],
     },
     { engraver: "old-engraver", mint: "old-mint" },
     query
@@ -97,6 +98,7 @@ it("enables Face Value Amount after selecting Currency", () => {
       issuers: [],
       mints: [],
       rulingAuthorities: [],
+      tags: [],
     },
     { currency: "euro" },
     createFilterQuery<string>([
@@ -124,6 +126,7 @@ it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
       issuers: [],
       mints: [],
       rulingAuthorities: [],
+      tags: [],
     },
     {},
     createFilterQuery<string>([
@@ -137,5 +140,26 @@ it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
   )
   expect(fields.find(({ id }) => id === "amount")).toMatchObject({
     disabled: true,
+  })
+})
+
+it("offers Map from the Tag catalogue", () => {
+  const fields = getExploreFilterFields(
+    {
+      currencies: [],
+      compositions: [],
+      distributions: [],
+      engravers: [],
+      issuers: [],
+      mints: [],
+      rulingAuthorities: [],
+      tags: [{ slug: "map", name: "Map" }],
+    },
+    {},
+    createFilterQuery()
+  )
+  expect(fields.find(({ id }) => id === "tag")).toMatchObject({
+    type: "select",
+    options: [{ label: "Map", value: "map" }],
   })
 })

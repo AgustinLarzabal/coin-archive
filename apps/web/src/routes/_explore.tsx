@@ -13,6 +13,7 @@ import {
   IssuerListRequestError,
   mintListQueryOptions,
   rulingAuthorityListQueryOptions,
+  tagListQueryOptions,
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
 import { ExploreFilters } from "@/features/explore/filters/explore-filters"
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_explore")({
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(mintListQueryOptions()),
       context.queryClient.query(rulingAuthorityListQueryOptions()),
+      context.queryClient.query(tagListQueryOptions()),
     ])
   },
   component: ExploreLayout,
@@ -50,6 +52,7 @@ function ExploreLayout() {
   const { data: rulingAuthorityList } = useSuspenseQuery(
     rulingAuthorityListQueryOptions()
   )
+  const { data: tagList } = useSuspenseQuery(tagListQueryOptions())
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
@@ -65,6 +68,7 @@ function ExploreLayout() {
           issuers={issuerList.issuers}
           mints={mintList.mints}
           rulingAuthorities={rulingAuthorityList.rulers}
+          tags={tagList.tags}
           search={search}
         />
       </nav>

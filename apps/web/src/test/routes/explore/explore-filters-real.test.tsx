@@ -15,6 +15,7 @@ it("offers the Explore filters in the filter picker", async () => {
           { slug: "argentine-peso", name: "Peso", fullName: "Argentine peso" },
         ],
         issuers: [{ code: "AR", name: "Argentina" }],
+        tags: [{ slug: "map", name: "Map" }],
       })
     )
   )
@@ -23,6 +24,7 @@ it("offers the Explore filters in the filter picker", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "Add filter" }))
   expect((await screen.findAllByText("Issuer")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Distribution")).length).toBeGreaterThan(0)
+  expect((await screen.findAllByText("Tag")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Composition")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Currency")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Mint")).length).toBeGreaterThan(0)
@@ -42,6 +44,20 @@ it("loads a restored issue year range from the URL", async () => {
   expect(router.state.location.search.year).toBe("-25-19")
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?year=-25-19&page=1&pageSize=24"
+  )
+})
+
+it("restores Map from the Tag catalogue and filters Explore", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({ tags: [{ slug: "map", name: "Map" }] })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?tag=map")
+
+  expect(await screen.findByText("Map")).toBeVisible()
+  expect(router.state.location.search.tag).toBe("map")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
   )
 })
 

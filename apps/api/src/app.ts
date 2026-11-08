@@ -13,6 +13,7 @@ import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerMintRoutes } from "./routes/mints.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
 import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
+import { registerTagRoutes } from "./routes/tags.js"
 import type { AppEnvironment } from "./routes/shared.js"
 import type {
   Coin,
@@ -25,6 +26,7 @@ import type {
   IssuerRecord,
   MintRecord,
   RulingAuthorityRecord,
+  TagRecord,
 } from "@coin-archive/db"
 
 export interface AppOptions {
@@ -40,6 +42,7 @@ export interface AppOptions {
   listIssuers?: () => Promise<Array<IssuerRecord>>
   listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
+  listTags?: () => Promise<Array<TagRecord>>
   log?: (line: string) => void
 }
 
@@ -99,6 +102,7 @@ export function createApp(options: AppOptions) {
   registerMintRoutes(app, options)
   registerEngraverRoutes(app, options)
   registerRulingAuthorityRoutes(app, options)
+  registerTagRoutes(app, options)
 
   app.doc("/openapi.json", {
     info: {

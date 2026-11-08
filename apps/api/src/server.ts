@@ -48,6 +48,7 @@ const app = createApp({
   listIssuers: database.listIssuers,
   listMints: database.listMints,
   listRulingAuthorities: database.listRulingAuthorities,
+  listTags: database.listTags,
 })
 const server = serve(
   {

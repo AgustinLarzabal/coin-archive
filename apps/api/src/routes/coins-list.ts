@@ -31,10 +31,12 @@ import {
   invalidMintSlugErrorSchema as sharedInvalidMintSlugErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
+  invalidTagErrorSchema as sharedInvalidTagErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
+  tagSlugSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import {
@@ -91,6 +93,11 @@ const coinListQuerySchema = z
       description:
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
+    }),
+    tag: tagSlugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Tag Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_tag",
+      param: { name: "tag", in: "query" },
     }),
     composition: compositionSlugSchema.optional().openapi({
       description:
@@ -149,6 +156,8 @@ const coinListQuerySchema = z
 
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
+const invalidTagErrorSchema =
+  sharedInvalidTagErrorSchema.openapi("InvalidTagError")
 const invalidCompositionErrorSchema =
   sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
 const invalidFaceValueFilterErrorSchema =
@@ -178,6 +187,7 @@ const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
   invalidMeasurementFilterErrorSchema,
   invalidDistributionErrorSchema,
+  invalidTagErrorSchema,
   invalidCompositionErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidMintSlugErrorSchema,
@@ -271,6 +281,10 @@ const validationErrors = [
     },
   },
   {
+    fields: ["tag"],
+    response: { error: { code: "invalid_tag", message: "Tag is invalid" } },
+  },
+  {
     fields: ["composition"],
     response: {
       error: {
@@ -334,6 +348,7 @@ export function registerCoinListRoute(
         amount: faceValueAmount,
         currency: currencySlug,
         distribution,
+        tag,
         composition,
         engraver: engraverSlug,
         issuer: issuerCode,
@@ -358,6 +373,7 @@ export function registerCoinListRoute(
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),
+        ...(tag === undefined ? {} : { tagSlug: tag }),
         ...(composition === undefined ? {} : { composition }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),

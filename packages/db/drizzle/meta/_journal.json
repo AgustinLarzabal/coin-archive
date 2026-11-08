@@ -155,6 +155,13 @@
       "when": 1794041656328,
       "tag": "0021_married_carmella_unuscione",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794062517727,
+      "tag": "0022_perpetual_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

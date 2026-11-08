@@ -9,6 +9,7 @@ import type {
   IssuerResponse,
   MintResponse,
   RulingAuthorityListItemResponse,
+  TagListItemResponse,
 } from "@coin-archive/api"
 
 import { getRouter } from "@/router"
@@ -45,6 +46,7 @@ export function createArchiveFetch({
   issuers = [],
   mints = [],
   rulers = [],
+  tags = [],
 }: {
   coins?: Array<unknown>
   pagination?: CoinListPaginationResponse
@@ -55,6 +57,7 @@ export function createArchiveFetch({
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
   rulers?: Array<RulingAuthorityListItemResponse>
+  tags?: Array<TagListItemResponse>
 } = {}) {
   return (input: string | URL | Request) => {
     const url = String(input)
@@ -73,6 +76,7 @@ export function createArchiveFetch({
       return Promise.resolve(jsonResponse({ mints }))
     if (url.endsWith("/v1/rulers"))
       return Promise.resolve(jsonResponse({ rulers }))
+    if (url.endsWith("/v1/tags")) return Promise.resolve(jsonResponse({ tags }))
     return Promise.resolve(coinListJsonResponse(coins, pagination))
   }
 }

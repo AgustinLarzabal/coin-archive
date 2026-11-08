@@ -64,6 +64,49 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           )?.value
         }
       </output>
+      <output data-testid="tag-value">
+        {
+          query.rules.find(
+            (node): node is FilterRule<string> =>
+              node.type === "rule" && node.path[0] === "tag"
+          )?.value
+        }
+      </output>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: [
+              ...query.rules.filter(
+                (node) => node.type !== "rule" || node.path[0] !== "tag"
+              ),
+              {
+                type: "rule",
+                id: "test-tag",
+                path: ["tag"],
+                operator: "is",
+                value: "map",
+              },
+            ],
+          })
+        }
+      >
+        Select tag
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.filter(
+              (node) => node.type !== "rule" || node.path[0] !== "tag"
+            ),
+          })
+        }
+      >
+        Clear tag
+      </button>
       <output data-testid="composition-value">
         {
           query.rules.find(
@@ -408,7 +451,7 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   const router = renderArchiveRoute("/")
 
   expect(await screen.findByTestId("fields")).toHaveTextContent(
-    "amount,currency,composition,distribution,engraver,issuer,mint,ruler,size,thickness,weight,year"
+    "amount,currency,composition,distribution,engraver,issuer,mint,ruler,tag,size,thickness,weight,year"
   )
   expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "National Mint (Buenos Aires, Argentina; buenos-aires)"
@@ -514,4 +557,27 @@ it("combines all Explore filters and syncs them with the URL", async () => {
     expect(router.state.location.search.issuer).toBeUndefined()
   )
   expect(screen.getByTestId("issuer-value")).toBeEmptyDOMElement()
+})
+
+it("selects and removes Map while resetting pagination", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      tags: [{ slug: "map", name: "Map" }],
+      pagination: { page: 2, pageSize: 24, totalItems: 50, totalPages: 3 },
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?page=2")
+
+  await screen.findByTestId("fields")
+  fireEvent.click(screen.getByRole("button", { name: "Select tag" }))
+  await waitFor(() => expect(router.state.location.search.tag).toBe("map"))
+  expect(router.state.location.search.page).toBeUndefined()
+  expect(screen.getByTestId("tag-value")).toHaveTextContent("map")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
+  )
+
+  fireEvent.click(screen.getByRole("button", { name: "Clear tag" }))
+  await waitFor(() => expect(router.state.location.search.tag).toBeUndefined())
 })

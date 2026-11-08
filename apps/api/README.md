@@ -45,6 +45,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/issuers`        | Issuers and their public codes                                                                |
 | `GET /v1/mints`          | Mints and their stable public slugs                                                           |
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
+| `GET /v1/tags`           | Tags and their public slugs                                                                   |
 
 Coin detail includes required nullable numeric `size` and `thickness` in millimetres and `weight` in grams. `null` means that measurement is unknown; each is independent. Coin list items omit these fields.
 
@@ -57,6 +58,7 @@ Coin detail includes required nullable numeric `size` and `thickness` in millime
 | `amount`       | Exact positive Face Value Amount; requires `currency`                                  |
 | `currency`     | Case-sensitive Currency Slug                                                           |
 | `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
+| `tag`          | Exact, case-sensitive Tag Slug; use a value returned by `GET /v1/tags`                 |
 | `issuer`       | Case-sensitive Issuer Code, such as `AR`                                               |
 | `mint`         | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`               |
 | `engraver`     | Case-sensitive Engraver Slug                                                           |
@@ -74,6 +76,7 @@ curl 'http://localhost:3001/v1/coins?currency=argentine-peso-convertible&amount=
 curl 'http://localhost:3001/v1/coins?mint=rome-state-mint-italy&issuer=IT&page=1'
 curl 'http://localhost:3001/v1/coins?size=20-25.75&weight=8.125'
 curl 'http://localhost:3001/v1/coins?thickness=1.5-2.25&issuer=AR'
+curl 'http://localhost:3001/v1/coins?tag=map&issuer=FI&page=1'
 ```
 
 The Currency Slug in the second example is illustrative; use a value returned
@@ -85,6 +88,10 @@ The `mint` filter matches only Coins associated with that physical Mint and
 combines with other filters and pagination. A valid unknown slug returns an
 empty successful page; malformed or repeated values return `400` with
 `invalid_mint_slug`.
+
+The `tag` filter matches one exact Tag Slug before counting and paging, and combines with other filters without duplicating Coins. A valid unknown slug returns an empty successful page; malformed or repeated values return `400` with `invalid_tag`.
+
+`GET /v1/tags` returns `{"tags":[{"slug":"map","name":"Map"}]}` for the current seed catalogue, ordered by name then slug. It has no defined query parameters; an empty catalogue returns `{"tags":[]}`.
 
 Size, Thickness, and Weight each accept one positive decimal for an exact match,
 or two positive decimals separated by a hyphen for an inclusive range. Size and

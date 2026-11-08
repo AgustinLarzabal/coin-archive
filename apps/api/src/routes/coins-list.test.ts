@@ -15,6 +15,53 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin list route", () => {
+  describe("Tag", () => {
+    it("combines Tag with other filters before pagination", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 2 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?tag=map&issuer=FI&page=2&pageSize=1")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        tagSlug: "map",
+        issuerCode: "FI",
+        page: 2,
+        pageSize: 1,
+      })
+      await expect(response.json()).resolves.toMatchObject({
+        pagination: { totalItems: 2, totalPages: 2 },
+      })
+    })
+
+    it.each(["tag=Map", "tag=bad slug", "tag=map&tag=map"])(
+      "rejects %s",
+      async (query) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?${query}`)
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toEqual({
+          error: { code: "invalid_tag", message: "Tag is invalid" },
+        })
+      }
+    )
+
+    it("accepts a valid unknown Tag Slug as an empty page", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: emptyCoinPage,
+      }).request("/v1/coins?tag=unknown-map")
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+  })
   describe("Composition", () => {
     it("combines a slug with other filters and keeps pagination totals", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 5 }))
@@ -1209,6 +1256,15 @@ describe("Coin list route", () => {
           }),
         }),
         expect.objectContaining({
+          description: expect.stringContaining("Tag Slug"),
+          in: "query",
+          name: "tag",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        }),
+        expect.objectContaining({
           description: expect.stringContaining("Coin Composition Slug"),
           in: "query",
           name: "composition",
@@ -1302,6 +1358,7 @@ describe("Coin list route", () => {
                       $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
+                    { $ref: "#/components/schemas/InvalidTagError" },
                     { $ref: "#/components/schemas/InvalidCompositionError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidMintSlugError" },
@@ -1329,6 +1386,7 @@ describe("Coin list route", () => {
         expect.objectContaining({
           CoinListResponse: expect.any(Object),
           InvalidDistributionError: expect.any(Object),
+          InvalidTagError: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidFaceValueFilterError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),

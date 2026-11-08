@@ -83,6 +83,16 @@ export const coinDistributionSchema = z
 export type CoinDistribution = z.infer<typeof coinDistributionSchema>
 
 export const distributionSlugSchema = coinDistributionSchema
+export const tagSlugSchema = coinDistributionSchema
+export const tagListItemResponseSchema = z.strictObject({
+  slug: tagSlugSchema,
+  name: trimmedDisplayTextSchema(200),
+})
+export type TagListItemResponse = z.infer<typeof tagListItemResponseSchema>
+export const tagListResponseSchema = z.strictObject({
+  tags: z.array(tagListItemResponseSchema),
+})
+export type TagListResponse = z.infer<typeof tagListResponseSchema>
 
 export const distributionListItemResponseSchema = z.strictObject({
   slug: distributionSlugSchema,
@@ -489,6 +499,10 @@ export const invalidIssuerCodeErrorSchema = errorResponseSchema(
 export const invalidDistributionErrorSchema = errorResponseSchema(
   "invalid_distribution",
   "Coin Distribution is invalid"
+)
+export const invalidTagErrorSchema = errorResponseSchema(
+  "invalid_tag",
+  "Tag is invalid"
 )
 
 export const invalidCompositionErrorSchema = errorResponseSchema(

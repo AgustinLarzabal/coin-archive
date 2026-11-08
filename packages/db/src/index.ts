@@ -18,6 +18,7 @@ export {
   coinRulingAuthorityAttributionSelectSchema,
   coinSelectSchema,
   coinSurfaceInsertSchema,
+  coinTags,
   compositionInsertSchema,
   compositions,
   compositionSelectSchema,
@@ -36,6 +37,9 @@ export {
   mintSelectSchema,
   rulingAuthorityInsertSchema,
   rulingAuthoritySelectSchema,
+  tagInsertSchema,
+  tags,
+  tagSelectSchema,
 } from "./schema/index.js"
 export type {
   CoinRecord,
@@ -48,6 +52,7 @@ export type {
   IssuerRecord,
   MintRecord,
   RulingAuthorityRecord,
+  TagRecord,
 } from "./schema/index.js"
 export { rebuildDatabase } from "./reset.js"
 export { readCoinSeed, seedCoins } from "./seed.js"

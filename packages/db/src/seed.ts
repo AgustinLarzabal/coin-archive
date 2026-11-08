@@ -17,6 +17,7 @@ import {
   coinSurfaceEngravers,
   coinSurfaceInsertSchema,
   coinSurfaces,
+  coinTags,
   compositions,
   currencies,
   currencyInsertSchema,
@@ -31,6 +32,8 @@ import {
   mints,
   rulingAuthorities,
   rulingAuthorityInsertSchema,
+  tagInsertSchema,
+  tags,
 } from "./schema/index.js"
 import { trimmedInsertText } from "./schema/validation.js"
 import type { Database } from "./connection.js"
@@ -92,6 +95,7 @@ const coinSeedWithSurfacesSchema = coinSeedSchema.extend({
     .array(coinRulingAuthoritySeedRecordSchema)
     .default([]),
   mintSlugs: z.array(mintInsertSchema.shape.slug).default([]),
+  tagSlugs: z.array(tagInsertSchema.shape.slug).default([]),
 })
 
 const denominationSeedRecordSchema = z.strictObject({
@@ -118,6 +122,7 @@ const seedDocumentSchema = z
       )
       .default([]),
     engravers: z.array(engraverInsertSchema),
+    tags: z.array(tagInsertSchema).default([]),
     coins: z.array(coinSeedWithSurfacesSchema),
   })
   .strict()
@@ -127,6 +132,18 @@ const seedDocumentSchema = z
     const engraverSlugs = new Set<string>()
     const authoritySlugs = new Set<string>()
     const mintSlugs = new Set<string>()
+    const tagSlugs = new Set<string>()
+
+    document.tags.forEach((tag, index) => {
+      if (tagSlugs.has(tag.slug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate Tag Slug: ${tag.slug}`,
+          path: ["tags", index, "slug"],
+        })
+      }
+      tagSlugs.add(tag.slug)
+    })
 
     document.issuers.forEach((issuer, index) => {
       if (issuerCodes.has(issuer.code)) {
@@ -201,6 +218,17 @@ const seedDocumentSchema = z
     })
 
     document.coins.forEach((coin, index) => {
+      const coinTagSlugs = new Set<string>()
+      coin.tagSlugs.forEach((slug, tagIndex) => {
+        if (!tagSlugs.has(slug) || coinTagSlugs.has(slug)) {
+          context.addIssue({
+            code: "custom",
+            message: `Unknown or duplicate Tag Slug: ${slug}`,
+            path: ["coins", index, "tagSlugs", tagIndex],
+          })
+        }
+        coinTagSlugs.add(slug)
+      })
       const coinMintSlugs = new Set<string>()
       coin.mintSlugs.forEach((slug, mintIndex) => {
         const mint = document.mints.find((candidate) => candidate.slug === slug)
@@ -492,6 +520,15 @@ export async function seedCoins(database: Database, input: unknown) {
       insertedMints.map(({ id, slug }) => [slug, id])
     )
 
+    const insertedTags =
+      document.tags.length === 0
+        ? []
+        : await transaction
+            .insert(tags)
+            .values(document.tags)
+            .returning({ id: tags.id, slug: tags.slug })
+    const tagIdsBySlug = new Map(insertedTags.map(({ id, slug }) => [slug, id]))
+
     const coinRecords = document.coins.map(
       ({
         issuerCode,
@@ -501,6 +538,7 @@ export async function seedCoins(database: Database, input: unknown) {
         edge: _edge,
         rulingAuthorityAttributions: _rulingAuthorityAttributions,
         mintSlugs: _mintSlugs,
+        tagSlugs: _tagSlugs,
         distribution,
         composition,
         ...coin
@@ -561,6 +599,15 @@ export async function seedCoins(database: Database, input: unknown) {
     )
     if (mintAssociations.length > 0)
       await transaction.insert(coinMints).values(mintAssociations)
+
+    const tagAssociations = document.coins.flatMap((coin) =>
+      coin.tagSlugs.map((slug) => ({
+        coinId: coin.id,
+        tagId: tagIdsBySlug.get(slug)!,
+      }))
+    )
+    if (tagAssociations.length > 0)
+      await transaction.insert(coinTags).values(tagAssociations)
 
     const attributions = document.coins.flatMap((coin) =>
       coin.rulingAuthorityAttributions.map((attribution) => {
@@ -663,6 +710,7 @@ export async function readCoinSeed(
     engraverSeedData,
     authoritySeedData,
     mintSeedData,
+    tagSeedData,
     coinSeedData,
   ] = await Promise.all([
     readSeedFile(new URL("issuers.json", seedDirectory)),
@@ -671,6 +719,7 @@ export async function readCoinSeed(
     readSeedFile(new URL("engravers.json", seedDirectory)),
     readSeedFile(new URL("authorities.json", seedDirectory)),
     readSeedFile(new URL("mints.json", seedDirectory)),
+    readSeedFile(new URL("tags.json", seedDirectory)),
     readSeedFile(new URL("coins.json", seedDirectory)),
   ])
 
@@ -681,6 +730,7 @@ export async function readCoinSeed(
     engravers: engraverSeedData,
     authorities: authoritySeedData,
     mints: mintSeedData,
+    tags: tagSeedData,
     coins: coinSeedData,
   }
 }

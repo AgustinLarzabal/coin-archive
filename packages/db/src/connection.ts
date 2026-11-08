@@ -27,6 +27,7 @@ export interface Database {
   listCompositions: () => Promise<Array<schema.CompositionRecord>>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
   listDistributions: () => Promise<Array<schema.DistributionRecord>>
+  listTags: () => Promise<Array<schema.TagRecord>>
   listEngravers: () => Promise<Array<schema.EngraverRecord>>
   listIssuers: () => Promise<Array<schema.IssuerRecord>>
   listMints: () => Promise<
@@ -94,6 +95,7 @@ export interface CoinListOptions {
   currencySlug?: string
   faceValueAmount?: string
   distribution?: string
+  tagSlug?: string
   composition?: string
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
@@ -456,6 +458,23 @@ export function createDatabase(
                 : compositionId === null
                   ? sql`false`
                   : eq(schema.coins.compositionId, compositionId),
+              listOptions.tagSlug === undefined
+                ? undefined
+                : exists(
+                    transaction
+                      .select({ coinId: schema.coinTags.coinId })
+                      .from(schema.coinTags)
+                      .innerJoin(
+                        schema.tags,
+                        eq(schema.coinTags.tagId, schema.tags.id)
+                      )
+                      .where(
+                        and(
+                          eq(schema.coinTags.coinId, schema.coins.id),
+                          eq(schema.tags.slug, listOptions.tagSlug)
+                        )
+                      )
+                  ),
               currencyId === undefined
                 ? undefined
                 : currencyId === null
@@ -683,6 +702,11 @@ export function createDatabase(
           asc(schema.distributions.name),
           asc(schema.distributions.slug)
         ),
+    listTags: () =>
+      orm
+        .select()
+        .from(schema.tags)
+        .orderBy(asc(schema.tags.name), asc(schema.tags.slug)),
     listCompositions: () =>
       orm
         .select()

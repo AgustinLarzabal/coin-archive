@@ -18,6 +18,7 @@ import {
   issuerCodeSchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
+  tagSlugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import type {
@@ -52,6 +53,7 @@ export type CoinListFilters = Readonly<{
   currencySlug?: string
   faceValueAmount?: string
   distribution?: CoinDistribution
+  tagSlug?: string
   composition?: string
   engraverSlug?: string
   issuerCode?: string
@@ -68,6 +70,7 @@ type ValidatedCoinListFilters = Readonly<{
   currencySlug: string | null
   faceValueAmount: string | null
   distribution?: CoinDistribution
+  tagSlug?: string
   composition?: string
   engraverSlug: string | null
   issuerCode: string | null
@@ -85,6 +88,7 @@ async function getCoins({
   currencySlug,
   faceValueAmount,
   distribution,
+  tagSlug,
   composition,
   engraverSlug,
   issuerCode,
@@ -114,6 +118,7 @@ async function getCoins({
     if (distribution !== undefined) {
       search.set("distribution", distribution)
     }
+    if (tagSlug !== undefined) search.set("tag", tagSlug)
     if (composition !== undefined) search.set("composition", composition)
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
@@ -197,6 +202,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     currencySlug,
     faceValueAmount,
     distribution,
+    tagSlug,
     composition,
     engraverSlug,
     issuerCode,
@@ -223,6 +229,9 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     !coinDistributionSchema.safeParse(distribution).success
   ) {
     throw new TypeError("Invalid Coin Distribution")
+  }
+  if (tagSlug !== undefined && !tagSlugSchema.safeParse(tagSlug).success) {
+    throw new TypeError("Invalid Tag Slug")
   }
   if (
     composition !== undefined &&
@@ -280,6 +289,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     currencySlug: currencySlug ?? null,
     faceValueAmount: faceValueAmount ?? null,
     ...(distribution === undefined ? {} : { distribution }),
+    ...(tagSlug === undefined ? {} : { tagSlug }),
     ...(composition === undefined ? {} : { composition }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,

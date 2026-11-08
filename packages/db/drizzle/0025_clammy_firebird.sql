@@ -1,0 +1,1 @@
+CREATE INDEX "coins_shape_created_at_id_index" ON "coins" USING btree ("shape_id","created_at" DESC NULLS FIRST,"id");

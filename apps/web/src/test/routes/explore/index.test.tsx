@@ -359,6 +359,26 @@ describe("Archive landing route", () => {
     expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
   })
 
+  it("shows the filtered empty state for a Technique-only result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetchFixture({
+          techniques: [{ slug: "milled", name: "Milled" }],
+        })
+      )
+    )
+
+    renderArchiveRoute("/?technique=milled")
+
+    expect(
+      await screen.findByText("No coins match the selected filters.")
+    ).toBeVisible()
+    expect(
+      screen.queryByText("No coins have been added to the archive yet")
+    ).toBeNull()
+  })
+
   it("shows the route message when the URL Issuer is unknown", async () => {
     vi.stubGlobal("fetch", vi.fn(createArchiveFetch([])))
     renderArchiveRoute("/?issuer=ZZ")

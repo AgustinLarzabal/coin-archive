@@ -82,6 +82,9 @@ export const coinDistributionSchema = z
 
 export type CoinDistribution = z.infer<typeof coinDistributionSchema>
 
+export const coinOrientationSchema = coinDistributionSchema
+export type CoinOrientation = z.infer<typeof coinOrientationSchema>
+
 export const distributionSlugSchema = coinDistributionSchema
 export const tagSlugSchema = coinDistributionSchema
 export const tagListItemResponseSchema = z.strictObject({
@@ -120,6 +123,17 @@ export const shapeListResponseSchema = z.strictObject({
   shapes: z.array(shapeListItemResponseSchema),
 })
 export type ShapeListResponse = z.infer<typeof shapeListResponseSchema>
+export const coinOrientationListItemResponseSchema =
+  distributionListItemResponseSchema
+export type CoinOrientationListItemResponse = z.infer<
+  typeof coinOrientationListItemResponseSchema
+>
+export const coinOrientationListResponseSchema = z.strictObject({
+  orientations: z.array(coinOrientationListItemResponseSchema),
+})
+export type CoinOrientationListResponse = z.infer<
+  typeof coinOrientationListResponseSchema
+>
 export const techniqueListItemResponseSchema =
   distributionListItemResponseSchema
 export type TechniqueListItemResponse = z.infer<
@@ -539,6 +553,10 @@ export const invalidCompositionErrorSchema = errorResponseSchema(
 export const invalidShapeErrorSchema = errorResponseSchema(
   "invalid_shape",
   "Coin Shape is invalid"
+)
+export const invalidOrientationErrorSchema = errorResponseSchema(
+  "invalid_orientation",
+  "Coin Orientation is invalid"
 )
 
 export const invalidEngraverSlugErrorSchema = errorResponseSchema(

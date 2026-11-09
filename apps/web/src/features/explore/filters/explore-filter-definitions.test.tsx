@@ -20,6 +20,10 @@ it("keeps unavailable selections visible and disables selected fields", () => {
       currencies: [],
       compositions: [],
       shapes: [],
+      orientations: [
+        { slug: "medal", name: "Medal" },
+        { slug: "coin", name: "Coin" },
+      ],
       distributions: [],
       techniques: [],
       engravers: [],
@@ -54,6 +58,13 @@ it("keeps unavailable selections visible and disables selected fields", () => {
   expect(fields.find(({ id }) => id === "shape")).toMatchObject({
     type: "select",
     options: [],
+  })
+  expect(fields.find(({ id }) => id === "orientation")).toMatchObject({
+    type: "select",
+    options: [
+      { label: "Medal", value: "medal" },
+      { label: "Coin", value: "coin" },
+    ],
   })
   expect(fields.find(({ id }) => id === "amount")).toMatchObject({
     type: "text",
@@ -100,6 +111,7 @@ it("enables Face Value Amount after selecting Currency", () => {
       currencies: [],
       compositions: [],
       shapes: [],
+      orientations: [],
       distributions: [],
       techniques: [],
       engravers: [],
@@ -130,6 +142,7 @@ it("keeps Face Value Amount unavailable while Currency is unfinished", () => {
       currencies: [],
       compositions: [],
       shapes: [],
+      orientations: [],
       distributions: [],
       techniques: [],
       engravers: [],
@@ -159,6 +172,7 @@ it("offers Map from the Tag catalogue", () => {
       currencies: [],
       compositions: [],
       shapes: [],
+      orientations: [],
       distributions: [],
       techniques: [],
       engravers: [],
@@ -189,6 +203,7 @@ it("offers Shapes supplied by the catalogue even without matching Coins", () => 
       rulingAuthorities: [],
       tags: [],
       shapes: [{ slug: "pentagonal", name: "Pentagonal" }],
+      orientations: [],
     },
     {},
     createFilterQuery()

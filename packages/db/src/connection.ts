@@ -26,6 +26,7 @@ export interface Database {
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   hasShape: (slug: string) => Promise<boolean>
   listShapes: () => Promise<Array<schema.CoinShapeRecord>>
+  listOrientations: () => Promise<Array<schema.CoinOrientationRecord>>
   listTechniques: () => Promise<Array<schema.CoinTechniqueRecord>>
   listCompositions: () => Promise<Array<schema.CompositionRecord>>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
@@ -115,6 +116,7 @@ export interface CoinListOptions {
   tagSlug?: string
   composition?: string
   shape?: string
+  orientation?: string
   engraverSlug?: string
   issueYearInterval?: IssueYearInterval
   issuerCode?: string
@@ -489,6 +491,18 @@ export function createDatabase(
                     .where(eq(schema.coinShapes.slug, listOptions.shape))
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const orientationId =
+            listOptions.orientation === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.coinOrientations.id })
+                    .from(schema.coinOrientations)
+                    .where(
+                      eq(schema.coinOrientations.slug, listOptions.orientation)
+                    )
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const coinFilterPredicate = () =>
             and(
               listOptions.sizeInterval === undefined
@@ -541,6 +555,11 @@ export function createDatabase(
                 : shapeId === null
                   ? sql`false`
                   : eq(schema.coins.shapeId, shapeId),
+              orientationId === undefined
+                ? undefined
+                : orientationId === null
+                  ? sql`false`
+                  : eq(schema.coins.orientationId, orientationId),
               listOptions.tagSlug === undefined
                 ? undefined
                 : exists(
@@ -811,6 +830,14 @@ export function createDatabase(
         .select()
         .from(schema.coinShapes)
         .orderBy(asc(schema.coinShapes.name), asc(schema.coinShapes.slug)),
+    listOrientations: () =>
+      orm
+        .select()
+        .from(schema.coinOrientations)
+        .orderBy(
+          asc(schema.coinOrientations.name),
+          asc(schema.coinOrientations.slug)
+        ),
     listTechniques: () =>
       orm
         .select()

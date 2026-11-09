@@ -16,6 +16,7 @@ export function Explore({ filters }: { filters: CoinListFilters }) {
       filters.tagSlug !== undefined ||
       filters.composition !== undefined ||
       filters.shape !== undefined ||
+      filters.orientation !== undefined ||
       filters.currencySlug !== undefined ||
       filters.faceValueAmount !== undefined ||
       filters.mintSlug !== undefined ||

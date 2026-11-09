@@ -95,6 +95,9 @@ describe("Coin persistence", () => {
       const orientations = await database.orm
         .select()
         .from(database.schema.coinOrientations)
+      expect(
+        (await database.listOrientations()).map(({ slug }) => slug)
+      ).toEqual(["coin", "medal"])
       let medalCoinId = ""
       for (const orientation of ["Medal", "Coin", null] as const) {
         const orientationId =
@@ -127,6 +130,37 @@ describe("Coin persistence", () => {
       expect((await database.listCoins()).coins[0]).not.toHaveProperty(
         "orientation"
       )
+      const [secondMedal] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          ...values,
+          orientationId: orientations.find(({ slug }) => slug === "medal")!.id,
+        })
+        .returning({ id: database.schema.coins.id })
+      const medalPage = await database.listCoins({
+        orientation: "medal",
+        pageSize: 1,
+      })
+      const secondMedalPage = await database.listCoins({
+        orientation: "medal",
+        page: 2,
+        pageSize: 1,
+      })
+      expect(medalPage.totalItems).toBe(2)
+      expect(secondMedalPage.totalItems).toBe(2)
+      expect(
+        [...medalPage.coins, ...secondMedalPage.coins]
+          .map(({ id }) => id)
+          .sort()
+      ).toEqual([medalCoinId, secondMedal.id].sort())
+      expect(medalPage.coins[0]).not.toHaveProperty("orientation")
+      expect(
+        (await database.listCoins({ orientation: "coin" })).totalItems
+      ).toBe(1)
+      expect(
+        (await database.listCoins({ orientation: "unknown" })).totalItems
+      ).toBe(0)
+      expect((await database.listCoins()).totalItems).toBe(4)
       await database.orm
         .update(database.schema.coinOrientations)
         .set({ name: "Medal orientation" })
@@ -134,6 +168,10 @@ describe("Coin persistence", () => {
       await expect(database.findCoinById(medalCoinId)).resolves.toMatchObject({
         orientation: "Medal orientation",
       })
+      expect(
+        (await database.listOrientations()).find(({ slug }) => slug === "medal")
+          ?.name
+      ).toBe("Medal orientation")
     } finally {
       await database.close()
     }

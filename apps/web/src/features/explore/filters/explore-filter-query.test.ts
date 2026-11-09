@@ -40,6 +40,18 @@ it("round-trips Shape with another selected filter", () => {
   })
 })
 
+it("round-trips and clears exact Orientation", () => {
+  const search = { orientation: "medal" as const }
+  const query = searchToFilterQuery(search)
+  expect(query.rules).toMatchObject([
+    { path: ["orientation"], operator: "is", value: "medal" },
+  ])
+  expect(filterQueryToPatch(query, search)).toEqual({})
+  expect(filterQueryToPatch(createFilterQuery(), search)).toMatchObject({
+    orientation: undefined,
+  })
+})
+
 it("turns added, replaced, and cleared rules into URL patches", () => {
   const query = (issuer?: string) =>
     createFilterQuery(
@@ -59,6 +71,7 @@ it("turns added, replaced, and cleared rules into URL patches", () => {
     amount: undefined,
     currency: undefined,
     distribution: undefined,
+    orientation: undefined,
     engraver: undefined,
     issuer: "AR",
     mint: undefined,

@@ -42,6 +42,7 @@ export {
   tagSelectSchema,
 } from "./schema/index.js"
 export type {
+  CoinOrientationRecord,
   CoinRecord,
   CoinRulingAuthorityAttributionRecord,
   CoinShapeRecord,

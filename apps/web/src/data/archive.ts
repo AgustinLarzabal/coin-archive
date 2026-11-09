@@ -35,6 +35,10 @@ import {
   MintListRequestError,
 } from "./archive/mints"
 import {
+  InvalidOrientationListResponseError,
+  OrientationListRequestError,
+} from "./archive/orientations"
+import {
   InvalidRulingAuthorityListResponseError,
   RulingAuthorityListRequestError,
 } from "./archive/rulers"
@@ -102,6 +106,11 @@ export {
   ShapeListRequestError,
 } from "./archive/shapes"
 export {
+  InvalidOrientationListResponseError,
+  orientationListQueryOptions,
+  OrientationListRequestError,
+} from "./archive/orientations"
+export {
   engraverListQueryOptions,
   EngraverListRequestError,
   InvalidEngraverListResponseError,
@@ -137,6 +146,11 @@ export const archiveErrorSerializationAdapters = [
   errorAdapter("CompositionListRequestError", CompositionListRequestError),
   errorAdapter("InvalidShapeListResponseError", InvalidShapeListResponseError),
   errorAdapter("ShapeListRequestError", ShapeListRequestError),
+  errorAdapter(
+    "InvalidOrientationListResponseError",
+    InvalidOrientationListResponseError
+  ),
+  errorAdapter("OrientationListRequestError", OrientationListRequestError),
   errorAdapter("InvalidMintListResponseError", InvalidMintListResponseError),
   errorAdapter("MintListRequestError", MintListRequestError),
   errorAdapter("InvalidCoinIdError", InvalidCoinIdError),

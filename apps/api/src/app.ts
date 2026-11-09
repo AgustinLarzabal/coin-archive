@@ -12,6 +12,7 @@ import { registerEngraverRoutes } from "./routes/engravers.js"
 import { registerIssuerRoutes } from "./routes/issuers.js"
 import { registerMintRoutes } from "./routes/mints.js"
 import { registerOperationalRoutes } from "./routes/operational.js"
+import { registerOrientationRoutes } from "./routes/orientations.js"
 import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
 import { registerShapeRoutes } from "./routes/shapes.js"
 import { registerTagRoutes } from "./routes/tags.js"
@@ -21,6 +22,7 @@ import type {
   Coin,
   CoinListOptions,
   CoinListPage,
+  CoinOrientationRecord,
   CoinShapeRecord,
   CoinTechniqueRecord,
   CompositionRecord,
@@ -41,6 +43,7 @@ export interface AppOptions {
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   hasShape?: (slug: string) => Promise<boolean>
   listShapes?: () => Promise<Array<CoinShapeRecord>>
+  listOrientations?: () => Promise<Array<CoinOrientationRecord>>
   listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
   listCompositions?: () => Promise<Array<CompositionRecord>>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
@@ -103,6 +106,7 @@ export function createApp(options: AppOptions) {
   registerCoinListRoute(app, options)
   registerCompositionRoutes(app, options)
   registerShapeRoutes(app, options)
+  registerOrientationRoutes(app, options)
   registerTechniqueRoutes(app, options)
   registerCoinDetailRoute(app, options)
   registerCurrencyRoutes(app, options)

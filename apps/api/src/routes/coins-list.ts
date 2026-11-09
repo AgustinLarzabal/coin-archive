@@ -17,6 +17,7 @@ import {
   coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
+  coinOrientationSchema,
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
@@ -30,6 +31,7 @@ import {
   invalidIssuerCodeErrorSchema as sharedInvalidIssuerCodeErrorSchema,
   invalidMeasurementFilterErrorSchema as sharedInvalidMeasurementFilterErrorSchema,
   invalidMintSlugErrorSchema as sharedInvalidMintSlugErrorSchema,
+  invalidOrientationErrorSchema as sharedInvalidOrientationErrorSchema,
   invalidPaginationErrorSchema as sharedInvalidPaginationErrorSchema,
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
   invalidShapeErrorSchema as sharedInvalidShapeErrorSchema,
@@ -118,6 +120,11 @@ const coinListQuerySchema = z
         "Exact, case-sensitive Coin Shape Slug. Unsupported or repeated values return invalid_shape",
       param: { name: "shape", in: "query" },
     }),
+    orientation: coinOrientationSchema.optional().openapi({
+      description:
+        "Exact Coin Orientation Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_orientation",
+      param: { name: "orientation", in: "query" },
+    }),
     engraver: engraverSlugSchema.optional().openapi({
       description: "Exact, case-sensitive Engraver Slug",
       param: { name: "engraver", in: "query" },
@@ -179,6 +186,8 @@ const invalidCompositionErrorSchema =
   sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
 const invalidShapeErrorSchema =
   sharedInvalidShapeErrorSchema.openapi("InvalidShapeError")
+const invalidOrientationErrorSchema =
+  sharedInvalidOrientationErrorSchema.openapi("InvalidOrientationError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
 const invalidMeasurementFilterErrorSchema =
@@ -210,6 +219,7 @@ const invalidCoinListFilterErrorSchema = z.union([
   invalidTagErrorSchema,
   invalidCompositionErrorSchema,
   invalidShapeErrorSchema,
+  invalidOrientationErrorSchema,
   invalidIssuerCodeErrorSchema,
   invalidMintSlugErrorSchema,
   invalidEngraverSlugErrorSchema,
@@ -330,6 +340,15 @@ const validationErrors = [
     },
   },
   {
+    fields: ["orientation"],
+    response: {
+      error: {
+        code: "invalid_orientation",
+        message: "Coin Orientation is invalid",
+      },
+    },
+  },
+  {
     fields: ["ruler"],
     response: {
       error: {
@@ -388,6 +407,7 @@ export function registerCoinListRoute(
         tag,
         composition,
         shape,
+        orientation,
         engraver: engraverSlug,
         issuer: issuerCode,
         mint: mintSlug,
@@ -423,6 +443,7 @@ export function registerCoinListRoute(
         ...(tag === undefined ? {} : { tagSlug: tag }),
         ...(composition === undefined ? {} : { composition }),
         ...(shape === undefined ? {} : { shape }),
+        ...(orientation === undefined ? {} : { orientation }),
         ...(engraverSlug === undefined ? {} : { engraverSlug }),
         ...(issuerCode === undefined ? {} : { issuerCode }),
         ...(mintSlug === undefined ? {} : { mintSlug }),

@@ -12,6 +12,7 @@ import {
   issuerListQueryOptions,
   IssuerListRequestError,
   mintListQueryOptions,
+  orientationListQueryOptions,
   rulingAuthorityListQueryOptions,
   shapeListQueryOptions,
   tagListQueryOptions,
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/_explore")({
       context.queryClient.query(rulingAuthorityListQueryOptions()),
       context.queryClient.query(tagListQueryOptions()),
       context.queryClient.query(shapeListQueryOptions()),
+      context.queryClient.query(orientationListQueryOptions()),
     ])
   },
   component: ExploreLayout,
@@ -59,6 +61,9 @@ function ExploreLayout() {
   )
   const { data: tagList } = useSuspenseQuery(tagListQueryOptions())
   const { data: shapeList } = useSuspenseQuery(shapeListQueryOptions())
+  const { data: orientationList } = useSuspenseQuery(
+    orientationListQueryOptions()
+  )
 
   return (
     <main className="mt-18 mb-10 flex flex-1 flex-col">
@@ -77,6 +82,7 @@ function ExploreLayout() {
           rulingAuthorities={rulingAuthorityList.rulers}
           tags={tagList.tags}
           shapes={shapeList.shapes}
+          orientations={orientationList.orientations}
           search={search}
         />
       </nav>

@@ -11,6 +11,7 @@ import {
   coinListWeightSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
+  coinOrientationSchema,
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
@@ -30,6 +31,7 @@ import type {
   CoinListThickness,
   CoinListWeight,
   CoinListYear,
+  CoinOrientation,
   CoinShape,
 } from "@coin-archive/api"
 
@@ -59,6 +61,7 @@ export type CoinListFilters = Readonly<{
   tagSlug?: string
   composition?: string
   shape?: CoinShape
+  orientation?: CoinOrientation
   engraverSlug?: string
   issuerCode?: string
   mintSlug?: string
@@ -78,6 +81,7 @@ type ValidatedCoinListFilters = Readonly<{
   tagSlug?: string
   composition?: string
   shape?: CoinShape
+  orientation?: CoinOrientation
   engraverSlug: string | null
   issuerCode: string | null
   mintSlug?: string
@@ -98,6 +102,7 @@ async function getCoins({
   tagSlug,
   composition,
   shape,
+  orientation,
   engraverSlug,
   issuerCode,
   mintSlug,
@@ -130,6 +135,7 @@ async function getCoins({
     if (tagSlug !== undefined) search.set("tag", tagSlug)
     if (composition !== undefined) search.set("composition", composition)
     if (shape !== undefined) search.set("shape", shape)
+    if (orientation !== undefined) search.set("orientation", orientation)
     if (engraverSlug !== null) {
       search.set("engraver", engraverSlug)
     }
@@ -216,6 +222,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     tagSlug,
     composition,
     shape,
+    orientation,
     engraverSlug,
     issuerCode,
     mintSlug,
@@ -259,6 +266,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
   if (shape !== undefined && !coinShapeSchema.safeParse(shape).success) {
     throw new TypeError("Invalid Coin Shape")
+  }
+  if (
+    orientation !== undefined &&
+    !coinOrientationSchema.safeParse(orientation).success
+  ) {
+    throw new TypeError("Invalid Coin Orientation")
   }
   if (
     issuerCode !== undefined &&
@@ -314,6 +327,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
     ...(tagSlug === undefined ? {} : { tagSlug }),
     ...(composition === undefined ? {} : { composition }),
     ...(shape === undefined ? {} : { shape }),
+    ...(orientation === undefined ? {} : { orientation }),
     engraverSlug: engraverSlug ?? null,
     issuerCode: issuerCode ?? null,
     ...(mintSlug === undefined ? {} : { mintSlug }),

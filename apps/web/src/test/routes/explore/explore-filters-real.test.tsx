@@ -84,6 +84,43 @@ it("restores Shape with Issuer and shows a filtered empty result", async () => {
   )
 })
 
+it("restores Medal Orientation from the URL", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?orientation=medal")
+  expect(await screen.findByText("Medal")).toBeVisible()
+  expect(router.state.location.search.orientation).toBe("medal")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?orientation=medal&page=1&pageSize=24"
+  )
+})
+
+it("restores an Orientation added to the catalogue", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      orientations: [{ slug: "diagonal", name: "Diagonal" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?orientation=diagonal")
+  expect(await screen.findByText("Diagonal")).toBeVisible()
+  expect(router.state.location.search.orientation).toBe("diagonal")
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?orientation=diagonal&page=1&pageSize=24"
+  )
+})
+
+it("drops malformed Orientation from Explore search", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?orientation=Bad%20Slug")
+  await screen.findByRole("button", { name: "Add filter" })
+  expect(router.state.location.search.orientation).toBeUndefined()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?page=1&pageSize=24"
+  )
+})
+
 it("loads a restored issue year range from the URL", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)

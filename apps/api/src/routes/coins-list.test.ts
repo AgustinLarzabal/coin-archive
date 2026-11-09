@@ -15,6 +15,61 @@ const emptyCoinListResponse = {
 }
 
 describe("Coin list route", () => {
+  describe("Orientation", () => {
+    it.each(["medal", "coin"])(
+      "passes exact %s Orientation and keeps pagination totals",
+      async (orientation) => {
+        const listCoins = vi.fn(async () => ({ coins: [], totalItems: 3 }))
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(
+          `/v1/coins?orientation=${orientation}&issuer=AR&page=2&pageSize=2`
+        )
+        expect(response.status).toBe(200)
+        expect(listCoins).toHaveBeenCalledWith({
+          orientation,
+          issuerCode: "AR",
+          page: 2,
+          pageSize: 2,
+        })
+        await expect(response.json()).resolves.toMatchObject({
+          pagination: { totalItems: 3, totalPages: 2 },
+        })
+      }
+    )
+
+    it.each([
+      "orientation=Medal",
+      "orientation=bad%20slug",
+      "orientation=medal&orientation=medal",
+    ])("rejects %s", async (query) => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_orientation",
+          message: "Coin Orientation is invalid",
+        },
+      })
+    })
+    it("returns an empty page for a valid unknown Orientation Slug", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins: emptyCoinPage,
+      }).request("/v1/coins?orientation=unknown")
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+  })
   describe("Shape", () => {
     it("combines Shape with other filters and keeps pagination totals", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 3 }))
@@ -1394,6 +1449,13 @@ describe("Coin list route", () => {
           }),
         }),
         expect.objectContaining({
+          name: "orientation",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        }),
+        expect.objectContaining({
           description: "Exact, case-sensitive Engraver Slug",
           in: "query",
           name: "engraver",
@@ -1482,6 +1544,7 @@ describe("Coin list route", () => {
                     { $ref: "#/components/schemas/InvalidTagError" },
                     { $ref: "#/components/schemas/InvalidCompositionError" },
                     { $ref: "#/components/schemas/InvalidShapeError" },
+                    { $ref: "#/components/schemas/InvalidOrientationError" },
                     { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidMintSlugError" },
                     { $ref: "#/components/schemas/InvalidEngraverSlugError" },

@@ -8,6 +8,7 @@ import {
   coinListWeightSchema,
   coinListYearQuerySchema,
   coinListYearSchema,
+  coinOrientationSchema,
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
@@ -29,6 +30,7 @@ export const exploreSearchSchema = z.object({
   tag: tagSlugSchema.optional().catch(undefined),
   composition: compositionSlugSchema.optional().catch(undefined),
   shape: coinShapeSchema.optional().catch(undefined),
+  orientation: coinOrientationSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
   issuer: issuerCodeSchema.optional().catch(undefined),
   mint: mintSlugSchema.optional().catch(undefined),
@@ -59,6 +61,9 @@ export function getExploreCoinListFilters(
     tagSlug: search.tag,
     composition: search.composition,
     shape: search.shape,
+    ...(search.orientation === undefined
+      ? {}
+      : { orientation: search.orientation }),
     engraverSlug: search.engraver,
     issuerCode: search.issuer,
     mintSlug: search.mint,

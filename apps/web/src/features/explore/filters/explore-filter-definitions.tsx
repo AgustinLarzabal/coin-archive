@@ -5,6 +5,7 @@ import { distributionFilterDefinition } from "./definitions/distribution-filter"
 import { engraverFilterDefinition } from "./definitions/engraver-filter"
 import { issuerFilterDefinition } from "./definitions/issuer-filter"
 import { mintFilterDefinition } from "./definitions/mint-filter"
+import { orientationFilterDefinition } from "./definitions/orientation-filter"
 import { rulerFilterDefinition } from "./definitions/ruler-filter"
 import { shapeFilterDefinition } from "./definitions/shape-filter"
 import { sizeFilterDefinition } from "./definitions/size-filter"
@@ -16,6 +17,7 @@ import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
 import type {
+  CoinOrientationListItemResponse,
   CompositionListItemResponse,
   CurrencyResponse,
   DistributionListItemResponse,
@@ -51,6 +53,7 @@ export interface ExploreFilterLists {
   rulingAuthorities: Array<RulingAuthorityListItemResponse>
   tags: Array<TagListItemResponse>
   shapes: Array<ShapeListItemResponse>
+  orientations: Array<CoinOrientationListItemResponse>
 }
 
 export interface ExploreFilterDefinition {
@@ -66,6 +69,7 @@ export const exploreFilterDefinitions = [
   currencyFilterDefinition,
   compositionFilterDefinition,
   shapeFilterDefinition,
+  orientationFilterDefinition,
   distributionFilterDefinition,
   techniqueFilterDefinition,
   engraverFilterDefinition,

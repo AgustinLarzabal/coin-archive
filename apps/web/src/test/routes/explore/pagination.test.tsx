@@ -26,6 +26,11 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/shapes")) {
       return Promise.resolve(jsonResponse({ shapes: [] }))
     }
+    if (url.endsWith("/v1/orientations")) {
+      return Promise.resolve(
+        jsonResponse({ orientations: [{ slug: "coin", name: "Coin" }] })
+      )
+    }
     if (url.endsWith("/v1/tags")) {
       return Promise.resolve(jsonResponse({ tags: [] }))
     }
@@ -61,6 +66,24 @@ function createPageAwareArchiveFetch(totalPages = 3) {
 }
 
 describe("Explore pagination", () => {
+  it("keeps Coin Orientation when changing pages", async () => {
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?orientation=coin")
+    const user = userEvent.setup()
+
+    await screen.findByRole("link", { name: "Coin on page 1" })
+    await user.click(screen.getByRole("button", { name: "Go to next page" }))
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({
+        orientation: "coin",
+        page: 2,
+      })
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?orientation=coin&page=2&pageSize=24"
+    )
+  })
   it("keeps Technique and Issuer when changing pages", async () => {
     const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
@@ -245,6 +268,10 @@ describe("Explore pagination", () => {
   it("replace-navigates a stale page to the last page while preserving filters", async () => {
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
+
+      if (url.endsWith("/v1/orientations")) {
+        return Promise.resolve(jsonResponse({ orientations: [] }))
+      }
 
       if (url.endsWith("/v1/issuers")) {
         return Promise.resolve(jsonResponse({ issuers }))

@@ -72,6 +72,45 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           )?.value
         }
       </output>
+      <output data-testid="orientation-options">
+        {fields
+          .find((field) => field.id === "orientation")
+          ?.options?.map(({ label }) => label)
+          .join("|")}
+      </output>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: [
+              ...query.rules,
+              {
+                type: "rule",
+                id: "test-orientation",
+                path: ["orientation"],
+                operator: "is",
+                value: "medal",
+              },
+            ],
+          })
+        }
+      >
+        Select Orientation
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.filter(
+              (node) => node.type !== "rule" || node.path[0] !== "orientation"
+            ),
+          })
+        }
+      >
+        Clear Orientation
+      </button>
       <button
         type="button"
         onClick={() =>
@@ -451,7 +490,7 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   const router = renderArchiveRoute("/")
 
   expect(await screen.findByTestId("fields")).toHaveTextContent(
-    "amount,currency,composition,shape,distribution,technique,engraver,issuer,mint,ruler,tag,size,thickness,weight,year"
+    "amount,currency,composition,shape,orientation,distribution,technique,engraver,issuer,mint,ruler,tag,size,thickness,weight,year"
   )
   expect(screen.getByTestId("mint-options")).toHaveTextContent(
     "National Mint (Buenos Aires, Argentina; buenos-aires)"
@@ -580,4 +619,29 @@ it("selects and removes Map while resetting pagination", async () => {
 
   fireEvent.click(screen.getByRole("button", { name: "Clear tag" }))
   await waitFor(() => expect(router.state.location.search.tag).toBeUndefined())
+})
+
+it("selects and clears Medal Orientation through the URL", async () => {
+  const fetchMock = vi.fn(createArchiveFetch())
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?page=2")
+  await screen.findByTestId("orientation-options")
+  expect(screen.getByTestId("orientation-options")).toHaveTextContent(
+    "Medal|Coin"
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Select Orientation" }))
+  await waitFor(() =>
+    expect(router.state.location.search.orientation).toBe("medal")
+  )
+  expect(router.state.location.search.page).toBeUndefined()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?orientation=medal&page=1&pageSize=24"
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Clear Orientation" }))
+  await waitFor(() =>
+    expect(router.state.location.search.orientation).toBeUndefined()
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?page=1&pageSize=24"
+  )
 })

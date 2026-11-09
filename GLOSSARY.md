@@ -18,6 +18,9 @@ A Coin type's curated representative linear size in millimetres, including diame
 **Coin Shape**:
 A controlled classification of a Coin type's outline, such as circular, square, oval, or rectangular. A Coin has at most one Coin Shape, which may be unknown independently of its other physical characteristics.
 
+**Coin Orientation**:
+The relative alignment of a Coin type's Obverse and Reverse designs when the Coin is turned over around its vertical axis. Medal orientation keeps both designs upright (0°); Coin orientation inverts the opposite design (180°). It may be unknown independently of the Coin's other characteristics.
+
 **Coin Thickness**:
 A Coin type's curated representative thickness in millimetres. It may be unknown independently of the Coin's other measurements.
 

@@ -30,6 +30,10 @@ A controlled classification of a Coin type's material construction, such as Bime
 **Coin Composition Detail**:
 An optional, curated description of the materials and proportions in a Coin type, including where they occur when relevant. It may be unknown independently of the Coin's Composition.
 
+**Coin Technique**:
+A controlled classification of the overall method used to manufacture a Coin type, such as milled (machine struck). A Coin has at most one Technique, which may be unknown; imagery, surface decoration, and edge treatment are separate characteristics.
+_Avoid_: Engraver, Surface decoration, Edge treatment
+
 **Face Value**:
 The nominal monetary value assigned to a Coin through its Denomination, distinct from its collector price, purchasing power, or intrinsic material value. A Coin may have at most one Face Value.
 _Avoid_: Value, Price, Valuation

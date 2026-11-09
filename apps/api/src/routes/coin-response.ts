@@ -99,6 +99,7 @@ export function toCoinDetailResponse(
   return {
     ...toCoinResponseFields(coin),
     distributionName: coin.distributionName,
+    orientation: coin.orientation,
     composition: coin.composition,
     compositionName: coin.compositionName,
     compositionDetail: coin.compositionDetail,

@@ -10,6 +10,7 @@ import {
 } from "./schema/coin-surface.js"
 import {
   coinMints,
+  coinOrientations,
   coinRulingAuthorityAttributionInsertSchema,
   coinRulingAuthorityAttributions,
   coins,
@@ -442,6 +443,13 @@ export async function seedCoins(database: Database, input: unknown) {
           .from(coinShapes)
       ).map(({ slug, id }) => [slug, id])
     )
+    const orientationIdsBySlug = new Map(
+      (
+        await transaction
+          .select({ slug: coinOrientations.slug, id: coinOrientations.id })
+          .from(coinOrientations)
+      ).map(({ slug, id }) => [slug, id])
+    )
     const techniqueIdsBySlug = new Map(
       (
         await transaction
@@ -558,6 +566,7 @@ export async function seedCoins(database: Database, input: unknown) {
         distribution,
         composition,
         shape,
+        orientation,
         technique,
         ...coin
       }) => {
@@ -600,6 +609,14 @@ export async function seedCoins(database: Database, input: unknown) {
         if (shape && !shapeId) {
           throw new Error(`Coin references unknown Coin Shape Slug: ${shape}`)
         }
+        const orientationId = orientation
+          ? orientationIdsBySlug.get(orientation)
+          : null
+        if (orientation && !orientationId) {
+          throw new Error(
+            `Coin references unknown Coin Orientation Slug: ${orientation}`
+          )
+        }
         const techniqueId = technique ? techniqueIdsBySlug.get(technique) : null
         if (technique && !techniqueId) {
           throw new Error(
@@ -612,6 +629,7 @@ export async function seedCoins(database: Database, input: unknown) {
           distributionId,
           compositionId,
           shapeId,
+          orientationId,
           techniqueId,
           denominationId: denominationId ?? null,
         }

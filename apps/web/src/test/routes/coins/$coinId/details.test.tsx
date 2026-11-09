@@ -6,6 +6,23 @@ import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it.each(["Medal", "Coin", null] as const)(
+    "shows %s Orientation only when known",
+    async (orientation) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(jsonResponse(coinDetailFixture({ orientation })))
+        )
+      )
+      renderCoinRoute()
+      await screen.findByText("Issue Period")
+      expect(Boolean(screen.queryByText("Coin Orientation"))).toBe(
+        orientation !== null
+      )
+      if (orientation) expect(screen.getByText(orientation)).toBeInTheDocument()
+    }
+  )
   it.each([
     ["milled", "Machine struck"],
     [null, null],

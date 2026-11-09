@@ -43,7 +43,11 @@ export interface Database {
 
 export type Coin = Omit<
   schema.CoinRecord,
-  "distributionId" | "compositionId" | "shapeId" | "techniqueId"
+  | "distributionId"
+  | "compositionId"
+  | "shapeId"
+  | "techniqueId"
+  | "orientationId"
 > & {
   distribution: string
   distributionName: string
@@ -53,6 +57,7 @@ export type Coin = Omit<
   shapeName: string | null
   technique: string | null
   techniqueName: string | null
+  orientation: string | null
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
@@ -90,6 +95,7 @@ export type CoinListItem = Omit<
   | "weight"
   | "shapeId"
   | "techniqueId"
+  | "orientationId"
 > & {
   distribution: string
   issuer: schema.IssuerRecord
@@ -175,6 +181,7 @@ export function createDatabase(
               shapeName: schema.coinShapes.name,
               technique: schema.coinTechniques.slug,
               techniqueName: schema.coinTechniques.name,
+              orientation: schema.coinOrientations.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -202,6 +209,10 @@ export function createDatabase(
             .leftJoin(
               schema.coinTechniques,
               eq(schema.coins.techniqueId, schema.coinTechniques.id)
+            )
+            .leftJoin(
+              schema.coinOrientations,
+              eq(schema.coins.orientationId, schema.coinOrientations.id)
             )
             .leftJoin(
               schema.denominations,
@@ -318,6 +329,7 @@ export function createDatabase(
             compositionId: _compositionId,
             shapeId: _shapeId,
             techniqueId: _techniqueId,
+            orientationId: _orientationId,
             ...publicCoin
           } = row.coin
           return {
@@ -330,6 +342,7 @@ export function createDatabase(
             shapeName: row.shapeName,
             technique: row.technique,
             techniqueName: row.techniqueName,
+            orientation: row.orientation,
             issuer: row.issuer,
             denomination:
               row.denomination && row.currency
@@ -736,6 +749,7 @@ export function createDatabase(
                   compositionDetail: _compositionDetail,
                   shapeId: _shapeId,
                   techniqueId: _techniqueId,
+                  orientationId: _orientationId,
                   ...publicCoin
                 } = coin
                 return {

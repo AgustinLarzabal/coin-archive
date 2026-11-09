@@ -73,6 +73,7 @@ export function coinDetailFixture(
     title: "First coin",
     distribution: "circulating-commemorative",
     distributionName: "Circulating commemorative",
+    orientation: null,
     composition: null,
     compositionName: null,
     compositionDetail: null,

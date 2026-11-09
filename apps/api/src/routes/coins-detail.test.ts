@@ -19,6 +19,7 @@ describe("Coin detail route", () => {
       composition: null,
       compositionName: null,
       compositionDetail: null,
+      orientation: null,
       firstIssueYear: 2004,
       lastIssueYear: 2004,
       size: null,
@@ -135,6 +136,32 @@ describe("Coin detail route", () => {
         ((await list.json()) as { coins: Array<unknown> }).coins[0]
       ).not.toHaveProperty("tags")
     })
+
+    it.each(["Medal", "Coin", null] as const)(
+      "returns %s Orientation on detail and omits it from list items",
+      async (orientation) => {
+        const orientedCoin = { ...coin, orientation }
+        const app = createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          findCoinById: async () => orientedCoin,
+          listCoins: async () => ({
+            coins: [
+              { ...orientedCoin, obverseImageKey: null, reverseImageKey: null },
+            ],
+            totalItems: 1,
+          }),
+          imageBaseUrl: "https://images.coin-archive.example",
+        })
+        await expect(
+          (await app.request(`/v1/coins/${coinId}`)).json()
+        ).resolves.toMatchObject({ orientation })
+        const list = (await (await app.request("/v1/coins")).json()) as {
+          coins: Array<unknown>
+        }
+        expect(list.coins[0]).not.toHaveProperty("orientation")
+      }
+    )
 
     it("returns a known Shape on detail and omits it from list items", async () => {
       const shapedCoin = { ...coin, shape: "circular", shapeName: "Circular" }
@@ -346,6 +373,7 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        orientation: null,
         composition: null,
         compositionName: null,
         compositionDetail: null,
@@ -512,6 +540,7 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        orientation: null,
         composition: null,
         compositionName: null,
         compositionDetail: null,
@@ -652,6 +681,7 @@ describe("Coin detail route", () => {
         title: "First coin",
         distribution: "circulating-commemorative",
         distributionName: "Circulating commemorative",
+        orientation: null,
         composition: null,
         compositionName: null,
         compositionDetail: null,

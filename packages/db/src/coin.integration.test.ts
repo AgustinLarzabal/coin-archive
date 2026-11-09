@@ -32,6 +32,7 @@ function publicCoin<
     compositionId: string | null
     shapeId: string | null
     techniqueId: string | null
+    orientationId: string | null
   },
 >(coin: T) {
   const {
@@ -39,6 +40,7 @@ function publicCoin<
     compositionId: _compositionId,
     shapeId: _shapeId,
     techniqueId: _techniqueId,
+    orientationId: _orientationId,
     ...fields
   } = coin
   return {
@@ -50,6 +52,7 @@ function publicCoin<
     shapeName: null,
     technique: null,
     techniqueName: null,
+    orientation: null,
   }
 }
 
@@ -80,6 +83,61 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("stores Medal, Coin, or unknown Orientation and rejects unsupported values", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const values = {
+        title: "Oriented Coin",
+        issuerId: issuer.id,
+        ...TEST_COIN_REQUIRED_FIELDS,
+      }
+      const orientations = await database.orm
+        .select()
+        .from(database.schema.coinOrientations)
+      let medalCoinId = ""
+      for (const orientation of ["Medal", "Coin", null] as const) {
+        const orientationId =
+          orientations.find(({ name }) => name === orientation)?.id ?? null
+        expect(
+          coinInsertSchema.safeParse({
+            ...values,
+            distributionId: issuer.id,
+            orientationId,
+          }).success
+        ).toBe(true)
+        const [coin] = await database.orm
+          .insert(database.schema.coins)
+          .values({ ...values, orientationId })
+          .returning()
+        if (orientation === "Medal") medalCoinId = coin.id
+        await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+          orientation,
+        })
+      }
+      expect(
+        coinInsertSchema.safeParse({ ...values, orientationId: "sideways" })
+          .success
+      ).toBe(false)
+      await expect(
+        database.orm.execute(
+          sql`insert into coins (title, issuer_id, distribution_id, first_issue_year, last_issue_year, orientation_id) values ('Bad', ${issuer.id}, (select id from distributions where slug = 'circulating-commemorative'), 2004, 2004, '00000000-0000-4000-8000-000000000099')`
+        )
+      ).rejects.toThrow()
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty(
+        "orientation"
+      )
+      await database.orm
+        .update(database.schema.coinOrientations)
+        .set({ name: "Medal orientation" })
+        .where(sql`${database.schema.coinOrientations.slug} = 'medal'`)
+      await expect(database.findCoinById(medalCoinId)).resolves.toMatchObject({
+        orientation: "Medal orientation",
+      })
+    } finally {
+      await database.close()
+    }
+  })
   it("filters exact Technique before counting and paging with another filter", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2751,6 +2809,37 @@ describe("Coin seed", () => {
     }
   })
 
+  it("rejects unsupported Orientation in the seed document", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], orientation: "sideways" }],
+        })
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("ingests Coin Orientation from a seed document", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, {
+        ...validSeed,
+        coins: [{ ...validSeed.coins[0], orientation: "coin" }],
+      })
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({
+        orientation: "Coin",
+      })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("rejects an unknown Technique slug in Coin seed data", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -3021,6 +3110,13 @@ describe("Coin seed", () => {
       expect(knownTechniques.rows).toEqual([
         { id: "00000000-0000-4000-8000-000000000005", technique: "milled" },
         { id: "00000000-0000-4000-8000-000000000006", technique: "milled" },
+      ])
+      const orientations = await database.orm.execute(
+        sql`select coins.id, coin_orientations.name as orientation from coins join coin_orientations on coins.orientation_id = coin_orientations.id order by coins.id`
+      )
+      expect(orientations.rows).toEqual([
+        { id: "00000000-0000-4000-8000-000000000005", orientation: "Medal" },
+        { id: "00000000-0000-4000-8000-000000000006", orientation: "Medal" },
       ])
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000001")

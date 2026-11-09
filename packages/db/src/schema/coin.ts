@@ -11,6 +11,10 @@ import {
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
+import {
+  coinOrientationInsertSchema,
+  coinOrientations,
+} from "./coin-orientation.js"
 import { coinShapeInsertSchema, coinShapes } from "./coin-shape.js"
 import { coinTechniqueInsertSchema, coinTechniques } from "./coin-technique.js"
 import { compositionInsertSchema, compositions } from "./composition.js"
@@ -38,6 +42,12 @@ export const coins = pgTable(
       onDelete: "restrict",
     }),
     compositionDetail: varchar("composition_detail", { length: 10_000 }),
+    orientationId: uuid("orientation_id").references(
+      () => coinOrientations.id,
+      {
+        onDelete: "restrict",
+      }
+    ),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
     size: numeric({ mode: "number" }),
@@ -155,6 +165,7 @@ export const coinSeedSchema = coinInsertBaseSchema
     distributionId: true,
     compositionId: true,
     shapeId: true,
+    orientationId: true,
     techniqueId: true,
     denominationId: true,
     createdAt: true,
@@ -165,6 +176,7 @@ export const coinSeedSchema = coinInsertBaseSchema
     distribution: distributionInsertSchema.shape.slug,
     composition: compositionInsertSchema.shape.slug.optional(),
     shape: coinShapeInsertSchema.shape.slug.optional(),
+    orientation: coinOrientationInsertSchema.shape.slug.optional(),
     technique: coinTechniqueInsertSchema.shape.slug.optional(),
   })
   .required({

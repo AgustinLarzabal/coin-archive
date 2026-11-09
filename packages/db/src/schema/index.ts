@@ -5,6 +5,11 @@ export {
   coinSelectSchema,
 } from "./coin.js"
 export type { CoinRecord } from "./coin.js"
+export {
+  coinOrientationInsertSchema,
+  coinOrientations,
+} from "./coin-orientation.js"
+export type { CoinOrientationRecord } from "./coin-orientation.js"
 export { coinShapeInsertSchema, coinShapes } from "./coin-shape.js"
 export type { CoinShapeRecord } from "./coin-shape.js"
 export { coinTechniqueInsertSchema, coinTechniques } from "./coin-technique.js"

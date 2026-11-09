@@ -445,6 +445,7 @@ export type MintListResponse = z.infer<typeof mintListResponseSchema>
 export const coinDetailResponseSchema = z
   .strictObject({
     ...coinResponseShape,
+    orientation: trimmedDisplayTextSchema(200).nullable(),
     shape: coinDistributionSchema.nullable(),
     shapeName: trimmedDisplayTextSchema(200).nullable(),
     technique: coinDistributionSchema.nullable(),

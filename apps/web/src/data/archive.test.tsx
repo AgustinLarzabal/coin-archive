@@ -350,6 +350,7 @@ describe("Archive data module", () => {
             composition: null,
             compositionName: null,
             compositionDetail: null,
+            demonetized: null,
             shape: null,
             shapeName: null,
             technique: null,
@@ -392,6 +393,7 @@ describe("Archive data module", () => {
     ).resolves.toEqual({
       ...coin,
       distributionName: "Circulating commemorative",
+      demonetized: null,
       orientation: null,
       composition: null,
       compositionName: null,

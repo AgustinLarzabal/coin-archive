@@ -19,6 +19,7 @@ describe("Coin detail route", () => {
       composition: null,
       compositionName: null,
       compositionDetail: null,
+      demonetized: null,
       orientation: null,
       firstIssueYear: 2004,
       lastIssueYear: 2004,
@@ -107,6 +108,32 @@ describe("Coin detail route", () => {
         updatedAt: new Date("2026-09-16T10:47:00.000Z"),
       },
     }
+
+    it.each([true, false, null] as const)(
+      "returns %s Demonetization Status only in Coin detail",
+      async (demonetized) => {
+        const updatedCoin = { ...coin, demonetized }
+        const app = createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          findCoinById: async () => updatedCoin,
+          listCoins: async () => ({
+            coins: [
+              { ...updatedCoin, obverseImageKey: null, reverseImageKey: null },
+            ],
+            totalItems: 1,
+          }),
+          imageBaseUrl: "https://images.coin-archive.example",
+        })
+        await expect(
+          (await app.request(`/v1/coins/${coinId}`)).json()
+        ).resolves.toMatchObject({ demonetized })
+        const list = (await (await app.request("/v1/coins")).json()) as {
+          coins: Array<unknown>
+        }
+        expect(list.coins[0]).not.toHaveProperty("demonetized")
+      }
+    )
 
     it("returns assigned Tags on detail and omits them from list items", async () => {
       const taggedCoin = { ...coin, tags: [{ slug: "map", name: "Map" }] }
@@ -377,6 +404,7 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        demonetized: null,
         shape: null,
         shapeName: null,
         technique: null,
@@ -544,6 +572,7 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        demonetized: null,
         shape: null,
         shapeName: null,
         technique: null,
@@ -685,6 +714,7 @@ describe("Coin detail route", () => {
         composition: null,
         compositionName: null,
         compositionDetail: null,
+        demonetized: null,
         shape: null,
         shapeName: null,
         technique: null,
@@ -914,6 +944,10 @@ describe("Coin detail route", () => {
               composition: expect.objectContaining({ nullable: true }),
               compositionName: expect.objectContaining({ nullable: true }),
               compositionDetail: expect.objectContaining({ nullable: true }),
+              demonetized: expect.objectContaining({
+                type: "boolean",
+                nullable: true,
+              }),
               shape: expect.objectContaining({ nullable: true }),
               shapeName: expect.objectContaining({ nullable: true }),
               technique: expect.objectContaining({ nullable: true }),
@@ -997,6 +1031,7 @@ describe("Coin detail route", () => {
               "composition",
               "compositionName",
               "compositionDetail",
+              "demonetized",
               "firstIssueYear",
               "lastIssueYear",
               "faceValue",
@@ -1087,6 +1122,7 @@ describe("Coin detail route", () => {
         properties: Record<string, unknown>
       }
       expect(coinListItemSchema.properties).not.toHaveProperty("rulers")
+      expect(coinListItemSchema.properties).not.toHaveProperty("demonetized")
       expect(coinListItemSchema.properties).not.toHaveProperty("size")
       expect(coinListItemSchema.properties).not.toHaveProperty("thickness")
       expect(coinListItemSchema.properties).not.toHaveProperty("weight")

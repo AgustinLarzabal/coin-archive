@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm"
 import {
+  boolean,
   check,
   index,
   integer,
@@ -50,6 +51,7 @@ export const coins = pgTable(
     ),
     firstIssueYear: integer("first_issue_year").notNull(),
     lastIssueYear: integer("last_issue_year").notNull(),
+    demonetized: boolean(),
     size: numeric({ mode: "number" }),
     thickness: numeric({ mode: "number" }),
     weight: numeric({ mode: "number" }),

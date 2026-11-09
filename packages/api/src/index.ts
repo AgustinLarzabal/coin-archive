@@ -468,6 +468,10 @@ export const coinDetailResponseSchema = z
     composition: coinDistributionSchema.nullable(),
     compositionName: trimmedDisplayTextSchema(200).nullable(),
     compositionDetail: trimmedDisplayTextSchema(10_000).nullable(),
+    demonetized: z.boolean().nullable().meta({
+      description:
+        "True for confirmed formal withdrawal of legal-tender status, false for confirmed absence of withdrawal, null when unverified.",
+    }),
     size: z
       .number()
       .positive()

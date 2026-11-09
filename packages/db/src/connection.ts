@@ -91,6 +91,7 @@ export type CoinListItem = Omit<
   | "distributionId"
   | "compositionId"
   | "compositionDetail"
+  | "demonetized"
   | "size"
   | "thickness"
   | "weight"
@@ -766,6 +767,7 @@ export function createDatabase(
                   distributionId: _distributionId,
                   compositionId: _compositionId,
                   compositionDetail: _compositionDetail,
+                  demonetized: _demonetized,
                   shapeId: _shapeId,
                   techniqueId: _techniqueId,
                   orientationId: _orientationId,

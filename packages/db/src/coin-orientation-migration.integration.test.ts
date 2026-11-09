@@ -14,7 +14,7 @@ import { migrate } from "drizzle-orm/node-postgres/migrator"
 import { Pool } from "pg"
 import { expect, it } from "vitest"
 
-it("migrates existing Coins with unknown Orientation", async () => {
+it("migrates existing Coins with unknown Orientation and Demonetization Status", async () => {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
   const oldMigrations = await mkdtemp(
     join(tmpdir(), "coin-orientation-migrations-")
@@ -54,9 +54,9 @@ it("migrates existing Coins with unknown Orientation", async () => {
     await migrate(drizzle(pool), { migrationsFolder: "drizzle" })
 
     const { rows } = await pool.query(
-      "select orientation_id from coins where title = 'Existing Coin'"
+      "select orientation_id, demonetized from coins where title = 'Existing Coin'"
     )
-    expect(rows).toEqual([{ orientation_id: null }])
+    expect(rows).toEqual([{ orientation_id: null, demonetized: null }])
   } finally {
     await pool.end()
     await rm(oldMigrations, { recursive: true, force: true })

@@ -2833,6 +2833,39 @@ describe("Coin seed", () => {
     ],
   }
 
+  it.each([true, false, null] as const)(
+    "preserves %s Coin Demonetization Status from seed data",
+    async (demonetized) => {
+      const database = createDatabase(getDatabaseUrl())
+      try {
+        await seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], demonetized }],
+        })
+        await expect(
+          database.findCoinById(SEEDED_COIN_ID)
+        ).resolves.toMatchObject({ demonetized })
+        expect((await database.listCoins()).coins[0]).not.toHaveProperty(
+          "demonetized"
+        )
+      } finally {
+        await database.close()
+      }
+    }
+  )
+
+  it("defaults uncurated Coin Demonetization Status to unknown", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, validSeed)
+      await expect(
+        database.findCoinById(SEEDED_COIN_ID)
+      ).resolves.toMatchObject({ demonetized: null })
+    } finally {
+      await database.close()
+    }
+  })
+
   it("rejects unsupported Shape in the seed document", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

@@ -103,6 +103,7 @@ export function toCoinDetailResponse(
     composition: coin.composition,
     compositionName: coin.compositionName,
     compositionDetail: coin.compositionDetail,
+    demonetized: coin.demonetized,
     size: coin.size,
     thickness: coin.thickness,
     weight: coin.weight,

@@ -6,6 +6,26 @@ import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
+  it.each([
+    [true, "Demonetized"],
+    [false, "Not demonetized"],
+    [null, "Unknown"],
+  ] as const)(
+    "shows %s Coin Demonetization Status as %s",
+    async (demonetized, label) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(jsonResponse(coinDetailFixture({ demonetized })))
+        )
+      )
+      renderCoinRoute()
+      expect(
+        await screen.findByText("Coin Demonetization Status")
+      ).toBeInTheDocument()
+      expect(screen.getByText(label)).toBeInTheDocument()
+    }
+  )
   it.each(["Medal", "Coin", null] as const)(
     "shows %s Orientation only when known",
     async (orientation) => {
@@ -236,7 +256,7 @@ describe("Coin viewer route details", () => {
     expect(screen.getByText("Athens, Greece")).toBeInTheDocument()
     expect(screen.getByText("44–42 BCE")).toBeInTheDocument()
     expect(screen.getByText("Unknown (closed)")).toBeInTheDocument()
-    expect(screen.getByText("Unknown")).toBeInTheDocument()
+    expect(screen.getByText("Mint").parentElement).toHaveTextContent("Unknown")
     expect(screen.getByText("1900–unknown")).toBeInTheDocument()
   })
 
@@ -396,7 +416,6 @@ describe("Coin viewer route details", () => {
 
     expect(await screen.findByText("Issue Period")).toBeInTheDocument()
     expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
-    expect(screen.queryByText("Unknown")).not.toBeInTheDocument()
   })
 
   it("renders a multi-year CE Issue Period in Coin details", async () => {

@@ -77,6 +77,7 @@ export function coinDetailFixture(
     composition: null,
     compositionName: null,
     compositionDetail: null,
+    demonetized: null,
     size: null,
     thickness: null,
     weight: null,

@@ -120,6 +120,15 @@ export const shapeListResponseSchema = z.strictObject({
   shapes: z.array(shapeListItemResponseSchema),
 })
 export type ShapeListResponse = z.infer<typeof shapeListResponseSchema>
+export const techniqueListItemResponseSchema =
+  distributionListItemResponseSchema
+export type TechniqueListItemResponse = z.infer<
+  typeof techniqueListItemResponseSchema
+>
+export const techniqueListResponseSchema = z.strictObject({
+  techniques: z.array(techniqueListItemResponseSchema),
+})
+export type TechniqueListResponse = z.infer<typeof techniqueListResponseSchema>
 export const compositionListItemResponseSchema =
   distributionListItemResponseSchema
 export type CompositionListItemResponse = z.infer<
@@ -438,6 +447,8 @@ export const coinDetailResponseSchema = z
     ...coinResponseShape,
     shape: coinDistributionSchema.nullable(),
     shapeName: trimmedDisplayTextSchema(200).nullable(),
+    technique: coinDistributionSchema.nullable(),
+    techniqueName: trimmedDisplayTextSchema(200).nullable(),
     distributionName: trimmedDisplayTextSchema(200),
     composition: coinDistributionSchema.nullable(),
     compositionName: trimmedDisplayTextSchema(200).nullable(),

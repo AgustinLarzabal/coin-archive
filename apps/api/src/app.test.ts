@@ -146,6 +146,7 @@ describe("API composition", () => {
       "/v1/rulers",
       "/v1/shapes",
       "/v1/tags",
+      "/v1/techniques",
     ])
     expect(Object.keys(document.components.schemas).sort()).toEqual([
       "Coin",
@@ -185,6 +186,8 @@ describe("API composition", () => {
       "ShapeListResponse",
       "Tag",
       "TagListResponse",
+      "Technique",
+      "TechniqueListResponse",
       "UnavailableResponse",
     ])
   })

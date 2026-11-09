@@ -15,12 +15,14 @@ import { registerOperationalRoutes } from "./routes/operational.js"
 import { registerRulingAuthorityRoutes } from "./routes/rulers.js"
 import { registerShapeRoutes } from "./routes/shapes.js"
 import { registerTagRoutes } from "./routes/tags.js"
+import { registerTechniqueRoutes } from "./routes/techniques.js"
 import type { AppEnvironment } from "./routes/shared.js"
 import type {
   Coin,
   CoinListOptions,
   CoinListPage,
   CoinShapeRecord,
+  CoinTechniqueRecord,
   CompositionRecord,
   CurrencyRecord,
   DistributionRecord,
@@ -39,6 +41,7 @@ export interface AppOptions {
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   hasShape?: (slug: string) => Promise<boolean>
   listShapes?: () => Promise<Array<CoinShapeRecord>>
+  listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
   listCompositions?: () => Promise<Array<CompositionRecord>>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
   listDistributions?: () => Promise<Array<DistributionRecord>>
@@ -100,6 +103,7 @@ export function createApp(options: AppOptions) {
   registerCoinListRoute(app, options)
   registerCompositionRoutes(app, options)
   registerShapeRoutes(app, options)
+  registerTechniqueRoutes(app, options)
   registerCoinDetailRoute(app, options)
   registerCurrencyRoutes(app, options)
   registerDistributionRoutes(app, options)

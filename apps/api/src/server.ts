@@ -43,6 +43,7 @@ const app = createApp({
   listCoins: database.listCoins,
   hasShape: database.hasShape,
   listShapes: database.listShapes,
+  listTechniques: database.listTechniques,
   listCurrencies: database.listCurrencies,
   listDistributions: database.listDistributions,
   listCompositions: database.listCompositions,

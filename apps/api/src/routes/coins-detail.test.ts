@@ -26,6 +26,8 @@ describe("Coin detail route", () => {
       weight: null,
       shape: null,
       shapeName: null,
+      technique: null,
+      techniqueName: null,
       issuer: {
         id: issuerId,
         name: "Argentina",
@@ -155,6 +157,37 @@ describe("Coin detail route", () => {
       expect(
         ((await list.json()) as { coins: Array<unknown> }).coins[0]
       ).not.toHaveProperty("shape")
+    })
+
+    it("returns current Technique on detail and omits it from list items", async () => {
+      const knownCoin = {
+        ...coin,
+        technique: "milled",
+        techniqueName: "Machine struck",
+      }
+      const app = createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => knownCoin,
+        listCoins: async () => ({
+          coins: [
+            { ...knownCoin, obverseImageKey: null, reverseImageKey: null },
+          ],
+          totalItems: 1,
+        }),
+        imageBaseUrl: "https://images.coin-archive.example",
+      })
+      await expect(
+        (await app.request(`/v1/coins/${coinId}`)).json()
+      ).resolves.toMatchObject({
+        technique: "milled",
+        techniqueName: "Machine struck",
+      })
+      const list = (await (await app.request("/v1/coins")).json()) as {
+        coins: Array<unknown>
+      }
+      expect(list.coins[0]).not.toHaveProperty("technique")
+      expect(list.coins[0]).not.toHaveProperty("techniqueName")
     })
 
     it("returns every confirmed Mint with its own country and operation period", async () => {
@@ -318,6 +351,8 @@ describe("Coin detail route", () => {
         compositionDetail: null,
         shape: null,
         shapeName: null,
+        technique: null,
+        techniqueName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -482,6 +517,8 @@ describe("Coin detail route", () => {
         compositionDetail: null,
         shape: null,
         shapeName: null,
+        technique: null,
+        techniqueName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -620,6 +657,8 @@ describe("Coin detail route", () => {
         compositionDetail: null,
         shape: null,
         shapeName: null,
+        technique: null,
+        techniqueName: null,
         size: null,
         thickness: null,
         weight: null,
@@ -847,6 +886,8 @@ describe("Coin detail route", () => {
               compositionDetail: expect.objectContaining({ nullable: true }),
               shape: expect.objectContaining({ nullable: true }),
               shapeName: expect.objectContaining({ nullable: true }),
+              technique: expect.objectContaining({ nullable: true }),
+              techniqueName: expect.objectContaining({ nullable: true }),
               size: expect.objectContaining({ type: "number", nullable: true }),
               thickness: expect.objectContaining({
                 type: "number",

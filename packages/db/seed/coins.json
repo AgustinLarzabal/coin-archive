@@ -111,6 +111,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000005",
     "title": "Enlargement of the European Union by Ten New Member States",
+    "technique": "milled",
     "shape": "circular",
     "tagSlugs": ["map"],
     "size": 25.75,
@@ -152,6 +153,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000006",
     "title": "Olympic Games in Athens 2004",
+    "technique": "milled",
     "shape": "circular",
     "tagSlugs": ["map"],
     "size": 25.75,

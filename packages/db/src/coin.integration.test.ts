@@ -31,12 +31,14 @@ function publicCoin<
     distributionId: string
     compositionId: string | null
     shapeId: string | null
+    techniqueId: string | null
   },
 >(coin: T) {
   const {
     distributionId: _distributionId,
     compositionId: _compositionId,
     shapeId: _shapeId,
+    techniqueId: _techniqueId,
     ...fields
   } = coin
   return {
@@ -46,6 +48,8 @@ function publicCoin<
     compositionName: null,
     shape: null,
     shapeName: null,
+    technique: null,
+    techniqueName: null,
   }
 }
 
@@ -76,6 +80,62 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("stores one Technique by identity and protects referenced catalogue entries", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [milled] = await database.listTechniques()
+      expect(milled).toMatchObject({ slug: "milled", name: "Milled" })
+      await database.orm
+        .insert(database.schema.coinTechniques)
+        .values({ slug: "earlier", name: "Earlier" })
+      expect((await database.listTechniques()).map(({ slug }) => slug)).toEqual(
+        ["earlier", "milled"]
+      )
+      const [coin] = await database.orm
+        .insert(database.schema.coins)
+        .values({
+          title: "Machine struck Coin",
+          issuerId: issuer.id,
+          techniqueId: milled.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+        })
+        .returning()
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        technique: "milled",
+        techniqueName: "Milled",
+      })
+      await database.orm
+        .update(database.schema.coinTechniques)
+        .set({ name: "Machine struck" })
+        .where(sql`${database.schema.coinTechniques.id} = ${milled.id}`)
+      await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
+        technique: "milled",
+        techniqueName: "Machine struck",
+      })
+      await expect(
+        database.orm
+          .delete(database.schema.coinTechniques)
+          .where(sql`${database.schema.coinTechniques.id} = ${milled.id}`)
+      ).rejects.toThrow()
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty(
+        "technique"
+      )
+      expect((await database.listCoins()).coins[0]).not.toHaveProperty(
+        "techniqueId"
+      )
+      await expect(
+        database.orm.insert(database.schema.coins).values({
+          title: "Unsupported Technique",
+          issuerId: issuer.id,
+          techniqueId: "00000000-0000-4000-8000-000000000099",
+          ...TEST_COIN_REQUIRED_FIELDS,
+        })
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
   it("stores one controlled Shape or unknown and rejects unsupported Shapes at both write boundaries", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2638,6 +2698,20 @@ describe("Coin seed", () => {
     }
   })
 
+  it("rejects an unknown Technique slug in Coin seed data", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await expect(
+        seedCoins(database, {
+          ...validSeed,
+          coins: [{ ...validSeed.coins[0], technique: "unlisted" }],
+        })
+      ).rejects.toThrow("Coin references unknown Coin Technique Slug: unlisted")
+    } finally {
+      await database.close()
+    }
+  })
+
   it("accepts all four Composition and Detail seed combinations", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
@@ -2886,10 +2960,20 @@ describe("Coin seed", () => {
         { id: "00000000-0000-4000-8000-000000000005", shape: "circular" },
         { id: "00000000-0000-4000-8000-000000000006", shape: "circular" },
       ])
+      const knownTechniques = await database.orm.execute(sql`
+        select coins.id, coin_techniques.slug as technique
+        from coins join coin_techniques on coins.technique_id = coin_techniques.id
+        order by coins.id
+      `)
+      expect(knownTechniques.rows).toEqual([
+        { id: "00000000-0000-4000-8000-000000000005", technique: "milled" },
+        { id: "00000000-0000-4000-8000-000000000006", technique: "milled" },
+      ])
       await expect(
         database.findCoinById("00000000-0000-4000-8000-000000000001")
       ).resolves.toMatchObject({
         shape: null,
+        technique: null,
         composition: null,
         compositionName: null,
         compositionDetail: null,
@@ -2900,6 +2984,8 @@ describe("Coin seed", () => {
       ]) {
         await expect(database.findCoinById(id)).resolves.toMatchObject({
           shape: "circular",
+          technique: "milled",
+          techniqueName: "Milled",
           composition: "bimetallic",
           compositionName: "Bimetallic",
           compositionDetail:

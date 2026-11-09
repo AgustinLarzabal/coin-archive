@@ -7,6 +7,8 @@ export {
 export type { CoinRecord } from "./coin.js"
 export { coinShapeInsertSchema, coinShapes } from "./coin-shape.js"
 export type { CoinShapeRecord } from "./coin-shape.js"
+export { coinTechniqueInsertSchema, coinTechniques } from "./coin-technique.js"
+export type { CoinTechniqueRecord } from "./coin-technique.js"
 export {
   compositionInsertSchema,
   compositions,

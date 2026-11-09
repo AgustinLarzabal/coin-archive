@@ -7,6 +7,29 @@ import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
   it.each([
+    ["milled", "Machine struck"],
+    [null, null],
+  ] as const)(
+    "shows a known Technique name and omits unknown",
+    async (technique, techniqueName) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() =>
+          Promise.resolve(
+            jsonResponse(coinDetailFixture({ technique, techniqueName }))
+          )
+        )
+      )
+      renderCoinRoute()
+      await screen.findByText("Issue Period")
+      expect(Boolean(screen.queryByText("Coin Technique"))).toBe(
+        techniqueName !== null
+      )
+      if (techniqueName)
+        expect(screen.getByText(techniqueName)).toBeInTheDocument()
+    }
+  )
+  it.each([
     ["circular", "Circular"],
     ["square", "Square"],
     ["oval", "Oval"],

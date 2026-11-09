@@ -46,8 +46,11 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | `GET /v1/mints`          | Mints and their stable public slugs                                                           |
 | `GET /v1/rulers`         | Ruling Authorities and their public slugs                                                     |
 | `GET /v1/tags`           | Tags and their public slugs                                                                   |
+| `GET /v1/techniques`     | Coin Techniques and their stable public slugs                                                 |
 
 Coin detail includes required nullable numeric `size` and `thickness` in millimetres and `weight` in grams. `null` means that measurement is unknown; each is independent. It also includes `tags`, an array of `{ "slug": "map", "name": "Map" }` entries, or `[]` for an untagged Coin. Coin list items omit these fields and Tags.
+
+Coin detail also includes nullable `technique` and `techniqueName` fields. `technique` is the stable public slug; `techniqueName` is the current display name. Both are `null` when unknown. Milled means machine struck, independently of edge treatment. Coin list items omit both fields. `GET /v1/techniques` returns `{ "techniques": [{ "slug": "milled", "name": "Milled" }] }`, ordered by name then slug, or `{ "techniques": [] }` when the catalogue is empty.
 
 ## Find Coins
 

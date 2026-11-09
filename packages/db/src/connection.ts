@@ -26,6 +26,7 @@ export interface Database {
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   hasShape: (slug: string) => Promise<boolean>
   listShapes: () => Promise<Array<schema.CoinShapeRecord>>
+  listTechniques: () => Promise<Array<schema.CoinTechniqueRecord>>
   listCompositions: () => Promise<Array<schema.CompositionRecord>>
   listCurrencies: () => Promise<Array<schema.CurrencyRecord>>
   listDistributions: () => Promise<Array<schema.DistributionRecord>>
@@ -42,7 +43,7 @@ export interface Database {
 
 export type Coin = Omit<
   schema.CoinRecord,
-  "distributionId" | "compositionId" | "shapeId"
+  "distributionId" | "compositionId" | "shapeId" | "techniqueId"
 > & {
   distribution: string
   distributionName: string
@@ -50,6 +51,8 @@ export type Coin = Omit<
   compositionName: string | null
   shape: string | null
   shapeName: string | null
+  technique: string | null
+  techniqueName: string | null
   issuer: schema.IssuerRecord
   denomination: CoinDenomination | null
   rulingAuthorityAttributions: Array<CoinRulingAuthorityAttribution>
@@ -86,6 +89,7 @@ export type CoinListItem = Omit<
   | "thickness"
   | "weight"
   | "shapeId"
+  | "techniqueId"
 > & {
   distribution: string
   issuer: schema.IssuerRecord
@@ -168,6 +172,8 @@ export function createDatabase(
               compositionName: schema.compositions.name,
               shape: schema.coinShapes.slug,
               shapeName: schema.coinShapes.name,
+              technique: schema.coinTechniques.slug,
+              techniqueName: schema.coinTechniques.name,
               issuer: schema.issuers,
               denomination: schema.denominations,
               currency: schema.currencies,
@@ -191,6 +197,10 @@ export function createDatabase(
             .leftJoin(
               schema.coinShapes,
               eq(schema.coins.shapeId, schema.coinShapes.id)
+            )
+            .leftJoin(
+              schema.coinTechniques,
+              eq(schema.coins.techniqueId, schema.coinTechniques.id)
             )
             .leftJoin(
               schema.denominations,
@@ -306,6 +316,7 @@ export function createDatabase(
             distributionId: _distributionId,
             compositionId: _compositionId,
             shapeId: _shapeId,
+            techniqueId: _techniqueId,
             ...publicCoin
           } = row.coin
           return {
@@ -316,6 +327,8 @@ export function createDatabase(
             compositionName: row.compositionName,
             shape: row.shape,
             shapeName: row.shapeName,
+            technique: row.technique,
+            techniqueName: row.techniqueName,
             issuer: row.issuer,
             denomination:
               row.denomination && row.currency
@@ -704,6 +717,7 @@ export function createDatabase(
                   compositionId: _compositionId,
                   compositionDetail: _compositionDetail,
                   shapeId: _shapeId,
+                  techniqueId: _techniqueId,
                   ...publicCoin
                 } = coin
                 return {
@@ -765,6 +779,14 @@ export function createDatabase(
         .select()
         .from(schema.coinShapes)
         .orderBy(asc(schema.coinShapes.name), asc(schema.coinShapes.slug)),
+    listTechniques: () =>
+      orm
+        .select()
+        .from(schema.coinTechniques)
+        .orderBy(
+          asc(schema.coinTechniques.name),
+          asc(schema.coinTechniques.slug)
+        ),
     listMints: async () =>
       (
         await orm

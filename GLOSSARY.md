@@ -71,6 +71,9 @@ _Avoid_: Coin Category, Coin Type
 A unique, lowercase public identifier for a Coin Distribution that remains stable independently of its editable display name.
 _Avoid_: Coin Distribution ID
 
+**Coin Demonetization Status**:
+Whether the issuing authority has formally withdrawn a Coin type's legal-tender status as of the present. A Coin type that was never legal tender has not been demonetized; the status may be unknown when the archive lacks evidence.
+
 **Tag**:
 A reusable, curated label for a visible motif on a Coin, such as Map, Flag, or Coat of Arms, regardless of which face depicts it. A Coin may have any number of Tags; Tags name broad motifs rather than specific instances and do not describe its numismatic role or status.
 

@@ -110,28 +110,18 @@ describe("Coin detail route", () => {
     }
 
     it.each([true, false, null] as const)(
-      "returns %s Demonetization Status only in Coin detail",
+      "returns %s Demonetization Status in Coin detail",
       async (demonetized) => {
         const updatedCoin = { ...coin, demonetized }
         const app = createApp({
           allowedOrigins: [],
           checkReadiness: successfulReadinessCheck,
           findCoinById: async () => updatedCoin,
-          listCoins: async () => ({
-            coins: [
-              { ...updatedCoin, obverseImageKey: null, reverseImageKey: null },
-            ],
-            totalItems: 1,
-          }),
           imageBaseUrl: "https://images.coin-archive.example",
         })
         await expect(
           (await app.request(`/v1/coins/${coinId}`)).json()
         ).resolves.toMatchObject({ demonetized })
-        const list = (await (await app.request("/v1/coins")).json()) as {
-          coins: Array<unknown>
-        }
-        expect(list.coins[0]).not.toHaveProperty("demonetized")
       }
     )
 

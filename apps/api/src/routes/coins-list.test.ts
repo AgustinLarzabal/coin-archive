@@ -1223,7 +1223,7 @@ describe("Coin list route", () => {
       })
     })
 
-    it("returns persisted Coins with UTC timestamps and no caching", async () => {
+    it("returns persisted Coins without detail status, with UTC timestamps and no caching", async () => {
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
@@ -1237,6 +1237,7 @@ describe("Coin list route", () => {
               distribution: "standard-circulation",
               firstIssueYear: -2,
               lastIssueYear: 2,
+              demonetized: true,
               issuer: {
                 id: "10000000-0000-4000-8000-000000000001",
                 name: "Argentina",

@@ -522,6 +522,10 @@ export const invalidDistributionErrorSchema = errorResponseSchema(
   "invalid_distribution",
   "Coin Distribution is invalid"
 )
+export const invalidTechniqueErrorSchema = errorResponseSchema(
+  "invalid_technique",
+  "Coin Technique is invalid"
+)
 export const invalidTagErrorSchema = errorResponseSchema(
   "invalid_tag",
   "Tag is invalid"

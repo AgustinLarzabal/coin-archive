@@ -25,6 +25,7 @@ it("offers the Explore filters in the filter picker", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "Add filter" }))
   expect((await screen.findAllByText("Issuer")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Distribution")).length).toBeGreaterThan(0)
+  expect((await screen.findAllByText("Technique")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Tag")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Composition")).length).toBeGreaterThan(0)
   expect((await screen.findAllByText("Shape")).length).toBeGreaterThan(0)
@@ -35,6 +36,29 @@ it("offers the Explore filters in the filter picker", async () => {
     0
   )
   expect((await screen.findAllByText("Issue year")).length).toBeGreaterThan(0)
+})
+
+it("restores Technique with Issuer and sends both to the Coin API", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      techniques: [{ slug: "milled", name: "Milled" }],
+      issuers: [{ code: "AR", name: "Argentina" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?technique=milled&issuer=AR")
+
+  expect(await screen.findByText("Milled")).toBeVisible()
+  expect(router.state.location.search).toMatchObject({
+    technique: "milled",
+    issuer: "AR",
+  })
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?technique=milled&issuer=AR&page=1&pageSize=24"
+  )
+  expect(
+    await screen.findByText("No coins match the selected filters.")
+  ).toBeVisible()
 })
 
 it("restores Shape with Issuer and shows a filtered empty result", async () => {

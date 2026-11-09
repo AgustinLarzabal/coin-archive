@@ -701,6 +701,58 @@ describe("Coin list route", () => {
       })
     })
 
+    it("passes Coin Technique with other filters and pagination", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?technique=milled&issuer=AR&page=2&pageSize=12")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        technique: "milled",
+        issuerCode: "AR",
+        page: 2,
+        pageSize: 12,
+      })
+    })
+
+    it("returns an empty page for a valid unknown Coin Technique slug", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?technique=unknown-technique")
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledExactlyOnceWith({
+        technique: "unknown-technique",
+        page: 1,
+        pageSize: 24,
+      })
+      await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
+    })
+
+    it.each(["", "Milled", "bad_slug", "milled&technique=milled"])(
+      "rejects malformed or repeated Coin Technique %j",
+      async (technique) => {
+        const listCoins = vi.fn(emptyCoinPage)
+        const response = await createApp({
+          allowedOrigins: [],
+          checkReadiness: successfulReadinessCheck,
+          listCoins,
+        }).request(`/v1/coins?technique=${technique}`)
+
+        expect(response.status).toBe(400)
+        expect(listCoins).not.toHaveBeenCalled()
+        await expect(response.json()).resolves.toMatchObject({
+          error: { code: "invalid_technique" },
+        })
+      }
+    )
+
     it.each(["", "Non-circulating", "bad_slug", "standard_circulation"])(
       "rejects the invalid Coin Distribution %j without listing Coins",
       async (distribution) => {
@@ -1306,6 +1358,15 @@ describe("Coin list route", () => {
           }),
         }),
         expect.objectContaining({
+          description: expect.stringContaining("Coin Technique slug"),
+          in: "query",
+          name: "technique",
+          required: false,
+          schema: expect.objectContaining({
+            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          }),
+        }),
+        expect.objectContaining({
           description: expect.stringContaining("Tag Slug"),
           in: "query",
           name: "tag",
@@ -1417,6 +1478,7 @@ describe("Coin list route", () => {
                       $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
+                    { $ref: "#/components/schemas/InvalidTechniqueError" },
                     { $ref: "#/components/schemas/InvalidTagError" },
                     { $ref: "#/components/schemas/InvalidCompositionError" },
                     { $ref: "#/components/schemas/InvalidShapeError" },
@@ -1446,6 +1508,7 @@ describe("Coin list route", () => {
         expect.objectContaining({
           CoinListResponse: expect.any(Object),
           InvalidDistributionError: expect.any(Object),
+          InvalidTechniqueError: expect.any(Object),
           InvalidTagError: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidFaceValueFilterError: expect.any(Object),

@@ -15,6 +15,7 @@ import {
   rulingAuthorityListQueryOptions,
   shapeListQueryOptions,
   tagListQueryOptions,
+  techniqueListQueryOptions,
 } from "@/data/archive"
 import { exploreSearchSchema } from "@/features/explore/explore-search"
 import { ExploreFilters } from "@/features/explore/filters/explore-filters"
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_explore")({
       context.queryClient.query(currencyListQueryOptions()),
       context.queryClient.query(compositionListQueryOptions()),
       context.queryClient.query(distributionListQueryOptions()),
+      context.queryClient.query(techniqueListQueryOptions()),
       context.queryClient.query(engraverListQueryOptions()),
       context.queryClient.query(issuerListQueryOptions()),
       context.queryClient.query(mintListQueryOptions()),
@@ -48,6 +50,7 @@ function ExploreLayout() {
   const { data: distributionList } = useSuspenseQuery(
     distributionListQueryOptions()
   )
+  const { data: techniqueList } = useSuspenseQuery(techniqueListQueryOptions())
   const { data: engraverList } = useSuspenseQuery(engraverListQueryOptions())
   const { data: issuerList } = useSuspenseQuery(issuerListQueryOptions())
   const { data: mintList } = useSuspenseQuery(mintListQueryOptions())
@@ -67,6 +70,7 @@ function ExploreLayout() {
           currencies={currencyList.currencies}
           compositions={compositionList.compositions}
           distributions={distributionList.distributions}
+          techniques={techniqueList.techniques}
           engravers={engraverList.engravers}
           issuers={issuerList.issuers}
           mints={mintList.mints}

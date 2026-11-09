@@ -34,6 +34,7 @@ import {
   invalidRulingAuthoritySlugErrorSchema as sharedInvalidRulingAuthoritySlugErrorSchema,
   invalidShapeErrorSchema as sharedInvalidShapeErrorSchema,
   invalidTagErrorSchema as sharedInvalidTagErrorSchema,
+  invalidTechniqueErrorSchema as sharedInvalidTechniqueErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
   mintSlugSchema,
@@ -96,6 +97,11 @@ const coinListQuerySchema = z
       description:
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
+    }),
+    technique: coinDistributionSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
+      param: { name: "technique", in: "query" },
     }),
     tag: tagSlugSchema.optional().openapi({
       description:
@@ -164,6 +170,9 @@ const coinListQuerySchema = z
 
 const invalidDistributionErrorSchema =
   sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
+const invalidTechniqueErrorSchema = sharedInvalidTechniqueErrorSchema.openapi(
+  "InvalidTechniqueError"
+)
 const invalidTagErrorSchema =
   sharedInvalidTagErrorSchema.openapi("InvalidTagError")
 const invalidCompositionErrorSchema =
@@ -197,6 +206,7 @@ const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
   invalidMeasurementFilterErrorSchema,
   invalidDistributionErrorSchema,
+  invalidTechniqueErrorSchema,
   invalidTagErrorSchema,
   invalidCompositionErrorSchema,
   invalidShapeErrorSchema,
@@ -292,6 +302,15 @@ const validationErrors = [
     },
   },
   {
+    fields: ["technique"],
+    response: {
+      error: {
+        code: "invalid_technique",
+        message: "Coin Technique is invalid",
+      },
+    },
+  },
+  {
     fields: ["tag"],
     response: { error: { code: "invalid_tag", message: "Tag is invalid" } },
   },
@@ -365,6 +384,7 @@ export function registerCoinListRoute(
         amount: faceValueAmount,
         currency: currencySlug,
         distribution,
+        technique,
         tag,
         composition,
         shape,
@@ -378,7 +398,9 @@ export function registerCoinListRoute(
       } = context.req.valid("query")
       if (shape !== undefined && !(await options.hasShape?.(shape))) {
         return context.json(
-          { error: { code: "invalid_shape", message: "Coin Shape is invalid" } },
+          {
+            error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+          },
           400
         )
       }
@@ -397,6 +419,7 @@ export function registerCoinListRoute(
         ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
         ...(currencySlug === undefined ? {} : { currencySlug }),
         ...(distribution === undefined ? {} : { distribution }),
+        ...(technique === undefined ? {} : { technique }),
         ...(tag === undefined ? {} : { tagSlug: tag }),
         ...(composition === undefined ? {} : { composition }),
         ...(shape === undefined ? {} : { shape }),

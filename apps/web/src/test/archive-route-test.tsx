@@ -11,6 +11,7 @@ import type {
   RulingAuthorityListItemResponse,
   ShapeListItemResponse,
   TagListItemResponse,
+  TechniqueListItemResponse,
 } from "@coin-archive/api"
 
 import { getRouter } from "@/router"
@@ -42,6 +43,7 @@ export function createArchiveFetch({
   pagination,
   currencies = [],
   distributions = [],
+  techniques = [],
   compositions = [],
   engravers = [],
   issuers = [],
@@ -54,6 +56,7 @@ export function createArchiveFetch({
   pagination?: CoinListPaginationResponse
   currencies?: Array<CurrencyResponse>
   distributions?: Array<DistributionListItemResponse>
+  techniques?: Array<TechniqueListItemResponse>
   compositions?: Array<CompositionListItemResponse>
   engravers?: Array<EngraverListItemResponse>
   issuers?: Array<IssuerResponse>
@@ -69,6 +72,8 @@ export function createArchiveFetch({
       return Promise.resolve(jsonResponse({ currencies }))
     if (url.endsWith("/v1/distributions"))
       return Promise.resolve(jsonResponse({ distributions }))
+    if (url.endsWith("/v1/techniques"))
+      return Promise.resolve(jsonResponse({ techniques }))
     if (url.endsWith("/v1/compositions"))
       return Promise.resolve(jsonResponse({ compositions }))
     if (url.endsWith("/v1/engravers"))

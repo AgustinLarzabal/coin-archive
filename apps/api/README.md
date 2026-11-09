@@ -56,20 +56,21 @@ Coin detail also includes nullable `technique` and `techniqueName` fields. `tech
 
 `GET /v1/coins` accepts one exact value for each optional filter:
 
-| Parameter      | Value                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------- |
-| `amount`       | Exact positive Face Value Amount; requires `currency`                                  |
-| `currency`     | Case-sensitive Currency Slug                                                           |
-| `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions` |
-| `tag`          | Exact, case-sensitive Tag Slug; use a value returned by `GET /v1/tags`                 |
-| `issuer`       | Case-sensitive Issuer Code, such as `AR`                                               |
-| `mint`         | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`               |
-| `engraver`     | Case-sensitive Engraver Slug                                                           |
-| `ruler`        | Case-sensitive Ruling Authority Slug                                                   |
-| `year`         | One Issue Year or a closed Issue Year range                                            |
-| `size`         | Exact Coin Size or an inclusive closed range in millimetres                            |
-| `thickness`    | Exact Coin Thickness or an inclusive closed range in millimetres                       |
-| `weight`       | Exact Coin Weight or an inclusive closed range in grams                                |
+| Parameter      | Value                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------- |
+| `amount`       | Exact positive Face Value Amount; requires `currency`                                   |
+| `currency`     | Case-sensitive Currency Slug                                                            |
+| `distribution` | Case-sensitive Coin Distribution Slug; use a value returned by `GET /v1/distributions`  |
+| `technique`    | Exact, case-sensitive Coin Technique slug; use a value returned by `GET /v1/techniques` |
+| `tag`          | Exact, case-sensitive Tag Slug; use a value returned by `GET /v1/tags`                  |
+| `issuer`       | Case-sensitive Issuer Code, such as `AR`                                                |
+| `mint`         | Exact, case-sensitive Mint Slug; use a value returned by `GET /v1/mints`                |
+| `engraver`     | Case-sensitive Engraver Slug                                                            |
+| `ruler`        | Case-sensitive Ruling Authority Slug                                                    |
+| `year`         | One Issue Year or a closed Issue Year range                                             |
+| `size`         | Exact Coin Size or an inclusive closed range in millimetres                             |
+| `thickness`    | Exact Coin Thickness or an inclusive closed range in millimetres                        |
+| `weight`       | Exact Coin Weight or an inclusive closed range in grams                                 |
 
 Filters can be combined. For example:
 

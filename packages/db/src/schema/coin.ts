@@ -81,6 +81,11 @@ export const coins = pgTable(
       table.createdAt.desc().nullsFirst(),
       table.id.asc()
     ),
+    index("coins_technique_created_at_id_index").on(
+      table.techniqueId,
+      table.createdAt.desc().nullsFirst(),
+      table.id.asc()
+    ),
     check("coins_title_not_empty", sql`length(${table.title}) >= 1`),
     check(
       "coins_composition_detail_valid",

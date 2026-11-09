@@ -80,6 +80,59 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("filters exact Technique before counting and paging with another filter", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const [milled] = await database.listTechniques()
+      const coins = await database.orm
+        .insert(database.schema.coins)
+        .values([
+          {
+            title: "Milled one",
+            issuerId: issuer.id,
+            techniqueId: milled.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Milled two",
+            issuerId: issuer.id,
+            techniqueId: milled.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+          {
+            title: "Unknown",
+            issuerId: issuer.id,
+            ...TEST_COIN_REQUIRED_FIELDS,
+          },
+        ])
+        .returning({ id: database.schema.coins.id })
+      const filters = { technique: "milled", issuerCode: "AR", pageSize: 1 }
+      const first = await database.listCoins(filters)
+      const second = await database.listCoins({ ...filters, page: 2 })
+      expect(first.totalItems).toBe(2)
+      expect(second.totalItems).toBe(2)
+      expect(
+        [...first.coins, ...second.coins].map(({ id }) => id).sort()
+      ).toEqual(
+        coins
+          .slice(0, 2)
+          .map(({ id }) => id)
+          .sort()
+      )
+      await expect(
+        database.listCoins({ technique: "Milled" })
+      ).resolves.toMatchObject({ coins: [], totalItems: 0 })
+      await expect(
+        database.listCoins({ technique: "unknown-technique" })
+      ).resolves.toMatchObject({ coins: [], totalItems: 0 })
+      await expect(
+        database.listCoins({ technique: "milled", issuerCode: "UY" })
+      ).resolves.toMatchObject({ coins: [], totalItems: 0 })
+    } finally {
+      await database.close()
+    }
+  })
   it("stores one Technique by identity and protects referenced catalogue entries", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {

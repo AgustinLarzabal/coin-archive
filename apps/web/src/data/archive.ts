@@ -46,6 +46,10 @@ import {
   InvalidTagListResponseError,
   TagListRequestError,
 } from "./archive/tags"
+import {
+  InvalidTechniqueListResponseError,
+  TechniqueListRequestError,
+} from "./archive/techniques"
 
 export {
   coinDetailQueryOptions,
@@ -82,6 +86,11 @@ export {
   DistributionListRequestError,
   InvalidDistributionListResponseError,
 } from "./archive/distributions"
+export {
+  InvalidTechniqueListResponseError,
+  techniqueListQueryOptions,
+  TechniqueListRequestError,
+} from "./archive/techniques"
 export {
   compositionListQueryOptions,
   CompositionListRequestError,
@@ -143,6 +152,11 @@ export const archiveErrorSerializationAdapters = [
     InvalidDistributionListResponseError
   ),
   errorAdapter("DistributionListRequestError", DistributionListRequestError),
+  errorAdapter(
+    "InvalidTechniqueListResponseError",
+    InvalidTechniqueListResponseError
+  ),
+  errorAdapter("TechniqueListRequestError", TechniqueListRequestError),
   errorAdapter(
     "InvalidEngraverListResponseError",
     InvalidEngraverListResponseError

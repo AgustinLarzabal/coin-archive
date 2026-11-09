@@ -176,6 +176,7 @@ describe("API composition", () => {
       "InvalidRulingAuthoritySlugError",
       "InvalidShapeError",
       "InvalidTagError",
+      "InvalidTechniqueError",
       "InvalidYearError",
       "Issuer",
       "IssuerListResponse",

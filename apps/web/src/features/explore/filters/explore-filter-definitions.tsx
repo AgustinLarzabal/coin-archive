@@ -9,6 +9,7 @@ import { rulerFilterDefinition } from "./definitions/ruler-filter"
 import { shapeFilterDefinition } from "./definitions/shape-filter"
 import { sizeFilterDefinition } from "./definitions/size-filter"
 import { tagFilterDefinition } from "./definitions/tag-filter"
+import { techniqueFilterDefinition } from "./definitions/technique-filter"
 import { thicknessFilterDefinition } from "./definitions/thickness-filter"
 import { weightFilterDefinition } from "./definitions/weight-filter"
 import { yearFilterDefinition } from "./definitions/year-filter"
@@ -24,6 +25,7 @@ import type {
   RulingAuthorityListItemResponse,
   ShapeListItemResponse,
   TagListItemResponse,
+  TechniqueListItemResponse,
 } from "@coin-archive/api"
 import type {
   FilterField,
@@ -42,6 +44,7 @@ export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
   compositions: Array<CompositionListItemResponse>
   distributions: Array<DistributionListItemResponse>
+  techniques: Array<TechniqueListItemResponse>
   engravers: Array<EngraverListItemResponse>
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>
@@ -64,6 +67,7 @@ export const exploreFilterDefinitions = [
   compositionFilterDefinition,
   shapeFilterDefinition,
   distributionFilterDefinition,
+  techniqueFilterDefinition,
   engraverFilterDefinition,
   issuerFilterDefinition,
   mintFilterDefinition,

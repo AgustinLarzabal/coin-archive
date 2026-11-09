@@ -105,6 +105,7 @@ export interface CoinListOptions {
   currencySlug?: string
   faceValueAmount?: string
   distribution?: string
+  technique?: string
   tagSlug?: string
   composition?: string
   shape?: string
@@ -453,6 +454,18 @@ export function createDatabase(
                     )
                     .limit(1)
                 ).at(0)?.id ?? null)
+          const techniqueId =
+            listOptions.technique === undefined
+              ? undefined
+              : ((
+                  await transaction
+                    .select({ id: schema.coinTechniques.id })
+                    .from(schema.coinTechniques)
+                    .where(
+                      eq(schema.coinTechniques.slug, listOptions.technique)
+                    )
+                    .limit(1)
+                ).at(0)?.id ?? null)
           const shapeId =
             listOptions.shape === undefined
               ? undefined
@@ -500,6 +513,11 @@ export function createDatabase(
                 : distributionId === null
                   ? sql`false`
                   : eq(schema.coins.distributionId, distributionId),
+              techniqueId === undefined
+                ? undefined
+                : techniqueId === null
+                  ? sql`false`
+                  : eq(schema.coins.techniqueId, techniqueId),
               compositionId === undefined
                 ? undefined
                 : compositionId === null

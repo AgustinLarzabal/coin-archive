@@ -28,6 +28,10 @@ describe("returning from a coin to Explore", () => {
       if (url.pathname === "/v1/distributions") {
         return Promise.resolve(jsonResponse({ distributions: [] }))
       }
+
+      if (url.pathname === "/v1/techniques") {
+        return Promise.resolve(jsonResponse({ techniques: [] }))
+      }
       if (url.pathname === "/v1/tags") {
         return Promise.resolve(jsonResponse({ tags: [] }))
       }

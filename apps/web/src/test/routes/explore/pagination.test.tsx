@@ -32,6 +32,10 @@ function createPageAwareArchiveFetch(totalPages = 3) {
     if (url.endsWith("/v1/distributions")) {
       return Promise.resolve(jsonResponse({ distributions: [] }))
     }
+
+    if (url.endsWith("/v1/techniques")) {
+      return Promise.resolve(jsonResponse({ techniques: [] }))
+    }
     if (url.endsWith("/v1/currencies")) {
       return Promise.resolve(jsonResponse({ currencies: [] }))
     }
@@ -57,6 +61,26 @@ function createPageAwareArchiveFetch(totalPages = 3) {
 }
 
 describe("Explore pagination", () => {
+  it("keeps Technique and Issuer when changing pages", async () => {
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?technique=milled&issuer=AR")
+    const user = userEvent.setup()
+
+    await screen.findByRole("link", { name: "Coin on page 1" })
+    await user.click(screen.getByRole("button", { name: "Go to next page" }))
+
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({
+        technique: "milled",
+        issuer: "AR",
+        page: 2,
+      })
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?technique=milled&issuer=AR&page=2&pageSize=24"
+    )
+  })
   it("keeps Shape and Issuer when changing pages", async () => {
     const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)
@@ -236,6 +260,10 @@ describe("Explore pagination", () => {
       }
       if (url.endsWith("/v1/distributions")) {
         return Promise.resolve(jsonResponse({ distributions: [] }))
+      }
+
+      if (url.endsWith("/v1/techniques")) {
+        return Promise.resolve(jsonResponse({ techniques: [] }))
       }
       if (url.endsWith("/v1/currencies")) {
         return Promise.resolve(jsonResponse({ currencies: [] }))

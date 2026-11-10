@@ -87,6 +87,7 @@ export type CoinOrientation = z.infer<typeof coinOrientationSchema>
 
 export const distributionSlugSchema = coinDistributionSchema
 export const tagSlugSchema = coinDistributionSchema
+export const techniqueSlugSchema = coinDistributionSchema
 export const tagListItemResponseSchema = z.strictObject({
   slug: tagSlugSchema,
   name: trimmedDisplayTextSchema(200),
@@ -158,7 +159,7 @@ export type CompositionListResponse = z.infer<
 const coinResponseShape = {
   id: coinIdSchema,
   title: z.string().min(1).max(200),
-  distribution: coinDistributionSchema,
+  distribution: distributionSlugSchema,
   firstIssueYear: firstIssueYearSchema,
   lastIssueYear: lastIssueYearSchema,
   issuer: issuerResponseSchema,
@@ -462,7 +463,7 @@ export const coinDetailResponseSchema = z
     orientation: trimmedDisplayTextSchema(200).nullable(),
     shape: coinDistributionSchema.nullable(),
     shapeName: trimmedDisplayTextSchema(200).nullable(),
-    technique: coinDistributionSchema.nullable(),
+    technique: techniqueSlugSchema.nullable(),
     techniqueName: trimmedDisplayTextSchema(200).nullable(),
     distributionName: trimmedDisplayTextSchema(200),
     composition: coinDistributionSchema.nullable(),

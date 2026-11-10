@@ -1,6 +1,5 @@
 import {
   COIN_LIST_DEFAULT_PAGE,
-  coinDistributionSchema,
   coinListPageQuerySchema,
   coinListPageSchema,
   coinListSizeSchema,
@@ -12,30 +11,32 @@ import {
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
+  distributionSlugSchema,
   engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
   tagSlugSchema,
+  techniqueSlugSchema,
 } from "@coin-archive/api"
 import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
 
 export const exploreSearchSchema = z.object({
   amount: faceValueAmountQuerySchema.optional().catch(undefined),
-  currency: currencySlugSchema.optional().catch(undefined),
-  distribution: coinDistributionSchema.optional().catch(undefined),
-  technique: coinDistributionSchema.optional().catch(undefined),
-  tag: tagSlugSchema.optional().catch(undefined),
   composition: compositionSlugSchema.optional().catch(undefined),
-  shape: coinShapeSchema.optional().catch(undefined),
-  orientation: coinOrientationSchema.optional().catch(undefined),
+  currency: currencySlugSchema.optional().catch(undefined),
+  distribution: distributionSlugSchema.optional().catch(undefined),
   engraver: engraverSlugSchema.optional().catch(undefined),
   issuer: issuerCodeSchema.optional().catch(undefined),
   mint: mintSlugSchema.optional().catch(undefined),
+  orientation: coinOrientationSchema.optional().catch(undefined),
   ruler: rulingAuthoritySlugSchema.optional().catch(undefined),
+  shape: coinShapeSchema.optional().catch(undefined),
   size: coinListSizeSchema.optional().catch(undefined),
+  tag: tagSlugSchema.optional().catch(undefined),
+  technique: techniqueSlugSchema.optional().catch(undefined),
   thickness: coinListThicknessSchema.optional().catch(undefined),
   weight: coinListWeightSchema.optional().catch(undefined),
   year: z

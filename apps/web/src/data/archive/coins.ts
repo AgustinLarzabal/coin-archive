@@ -2,7 +2,6 @@ import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
   coinDetailResponseSchema,
-  coinDistributionSchema,
   coinIdSchema,
   coinListPageSchema,
   coinListResponseSchema,
@@ -15,12 +14,14 @@ import {
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
+  distributionSlugSchema,
   engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   mintSlugSchema,
   rulingAuthoritySlugSchema,
   tagSlugSchema,
+  techniqueSlugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import type {
@@ -245,13 +246,13 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
   if (
     distribution !== undefined &&
-    !coinDistributionSchema.safeParse(distribution).success
+    !distributionSlugSchema.safeParse(distribution).success
   ) {
     throw new TypeError("Invalid Coin Distribution")
   }
   if (
     technique !== undefined &&
-    !coinDistributionSchema.safeParse(technique).success
+    !techniqueSlugSchema.safeParse(technique).success
   ) {
     throw new TypeError("Invalid Coin Technique")
   }

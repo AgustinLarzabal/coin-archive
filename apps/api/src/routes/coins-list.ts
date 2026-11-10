@@ -6,7 +6,6 @@ import {
   COIN_LIST_THICKNESS_QUERY_PATTERN,
   COIN_LIST_WEIGHT_QUERY_PATTERN,
   COIN_LIST_YEAR_QUERY_PATTERN,
-  coinDistributionSchema,
   coinListPageQuerySchema,
   coinListPageSizeQuerySchema,
   coinListSizeSchema,
@@ -21,6 +20,7 @@ import {
   coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
+  distributionSlugSchema,
   engraverSlugSchema,
   FACE_VALUE_AMOUNT_QUERY_PATTERN,
   faceValueAmountQuerySchema,
@@ -42,6 +42,7 @@ import {
   mintSlugSchema,
   rulingAuthoritySlugSchema,
   tagSlugSchema,
+  techniqueSlugSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import {
@@ -95,12 +96,12 @@ const coinListQuerySchema = z
         "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_face_value_filter",
       param: { name: "currency", in: "query" },
     }),
-    distribution: coinDistributionSchema.optional().openapi({
+    distribution: distributionSlugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
     }),
-    technique: coinDistributionSchema.optional().openapi({
+    technique: techniqueSlugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
       param: { name: "technique", in: "query" },

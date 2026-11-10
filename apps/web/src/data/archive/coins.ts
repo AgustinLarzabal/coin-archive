@@ -10,8 +10,6 @@ import {
   coinListWeightSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
-  coinOrientationSchema,
-  coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
   distributionSlugSchema,
@@ -19,7 +17,9 @@ import {
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   mintSlugSchema,
+  orientationSlugSchema,
   rulingAuthoritySlugSchema,
+  shapeSlugSchema,
   tagSlugSchema,
   techniqueSlugSchema,
 } from "@coin-archive/api"
@@ -265,12 +265,12 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   ) {
     throw new TypeError("Invalid Coin Composition")
   }
-  if (shape !== undefined && !coinShapeSchema.safeParse(shape).success) {
+  if (shape !== undefined && !shapeSlugSchema.safeParse(shape).success) {
     throw new TypeError("Invalid Coin Shape")
   }
   if (
     orientation !== undefined &&
-    !coinOrientationSchema.safeParse(orientation).success
+    !orientationSlugSchema.safeParse(orientation).success
   ) {
     throw new TypeError("Invalid Coin Orientation")
   }

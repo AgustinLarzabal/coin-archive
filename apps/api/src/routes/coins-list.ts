@@ -16,8 +16,6 @@ import {
   coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
-  coinOrientationSchema,
-  coinShapeSchema,
   compositionSlugSchema,
   currencySlugSchema,
   distributionSlugSchema,
@@ -40,7 +38,9 @@ import {
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
   mintSlugSchema,
+  orientationSlugSchema,
   rulingAuthoritySlugSchema,
+  shapeSlugSchema,
   tagSlugSchema,
   techniqueSlugSchema,
 } from "@coin-archive/api"
@@ -116,12 +116,12 @@ const coinListQuerySchema = z
         "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
       param: { name: "composition", in: "query" },
     }),
-    shape: coinShapeSchema.optional().openapi({
+    shape: shapeSlugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Shape Slug. Unsupported or repeated values return invalid_shape",
       param: { name: "shape", in: "query" },
     }),
-    orientation: coinOrientationSchema.optional().openapi({
+    orientation: orientationSlugSchema.optional().openapi({
       description:
         "Exact Coin Orientation Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_orientation",
       param: { name: "orientation", in: "query" },

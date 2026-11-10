@@ -82,8 +82,8 @@ export const coinDistributionSchema = z
 
 export type CoinDistribution = z.infer<typeof coinDistributionSchema>
 
-export const coinOrientationSchema = coinDistributionSchema
-export type CoinOrientation = z.infer<typeof coinOrientationSchema>
+export const orientationSlugSchema = coinDistributionSchema
+export type CoinOrientation = z.infer<typeof orientationSlugSchema>
 
 export const distributionSlugSchema = coinDistributionSchema
 export const tagSlugSchema = coinDistributionSchema
@@ -116,8 +116,8 @@ export type DistributionListResponse = z.infer<
 >
 
 export const compositionSlugSchema = coinDistributionSchema
-export const coinShapeSchema = coinDistributionSchema
-export type CoinShape = z.infer<typeof coinShapeSchema>
+export const shapeSlugSchema = coinDistributionSchema
+export type CoinShape = z.infer<typeof shapeSlugSchema>
 export const shapeListItemResponseSchema = distributionListItemResponseSchema
 export type ShapeListItemResponse = z.infer<typeof shapeListItemResponseSchema>
 export const shapeListResponseSchema = z.strictObject({

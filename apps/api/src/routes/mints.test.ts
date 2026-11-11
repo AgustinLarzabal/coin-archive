@@ -5,7 +5,7 @@ import { createApp } from "../app.js"
 const options = { allowedOrigins: [], checkReadiness: async () => {} }
 
 describe("GET /v1/mints", () => {
-  it("publishes each Mint with its country and operation period", async () => {
+  it("publishes each Mint with its country", async () => {
     const response = await createApp({
       ...options,
       listMints: async () => [
@@ -22,9 +22,6 @@ describe("GET /v1/mints", () => {
             createdAt: new Date(),
             updatedAt: new Date(),
           },
-          startYear: 1900,
-          endYear: null,
-          operating: true,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -36,14 +33,10 @@ describe("GET /v1/mints", () => {
     await expect(response.json()).resolves.toEqual({
       mints: [
         {
-          id: "40000000-0000-4000-8000-000000000001",
           slug: "rome-italy",
           name: "Rome Mint",
           place: "Rome",
           country: { code: "IT", name: "Italy" },
-          startYear: 1900,
-          endYear: null,
-          operating: true,
         },
       ],
     })

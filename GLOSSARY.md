@@ -102,15 +102,12 @@ A unique, uppercase public identifier for an Issuer. Genuine ISO 3166-1 alpha-2 
 _Avoid_: Country Code, ISO Code
 
 **Mint**:
-A physical facility where Coins were struck, identified by its name and locality for one period under a particular polity. Its country is the existing Issuer representing that polity, which may differ from the Issuer of a Coin struck there; a change of country begins a distinct Mint identity.
+A physical facility where Coins were struck, identified by its name and locality under a particular polity. Its country is the existing Issuer representing that polity, which may differ from the Issuer of a Coin struck there; a change of country begins a distinct Mint identity.
 _Avoid_: Mint mark, Minting organization
 
 **Mint Slug**:
 A unique, lowercase public identifier for a Mint that remains stable independently of its name and place. Distinct Mint identities have distinct slugs.
 _Avoid_: Mint ID
-
-**Mint Operation Period**:
-The inclusive span from the first through the last year a Mint operated under its recorded country, using the same BCE/CE convention as Issue Years. It may include temporary pauses; either boundary may be unknown, and an unknown last year is distinct from a Mint that is still operating.
 
 **Ruling Authority**:
 A canonical person, dynasty, regime, or named political period to which a Coin's issuance is attributed. A Coin may have any number of Ruling Authorities; a Ruling Authority is distinct from both its Issuer and its Issue Period and may be shared by Coins from multiple Issuers.

@@ -182,7 +182,7 @@ describe("Coin viewer route details", () => {
     expect(screen.queryByText("Coin Thickness")).not.toBeInTheDocument()
   })
 
-  it("shows multiple confirmed Mints with place, country, and operation period", async () => {
+  it("shows multiple confirmed Mints with place and country", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
@@ -191,54 +191,34 @@ describe("Coin viewer route details", () => {
             coinDetailFixture({
               mints: [
                 {
-                  id: "40000000-0000-4000-8000-000000000001",
                   slug: "rome-state-mint-italy",
                   name: "Zecca dello Stato",
                   place: "Rome",
                   country: { name: "Italy", code: "IT" },
-                  startYear: null,
-                  endYear: null,
-                  operating: true,
                 },
                 {
-                  id: "40000000-0000-4000-8000-000000000002",
                   slug: "ancient-mint",
                   name: "Ancient Mint",
                   place: "Athens",
                   country: { name: "Greece", code: "GR" },
-                  startYear: -44,
-                  endYear: -42,
-                  operating: false,
                 },
                 {
-                  id: "40000000-0000-4000-8000-000000000003",
                   slug: "closed-mint",
                   name: "Closed Mint",
                   place: "Milan",
                   country: { name: "Italy", code: "IT" },
-                  startYear: null,
-                  endYear: null,
-                  operating: false,
                 },
                 {
-                  id: "40000000-0000-4000-8000-000000000004",
                   slug: "unknown-mint",
                   name: "Unknown Mint",
                   place: "Naples",
                   country: { name: "Italy", code: "IT" },
-                  startYear: null,
-                  endYear: null,
-                  operating: null,
                 },
                 {
-                  id: "40000000-0000-4000-8000-000000000005",
                   slug: "partly-known-mint",
                   name: "Partly Known Mint",
                   place: "Turin",
                   country: { name: "Italy", code: "IT" },
-                  startYear: 1900,
-                  endYear: null,
-                  operating: null,
                 },
               ],
             })
@@ -251,13 +231,11 @@ describe("Coin viewer route details", () => {
     expect(screen.getByText("Zecca dello Stato")).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Zecca dello Stato" })).toBeNull()
     expect(screen.getByText("Rome, Italy")).toBeInTheDocument()
-    expect(screen.getByText("Unknown–ongoing")).toBeInTheDocument()
     expect(screen.getByText("Ancient Mint")).toBeInTheDocument()
     expect(screen.getByText("Athens, Greece")).toBeInTheDocument()
-    expect(screen.getByText("44–42 BCE")).toBeInTheDocument()
-    expect(screen.getByText("Unknown (closed)")).toBeInTheDocument()
-    expect(screen.getByText("Mint").parentElement).toHaveTextContent("Unknown")
-    expect(screen.getByText("1900–unknown")).toBeInTheDocument()
+    expect(screen.getByText("Milan, Italy")).toBeInTheDocument()
+    expect(screen.getByText("Naples, Italy")).toBeInTheDocument()
+    expect(screen.getByText("Turin, Italy")).toBeInTheDocument()
   })
 
   it("omits Mint details for a Coin with no confirmed Mint", async () => {

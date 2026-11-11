@@ -234,7 +234,7 @@ describe("Coin detail route", () => {
       expect(list.coins[0]).not.toHaveProperty("techniqueName")
     })
 
-    it("returns every confirmed Mint with its own country and operation period", async () => {
+    it("returns every confirmed Mint with its own country", async () => {
       const mint = {
         id: "40000000-0000-4000-8000-000000000001",
         slug: "rome-state-mint-italy",
@@ -242,9 +242,6 @@ describe("Coin detail route", () => {
         place: "Rome",
         countryId: issuerId,
         country: { ...coin.issuer, name: "Italy", code: "IT" },
-        startYear: null,
-        endYear: null,
-        operating: true,
         createdAt: coin.createdAt,
         updatedAt: coin.updatedAt,
       }
@@ -260,15 +257,11 @@ describe("Coin detail route", () => {
               id: "40000000-0000-4000-8000-000000000002",
               slug: "second-mint",
               name: "Second Mint",
-              startYear: 2000,
-              endYear: 2005,
-              operating: false,
             },
             {
               ...mint,
               id: "40000000-0000-4000-8000-000000000003",
               slug: "unknown-status-mint",
-              operating: null,
             },
           ],
         }),
@@ -276,40 +269,27 @@ describe("Coin detail route", () => {
       }).request(`/v1/coins/${coinId}`)
 
       expect(response.status).toBe(200)
-      await expect(response.json()).resolves.toMatchObject({
-        mints: [
-          {
-            id: mint.id,
-            slug: "rome-state-mint-italy",
-            name: "Zecca dello Stato",
-            place: "Rome",
-            country: { name: "Italy", code: "IT" },
-            startYear: null,
-            endYear: null,
-            operating: true,
-          },
-          {
-            id: "40000000-0000-4000-8000-000000000002",
-            slug: "second-mint",
-            name: "Second Mint",
-            place: "Rome",
-            country: { name: "Italy", code: "IT" },
-            startYear: 2000,
-            endYear: 2005,
-            operating: false,
-          },
-          {
-            id: "40000000-0000-4000-8000-000000000003",
-            slug: "unknown-status-mint",
-            name: "Zecca dello Stato",
-            place: "Rome",
-            country: { name: "Italy", code: "IT" },
-            startYear: null,
-            endYear: null,
-            operating: null,
-          },
-        ],
-      })
+      const { mints } = (await response.json()) as { mints: Array<unknown> }
+      expect(mints).toEqual([
+        {
+          slug: "rome-state-mint-italy",
+          name: "Zecca dello Stato",
+          place: "Rome",
+          country: { name: "Italy", code: "IT" },
+        },
+        {
+          slug: "second-mint",
+          name: "Second Mint",
+          place: "Rome",
+          country: { name: "Italy", code: "IT" },
+        },
+        {
+          slug: "unknown-status-mint",
+          name: "Zecca dello Stato",
+          place: "Rome",
+          country: { name: "Italy", code: "IT" },
+        },
+      ])
     })
 
     it("returns a newly curated Coin Distribution Slug and name", async () => {
@@ -982,16 +962,7 @@ describe("Coin detail route", () => {
                 type: "array",
                 items: expect.objectContaining({
                   type: "object",
-                  required: [
-                    "id",
-                    "slug",
-                    "name",
-                    "place",
-                    "country",
-                    "startYear",
-                    "endYear",
-                    "operating",
-                  ],
+                  required: ["slug", "name", "place", "country"],
                 }),
               }),
               tags: expect.objectContaining({
@@ -1082,7 +1053,12 @@ describe("Coin detail route", () => {
           Issuer: {
             type: "object",
             properties: {
-              name: { type: "string", minLength: 1, maxLength: 200 },
+              name: {
+                type: "string",
+                minLength: 1,
+                maxLength: 200,
+                pattern: expect.any(String),
+              },
               code: { type: "string", pattern: expect.any(String) },
             },
             required: ["name", "code"],

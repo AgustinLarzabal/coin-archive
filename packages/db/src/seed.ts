@@ -241,19 +241,6 @@ const seedDocumentSchema = z
             message: `Unknown or duplicate Mint Slug: ${slug}`,
             path: ["coins", index, "mintSlugs", mintIndex],
           })
-        } else if (
-          (mint.startYear !== undefined &&
-            mint.startYear !== null &&
-            mint.startYear > coin.lastIssueYear) ||
-          (mint.endYear !== undefined &&
-            mint.endYear !== null &&
-            mint.endYear < coin.firstIssueYear)
-        ) {
-          context.addIssue({
-            code: "custom",
-            message: `Mint Operation Period does not overlap Coin Issue Period: ${slug}`,
-            path: ["coins", index, "mintSlugs", mintIndex],
-          })
         }
         coinMintSlugs.add(slug)
       })

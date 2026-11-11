@@ -1,7 +1,7 @@
-import { isIsoIssuerCode } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { cn } from "@coin-archive/ui/lib/utils"
 import { Link, useSearch } from "@tanstack/react-router"
+import { isIsoIssuerCode } from "../issuer"
 import type { CoinListItemResponse } from "@coin-archive/api"
 import type { ComponentProps } from "react"
 

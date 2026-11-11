@@ -13,7 +13,7 @@ const route = createRoute({
       content: {
         "application/json": {
           schema: mintListResponseSchema
-            .safeExtend({ mints: z.array(mintResponseSchema.openapi("Mint")) })
+            .extend({ mints: z.array(mintResponseSchema.openapi("Mint")) })
             .openapi("MintListResponse"),
         },
       },
@@ -37,27 +37,12 @@ export function registerMintRoutes(
   app.openapi(route, async (context) => {
     const mints = await (options.listMints ?? (async () => []))()
     const response = {
-      mints: mints.map(
-        ({
-          id,
-          slug,
-          name,
-          place,
-          country,
-          startYear,
-          endYear,
-          operating,
-        }) => ({
-          id,
-          slug,
-          name,
-          place,
-          country: { code: country.code, name: country.name },
-          startYear,
-          endYear,
-          operating,
-        })
-      ),
+      mints: mints.map(({ slug, name, place, country }) => ({
+        slug,
+        name,
+        place,
+        country: { code: country.code, name: country.name },
+      })),
     } satisfies MintListResponse
     return context.json(response, 200)
   })

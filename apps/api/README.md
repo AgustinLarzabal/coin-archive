@@ -154,24 +154,18 @@ curl 'http://localhost:3001/v1/mints'
 {
   "mints": [
     {
-      "id": "40000000-0000-4000-8000-000000000001",
       "slug": "rome-state-mint-italy",
       "name": "Zecca dello Stato",
       "place": "Rome",
-      "country": { "code": "IT", "name": "Italy" },
-      "startYear": null,
-      "endYear": null,
-      "operating": true
+      "country": { "code": "IT", "name": "Italy" }
     }
   ]
 }
 ```
 
-`startYear` and `endYear` are inclusive signed BCE/CE years without year zero;
-either can be `null` when unknown. `operating` is `true`, `false`, or `null`
-when unknown. A known end year requires `operating: false`. An empty catalogue
-returns `{"mints":[]}`. A Coin may have multiple confirmed Mints or none;
-each Mint name in the Coin viewer links to Explore with that Mint selected.
+An empty catalogue returns `{"mints":[]}`. A Coin may have multiple confirmed
+Mints or none; each Mint name in the Coin viewer links to Explore with that Mint
+selected.
 
 ## List Coin Distributions
 

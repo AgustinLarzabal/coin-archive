@@ -83,9 +83,6 @@ The Currency Full Name is derived from `name` and `period_label`; it is not stor
 | `name`       | `varchar(200)` | Required; nonempty, with no surrounding whitespace.                                          |
 | `place`      | `varchar(200)` | Required; nonempty, with no surrounding whitespace.                                          |
 | `country_id` | UUID           | Required reference to `issuers.id`; deletion of a referenced Issuer is restricted.          |
-| `start_year` | `integer`      | Optional; if present, a nonzero BCE/CE year.                                                  |
-| `end_year`   | `integer`      | Optional; if present, a nonzero BCE/CE year not before `start_year`.                          |
-| `operating`  | `boolean`      | Optional; `true` requires no `end_year`; an `end_year` requires `false`.                      |
 | `created_at` | `timestamptz`  | Required; defaults to now.                                                                   |
 | `updated_at` | `timestamptz`  | Required; defaults to now and updates automatically.                                         |
 
@@ -125,7 +122,7 @@ Each row links one Coin to one Mint.
 | `coin_id` | UUID | Required reference to `coins.id`; deleted with its Coin. Part of the composite primary key.                                 |
 | `mint_id` | UUID | Required reference to `mints.id`; deletion of a referenced Mint is restricted. Part of the composite primary key.          |
 
-The Coin's issue period must overlap the Mint's operating period. The database checks this when the link is created or updated and when either period changes. An index supports filtering by Mint.
+An index supports filtering Coins by Mint.
 
 ## `coin_surfaces`
 

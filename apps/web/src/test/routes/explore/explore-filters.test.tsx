@@ -455,24 +455,16 @@ it("combines all Explore filters and syncs them with the URL", async () => {
         issuers: [{ code: "AR", name: "Argentina" }],
         mints: [
           {
-            id: "00000000-0000-4000-8000-000000000001",
             slug: "buenos-aires",
             name: "National Mint",
             place: "Buenos Aires",
             country: { code: "AR", name: "Argentina" },
-            startYear: null,
-            endYear: null,
-            operating: null,
           },
           {
-            id: "00000000-0000-4000-8000-000000000002",
             slug: "cordoba",
             name: "National Mint",
             place: "Córdoba",
             country: { code: "AR", name: "Argentina" },
-            startYear: null,
-            endYear: null,
-            operating: null,
           },
         ],
         distributions: [

@@ -5,6 +5,17 @@ import { createApp } from "../app.js"
 const successfulReadinessCheck = async () => {}
 
 describe("Issuer routes", () => {
+  it("rejects issuer names with outer whitespace", async () => {
+    const { issuerResponseSchema } = await import("@coin-archive/api")
+
+    expect(
+      issuerResponseSchema.safeParse({ name: " Argentina", code: "AR" }).success
+    ).toBe(false)
+    expect(
+      issuerResponseSchema.safeParse({ name: "Argentina", code: "AR" }).success
+    ).toBe(true)
+  })
+
   describe("GET /v1/issuers", () => {
     const issuers = [
       {

@@ -175,14 +175,10 @@ describe("Archive landing route", () => {
         issuers,
         mints: [
           {
-            id: "00000000-0000-4000-8000-000000000001",
             slug: "buenos-aires",
             name: "Buenos Aires Mint",
             place: "Buenos Aires",
             country: { code: "AR", name: "Argentina" },
-            startYear: null,
-            endYear: null,
-            operating: null,
           },
         ],
       })

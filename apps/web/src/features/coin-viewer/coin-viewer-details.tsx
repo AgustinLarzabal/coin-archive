@@ -1,31 +1,9 @@
-import { isIsoIssuerCode } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { Link } from "@tanstack/react-router"
+import { isIsoIssuerCode } from "../issuer"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
 import { formatIssuePeriod } from "@/features/issue-period"
-
-function formatMintPeriod(mint: CoinDetailResponse["mints"][number]) {
-  const { startYear, endYear, operating } = mint
-  if (startYear === null && endYear === null && operating === null)
-    return "Unknown"
-  if (startYear === null && endYear === null && operating === false)
-    return "Unknown (closed)"
-  if (startYear !== null && endYear !== null) {
-    return formatIssuePeriod(startYear, endYear)
-  }
-  const first =
-    startYear === null ? "Unknown" : formatIssuePeriod(startYear, startYear)
-  const last =
-    operating === true
-      ? "ongoing"
-      : endYear === null
-        ? operating === false
-          ? "unknown (closed)"
-          : "unknown"
-        : formatIssuePeriod(endYear, endYear)
-  return `${first}–${last}`
-}
 
 function groupRulingAuthorityAttributionsByConsecutiveRole(
   coin: CoinDetailResponse
@@ -168,7 +146,6 @@ export function CoinViewerDetails({ coin }: { coin: CoinDetailResponse }) {
                     <div>
                       {mint.place}, {mint.country.name}
                     </div>
-                    <div>{formatMintPeriod(mint)}</div>
                   </div>
                 ))}
               </dd>

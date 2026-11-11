@@ -1,6 +1,7 @@
-import { isIsoIssuerCode, issuerCodeSchema } from "@coin-archive/api"
+import { issuerCodeSchema } from "@coin-archive/api"
 import { Flag } from "@coin-archive/ui/components/flags/flag"
 import { GlobeIcon } from "@phosphor-icons/react"
+import { isIsoIssuerCode } from "../../../issuer"
 import type { ExploreFilterDefinition } from "../explore-filter-definitions"
 
 export const issuerFilterDefinition = {

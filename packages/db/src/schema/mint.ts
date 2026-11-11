@@ -1,8 +1,6 @@
 import { sql } from "drizzle-orm"
 import {
-  boolean,
   check,
-  integer,
   pgTable,
   timestamp,
   unique,
@@ -25,9 +23,6 @@ export const mints = pgTable(
     countryId: uuid("country_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
-    startYear: integer("start_year"),
-    endYear: integer("end_year"),
-    operating: boolean(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -48,22 +43,6 @@ export const mints = pgTable(
     check(
       "mints_place_trimmed",
       sql`length(${table.place}) > 0 and ${table.place} !~ '^[[:space:]]|[[:space:]]$'`
-    ),
-    check(
-      "mints_first_year_nonzero",
-      sql`${table.startYear} is null or ${table.startYear} <> 0`
-    ),
-    check(
-      "mints_last_year_nonzero",
-      sql`${table.endYear} is null or ${table.endYear} <> 0`
-    ),
-    check(
-      "mints_period_ordered",
-      sql`${table.startYear} is null or ${table.endYear} is null or ${table.startYear} <= ${table.endYear}`
-    ),
-    check(
-      "mints_operating_matches_end",
-      sql`(${table.operating} is distinct from true or ${table.endYear} is null) and (${table.endYear} is null or ${table.operating} is false)`
     ),
   ]
 )

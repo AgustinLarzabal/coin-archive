@@ -6,19 +6,12 @@ import {
   pgTable,
   unique,
   uuid,
-  varchar,
 } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { z } from "zod"
 
 import { coins } from "./coin.js"
 import { rulingAuthorities } from "./ruling-authority.js"
-import { trimmedInsertText } from "./validation.js"
-
-const tenureMaximumLength = 200
-export const coinRulingAuthorityTenureInsertSchema = trimmedInsertText(
-  "Ruling Authority Tenure Label"
-)(z.string().max(tenureMaximumLength))
+import type { z } from "zod"
 
 export const coinRulingAuthorityAttributions = pgTable(
   "coin_ruling_authorities",
@@ -30,8 +23,6 @@ export const coinRulingAuthorityAttributions = pgTable(
     rulingAuthorityId: uuid("ruling_authority_id")
       .notNull()
       .references(() => rulingAuthorities.id, { onDelete: "restrict" }),
-    role: varchar({ length: 100 }).notNull(),
-    tenure: varchar({ length: tenureMaximumLength }),
     position: integer().notNull(),
   },
   (table) => [
@@ -39,28 +30,13 @@ export const coinRulingAuthorityAttributions = pgTable(
       table.coinId,
       table.position
     ),
-    unique("coin_ruling_authorities_context_unique")
-      .on(table.coinId, table.rulingAuthorityId, table.role, table.tenure)
-      .nullsNotDistinct(),
+    unique("coin_ruling_authorities_context_unique").on(
+      table.coinId,
+      table.rulingAuthorityId
+    ),
     index("coin_ruling_authorities_authority_coin_index").on(
       table.rulingAuthorityId,
       table.coinId
-    ),
-    check(
-      "coin_ruling_authorities_role_not_empty",
-      sql`length(${table.role}) >= 1`
-    ),
-    check(
-      "coin_ruling_authorities_role_trimmed",
-      sql`${table.role} !~ '^[[:space:]]|[[:space:]]$'`
-    ),
-    check(
-      "coin_ruling_authorities_tenure_not_empty",
-      sql`${table.tenure} is null or length(${table.tenure}) >= 1`
-    ),
-    check(
-      "coin_ruling_authorities_tenure_trimmed",
-      sql`${table.tenure} is null or ${table.tenure} !~ '^[[:space:]]|[[:space:]]$'`
     ),
     check(
       "coin_ruling_authorities_position_positive",
@@ -75,8 +51,6 @@ export const coinRulingAuthorityAttributionSelectSchema = createSelectSchema(
 export const coinRulingAuthorityAttributionInsertSchema = createInsertSchema(
   coinRulingAuthorityAttributions,
   {
-    role: trimmedInsertText("Ruling Authority Role"),
-    tenure: () => coinRulingAuthorityTenureInsertSchema,
     position: (schema) => schema.positive(),
   }
 )

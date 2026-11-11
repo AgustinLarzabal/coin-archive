@@ -1,4 +1,4 @@
-import { coinOrientationListResponseSchema } from "@coin-archive/api"
+import { orientationListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { API_BASE_URL } from "@/config"
 
@@ -26,7 +26,7 @@ export function orientationListQueryOptions() {
         )
       }
       try {
-        return coinOrientationListResponseSchema.parse(await response.json())
+        return orientationListResponseSchema.parse(await response.json())
       } catch (error) {
         throw new InvalidOrientationListResponseError(
           "Orientation list response is invalid",

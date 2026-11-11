@@ -76,7 +76,11 @@ describe("Face Value persistence", () => {
         .returning()
       const [ruler] = await database.orm
         .insert(database.schema.rulingAuthorities)
-        .values({ slug: "selected-ruler", name: "Selected Ruler" })
+        .values({
+          slug: "selected-ruler",
+          name: "Selected Ruler",
+          role: "President",
+        })
         .returning()
       const firstMatchingId = "00000000-0000-4000-8000-000000000001"
       const secondMatchingId = "00000000-0000-4000-8000-000000000002"
@@ -146,7 +150,6 @@ describe("Face Value persistence", () => {
           [firstMatchingId, secondMatchingId].map((coinId) => ({
             coinId,
             rulingAuthorityId: ruler.id,
-            role: "President",
             position: 1,
           }))
         )
@@ -396,7 +399,9 @@ describe("Face Value persistence", () => {
   })
 
   it("upgrades an existing Coin without fabricating a Face Value", async () => {
-    const olderMigrations = await mkdtemp(join(tmpdir(), "coin-archive-migrations-"))
+    const olderMigrations = await mkdtemp(
+      join(tmpdir(), "coin-archive-migrations-")
+    )
     const pool = new Pool({ connectionString: getDatabaseUrl() })
     try {
       await cp(new URL("../drizzle/", import.meta.url), olderMigrations, {

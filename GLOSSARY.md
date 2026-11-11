@@ -118,11 +118,11 @@ A unique, lowercase public identifier for a Ruling Authority. It contains 3–64
 _Avoid_: Ruling Authority ID, Ruler ID
 
 **Ruling Authority Role**:
-A required, curated display label describing how a Ruling Authority applies to a particular Coin, such as Pope, King, Grand Duke, or Period. It belongs to the Coin's attribution rather than permanently classifying the Ruling Authority.
+A required, curated display label for a Ruling Authority, such as Pope, King, Grand Duke, or Period. Each Ruling Authority has one role.
 _Avoid_: Ruling Authority Type, Rank
 
 **Ruling Authority Tenure Label**:
-An optional, curated description of when a Ruling Authority held the role attributed to a Coin. It is presentation text that may express open-ended, approximate, or discontinuous tenure and is independent of the Coin's Issue Period.
+An optional, curated description of when a Ruling Authority held its role. It is presentation text that may express open-ended, approximate, or discontinuous tenure and is independent of any Coin's Issue Period.
 _Avoid_: Issue Period, Reign Dates
 
 **Coin Surface**:

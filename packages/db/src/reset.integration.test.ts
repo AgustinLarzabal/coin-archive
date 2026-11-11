@@ -361,8 +361,8 @@ describe("database rebuild lifecycle", () => {
         tenure: string | null
       }>(`
         select coin_ruling_authorities.coin_id, ruling_authorities.slug,
-          ruling_authorities.name, coin_ruling_authorities.role,
-          coin_ruling_authorities.tenure, coin_ruling_authorities.position
+          ruling_authorities.name, ruling_authorities.role,
+          ruling_authorities.tenure, coin_ruling_authorities.position
         from coin_ruling_authorities
         join ruling_authorities
           on ruling_authorities.id = coin_ruling_authorities.ruling_authority_id

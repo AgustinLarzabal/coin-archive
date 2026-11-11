@@ -1,6 +1,6 @@
 # ADR 0005: Model Ruling Authorities as contextual attributions
 
-- Status: Accepted
+- Status: Superseded by ADR 0009
 - Date: 2026-10-16
 
 ## Decision

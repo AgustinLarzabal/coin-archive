@@ -1,15 +1,21 @@
 import { z } from "zod"
 
-import { errorResponseSchema, namedSlugResponseSchema } from "./common.js"
-import type { slugSchema } from "./common.js"
+import { displayTextSchema, errorResponseSchema, slugSchema } from "./common.js"
 
-export type CoinOrientation = z.infer<typeof slugSchema>
-export const coinOrientationListResponseSchema = z.strictObject({
-  orientations: z.array(namedSlugResponseSchema),
+export const orientationResponseSchema = z.strictObject({
+  slug: slugSchema,
+  name: displayTextSchema(200),
 })
-export type CoinOrientationListResponse = z.infer<
-  typeof coinOrientationListResponseSchema
+
+export const orientationListResponseSchema = z.strictObject({
+  orientations: z.array(orientationResponseSchema),
+})
+
+export type OrientationResponse = z.infer<typeof orientationResponseSchema>
+export type OrientationListResponse = z.infer<
+  typeof orientationListResponseSchema
 >
+
 export const invalidOrientationErrorSchema = errorResponseSchema(
   "invalid_orientation",
   "Orientation Slug is invalid"

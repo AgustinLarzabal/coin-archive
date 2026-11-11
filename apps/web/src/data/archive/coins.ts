@@ -22,7 +22,6 @@ import type {
   CoinListThickness,
   CoinListWeight,
   CoinListYear,
-  CoinOrientation,
   CoinShape,
 } from "@coin-archive/api"
 
@@ -52,7 +51,7 @@ export type CoinListFilters = Readonly<{
   tagSlug?: string
   composition?: string
   shape?: CoinShape
-  orientation?: CoinOrientation
+  orientation?: string
   engraverSlug?: string
   issuerCode?: string
   mintSlug?: string
@@ -72,7 +71,7 @@ type ValidatedCoinListFilters = Readonly<{
   tagSlug?: string
   composition?: string
   shape?: CoinShape
-  orientation?: CoinOrientation
+  orientation?: string
   engraverSlug: string | null
   issuerCode: string | null
   mintSlug?: string

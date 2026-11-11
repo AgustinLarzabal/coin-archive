@@ -473,8 +473,8 @@ it("combines all Explore filters and syncs them with the URL", async () => {
         compositions: [{ slug: "bimetallic", name: "Bimetallic" }],
         engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
         rulers: [
-          { slug: "roman-republic", name: "Rome" },
-          { slug: "roman-empire", name: "Rome" },
+          { slug: "roman-republic", name: "Rome", role: "Period", tenure: null },
+          { slug: "roman-empire", name: "Rome", role: "Period", tenure: null },
         ],
       })
     )

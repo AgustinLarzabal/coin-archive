@@ -239,7 +239,7 @@ Use a returned `code` as the `issuer` filter on `GET /v1/coins`.
 
 ## List Ruling Authorities
 
-`GET /v1/rulers` returns each Ruling Authority's public `slug` and `name`. It has no defined query parameters.
+`GET /v1/rulers` returns each Ruling Authority's public `slug`, `name`, `role`, and optional `tenure`. It has no defined query parameters.
 
 ```bash
 curl 'http://localhost:3001/v1/rulers'
@@ -252,7 +252,9 @@ For a catalogue containing one Ruling Authority, the response is:
   "rulers": [
     {
       "slug": "first-name",
-      "name": "First Name"
+      "name": "First Name",
+      "role": "King",
+      "tenure": null
     }
   ]
 }

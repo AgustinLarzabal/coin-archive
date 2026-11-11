@@ -1,11 +1,11 @@
 import {
-  coinOrientationListResponseSchema,
-  namedSlugResponseSchema,
+  orientationListResponseSchema,
+  orientationResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
-import type { CoinOrientationListResponse } from "@coin-archive/api"
+import type { OrientationListResponse } from "@coin-archive/api"
 import type { CoinOrientationRecord } from "@coin-archive/db"
 
 const route = createRoute({
@@ -15,10 +15,10 @@ const route = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: coinOrientationListResponseSchema
+          schema: orientationListResponseSchema
             .safeExtend({
               orientations: z.array(
-                namedSlugResponseSchema.openapi("Orientation")
+                orientationResponseSchema.openapi("Orientation")
               ),
             })
             .openapi("OrientationListResponse"),
@@ -44,7 +44,7 @@ export function registerOrientationRoutes(
     return context.json(
       {
         orientations: orientations.map(({ slug, name }) => ({ slug, name })),
-      } satisfies CoinOrientationListResponse,
+      } satisfies OrientationListResponse,
       200
     )
   })

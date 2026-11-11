@@ -1,27 +1,25 @@
 import { z } from "zod"
 
-import {
-  displayTextSchema,
-  errorResponseSchema,
-  namedSlugResponseSchema,
-} from "./common.js"
+import { displayTextSchema, errorResponseSchema, slugSchema } from "./common.js"
 
-export const rulingAuthorityListResponseSchema = z.strictObject({
-  rulers: z.array(namedSlugResponseSchema),
-})
-
-export type RulingAuthorityListResponse = z.infer<
-  typeof rulingAuthorityListResponseSchema
->
-export const rulingAuthorityAttributionResponseSchema = z.strictObject({
-  ...namedSlugResponseSchema.shape,
+export const rulingAuthorityResponseSchema = z.strictObject({
+  slug: slugSchema,
+  name: displayTextSchema(200),
   role: displayTextSchema(100),
   tenure: displayTextSchema(200).nullable(),
 })
 
-export type RulingAuthorityAttributionResponse = z.infer<
-  typeof rulingAuthorityAttributionResponseSchema
+export const rulingAuthorityListResponseSchema = z.strictObject({
+  rulers: z.array(rulingAuthorityResponseSchema),
+})
+
+export type RulingAuthorityResponse = z.infer<
+  typeof rulingAuthorityResponseSchema
 >
+export type RulingAuthorityListResponse = z.infer<
+  typeof rulingAuthorityListResponseSchema
+>
+
 export const invalidRulingAuthoritySlugErrorSchema = errorResponseSchema(
   "invalid_ruler_slug",
   "Ruling Authority Slug is invalid"

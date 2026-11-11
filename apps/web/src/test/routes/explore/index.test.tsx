@@ -220,7 +220,7 @@ describe("Archive landing route", () => {
       createArchiveFetchFixture({
         coins: [coin],
         issuers,
-        rulers: [{ slug: "roman-republic", name: "Roman Republic" }],
+        rulers: [{ slug: "roman-republic", name: "Roman Republic", role: "Period", tenure: null }],
       })
     )
     vi.stubGlobal("fetch", fetchMock)

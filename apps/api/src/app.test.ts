@@ -187,6 +187,7 @@ describe("API composition", () => {
       "MintListResponse",
       "Orientation",
       "OrientationListResponse",
+      "RulingAuthority",
       "RulingAuthorityListResponse",
       "Shape",
       "ShapeListResponse",

@@ -9,6 +9,8 @@ import type {
   IssuerResponse,
   MintResponse,
   NamedSlugResponse,
+  OrientationResponse,
+  RulingAuthorityResponse,
 } from "@coin-archive/api"
 
 import { getRouter } from "@/router"
@@ -62,10 +64,10 @@ export function createArchiveFetch({
   engravers?: Array<EngraverResponse>
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
-  rulers?: Array<NamedSlugResponse>
+  rulers?: Array<RulingAuthorityResponse>
   tags?: Array<NamedSlugResponse>
   shapes?: Array<NamedSlugResponse>
-  orientations?: Array<NamedSlugResponse>
+  orientations?: Array<OrientationResponse>
 } = {}) {
   return (input: string | URL | Request) => {
     const url = String(input)

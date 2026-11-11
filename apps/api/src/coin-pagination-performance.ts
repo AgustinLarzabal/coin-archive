@@ -442,15 +442,16 @@ async function seedDataset(
       timestamptz '2026-01-01 00:00:00+00'
     from generate_series(1, ${COIN_COUNT}, 2) as g;
 
-    insert into ruling_authorities (id, slug, name)
+    insert into ruling_authorities (id, slug, name, role)
     select
       ('40000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
       'performance-authority-' || g,
-      'Performance Authority ' || g
+      'Performance Authority ' || g,
+      'Performance Role'
     from generate_series(1, 10) as g;
 
     insert into coin_ruling_authorities (
-      coin_id, ruling_authority_id, role, position
+      coin_id, ruling_authority_id, position
     )
     select
       ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
@@ -458,7 +459,6 @@ async function seedDataset(
         '40000000-0000-4000-8000-' ||
         lpad(((((g - 1) / 2) % 10) + 1)::text, 12, '0')
       )::uuid,
-      'Performance Role',
       1
     from generate_series(1, ${COIN_COUNT}, 2) as g;
 

@@ -35,3 +35,8 @@ export function errorResponseSchema<
     }),
   })
 }
+
+export const internalErrorSchema = errorResponseSchema(
+  "internal_error",
+  "Internal server error"
+)

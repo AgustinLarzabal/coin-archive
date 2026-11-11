@@ -24,6 +24,8 @@ import type {
   IssuerResponse,
   MintResponse,
   NamedSlugResponse,
+  OrientationResponse,
+  RulingAuthorityResponse,
 } from "@coin-archive/api"
 import type {
   FilterField,
@@ -46,10 +48,10 @@ export interface ExploreFilterLists {
   engravers: Array<EngraverResponse>
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>
-  rulingAuthorities: Array<NamedSlugResponse>
+  rulingAuthorities: Array<RulingAuthorityResponse>
   tags: Array<NamedSlugResponse>
   shapes: Array<NamedSlugResponse>
-  orientations: Array<NamedSlugResponse>
+  orientations: Array<OrientationResponse>
 }
 
 export interface ExploreFilterDefinition {

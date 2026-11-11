@@ -11,7 +11,7 @@ import { currencyResponseSchema } from "./currencies.js"
 import { engraverResponseSchema } from "./engravers.js"
 import { issuerResponseSchema } from "./issuers.js"
 import { mintResponseSchema } from "./mints.js"
-import { rulingAuthorityAttributionResponseSchema } from "./ruling-authorities.js"
+import { rulingAuthorityResponseSchema } from "./ruling-authorities.js"
 
 const firstIssueYearSchema = historicalYearSchema.meta({
   description:
@@ -244,7 +244,7 @@ export const coinDetailResponseSchema = z
     obverse: coinSurfaceWithEngraversResponseSchema,
     reverse: coinSurfaceWithEngraversResponseSchema,
     edge: coinSurfaceResponseSchema,
-    rulers: z.array(rulingAuthorityAttributionResponseSchema),
+    rulers: z.array(rulingAuthorityResponseSchema),
     mints: z.array(mintResponseSchema),
     tags: z.array(namedSlugResponseSchema),
   })

@@ -1,5 +1,9 @@
 export * from "./coins.js"
-export { namedSlugResponseSchema, slugSchema } from "./common.js"
+export {
+  internalErrorSchema,
+  namedSlugResponseSchema,
+  slugSchema,
+} from "./common.js"
 export type { NamedSlugResponse } from "./common.js"
 export * from "./compositions.js"
 export * from "./currencies.js"

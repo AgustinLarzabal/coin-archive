@@ -9,7 +9,7 @@ const baseOptions = {
 }
 
 describe("GET /v1/rulers", () => {
-  it("returns every Ruling Authority as Slug and name in repository order", async () => {
+  it("returns every Ruling Authority with its role and tenure in repository order", async () => {
     const response = await createApp({
       ...baseOptions,
       listRulingAuthorities: async () => [
@@ -17,6 +17,8 @@ describe("GET /v1/rulers", () => {
           id: "10000000-0000-4000-8000-000000000002",
           slug: "first-name",
           name: "First Name",
+          role: "King",
+          tenure: "2000–2004",
           createdAt: new Date("2026-01-01T00:00:00.000Z"),
           updatedAt: new Date("2026-01-01T00:00:00.000Z"),
         },
@@ -24,6 +26,8 @@ describe("GET /v1/rulers", () => {
           id: "10000000-0000-4000-8000-000000000001",
           slug: "shared-name-a",
           name: "Shared Name",
+          role: "Period",
+          tenure: null,
           createdAt: new Date("2026-01-01T00:00:00.000Z"),
           updatedAt: new Date("2026-01-01T00:00:00.000Z"),
         },
@@ -31,6 +35,8 @@ describe("GET /v1/rulers", () => {
           id: "10000000-0000-4000-8000-000000000003",
           slug: "shared-name-b",
           name: "Shared Name",
+          role: "Period",
+          tenure: null,
           createdAt: new Date("2026-01-01T00:00:00.000Z"),
           updatedAt: new Date("2026-01-01T00:00:00.000Z"),
         },
@@ -40,9 +46,24 @@ describe("GET /v1/rulers", () => {
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       rulers: [
-        { slug: "first-name", name: "First Name" },
-        { slug: "shared-name-a", name: "Shared Name" },
-        { slug: "shared-name-b", name: "Shared Name" },
+        {
+          slug: "first-name",
+          name: "First Name",
+          role: "King",
+          tenure: "2000–2004",
+        },
+        {
+          slug: "shared-name-a",
+          name: "Shared Name",
+          role: "Period",
+          tenure: null,
+        },
+        {
+          slug: "shared-name-b",
+          name: "Shared Name",
+          role: "Period",
+          tenure: null,
+        },
       ],
     })
   })

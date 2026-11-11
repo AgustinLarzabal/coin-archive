@@ -16,8 +16,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "italian-republic",
-        "role": "Period",
-        "tenure": "1946–present",
         "position": 1
       }
     ],
@@ -46,8 +44,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "john-paul-ii",
-        "role": "Pope",
-        "tenure": "1978–2005",
         "position": 1
       }
     ],
@@ -71,8 +67,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "republic-of-san-marino",
-        "role": "Period",
-        "tenure": "301–present",
         "position": 1
       }
     ],
@@ -94,8 +88,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "henri-of-luxembourg",
-        "role": "Grand Duke",
-        "tenure": "2000–2025",
         "position": 1
       }
     ],
@@ -129,8 +121,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "republic-of-finland",
-        "role": "Period",
-        "tenure": "1919–present",
         "position": 1
       }
     ],
@@ -172,8 +162,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "third-hellenic-republic",
-        "role": "Period",
-        "tenure": "1974–present",
         "position": 1
       }
     ],
@@ -267,8 +255,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "juan-carlos-i",
-        "role": "King",
-        "tenure": "1975–2014",
         "position": 1
       }
     ]
@@ -973,8 +959,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "juan-carlos-i",
-        "role": "King",
-        "tenure": "1975–2014",
         "position": 1
       }
     ]
@@ -1613,8 +1597,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "juan-carlos-i",
-        "role": "King",
-        "tenure": "1975–2014",
         "position": 1
       }
     ]
@@ -1911,14 +1893,10 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "felipe-vi",
-        "role": "King",
-        "tenure": "2014–present",
         "position": 1
       },
       {
         "slug": "juan-carlos-i",
-        "role": "King",
-        "tenure": "1975–2014",
         "position": 2
       }
     ]
@@ -3689,8 +3667,6 @@
     "rulingAuthorityAttributions": [
       {
         "slug": "felipe-vi",
-        "role": "King",
-        "tenure": "2014–present",
         "position": 1
       }
     ]

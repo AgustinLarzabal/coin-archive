@@ -33,9 +33,9 @@ describe("Ruling Authority persistence", () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       await database.orm.insert(database.schema.rulingAuthorities).values([
-        { slug: "shared-b", name: "Shared" },
-        { slug: "alpha", name: "Alpha" },
-        { slug: "shared-a", name: "Shared" },
+        { slug: "shared-b", name: "Shared", role: "Role" },
+        { slug: "alpha", name: "Alpha", role: "Role" },
+        { slug: "shared-a", name: "Shared", role: "Role" },
       ])
 
       await expect(database.listRulingAuthorities()).resolves.toEqual([
@@ -62,8 +62,12 @@ describe("Ruling Authority persistence", () => {
       const [selectedAuthority, otherAuthority] = await database.orm
         .insert(database.schema.rulingAuthorities)
         .values([
-          { slug: "selected-authority", name: "Selected Authority" },
-          { slug: "other-authority", name: "Other Authority" },
+          {
+            slug: "selected-authority",
+            name: "Selected Authority",
+            role: "Emperor",
+          },
+          { slug: "other-authority", name: "Other Authority", role: "Emperor" },
         ])
         .returning()
       const coins = await database.orm
@@ -120,25 +124,16 @@ describe("Ruling Authority persistence", () => {
           {
             coinId: coins[0].id,
             rulingAuthorityId: selectedAuthority.id,
-            role: "Emperor",
             position: 1,
-          },
-          {
-            coinId: coins[0].id,
-            rulingAuthorityId: selectedAuthority.id,
-            role: "Augustus",
-            position: 2,
           },
           {
             coinId: coins[1].id,
             rulingAuthorityId: selectedAuthority.id,
-            role: "Emperor",
             position: 1,
           },
           {
             coinId: coins[2].id,
             rulingAuthorityId: otherAuthority.id,
-            role: "Emperor",
             position: 1,
           },
         ])
@@ -171,8 +166,8 @@ describe("Ruling Authority persistence", () => {
       const [authority, sameName] = await database.orm
         .insert(database.schema.rulingAuthorities)
         .values([
-          { slug: "first-authority", name: "Shared Name" },
-          { slug: "second-authority", name: "Shared Name" },
+          { slug: "first-authority", name: "Shared Name", role: "Role" },
+          { slug: "second-authority", name: "Shared Name", role: "Role" },
         ])
         .returning()
 
@@ -185,6 +180,7 @@ describe("Ruling Authority persistence", () => {
         database.orm.insert(database.schema.rulingAuthorities).values({
           slug: authority.slug,
           name: "Different Name",
+          role: "Role",
         })
       ).rejects.toThrow()
       await expect(
@@ -197,7 +193,7 @@ describe("Ruling Authority persistence", () => {
     }
   })
 
-  it("returns ordered contextual attributions and leaves uncurated Coins empty", async () => {
+  it("returns ordered authorities and leaves uncurated Coins empty", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const [issuer] = await database.orm
@@ -226,8 +222,17 @@ describe("Ruling Authority persistence", () => {
       const [sharedAuthority, secondAuthority] = await database.orm
         .insert(database.schema.rulingAuthorities)
         .values([
-          { slug: "shared-authority", name: "Shared Authority" },
-          { slug: "second-authority", name: "Second Authority" },
+          {
+            slug: "shared-authority",
+            name: "Shared Authority",
+            role: "Second Role",
+            tenure: "2001–2004",
+          },
+          {
+            slug: "second-authority",
+            name: "Second Authority",
+            role: "First Role",
+          },
         ])
         .returning()
 
@@ -237,23 +242,12 @@ describe("Ruling Authority persistence", () => {
           {
             coinId: attributedCoin.id,
             rulingAuthorityId: sharedAuthority.id,
-            role: "Second Role",
-            tenure: "2001–2004",
             position: 2,
           },
           {
             coinId: attributedCoin.id,
             rulingAuthorityId: secondAuthority.id,
-            role: "First Role",
-            tenure: null,
             position: 1,
-          },
-          {
-            coinId: attributedCoin.id,
-            rulingAuthorityId: sharedAuthority.id,
-            role: "Third Role",
-            tenure: "circa 2004",
-            position: 3,
           },
         ])
 
@@ -272,12 +266,6 @@ describe("Ruling Authority persistence", () => {
             name: "Shared Authority",
             role: "Second Role",
             tenure: "2001–2004",
-          },
-          {
-            slug: "shared-authority",
-            name: "Shared Authority",
-            role: "Third Role",
-            tenure: "circa 2004",
           },
         ],
       })
@@ -308,7 +296,11 @@ describe("Ruling Authority persistence", () => {
         .returning()
       const [authority] = await database.orm
         .insert(database.schema.rulingAuthorities)
-        .values({ slug: "lasting-authority", name: "Lasting Authority" })
+        .values({
+          slug: "lasting-authority",
+          name: "Lasting Authority",
+          role: "Role",
+        })
         .returning()
 
       await database.orm
@@ -316,8 +308,6 @@ describe("Ruling Authority persistence", () => {
         .values({
           coinId: coin.id,
           rulingAuthorityId: authority.id,
-          role: "Role",
-          tenure: null,
           position: 1,
         })
 
@@ -327,49 +317,39 @@ describe("Ruling Authority persistence", () => {
           .values({
             coinId: coin.id,
             rulingAuthorityId: authority.id,
-            role: "Role",
-            tenure: null,
             position: 2,
           })
       ).rejects.toThrow()
 
-      await expect(
-        database.orm
-          .insert(database.schema.coinRulingAuthorityAttributions)
-          .values([
-            {
-              coinId: coin.id,
-              rulingAuthorityId: authority.id,
-              role: "Different Role",
-              tenure: null,
-              position: 2,
-            },
-            {
-              coinId: coin.id,
-              rulingAuthorityId: authority.id,
-              role: "Role",
-              tenure: "Different tenure",
-              position: 3,
-            },
-          ])
-      ).resolves.toBeDefined()
-
-      for (const attribution of [
-        { role: "", tenure: null, position: 4 },
-        { role: " padded", tenure: null, position: 4 },
-        { role: "Role", tenure: "", position: 4 },
-        { role: "Role", tenure: "padded ", position: 4 },
-        { role: "Invalid Position Role", tenure: null, position: 0 },
-        { role: "Duplicate Position Role", tenure: null, position: 1 },
-      ]) {
+      for (const position of [0, 1]) {
         await expect(
           database.orm
             .insert(database.schema.coinRulingAuthorityAttributions)
             .values({
               coinId: coin.id,
               rulingAuthorityId: authority.id,
-              ...attribution,
+              position,
             })
+        ).rejects.toThrow()
+      }
+
+      for (const role of ["", " padded"]) {
+        await expect(
+          database.orm.insert(database.schema.rulingAuthorities).values({
+            slug: "invalid-role-authority",
+            name: "Invalid Role Authority",
+            role,
+          })
+        ).rejects.toThrow()
+      }
+      for (const tenure of ["", "padded "]) {
+        await expect(
+          database.orm.insert(database.schema.rulingAuthorities).values({
+            slug: "invalid-tenure-authority",
+            name: "Invalid Tenure Authority",
+            role: "Role",
+            tenure,
+          })
         ).rejects.toThrow()
       }
 
@@ -400,8 +380,17 @@ describe("Ruling Authority persistence", () => {
         issuers: [{ name: "Test Issuer", code: "TI" }],
         engravers: [],
         authorities: [
-          { slug: "first-authority", name: "First Authority" },
-          { slug: "second-authority", name: "Second Authority" },
+          {
+            slug: "first-authority",
+            name: "First Authority",
+            role: "First Role",
+          },
+          {
+            slug: "second-authority",
+            name: "Second Authority",
+            role: "Second Role",
+            tenure: "2000–2004",
+          },
         ],
         coins: [
           {
@@ -414,13 +403,10 @@ describe("Ruling Authority persistence", () => {
             rulingAuthorityAttributions: [
               {
                 slug: "second-authority",
-                role: "Second Role",
-                tenure: "2000–2004",
                 position: 2,
               },
               {
                 slug: "first-authority",
-                role: "First Role",
                 position: 1,
               },
             ],
@@ -453,33 +439,18 @@ describe("Ruling Authority persistence", () => {
     [
       "a malformed authority",
       {
-        authorities: [{ slug: "Bad Slug", name: "Authority" }],
+        authorities: [{ slug: "Bad Slug", name: "Authority", role: "Role" }],
         coins: [],
       },
       "Invalid string",
     ],
     [
-      "a malformed attribution",
+      "a malformed authority role",
       {
-        authorities: [{ slug: "known-authority", name: "Authority" }],
-        coins: [
-          {
-            id: "00000000-0000-4000-8000-000000000001",
-            title: "Invalid attribution",
-            issuerCode: "TI",
-            distribution: "circulating-commemorative",
-            firstIssueYear: 2004,
-            lastIssueYear: 2004,
-            rulingAuthorityAttributions: [
-              {
-                slug: "known-authority",
-                role: " padded",
-                tenure: "",
-                position: 1,
-              },
-            ],
-          },
+        authorities: [
+          { slug: "known-authority", name: "Authority", role: " padded" },
         ],
+        coins: [],
       },
       "must be trimmed",
     ],
@@ -487,8 +458,8 @@ describe("Ruling Authority persistence", () => {
       "duplicate attribution positions",
       {
         authorities: [
-          { slug: "first-authority", name: "First Authority" },
-          { slug: "second-authority", name: "Second Authority" },
+          { slug: "first-authority", name: "First Authority", role: "Role" },
+          { slug: "second-authority", name: "Second Authority", role: "Role" },
         ],
         coins: [
           {
@@ -499,8 +470,8 @@ describe("Ruling Authority persistence", () => {
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
-              { slug: "first-authority", role: "Role", position: 1 },
-              { slug: "second-authority", role: "Role", position: 1 },
+              { slug: "first-authority", position: 1 },
+              { slug: "second-authority", position: 1 },
             ],
           },
         ],
@@ -508,9 +479,11 @@ describe("Ruling Authority persistence", () => {
       "Duplicate Ruling Authority position: 1",
     ],
     [
-      "duplicate contextual attributions",
+      "duplicate authority attributions",
       {
-        authorities: [{ slug: "known-authority", name: "Authority" }],
+        authorities: [
+          { slug: "known-authority", name: "Authority", role: "Role" },
+        ],
         coins: [
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -520,13 +493,13 @@ describe("Ruling Authority persistence", () => {
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
-              { slug: "known-authority", role: "Role", position: 1 },
-              { slug: "known-authority", role: "Role", position: 2 },
+              { slug: "known-authority", position: 1 },
+              { slug: "known-authority", position: 2 },
             ],
           },
         ],
       },
-      "Duplicate Ruling Authority attribution: known-authority / Role / no tenure",
+      "Duplicate Ruling Authority attribution: known-authority",
     ],
     [
       "an unknown authority reference",
@@ -541,7 +514,7 @@ describe("Ruling Authority persistence", () => {
             firstIssueYear: 2004,
             lastIssueYear: 2004,
             rulingAuthorityAttributions: [
-              { slug: "missing-authority", role: "Role", position: 1 },
+              { slug: "missing-authority", position: 1 },
             ],
           },
         ],

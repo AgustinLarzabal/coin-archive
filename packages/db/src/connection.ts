@@ -290,8 +290,8 @@ export function createDatabase(
             .select({
               slug: schema.rulingAuthorities.slug,
               name: schema.rulingAuthorities.name,
-              role: schema.coinRulingAuthorityAttributions.role,
-              tenure: schema.coinRulingAuthorityAttributions.tenure,
+              role: schema.rulingAuthorities.role,
+              tenure: schema.rulingAuthorities.tenure,
             })
             .from(schema.coinRulingAuthorityAttributions)
             .innerJoin(

@@ -1,34 +1,50 @@
 [
   {
     "slug": "italian-republic",
-    "name": "Italian Republic"
+    "name": "Italian Republic",
+    "role": "Period",
+    "tenure": "1946–present"
   },
   {
     "slug": "john-paul-ii",
-    "name": "John Paul II (Ioannes Paulus II)"
+    "name": "John Paul II (Ioannes Paulus II)",
+    "role": "Pope",
+    "tenure": "1978–2005"
   },
   {
     "slug": "republic-of-san-marino",
-    "name": "Republic of San Marino"
+    "name": "Republic of San Marino",
+    "role": "Period",
+    "tenure": "301–present"
   },
   {
     "slug": "henri-of-luxembourg",
-    "name": "Henri"
+    "name": "Henri",
+    "role": "Grand Duke",
+    "tenure": "2000–2025"
   },
   {
     "slug": "republic-of-finland",
-    "name": "Republic of Finland"
+    "name": "Republic of Finland",
+    "role": "Period",
+    "tenure": "1919–present"
   },
   {
     "slug": "third-hellenic-republic",
-    "name": "Third Hellenic Republic"
+    "name": "Third Hellenic Republic",
+    "role": "Period",
+    "tenure": "1974–present"
   },
   {
     "slug": "juan-carlos-i",
-    "name": "Juan Carlos I"
+    "name": "Juan Carlos I",
+    "role": "King",
+    "tenure": "1975–2014"
   },
   {
     "slug": "felipe-vi",
-    "name": "Felipe VI"
+    "name": "Felipe VI",
+    "role": "King",
+    "tenure": "2014–present"
   }
 ]

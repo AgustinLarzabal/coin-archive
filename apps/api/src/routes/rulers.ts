@@ -1,12 +1,12 @@
-import { rulingAuthorityListResponseSchema as sharedRulingAuthorityListResponseSchema } from "@coin-archive/api"
-import { createRoute } from "@hono/zod-openapi"
+import {
+  rulingAuthorityListResponseSchema,
+  rulingAuthorityResponseSchema,
+} from "@coin-archive/api"
+import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
 import type { RulingAuthorityListResponse } from "@coin-archive/api"
 import type { RulingAuthorityRecord } from "@coin-archive/db"
-
-const rulingAuthorityListResponseSchema =
-  sharedRulingAuthorityListResponseSchema.openapi("RulingAuthorityListResponse")
 
 const rulingAuthorityListRoute = createRoute({
   method: "get",
@@ -14,7 +14,15 @@ const rulingAuthorityListRoute = createRoute({
   responses: {
     200: {
       content: {
-        "application/json": { schema: rulingAuthorityListResponseSchema },
+        "application/json": {
+          schema: rulingAuthorityListResponseSchema
+            .safeExtend({
+              rulers: z.array(
+                rulingAuthorityResponseSchema.openapi("RulingAuthority")
+              ),
+            })
+            .openapi("RulingAuthorityListResponse"),
+        },
       },
       description: "Every Ruling Authority, sorted by name and Slug",
       headers: responseHeaders,
@@ -36,7 +44,12 @@ export function registerRulingAuthorityRoutes(
   app.openapi(rulingAuthorityListRoute, async (context) => {
     const rulers = await (options.listRulingAuthorities ?? (async () => []))()
     const response = {
-      rulers: rulers.map(({ slug, name }) => ({ slug, name })),
+      rulers: rulers.map(({ slug, name, role, tenure }) => ({
+        slug,
+        name,
+        role,
+        tenure,
+      })),
     } satisfies RulingAuthorityListResponse
     return context.json(response, 200)
   })

@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises"
 import { sql } from "drizzle-orm"
 import { z } from "zod"
 
-import { coinRulingAuthorityTenureInsertSchema } from "./schema/coin-ruling-authority.js"
 import {
   coinSurfaceDescriptionInsertSchema,
   coinSurfaceImageKeyInsertSchema,
@@ -49,7 +48,6 @@ const coinRulingAuthoritySeedRecordSchema =
     .omit({ coinId: true, rulingAuthorityId: true })
     .extend({
       slug: rulingAuthorityInsertSchema.shape.slug,
-      tenure: coinRulingAuthorityTenureInsertSchema.optional(),
     })
 
 const coinSurfaceSeedBaseSchema = coinSurfaceInsertSchema
@@ -252,7 +250,7 @@ const seedDocumentSchema = z
         })
       }
       const attributionPositions = new Set<number>()
-      const contextualAttributions = new Set<string>()
+      const attributedAuthoritySlugs = new Set<string>()
       coin.rulingAuthorityAttributions.forEach(
         (attribution, attributionIndex) => {
           if (!authoritySlugs.has(attribution.slug)) {
@@ -282,15 +280,10 @@ const seedDocumentSchema = z
             })
           }
           attributionPositions.add(attribution.position)
-          const contextualAttribution = JSON.stringify([
-            attribution.slug,
-            attribution.role,
-            attribution.tenure ?? null,
-          ])
-          if (contextualAttributions.has(contextualAttribution)) {
+          if (attributedAuthoritySlugs.has(attribution.slug)) {
             context.addIssue({
               code: "custom",
-              message: `Duplicate Ruling Authority attribution: ${attribution.slug} / ${attribution.role} / ${attribution.tenure ?? "no tenure"}`,
+              message: `Duplicate Ruling Authority attribution: ${attribution.slug}`,
               path: [
                 "coins",
                 index,
@@ -299,7 +292,7 @@ const seedDocumentSchema = z
               ],
             })
           }
-          contextualAttributions.add(contextualAttribution)
+          attributedAuthoritySlugs.add(attribution.slug)
         }
       )
       for (const kind of ["obverse", "reverse"] as const) {
@@ -655,8 +648,6 @@ export async function seedCoins(database: Database, input: unknown) {
         return {
           coinId: coin.id,
           rulingAuthorityId,
-          role: attribution.role,
-          tenure: attribution.tenure ?? null,
           position: attribution.position,
         }
       })

@@ -1,4 +1,6 @@
 export * from "./coin-filters.js"
+export * from "./coin-measurement-filters.js"
+export * from "./coin-year-filters.js"
 export * from "./coin-list.js"
 export * from "./coin-detail.js"
 export {

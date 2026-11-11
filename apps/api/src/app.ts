@@ -41,17 +41,17 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
-  listShapes?: () => Promise<Array<CoinShapeRecord>>
-  listOrientations?: () => Promise<Array<CoinOrientationRecord>>
-  listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
   listCompositions?: () => Promise<Array<CompositionRecord>>
   listCurrencies?: () => Promise<Array<CurrencyRecord>>
   listDistributions?: () => Promise<Array<DistributionRecord>>
   listEngravers?: () => Promise<Array<EngraverRecord>>
   listIssuers?: () => Promise<Array<IssuerRecord>>
   listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
+  listOrientations?: () => Promise<Array<CoinOrientationRecord>>
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
+  listShapes?: () => Promise<Array<CoinShapeRecord>>
   listTags?: () => Promise<Array<TagRecord>>
+  listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
   log?: (line: string) => void
 }
 

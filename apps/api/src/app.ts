@@ -41,7 +41,6 @@ export interface AppOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
-  hasShape?: (slug: string) => Promise<boolean>
   listShapes?: () => Promise<Array<CoinShapeRecord>>
   listOrientations?: () => Promise<Array<CoinOrientationRecord>>
   listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
@@ -57,6 +56,7 @@ export interface AppOptions {
 }
 
 const validRequestIdPattern = /^[A-Za-z0-9._:-]{1,128}$/
+
 export function createApp(options: AppOptions) {
   const app = new OpenAPIHono<AppEnvironment>()
   const log = options.log ?? console.log

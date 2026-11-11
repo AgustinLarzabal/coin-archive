@@ -49,7 +49,6 @@ import type { CoinListOptions, CoinListPage } from "@coin-archive/db"
 interface CoinListRouteOptions {
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
-  hasShape?: (slug: string) => Promise<boolean>
 }
 
 const coinListQuerySchema = z
@@ -110,7 +109,7 @@ const coinListQuerySchema = z
     }),
     shape: slugSchema.optional().openapi({
       description:
-        "Exact, case-sensitive Coin Shape Slug. Unsupported or repeated values return invalid_shape",
+        "Exact, case-sensitive Coin Shape Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_shape",
       param: { name: "shape", in: "query" },
     }),
     orientation: slugSchema.optional().openapi({
@@ -432,17 +431,6 @@ export function registerCoinListRoute(
         page,
         pageSize,
       } = context.req.valid("query")
-      if (shape !== undefined && !(await options.hasShape?.(shape))) {
-        return context.json(
-          {
-            error: {
-              code: "invalid_shape",
-              message: "Shape Slug is invalid",
-            },
-          },
-          400
-        )
-      }
       const listCoins =
         options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
       const { coins, totalItems } = await listCoins({

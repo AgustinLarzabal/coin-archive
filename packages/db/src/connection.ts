@@ -24,7 +24,6 @@ export interface Database {
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
-  hasShape: (slug: string) => Promise<boolean>
   listShapes: () => Promise<Array<schema.CoinShapeRecord>>
   listOrientations: () => Promise<Array<schema.CoinOrientationRecord>>
   listTechniques: () => Promise<Array<schema.CoinTechniqueRecord>>
@@ -819,14 +818,6 @@ export function createDatabase(
         .select()
         .from(schema.compositions)
         .orderBy(asc(schema.compositions.name), asc(schema.compositions.slug)),
-    hasShape: async (slug) =>
-      (
-        await orm
-          .select({ id: schema.coinShapes.id })
-          .from(schema.coinShapes)
-          .where(eq(schema.coinShapes.slug, slug))
-          .limit(1)
-      ).length > 0,
     listShapes: () =>
       orm
         .select()

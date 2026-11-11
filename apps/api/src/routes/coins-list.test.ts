@@ -77,7 +77,6 @@ describe("Coin list route", () => {
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
         listCoins,
-        hasShape: async (slug) => slug === "square",
       }).request("/v1/coins?shape=square&issuer=AR&page=2&pageSize=2")
       expect(response.status).toBe(200)
       expect(listCoins).toHaveBeenCalledWith({
@@ -91,15 +90,14 @@ describe("Coin list route", () => {
       })
     })
 
-    it.each(["shape=triangle", "shape=Square", "shape=square&shape=square"])(
-      "rejects unsupported or repeated %s",
+    it.each(["shape=Square", "shape=bad%20slug", "shape=square&shape=square"])(
+      "rejects malformed or repeated %s",
       async (query) => {
         const listCoins = vi.fn(emptyCoinPage)
         const response = await createApp({
           allowedOrigins: [],
           checkReadiness: successfulReadinessCheck,
           listCoins,
-          hasShape: async () => false,
         }).request(`/v1/coins?${query}`)
         expect(response.status).toBe(400)
         expect(listCoins).not.toHaveBeenCalled()
@@ -112,14 +110,19 @@ describe("Coin list route", () => {
       }
     )
 
-    it("returns an empty page when a valid Shape has no matches", async () => {
+    it("returns an empty page for a valid unknown Shape Slug", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
       const response = await createApp({
         allowedOrigins: [],
         checkReadiness: successfulReadinessCheck,
-        listCoins: emptyCoinPage,
-        hasShape: async (slug) => slug === "oval",
-      }).request("/v1/coins?shape=oval")
+        listCoins,
+      }).request("/v1/coins?shape=unknown")
       expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        shape: "unknown",
+        page: 1,
+        pageSize: 24,
+      })
       await expect(response.json()).resolves.toEqual(emptyCoinListResponse)
     })
   })

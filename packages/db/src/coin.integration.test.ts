@@ -377,8 +377,6 @@ describe("Coin persistence", () => {
         .insert(database.schema.coinShapes)
         .values({ slug: "pentagonal", name: "Pentagonal" })
         .returning()
-      expect(await database.hasShape("pentagonal")).toBe(true)
-      expect(await database.hasShape("triangle")).toBe(false)
       expect(await database.listShapes()).toContainEqual(
         expect.objectContaining({ slug: "pentagonal", name: "Pentagonal" })
       )

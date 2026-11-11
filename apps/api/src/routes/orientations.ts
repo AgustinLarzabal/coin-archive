@@ -37,10 +37,10 @@ const route = createRoute({
 
 export function registerOrientationRoutes(
   app: ApiApp,
-  options: { listOrientations?: () => Promise<Array<CoinOrientationRecord>> }
+  listOrientations?: () => Promise<Array<CoinOrientationRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const orientations = await (options.listOrientations ?? (async () => []))()
+    const orientations = await (listOrientations ?? (async () => []))()
     return context.json(
       {
         orientations: orientations.map(({ slug, name }) => ({ slug, name })),

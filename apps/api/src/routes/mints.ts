@@ -30,12 +30,10 @@ const route = createRoute({
 
 export function registerMintRoutes(
   app: ApiApp,
-  options: {
-    listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
-  }
+  listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
 ) {
   app.openapi(route, async (context) => {
-    const mints = await (options.listMints ?? (async () => []))()
+    const mints = await (listMints ?? (async () => []))()
     const response = {
       mints: mints.map(({ slug, name, place, country }) => ({
         slug,

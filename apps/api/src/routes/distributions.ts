@@ -8,10 +8,6 @@ import type { ApiApp } from "./shared.js"
 import type { DistributionListResponse } from "@coin-archive/api"
 import type { DistributionRecord } from "@coin-archive/db"
 
-interface DistributionRouteOptions {
-  listDistributions?: () => Promise<Array<DistributionRecord>>
-}
-
 const responseSchema = distributionListResponseSchema
   .safeExtend({
     distributions: z.array(distributionResponseSchema.openapi("Distribution")),
@@ -37,12 +33,10 @@ const route = createRoute({
 
 export function registerDistributionRoutes(
   app: ApiApp,
-  options: DistributionRouteOptions
+  listDistributions?: () => Promise<Array<DistributionRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const distributions = await (
-      options.listDistributions ?? (async () => [])
-    )()
+    const distributions = await (listDistributions ?? (async () => []))()
     const response = {
       distributions: distributions.map(({ slug, name }) => ({ slug, name })),
     } satisfies DistributionListResponse

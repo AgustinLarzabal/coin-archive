@@ -37,10 +37,10 @@ const route = createRoute({
 
 export function registerCompositionRoutes(
   app: ApiApp,
-  options: { listCompositions?: () => Promise<Array<CompositionRecord>> }
+  listCompositions?: () => Promise<Array<CompositionRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const compositions = await (options.listCompositions ?? (async () => []))()
+    const compositions = await (listCompositions ?? (async () => []))()
     return context.json(
       {
         compositions: compositions.map(({ slug, name }) => ({ slug, name })),

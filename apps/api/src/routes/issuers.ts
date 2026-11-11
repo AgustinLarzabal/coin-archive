@@ -5,11 +5,6 @@ import type { ApiApp } from "./shared.js"
 import type { IssuerListResponse } from "@coin-archive/api"
 import type { IssuerRecord } from "@coin-archive/db"
 
-
-interface IssuerRouteOptions {
-  listIssuers?: () => Promise<Array<IssuerRecord>>
-}
-
 const issuerListResponseSchema =
   sharedIssuerListResponseSchema.openapi("IssuerListResponse")
 
@@ -30,9 +25,12 @@ const issuerListRoute = createRoute({
   },
 })
 
-export function registerIssuerRoutes(app: ApiApp, options: IssuerRouteOptions) {
+export function registerIssuerRoutes(
+  app: ApiApp,
+  listIssuers?: () => Promise<Array<IssuerRecord>>
+) {
   app.openapi(issuerListRoute, async (context) => {
-    const issuers = await (options.listIssuers ?? (async () => []))()
+    const issuers = await (listIssuers ?? (async () => []))()
     const response = {
       issuers: issuers.map(({ name, code }) => ({ name, code })),
     } satisfies IssuerListResponse

@@ -5,11 +5,6 @@ import type { ApiApp } from "./shared.js"
 import type { EngraverListResponse } from "@coin-archive/api"
 import type { EngraverRecord } from "@coin-archive/db"
 
-
-interface EngraverRouteOptions {
-  listEngravers?: () => Promise<Array<EngraverRecord>>
-}
-
 const engraverListResponseSchema = sharedEngraverListResponseSchema.openapi(
   "EngraverListResponse"
 )
@@ -33,10 +28,10 @@ const engraverListRoute = createRoute({
 
 export function registerEngraverRoutes(
   app: ApiApp,
-  options: EngraverRouteOptions
+  listEngravers?: () => Promise<Array<EngraverRecord>>
 ) {
   app.openapi(engraverListRoute, async (context) => {
-    const engravers = await (options.listEngravers ?? (async () => []))()
+    const engravers = await (listEngravers ?? (async () => []))()
     const response = {
       engravers: engravers.map(({ slug, fullName }) => ({ slug, fullName })),
     } satisfies EngraverListResponse

@@ -35,10 +35,10 @@ const route = createRoute({
 
 export function registerTechniqueRoutes(
   app: ApiApp,
-  options: { listTechniques?: () => Promise<Array<CoinTechniqueRecord>> }
+  listTechniques?: () => Promise<Array<CoinTechniqueRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const techniques = await (options.listTechniques ?? (async () => []))()
+    const techniques = await (listTechniques ?? (async () => []))()
     return context.json(
       {
         techniques: techniques.map(({ slug, name }) => ({ slug, name })),

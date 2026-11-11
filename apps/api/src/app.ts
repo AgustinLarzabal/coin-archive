@@ -103,19 +103,25 @@ export function createApp(options: AppOptions) {
     checkReadiness: options.checkReadiness,
     log,
   })
-  registerCoinListRoute(app, options)
-  registerCompositionRoutes(app, options)
-  registerShapeRoutes(app, options)
-  registerOrientationRoutes(app, options)
-  registerTechniqueRoutes(app, options)
-  registerCoinDetailRoute(app, options)
-  registerCurrencyRoutes(app, options)
-  registerDistributionRoutes(app, options)
-  registerIssuerRoutes(app, options)
-  registerMintRoutes(app, options)
-  registerEngraverRoutes(app, options)
-  registerRulingAuthorityRoutes(app, options)
-  registerTagRoutes(app, options)
+  registerShapeRoutes(app, options.listShapes)
+  registerCoinListRoute(app, {
+    imageBaseUrl: options.imageBaseUrl,
+    listCoins: options.listCoins,
+  })
+  registerCompositionRoutes(app, options.listCompositions)
+  registerOrientationRoutes(app, options.listOrientations)
+  registerTechniqueRoutes(app, options.listTechniques)
+  registerCoinDetailRoute(app, {
+    findCoinById: options.findCoinById,
+    imageBaseUrl: options.imageBaseUrl,
+  })
+  registerCurrencyRoutes(app, options.listCurrencies)
+  registerDistributionRoutes(app, options.listDistributions)
+  registerIssuerRoutes(app, options.listIssuers)
+  registerMintRoutes(app, options.listMints)
+  registerEngraverRoutes(app, options.listEngravers)
+  registerRulingAuthorityRoutes(app, options.listRulingAuthorities)
+  registerTagRoutes(app, options.listTags)
 
   app.doc("/openapi.json", {
     info: {

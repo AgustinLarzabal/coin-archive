@@ -37,12 +37,10 @@ const rulingAuthorityListRoute = createRoute({
 
 export function registerRulingAuthorityRoutes(
   app: ApiApp,
-  options: {
-    listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
-  }
+  listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
 ) {
   app.openapi(rulingAuthorityListRoute, async (context) => {
-    const rulers = await (options.listRulingAuthorities ?? (async () => []))()
+    const rulers = await (listRulingAuthorities ?? (async () => []))()
     const response = {
       rulers: rulers.map(({ slug, name, role, tenure }) => ({
         slug,

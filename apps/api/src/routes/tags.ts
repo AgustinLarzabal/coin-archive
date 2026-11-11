@@ -32,10 +32,10 @@ const route = createRoute({
 
 export function registerTagRoutes(
   app: ApiApp,
-  options: { listTags?: () => Promise<Array<TagRecord>> }
+  listTags?: () => Promise<Array<TagRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const tags = await (options.listTags ?? (async () => []))()
+    const tags = await (listTags ?? (async () => []))()
     const response = {
       tags: tags.map(({ slug, name }) => ({ slug, name })),
     } satisfies TagListResponse

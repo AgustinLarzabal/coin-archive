@@ -9,10 +9,6 @@ import type { ApiApp } from "./shared.js"
 import type { CurrencyListResponse } from "@coin-archive/api"
 import type { CurrencyRecord } from "@coin-archive/db"
 
-interface CurrencyRouteOptions {
-  listCurrencies?: () => Promise<Array<CurrencyRecord>>
-}
-
 const currencyListResponseSchema = sharedCurrencyListResponseSchema
   .safeExtend({
     currencies: z.array(currencyResponseSchema.openapi("Currency")),
@@ -38,10 +34,10 @@ const currencyListRoute = createRoute({
 
 export function registerCurrencyRoutes(
   app: ApiApp,
-  options: CurrencyRouteOptions
+  listCurrencies?: () => Promise<Array<CurrencyRecord>>
 ) {
   app.openapi(currencyListRoute, async (context) => {
-    const currencies = await (options.listCurrencies ?? (async () => []))()
+    const currencies = await (listCurrencies ?? (async () => []))()
     const response = {
       currencies: currencies.map(toCurrencyResponse),
     } satisfies CurrencyListResponse

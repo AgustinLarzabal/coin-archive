@@ -32,10 +32,10 @@ const route = createRoute({
 
 export function registerShapeRoutes(
   app: ApiApp,
-  options: { listShapes?: () => Promise<Array<CoinShapeRecord>> }
+  listShapes?: () => Promise<Array<CoinShapeRecord>>
 ) {
   app.openapi(route, async (context) => {
-    const shapes = await (options.listShapes ?? (async () => []))()
+    const shapes = await (listShapes ?? (async () => []))()
     return context.json(
       {
         shapes: shapes.map(({ slug, name }) => ({ slug, name })),

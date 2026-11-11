@@ -1,6 +1,6 @@
 import {
-  coinOrientationListItemResponseSchema,
   coinOrientationListResponseSchema,
+  namedSlugResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
@@ -18,7 +18,7 @@ const route = createRoute({
           schema: coinOrientationListResponseSchema
             .safeExtend({
               orientations: z.array(
-                coinOrientationListItemResponseSchema.openapi("Orientation")
+                namedSlugResponseSchema.openapi("Orientation")
               ),
             })
             .openapi("OrientationListResponse"),

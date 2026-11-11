@@ -17,17 +17,12 @@ import { yearFilterDefinition } from "./definitions/year-filter"
 import type { ExploreSearch } from "../explore-search"
 import type { ExploreFilterPatch } from "../explore-search-navigation"
 import type {
-  CoinOrientationListItemResponse,
-  CompositionListItemResponse,
+  CompositionResponse,
   CurrencyResponse,
-  DistributionListItemResponse,
   EngraverListItemResponse,
   IssuerResponse,
   MintResponse,
-  RulingAuthorityListItemResponse,
-  ShapeListItemResponse,
-  TagListItemResponse,
-  TechniqueListItemResponse,
+  NamedSlugResponse,
 } from "@coin-archive/api"
 import type {
   FilterField,
@@ -44,16 +39,16 @@ export type ExploreFilterValue =
 
 export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
-  compositions: Array<CompositionListItemResponse>
-  distributions: Array<DistributionListItemResponse>
-  techniques: Array<TechniqueListItemResponse>
+  compositions: Array<CompositionResponse>
+  distributions: Array<NamedSlugResponse>
+  techniques: Array<NamedSlugResponse>
   engravers: Array<EngraverListItemResponse>
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>
-  rulingAuthorities: Array<RulingAuthorityListItemResponse>
-  tags: Array<TagListItemResponse>
-  shapes: Array<ShapeListItemResponse>
-  orientations: Array<CoinOrientationListItemResponse>
+  rulingAuthorities: Array<NamedSlugResponse>
+  tags: Array<NamedSlugResponse>
+  shapes: Array<NamedSlugResponse>
+  orientations: Array<NamedSlugResponse>
 }
 
 export interface ExploreFilterDefinition {

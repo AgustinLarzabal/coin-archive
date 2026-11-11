@@ -1538,6 +1538,9 @@ describe("Coin list route", () => {
                       $ref: "#/components/schemas/InvalidFaceValueFilterError",
                     },
                     {
+                      $ref: "#/components/schemas/InvalidCurrencySlugError",
+                    },
+                    {
                       $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
                     { $ref: "#/components/schemas/InvalidDistributionError" },
@@ -1576,6 +1579,7 @@ describe("Coin list route", () => {
           InvalidTagError: expect.any(Object),
           InvalidEngraverSlugError: expect.any(Object),
           InvalidFaceValueFilterError: expect.any(Object),
+          InvalidCurrencySlugError: expect.any(Object),
           InvalidIssuerCodeError: expect.any(Object),
           InvalidMintSlugError: expect.any(Object),
           InvalidRulingAuthoritySlugError: expect.any(Object),
@@ -1681,8 +1685,8 @@ describe("Currency Coin filter", () => {
       expect(listCoins).not.toHaveBeenCalled()
       await expect(response.json()).resolves.toEqual({
         error: {
-          code: "invalid_face_value_filter",
-          message: "Face Value filter is invalid",
+          code: "invalid_currency_slug",
+          message: "Currency Slug is invalid",
         },
       })
     }
@@ -1699,7 +1703,7 @@ describe("Currency Coin filter", () => {
     expect(response.status).toBe(400)
     expect(listCoins).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toMatchObject({
-      error: { code: "invalid_face_value_filter" },
+      error: { code: "invalid_currency_slug" },
     })
   })
 
@@ -1709,6 +1713,7 @@ describe("Currency Coin filter", () => {
       checkReadiness: successfulReadinessCheck,
     }).request("/openapi.json")
     const document = (await response.json()) as {
+      components: { schemas: Record<string, unknown> }
       paths: {
         "/v1/coins": {
           get: {
@@ -1731,6 +1736,9 @@ describe("Currency Coin filter", () => {
       })
     )
     expect(document.paths["/v1/coins"].get.responses).toHaveProperty("400")
+    expect(document.components.schemas).toHaveProperty(
+      "InvalidCurrencySlugError"
+    )
     expect(
       document.paths["/v1/coins"].get.responses["200"].content?.[
         "application/json"
@@ -1741,5 +1749,10 @@ describe("Currency Coin filter", () => {
         "application/json"
       ].examples
     ).toHaveProperty("invalidFaceValueFilter")
+    expect(
+      document.paths["/v1/coins"].get.responses["400"].content?.[
+        "application/json"
+      ].examples
+    ).toHaveProperty("invalidCurrencySlug")
   })
 })

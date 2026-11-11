@@ -1,5 +1,5 @@
 import {
-  tagListItemResponseSchema,
+  namedSlugResponseSchema,
   tagListResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
@@ -17,7 +17,7 @@ const route = createRoute({
         "application/json": {
           schema: tagListResponseSchema
             .safeExtend({
-              tags: z.array(tagListItemResponseSchema.openapi("Tag")),
+              tags: z.array(namedSlugResponseSchema.openapi("Tag")),
             })
             .openapi("TagListResponse"),
         },

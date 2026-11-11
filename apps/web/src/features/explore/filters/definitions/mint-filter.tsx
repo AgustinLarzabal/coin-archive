@@ -1,4 +1,4 @@
-import { mintSlugSchema } from "@coin-archive/api"
+import { slugSchema } from "@coin-archive/api"
 import { MapPinIcon } from "@phosphor-icons/react"
 import type { ExploreFilterDefinition } from "../explore-filter-definitions"
 
@@ -6,7 +6,7 @@ export const mintFilterDefinition = {
   id: "mint",
   label: "Mint",
   icon: <MapPinIcon />,
-  schema: mintSlugSchema,
+  schema: slugSchema,
   options: ({ mints }, search) => {
     const nameCounts = new Map<string, number>()
     for (const mint of mints) {

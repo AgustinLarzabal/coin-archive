@@ -1,6 +1,6 @@
 import {
-  compositionListItemResponseSchema,
   compositionListResponseSchema,
+  compositionResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
@@ -18,7 +18,7 @@ const route = createRoute({
           schema: compositionListResponseSchema
             .safeExtend({
               compositions: z.array(
-                compositionListItemResponseSchema.openapi("Composition")
+                compositionResponseSchema.openapi("Composition")
               ),
             })
             .openapi("CompositionListResponse"),

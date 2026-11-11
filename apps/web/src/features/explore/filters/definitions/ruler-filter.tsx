@@ -1,4 +1,4 @@
-import { rulingAuthoritySlugSchema } from "@coin-archive/api"
+import { slugSchema } from "@coin-archive/api"
 import { CrownIcon } from "@phosphor-icons/react"
 import type { ExploreFilterDefinition } from "../explore-filter-definitions"
 
@@ -6,7 +6,7 @@ export const rulerFilterDefinition = {
   id: "ruler",
   label: "Ruler / Period",
   icon: <CrownIcon />,
-  schema: rulingAuthoritySlugSchema,
+  schema: slugSchema,
   options: ({ rulingAuthorities }) => {
     const nameCounts = new Map<string, number>()
     for (const ruler of rulingAuthorities) {

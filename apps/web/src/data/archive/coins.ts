@@ -10,18 +10,9 @@ import {
   coinListWeightSchema,
   coinListYearSchema,
   coinNotFoundErrorSchema,
-  compositionSlugSchema,
-  currencySlugSchema,
-  distributionSlugSchema,
-  engraverSlugSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
-  mintSlugSchema,
-  orientationSlugSchema,
-  rulingAuthoritySlugSchema,
-  shapeSlugSchema,
-  tagSlugSchema,
-  techniqueSlugSchema,
+  slugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import type {
@@ -233,7 +224,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   } = filters
   if (
     currencySlug !== undefined &&
-    !currencySlugSchema.safeParse(currencySlug).success
+    !slugSchema.safeParse(currencySlug).success
   ) {
     throw new InvalidCurrencySlugError("Invalid Currency Slug")
   }
@@ -246,32 +237,23 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
   if (
     distribution !== undefined &&
-    !distributionSlugSchema.safeParse(distribution).success
+    !slugSchema.safeParse(distribution).success
   ) {
     throw new TypeError("Invalid Coin Distribution")
   }
-  if (
-    technique !== undefined &&
-    !techniqueSlugSchema.safeParse(technique).success
-  ) {
+  if (technique !== undefined && !slugSchema.safeParse(technique).success) {
     throw new TypeError("Invalid Coin Technique")
   }
-  if (tagSlug !== undefined && !tagSlugSchema.safeParse(tagSlug).success) {
+  if (tagSlug !== undefined && !slugSchema.safeParse(tagSlug).success) {
     throw new TypeError("Invalid Tag Slug")
   }
-  if (
-    composition !== undefined &&
-    !compositionSlugSchema.safeParse(composition).success
-  ) {
+  if (composition !== undefined && !slugSchema.safeParse(composition).success) {
     throw new TypeError("Invalid Coin Composition")
   }
-  if (shape !== undefined && !shapeSlugSchema.safeParse(shape).success) {
+  if (shape !== undefined && !slugSchema.safeParse(shape).success) {
     throw new TypeError("Invalid Coin Shape")
   }
-  if (
-    orientation !== undefined &&
-    !orientationSlugSchema.safeParse(orientation).success
-  ) {
+  if (orientation !== undefined && !slugSchema.safeParse(orientation).success) {
     throw new TypeError("Invalid Coin Orientation")
   }
   if (
@@ -280,7 +262,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   ) {
     throw new InvalidIssuerCodeError("Invalid issuer code")
   }
-  if (mintSlug !== undefined && !mintSlugSchema.safeParse(mintSlug).success) {
+  if (mintSlug !== undefined && !slugSchema.safeParse(mintSlug).success) {
     throw new InvalidMintSlugError("Invalid Mint Slug")
   }
   if (size !== undefined && !coinListSizeSchema.safeParse(size).success) {
@@ -303,7 +285,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
   if (
     engraverSlug !== undefined &&
-    !engraverSlugSchema.safeParse(engraverSlug).success
+    !slugSchema.safeParse(engraverSlug).success
   ) {
     throw new InvalidEngraverSlugError("Invalid engraver slug")
   }
@@ -312,7 +294,7 @@ export function coinListQueryOptions(filters: CoinListFilters = {}) {
   }
   if (
     rulingAuthoritySlug !== undefined &&
-    !rulingAuthoritySlugSchema.safeParse(rulingAuthoritySlug).success
+    !slugSchema.safeParse(rulingAuthoritySlug).success
   ) {
     throw new InvalidRulingAuthoritySlugError("Invalid Ruling Authority Slug")
   }

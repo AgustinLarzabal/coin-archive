@@ -2,17 +2,12 @@ import { createMemoryHistory, RouterProvider } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
 import type {
   CoinListPaginationResponse,
-  CoinOrientationListItemResponse,
-  CompositionListItemResponse,
+  CompositionResponse,
   CurrencyResponse,
-  DistributionListItemResponse,
   EngraverListItemResponse,
   IssuerResponse,
   MintResponse,
-  RulingAuthorityListItemResponse,
-  ShapeListItemResponse,
-  TagListItemResponse,
-  TechniqueListItemResponse,
+  NamedSlugResponse,
 } from "@coin-archive/api"
 
 import { getRouter } from "@/router"
@@ -60,16 +55,16 @@ export function createArchiveFetch({
   coins?: Array<unknown>
   pagination?: CoinListPaginationResponse
   currencies?: Array<CurrencyResponse>
-  distributions?: Array<DistributionListItemResponse>
-  techniques?: Array<TechniqueListItemResponse>
-  compositions?: Array<CompositionListItemResponse>
+  distributions?: Array<NamedSlugResponse>
+  techniques?: Array<NamedSlugResponse>
+  compositions?: Array<CompositionResponse>
   engravers?: Array<EngraverListItemResponse>
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
-  rulers?: Array<RulingAuthorityListItemResponse>
-  tags?: Array<TagListItemResponse>
-  shapes?: Array<ShapeListItemResponse>
-  orientations?: Array<CoinOrientationListItemResponse>
+  rulers?: Array<NamedSlugResponse>
+  tags?: Array<NamedSlugResponse>
+  shapes?: Array<NamedSlugResponse>
+  orientations?: Array<NamedSlugResponse>
 } = {}) {
   return (input: string | URL | Request) => {
     const url = String(input)

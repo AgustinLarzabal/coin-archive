@@ -1,4 +1,4 @@
-import { engraverSlugSchema } from "@coin-archive/api"
+import { slugSchema } from "@coin-archive/api"
 import { PencilSimpleIcon } from "@phosphor-icons/react"
 import type { ExploreFilterDefinition } from "../explore-filter-definitions"
 
@@ -6,7 +6,7 @@ export const engraverFilterDefinition = {
   id: "engraver",
   label: "Engraver",
   icon: <PencilSimpleIcon />,
-  schema: engraverSlugSchema,
+  schema: slugSchema,
   options: ({ engravers }, search) => [
     ...engravers.map(({ fullName, slug }) => ({
       label: fullName,

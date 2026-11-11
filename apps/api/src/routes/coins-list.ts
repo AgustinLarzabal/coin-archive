@@ -16,13 +16,10 @@ import {
   coinListWeightToInterval,
   coinListYearQuerySchema,
   coinListYearToInterval,
-  compositionSlugSchema,
-  currencySlugSchema,
-  distributionSlugSchema,
-  engraverSlugSchema,
   FACE_VALUE_AMOUNT_QUERY_PATTERN,
   faceValueAmountQuerySchema,
   invalidCompositionErrorSchema as sharedInvalidCompositionErrorSchema,
+  invalidCurrencySlugErrorSchema as sharedInvalidCurrencySlugErrorSchema,
   invalidDistributionErrorSchema as sharedInvalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema as sharedInvalidEngraverSlugErrorSchema,
   invalidFaceValueFilterErrorSchema as sharedInvalidFaceValueFilterErrorSchema,
@@ -37,12 +34,7 @@ import {
   invalidTechniqueErrorSchema as sharedInvalidTechniqueErrorSchema,
   invalidYearErrorSchema as sharedInvalidYearErrorSchema,
   issuerCodeSchema,
-  mintSlugSchema,
-  orientationSlugSchema,
-  rulingAuthoritySlugSchema,
-  shapeSlugSchema,
-  tagSlugSchema,
-  techniqueSlugSchema,
+  slugSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import {
@@ -91,42 +83,42 @@ const coinListQuerySchema = z
       pattern: FACE_VALUE_AMOUNT_QUERY_PATTERN,
       example: "0.5",
     }),
-    currency: currencySlugSchema.optional().openapi({
+    currency: slugSchema.optional().openapi({
       description:
-        "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_face_value_filter",
+        "Exact, case-sensitive Currency Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_currency_slug",
       param: { name: "currency", in: "query" },
     }),
-    distribution: distributionSlugSchema.optional().openapi({
+    distribution: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
     }),
-    technique: techniqueSlugSchema.optional().openapi({
+    technique: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
       param: { name: "technique", in: "query" },
     }),
-    tag: tagSlugSchema.optional().openapi({
+    tag: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Tag Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_tag",
       param: { name: "tag", in: "query" },
     }),
-    composition: compositionSlugSchema.optional().openapi({
+    composition: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
       param: { name: "composition", in: "query" },
     }),
-    shape: shapeSlugSchema.optional().openapi({
+    shape: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Shape Slug. Unsupported or repeated values return invalid_shape",
       param: { name: "shape", in: "query" },
     }),
-    orientation: orientationSlugSchema.optional().openapi({
+    orientation: slugSchema.optional().openapi({
       description:
         "Exact Coin Orientation Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_orientation",
       param: { name: "orientation", in: "query" },
     }),
-    engraver: engraverSlugSchema.optional().openapi({
+    engraver: slugSchema.optional().openapi({
       description: "Exact, case-sensitive Engraver Slug",
       param: { name: "engraver", in: "query" },
     }),
@@ -134,12 +126,12 @@ const coinListQuerySchema = z
       description: "Exact, case-sensitive Issuer Code",
       param: { name: "issuer", in: "query" },
     }),
-    mint: mintSlugSchema.optional().openapi({
+    mint: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Mint Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_mint_slug",
       param: { name: "mint", in: "query" },
     }),
-    ruler: rulingAuthoritySlugSchema.optional().openapi({
+    ruler: slugSchema.optional().openapi({
       description: "Exact, case-sensitive Ruling Authority Slug",
       param: { name: "ruler", in: "query" },
     }),
@@ -185,6 +177,8 @@ const invalidTagErrorSchema =
   sharedInvalidTagErrorSchema.openapi("InvalidTagError")
 const invalidCompositionErrorSchema =
   sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
+const invalidCurrencySlugErrorSchema =
+  sharedInvalidCurrencySlugErrorSchema.openapi("InvalidCurrencySlugError")
 const invalidShapeErrorSchema =
   sharedInvalidShapeErrorSchema.openapi("InvalidShapeError")
 const invalidOrientationErrorSchema =
@@ -214,6 +208,7 @@ const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
   invalidFaceValueFilterErrorSchema,
+  invalidCurrencySlugErrorSchema,
   invalidMeasurementFilterErrorSchema,
   invalidDistributionErrorSchema,
   invalidTechniqueErrorSchema,
@@ -270,6 +265,15 @@ const coinListRoute = createRoute({
                 },
               },
             },
+            invalidCurrencySlug: {
+              summary: "Currency Slug is malformed or repeated",
+              value: {
+                error: {
+                  code: "invalid_currency_slug",
+                  message: "Currency Slug is invalid",
+                },
+              },
+            },
           },
         },
       },
@@ -295,11 +299,20 @@ const validationErrors = [
     },
   },
   {
-    fields: ["amount", "currency"],
+    fields: ["amount"],
     response: {
       error: {
         code: "invalid_face_value_filter",
         message: "Face Value filter is invalid",
+      },
+    },
+  },
+  {
+    fields: ["currency"],
+    response: {
+      error: {
+        code: "invalid_currency_slug",
+        message: "Currency Slug is invalid",
       },
     },
   },

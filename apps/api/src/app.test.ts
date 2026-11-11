@@ -167,6 +167,7 @@ describe("API composition", () => {
       "InternalError",
       "InvalidCoinIdError",
       "InvalidCompositionError",
+      "InvalidCurrencySlugError",
       "InvalidDistributionError",
       "InvalidEngraverSlugError",
       "InvalidFaceValueFilterError",

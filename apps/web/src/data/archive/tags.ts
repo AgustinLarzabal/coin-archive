@@ -1,11 +1,13 @@
 import { tagListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import type { TagListResponse } from "@coin-archive/api"
+
 import { API_BASE_URL } from "@/config"
 
 export class InvalidTagListResponseError extends Error {}
 export class TagListRequestError extends Error {}
 
-async function getTags() {
+async function getTags(): Promise<TagListResponse> {
   let response: Response
 
   try {

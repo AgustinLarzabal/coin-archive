@@ -26,6 +26,7 @@ import type {
   NamedSlugResponse,
   OrientationResponse,
   RulingAuthorityResponse,
+  TechniqueResponse,
 } from "@coin-archive/api"
 import type {
   FilterField,
@@ -44,7 +45,7 @@ export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
   compositions: Array<CompositionResponse>
   distributions: Array<DistributionResponse>
-  techniques: Array<NamedSlugResponse>
+  techniques: Array<TechniqueResponse>
   engravers: Array<EngraverResponse>
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>

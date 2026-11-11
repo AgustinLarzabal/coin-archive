@@ -1,4 +1,13 @@
-export * from "./coins.js"
+export * from "./coin-filters.js"
+export * from "./coin-list.js"
+export * from "./coin-detail.js"
+export {
+  coinFaceValueResponseSchema,
+  coinIdSchema,
+  coinNotFoundErrorSchema,
+  invalidCoinIdErrorSchema,
+} from "./coins.js"
+export type { CoinFaceValueResponse } from "./coins.js"
 export {
   internalErrorSchema,
   namedSlugResponseSchema,

@@ -1,6 +1,6 @@
 import {
-  namedSlugResponseSchema,
   techniqueListResponseSchema,
+  techniqueResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
@@ -17,7 +17,7 @@ const route = createRoute({
         "application/json": {
           schema: techniqueListResponseSchema
             .safeExtend({
-              techniques: z.array(namedSlugResponseSchema.openapi("Technique")),
+              techniques: z.array(techniqueResponseSchema.openapi("Technique")),
             })
             .openapi("TechniqueListResponse"),
         },

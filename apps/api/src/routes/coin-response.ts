@@ -6,8 +6,6 @@ import {
   coinListResponseSchema as sharedCoinListResponseSchema,
   currencyResponseSchema,
   issuerResponseSchema,
-  missingCoinSurfaceResponse,
-  missingCoinSurfaceWithEngraversResponse,
 } from "@coin-archive/api"
 import { z } from "@hono/zod-openapi"
 import { toCurrencyResponse } from "./currency-response.js"
@@ -40,6 +38,13 @@ export const coinListResponseSchema = sharedCoinListResponseSchema
     coins: z.array(coinListItemResponseSchema).max(COIN_LIST_MAX_PAGE_SIZE),
   })
   .openapi("CoinListResponse")
+
+const missingCoinSurfaceResponse = {
+  description: null,
+  imageUrl: null,
+  createdAt: null,
+  updatedAt: null,
+}
 
 function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
@@ -122,10 +127,10 @@ export function toCoinDetailResponse(
     tags: coin.tags.map(({ slug, name }) => ({ slug, name })),
     obverse: coin.obverse
       ? toCoinSurfaceWithEngraversResponse(coin.obverse, imageBaseUrl)
-      : { ...missingCoinSurfaceWithEngraversResponse },
+      : { ...missingCoinSurfaceResponse, engravers: [] },
     reverse: coin.reverse
       ? toCoinSurfaceWithEngraversResponse(coin.reverse, imageBaseUrl)
-      : { ...missingCoinSurfaceWithEngraversResponse },
+      : { ...missingCoinSurfaceResponse, engravers: [] },
     edge: coin.edge
       ? toCoinSurfaceResponse(coin.edge, imageBaseUrl)
       : { ...missingCoinSurfaceResponse },

@@ -9,6 +9,7 @@ export class RulingAuthorityListRequestError extends Error {}
 
 async function getRulingAuthorities(): Promise<RulingAuthorityListResponse> {
   let response: Response
+
   try {
     response = await fetch(`${API_BASE_URL}/v1/rulers`)
   } catch (error) {
@@ -17,11 +18,13 @@ async function getRulingAuthorities(): Promise<RulingAuthorityListResponse> {
       { cause: error }
     )
   }
+
   if (!response.ok) {
     throw new RulingAuthorityListRequestError(
       `Ruling Authority list request failed with HTTP ${response.status}`
     )
   }
+
   try {
     return rulingAuthorityListResponseSchema.parse(await response.json())
   } catch (error) {

@@ -7,15 +7,18 @@ export class TagListRequestError extends Error {}
 
 async function getTags() {
   let response: Response
+
   try {
     response = await fetch(`${API_BASE_URL}/v1/tags`)
   } catch (error) {
     throw new TagListRequestError("Tag list request failed", { cause: error })
   }
+
   if (!response.ok)
     throw new TagListRequestError(
       `Tag list request failed with HTTP ${response.status}`
     )
+
   try {
     return tagListResponseSchema.parse(await response.json())
   } catch (error) {

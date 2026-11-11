@@ -9,6 +9,7 @@ export class DistributionListRequestError extends Error {}
 
 async function getDistributions(): Promise<DistributionListResponse> {
   let response: Response
+
   try {
     response = await fetch(`${API_BASE_URL}/v1/distributions`)
   } catch (error) {
@@ -16,11 +17,13 @@ async function getDistributions(): Promise<DistributionListResponse> {
       cause: error,
     })
   }
+
   if (!response.ok) {
     throw new DistributionListRequestError(
       `Distribution list request failed with HTTP ${response.status}`
     )
   }
+
   try {
     return distributionListResponseSchema.parse(await response.json())
   } catch (error) {

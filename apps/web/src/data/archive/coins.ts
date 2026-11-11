@@ -1,22 +1,18 @@
 import {
   COIN_LIST_DEFAULT_PAGE,
   COIN_LIST_DEFAULT_PAGE_SIZE,
-  coinDetailResponseSchema,
-  coinIdSchema,
   coinListPageSchema,
   coinListResponseSchema,
   coinListSizeSchema,
   coinListThicknessSchema,
   coinListWeightSchema,
   coinListYearSchema,
-  coinNotFoundErrorSchema,
   faceValueAmountQuerySchema,
   issuerCodeSchema,
   slugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import type {
-  CoinDetailResponse,
   CoinListResponse,
   CoinListSize,
   CoinListThickness,
@@ -26,122 +22,77 @@ import type {
 
 import { API_BASE_URL } from "@/config"
 
-export class CoinNotFoundError extends Error {}
-export class InvalidCoinResponseError extends Error {}
-class CoinRequestError extends Error {}
-export class InvalidCoinListResponseError extends Error {}
 class CoinListRequestError extends Error {}
-export class InvalidCoinIdError extends Error {}
-export class InvalidIssuerCodeError extends Error {}
-export class InvalidMintSlugError extends Error {}
-export class InvalidEngraverSlugError extends Error {}
-export class InvalidRulingAuthoritySlugError extends Error {}
-export class InvalidIssueYearError extends Error {}
-export class InvalidCurrencySlugError extends Error {}
+export class InvalidCoinListFilterError extends Error {}
+export class InvalidCoinListResponseError extends Error {}
 
 export type CoinListFilters = Readonly<{
+  composition?: string
+  currencySlug?: string
+  distribution?: string
+  engraverSlug?: string
+  faceValueAmount?: string
+  issuerCode?: string
+  issueYear?: CoinListYear
+  mintSlug?: string
+  orientation?: string
+  rulingAuthoritySlug?: string
+  shape?: string
   size?: CoinListSize
+  tagSlug?: string
+  technique?: string
   thickness?: CoinListThickness
   weight?: CoinListWeight
-  currencySlug?: string
-  faceValueAmount?: string
-  distribution?: string
-  technique?: string
-  tagSlug?: string
-  composition?: string
-  shape?: string
-  orientation?: string
-  engraverSlug?: string
-  issuerCode?: string
-  mintSlug?: string
-  issueYear?: CoinListYear
   page?: number
-  rulingAuthoritySlug?: string
 }>
 
-type ValidatedCoinListFilters = Readonly<{
-  size?: CoinListSize
-  thickness?: CoinListThickness
-  weight?: CoinListWeight
-  currencySlug: string | null
-  faceValueAmount: string | null
-  distribution?: string
-  technique?: string
-  tagSlug?: string
-  composition?: string
-  shape?: string
-  orientation?: string
-  engraverSlug: string | null
-  issuerCode: string | null
-  mintSlug?: string
-  issueYear?: CoinListYear
-  page: number
-  pageSize: number
-  rulingAuthoritySlug?: string
-}>
+type ValidatedCoinListFilters = CoinListFilters & Readonly<{ page: number }>
 
 async function getCoins({
+  composition,
+  currencySlug,
+  distribution,
+  engraverSlug,
+  faceValueAmount,
+  issuerCode,
+  issueYear,
+  mintSlug,
+  orientation,
+  rulingAuthoritySlug,
+  shape,
   size,
+  tagSlug,
+  technique,
   thickness,
   weight,
-  currencySlug,
-  faceValueAmount,
-  distribution,
-  technique,
-  tagSlug,
-  composition,
-  shape,
-  orientation,
-  engraverSlug,
-  issuerCode,
-  mintSlug,
-  issueYear,
   page,
-  pageSize,
-  rulingAuthoritySlug,
 }: ValidatedCoinListFilters): Promise<CoinListResponse> {
   let response: Response
 
   try {
     const search = new URLSearchParams()
-    for (const [name, value] of Object.entries({
-      size,
-      thickness,
-      weight,
-    })) {
-      if (value !== undefined) search.set(name, value)
-    }
-    if (faceValueAmount !== null) {
-      search.set("amount", faceValueAmount)
-    }
-    if (currencySlug !== null) {
-      search.set("currency", currencySlug)
-    }
-    if (distribution !== undefined) {
-      search.set("distribution", distribution)
-    }
-    if (technique !== undefined) search.set("technique", technique)
-    if (tagSlug !== undefined) search.set("tag", tagSlug)
+
     if (composition !== undefined) search.set("composition", composition)
-    if (shape !== undefined) search.set("shape", shape)
+    if (currencySlug !== undefined) search.set("currency", currencySlug)
+    if (distribution !== undefined) search.set("distribution", distribution)
+    if (engraverSlug !== undefined) search.set("engraver", engraverSlug)
+    if (faceValueAmount !== undefined) search.set("amount", faceValueAmount)
+    if (issuerCode !== undefined) search.set("issuer", issuerCode)
+    if (issueYear !== undefined) search.set("year", String(issueYear))
+    if (mintSlug !== undefined) search.set("mint", mintSlug)
     if (orientation !== undefined) search.set("orientation", orientation)
-    if (engraverSlug !== null) {
-      search.set("engraver", engraverSlug)
-    }
-    if (issuerCode !== null) {
-      search.set("issuer", issuerCode)
-    }
-    if (mintSlug !== undefined) {
-      search.set("mint", mintSlug)
-    }
-    if (rulingAuthoritySlug !== undefined) {
+    if (rulingAuthoritySlug !== undefined)
       search.set("ruler", rulingAuthoritySlug)
-    }
-    if (issueYear !== undefined) {
-      search.set("year", String(issueYear))
-    }
+    if (shape !== undefined) search.set("shape", shape)
+    if (size !== undefined) search.set("size", size)
+    if (tagSlug !== undefined) search.set("tag", tagSlug)
+    if (technique !== undefined) search.set("technique", technique)
+    if (thickness !== undefined) search.set("thickness", thickness)
+    if (weight !== undefined) search.set("weight", weight)
+
     search.set("page", String(page))
-    search.set("pageSize", String(pageSize))
+    search.set("pageSize", String(COIN_LIST_DEFAULT_PAGE_SIZE))
+
     const query = search.size === 0 ? "" : `?${search.toString()}`
     response = await fetch(`${API_BASE_URL}/v1/coins${query}`)
   } catch (error) {
@@ -165,185 +116,134 @@ async function getCoins({
   }
 }
 
-async function getCoin(coinId: string): Promise<CoinDetailResponse> {
-  let response: Response
-
-  try {
-    response = await fetch(`${API_BASE_URL}/v1/coins/${coinId}`)
-  } catch (error) {
-    throw new CoinRequestError("Coin request failed", { cause: error })
-  }
-
-  if (response.status === 404) {
-    try {
-      coinNotFoundErrorSchema.parse(await response.json())
-    } catch (error) {
-      throw new InvalidCoinResponseError("Coin response is invalid", {
-        cause: error,
-      })
-    }
-    throw new CoinNotFoundError("Coin not found")
-  }
-  if (!response.ok) {
-    throw new CoinRequestError(
-      `Coin request failed with HTTP ${response.status}`
-    )
-  }
-
-  try {
-    return coinDetailResponseSchema.parse(await response.json())
-  } catch (error) {
-    throw new InvalidCoinResponseError("Coin response is invalid", {
-      cause: error,
-    })
-  }
-}
-
-export function coinListQueryOptions(filters: CoinListFilters = {}) {
+function validateCoinListFilters(
+  filters: CoinListFilters
+): ValidatedCoinListFilters {
   const {
+    composition,
+    currencySlug,
+    distribution,
+    engraverSlug,
+    faceValueAmount,
+    issuerCode,
+    issueYear,
+    mintSlug,
+    orientation,
+    rulingAuthoritySlug,
+    shape,
     size,
+    tagSlug,
+    technique,
     thickness,
     weight,
-    currencySlug,
-    faceValueAmount,
-    distribution,
-    technique,
-    tagSlug,
-    composition,
-    shape,
-    orientation,
-    engraverSlug,
-    issuerCode,
-    mintSlug,
-    issueYear,
     page = COIN_LIST_DEFAULT_PAGE,
-    rulingAuthoritySlug,
   } = filters
+
+  if (composition !== undefined && !slugSchema.safeParse(composition).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Composition")
+  }
+
   if (
     currencySlug !== undefined &&
     !slugSchema.safeParse(currencySlug).success
   ) {
-    throw new InvalidCurrencySlugError("Invalid Currency Slug")
+    throw new InvalidCoinListFilterError("Invalid Currency Slug")
   }
+
+  if (
+    distribution !== undefined &&
+    !slugSchema.safeParse(distribution).success
+  ) {
+    throw new InvalidCoinListFilterError("Invalid Coin Distribution")
+  }
+
+  if (
+    engraverSlug !== undefined &&
+    !slugSchema.safeParse(engraverSlug).success
+  ) {
+    throw new InvalidCoinListFilterError("Invalid Engraver Slug")
+  }
+
   if (
     faceValueAmount !== undefined &&
     (currencySlug === undefined ||
       !faceValueAmountQuerySchema.safeParse(faceValueAmount).success)
   ) {
-    throw new TypeError("Invalid Face Value Amount")
+    throw new InvalidCoinListFilterError("Invalid Face Value Amount")
   }
-  if (
-    distribution !== undefined &&
-    !slugSchema.safeParse(distribution).success
-  ) {
-    throw new TypeError("Invalid Coin Distribution")
-  }
-  if (technique !== undefined && !slugSchema.safeParse(technique).success) {
-    throw new TypeError("Invalid Coin Technique")
-  }
-  if (tagSlug !== undefined && !slugSchema.safeParse(tagSlug).success) {
-    throw new TypeError("Invalid Tag Slug")
-  }
-  if (composition !== undefined && !slugSchema.safeParse(composition).success) {
-    throw new TypeError("Invalid Coin Composition")
-  }
-  if (shape !== undefined && !slugSchema.safeParse(shape).success) {
-    throw new TypeError("Invalid Coin Shape")
-  }
-  if (orientation !== undefined && !slugSchema.safeParse(orientation).success) {
-    throw new TypeError("Invalid Coin Orientation")
-  }
+
   if (
     issuerCode !== undefined &&
     !issuerCodeSchema.safeParse(issuerCode).success
   ) {
-    throw new InvalidIssuerCodeError("Invalid issuer code")
+    throw new InvalidCoinListFilterError("Invalid issuer Code")
   }
-  if (mintSlug !== undefined && !slugSchema.safeParse(mintSlug).success) {
-    throw new InvalidMintSlugError("Invalid Mint Slug")
-  }
-  if (size !== undefined && !coinListSizeSchema.safeParse(size).success) {
-    throw new TypeError("Invalid Coin Size")
-  }
-  if (
-    thickness !== undefined &&
-    !coinListThicknessSchema.safeParse(thickness).success
-  ) {
-    throw new TypeError("Invalid Coin Thickness")
-  }
-  if (weight !== undefined && !coinListWeightSchema.safeParse(weight).success) {
-    throw new TypeError("Invalid Coin Weight")
-  }
+
   if (
     issueYear !== undefined &&
     !coinListYearSchema.safeParse(issueYear).success
   ) {
-    throw new InvalidIssueYearError("Invalid Issue Year")
+    throw new InvalidCoinListFilterError("Invalid Issue Year")
   }
-  if (
-    engraverSlug !== undefined &&
-    !slugSchema.safeParse(engraverSlug).success
-  ) {
-    throw new InvalidEngraverSlugError("Invalid engraver slug")
+
+  if (mintSlug !== undefined && !slugSchema.safeParse(mintSlug).success) {
+    throw new InvalidCoinListFilterError("Invalid Mint Slug")
   }
-  if (!coinListPageSchema.safeParse(page).success) {
-    throw new RangeError("Invalid Coin list page")
+
+  if (orientation !== undefined && !slugSchema.safeParse(orientation).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Orientation")
   }
+
   if (
     rulingAuthoritySlug !== undefined &&
     !slugSchema.safeParse(rulingAuthoritySlug).success
   ) {
-    throw new InvalidRulingAuthoritySlugError("Invalid Ruling Authority Slug")
+    throw new InvalidCoinListFilterError("Invalid Ruling Authority Slug")
   }
 
-  const validatedFilters: ValidatedCoinListFilters = {
-    ...(size === undefined ? {} : { size }),
-    ...(thickness === undefined ? {} : { thickness }),
-    ...(weight === undefined ? {} : { weight }),
-    currencySlug: currencySlug ?? null,
-    faceValueAmount: faceValueAmount ?? null,
-    ...(distribution === undefined ? {} : { distribution }),
-    ...(technique === undefined ? {} : { technique }),
-    ...(tagSlug === undefined ? {} : { tagSlug }),
-    ...(composition === undefined ? {} : { composition }),
-    ...(shape === undefined ? {} : { shape }),
-    ...(orientation === undefined ? {} : { orientation }),
-    engraverSlug: engraverSlug ?? null,
-    issuerCode: issuerCode ?? null,
-    ...(mintSlug === undefined ? {} : { mintSlug }),
-    ...(issueYear === undefined ? {} : { issueYear }),
-    page,
-    pageSize: COIN_LIST_DEFAULT_PAGE_SIZE,
-    ...(rulingAuthoritySlug === undefined ? {} : { rulingAuthoritySlug }),
+  if (shape !== undefined && !slugSchema.safeParse(shape).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Shape")
   }
+
+  if (size !== undefined && !coinListSizeSchema.safeParse(size).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Size")
+  }
+
+  if (tagSlug !== undefined && !slugSchema.safeParse(tagSlug).success) {
+    throw new InvalidCoinListFilterError("Invalid Tag Slug")
+  }
+
+  if (technique !== undefined && !slugSchema.safeParse(technique).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Technique")
+  }
+
+  if (
+    thickness !== undefined &&
+    !coinListThicknessSchema.safeParse(thickness).success
+  ) {
+    throw new InvalidCoinListFilterError("Invalid Coin Thickness")
+  }
+
+  if (weight !== undefined && !coinListWeightSchema.safeParse(weight).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin Weight")
+  }
+
+  if (!coinListPageSchema.safeParse(page).success) {
+    throw new InvalidCoinListFilterError("Invalid Coin List Page")
+  }
+
+  return {
+    ...filters,
+    page,
+  }
+}
+
+export function coinListQueryOptions(filters: CoinListFilters = {}) {
+  const validatedFilters = validateCoinListFilters(filters)
 
   return queryOptions({
     queryKey: ["coins", "list", validatedFilters] as const,
     queryFn: () => getCoins(validatedFilters),
-    staleTime: 30_000,
-  })
-}
-
-export function validateCoinId(coinId: string) {
-  if (!coinIdSchema.safeParse(coinId).success) {
-    throw new InvalidCoinIdError("Invalid coin identifier")
-  }
-
-  return coinId
-}
-
-function coinDetailQueryKey(coinId: string) {
-  const validCoinId = validateCoinId(coinId)
-
-  return ["coins", "detail", validCoinId] as const
-}
-
-export function coinDetailQueryOptions(coinId: string) {
-  const queryKey = coinDetailQueryKey(coinId)
-
-  return queryOptions({
-    queryKey,
-    queryFn: () => getCoin(queryKey[2]),
     staleTime: 30_000,
   })
 }

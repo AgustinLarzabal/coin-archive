@@ -86,12 +86,7 @@ describe("Archive landing route", () => {
         "coins",
         "list",
         {
-          currencySlug: null,
-          faceValueAmount: null,
-          engraverSlug: null,
-          issuerCode: null,
           page: 3,
-          pageSize: 24,
         },
       ])?.status
     ).toBe("success")

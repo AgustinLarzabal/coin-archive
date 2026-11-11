@@ -9,6 +9,7 @@ export class TechniqueListRequestError extends Error {}
 
 async function getTechniques(): Promise<TechniqueListResponse> {
   let response: Response
+
   try {
     response = await fetch(`${API_BASE_URL}/v1/techniques`)
   } catch (error) {
@@ -16,11 +17,13 @@ async function getTechniques(): Promise<TechniqueListResponse> {
       cause: error,
     })
   }
+
   if (!response.ok) {
     throw new TechniqueListRequestError(
       `Technique list request failed with HTTP ${response.status}`
     )
   }
+
   try {
     return techniqueListResponseSchema.parse(await response.json())
   } catch (error) {

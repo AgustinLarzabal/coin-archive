@@ -2,13 +2,11 @@ import { createSerializationAdapter } from "@tanstack/react-router"
 
 import {
   InvalidCoinIdError,
-  InvalidCoinListResponseError,
   InvalidCoinResponseError,
-  InvalidCurrencySlugError,
-  InvalidEngraverSlugError,
-  InvalidIssuerCodeError,
-  InvalidMintSlugError,
-  InvalidRulingAuthoritySlugError,
+} from "./archive/coin-detail"
+import {
+  InvalidCoinListFilterError,
+  InvalidCoinListResponseError,
 } from "./archive/coins"
 import {
   CompositionListRequestError,
@@ -56,75 +54,32 @@ import {
 } from "./archive/techniques"
 
 export {
-  coinDetailQueryOptions,
   coinListQueryOptions,
-  CoinNotFoundError,
-  InvalidCoinIdError,
   InvalidCoinListResponseError,
-  InvalidCoinResponseError,
-  InvalidCurrencySlugError,
-  InvalidEngraverSlugError,
-  InvalidIssuerCodeError,
-  InvalidMintSlugError,
-  InvalidRulingAuthoritySlugError,
-  validateCoinId,
 } from "./archive/coins"
 export type { CoinListFilters } from "./archive/coins"
 export {
-  InvalidTagListResponseError,
-  tagListQueryOptions,
-  TagListRequestError,
-} from "./archive/tags"
-export {
-  InvalidMintListResponseError,
-  mintListQueryOptions,
-  MintListRequestError,
-} from "./archive/mints"
-export {
-  currencyListQueryOptions,
-  CurrencyListRequestError,
-  InvalidCurrencyListResponseError,
-} from "./archive/currencies"
-export {
-  distributionListQueryOptions,
-  DistributionListRequestError,
-  InvalidDistributionListResponseError,
-} from "./archive/distributions"
-export {
-  InvalidTechniqueListResponseError,
-  techniqueListQueryOptions,
-  TechniqueListRequestError,
-} from "./archive/techniques"
-export {
-  compositionListQueryOptions,
-  CompositionListRequestError,
-  InvalidCompositionListResponseError,
-} from "./archive/compositions"
-export {
-  InvalidShapeListResponseError,
-  shapeListQueryOptions,
-  ShapeListRequestError,
-} from "./archive/shapes"
-export {
-  InvalidOrientationListResponseError,
-  orientationListQueryOptions,
-  OrientationListRequestError,
-} from "./archive/orientations"
-export {
-  engraverListQueryOptions,
-  EngraverListRequestError,
-  InvalidEngraverListResponseError,
-} from "./archive/engravers"
+  coinDetailQueryOptions,
+  CoinNotFoundError,
+  InvalidCoinIdError,
+  InvalidCoinResponseError,
+  validateCoinId,
+} from "./archive/coin-detail"
+export { tagListQueryOptions } from "./archive/tags"
+export { mintListQueryOptions } from "./archive/mints"
+export { currencyListQueryOptions } from "./archive/currencies"
+export { distributionListQueryOptions } from "./archive/distributions"
+export { techniqueListQueryOptions } from "./archive/techniques"
+export { compositionListQueryOptions } from "./archive/compositions"
+export { shapeListQueryOptions } from "./archive/shapes"
+export { orientationListQueryOptions } from "./archive/orientations"
+export { engraverListQueryOptions } from "./archive/engravers"
 export {
   InvalidIssuerListResponseError,
   issuerListQueryOptions,
   IssuerListRequestError,
 } from "./archive/issuers"
-export {
-  InvalidRulingAuthorityListResponseError,
-  rulingAuthorityListQueryOptions,
-  RulingAuthorityListRequestError,
-} from "./archive/rulers"
+export { rulingAuthorityListQueryOptions } from "./archive/rulers"
 
 function errorAdapter(key: string, ErrorType: new (message: string) => Error) {
   return createSerializationAdapter({
@@ -155,6 +110,7 @@ export const archiveErrorSerializationAdapters = [
   errorAdapter("MintListRequestError", MintListRequestError),
   errorAdapter("InvalidCoinIdError", InvalidCoinIdError),
   errorAdapter("InvalidCoinResponseError", InvalidCoinResponseError),
+  errorAdapter("InvalidCoinListFilterError", InvalidCoinListFilterError),
   errorAdapter("InvalidCoinListResponseError", InvalidCoinListResponseError),
   errorAdapter(
     "InvalidCurrencyListResponseError",
@@ -181,14 +137,6 @@ export const archiveErrorSerializationAdapters = [
     InvalidIssuerListResponseError
   ),
   errorAdapter("IssuerListRequestError", IssuerListRequestError),
-  errorAdapter("InvalidIssuerCodeError", InvalidIssuerCodeError),
-  errorAdapter("InvalidMintSlugError", InvalidMintSlugError),
-  errorAdapter("InvalidCurrencySlugError", InvalidCurrencySlugError),
-  errorAdapter("InvalidEngraverSlugError", InvalidEngraverSlugError),
-  errorAdapter(
-    "InvalidRulingAuthoritySlugError",
-    InvalidRulingAuthoritySlugError
-  ),
   errorAdapter(
     "InvalidRulingAuthorityListResponseError",
     InvalidRulingAuthorityListResponseError

@@ -9,16 +9,19 @@ export class MintListRequestError extends Error {}
 
 async function getMints(): Promise<MintListResponse> {
   let response: Response
+
   try {
     response = await fetch(`${API_BASE_URL}/v1/mints`)
   } catch (error) {
     throw new MintListRequestError("Mint list request failed", { cause: error })
   }
+
   if (!response.ok) {
     throw new MintListRequestError(
       `Mint list request failed with HTTP ${response.status}`
     )
   }
+
   try {
     return mintListResponseSchema.parse(await response.json())
   } catch (error) {

@@ -8,9 +8,9 @@ import {
   InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
-  InvalidIssuerCodeError,
   InvalidIssuerListResponseError,
 } from "./archive"
+import { InvalidCoinListFilterError } from "./archive/coins"
 import { Route as ExploreRoute } from "@/routes/_explore"
 import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$coinId"
@@ -42,6 +42,44 @@ function createQueryClient() {
 }
 
 describe("Archive data module", () => {
+  it("reuses the Coin list cache for omitted and undefined filters", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+    const queryClient = createQueryClient()
+
+    expect(coinListQueryOptions().queryKey[2]).toStrictEqual({
+      page: 1,
+    })
+    await queryClient.fetchQuery(coinListQueryOptions())
+    await queryClient.fetchQuery(
+      coinListQueryOptions({ page: 1, currencySlug: undefined })
+    )
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+    queryClient.clear()
+  })
+
+  it.each([
+    [{ issuerCode: "bad!" }, "Invalid issuer Code"],
+    [{ faceValueAmount: "1" }, "Invalid Face Value Amount"],
+    [{ page: 0 }, "Invalid Coin List Page"],
+    [{ issueYear: 0 }, "Invalid Issue Year"],
+  ])("reports invalid Coin list filters", (filters, message) => {
+    expect(() => coinListQueryOptions(filters)).toThrowError(
+      InvalidCoinListFilterError
+    )
+    expect(() => coinListQueryOptions(filters)).toThrowError(message)
+  })
+
+  it("reports the first invalid filter and checks page last", () => {
+    expect(() =>
+      coinListQueryOptions({ composition: "BAD!", currencySlug: "BAD!" })
+    ).toThrowError("Invalid Coin Composition")
+    expect(() =>
+      coinListQueryOptions({ weight: "8.5-8.125", page: 0 })
+    ).toThrowError("Invalid Coin Weight")
+  })
+
   it("maps a selected Coin Distribution to the Coin list request", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)
@@ -556,7 +594,7 @@ describe("Archive data module", () => {
       message: "Invalid issuer list response",
     },
     {
-      ErrorType: InvalidIssuerCodeError,
+      ErrorType: InvalidCoinListFilterError,
       route: ExploreIndexRoute,
       message: "Invalid issuer code",
       renderedMessage: "Unable to load coins",

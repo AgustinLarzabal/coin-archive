@@ -1,13 +1,19 @@
 import { z } from "zod"
 
-import { errorResponseSchema, namedSlugResponseSchema } from "./common.js"
-import type { slugSchema } from "./common.js"
+import { displayTextSchema, errorResponseSchema, slugSchema } from "./common.js"
 
-export type CoinShape = z.infer<typeof slugSchema>
-export const shapeListResponseSchema = z.strictObject({
-  shapes: z.array(namedSlugResponseSchema),
+export const shapeResponseSchema = z.strictObject({
+  slug: slugSchema,
+  name: displayTextSchema(200),
 })
+
+export const shapeListResponseSchema = z.strictObject({
+  shapes: z.array(shapeResponseSchema),
+})
+
+export type ShapeResponse = z.infer<typeof shapeResponseSchema>
 export type ShapeListResponse = z.infer<typeof shapeListResponseSchema>
+
 export const invalidShapeErrorSchema = errorResponseSchema(
   "invalid_shape",
   "Shape Slug is invalid"

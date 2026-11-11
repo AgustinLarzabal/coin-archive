@@ -1,7 +1,4 @@
-import {
-  namedSlugResponseSchema,
-  shapeListResponseSchema,
-} from "@coin-archive/api"
+import { shapeListResponseSchema, shapeResponseSchema } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
@@ -17,7 +14,7 @@ const route = createRoute({
         "application/json": {
           schema: shapeListResponseSchema
             .safeExtend({
-              shapes: z.array(namedSlugResponseSchema.openapi("Shape")),
+              shapes: z.array(shapeResponseSchema.openapi("Shape")),
             })
             .openapi("ShapeListResponse"),
         },

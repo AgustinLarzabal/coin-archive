@@ -20,7 +20,7 @@ import type {
   CompositionResponse,
   CurrencyResponse,
   DistributionResponse,
-  EngraverListItemResponse,
+  EngraverResponse,
   IssuerResponse,
   MintResponse,
   NamedSlugResponse,
@@ -43,7 +43,7 @@ export interface ExploreFilterLists {
   compositions: Array<CompositionResponse>
   distributions: Array<DistributionResponse>
   techniques: Array<NamedSlugResponse>
-  engravers: Array<EngraverListItemResponse>
+  engravers: Array<EngraverResponse>
   issuers: Array<IssuerResponse>
   mints: Array<MintResponse>
   rulingAuthorities: Array<NamedSlugResponse>

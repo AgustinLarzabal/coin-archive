@@ -8,5 +8,5 @@ export const tagListResponseSchema = z.strictObject({
 export type TagListResponse = z.infer<typeof tagListResponseSchema>
 export const invalidTagErrorSchema = errorResponseSchema(
   "invalid_tag",
-  "Tag is invalid"
+  "Tag Slug is invalid"
 )

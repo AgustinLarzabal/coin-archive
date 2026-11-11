@@ -8,5 +8,5 @@ export const techniqueListResponseSchema = z.strictObject({
 export type TechniqueListResponse = z.infer<typeof techniqueListResponseSchema>
 export const invalidTechniqueErrorSchema = errorResponseSchema(
   "invalid_technique",
-  "Coin Technique is invalid"
+  "Technique Slug is invalid"
 )

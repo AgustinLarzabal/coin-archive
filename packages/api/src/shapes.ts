@@ -10,5 +10,5 @@ export const shapeListResponseSchema = z.strictObject({
 export type ShapeListResponse = z.infer<typeof shapeListResponseSchema>
 export const invalidShapeErrorSchema = errorResponseSchema(
   "invalid_shape",
-  "Coin Shape is invalid"
+  "Shape Slug is invalid"
 )

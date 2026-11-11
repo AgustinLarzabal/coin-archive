@@ -18,5 +18,5 @@ export type CompositionListResponse = z.infer<
 
 export const invalidCompositionErrorSchema = errorResponseSchema(
   "invalid_composition",
-  "Coin Composition is invalid"
+  "Composition Slug is invalid"
 )

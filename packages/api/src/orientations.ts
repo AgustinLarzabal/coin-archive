@@ -12,5 +12,5 @@ export type CoinOrientationListResponse = z.infer<
 >
 export const invalidOrientationErrorSchema = errorResponseSchema(
   "invalid_orientation",
-  "Coin Orientation is invalid"
+  "Orientation Slug is invalid"
 )

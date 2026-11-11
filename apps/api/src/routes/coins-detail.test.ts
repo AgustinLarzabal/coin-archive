@@ -434,14 +434,10 @@ describe("Coin detail route", () => {
             {
               slug: "second-engraver",
               fullName: "Second Engraver",
-              createdAt: "2026-09-10T10:00:00.000Z",
-              updatedAt: "2026-09-11T10:00:00.000Z",
             },
             {
               slug: "first-engraver",
               fullName: "First Engraver",
-              createdAt: "2026-09-08T10:00:00.000Z",
-              updatedAt: "2026-09-09T10:00:00.000Z",
             },
           ],
         },
@@ -455,8 +451,6 @@ describe("Coin detail route", () => {
             {
               slug: "first-engraver",
               fullName: "First Engraver",
-              createdAt: "2026-09-08T10:00:00.000Z",
-              updatedAt: "2026-09-09T10:00:00.000Z",
             },
           ],
         },
@@ -658,8 +652,6 @@ describe("Coin detail route", () => {
               {
                 slug: "first-engraver",
                 fullName: "First Engraver",
-                createdAt: "2026-09-08T10:00:00.000Z",
-                updatedAt: "2026-09-09T10:00:00.000Z",
               },
             ],
           },
@@ -731,14 +723,10 @@ describe("Coin detail route", () => {
             {
               slug: "second-engraver",
               fullName: "Second Engraver",
-              createdAt: "2026-09-10T10:00:00.000Z",
-              updatedAt: "2026-09-11T10:00:00.000Z",
             },
             {
               slug: "first-engraver",
               fullName: "First Engraver",
-              createdAt: "2026-09-08T10:00:00.000Z",
-              updatedAt: "2026-09-09T10:00:00.000Z",
             },
           ],
         },
@@ -752,8 +740,6 @@ describe("Coin detail route", () => {
             {
               slug: "first-engraver",
               fullName: "First Engraver",
-              createdAt: "2026-09-08T10:00:00.000Z",
-              updatedAt: "2026-09-09T10:00:00.000Z",
             },
           ],
         },

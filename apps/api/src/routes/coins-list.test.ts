@@ -56,7 +56,7 @@ describe("Coin list route", () => {
       await expect(response.json()).resolves.toEqual({
         error: {
           code: "invalid_orientation",
-          message: "Coin Orientation is invalid",
+          message: "Orientation Slug is invalid",
         },
       })
     })
@@ -104,7 +104,10 @@ describe("Coin list route", () => {
         expect(response.status).toBe(400)
         expect(listCoins).not.toHaveBeenCalled()
         await expect(response.json()).resolves.toEqual({
-          error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+          error: {
+            code: "invalid_shape",
+            message: "Shape Slug is invalid",
+          },
         })
       }
     )
@@ -152,7 +155,7 @@ describe("Coin list route", () => {
         expect(response.status).toBe(400)
         expect(listCoins).not.toHaveBeenCalled()
         await expect(response.json()).resolves.toEqual({
-          error: { code: "invalid_tag", message: "Tag is invalid" },
+          error: { code: "invalid_tag", message: "Tag Slug is invalid" },
         })
       }
     )
@@ -203,7 +206,7 @@ describe("Coin list route", () => {
       await expect(response.json()).resolves.toEqual({
         error: {
           code: "invalid_composition",
-          message: "Coin Composition is invalid",
+          message: "Composition Slug is invalid",
         },
       })
     })
@@ -823,7 +826,7 @@ describe("Coin list route", () => {
         await expect(response.json()).resolves.toEqual({
           error: {
             code: "invalid_distribution",
-            message: "Coin Distribution is invalid",
+            message: "Distribution Slug is invalid",
           },
         })
       }
@@ -844,7 +847,7 @@ describe("Coin list route", () => {
       await expect(response.json()).resolves.toEqual({
         error: {
           code: "invalid_distribution",
-          message: "Coin Distribution is invalid",
+          message: "Distribution Slug is invalid",
         },
       })
     })

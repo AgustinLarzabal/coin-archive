@@ -86,8 +86,6 @@ function toCoinSurfaceWithEngraversResponse(
     engravers: surface.engravers.map((engraver) => ({
       slug: engraver.slug,
       fullName: engraver.fullName,
-      createdAt: engraver.createdAt.toISOString(),
-      updatedAt: engraver.updatedAt.toISOString(),
     })),
   }
 }

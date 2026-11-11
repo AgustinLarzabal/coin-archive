@@ -5,7 +5,7 @@ import type {
   CompositionResponse,
   CurrencyResponse,
   DistributionResponse,
-  EngraverListItemResponse,
+  EngraverResponse,
   IssuerResponse,
   MintResponse,
   NamedSlugResponse,
@@ -59,7 +59,7 @@ export function createArchiveFetch({
   distributions?: Array<DistributionResponse>
   techniques?: Array<NamedSlugResponse>
   compositions?: Array<CompositionResponse>
-  engravers?: Array<EngraverListItemResponse>
+  engravers?: Array<EngraverResponse>
   issuers?: Array<IssuerResponse>
   mints?: Array<MintResponse>
   rulers?: Array<NamedSlugResponse>

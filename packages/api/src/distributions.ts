@@ -18,5 +18,5 @@ export type DistributionListResponse = z.infer<
 
 export const invalidDistributionErrorSchema = errorResponseSchema(
   "invalid_distribution",
-  "Coin Distribution is invalid"
+  "Distribution Slug is invalid"
 )

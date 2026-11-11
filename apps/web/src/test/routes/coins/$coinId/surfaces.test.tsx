@@ -27,14 +27,10 @@ describe("Coin viewer route surfaces", () => {
                   {
                     slug: "second-engraver",
                     fullName: "Second Engraver",
-                    createdAt: "2026-09-10T10:00:00.000Z",
-                    updatedAt: "2026-09-11T10:00:00.000Z",
                   },
                   {
                     slug: "first-engraver",
                     fullName: "First Engraver",
-                    createdAt: "2026-09-08T10:00:00.000Z",
-                    updatedAt: "2026-09-09T10:00:00.000Z",
                   },
                 ],
               },
@@ -47,8 +43,6 @@ describe("Coin viewer route surfaces", () => {
                   {
                     slug: "reverse-engraver",
                     fullName: "Reverse Engraver",
-                    createdAt: "2026-09-12T10:00:00.000Z",
-                    updatedAt: "2026-09-13T10:00:00.000Z",
                   },
                 ],
               },

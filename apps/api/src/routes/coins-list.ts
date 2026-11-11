@@ -321,7 +321,7 @@ const validationErrors = [
     response: {
       error: {
         code: "invalid_distribution",
-        message: "Coin Distribution is invalid",
+        message: "Distribution Slug is invalid",
       },
     },
   },
@@ -330,27 +330,29 @@ const validationErrors = [
     response: {
       error: {
         code: "invalid_technique",
-        message: "Coin Technique is invalid",
+        message: "Technique Slug is invalid",
       },
     },
   },
   {
     fields: ["tag"],
-    response: { error: { code: "invalid_tag", message: "Tag is invalid" } },
+    response: {
+      error: { code: "invalid_tag", message: "Tag Slug is invalid" },
+    },
   },
   {
     fields: ["composition"],
     response: {
       error: {
         code: "invalid_composition",
-        message: "Coin Composition is invalid",
+        message: "Composition Slug is invalid",
       },
     },
   },
   {
     fields: ["shape"],
     response: {
-      error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+      error: { code: "invalid_shape", message: "Shape Slug is invalid" },
     },
   },
   {
@@ -358,7 +360,7 @@ const validationErrors = [
     response: {
       error: {
         code: "invalid_orientation",
-        message: "Coin Orientation is invalid",
+        message: "Orientation Slug is invalid",
       },
     },
   },
@@ -433,7 +435,10 @@ export function registerCoinListRoute(
       if (shape !== undefined && !(await options.hasShape?.(shape))) {
         return context.json(
           {
-            error: { code: "invalid_shape", message: "Coin Shape is invalid" },
+            error: {
+              code: "invalid_shape",
+              message: "Shape Slug is invalid",
+            },
           },
           400
         )

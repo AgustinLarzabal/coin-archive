@@ -7,12 +7,11 @@ export const compositionResponseSchema = z.strictObject({
   name: displayTextSchema(200),
 })
 
-export type CompositionResponse = z.infer<typeof compositionResponseSchema>
-
 export const compositionListResponseSchema = z.strictObject({
   compositions: z.array(compositionResponseSchema),
 })
 
+export type CompositionResponse = z.infer<typeof compositionResponseSchema>
 export type CompositionListResponse = z.infer<
   typeof compositionListResponseSchema
 >

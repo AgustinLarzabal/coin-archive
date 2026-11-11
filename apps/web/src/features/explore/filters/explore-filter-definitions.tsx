@@ -19,6 +19,7 @@ import type { ExploreFilterPatch } from "../explore-search-navigation"
 import type {
   CompositionResponse,
   CurrencyResponse,
+  DistributionResponse,
   EngraverListItemResponse,
   IssuerResponse,
   MintResponse,
@@ -40,7 +41,7 @@ export type ExploreFilterValue =
 export interface ExploreFilterLists {
   currencies: Array<CurrencyResponse>
   compositions: Array<CompositionResponse>
-  distributions: Array<NamedSlugResponse>
+  distributions: Array<DistributionResponse>
   techniques: Array<NamedSlugResponse>
   engravers: Array<EngraverListItemResponse>
   issuers: Array<IssuerResponse>

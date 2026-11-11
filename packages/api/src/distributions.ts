@@ -1,16 +1,21 @@
 import { z } from "zod"
 
-import { errorResponseSchema, namedSlugResponseSchema } from "./common.js"
-import type { slugSchema } from "./common.js"
+import { displayTextSchema, errorResponseSchema, slugSchema } from "./common.js"
 
-export type CoinDistribution = z.infer<typeof slugSchema>
-export const distributionListResponseSchema = z.strictObject({
-  distributions: z.array(namedSlugResponseSchema),
+export const distributionResponseSchema = z.strictObject({
+  slug: slugSchema,
+  name: displayTextSchema(200),
 })
 
+export const distributionListResponseSchema = z.strictObject({
+  distributions: z.array(distributionResponseSchema),
+})
+
+export type DistributionResponse = z.infer<typeof distributionResponseSchema>
 export type DistributionListResponse = z.infer<
   typeof distributionListResponseSchema
 >
+
 export const invalidDistributionErrorSchema = errorResponseSchema(
   "invalid_distribution",
   "Coin Distribution is invalid"

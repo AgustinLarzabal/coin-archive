@@ -17,7 +17,6 @@ import {
 import { queryOptions } from "@tanstack/react-query"
 import type {
   CoinDetailResponse,
-  CoinDistribution,
   CoinListResponse,
   CoinListSize,
   CoinListThickness,
@@ -48,8 +47,8 @@ export type CoinListFilters = Readonly<{
   weight?: CoinListWeight
   currencySlug?: string
   faceValueAmount?: string
-  distribution?: CoinDistribution
-  technique?: CoinDistribution
+  distribution?: string
+  technique?: string
   tagSlug?: string
   composition?: string
   shape?: CoinShape
@@ -68,8 +67,8 @@ type ValidatedCoinListFilters = Readonly<{
   weight?: CoinListWeight
   currencySlug: string | null
   faceValueAmount: string | null
-  distribution?: CoinDistribution
-  technique?: CoinDistribution
+  distribution?: string
+  technique?: string
   tagSlug?: string
   composition?: string
   shape?: CoinShape

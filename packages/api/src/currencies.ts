@@ -8,12 +8,11 @@ export const currencyResponseSchema = z.strictObject({
   fullName: displayTextSchema(403),
 })
 
-export type CurrencyResponse = z.infer<typeof currencyResponseSchema>
-
 export const currencyListResponseSchema = z.strictObject({
   currencies: z.array(currencyResponseSchema),
 })
 
+export type CurrencyResponse = z.infer<typeof currencyResponseSchema>
 export type CurrencyListResponse = z.infer<typeof currencyListResponseSchema>
 
 export const invalidCurrencySlugErrorSchema = errorResponseSchema(

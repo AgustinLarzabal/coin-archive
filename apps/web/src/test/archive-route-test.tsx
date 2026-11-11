@@ -4,6 +4,7 @@ import type {
   CoinListPaginationResponse,
   CompositionResponse,
   CurrencyResponse,
+  DistributionResponse,
   EngraverListItemResponse,
   IssuerResponse,
   MintResponse,
@@ -55,7 +56,7 @@ export function createArchiveFetch({
   coins?: Array<unknown>
   pagination?: CoinListPaginationResponse
   currencies?: Array<CurrencyResponse>
-  distributions?: Array<NamedSlugResponse>
+  distributions?: Array<DistributionResponse>
   techniques?: Array<NamedSlugResponse>
   compositions?: Array<CompositionResponse>
   engravers?: Array<EngraverListItemResponse>

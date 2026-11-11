@@ -5,6 +5,33 @@ import { createApp } from "../app.js"
 const successfulReadinessCheck = async () => {}
 
 describe("Engraver routes", () => {
+  it("keeps list and detail engraver responses strict", async () => {
+    const { engraverListItemResponseSchema, engraverResponseSchema } =
+      await import("@coin-archive/api")
+    const engraver = { slug: "first-engraver", fullName: " First Engraver" }
+    expect(engraverListItemResponseSchema.safeParse(engraver).success).toBe(
+      false
+    )
+    expect(
+      engraverResponseSchema.safeParse({
+        ...engraver,
+        createdAt: "2026-09-16T09:00:00.000Z",
+        updatedAt: "2026-09-17T09:00:00.000Z",
+      }).success
+    ).toBe(false)
+    const detail = {
+      ...engraver,
+      fullName: "First Engraver",
+      createdAt: "2026-09-16T09:00:00.000Z",
+      updatedAt: "2026-09-17T09:00:00.000Z",
+    }
+    expect(engraverResponseSchema.safeParse(detail).success).toBe(true)
+    expect(engraverListItemResponseSchema.safeParse(detail).success).toBe(false)
+    expect(
+      engraverResponseSchema.safeParse({ ...detail, extra: true }).success
+    ).toBe(false)
+  })
+
   describe("GET /v1/engravers", () => {
     it("returns exactly each canonical Engraver's public Slug and full name", async () => {
       const response = await createApp({

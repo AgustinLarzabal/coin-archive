@@ -1,6 +1,6 @@
 import {
   distributionListResponseSchema,
-  namedSlugResponseSchema,
+  distributionResponseSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
@@ -14,7 +14,7 @@ interface DistributionRouteOptions {
 
 const responseSchema = distributionListResponseSchema
   .safeExtend({
-    distributions: z.array(namedSlugResponseSchema.openapi("Distribution")),
+    distributions: z.array(distributionResponseSchema.openapi("Distribution")),
   })
   .openapi("DistributionListResponse")
 

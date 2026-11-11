@@ -9,6 +9,7 @@ import {
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
   InvalidIssuerListResponseError,
+  IssuerListRequestError,
 } from "./archive"
 import { InvalidCoinListFilterError } from "./archive/coins"
 import { Route as ExploreRoute } from "@/routes/_explore"
@@ -594,10 +595,10 @@ describe("Archive data module", () => {
       message: "Invalid issuer list response",
     },
     {
-      ErrorType: InvalidCoinListFilterError,
-      route: ExploreIndexRoute,
-      message: "Invalid issuer code",
-      renderedMessage: "Unable to load coins",
+      ErrorType: IssuerListRequestError,
+      route: ExploreRoute,
+      message: "Issuer list request failed",
+      renderedMessage: "Unable to load issuers",
     },
   ])(
     "preserves '$message' after SSR serialization",
@@ -626,4 +627,23 @@ describe("Archive data module", () => {
       expect(screen.getByText(renderedMessage ?? message)).toBeInTheDocument()
     }
   )
+
+  it("shows the generic Explore error for an unadapted filter error", async () => {
+    const { serializationAdapters: adapters } = await startInstance.getOptions()
+    expect(
+      adapters?.some((adapter) =>
+        adapter.test(new InvalidCoinListFilterError("Invalid Coin Composition"))
+      )
+    ).toBe(false)
+
+    const ErrorComponent = ExploreIndexRoute.options.errorComponent
+    if (!ErrorComponent) throw new Error("Missing route error component")
+    render(
+      <ErrorComponent
+        error={new Error("Invalid Coin Composition")}
+        reset={() => {}}
+      />
+    )
+    expect(screen.getByText("Unable to load coins")).toBeInTheDocument()
+  })
 })

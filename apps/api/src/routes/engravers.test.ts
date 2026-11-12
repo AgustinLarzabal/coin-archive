@@ -67,6 +67,7 @@ describe("Engraver routes", () => {
         checkReadiness: successfulReadinessCheck,
       }).request("/openapi.json")
       const document = (await response.json()) as {
+        components: { schemas: Record<string, unknown> }
         paths: {
           "/v1/engravers": { get: { responses: Record<string, unknown> } }
         }
@@ -90,6 +91,11 @@ describe("Engraver routes", () => {
           }),
         })
       )
+      expect(document.components.schemas.EngraverListResponse).toMatchObject({
+        properties: {
+          engravers: { items: { $ref: "#/components/schemas/Engraver" } },
+        },
+      })
     })
   })
 })

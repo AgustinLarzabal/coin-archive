@@ -14,6 +14,7 @@ interface OperationalRouteOptions {
 
 const healthResponseSchema =
   sharedOperationalOkResponseSchema.openapi("HealthResponse")
+
 const unavailableResponseSchema =
   sharedOperationalUnavailableResponseSchema.openapi("UnavailableResponse")
 
@@ -64,6 +65,7 @@ export function registerOperationalRoutes(
           requestId: context.get("requestId"),
         })
       )
+
       return context.json({ status: "unavailable" }, 503)
     }
   })

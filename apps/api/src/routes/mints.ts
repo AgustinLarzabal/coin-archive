@@ -5,18 +5,16 @@ import type { ApiApp } from "./shared.js"
 import type { MintListResponse } from "@coin-archive/api"
 import type { IssuerRecord, MintRecord } from "@coin-archive/db"
 
-const route = createRoute({
+const responseSchema = mintListResponseSchema
+  .safeExtend({ mints: z.array(mintResponseSchema.openapi("Mint")) })
+  .openapi("MintListResponse")
+
+const mintListRoute = createRoute({
   method: "get",
   path: "/v1/mints",
   responses: {
     200: {
-      content: {
-        "application/json": {
-          schema: mintListResponseSchema
-            .extend({ mints: z.array(mintResponseSchema.openapi("Mint")) })
-            .openapi("MintListResponse"),
-        },
-      },
+      content: { "application/json": { schema: responseSchema } },
       description: "Every Mint ordered by name then slug",
       headers: responseHeaders,
     },
@@ -32,8 +30,8 @@ export function registerMintRoutes(
   app: ApiApp,
   listMints?: () => Promise<Array<MintRecord & { country: IssuerRecord }>>
 ) {
-  app.openapi(route, async (context) => {
-    const mints = await (listMints ?? (async () => []))()
+  app.openapi(mintListRoute, async (context) => {
+    const mints = listMints ? await listMints() : []
     const response = {
       mints: mints.map(({ slug, name, place, country }) => ({
         slug,
@@ -42,6 +40,7 @@ export function registerMintRoutes(
         country: { code: country.code, name: country.name },
       })),
     } satisfies MintListResponse
+
     return context.json(response, 200)
   })
 }

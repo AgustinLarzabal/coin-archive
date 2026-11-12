@@ -8,22 +8,18 @@ import type { ApiApp } from "./shared.js"
 import type { RulingAuthorityListResponse } from "@coin-archive/api"
 import type { RulingAuthorityRecord } from "@coin-archive/db"
 
+const responseSchema = rulingAuthorityListResponseSchema
+  .safeExtend({
+    rulers: z.array(rulingAuthorityResponseSchema.openapi("RulingAuthority")),
+  })
+  .openapi("RulingAuthorityListResponse")
+
 const rulingAuthorityListRoute = createRoute({
   method: "get",
   path: "/v1/rulers",
   responses: {
     200: {
-      content: {
-        "application/json": {
-          schema: rulingAuthorityListResponseSchema
-            .safeExtend({
-              rulers: z.array(
-                rulingAuthorityResponseSchema.openapi("RulingAuthority")
-              ),
-            })
-            .openapi("RulingAuthorityListResponse"),
-        },
-      },
+      content: { "application/json": { schema: responseSchema } },
       description: "Every Ruling Authority, sorted by name and Slug",
       headers: responseHeaders,
     },
@@ -40,7 +36,7 @@ export function registerRulingAuthorityRoutes(
   listRulingAuthorities?: () => Promise<Array<RulingAuthorityRecord>>
 ) {
   app.openapi(rulingAuthorityListRoute, async (context) => {
-    const rulers = await (listRulingAuthorities ?? (async () => []))()
+    const rulers = listRulingAuthorities ? await listRulingAuthorities() : []
     const response = {
       rulers: rulers.map(({ slug, name, role, tenure }) => ({
         slug,
@@ -49,6 +45,7 @@ export function registerRulingAuthorityRoutes(
         tenure,
       })),
     } satisfies RulingAuthorityListResponse
+
     return context.json(response, 200)
   })
 }

@@ -66,7 +66,9 @@ export function registerCoinDetailRoute(
     coinDetailRoute,
     async (context) => {
       const { coinId } = context.req.valid("param")
-      const coin = await (options.findCoinById ?? (async () => null))(coinId)
+      const coin = options.findCoinById
+        ? await options.findCoinById(coinId)
+        : null
 
       if (!coin) {
         return context.json(

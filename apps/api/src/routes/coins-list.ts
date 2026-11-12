@@ -53,27 +53,6 @@ interface CoinListRouteOptions {
 
 const coinListQuerySchema = z
   .object({
-    size: coinListSizeSchema.optional().openapi({
-      description:
-        "Exact Coin Size in millimetres or an inclusive closed range (for example, 25.75 or 20-25.75). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
-      param: { name: "size", in: "query" },
-      type: "string",
-      pattern: COIN_LIST_SIZE_QUERY_PATTERN,
-    }),
-    thickness: coinListThicknessSchema.optional().openapi({
-      description:
-        "Exact Coin Thickness in millimetres or an inclusive closed range (for example, 2.2 or 1.5-2.25). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
-      param: { name: "thickness", in: "query" },
-      type: "string",
-      pattern: COIN_LIST_THICKNESS_QUERY_PATTERN,
-    }),
-    weight: coinListWeightSchema.optional().openapi({
-      description:
-        "Exact Coin Weight in grams or an inclusive closed range (for example, 8.125 or 8.125-8.5). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
-      param: { name: "weight", in: "query" },
-      type: "string",
-      pattern: COIN_LIST_WEIGHT_QUERY_PATTERN,
-    }),
     amount: faceValueAmountQuerySchema.optional().openapi({
       description:
         "Exact positive canonical Face Value Amount with at most 18 integer and 12 fractional digits. Requires currency; malformed or repeated values return invalid_face_value_filter",
@@ -81,6 +60,11 @@ const coinListQuerySchema = z
       type: "string",
       pattern: FACE_VALUE_AMOUNT_QUERY_PATTERN,
       example: "0.5",
+    }),
+    composition: slugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
+      param: { name: "composition", in: "query" },
     }),
     currency: slugSchema.optional().openapi({
       description:
@@ -91,31 +75,6 @@ const coinListQuerySchema = z
       description:
         "Exact, case-sensitive Coin Distribution Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_distribution",
       param: { name: "distribution", in: "query" },
-    }),
-    technique: slugSchema.optional().openapi({
-      description:
-        "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
-      param: { name: "technique", in: "query" },
-    }),
-    tag: slugSchema.optional().openapi({
-      description:
-        "Exact, case-sensitive Tag Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_tag",
-      param: { name: "tag", in: "query" },
-    }),
-    composition: slugSchema.optional().openapi({
-      description:
-        "Exact, case-sensitive Coin Composition Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_composition",
-      param: { name: "composition", in: "query" },
-    }),
-    shape: slugSchema.optional().openapi({
-      description:
-        "Exact, case-sensitive Coin Shape Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_shape",
-      param: { name: "shape", in: "query" },
-    }),
-    orientation: slugSchema.optional().openapi({
-      description:
-        "Exact Coin Orientation Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_orientation",
-      param: { name: "orientation", in: "query" },
     }),
     engraver: slugSchema.optional().openapi({
       description: "Exact, case-sensitive Engraver Slug",
@@ -130,9 +89,50 @@ const coinListQuerySchema = z
         "Exact, case-sensitive Mint Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_mint_slug",
       param: { name: "mint", in: "query" },
     }),
+    orientation: slugSchema.optional().openapi({
+      description:
+        "Exact Coin Orientation Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_orientation",
+      param: { name: "orientation", in: "query" },
+    }),
     ruler: slugSchema.optional().openapi({
       description: "Exact, case-sensitive Ruling Authority Slug",
       param: { name: "ruler", in: "query" },
+    }),
+    shape: slugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Shape Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_shape",
+      param: { name: "shape", in: "query" },
+    }),
+    size: coinListSizeSchema.optional().openapi({
+      description:
+        "Exact Coin Size in millimetres or an inclusive closed range (for example, 25.75 or 20-25.75). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "size", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_SIZE_QUERY_PATTERN,
+    }),
+    tag: slugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Tag Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_tag",
+      param: { name: "tag", in: "query" },
+    }),
+    technique: slugSchema.optional().openapi({
+      description:
+        "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
+      param: { name: "technique", in: "query" },
+    }),
+    thickness: coinListThicknessSchema.optional().openapi({
+      description:
+        "Exact Coin Thickness in millimetres or an inclusive closed range (for example, 2.2 or 1.5-2.25). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "thickness", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_THICKNESS_QUERY_PATTERN,
+    }),
+    weight: coinListWeightSchema.optional().openapi({
+      description:
+        "Exact Coin Weight in grams or an inclusive closed range (for example, 8.125 or 8.125-8.5). Malformed, reversed, open-ended, and repeated values return invalid_measurement_filter",
+      param: { name: "weight", in: "query" },
+      type: "string",
+      pattern: COIN_LIST_WEIGHT_QUERY_PATTERN,
     }),
     year: coinListYearQuerySchema.optional().openapi({
       description:
@@ -167,35 +167,28 @@ const coinListQuerySchema = z
     }
   )
 
-const invalidDistributionErrorSchema =
-  sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
-const invalidTechniqueErrorSchema = sharedInvalidTechniqueErrorSchema.openapi(
-  "InvalidTechniqueError"
-)
-const invalidTagErrorSchema =
-  sharedInvalidTagErrorSchema.openapi("InvalidTagError")
 const invalidCompositionErrorSchema =
   sharedInvalidCompositionErrorSchema.openapi("InvalidCompositionError")
 const invalidCurrencySlugErrorSchema =
   sharedInvalidCurrencySlugErrorSchema.openapi("InvalidCurrencySlugError")
-const invalidShapeErrorSchema =
-  sharedInvalidShapeErrorSchema.openapi("InvalidShapeError")
-const invalidOrientationErrorSchema =
-  sharedInvalidOrientationErrorSchema.openapi("InvalidOrientationError")
+const invalidDistributionErrorSchema =
+  sharedInvalidDistributionErrorSchema.openapi("InvalidDistributionError")
+const invalidEngraverSlugErrorSchema =
+  sharedInvalidEngraverSlugErrorSchema.openapi("InvalidEngraverSlugError")
 const invalidFaceValueFilterErrorSchema =
   sharedInvalidFaceValueFilterErrorSchema.openapi("InvalidFaceValueFilterError")
+const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
+  "InvalidIssuerCodeError"
+)
 const invalidMeasurementFilterErrorSchema =
   sharedInvalidMeasurementFilterErrorSchema.openapi(
     "InvalidMeasurementFilterError"
   )
-const invalidIssuerCodeErrorSchema = sharedInvalidIssuerCodeErrorSchema.openapi(
-  "InvalidIssuerCodeError"
-)
 const invalidMintSlugErrorSchema = sharedInvalidMintSlugErrorSchema.openapi(
   "InvalidMintSlugError"
 )
-const invalidEngraverSlugErrorSchema =
-  sharedInvalidEngraverSlugErrorSchema.openapi("InvalidEngraverSlugError")
+const invalidOrientationErrorSchema =
+  sharedInvalidOrientationErrorSchema.openapi("InvalidOrientationError")
 const invalidPaginationErrorSchema = sharedInvalidPaginationErrorSchema.openapi(
   "InvalidPaginationError"
 )
@@ -203,25 +196,33 @@ const invalidRulingAuthoritySlugErrorSchema =
   sharedInvalidRulingAuthoritySlugErrorSchema.openapi(
     "InvalidRulingAuthoritySlugError"
   )
+const invalidShapeErrorSchema =
+  sharedInvalidShapeErrorSchema.openapi("InvalidShapeError")
+const invalidTagErrorSchema =
+  sharedInvalidTagErrorSchema.openapi("InvalidTagError")
+const invalidTechniqueErrorSchema = sharedInvalidTechniqueErrorSchema.openapi(
+  "InvalidTechniqueError"
+)
 const invalidYearErrorSchema =
   sharedInvalidYearErrorSchema.openapi("InvalidYearError")
 const invalidCoinListFilterErrorSchema = z.union([
-  invalidFaceValueFilterErrorSchema,
-  invalidCurrencySlugErrorSchema,
-  invalidMeasurementFilterErrorSchema,
-  invalidDistributionErrorSchema,
-  invalidTechniqueErrorSchema,
-  invalidTagErrorSchema,
   invalidCompositionErrorSchema,
-  invalidShapeErrorSchema,
-  invalidOrientationErrorSchema,
-  invalidIssuerCodeErrorSchema,
-  invalidMintSlugErrorSchema,
+  invalidCurrencySlugErrorSchema,
+  invalidDistributionErrorSchema,
   invalidEngraverSlugErrorSchema,
-  invalidRulingAuthoritySlugErrorSchema,
-  invalidYearErrorSchema,
+  invalidFaceValueFilterErrorSchema,
+  invalidIssuerCodeErrorSchema,
+  invalidMeasurementFilterErrorSchema,
+  invalidMintSlugErrorSchema,
+  invalidOrientationErrorSchema,
   invalidPaginationErrorSchema,
+  invalidRulingAuthoritySlugErrorSchema,
+  invalidShapeErrorSchema,
+  invalidTagErrorSchema,
+  invalidTechniqueErrorSchema,
+  invalidYearErrorSchema,
 ])
+
 const coinListRoute = createRoute({
   method: "get",
   path: "/v1/coins",
@@ -289,20 +290,20 @@ const coinListRoute = createRoute({
 
 const validationErrors = [
   {
-    fields: ["size", "thickness", "weight"],
-    response: {
-      error: {
-        code: "invalid_measurement_filter",
-        message: "Measurement filter is invalid",
-      },
-    },
-  },
-  {
     fields: ["amount"],
     response: {
       error: {
         code: "invalid_face_value_filter",
         message: "Face Value filter is invalid",
+      },
+    },
+  },
+  {
+    fields: ["composition"],
+    response: {
+      error: {
+        code: "invalid_composition",
+        message: "Composition Slug is invalid",
       },
     },
   },
@@ -325,33 +326,18 @@ const validationErrors = [
     },
   },
   {
-    fields: ["technique"],
+    fields: ["engraver"],
     response: {
       error: {
-        code: "invalid_technique",
-        message: "Technique Slug is invalid",
+        code: "invalid_engraver_slug",
+        message: "Engraver Slug is invalid",
       },
     },
   },
   {
-    fields: ["tag"],
+    fields: ["mint"],
     response: {
-      error: { code: "invalid_tag", message: "Tag Slug is invalid" },
-    },
-  },
-  {
-    fields: ["composition"],
-    response: {
-      error: {
-        code: "invalid_composition",
-        message: "Composition Slug is invalid",
-      },
-    },
-  },
-  {
-    fields: ["shape"],
-    response: {
-      error: { code: "invalid_shape", message: "Shape Slug is invalid" },
+      error: { code: "invalid_mint_slug", message: "Mint Slug is invalid" },
     },
   },
   {
@@ -373,17 +359,32 @@ const validationErrors = [
     },
   },
   {
-    fields: ["mint"],
+    fields: ["shape"],
     response: {
-      error: { code: "invalid_mint_slug", message: "Mint Slug is invalid" },
+      error: { code: "invalid_shape", message: "Shape Slug is invalid" },
     },
   },
   {
-    fields: ["engraver"],
+    fields: ["size", "thickness", "weight"],
     response: {
       error: {
-        code: "invalid_engraver_slug",
-        message: "Engraver Slug is invalid",
+        code: "invalid_measurement_filter",
+        message: "Measurement filter is invalid",
+      },
+    },
+  },
+  {
+    fields: ["tag"],
+    response: {
+      error: { code: "invalid_tag", message: "Tag Slug is invalid" },
+    },
+  },
+  {
+    fields: ["technique"],
+    response: {
+      error: {
+        code: "invalid_technique",
+        message: "Technique Slug is invalid",
       },
     },
   },
@@ -412,55 +413,57 @@ export function registerCoinListRoute(
     coinListRoute,
     async (context) => {
       const {
-        size,
-        thickness,
-        weight,
         amount: faceValueAmount,
+        composition,
         currency: currencySlug,
         distribution,
-        technique,
-        tag,
-        composition,
-        shape,
-        orientation,
         engraver: engraverSlug,
         issuer: issuerCode,
         mint: mintSlug,
+        orientation,
         ruler: rulingAuthoritySlug,
+        shape,
+        size,
+        tag,
+        technique,
+        thickness,
+        weight,
         year,
         page,
         pageSize,
       } = context.req.valid("query")
-      const listCoins =
-        options.listCoins ?? (async () => ({ coins: [], totalItems: 0 }))
-      const { coins, totalItems } = await listCoins({
-        ...(size === undefined
-          ? {}
-          : { sizeInterval: coinListSizeToInterval(size) }),
-        ...(thickness === undefined
-          ? {}
-          : { thicknessInterval: coinListThicknessToInterval(thickness) }),
-        ...(weight === undefined
-          ? {}
-          : { weightInterval: coinListWeightToInterval(weight) }),
-        ...(faceValueAmount === undefined ? {} : { faceValueAmount }),
-        ...(currencySlug === undefined ? {} : { currencySlug }),
-        ...(distribution === undefined ? {} : { distribution }),
-        ...(technique === undefined ? {} : { technique }),
-        ...(tag === undefined ? {} : { tagSlug: tag }),
-        ...(composition === undefined ? {} : { composition }),
-        ...(shape === undefined ? {} : { shape }),
-        ...(orientation === undefined ? {} : { orientation }),
-        ...(engraverSlug === undefined ? {} : { engraverSlug }),
-        ...(issuerCode === undefined ? {} : { issuerCode }),
-        ...(mintSlug === undefined ? {} : { mintSlug }),
-        ...(rulingAuthoritySlug === undefined ? {} : { rulingAuthoritySlug }),
-        ...(year === undefined
-          ? {}
-          : { issueYearInterval: coinListYearToInterval(year) }),
+
+      const filters: CoinListOptions = {
+        composition,
+        currencySlug,
+        distribution,
+        engraverSlug,
+        faceValueAmount,
+        issuerCode,
+        issueYearInterval:
+          year === undefined ? undefined : coinListYearToInterval(year),
+        mintSlug,
+        orientation,
+        rulingAuthoritySlug,
+        shape,
+        sizeInterval:
+          size === undefined ? undefined : coinListSizeToInterval(size),
+        tagSlug: tag,
+        technique,
+        thicknessInterval:
+          thickness === undefined
+            ? undefined
+            : coinListThicknessToInterval(thickness),
+        weightInterval:
+          weight === undefined ? undefined : coinListWeightToInterval(weight),
         page,
         pageSize,
-      })
+      }
+
+      const { coins, totalItems } = options.listCoins
+        ? await options.listCoins(filters)
+        : { coins: [], totalItems: 0 }
+
       const response = {
         coins: coins
           .slice(0, pageSize)
@@ -487,6 +490,7 @@ export function registerCoinListRoute(
             message: "Issuer Code is invalid" as const,
           },
         }
+
         return context.json(response, 400)
       }
     }

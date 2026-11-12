@@ -161,6 +161,7 @@ describe("API composition", () => {
       "CurrencyListResponse",
       "Distribution",
       "DistributionListResponse",
+      "Engraver",
       "EngraverListResponse",
       "FaceValue",
       "HealthResponse",

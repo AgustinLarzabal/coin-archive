@@ -76,6 +76,7 @@ describe("Issuer routes", () => {
         checkReadiness: successfulReadinessCheck,
       }).request("/openapi.json")
       const document = (await response.json()) as {
+        components: { schemas: Record<string, unknown> }
         paths: {
           "/v1/issuers": { get: { responses: Record<string, unknown> } }
         }
@@ -99,6 +100,11 @@ describe("Issuer routes", () => {
           }),
         })
       )
+      expect(document.components.schemas.IssuerListResponse).toMatchObject({
+        properties: {
+          issuers: { items: { $ref: "#/components/schemas/Issuer" } },
+        },
+      })
     })
   })
 })

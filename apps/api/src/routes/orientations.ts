@@ -8,22 +8,18 @@ import type { ApiApp } from "./shared.js"
 import type { OrientationListResponse } from "@coin-archive/api"
 import type { CoinOrientationRecord } from "@coin-archive/db"
 
-const route = createRoute({
+const responseSchema = orientationListResponseSchema
+  .safeExtend({
+    orientations: z.array(orientationResponseSchema.openapi("Orientation")),
+  })
+  .openapi("OrientationListResponse")
+
+const orientationListRoute = createRoute({
   method: "get",
   path: "/v1/orientations",
   responses: {
     200: {
-      content: {
-        "application/json": {
-          schema: orientationListResponseSchema
-            .safeExtend({
-              orientations: z.array(
-                orientationResponseSchema.openapi("Orientation")
-              ),
-            })
-            .openapi("OrientationListResponse"),
-        },
-      },
+      content: { "application/json": { schema: responseSchema } },
       description: "Every Coin Orientation ordered by name then slug",
       headers: responseHeaders,
     },
@@ -39,13 +35,12 @@ export function registerOrientationRoutes(
   app: ApiApp,
   listOrientations?: () => Promise<Array<CoinOrientationRecord>>
 ) {
-  app.openapi(route, async (context) => {
-    const orientations = await (listOrientations ?? (async () => []))()
-    return context.json(
-      {
-        orientations: orientations.map(({ slug, name }) => ({ slug, name })),
-      } satisfies OrientationListResponse,
-      200
-    )
+  app.openapi(orientationListRoute, async (context) => {
+    const orientations = listOrientations ? await listOrientations() : []
+    const response = {
+      orientations: orientations.map(({ slug, name }) => ({ slug, name })),
+    } satisfies OrientationListResponse
+
+    return context.json(response, 200)
   })
 }

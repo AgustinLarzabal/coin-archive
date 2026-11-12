@@ -435,6 +435,21 @@ describe("Coin list route", () => {
       })
     })
 
+    it("uses alphabetical field priority when several filters are invalid", async () => {
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+      }).request("/v1/coins?amount=bad&size=bad")
+
+      expect(response.status).toBe(400)
+      await expect(response.json()).resolves.toEqual({
+        error: {
+          code: "invalid_face_value_filter",
+          message: "Face Value filter is invalid",
+        },
+      })
+    })
+
     it("returns a newly curated Coin Distribution Slug from the list", async () => {
       const response = await createApp({
         allowedOrigins: [],
@@ -1391,141 +1406,164 @@ describe("Coin list route", () => {
         }
       }
 
-      expect(document.paths["/v1/coins"].get.parameters.slice(3)).toEqual([
-        expect.objectContaining({
-          description: expect.stringContaining("Requires currency"),
-          in: "query",
-          name: "amount",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: expect.any(String),
-            example: "0.5",
-          }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("empty successful page"),
-          in: "query",
-          name: "currency",
-          required: false,
-          schema: expect.objectContaining({ pattern: expect.any(String) }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Coin Distribution Slug"),
-          in: "query",
-          name: "distribution",
-          required: false,
-          schema: expect.objectContaining({
-            type: "string",
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Coin Technique slug"),
-          in: "query",
-          name: "technique",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Tag Slug"),
-          in: "query",
-          name: "tag",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Coin Composition Slug"),
-          in: "query",
-          name: "composition",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Coin Shape Slug"),
-          in: "query",
-          name: "shape",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: expect.any(String),
-          }),
-        }),
-        expect.objectContaining({
-          name: "orientation",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: "Exact, case-sensitive Engraver Slug",
-          in: "query",
-          name: "engraver",
-          required: false,
-          schema: expect.objectContaining({ pattern: expect.any(String) }),
-        }),
-        expect.objectContaining({
-          description: "Exact, case-sensitive Issuer Code",
-          in: "query",
-          name: "issuer",
-          required: false,
-          schema: expect.objectContaining({ pattern: expect.any(String) }),
-        }),
-        expect.objectContaining({
-          description: expect.stringContaining("Mint Slug"),
-          in: "query",
-          name: "mint",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-          }),
-        }),
-        expect.objectContaining({
-          description: "Exact, case-sensitive Ruling Authority Slug",
-          in: "query",
-          name: "ruler",
-          required: false,
-        }),
-        expect.objectContaining({
-          description:
-            "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
-          in: "query",
-          name: "year",
-          required: false,
-          schema: expect.objectContaining({
-            pattern: "^(?:-?[1-9]\\d*|-?[1-9]\\d*--?[1-9]\\d*)$",
-            type: "string",
-          }),
-        }),
-        expect.objectContaining({
-          description: "One-based page number",
-          in: "query",
-          name: "page",
-          required: false,
-          schema: expect.objectContaining({
-            default: 1,
-            minimum: 1,
-            type: "integer",
-          }),
-        }),
-        expect.objectContaining({
-          description: "Number of Coins per page (maximum 100)",
-          in: "query",
-          name: "pageSize",
-          required: false,
-          schema: expect.objectContaining({
-            default: 24,
-            maximum: 100,
-            minimum: 1,
-            type: "integer",
-          }),
-        }),
+      const parameters = document.paths["/v1/coins"].get.parameters
+      expect(parameters.map(({ name }) => name).sort()).toEqual([
+        "amount",
+        "composition",
+        "currency",
+        "distribution",
+        "engraver",
+        "issuer",
+        "mint",
+        "orientation",
+        "page",
+        "pageSize",
+        "ruler",
+        "shape",
+        "size",
+        "tag",
+        "technique",
+        "thickness",
+        "weight",
+        "year",
       ])
+      expect(parameters).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            description: expect.stringContaining("Requires currency"),
+            in: "query",
+            name: "amount",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: expect.any(String),
+              example: "0.5",
+            }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("empty successful page"),
+            in: "query",
+            name: "currency",
+            required: false,
+            schema: expect.objectContaining({ pattern: expect.any(String) }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Coin Distribution Slug"),
+            in: "query",
+            name: "distribution",
+            required: false,
+            schema: expect.objectContaining({
+              type: "string",
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Coin Technique slug"),
+            in: "query",
+            name: "technique",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Tag Slug"),
+            in: "query",
+            name: "tag",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Coin Composition Slug"),
+            in: "query",
+            name: "composition",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Coin Shape Slug"),
+            in: "query",
+            name: "shape",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: expect.any(String),
+            }),
+          }),
+          expect.objectContaining({
+            name: "orientation",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: "Exact, case-sensitive Engraver Slug",
+            in: "query",
+            name: "engraver",
+            required: false,
+            schema: expect.objectContaining({ pattern: expect.any(String) }),
+          }),
+          expect.objectContaining({
+            description: "Exact, case-sensitive Issuer Code",
+            in: "query",
+            name: "issuer",
+            required: false,
+            schema: expect.objectContaining({ pattern: expect.any(String) }),
+          }),
+          expect.objectContaining({
+            description: expect.stringContaining("Mint Slug"),
+            in: "query",
+            name: "mint",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            }),
+          }),
+          expect.objectContaining({
+            description: "Exact, case-sensitive Ruling Authority Slug",
+            in: "query",
+            name: "ruler",
+            required: false,
+          }),
+          expect.objectContaining({
+            description:
+              "One signed conventional Issue Year contained by the Coin's Issue Period, or a canonical signed closed range whose inclusive boundaries overlap the Issue Period (for example, -400--300, -25-19, or 1986-1990). Negative values are BCE and positive values are CE. Malformed, zero, reversed, open-ended, and repeated values return invalid_year",
+            in: "query",
+            name: "year",
+            required: false,
+            schema: expect.objectContaining({
+              pattern: "^(?:-?[1-9]\\d*|-?[1-9]\\d*--?[1-9]\\d*)$",
+              type: "string",
+            }),
+          }),
+          expect.objectContaining({
+            description: "One-based page number",
+            in: "query",
+            name: "page",
+            required: false,
+            schema: expect.objectContaining({
+              default: 1,
+              minimum: 1,
+              type: "integer",
+            }),
+          }),
+          expect.objectContaining({
+            description: "Number of Coins per page (maximum 100)",
+            in: "query",
+            name: "pageSize",
+            required: false,
+            schema: expect.objectContaining({
+              default: 24,
+              maximum: 100,
+              minimum: 1,
+              type: "integer",
+            }),
+          }),
+        ])
+      )
       expect(document.paths["/v1/coins"].get.responses).toEqual(
         expect.objectContaining({
           "200": expect.objectContaining({
@@ -1540,29 +1578,27 @@ describe("Coin list route", () => {
               "application/json": expect.objectContaining({
                 schema: {
                   anyOf: [
+                    { $ref: "#/components/schemas/InvalidCompositionError" },
+                    { $ref: "#/components/schemas/InvalidCurrencySlugError" },
+                    { $ref: "#/components/schemas/InvalidDistributionError" },
+                    { $ref: "#/components/schemas/InvalidEngraverSlugError" },
                     {
                       $ref: "#/components/schemas/InvalidFaceValueFilterError",
                     },
-                    {
-                      $ref: "#/components/schemas/InvalidCurrencySlugError",
-                    },
+                    { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     {
                       $ref: "#/components/schemas/InvalidMeasurementFilterError",
                     },
-                    { $ref: "#/components/schemas/InvalidDistributionError" },
-                    { $ref: "#/components/schemas/InvalidTechniqueError" },
-                    { $ref: "#/components/schemas/InvalidTagError" },
-                    { $ref: "#/components/schemas/InvalidCompositionError" },
-                    { $ref: "#/components/schemas/InvalidShapeError" },
-                    { $ref: "#/components/schemas/InvalidOrientationError" },
-                    { $ref: "#/components/schemas/InvalidIssuerCodeError" },
                     { $ref: "#/components/schemas/InvalidMintSlugError" },
-                    { $ref: "#/components/schemas/InvalidEngraverSlugError" },
+                    { $ref: "#/components/schemas/InvalidOrientationError" },
+                    { $ref: "#/components/schemas/InvalidPaginationError" },
                     {
                       $ref: "#/components/schemas/InvalidRulingAuthoritySlugError",
                     },
+                    { $ref: "#/components/schemas/InvalidShapeError" },
+                    { $ref: "#/components/schemas/InvalidTagError" },
+                    { $ref: "#/components/schemas/InvalidTechniqueError" },
                     { $ref: "#/components/schemas/InvalidYearError" },
-                    { $ref: "#/components/schemas/InvalidPaginationError" },
                   ],
                 },
               }),

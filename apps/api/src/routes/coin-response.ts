@@ -8,7 +8,7 @@ import {
   issuerResponseSchema,
 } from "@coin-archive/api"
 import { z } from "@hono/zod-openapi"
-import { toCurrencyResponse } from "./currency-response.js"
+import { toCurrencyResponse } from "./currencies.js"
 import type {
   CoinDetailResponse,
   CoinFaceValueResponse,
@@ -95,6 +95,34 @@ function toCoinSurfaceWithEngraversResponse(
   }
 }
 
+function toCoinFaceValueResponse(
+  denomination: Coin["denomination"] | CoinListItem["denomination"]
+): CoinFaceValueResponse | null {
+  return denomination
+    ? {
+        label: denomination.label,
+        numericValue: Number(denomination.amount),
+        currency: toCurrencyResponse(denomination.currency),
+      }
+    : null
+}
+
+export function toCoinListItemResponse(
+  coin: CoinListItem,
+  imageBaseUrl: string | undefined
+): CoinListItemResponse {
+  return {
+    ...toCoinResponseFields(coin),
+    faceValue: toCoinFaceValueResponse(coin.denomination),
+    obverseImageUrl: coin.obverseImageKey
+      ? toPublicImageUrl(imageBaseUrl, coin.obverseImageKey)
+      : null,
+    reverseImageUrl: coin.reverseImageKey
+      ? toPublicImageUrl(imageBaseUrl, coin.reverseImageKey)
+      : null,
+  }
+}
+
 export function toCoinDetailResponse(
   coin: Coin,
   imageBaseUrl: string | undefined
@@ -134,33 +162,5 @@ export function toCoinDetailResponse(
     edge: coin.edge
       ? toCoinSurfaceResponse(coin.edge, imageBaseUrl)
       : { ...missingCoinSurfaceResponse },
-  }
-}
-
-function toCoinFaceValueResponse(
-  denomination: Coin["denomination"] | CoinListItem["denomination"]
-): CoinFaceValueResponse | null {
-  return denomination
-    ? {
-        label: denomination.label,
-        numericValue: Number(denomination.amount),
-        currency: toCurrencyResponse(denomination.currency),
-      }
-    : null
-}
-
-export function toCoinListItemResponse(
-  coin: CoinListItem,
-  imageBaseUrl: string | undefined
-): CoinListItemResponse {
-  return {
-    ...toCoinResponseFields(coin),
-    faceValue: toCoinFaceValueResponse(coin.denomination),
-    obverseImageUrl: coin.obverseImageKey
-      ? toPublicImageUrl(imageBaseUrl, coin.obverseImageKey)
-      : null,
-    reverseImageUrl: coin.reverseImageKey
-      ? toPublicImageUrl(imageBaseUrl, coin.reverseImageKey)
-      : null,
   }
 }

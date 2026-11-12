@@ -14,7 +14,7 @@ const responseSchema = distributionListResponseSchema
   })
   .openapi("DistributionListResponse")
 
-const route = createRoute({
+const distributionListRoute = createRoute({
   method: "get",
   path: "/v1/distributions",
   responses: {
@@ -35,11 +35,12 @@ export function registerDistributionRoutes(
   app: ApiApp,
   listDistributions?: () => Promise<Array<DistributionRecord>>
 ) {
-  app.openapi(route, async (context) => {
-    const distributions = await (listDistributions ?? (async () => []))()
+  app.openapi(distributionListRoute, async (context) => {
+    const distributions = listDistributions ? await listDistributions() : []
     const response = {
       distributions: distributions.map(({ slug, name }) => ({ slug, name })),
     } satisfies DistributionListResponse
+
     return context.json(response, 200)
   })
 }

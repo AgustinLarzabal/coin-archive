@@ -1,20 +1,25 @@
-import { engraverListResponseSchema as sharedEngraverListResponseSchema } from "@coin-archive/api"
-import { createRoute } from "@hono/zod-openapi"
+import {
+  engraverListResponseSchema,
+  engraverResponseSchema,
+} from "@coin-archive/api"
+import { createRoute, z } from "@hono/zod-openapi"
 import { internalErrorSchema, responseHeaders } from "./shared.js"
 import type { ApiApp } from "./shared.js"
 import type { EngraverListResponse } from "@coin-archive/api"
 import type { EngraverRecord } from "@coin-archive/db"
 
-const engraverListResponseSchema = sharedEngraverListResponseSchema.openapi(
-  "EngraverListResponse"
-)
+const responseSchema = engraverListResponseSchema
+  .safeExtend({
+    engravers: z.array(engraverResponseSchema.openapi("Engraver")),
+  })
+  .openapi("EngraverListResponse")
 
 const engraverListRoute = createRoute({
   method: "get",
   path: "/v1/engravers",
   responses: {
     200: {
-      content: { "application/json": { schema: engraverListResponseSchema } },
+      content: { "application/json": { schema: responseSchema } },
       description: "A list of Engravers",
       headers: responseHeaders,
     },
@@ -31,7 +36,7 @@ export function registerEngraverRoutes(
   listEngravers?: () => Promise<Array<EngraverRecord>>
 ) {
   app.openapi(engraverListRoute, async (context) => {
-    const engravers = await (listEngravers ?? (async () => []))()
+    const engravers = listEngravers ? await listEngravers() : []
     const response = {
       engravers: engravers.map(({ slug, fullName }) => ({ slug, fullName })),
     } satisfies EngraverListResponse

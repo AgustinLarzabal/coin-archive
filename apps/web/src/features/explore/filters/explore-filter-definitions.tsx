@@ -38,6 +38,7 @@ import type { ZodType } from "zod"
 
 export type ExploreFilterValue =
   | string
+  | string[]
   | number
   | [number | undefined, number | undefined]
 
@@ -114,6 +115,22 @@ export function getExploreFilterFields(
       return { ...definition, disabled: selected.has(definition.id) }
     }
 
+    if (definition.id === "tag") {
+      return {
+        id: definition.id,
+        label: definition.label,
+        icon: definition.icon,
+        type: "multiselect",
+        options: definition.options(lists),
+        pinSelected: true,
+        operators: [
+          { value: "has_all_of", label: "has all of", arity: "many" },
+        ],
+        defaultOperator: "has_all_of",
+        autoSelectOperator: true,
+        disabled: selected.has(definition.id),
+      }
+    }
     return {
       id: definition.id,
       label: definition.label,

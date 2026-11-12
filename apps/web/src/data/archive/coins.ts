@@ -39,7 +39,7 @@ export type CoinListFilters = Readonly<{
   rulingAuthoritySlug?: string
   shape?: string
   size?: CoinListSize
-  tagSlug?: string
+  tagSlugs?: string[]
   technique?: string
   thickness?: CoinListThickness
   weight?: CoinListWeight
@@ -61,7 +61,7 @@ async function getCoins({
   rulingAuthoritySlug,
   shape,
   size,
-  tagSlug,
+  tagSlugs,
   technique,
   thickness,
   weight,
@@ -85,7 +85,7 @@ async function getCoins({
       search.set("ruler", rulingAuthoritySlug)
     if (shape !== undefined) search.set("shape", shape)
     if (size !== undefined) search.set("size", size)
-    if (tagSlug !== undefined) search.set("tag", tagSlug)
+    tagSlugs?.forEach((slug) => search.append("tag", slug))
     if (technique !== undefined) search.set("technique", technique)
     if (thickness !== undefined) search.set("thickness", thickness)
     if (weight !== undefined) search.set("weight", weight)
@@ -132,7 +132,7 @@ function validateCoinListFilters(
     rulingAuthoritySlug,
     shape,
     size,
-    tagSlug,
+    tagSlugs,
     technique,
     thickness,
     weight,
@@ -209,8 +209,13 @@ function validateCoinListFilters(
     throw new InvalidCoinListFilterError("Invalid Coin Size")
   }
 
-  if (tagSlug !== undefined && !slugSchema.safeParse(tagSlug).success) {
-    throw new InvalidCoinListFilterError("Invalid Tag Slug")
+  if (
+    tagSlugs !== undefined &&
+    (tagSlugs.length === 0 ||
+      tagSlugs.some((slug) => !slugSchema.safeParse(slug).success) ||
+      new Set(tagSlugs).size !== tagSlugs.length)
+  ) {
+    throw new InvalidCoinListFilterError("Invalid Tag Slugs")
   }
 
   if (technique !== undefined && !slugSchema.safeParse(technique).success) {

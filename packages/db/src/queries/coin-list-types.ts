@@ -30,7 +30,7 @@ export interface CoinListOptions {
   faceValueAmount?: string
   distribution?: string
   technique?: string
-  tagSlug?: string
+  tagSlugs?: string[]
   composition?: string
   shape?: string
   orientation?: string

@@ -11,6 +11,7 @@ import {
   createFilterQuery,
   createFilterRule,
 } from "@coin-archive/ui/components/reui/filters/filters-query"
+import { tagFilterDefinition } from "./definitions/tag-filter"
 import { exploreFilterDefinitions } from "./explore-filter-definitions"
 
 import type { ExploreSearch } from "../explore-search"
@@ -93,8 +94,9 @@ export function searchToFilterQuery(
         createFilterRule({
           id: `explore-${id}`,
           path: [id],
-          operator: id === "amount" ? "eq" : "is",
-          value,
+          operator: id === "amount" ? "eq" : id === "tag" ? "has_all_of" : "is",
+          value:
+            id === "tag" ? (Array.isArray(value) ? value : [value]) : value,
         }),
       ]
     })
@@ -152,6 +154,7 @@ export function filterQueryToPatch(
   let size: CoinListSize | undefined
   let thickness: CoinListThickness | undefined
   let weight: CoinListWeight | undefined
+  let tag: string | string[] | undefined
   let hasIncompleteRule = false
 
   for (const rule of query.rules) {
@@ -169,6 +172,26 @@ export function filterQueryToPatch(
       const parsed = faceValueAmountQuerySchema.safeParse(rule.value)
       if (!parsed.success) return null
       selected.amount = parsed.data
+      continue
+    }
+    if (rule.path[0] === "tag") {
+      if (rule.operator !== "has_all_of") return null
+      if (rule.value === undefined) {
+        hasIncompleteRule = true
+        continue
+      }
+      if (Array.isArray(rule.value) && rule.value.length === 0) continue
+      const values = Array.isArray(rule.value) ? rule.value : [rule.value]
+      if (
+        !values.every(
+          (value): value is string =>
+            typeof value === "string" &&
+            tagFilterDefinition.schema.safeParse(value).success
+        ) ||
+        new Set(values).size !== values.length
+      )
+        return null
+      tag = values.length === 1 ? values[0] : values
       continue
     }
     if (rule.path[0] === "year") {
@@ -214,12 +237,14 @@ export function filterQueryToPatch(
       id === "size" ||
       id === "thickness" ||
       id === "weight" ||
+      id === "tag" ||
       selected[id] === search[id]
   ) &&
+    JSON.stringify(tag) === JSON.stringify(search.tag) &&
     year === search.year &&
     size === search.size &&
     thickness === search.thickness &&
     weight === search.weight
     ? {}
-    : { ...selected, year, size, thickness, weight }
+    : { ...selected, tag, year, size, thickness, weight }
 }

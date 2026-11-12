@@ -106,20 +106,20 @@ function relatedPredicate(
   listOptions: CoinListOptions
 ) {
   return and(
-    listOptions.tagSlug === undefined
-      ? undefined
-      : exists(
-          transaction
-            .select({ coinId: schema.coinTags.coinId })
-            .from(schema.coinTags)
-            .innerJoin(schema.tags, eq(schema.coinTags.tagId, schema.tags.id))
-            .where(
-              and(
-                eq(schema.coinTags.coinId, schema.coins.id),
-                eq(schema.tags.slug, listOptions.tagSlug)
-              )
+    ...(listOptions.tagSlugs ?? []).map((slug) =>
+      exists(
+        transaction
+          .select({ coinId: schema.coinTags.coinId })
+          .from(schema.coinTags)
+          .innerJoin(schema.tags, eq(schema.coinTags.tagId, schema.tags.id))
+          .where(
+            and(
+              eq(schema.coinTags.coinId, schema.coins.id),
+              eq(schema.tags.slug, slug)
             )
-        ),
+          )
+      )
+    ),
     listOptions.currencySlug === undefined
       ? undefined
       : exists(

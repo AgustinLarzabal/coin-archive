@@ -59,6 +59,11 @@ it("keeps unavailable selections visible and disables selected fields", () => {
     type: "select",
     options: [],
   })
+  expect(fields.find(({ id }) => id === "tag")).toMatchObject({
+    type: "multiselect",
+    defaultOperator: "has_all_of",
+    operators: [{ value: "has_all_of", label: "has all of", arity: "many" }],
+  })
   expect(fields.find(({ id }) => id === "orientation")).toMatchObject({
     type: "select",
     options: [
@@ -185,7 +190,7 @@ it("offers Map from the Tag catalogue", () => {
     createFilterQuery()
   )
   expect(fields.find(({ id }) => id === "tag")).toMatchObject({
-    type: "select",
+    type: "multiselect",
     options: [{ label: "Map", value: "map" }],
   })
 })

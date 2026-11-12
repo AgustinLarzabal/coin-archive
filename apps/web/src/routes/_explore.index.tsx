@@ -58,7 +58,10 @@ export const Route = createFileRoute("/_explore/")({
           currency: filters.currencySlug,
           distribution: filters.distribution,
           technique: filters.technique,
-          tag: filters.tagSlug,
+          tag:
+            filters.tagSlugs?.length === 1
+              ? filters.tagSlugs[0]
+              : filters.tagSlugs,
           composition: filters.composition,
           shape: filters.shape,
           orientation: filters.orientation,

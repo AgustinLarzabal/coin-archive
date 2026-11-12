@@ -63,22 +63,48 @@ describe("Coin Tags", () => {
       expect(
         (
           await database.listCoins({
-            tagSlug: "map",
+            tagSlugs: ["map"],
             issuerCode: "FI",
             pageSize: 1,
           })
         ).totalItems
       ).toBe(2)
       expect(
-        (await database.listCoins({ tagSlug: "map", page: 2, pageSize: 1 }))
+        (await database.listCoins({ tagSlugs: ["map"], page: 2, pageSize: 1 }))
           .coins
       ).toHaveLength(1)
       expect(
-        (await database.listCoins({ tagSlug: "flag" })).coins.map(
+        (await database.listCoins({ tagSlugs: ["flag"] })).coins.map(
           ({ id }) => id
         )
       ).toEqual([first.id])
-      expect(await database.listCoins({ tagSlug: "unknown-map" })).toEqual({
+      expect(
+        await database.listCoins({
+          tagSlugs: ["map", "flag"],
+          issuerCode: "FI",
+          pageSize: 1,
+        })
+      ).toMatchObject({
+        totalItems: 1,
+        coins: [{ id: first.id }],
+      })
+      expect(
+        await database.listCoins({
+          tagSlugs: ["map", "flag"],
+          page: 2,
+          pageSize: 1,
+        })
+      ).toEqual({
+        coins: [],
+        totalItems: 1,
+      })
+      expect(
+        await database.listCoins({ tagSlugs: ["map", "unknown-map"] })
+      ).toEqual({
+        coins: [],
+        totalItems: 0,
+      })
+      expect(await database.listCoins({ tagSlugs: ["unknown-map"] })).toEqual({
         coins: [],
         totalItems: 0,
       })
@@ -113,7 +139,7 @@ describe("Coin Tags", () => {
       expect(
         (await database.listTags()).map(({ slug, name }) => ({ slug, name }))
       ).toEqual([{ slug: "map", name: "Map" }])
-      const page = await database.listCoins({ tagSlug: "map" })
+      const page = await database.listCoins({ tagSlugs: ["map"] })
       expect(page.totalItems).toBe(2)
       expect(page.coins.map(({ title }) => title).sort()).toEqual([
         "Enlargement of the European Union by Ten New Member States",

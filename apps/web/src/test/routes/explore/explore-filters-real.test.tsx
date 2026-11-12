@@ -147,6 +147,26 @@ it("restores Map from the Tag catalogue and filters Explore", async () => {
   )
 })
 
+it("restores multiple Tags from a shared URL and sends both to the Coin API", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      tags: [
+        { slug: "map", name: "Map" },
+        { slug: "flag", name: "Flag" },
+      ],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?tag=map&tag=flag")
+  expect(
+    await screen.findByText("No coins match the selected filters.")
+  ).toBeVisible()
+  expect(router.state.location.search.tag).toEqual(["map", "flag"])
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
+  )
+})
+
 it("restores Composition with another filter and sends both to the Coin API", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({

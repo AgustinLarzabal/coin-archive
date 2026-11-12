@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
+import type { ExploreFilterValue } from "@/features/explore/filters/explore-filter-definitions"
 import type {
   FilterField,
   FilterQuery,
@@ -18,10 +19,12 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
     onQueryChange,
     onBeforeQueryChange,
   }: {
-    fields: FilterField<string>[]
-    query: FilterQuery<string>
-    onQueryChange: (query: FilterQuery<string>) => void
-    onBeforeQueryChange: (query: FilterQuery<string>) => boolean | void
+    fields: FilterField<ExploreFilterValue>[]
+    query: FilterQuery<ExploreFilterValue>
+    onQueryChange: (query: FilterQuery<ExploreFilterValue>) => void
+    onBeforeQueryChange: (
+      query: FilterQuery<ExploreFilterValue>
+    ) => boolean | void
   }) => (
     <>
       <output data-testid="fields">
@@ -124,14 +127,59 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
                 type: "rule",
                 id: "test-tag",
                 path: ["tag"],
-                operator: "is",
-                value: "map",
+                operator: "has_all_of",
+                value: ["map"],
               },
             ],
           })
         }
       >
         Select tag
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((node) =>
+              node.type === "rule" && node.path[0] === "tag"
+                ? { ...node, value: ["map", "flag"] }
+                : node
+            ),
+          })
+        }
+      >
+        Add Flag
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((node) =>
+              node.type === "rule" && node.path[0] === "tag"
+                ? { ...node, value: ["map"] }
+                : node
+            ),
+          })
+        }
+      >
+        Remove Flag
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((node) =>
+              node.type === "rule" && node.path[0] === "tag"
+                ? { ...node, value: [] }
+                : node
+            ),
+          })
+        }
+      >
+        Remove last Tag
       </button>
       <button
         type="button"
@@ -473,7 +521,12 @@ it("combines all Explore filters and syncs them with the URL", async () => {
         compositions: [{ slug: "bimetallic", name: "Bimetallic" }],
         engravers: [{ slug: "first-engraver", fullName: "First Engraver" }],
         rulers: [
-          { slug: "roman-republic", name: "Rome", role: "Period", tenure: null },
+          {
+            slug: "roman-republic",
+            name: "Rome",
+            role: "Period",
+            tenure: null,
+          },
           { slug: "roman-empire", name: "Rome", role: "Period", tenure: null },
         ],
       })
@@ -590,10 +643,13 @@ it("combines all Explore filters and syncs them with the URL", async () => {
   expect(screen.getByTestId("issuer-value")).toBeEmptyDOMElement()
 })
 
-it("selects and removes Map while resetting pagination", async () => {
+it("adds and removes individual Tags while resetting pagination", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({
-      tags: [{ slug: "map", name: "Map" }],
+      tags: [
+        { slug: "map", name: "Map" },
+        { slug: "flag", name: "Flag" },
+      ],
       pagination: { page: 2, pageSize: 24, totalItems: 50, totalPages: 3 },
     })
   )
@@ -609,6 +665,21 @@ it("selects and removes Map while resetting pagination", async () => {
     "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
   )
 
+  fireEvent.click(screen.getByRole("button", { name: "Add Flag" }))
+  await waitFor(() =>
+    expect(router.state.location.search.tag).toEqual(["map", "flag"])
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Remove Flag" }))
+  await waitFor(() => expect(router.state.location.search.tag).toBe("map"))
+
+  fireEvent.click(screen.getByRole("button", { name: "Remove last Tag" }))
+  await waitFor(() => expect(router.state.location.search.tag).toBeUndefined())
+
+  fireEvent.click(screen.getByRole("button", { name: "Select tag" }))
+  await waitFor(() => expect(router.state.location.search.tag).toBe("map"))
   fireEvent.click(screen.getByRole("button", { name: "Clear tag" }))
   await waitFor(() => expect(router.state.location.search.tag).toBeUndefined())
 })

@@ -26,7 +26,10 @@ export const exploreSearchSchema = z.object({
   ruler: slugSchema.optional().catch(undefined),
   shape: slugSchema.optional().catch(undefined),
   size: coinListSizeSchema.optional().catch(undefined),
-  tag: slugSchema.optional().catch(undefined),
+  tag: z
+    .union([slugSchema, z.array(slugSchema).min(1)])
+    .optional()
+    .catch(undefined),
   technique: slugSchema.optional().catch(undefined),
   thickness: coinListThicknessSchema.optional().catch(undefined),
   weight: coinListWeightSchema.optional().catch(undefined),
@@ -50,7 +53,12 @@ export function getExploreCoinListFilters(
     faceValueAmount: search.currency === undefined ? undefined : search.amount,
     distribution: search.distribution,
     technique: search.technique,
-    tagSlug: search.tag,
+    tagSlugs:
+      search.tag === undefined
+        ? undefined
+        : Array.isArray(search.tag)
+          ? search.tag
+          : [search.tag],
     composition: search.composition,
     shape: search.shape,
     ...(search.orientation === undefined

@@ -110,11 +110,17 @@ const coinListQuerySchema = z
       type: "string",
       pattern: COIN_LIST_SIZE_QUERY_PATTERN,
     }),
-    tag: slugSchema.optional().openapi({
-      description:
-        "Exact, case-sensitive Tag Slug. A valid unknown Slug returns an empty successful page; malformed or repeated values return invalid_tag",
-      param: { name: "tag", in: "query" },
-    }),
+    tag: z
+      .preprocess(
+        (value) => (typeof value === "string" ? [value] : value),
+        z.array(slugSchema).min(1)
+      )
+      .optional()
+      .openapi({
+        description:
+          "Repeat tag for multiple exact, case-sensitive Tag Slugs (for example, ?tag=map&tag=flag). Multiple distinct Tags match Coins with all of them by default. A valid unknown Slug returns an empty successful page; malformed or duplicate values return invalid_tag",
+        param: { name: "tag", in: "query" },
+      }),
     technique: slugSchema.optional().openapi({
       description:
         "Exact, case-sensitive Coin Technique slug. A valid unknown slug returns an empty successful page; malformed or repeated values return invalid_technique",
@@ -158,6 +164,10 @@ const coinListQuerySchema = z
         param: { name: "pageSize", in: "query" },
         type: "integer",
       }),
+  })
+  .refine(({ tag }) => tag === undefined || new Set(tag).size === tag.length, {
+    message: "Duplicate Tag",
+    path: ["tag"],
   })
   .refine(
     ({ amount, currency }) => amount === undefined || currency !== undefined,
@@ -448,7 +458,7 @@ export function registerCoinListRoute(
         shape,
         sizeInterval:
           size === undefined ? undefined : coinListSizeToInterval(size),
-        tagSlug: tag,
+        tagSlugs: tag,
         technique,
         thicknessInterval:
           thickness === undefined

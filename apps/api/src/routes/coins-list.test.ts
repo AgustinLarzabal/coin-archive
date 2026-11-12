@@ -127,6 +127,27 @@ describe("Coin list route", () => {
     })
   })
   describe("Tag", () => {
+    it("passes distinct repeated Tags with other filters to the paginated list", async () => {
+      const listCoins = vi.fn(async () => ({ coins: [], totalItems: 1 }))
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?tag=map&tag=flag&issuer=FI&page=2&pageSize=1")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tagSlugs: ["map", "flag"],
+          issuerCode: "FI",
+          page: 2,
+          pageSize: 1,
+        })
+      )
+      await expect(response.json()).resolves.toMatchObject({
+        pagination: { totalItems: 1, totalPages: 1 },
+      })
+    })
+
     it("combines Tag with other filters before pagination", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 2 }))
       const response = await createApp({
@@ -136,7 +157,7 @@ describe("Coin list route", () => {
       }).request("/v1/coins?tag=map&issuer=FI&page=2&pageSize=1")
       expect(response.status).toBe(200)
       expect(listCoins).toHaveBeenCalledWith({
-        tagSlug: "map",
+        tagSlugs: ["map"],
         issuerCode: "FI",
         page: 2,
         pageSize: 1,
@@ -146,7 +167,7 @@ describe("Coin list route", () => {
       })
     })
 
-    it.each(["tag=Map", "tag=bad slug", "tag=map&tag=map"])(
+    it.each(["tag=Map", "tag=bad slug", "tag=map&tag=map", "tag=map&tag=Bad"])(
       "rejects %s",
       async (query) => {
         const listCoins = vi.fn(emptyCoinPage)
@@ -1466,12 +1487,15 @@ describe("Coin list route", () => {
             }),
           }),
           expect.objectContaining({
-            description: expect.stringContaining("Tag Slug"),
+            description: expect.stringContaining("all of them by default"),
             in: "query",
             name: "tag",
             required: false,
             schema: expect.objectContaining({
-              pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              type: "array",
+              items: expect.objectContaining({
+                pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+              }),
             }),
           }),
           expect.objectContaining({

@@ -54,7 +54,7 @@ it("restores Technique with Issuer and sends both to the Coin API", async () => 
     issuer: "AR",
   })
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?technique=milled&issuer=AR&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?issuer=AR&technique=milled&page=1&pageSize=24"
   )
   expect(
     await screen.findByText("No coins match the selected filters.")
@@ -80,7 +80,7 @@ it("restores Shape with Issuer and shows a filtered empty result", async () => {
     issuer: "AR",
   })
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?shape=oval&issuer=AR&page=1&pageSize=24"
+    "http://localhost:3001/v1/coins?issuer=AR&shape=oval&page=1&pageSize=24"
   )
 })
 

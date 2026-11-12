@@ -101,7 +101,7 @@ describe("Explore pagination", () => {
       })
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?technique=milled&issuer=AR&page=2&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&technique=milled&page=2&pageSize=24"
     )
   })
   it("keeps Shape and Issuer when changing pages", async () => {
@@ -119,7 +119,7 @@ describe("Explore pagination", () => {
       )
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?shape=square&issuer=AR&page=2&pageSize=24"
+      "http://localhost:3001/v1/coins?issuer=AR&shape=square&page=2&pageSize=24"
     )
   })
 

@@ -47,7 +47,12 @@ describe("Face Value persistence", () => {
   })
 
   it("composes Currency and Amount with every filter, ordering, totals, and pagination", async () => {
-    const database = createDatabase(getDatabaseUrl())
+    const queries: string[] = []
+    const database = createDatabase(getDatabaseUrl(), {
+      onQuery(query) {
+        queries.push(query)
+      },
+    })
     try {
       const [peso, euro] = await database.orm
         .insert(database.schema.currencies)
@@ -154,6 +159,7 @@ describe("Face Value persistence", () => {
           }))
         )
 
+      queries.length = 0
       const page = await database.listCoins({
         currencySlug: "argentine-peso",
         distribution: "standard-circulation",
@@ -167,8 +173,16 @@ describe("Face Value persistence", () => {
       })
       expect(page.totalItems).toBe(2)
       expect(page.coins.map((coin) => coin.id)).toEqual([firstMatchingId])
+      expect(
+        queries.filter((query) =>
+          query.trimStart().toLowerCase().startsWith("select")
+        )
+      ).toHaveLength(3)
       await expect(
         database.listCoins({ currencySlug: "unknown-currency" })
+      ).resolves.toEqual({ coins: [], totalItems: 0 })
+      await expect(
+        database.listCoins({ distribution: "unknown-distribution" })
       ).resolves.toEqual({ coins: [], totalItems: 0 })
     } finally {
       await database.close()

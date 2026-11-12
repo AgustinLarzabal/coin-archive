@@ -64,7 +64,7 @@ export function createListCoins(orm: Database["orm"]) {
 
     return orm.transaction(
       async (transaction) => {
-        const coinFilterPredicate = await createCoinFilter(
+        const coinFilterPredicate = createCoinFilter(
           transaction,
           listOptions,
           persistedIssueYearInterval

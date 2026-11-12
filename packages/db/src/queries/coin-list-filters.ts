@@ -8,117 +8,9 @@ type CoinListTransaction = Parameters<
   Parameters<Database["orm"]["transaction"]>[0]
 >[0]
 
-async function resolveFilterIds(
-  transaction: CoinListTransaction,
-  listOptions: CoinListOptions
-) {
-  const issuerId =
-    listOptions.issuerCode === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.issuers.id })
-            .from(schema.issuers)
-            .where(eq(schema.issuers.code, listOptions.issuerCode))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const currencyId =
-    listOptions.currencySlug === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.currencies.id })
-            .from(schema.currencies)
-            .where(eq(schema.currencies.slug, listOptions.currencySlug))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const rulingAuthorityId =
-    listOptions.rulingAuthoritySlug === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.rulingAuthorities.id })
-            .from(schema.rulingAuthorities)
-            .where(
-              eq(schema.rulingAuthorities.slug, listOptions.rulingAuthoritySlug)
-            )
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const distributionId =
-    listOptions.distribution === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.distributions.id })
-            .from(schema.distributions)
-            .where(eq(schema.distributions.slug, listOptions.distribution))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const compositionId =
-    listOptions.composition === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.compositions.id })
-            .from(schema.compositions)
-            .where(eq(schema.compositions.slug, listOptions.composition))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const techniqueId =
-    listOptions.technique === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.coinTechniques.id })
-            .from(schema.coinTechniques)
-            .where(eq(schema.coinTechniques.slug, listOptions.technique))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const shapeId =
-    listOptions.shape === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.coinShapes.id })
-            .from(schema.coinShapes)
-            .where(eq(schema.coinShapes.slug, listOptions.shape))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  const orientationId =
-    listOptions.orientation === undefined
-      ? undefined
-      : ((
-          await transaction
-            .select({ id: schema.coinOrientations.id })
-            .from(schema.coinOrientations)
-            .where(eq(schema.coinOrientations.slug, listOptions.orientation))
-            .limit(1)
-        ).at(0)?.id ?? null)
-
-  return {
-    issuerId,
-    currencyId,
-    rulingAuthorityId,
-    distributionId,
-    compositionId,
-    techniqueId,
-    shapeId,
-    orientationId,
-  }
-}
-
-type ResolvedFilterIds = Awaited<ReturnType<typeof resolveFilterIds>>
-
 function scalarPredicate(
+  transaction: CoinListTransaction,
   listOptions: CoinListOptions,
-  ids: ResolvedFilterIds,
   persistedIssueYearInterval: IssueYearInterval | undefined
 ) {
   return and(
@@ -140,36 +32,60 @@ function scalarPredicate(
     listOptions.weightInterval === undefined
       ? undefined
       : lte(schema.coins.weight, sql`${listOptions.weightInterval.max}`),
-    ids.distributionId === undefined
+    listOptions.distribution === undefined
       ? undefined
-      : ids.distributionId === null
-        ? sql`false`
-        : eq(schema.coins.distributionId, ids.distributionId),
-    ids.techniqueId === undefined
+      : inArray(
+          schema.coins.distributionId,
+          transaction
+            .select({ id: schema.distributions.id })
+            .from(schema.distributions)
+            .where(eq(schema.distributions.slug, listOptions.distribution))
+        ),
+    listOptions.technique === undefined
       ? undefined
-      : ids.techniqueId === null
-        ? sql`false`
-        : eq(schema.coins.techniqueId, ids.techniqueId),
-    ids.compositionId === undefined
+      : inArray(
+          schema.coins.techniqueId,
+          transaction
+            .select({ id: schema.coinTechniques.id })
+            .from(schema.coinTechniques)
+            .where(eq(schema.coinTechniques.slug, listOptions.technique))
+        ),
+    listOptions.composition === undefined
       ? undefined
-      : ids.compositionId === null
-        ? sql`false`
-        : eq(schema.coins.compositionId, ids.compositionId),
-    ids.shapeId === undefined
+      : inArray(
+          schema.coins.compositionId,
+          transaction
+            .select({ id: schema.compositions.id })
+            .from(schema.compositions)
+            .where(eq(schema.compositions.slug, listOptions.composition))
+        ),
+    listOptions.shape === undefined
       ? undefined
-      : ids.shapeId === null
-        ? sql`false`
-        : eq(schema.coins.shapeId, ids.shapeId),
-    ids.orientationId === undefined
+      : inArray(
+          schema.coins.shapeId,
+          transaction
+            .select({ id: schema.coinShapes.id })
+            .from(schema.coinShapes)
+            .where(eq(schema.coinShapes.slug, listOptions.shape))
+        ),
+    listOptions.orientation === undefined
       ? undefined
-      : ids.orientationId === null
-        ? sql`false`
-        : eq(schema.coins.orientationId, ids.orientationId),
-    ids.issuerId === undefined
+      : inArray(
+          schema.coins.orientationId,
+          transaction
+            .select({ id: schema.coinOrientations.id })
+            .from(schema.coinOrientations)
+            .where(eq(schema.coinOrientations.slug, listOptions.orientation))
+        ),
+    listOptions.issuerCode === undefined
       ? undefined
-      : ids.issuerId === null
-        ? sql`false`
-        : eq(schema.coins.issuerId, ids.issuerId),
+      : inArray(
+          schema.coins.issuerId,
+          transaction
+            .select({ id: schema.issuers.id })
+            .from(schema.issuers)
+            .where(eq(schema.issuers.code, listOptions.issuerCode))
+        ),
     persistedIssueYearInterval === undefined
       ? undefined
       : and(
@@ -187,8 +103,7 @@ function scalarPredicate(
 
 function relatedPredicate(
   transaction: CoinListTransaction,
-  listOptions: CoinListOptions,
-  ids: ResolvedFilterIds
+  listOptions: CoinListOptions
 ) {
   return and(
     listOptions.tagSlug === undefined
@@ -205,27 +120,28 @@ function relatedPredicate(
               )
             )
         ),
-    ids.currencyId === undefined
+    listOptions.currencySlug === undefined
       ? undefined
-      : ids.currencyId === null
-        ? sql`false`
-        : exists(
-            transaction
-              .select({ id: schema.denominations.id })
-              .from(schema.denominations)
-              .where(
-                and(
-                  eq(schema.denominations.id, schema.coins.denominationId),
-                  eq(schema.denominations.currencyId, ids.currencyId),
-                  listOptions.faceValueAmount === undefined
-                    ? undefined
-                    : eq(
-                        schema.denominations.amount,
-                        listOptions.faceValueAmount
-                      )
-                )
+      : exists(
+          transaction
+            .select({ id: schema.denominations.id })
+            .from(schema.denominations)
+            .where(
+              and(
+                eq(schema.denominations.id, schema.coins.denominationId),
+                inArray(
+                  schema.denominations.currencyId,
+                  transaction
+                    .select({ id: schema.currencies.id })
+                    .from(schema.currencies)
+                    .where(eq(schema.currencies.slug, listOptions.currencySlug))
+                ),
+                listOptions.faceValueAmount === undefined
+                  ? undefined
+                  : eq(schema.denominations.amount, listOptions.faceValueAmount)
               )
-          ),
+            )
+        ),
     listOptions.mintSlug === undefined
       ? undefined
       : exists(
@@ -270,42 +186,46 @@ function relatedPredicate(
               )
             )
         ),
-    ids.rulingAuthorityId === undefined
+    listOptions.rulingAuthoritySlug === undefined
       ? undefined
-      : ids.rulingAuthorityId === null
-        ? sql`false`
-        : exists(
-            transaction
-              .select({
-                coinId: schema.coinRulingAuthorityAttributions.coinId,
-              })
-              .from(schema.coinRulingAuthorityAttributions)
-              .where(
-                and(
-                  eq(
-                    schema.coinRulingAuthorityAttributions.coinId,
-                    schema.coins.id
-                  ),
-                  eq(
-                    schema.coinRulingAuthorityAttributions.rulingAuthorityId,
-                    ids.rulingAuthorityId
-                  )
+      : exists(
+          transaction
+            .select({
+              coinId: schema.coinRulingAuthorityAttributions.coinId,
+            })
+            .from(schema.coinRulingAuthorityAttributions)
+            .where(
+              and(
+                eq(
+                  schema.coinRulingAuthorityAttributions.coinId,
+                  schema.coins.id
+                ),
+                inArray(
+                  schema.coinRulingAuthorityAttributions.rulingAuthorityId,
+                  transaction
+                    .select({ id: schema.rulingAuthorities.id })
+                    .from(schema.rulingAuthorities)
+                    .where(
+                      eq(
+                        schema.rulingAuthorities.slug,
+                        listOptions.rulingAuthoritySlug
+                      )
+                    )
                 )
               )
-          )
+            )
+        )
   )
 }
 
-export async function createCoinFilter(
+export function createCoinFilter(
   transaction: CoinListTransaction,
   listOptions: CoinListOptions,
   persistedIssueYearInterval: IssueYearInterval | undefined
 ) {
-  const ids = await resolveFilterIds(transaction, listOptions)
-
   return () =>
     and(
-      scalarPredicate(listOptions, ids, persistedIssueYearInterval),
-      relatedPredicate(transaction, listOptions, ids)
+      scalarPredicate(transaction, listOptions, persistedIssueYearInterval),
+      relatedPredicate(transaction, listOptions)
     )
 }

@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_explore/")({
           distribution: search.distribution,
           technique: search.technique,
           tag: search.tag,
+          tagMatch: search.tagMatch,
           composition: search.composition,
           shape: search.shape,
           orientation: search.orientation,
@@ -62,6 +63,7 @@ export const Route = createFileRoute("/_explore/")({
             filters.tagSlugs?.length === 1
               ? filters.tagSlugs[0]
               : filters.tagSlugs,
+          tagMatch: filters.tagMatch,
           composition: filters.composition,
           shape: filters.shape,
           orientation: filters.orientation,

@@ -62,7 +62,10 @@ it("keeps unavailable selections visible and disables selected fields", () => {
   expect(fields.find(({ id }) => id === "tag")).toMatchObject({
     type: "multiselect",
     defaultOperator: "has_all_of",
-    operators: [{ value: "has_all_of", label: "has all of", arity: "many" }],
+    operators: [
+      { value: "has_all_of", label: "has all of", arity: "many" },
+      { value: "has_any_of", label: "has any of", arity: "many" },
+    ],
   })
   expect(fields.find(({ id }) => id === "orientation")).toMatchObject({
     type: "select",

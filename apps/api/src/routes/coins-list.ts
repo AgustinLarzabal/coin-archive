@@ -118,8 +118,16 @@ const coinListQuerySchema = z
       .optional()
       .openapi({
         description:
-          "Repeat tag for multiple exact, case-sensitive Tag Slugs (for example, ?tag=map&tag=flag). Multiple distinct Tags match Coins with all of them by default. A valid unknown Slug returns an empty successful page; malformed or duplicate values return invalid_tag",
+          "Repeat tag for multiple exact, case-sensitive Tag Slugs (for example, ?tag=map&tag=flag). Multiple distinct Tags match Coins with all of them by default, or any of them with tagMatch=any. A valid unknown Slug returns an empty successful page when no selected Tag matches; malformed or duplicate values return invalid_tag",
         param: { name: "tag", in: "query" },
+      }),
+    tagMatch: z
+      .literal("any")
+      .optional()
+      .openapi({
+        description:
+          "Match any selected Tag. Omit to require all selected Tags. Requires tag; invalid or repeated values return invalid_tag",
+        param: { name: "tagMatch", in: "query" },
       }),
     technique: slugSchema.optional().openapi({
       description:
@@ -168,6 +176,10 @@ const coinListQuerySchema = z
   .refine(({ tag }) => tag === undefined || new Set(tag).size === tag.length, {
     message: "Duplicate Tag",
     path: ["tag"],
+  })
+  .refine(({ tag, tagMatch }) => tagMatch === undefined || tag !== undefined, {
+    message: "Tag Match requires Tag",
+    path: ["tagMatch"],
   })
   .refine(
     ({ amount, currency }) => amount === undefined || currency !== undefined,
@@ -384,7 +396,7 @@ const validationErrors = [
     },
   },
   {
-    fields: ["tag"],
+    fields: ["tag", "tagMatch"],
     response: {
       error: { code: "invalid_tag", message: "Tag Slug is invalid" },
     },
@@ -435,6 +447,7 @@ export function registerCoinListRoute(
         shape,
         size,
         tag,
+        tagMatch,
         technique,
         thickness,
         weight,
@@ -459,6 +472,7 @@ export function registerCoinListRoute(
         sizeInterval:
           size === undefined ? undefined : coinListSizeToInterval(size),
         tagSlugs: tag,
+        ...(tagMatch === "any" ? { tagMatch } : {}),
         technique,
         thicknessInterval:
           thickness === undefined

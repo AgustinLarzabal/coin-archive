@@ -125,6 +125,7 @@ export function getExploreFilterFields(
         pinSelected: true,
         operators: [
           { value: "has_all_of", label: "has all of", arity: "many" },
+          { value: "has_any_of", label: "has any of", arity: "many" },
         ],
         defaultOperator: "has_all_of",
         autoSelectOperator: true,

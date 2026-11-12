@@ -88,6 +88,27 @@ describe("Coin Tags", () => {
         totalItems: 1,
         coins: [{ id: first.id }],
       })
+      const anyTagPage = await database.listCoins({
+        tagSlugs: ["map", "flag"],
+        tagMatch: "any",
+        pageSize: 1,
+      })
+      expect(anyTagPage.totalItems).toBe(2)
+      expect(anyTagPage.coins).toHaveLength(1)
+      expect(
+        (
+          await database.listCoins({
+            tagSlugs: ["map", "flag"],
+            tagMatch: "any",
+          })
+        ).coins.map(({ id }) => id)
+      ).toEqual(expect.arrayContaining([first.id, second.id]))
+      expect(
+        await database.listCoins({
+          tagSlugs: ["map", "unknown-map"],
+          tagMatch: "any",
+        })
+      ).toMatchObject({ totalItems: 2 })
       expect(
         await database.listCoins({
           tagSlugs: ["map", "flag"],

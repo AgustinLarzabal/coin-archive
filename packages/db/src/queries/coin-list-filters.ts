@@ -1,4 +1,4 @@
-import { and, eq, exists, gte, inArray, lte, sql } from "drizzle-orm"
+import { and, eq, exists, gte, inArray, lte, or, sql } from "drizzle-orm"
 
 import * as schema from "../schema/index.js"
 import type { Database } from "../connection.js"
@@ -105,21 +105,24 @@ function relatedPredicate(
   transaction: CoinListTransaction,
   listOptions: CoinListOptions
 ) {
-  return and(
-    ...(listOptions.tagSlugs ?? []).map((slug) =>
-      exists(
-        transaction
-          .select({ coinId: schema.coinTags.coinId })
-          .from(schema.coinTags)
-          .innerJoin(schema.tags, eq(schema.coinTags.tagId, schema.tags.id))
-          .where(
-            and(
-              eq(schema.coinTags.coinId, schema.coins.id),
-              eq(schema.tags.slug, slug)
-            )
+  const tagPredicates = (listOptions.tagSlugs ?? []).map((slug) =>
+    exists(
+      transaction
+        .select({ coinId: schema.coinTags.coinId })
+        .from(schema.coinTags)
+        .innerJoin(schema.tags, eq(schema.coinTags.tagId, schema.tags.id))
+        .where(
+          and(
+            eq(schema.coinTags.coinId, schema.coins.id),
+            eq(schema.tags.slug, slug)
           )
-      )
-    ),
+        )
+    )
+  )
+  return and(
+    listOptions.tagMatch === "any"
+      ? or(...tagPredicates)
+      : and(...tagPredicates),
     listOptions.currencySlug === undefined
       ? undefined
       : exists(

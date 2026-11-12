@@ -40,6 +40,7 @@ export type CoinListFilters = Readonly<{
   shape?: string
   size?: CoinListSize
   tagSlugs?: string[]
+  tagMatch?: "any"
   technique?: string
   thickness?: CoinListThickness
   weight?: CoinListWeight
@@ -62,6 +63,7 @@ async function getCoins({
   shape,
   size,
   tagSlugs,
+  tagMatch,
   technique,
   thickness,
   weight,
@@ -86,6 +88,7 @@ async function getCoins({
     if (shape !== undefined) search.set("shape", shape)
     if (size !== undefined) search.set("size", size)
     tagSlugs?.forEach((slug) => search.append("tag", slug))
+    if (tagMatch !== undefined) search.set("tagMatch", tagMatch)
     if (technique !== undefined) search.set("technique", technique)
     if (thickness !== undefined) search.set("thickness", thickness)
     if (weight !== undefined) search.set("weight", weight)
@@ -133,6 +136,7 @@ function validateCoinListFilters(
     shape,
     size,
     tagSlugs,
+    tagMatch,
     technique,
     thickness,
     weight,
@@ -216,6 +220,10 @@ function validateCoinListFilters(
       new Set(tagSlugs).size !== tagSlugs.length)
   ) {
     throw new InvalidCoinListFilterError("Invalid Tag Slugs")
+  }
+
+  if (tagMatch !== undefined && tagSlugs === undefined) {
+    throw new InvalidCoinListFilterError("Invalid Tag Match")
   }
 
   if (technique !== undefined && !slugSchema.safeParse(technique).success) {

@@ -75,6 +75,39 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
           )?.value
         }
       </output>
+      <output data-testid="tag-operator">
+        {
+          query.rules.find(
+            (node): node is FilterRule<ExploreFilterValue> =>
+              node.type === "rule" && node.path[0] === "tag"
+          )?.operator
+        }
+      </output>
+      <output data-testid="tag-operators">
+        {(() => {
+          const operators = fields.find(
+            (field) => field.id === "tag"
+          )?.operators
+          return Array.isArray(operators)
+            ? operators.map(({ value }) => value).join("|")
+            : ""
+        })()}
+      </output>
+      <button
+        type="button"
+        onClick={() =>
+          onQueryChange({
+            ...query,
+            rules: query.rules.map((node) =>
+              node.type === "rule" && node.path[0] === "tag"
+                ? { ...node, operator: "has_any_of" }
+                : node
+            ),
+          })
+        }
+      >
+        Match any Tag
+      </button>
       <output data-testid="orientation-options">
         {fields
           .find((field) => field.id === "orientation")
@@ -682,6 +715,35 @@ it("adds and removes individual Tags while resetting pagination", async () => {
   await waitFor(() => expect(router.state.location.search.tag).toBe("map"))
   fireEvent.click(screen.getByRole("button", { name: "Clear tag" }))
   await waitFor(() => expect(router.state.location.search.tag).toBeUndefined())
+})
+
+it("switches selected Tags to any, resets the page, and restores the shared URL", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      tags: [
+        { slug: "map", name: "Map" },
+        { slug: "flag", name: "Flag" },
+      ],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?tag=map&tag=flag&page=2")
+  await screen.findByTestId("tag-operator")
+  expect(screen.getByTestId("tag-operators")).toHaveTextContent(
+    "has_all_of|has_any_of"
+  )
+  fireEvent.click(screen.getByRole("button", { name: "Match any Tag" }))
+  await waitFor(() =>
+    expect(router.state.location.search).toMatchObject({
+      tag: ["map", "flag"],
+      tagMatch: "any",
+    })
+  )
+  expect(router.state.location.search.page).toBeUndefined()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
+  )
+  expect(screen.getByTestId("tag-operator")).toHaveTextContent("has_any_of")
 })
 
 it("selects and clears Medal Orientation through the URL", async () => {

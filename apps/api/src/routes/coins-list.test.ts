@@ -127,6 +127,43 @@ describe("Coin list route", () => {
     })
   })
   describe("Tag", () => {
+    it("passes has any of to the paginated list", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?tag=map&tag=flag&tagMatch=any")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tagSlugs: ["map", "flag"],
+          tagMatch: "any",
+          page: 1,
+          pageSize: 24,
+        })
+      )
+    })
+
+    it.each([
+      "tag=map&tagMatch=all",
+      "tag=map&tagMatch=ANY",
+      "tag=map&tagMatch=any&tagMatch=any",
+      "tagMatch=any",
+    ])("rejects invalid mode %s", async (query) => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: { code: "invalid_tag", message: "Tag Slug is invalid" },
+      })
+    })
+
     it("passes distinct repeated Tags with other filters to the paginated list", async () => {
       const listCoins = vi.fn(async () => ({ coins: [], totalItems: 1 }))
       const response = await createApp({
@@ -1443,6 +1480,7 @@ describe("Coin list route", () => {
         "shape",
         "size",
         "tag",
+        "tagMatch",
         "technique",
         "thickness",
         "weight",

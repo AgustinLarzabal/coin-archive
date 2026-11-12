@@ -31,6 +31,7 @@ export interface CoinListOptions {
   distribution?: string
   technique?: string
   tagSlugs?: string[]
+  tagMatch?: "any"
   composition?: string
   shape?: string
   orientation?: string

@@ -27,6 +27,25 @@ it("turns URL filters into filter rules without including the page", () => {
   )
 })
 
+it("switches Tag mode while keeping selected Tags", () => {
+  const search = { tag: ["map", "flag"], page: 2 }
+  const switched = createFilterQuery([
+    createFilterRule({
+      id: "explore-tag",
+      path: ["tag"],
+      operator: "has_any_of",
+      value: ["map", "flag"],
+    }),
+  ])
+  expect(filterQueryToPatch(switched, search)).toMatchObject({
+    tag: ["map", "flag"],
+    tagMatch: "any",
+  })
+  expect(
+    searchToFilterQuery({ ...search, tagMatch: "any" }).rules
+  ).toMatchObject([{ operator: "has_any_of", value: ["map", "flag"] }])
+})
+
 it("round-trips Shape with another selected filter", () => {
   const search = { shape: "square" as const, issuer: "AR" }
   const query = searchToFilterQuery(search)

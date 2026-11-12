@@ -93,7 +93,7 @@ combines with other filters and pagination. A valid unknown slug returns an
 empty successful page; malformed or repeated values return `400` with
 `invalid_mint_slug`.
 
-The `tag` filter matches one exact Tag Slug before counting and paging, and combines with other filters without duplicating Coins. A valid unknown slug returns an empty successful page; malformed or repeated values return `400` with `invalid_tag`.
+The `tag` filter matches exact Tag Slugs before counting and paging, and combines with other filters without duplicating Coins. Repeat `tag` to require all selected Tags; add `tagMatch=any` to match any selected Tag. A valid unknown Slug can be combined with a known one in any mode. An unknown Slug alone returns an empty successful page. Malformed or duplicate Tags, invalid or repeated `tagMatch`, and `tagMatch` without `tag` return `400` with `invalid_tag`.
 
 `GET /v1/tags` returns `{"tags":[{"slug":"map","name":"Map"}]}` for the current seed catalogue, ordered by name then slug. It has no defined query parameters; an empty catalogue returns `{"tags":[]}`.
 

@@ -94,7 +94,14 @@ export function searchToFilterQuery(
         createFilterRule({
           id: `explore-${id}`,
           path: [id],
-          operator: id === "amount" ? "eq" : id === "tag" ? "has_all_of" : "is",
+          operator:
+            id === "amount"
+              ? "eq"
+              : id === "tag"
+                ? search.tagMatch === "any"
+                  ? "has_any_of"
+                  : "has_all_of"
+                : "is",
           value:
             id === "tag" ? (Array.isArray(value) ? value : [value]) : value,
         }),
@@ -155,6 +162,7 @@ export function filterQueryToPatch(
   let thickness: CoinListThickness | undefined
   let weight: CoinListWeight | undefined
   let tag: string | string[] | undefined
+  let tagMatch: "any" | undefined
   let hasIncompleteRule = false
 
   for (const rule of query.rules) {
@@ -175,7 +183,8 @@ export function filterQueryToPatch(
       continue
     }
     if (rule.path[0] === "tag") {
-      if (rule.operator !== "has_all_of") return null
+      if (rule.operator !== "has_all_of" && rule.operator !== "has_any_of")
+        return null
       if (rule.value === undefined) {
         hasIncompleteRule = true
         continue
@@ -192,6 +201,7 @@ export function filterQueryToPatch(
       )
         return null
       tag = values.length === 1 ? values[0] : values
+      tagMatch = rule.operator === "has_any_of" ? "any" : undefined
       continue
     }
     if (rule.path[0] === "year") {
@@ -241,10 +251,21 @@ export function filterQueryToPatch(
       selected[id] === search[id]
   ) &&
     JSON.stringify(tag) === JSON.stringify(search.tag) &&
+    tagMatch === search.tagMatch &&
     year === search.year &&
     size === search.size &&
     thickness === search.thickness &&
     weight === search.weight
     ? {}
-    : { ...selected, tag, year, size, thickness, weight }
+    : {
+        ...selected,
+        tag,
+        ...(tagMatch !== undefined || search.tagMatch !== undefined
+          ? { tagMatch }
+          : {}),
+        year,
+        size,
+        thickness,
+        weight,
+      }
 }

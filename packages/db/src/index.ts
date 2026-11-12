@@ -2,15 +2,16 @@ export { createDatabase } from "./connection.js"
 export type {
   Coin,
   CoinDenomination,
+  CoinRulingAuthorityAttribution,
+  CoinSurfaceWithEngravers,
+} from "./queries/coin-detail-types.js"
+export type {
   CoinListItem,
   CoinListOptions,
   CoinListPage,
-  CoinRulingAuthorityAttribution,
-  CoinSurfaceWithEngravers,
-  Database,
-  DatabaseOptions,
   IssueYearInterval,
-} from "./connection.js"
+} from "./queries/coin-list-types.js"
+export type { Database, DatabaseOptions } from "./connection.js"
 export {
   coinInsertSchema,
   coinMints,

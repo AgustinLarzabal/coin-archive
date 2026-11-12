@@ -44,7 +44,6 @@ Explore can filter Coins by one Mint's stable, globally unique slug. A Mint is
 a physical facility whose public record includes its slug, name, place, and country.
 `GET /v1/mints` lists those records, and `GET /v1/coins?mint=<slug>` finds Coins
 associated with one Mint. A Coin can have multiple confirmed Mints or none.
-The Coin viewer links each confirmed Mint name to its Explore filter.
 
 Local development defaults to `http://localhost:3001` when
 `VITE_API_BASE_URL` is absent. Production builds require an explicit HTTP(S)

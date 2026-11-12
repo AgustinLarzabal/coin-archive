@@ -164,8 +164,7 @@ curl 'http://localhost:3001/v1/mints'
 ```
 
 An empty catalogue returns `{"mints":[]}`. A Coin may have multiple confirmed
-Mints or none; each Mint name in the Coin viewer links to Explore with that Mint
-selected.
+Mints or none.
 
 ## List Coin Distributions
 

@@ -6,13 +6,18 @@ import type { ExploreSearch } from "@/features/explore/explore-search"
 import { coinDetailQueryOptions } from "@/data/archive"
 
 export function CoinViewer({
-  coinId,
   search,
-}: {
-  coinId: string
-  search: ExploreSearch
-}) {
-  const { data: coin } = useSuspenseQuery(coinDetailQueryOptions(coinId))
+  ...identity
+}: { search: ExploreSearch } & (
+  | { coinId: string; coinSlug?: never }
+  | { coinSlug: string; coinId?: never }
+)) {
+  const { data: coin } = useSuspenseQuery(
+    coinDetailQueryOptions(
+      identity.coinSlug !== undefined ? identity.coinSlug : identity.coinId,
+      identity.coinSlug !== undefined
+    )
+  )
 
   return (
     <>

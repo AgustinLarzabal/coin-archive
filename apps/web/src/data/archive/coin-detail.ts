@@ -2,6 +2,7 @@ import {
   coinDetailResponseSchema,
   coinIdSchema,
   coinNotFoundErrorSchema,
+  slugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import type { CoinDetailResponse } from "@coin-archive/api"
@@ -13,11 +14,11 @@ export class InvalidCoinResponseError extends Error {}
 class CoinRequestError extends Error {}
 export class InvalidCoinIdError extends Error {}
 
-async function getCoin(coinId: string): Promise<CoinDetailResponse> {
+async function getCoin(path: string): Promise<CoinDetailResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/coins/${coinId}`)
+    response = await fetch(`${API_BASE_URL}/v1/coins/${path}`)
   } catch (error) {
     throw new CoinRequestError("Coin request failed", { cause: error })
   }
@@ -56,12 +57,15 @@ export function validateCoinId(coinId: string) {
   return coinId
 }
 
-export function coinDetailQueryOptions(coinId: string) {
-  const validCoinId = validateCoinId(coinId)
+export function coinDetailQueryOptions(coinId: string, bySlug = false) {
+  if (bySlug && !slugSchema.safeParse(coinId).success) {
+    throw new CoinNotFoundError("Coin not found")
+  }
+  const validCoinId = bySlug ? coinId : validateCoinId(coinId)
 
   return queryOptions({
-    queryKey: ["coins", "detail", validCoinId] as const,
-    queryFn: () => getCoin(validCoinId),
+    queryKey: ["coins", bySlug ? "slug" : "detail", validCoinId] as const,
+    queryFn: () => getCoin(bySlug ? `by-slug/${validCoinId}` : validCoinId),
     staleTime: 30_000,
   })
 }

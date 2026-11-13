@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 
-import { createFindCoinById } from "./queries/coin-detail.js"
+import { createFindCoin } from "./queries/coin-detail.js"
 import { createListCoins } from "./queries/coin-list.js"
 import { createReferenceDataQueries } from "./queries/index.js"
 import * as schema from "./schema/index.js"
@@ -16,6 +16,7 @@ export interface Database {
   checkReadiness: () => Promise<void>
   close: () => Promise<void>
   findCoinById: (coinId: string) => Promise<Coin | null>
+  findCoinBySlug: (coinSlug: string) => Promise<Coin | null>
   listCoins: (options?: CoinListOptions) => Promise<CoinListPage>
   listShapes: () => Promise<Array<schema.CoinShapeRecord>>
   listOrientations: () => Promise<Array<schema.CoinOrientationRecord>>
@@ -63,7 +64,8 @@ export function createDatabase(
       await orm.execute(sql`select 1`)
     },
     close: () => pool.end(),
-    findCoinById: createFindCoinById(orm),
+    findCoinById: createFindCoin(orm, "id"),
+    findCoinBySlug: createFindCoin(orm, "slug"),
     listCoins: createListCoins(orm),
     ...createReferenceDataQueries(orm),
     orm,

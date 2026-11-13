@@ -50,10 +50,15 @@ function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
     id: coin.id,
     title: coin.title,
+    ...(coin.slug ? { slug: coin.slug } : {}),
     distribution: coin.distribution,
     firstIssueYear: coin.firstIssueYear,
     lastIssueYear: coin.lastIssueYear,
-    issuer: { name: coin.issuer.name, code: coin.issuer.code },
+    issuer: {
+      name: coin.issuer.name,
+      code: coin.issuer.code,
+      ...(coin.issuer.slug ? { slug: coin.issuer.slug } : {}),
+    },
     createdAt: coin.createdAt.toISOString(),
     updatedAt: coin.updatedAt.toISOString(),
   }

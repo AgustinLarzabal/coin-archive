@@ -7,7 +7,7 @@
   { "name": "Estonia", "code": "EE" },
   { "name": "Finland", "code": "FI" },
   { "name": "France", "code": "FR" },
-  { "name": "Germany", "code": "DE" },
+  { "name": "Germany", "code": "DE", "slug": "germany" },
   { "name": "Greece", "code": "GR" },
   { "name": "Ireland", "code": "IE" },
   { "name": "Italy", "code": "IT" },

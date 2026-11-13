@@ -225,6 +225,13 @@
       "when": 1794390707647,
       "tag": "0031_heavy_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794579537666,
+      "tag": "0032_pink_namorita",
+      "breakpoints": true
     }
   ]
 }

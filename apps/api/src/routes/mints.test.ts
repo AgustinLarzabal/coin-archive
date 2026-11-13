@@ -19,6 +19,7 @@ describe("GET /v1/mints", () => {
             id: "10000000-0000-4000-8000-000000000001",
             code: "IT",
             name: "Italy",
+            slug: null,
             createdAt: new Date(),
             updatedAt: new Date(),
           },

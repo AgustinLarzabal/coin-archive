@@ -9,6 +9,7 @@ import {
   coinSelectSchema,
   createDatabase,
   engraverSelectSchema,
+  issuerInsertSchema,
   issuerSelectSchema,
   readCoinSeed,
   seedCoins,
@@ -3700,6 +3701,66 @@ describe("Coin seed", () => {
         })
       ).rejects.toThrow()
       await expect(database.findCoinById(SEEDED_COIN_ID)).resolves.toBeNull()
+    } finally {
+      await database.close()
+    }
+  })
+
+  it("seeds distinct Hamburg Slugs, looks them up, and enforces Slug writes", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      await seedCoins(database, await readCoinSeed())
+      for (const [slug, year] of [
+        ["hamburg-2008", 2008],
+        ["hamburg-2023", 2023],
+      ] as const) {
+        const coin = await database.findCoinBySlug(slug)
+        expect(coin).toMatchObject({
+          title: "Hamburg",
+          slug,
+          firstIssueYear: year,
+          issuer: { slug: "germany" },
+        })
+        expect(await database.findCoinById(coin!.id)).toEqual(coin)
+      }
+      await expect(database.findCoinBySlug("unknown-coin")).resolves.toBeNull()
+      expect(
+        issuerInsertSchema.safeParse({
+          name: "Other",
+          code: "OTH",
+          slug: "Bad-Slug",
+        }).success
+      ).toBe(false)
+      expect(
+        coinInsertSchema.safeParse({
+          title: "Other",
+          issuerId: "00000000-0000-4000-8000-000000000001",
+          distributionId: "00000000-0000-4000-8000-000000000002",
+          firstIssueYear: 2008,
+          lastIssueYear: 2008,
+          slug: "Bad-Slug",
+        }).success
+      ).toBe(false)
+      await expect(
+        database.orm.execute(
+          sql`update coins set slug = 'Bad-Slug' where id = '00000000-0000-4000-8000-000000000033'`
+        )
+      ).rejects.toThrow()
+      await expect(
+        database.orm.execute(
+          sql`update coins set slug = 'hamburg-2008' where id = '00000000-0000-4000-8000-000000000204'`
+        )
+      ).rejects.toThrow()
+      await expect(
+        database.orm.execute(
+          sql`update issuers set slug = 'Bad-Slug' where code = 'DE'`
+        )
+      ).rejects.toThrow()
+      await expect(
+        database.orm.execute(
+          sql`update issuers set slug = 'germany' where code = 'AD'`
+        )
+      ).rejects.toThrow()
     } finally {
       await database.close()
     }

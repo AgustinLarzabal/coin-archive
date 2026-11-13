@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ExploreRouteImport } from './routes/_explore'
 import { Route as ExploreIndexRouteImport } from './routes/_explore.index'
 import { Route as CoinsCoinIdRouteImport } from './routes/coins.$coinId'
+import { Route as CoinsIssuerSlugCoinSlugRouteImport } from './routes/coins.$issuerSlug.$coinSlug'
 
 const ExploreRoute = ExploreRouteImport.update({
   id: '/_explore',
@@ -27,32 +28,46 @@ const CoinsCoinIdRoute = CoinsCoinIdRouteImport.update({
   path: '/coins/$coinId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoinsIssuerSlugCoinSlugRoute = CoinsIssuerSlugCoinSlugRouteImport.update({
+  id: '/coins/$issuerSlug/$coinSlug',
+  path: '/coins/$issuerSlug/$coinSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ExploreIndexRoute
   '/coins/$coinId': typeof CoinsCoinIdRoute
+  '/coins/$issuerSlug/$coinSlug': typeof CoinsIssuerSlugCoinSlugRoute
 }
 export interface FileRoutesByTo {
   '/coins/$coinId': typeof CoinsCoinIdRoute
   '/': typeof ExploreIndexRoute
+  '/coins/$issuerSlug/$coinSlug': typeof CoinsIssuerSlugCoinSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_explore': typeof ExploreRouteWithChildren
   '/coins/$coinId': typeof CoinsCoinIdRoute
   '/_explore/': typeof ExploreIndexRoute
+  '/coins/$issuerSlug/$coinSlug': typeof CoinsIssuerSlugCoinSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/coins/$coinId'
+  fullPaths: '/' | '/coins/$coinId' | '/coins/$issuerSlug/$coinSlug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/coins/$coinId' | '/'
-  id: '__root__' | '/_explore' | '/coins/$coinId' | '/_explore/'
+  to: '/coins/$coinId' | '/' | '/coins/$issuerSlug/$coinSlug'
+  id:
+    | '__root__'
+    | '/_explore'
+    | '/coins/$coinId'
+    | '/_explore/'
+    | '/coins/$issuerSlug/$coinSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRouteWithChildren
   CoinsCoinIdRoute: typeof CoinsCoinIdRoute
+  CoinsIssuerSlugCoinSlugRoute: typeof CoinsIssuerSlugCoinSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,6 +93,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoinsCoinIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coins/$issuerSlug/$coinSlug': {
+      id: '/coins/$issuerSlug/$coinSlug'
+      path: '/coins/$issuerSlug/$coinSlug'
+      fullPath: '/coins/$issuerSlug/$coinSlug'
+      preLoaderRoute: typeof CoinsIssuerSlugCoinSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -95,6 +117,7 @@ const ExploreRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRouteWithChildren,
   CoinsCoinIdRoute: CoinsCoinIdRoute,
+  CoinsIssuerSlugCoinSlugRoute: CoinsIssuerSlugCoinSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

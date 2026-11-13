@@ -136,6 +136,7 @@ describe("API composition", () => {
       "/health",
       "/ready",
       "/v1/coins",
+      "/v1/coins/by-slug/{coinSlug}",
       "/v1/coins/{coinId}",
       "/v1/compositions",
       "/v1/currencies",

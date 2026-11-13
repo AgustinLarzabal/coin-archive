@@ -2,6 +2,7 @@ import {
   coinIdSchema,
   coinNotFoundErrorSchema as sharedCoinNotFoundErrorSchema,
   invalidCoinIdErrorSchema as sharedInvalidCoinIdErrorSchema,
+  slugSchema,
 } from "@coin-archive/api"
 import { createRoute, z } from "@hono/zod-openapi"
 import { coinSchema, toCoinDetailResponse } from "./coin-response.js"
@@ -12,6 +13,7 @@ import type { Coin } from "@coin-archive/db"
 
 interface CoinDetailRouteOptions {
   findCoinById?: (coinId: string) => Promise<Coin | null>
+  findCoinBySlug?: (coinSlug: string) => Promise<Coin | null>
   imageBaseUrl?: string
 }
 
@@ -56,6 +58,34 @@ const coinDetailRoute = createRoute({
   },
 })
 
+const coinSlugRoute = createRoute({
+  method: "get",
+  path: "/v1/coins/by-slug/{coinSlug}",
+  request: {
+    params: z.object({
+      coinSlug: slugSchema.openapi({ param: { name: "coinSlug", in: "path" } }),
+    }),
+  },
+  responses: {
+    200: coinDetailRoute.responses[200],
+    400: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            error: z.object({
+              code: z.literal("invalid_coin_slug"),
+              message: z.literal("Coin Slug is invalid"),
+            }),
+          }),
+        },
+      },
+      description: "The Coin Slug is malformed",
+    },
+    404: coinDetailRoute.responses[404],
+    500: coinDetailRoute.responses[500],
+  },
+})
+
 export function registerCoinDetailRoute(
   app: ApiApp,
   options: CoinDetailRouteOptions
@@ -96,6 +126,40 @@ export function registerCoinDetailRoute(
             error: {
               code: "invalid_coin_id" as const,
               message: "Coin ID must be a valid UUID" as const,
+            },
+          },
+          400
+        )
+      }
+    }
+  )
+
+  app.openapi(
+    coinSlugRoute,
+    async (context) => {
+      const coin = options.findCoinBySlug
+        ? await options.findCoinBySlug(context.req.valid("param").coinSlug)
+        : null
+      if (!coin) {
+        return context.json(
+          {
+            error: {
+              code: "coin_not_found" as const,
+              message: "Coin not found" as const,
+            },
+          },
+          404
+        )
+      }
+      return context.json(toCoinDetailResponse(coin, options.imageBaseUrl), 200)
+    },
+    (result, context) => {
+      if (!result.success) {
+        return context.json(
+          {
+            error: {
+              code: "invalid_coin_slug" as const,
+              message: "Coin Slug is invalid" as const,
             },
           },
           400

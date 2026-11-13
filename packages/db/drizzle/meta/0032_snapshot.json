@@ -1,0 +1,1888 @@
+{
+  "id": "78e98605-69b8-4142-96f1-007de023e2b6",
+  "prevId": "0a5e3eaa-3b8e-4db5-a3d6-b6d2e6a3f48a",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.coin_mints": {
+      "name": "coin_mints",
+      "schema": "",
+      "columns": {
+        "coin_id": {
+          "name": "coin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mint_id": {
+          "name": "mint_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "coin_mints_mint_id_index": {
+          "name": "coin_mints_mint_id_index",
+          "columns": [
+            {
+              "expression": "mint_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "coin_mints_coin_id_coins_id_fk": {
+          "name": "coin_mints_coin_id_coins_id_fk",
+          "tableFrom": "coin_mints",
+          "tableTo": "coins",
+          "columnsFrom": [
+            "coin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "coin_mints_mint_id_mints_id_fk": {
+          "name": "coin_mints_mint_id_mints_id_fk",
+          "tableFrom": "coin_mints",
+          "tableTo": "mints",
+          "columnsFrom": [
+            "mint_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "coin_mints_coin_id_mint_id_pk": {
+          "name": "coin_mints_coin_id_mint_id_pk",
+          "columns": [
+            "coin_id",
+            "mint_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.coin_orientations": {
+      "name": "coin_orientations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_orientations_slug_unique": {
+          "name": "coin_orientations_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_orientations_slug_min_length": {
+          "name": "coin_orientations_slug_min_length",
+          "value": "length(\"coin_orientations\".\"slug\") >= 3"
+        },
+        "coin_orientations_slug_format": {
+          "name": "coin_orientations_slug_format",
+          "value": "\"coin_orientations\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "coin_orientations_name_not_empty": {
+          "name": "coin_orientations_name_not_empty",
+          "value": "length(\"coin_orientations\".\"name\") >= 1"
+        },
+        "coin_orientations_name_trimmed": {
+          "name": "coin_orientations_name_trimmed",
+          "value": "\"coin_orientations\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_ruling_authorities": {
+      "name": "coin_ruling_authorities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coin_id": {
+          "name": "coin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ruling_authority_id": {
+          "name": "ruling_authority_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "coin_ruling_authorities_authority_coin_index": {
+          "name": "coin_ruling_authorities_authority_coin_index",
+          "columns": [
+            {
+              "expression": "ruling_authority_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "coin_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "coin_ruling_authorities_coin_id_coins_id_fk": {
+          "name": "coin_ruling_authorities_coin_id_coins_id_fk",
+          "tableFrom": "coin_ruling_authorities",
+          "tableTo": "coins",
+          "columnsFrom": [
+            "coin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "coin_ruling_authorities_ruling_authority_id_ruling_authorities_id_fk": {
+          "name": "coin_ruling_authorities_ruling_authority_id_ruling_authorities_id_fk",
+          "tableFrom": "coin_ruling_authorities",
+          "tableTo": "ruling_authorities",
+          "columnsFrom": [
+            "ruling_authority_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_ruling_authorities_coin_position_unique": {
+          "name": "coin_ruling_authorities_coin_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "coin_id",
+            "position"
+          ]
+        },
+        "coin_ruling_authorities_context_unique": {
+          "name": "coin_ruling_authorities_context_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "coin_id",
+            "ruling_authority_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_ruling_authorities_position_positive": {
+          "name": "coin_ruling_authorities_position_positive",
+          "value": "\"coin_ruling_authorities\".\"position\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_shapes": {
+      "name": "coin_shapes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_shapes_slug_unique": {
+          "name": "coin_shapes_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_shapes_slug_min_length": {
+          "name": "coin_shapes_slug_min_length",
+          "value": "length(\"coin_shapes\".\"slug\") >= 3"
+        },
+        "coin_shapes_slug_format": {
+          "name": "coin_shapes_slug_format",
+          "value": "\"coin_shapes\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "coin_shapes_name_not_empty": {
+          "name": "coin_shapes_name_not_empty",
+          "value": "length(\"coin_shapes\".\"name\") >= 1"
+        },
+        "coin_shapes_name_trimmed": {
+          "name": "coin_shapes_name_trimmed",
+          "value": "\"coin_shapes\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_surface_engravers": {
+      "name": "coin_surface_engravers",
+      "schema": "",
+      "columns": {
+        "coin_surface_id": {
+          "name": "coin_surface_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engraver_id": {
+          "name": "engraver_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "coin_surface_engravers_coin_surface_id_coin_surfaces_id_fk": {
+          "name": "coin_surface_engravers_coin_surface_id_coin_surfaces_id_fk",
+          "tableFrom": "coin_surface_engravers",
+          "tableTo": "coin_surfaces",
+          "columnsFrom": [
+            "coin_surface_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "coin_surface_engravers_engraver_id_engravers_id_fk": {
+          "name": "coin_surface_engravers_engraver_id_engravers_id_fk",
+          "tableFrom": "coin_surface_engravers",
+          "tableTo": "engravers",
+          "columnsFrom": [
+            "engraver_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "coin_surface_engravers_coin_surface_id_engraver_id_pk": {
+          "name": "coin_surface_engravers_coin_surface_id_engraver_id_pk",
+          "columns": [
+            "coin_surface_id",
+            "engraver_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "coin_surface_engravers_surface_position_unique": {
+          "name": "coin_surface_engravers_surface_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "coin_surface_id",
+            "position"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_surface_engravers_position_positive": {
+          "name": "coin_surface_engravers_position_positive",
+          "value": "\"coin_surface_engravers\".\"position\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_surfaces": {
+      "name": "coin_surfaces",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "coin_id": {
+          "name": "coin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "coin_surface_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_key": {
+          "name": "image_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "coin_surfaces_coin_id_coins_id_fk": {
+          "name": "coin_surfaces_coin_id_coins_id_fk",
+          "tableFrom": "coin_surfaces",
+          "tableTo": "coins",
+          "columnsFrom": [
+            "coin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_surfaces_coin_id_kind_unique": {
+          "name": "coin_surfaces_coin_id_kind_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "coin_id",
+            "kind"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_surfaces_description_length": {
+          "name": "coin_surfaces_description_length",
+          "value": "\"coin_surfaces\".\"description\" is null or length(\"coin_surfaces\".\"description\") between 1 and 10000"
+        },
+        "coin_surfaces_description_trimmed": {
+          "name": "coin_surfaces_description_trimmed",
+          "value": "\"coin_surfaces\".\"description\" is null or \"coin_surfaces\".\"description\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "coin_surfaces_image_key_length": {
+          "name": "coin_surfaces_image_key_length",
+          "value": "\"coin_surfaces\".\"image_key\" is null or octet_length(\"coin_surfaces\".\"image_key\") between 1 and 1024"
+        },
+        "coin_surfaces_image_key_trimmed": {
+          "name": "coin_surfaces_image_key_trimmed",
+          "value": "\"coin_surfaces\".\"image_key\" is null or \"coin_surfaces\".\"image_key\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "coin_surfaces_image_key_format": {
+          "name": "coin_surfaces_image_key_format",
+          "value": "\"coin_surfaces\".\"image_key\" is null or (\"coin_surfaces\".\"image_key\" !~ '^/' and \"coin_surfaces\".\"image_key\" !~* '^[a-z][a-z0-9+.-]*:' and \"coin_surfaces\".\"image_key\" !~ '(^|/)[.]{1,2}(/|$)')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coin_tags": {
+      "name": "coin_tags",
+      "schema": "",
+      "columns": {
+        "coin_id": {
+          "name": "coin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "coin_tags_tag_id_index": {
+          "name": "coin_tags_tag_id_index",
+          "columns": [
+            {
+              "expression": "tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "coin_tags_coin_id_coins_id_fk": {
+          "name": "coin_tags_coin_id_coins_id_fk",
+          "tableFrom": "coin_tags",
+          "tableTo": "coins",
+          "columnsFrom": [
+            "coin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "coin_tags_tag_id_tags_id_fk": {
+          "name": "coin_tags_tag_id_tags_id_fk",
+          "tableFrom": "coin_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "coin_tags_coin_id_tag_id_pk": {
+          "name": "coin_tags_coin_id_tag_id_pk",
+          "columns": [
+            "coin_id",
+            "tag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.coin_techniques": {
+      "name": "coin_techniques",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coin_techniques_slug_unique": {
+          "name": "coin_techniques_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coin_techniques_slug_min_length": {
+          "name": "coin_techniques_slug_min_length",
+          "value": "length(\"coin_techniques\".\"slug\") >= 3"
+        },
+        "coin_techniques_slug_format": {
+          "name": "coin_techniques_slug_format",
+          "value": "\"coin_techniques\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "coin_techniques_name_not_empty": {
+          "name": "coin_techniques_name_not_empty",
+          "value": "length(\"coin_techniques\".\"name\") >= 1"
+        },
+        "coin_techniques_name_trimmed": {
+          "name": "coin_techniques_name_trimmed",
+          "value": "\"coin_techniques\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.coins": {
+      "name": "coins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "issuer_id": {
+          "name": "issuer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "denomination_id": {
+          "name": "denomination_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "distribution_id": {
+          "name": "distribution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "composition_id": {
+          "name": "composition_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "composition_detail": {
+          "name": "composition_detail",
+          "type": "varchar(10000)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "orientation_id": {
+          "name": "orientation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_issue_year": {
+          "name": "first_issue_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_issue_year": {
+          "name": "last_issue_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "demonetized": {
+          "name": "demonetized",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size": {
+          "name": "size",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "thickness": {
+          "name": "thickness",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "shape_id": {
+          "name": "shape_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "technique_id": {
+          "name": "technique_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "coins_created_at_id_index": {
+          "name": "coins_created_at_id_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coins_issuer_id_created_at_id_index": {
+          "name": "coins_issuer_id_created_at_id_index",
+          "columns": [
+            {
+              "expression": "issuer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coins_distribution_created_at_id_index": {
+          "name": "coins_distribution_created_at_id_index",
+          "columns": [
+            {
+              "expression": "distribution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coins_composition_created_at_id_index": {
+          "name": "coins_composition_created_at_id_index",
+          "columns": [
+            {
+              "expression": "composition_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coins_shape_created_at_id_index": {
+          "name": "coins_shape_created_at_id_index",
+          "columns": [
+            {
+              "expression": "shape_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "coins_technique_created_at_id_index": {
+          "name": "coins_technique_created_at_id_index",
+          "columns": [
+            {
+              "expression": "technique_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "first"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "coins_issuer_id_issuers_id_fk": {
+          "name": "coins_issuer_id_issuers_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "issuers",
+          "columnsFrom": [
+            "issuer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_denomination_id_denominations_id_fk": {
+          "name": "coins_denomination_id_denominations_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "denominations",
+          "columnsFrom": [
+            "denomination_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_distribution_id_distributions_id_fk": {
+          "name": "coins_distribution_id_distributions_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "distributions",
+          "columnsFrom": [
+            "distribution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_composition_id_compositions_id_fk": {
+          "name": "coins_composition_id_compositions_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "compositions",
+          "columnsFrom": [
+            "composition_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_orientation_id_coin_orientations_id_fk": {
+          "name": "coins_orientation_id_coin_orientations_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "coin_orientations",
+          "columnsFrom": [
+            "orientation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_shape_id_coin_shapes_id_fk": {
+          "name": "coins_shape_id_coin_shapes_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "coin_shapes",
+          "columnsFrom": [
+            "shape_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "coins_technique_id_coin_techniques_id_fk": {
+          "name": "coins_technique_id_coin_techniques_id_fk",
+          "tableFrom": "coins",
+          "tableTo": "coin_techniques",
+          "columnsFrom": [
+            "technique_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "coins_slug_unique": {
+          "name": "coins_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "coins_slug_min_length": {
+          "name": "coins_slug_min_length",
+          "value": "\"coins\".\"slug\" is null or length(\"coins\".\"slug\") >= 3"
+        },
+        "coins_slug_format": {
+          "name": "coins_slug_format",
+          "value": "\"coins\".\"slug\" is null or \"coins\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "coins_title_not_empty": {
+          "name": "coins_title_not_empty",
+          "value": "length(\"coins\".\"title\") >= 1"
+        },
+        "coins_composition_detail_valid": {
+          "name": "coins_composition_detail_valid",
+          "value": "\"coins\".\"composition_detail\" is null or (length(\"coins\".\"composition_detail\") >= 1 and \"coins\".\"composition_detail\" !~ '^[[:space:]]|[[:space:]]$')"
+        },
+        "coins_title_trimmed": {
+          "name": "coins_title_trimmed",
+          "value": "\"coins\".\"title\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "coins_first_issue_year_not_zero": {
+          "name": "coins_first_issue_year_not_zero",
+          "value": "\"coins\".\"first_issue_year\" <> 0"
+        },
+        "coins_last_issue_year_not_zero": {
+          "name": "coins_last_issue_year_not_zero",
+          "value": "\"coins\".\"last_issue_year\" <> 0"
+        },
+        "coins_size_valid": {
+          "name": "coins_size_valid",
+          "value": "\"coins\".\"size\" > 0 and \"coins\".\"size\" < 'Infinity'::numeric and scale(\"coins\".\"size\") <= 2"
+        },
+        "coins_thickness_valid": {
+          "name": "coins_thickness_valid",
+          "value": "\"coins\".\"thickness\" > 0 and \"coins\".\"thickness\" < 'Infinity'::numeric and scale(\"coins\".\"thickness\") <= 2"
+        },
+        "coins_weight_valid": {
+          "name": "coins_weight_valid",
+          "value": "\"coins\".\"weight\" > 0 and \"coins\".\"weight\" < 'Infinity'::numeric and scale(\"coins\".\"weight\") <= 3"
+        },
+        "coins_issue_period_ordered": {
+          "name": "coins_issue_period_ordered",
+          "value": "\"coins\".\"first_issue_year\" <= \"coins\".\"last_issue_year\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.compositions": {
+      "name": "compositions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "compositions_name_case_insensitive_unique": {
+          "name": "compositions_name_case_insensitive_unique",
+          "columns": [
+            {
+              "expression": "lower(\"name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "compositions_slug_unique": {
+          "name": "compositions_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "compositions_slug_min_length": {
+          "name": "compositions_slug_min_length",
+          "value": "length(\"compositions\".\"slug\") >= 3"
+        },
+        "compositions_slug_format": {
+          "name": "compositions_slug_format",
+          "value": "\"compositions\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "compositions_name_not_empty": {
+          "name": "compositions_name_not_empty",
+          "value": "length(\"compositions\".\"name\") >= 1"
+        },
+        "compositions_name_trimmed": {
+          "name": "compositions_name_trimmed",
+          "value": "\"compositions\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.currencies": {
+      "name": "currencies",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_label": {
+          "name": "period_label",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "currencies_slug_unique": {
+          "name": "currencies_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "currencies_slug_min_length": {
+          "name": "currencies_slug_min_length",
+          "value": "length(\"currencies\".\"slug\") >= 3"
+        },
+        "currencies_slug_format": {
+          "name": "currencies_slug_format",
+          "value": "\"currencies\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "currencies_name_not_empty": {
+          "name": "currencies_name_not_empty",
+          "value": "length(\"currencies\".\"name\") >= 1"
+        },
+        "currencies_name_trimmed": {
+          "name": "currencies_name_trimmed",
+          "value": "\"currencies\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "currencies_period_label_not_empty": {
+          "name": "currencies_period_label_not_empty",
+          "value": "length(\"currencies\".\"period_label\") >= 1"
+        },
+        "currencies_period_label_trimmed": {
+          "name": "currencies_period_label_trimmed",
+          "value": "\"currencies\".\"period_label\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.denominations": {
+      "name": "denominations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "currency_id": {
+          "name": "currency_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "denominations_currency_label_unique": {
+          "name": "denominations_currency_label_unique",
+          "columns": [
+            {
+              "expression": "currency_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"label\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "denominations_currency_id_currencies_id_fk": {
+          "name": "denominations_currency_id_currencies_id_fk",
+          "tableFrom": "denominations",
+          "tableTo": "currencies",
+          "columnsFrom": [
+            "currency_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "denominations_label_not_empty": {
+          "name": "denominations_label_not_empty",
+          "value": "length(\"denominations\".\"label\") >= 1"
+        },
+        "denominations_label_trimmed": {
+          "name": "denominations_label_trimmed",
+          "value": "\"denominations\".\"label\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "denominations_amount_positive": {
+          "name": "denominations_amount_positive",
+          "value": "\"denominations\".\"amount\" > 0"
+        },
+        "denominations_amount_integer_digits": {
+          "name": "denominations_amount_integer_digits",
+          "value": "\"denominations\".\"amount\" < 1000000000000000000"
+        },
+        "denominations_amount_fractional_digits": {
+          "name": "denominations_amount_fractional_digits",
+          "value": "scale(\"denominations\".\"amount\") <= 12"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.distributions": {
+      "name": "distributions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "distributions_name_case_insensitive_unique": {
+          "name": "distributions_name_case_insensitive_unique",
+          "columns": [
+            {
+              "expression": "lower(\"name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "distributions_slug_unique": {
+          "name": "distributions_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "distributions_slug_min_length": {
+          "name": "distributions_slug_min_length",
+          "value": "length(\"distributions\".\"slug\") >= 3"
+        },
+        "distributions_slug_format": {
+          "name": "distributions_slug_format",
+          "value": "\"distributions\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "distributions_name_not_empty": {
+          "name": "distributions_name_not_empty",
+          "value": "length(\"distributions\".\"name\") >= 1"
+        },
+        "distributions_name_trimmed": {
+          "name": "distributions_name_trimmed",
+          "value": "\"distributions\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.engravers": {
+      "name": "engravers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "engravers_slug_unique": {
+          "name": "engravers_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "engravers_slug_min_length": {
+          "name": "engravers_slug_min_length",
+          "value": "length(\"engravers\".\"slug\") >= 3"
+        },
+        "engravers_slug_format": {
+          "name": "engravers_slug_format",
+          "value": "\"engravers\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "engravers_full_name_not_empty": {
+          "name": "engravers_full_name_not_empty",
+          "value": "length(\"engravers\".\"full_name\") >= 1"
+        },
+        "engravers_full_name_trimmed": {
+          "name": "engravers_full_name_trimmed",
+          "value": "\"engravers\".\"full_name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.issuers": {
+      "name": "issuers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "issuers_code_unique": {
+          "name": "issuers_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        },
+        "issuers_slug_unique": {
+          "name": "issuers_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "issuers_slug_min_length": {
+          "name": "issuers_slug_min_length",
+          "value": "\"issuers\".\"slug\" is null or length(\"issuers\".\"slug\") >= 3"
+        },
+        "issuers_slug_format": {
+          "name": "issuers_slug_format",
+          "value": "\"issuers\".\"slug\" is null or \"issuers\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "issuers_name_not_empty": {
+          "name": "issuers_name_not_empty",
+          "value": "length(\"issuers\".\"name\") >= 1"
+        },
+        "issuers_name_trimmed": {
+          "name": "issuers_name_trimmed",
+          "value": "\"issuers\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "issuers_code_format": {
+          "name": "issuers_code_format",
+          "value": "\"issuers\".\"code\" ~ '^(?:[A-Z]{2}|[A-Z0-9-]{3,12})$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.mints": {
+      "name": "mints",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "place": {
+          "name": "place",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "mints_country_id_issuers_id_fk": {
+          "name": "mints_country_id_issuers_id_fk",
+          "tableFrom": "mints",
+          "tableTo": "issuers",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "mints_slug_unique": {
+          "name": "mints_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "mints_slug_format": {
+          "name": "mints_slug_format",
+          "value": "\"mints\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(\"mints\".\"slug\") >= 3"
+        },
+        "mints_name_trimmed": {
+          "name": "mints_name_trimmed",
+          "value": "length(\"mints\".\"name\") > 0 and \"mints\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "mints_place_trimmed": {
+          "name": "mints_place_trimmed",
+          "value": "length(\"mints\".\"place\") > 0 and \"mints\".\"place\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ruling_authorities": {
+      "name": "ruling_authorities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tenure": {
+          "name": "tenure",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ruling_authorities_slug_unique": {
+          "name": "ruling_authorities_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "ruling_authorities_slug_min_length": {
+          "name": "ruling_authorities_slug_min_length",
+          "value": "length(\"ruling_authorities\".\"slug\") >= 3"
+        },
+        "ruling_authorities_slug_format": {
+          "name": "ruling_authorities_slug_format",
+          "value": "\"ruling_authorities\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "ruling_authorities_name_not_empty": {
+          "name": "ruling_authorities_name_not_empty",
+          "value": "length(\"ruling_authorities\".\"name\") >= 1"
+        },
+        "ruling_authorities_name_trimmed": {
+          "name": "ruling_authorities_name_trimmed",
+          "value": "\"ruling_authorities\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "ruling_authorities_role_not_empty": {
+          "name": "ruling_authorities_role_not_empty",
+          "value": "length(\"ruling_authorities\".\"role\") >= 1"
+        },
+        "ruling_authorities_role_trimmed": {
+          "name": "ruling_authorities_role_trimmed",
+          "value": "\"ruling_authorities\".\"role\" !~ '^[[:space:]]|[[:space:]]$'"
+        },
+        "ruling_authorities_tenure_not_empty": {
+          "name": "ruling_authorities_tenure_not_empty",
+          "value": "\"ruling_authorities\".\"tenure\" is null or length(\"ruling_authorities\".\"tenure\") >= 1"
+        },
+        "ruling_authorities_tenure_trimmed": {
+          "name": "ruling_authorities_tenure_trimmed",
+          "value": "\"ruling_authorities\".\"tenure\" is null or \"ruling_authorities\".\"tenure\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.tags": {
+      "name": "tags",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tags_name_case_insensitive_unique": {
+          "name": "tags_name_case_insensitive_unique",
+          "columns": [
+            {
+              "expression": "lower(\"name\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tags_slug_unique": {
+          "name": "tags_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "tags_slug_format": {
+          "name": "tags_slug_format",
+          "value": "length(\"tags\".\"slug\") >= 3 and \"tags\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "tags_name_trimmed": {
+          "name": "tags_name_trimmed",
+          "value": "length(\"tags\".\"name\") >= 1 and \"tags\".\"name\" !~ '^[[:space:]]|[[:space:]]$'"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.coin_surface_kind": {
+      "name": "coin_surface_kind",
+      "schema": "public",
+      "values": [
+        "obverse",
+        "reverse",
+        "edge"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

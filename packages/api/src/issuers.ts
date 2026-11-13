@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { displayTextSchema, errorResponseSchema } from "./common.js"
+import { displayTextSchema, errorResponseSchema, slugSchema } from "./common.js"
 
 export const issuerCodeSchema = z
   .string()
@@ -9,6 +9,7 @@ export const issuerCodeSchema = z
 export const issuerResponseSchema = z.strictObject({
   name: displayTextSchema(200),
   code: issuerCodeSchema,
+  slug: slugSchema.nullable().optional(),
 })
 
 export const issuerListResponseSchema = z.strictObject({

@@ -7,6 +7,7 @@ import {
   numeric,
   pgTable,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core"
@@ -22,7 +23,7 @@ import { compositionInsertSchema, compositions } from "./composition.js"
 import { denominations } from "./denomination.js"
 import { distributionInsertSchema, distributions } from "./distribution.js"
 import { issuerInsertSchema, issuers } from "./issuer.js"
-import { trimmedInsertText } from "./validation.js"
+import { slugInsertText, trimmedInsertText } from "./validation.js"
 import type { z } from "zod"
 
 export const coins = pgTable(
@@ -30,6 +31,7 @@ export const coins = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar({ length: 200 }).notNull(),
+    slug: varchar({ length: 64 }),
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
@@ -69,6 +71,15 @@ export const coins = pgTable(
       .defaultNow(),
   },
   (table) => [
+    unique("coins_slug_unique").on(table.slug),
+    check(
+      "coins_slug_min_length",
+      sql`${table.slug} is null or length(${table.slug}) >= 3`
+    ),
+    check(
+      "coins_slug_format",
+      sql`${table.slug} is null or ${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
+    ),
     index("coins_created_at_id_index").on(
       table.createdAt.desc().nullsFirst(),
       table.id.asc()
@@ -150,6 +161,7 @@ const coinInsertBaseSchema = createInsertSchema(coins, {
   firstIssueYear: rejectFutureIssueYear,
   lastIssueYear: rejectFutureIssueYear,
   title: trimmedInsertText("Coin title"),
+  slug: slugInsertText,
   compositionDetail: trimmedInsertText("Coin Composition Detail"),
   size: measurement(2),
   thickness: measurement(2),

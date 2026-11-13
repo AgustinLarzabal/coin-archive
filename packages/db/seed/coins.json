@@ -682,6 +682,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000033",
     "title": "Hamburg",
+    "slug": "hamburg-2008",
     "issuerCode": "DE",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -5845,6 +5846,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000204",
     "title": "Hamburg",
+    "slug": "hamburg-2023",
     "issuerCode": "DE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,

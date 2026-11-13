@@ -215,7 +215,14 @@ describe("Archive landing route", () => {
       createArchiveFetchFixture({
         coins: [coin],
         issuers,
-        rulers: [{ slug: "roman-republic", name: "Roman Republic", role: "Period", tenure: null }],
+        rulers: [
+          {
+            slug: "roman-republic",
+            name: "Roman Republic",
+            role: "Period",
+            tenure: null,
+          },
+        ],
       })
     )
     vi.stubGlobal("fetch", fetchMock)
@@ -459,6 +466,26 @@ describe("Archive landing route", () => {
       expect(fetchMock).toHaveBeenCalledTimes(12)
     }
   )
+
+  it("links a Coin with approved Slugs to its readable detail URL", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        createArchiveFetch([
+          {
+            ...coin,
+            title: "Hamburg",
+            slug: "hamburg-2008",
+            issuer: { name: "Germany", code: "DE", slug: "germany" },
+          },
+        ])
+      )
+    )
+    renderArchiveRoute()
+    expect(
+      await screen.findByRole("link", { name: "Hamburg" })
+    ).toHaveAttribute("href", "/coins/germany/hamburg-2008")
+  })
 
   it("bounds Explore Coin animation delays", async () => {
     const coins = Array.from({ length: 20 }, (_, index) => ({

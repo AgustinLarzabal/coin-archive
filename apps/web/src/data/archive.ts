@@ -1,6 +1,9 @@
 import { createSerializationAdapter } from "@tanstack/react-router"
 
-import { InvalidCoinIdError, InvalidCoinResponseError } from "./archive/coin-detail"
+import {
+  InvalidCoinIdError,
+  InvalidCoinResponseError,
+} from "./archive/coin-detail"
 import { InvalidCoinListResponseError } from "./archive/coins"
 import {
   InvalidIssuerListResponseError,

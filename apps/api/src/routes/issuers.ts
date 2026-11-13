@@ -36,7 +36,11 @@ export function registerIssuerRoutes(
   app.openapi(issuerListRoute, async (context) => {
     const issuers = listIssuers ? await listIssuers() : []
     const response = {
-      issuers: issuers.map(({ name, code }) => ({ name, code })),
+      issuers: issuers.map(({ name, code, slug }) => ({
+        name,
+        code,
+        ...(slug ? { slug } : {}),
+      })),
     } satisfies IssuerListResponse
 
     return context.json(response, 200)

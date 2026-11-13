@@ -19,12 +19,12 @@ function withEngravers(
     : null
 }
 
-export function createFindCoinById(orm: Database["orm"]) {
+export function createFindCoin(orm: Database["orm"], key: "id" | "slug") {
   const obverses = alias(schema.coinSurfaces, "obverses")
   const reverses = alias(schema.coinSurfaces, "reverses")
   const edges = alias(schema.coinSurfaces, "edges")
 
-  return async function findCoinById(coinId: string): Promise<Coin | null> {
+  return async function findCoin(value: string): Promise<Coin | null> {
     return orm.transaction(
       async (transaction) => {
         const rows = await transaction
@@ -97,7 +97,7 @@ export function createFindCoinById(orm: Database["orm"]) {
             edges,
             and(eq(edges.coinId, schema.coins.id), eq(edges.kind, "edge"))
           )
-          .where(eq(schema.coins.id, coinId))
+          .where(eq(schema.coins[key], value))
           .limit(1)
 
         const row = rows.at(0)

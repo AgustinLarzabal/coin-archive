@@ -39,6 +39,7 @@ To inspect the full schema, fetch `http://localhost:3001/openapi.json`.
 | ------------------------ | --------------------------------------------------------------------------------------------- |
 | `GET /v1/coins`          | A page of Coins with summary fields, Face Value, and Obverse and Reverse image URLs           |
 | `GET /v1/coins/{coinId}` | One Coin by UUID, including its surfaces, Engraver credits, and Ruling Authority attributions |
+| `GET /v1/coins/by-slug/{coinSlug}` | The same Coin detail by its globally unique Slug |
 | `GET /v1/currencies`     | Currencies and their public slugs                                                             |
 | `GET /v1/distributions`  | Coin Distributions and their public slugs                                                     |
 | `GET /v1/engravers`      | Engravers and their public slugs                                                              |
@@ -279,7 +280,7 @@ Errors use a JSON `error` object with a stable `code` and a `message`. For examp
 }
 ```
 
-Malformed Coin filters also return `400` with a corresponding code, such as `invalid_year` or `invalid_face_value_filter`. `GET /v1/coins/{coinId}` returns `400` with `invalid_coin_id` for a malformed UUID and `404` with `coin_not_found` for a valid UUID absent from the catalogue. An unknown route returns `404` with `not_found`. An unexpected server failure returns `500` with `internal_error`. Consult `/openapi.json` for each route's documented responses.
+Malformed Coin filters also return `400` with a corresponding code, such as `invalid_year` or `invalid_face_value_filter`. `GET /v1/coins/{coinId}` returns `400` with `invalid_coin_id` for a malformed UUID and `404` with `coin_not_found` for a valid UUID absent from the catalogue. `GET /v1/coins/by-slug/{coinSlug}` returns the same detail, `400` with `invalid_coin_slug` for a malformed Slug, or `404` with `coin_not_found` for an unknown Slug. An unknown route returns `404` with `not_found`. An unexpected server failure returns `500` with `internal_error`. Consult `/openapi.json` for each route's documented responses.
 
 Every response includes `x-request-id`. You may send that header with a request to carry your own correlation ID; the API accepts 1–128 ASCII letters, digits, periods, underscores, colons, or hyphens. Otherwise it generates an ID. Include the returned ID when reporting a failed request. Catalogue and operational responses use `Cache-Control: no-store`.
 

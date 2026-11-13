@@ -531,11 +531,13 @@ describe("Coin list route", () => {
             {
               id: "00000000-0000-4000-8000-000000000001",
               title: "Pattern Coin",
+              slug: null,
               issuerId: "10000000-0000-4000-8000-000000000001",
               issuer: {
                 id: "10000000-0000-4000-8000-000000000001",
                 name: "Argentina",
                 code: "AR",
+                slug: null,
                 createdAt: new Date("2026-09-16T09:00:00.000Z"),
                 updatedAt: new Date("2026-09-16T09:00:00.000Z"),
               },
@@ -563,6 +565,7 @@ describe("Coin list route", () => {
       const baseCoin = {
         id: "00000000-0000-4000-8000-000000000001",
         title: "1 peso",
+        slug: null,
         issuerId: "10000000-0000-4000-8000-000000000001",
         distribution: "standard-circulation" as const,
         firstIssueYear: 1994,
@@ -571,6 +574,7 @@ describe("Coin list route", () => {
           id: "10000000-0000-4000-8000-000000000001",
           name: "Argentina",
           code: "AR",
+          slug: null,
           createdAt: new Date("2026-09-16T09:00:00.000Z"),
           updatedAt: new Date("2026-09-16T09:00:00.000Z"),
         },
@@ -713,6 +717,7 @@ describe("Coin list route", () => {
       const coin = {
         id: "00000000-0000-4000-8000-000000000001",
         title: "Bounded coin",
+        slug: null,
         issuerId: "10000000-0000-4000-8000-000000000001",
         distribution: "circulating-commemorative" as const,
         firstIssueYear: 2004,
@@ -721,6 +726,7 @@ describe("Coin list route", () => {
           id: "10000000-0000-4000-8000-000000000001",
           name: "Argentina",
           code: "AR",
+          slug: null,
           createdAt: new Date("2026-09-16T09:00:00.000Z"),
           updatedAt: new Date("2026-09-16T09:00:00.000Z"),
         },
@@ -1326,6 +1332,7 @@ describe("Coin list route", () => {
             {
               id: "00000000-0000-4000-8000-000000000001",
               title: "First coin",
+              slug: null,
               issuerId: "10000000-0000-4000-8000-000000000001",
               distribution: "standard-circulation",
               firstIssueYear: -2,
@@ -1335,6 +1342,7 @@ describe("Coin list route", () => {
                 id: "10000000-0000-4000-8000-000000000001",
                 name: "Argentina",
                 code: "AR",
+                slug: null,
                 createdAt: new Date("2026-09-16T09:00:00.000Z"),
                 updatedAt: new Date("2026-09-16T09:00:00.000Z"),
               },
@@ -1387,6 +1395,7 @@ describe("Coin list route", () => {
             {
               id: "00000000-0000-4000-8000-000000000001",
               title: "First coin",
+              slug: null,
               issuerId: "10000000-0000-4000-8000-000000000001",
               distribution: "circulating-commemorative",
               firstIssueYear: 2004,
@@ -1395,6 +1404,7 @@ describe("Coin list route", () => {
                 id: "10000000-0000-4000-8000-000000000001",
                 name: "Argentina",
                 code: "AR",
+                slug: null,
                 createdAt: new Date("2026-09-16T09:00:00.000Z"),
                 updatedAt: new Date("2026-09-16T09:00:00.000Z"),
               },

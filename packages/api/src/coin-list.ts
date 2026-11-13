@@ -26,6 +26,7 @@ export const coinListItemResponseSchema = z
   .strictObject({
     id: coinIdSchema,
     title: displayTextSchema(200),
+    slug: slugSchema.nullable().optional(),
     distribution: slugSchema,
     firstIssueYear: firstIssueYearSchema,
     lastIssueYear: lastIssueYearSchema,

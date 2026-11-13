@@ -39,6 +39,7 @@ export interface AppOptions {
   allowedOrigins: ReadonlyArray<string>
   checkReadiness: () => Promise<void>
   findCoinById?: (coinId: string) => Promise<Coin | null>
+  findCoinBySlug?: (coinSlug: string) => Promise<Coin | null>
   imageBaseUrl?: string
   listCoins?: (options?: CoinListOptions) => Promise<CoinListPage>
   listCompositions?: () => Promise<Array<CompositionRecord>>
@@ -105,6 +106,7 @@ export function createApp(options: AppOptions) {
   })
   registerCoinDetailRoute(app, {
     findCoinById: options.findCoinById,
+    findCoinBySlug: options.findCoinBySlug,
     imageBaseUrl: options.imageBaseUrl,
   })
   registerCoinListRoute(app, {

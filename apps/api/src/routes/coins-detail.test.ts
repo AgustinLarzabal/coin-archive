@@ -11,6 +11,7 @@ describe("Coin detail route", () => {
     const coin = {
       id: coinId,
       title: "First coin",
+      slug: null,
       issuerId,
       denominationId: null,
       denomination: null,
@@ -34,6 +35,7 @@ describe("Coin detail route", () => {
         id: issuerId,
         name: "Argentina",
         code: "AR",
+        slug: null,
         createdAt: new Date("2026-09-16T09:00:00.000Z"),
         updatedAt: new Date("2026-09-16T09:00:00.000Z"),
       },
@@ -1050,9 +1052,9 @@ describe("Coin detail route", () => {
             }),
             required: ["slug", "name", "fullName"],
           }),
-          Issuer: {
+          Issuer: expect.objectContaining({
             type: "object",
-            properties: {
+            properties: expect.objectContaining({
               name: {
                 type: "string",
                 minLength: 1,
@@ -1060,10 +1062,10 @@ describe("Coin detail route", () => {
                 pattern: expect.any(String),
               },
               code: { type: "string", pattern: expect.any(String) },
-            },
+            }),
             required: ["name", "code"],
             additionalProperties: false,
-          },
+          }),
           CoinPathParameters: expect.any(Object),
           InvalidCoinIdError: expect.any(Object),
           CoinNotFoundError: expect.any(Object),
@@ -1090,6 +1092,47 @@ describe("Coin detail route", () => {
       expect(coinListItemSchema.properties).not.toHaveProperty("obverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("reverse")
       expect(coinListItemSchema.properties).not.toHaveProperty("edge")
+    })
+
+    it("looks up a Coin Slug with the same detail as its UUID", async () => {
+      const hamburg = {
+        ...coin,
+        slug: "hamburg-2008",
+        issuer: { ...coin.issuer, slug: "germany" },
+      }
+      const app = createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinById: async () => hamburg,
+        findCoinBySlug: async (slug) =>
+          slug === "hamburg-2008" ? hamburg : null,
+        imageBaseUrl: "https://images.coin-archive.example",
+      })
+      const uuid = await app.request(`/v1/coins/${coinId}`)
+      const bySlug = await app.request("/v1/coins/by-slug/hamburg-2008")
+      expect(bySlug.status).toBe(200)
+      expect(await bySlug.json()).toEqual(await uuid.json())
+    })
+
+    it("rejects malformed Coin Slugs and returns 404 for unknown ones", async () => {
+      let calls = 0
+      const app = createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        findCoinBySlug: async () => {
+          calls++
+          return null
+        },
+      })
+      const malformed = await app.request("/v1/coins/by-slug/Bad-Slug")
+      expect(malformed.status).toBe(400)
+      expect(await malformed.json()).toEqual({
+        error: { code: "invalid_coin_slug", message: "Coin Slug is invalid" },
+      })
+      expect(calls).toBe(0)
+      const unknown = await app.request("/v1/coins/by-slug/unknown-coin")
+      expect(unknown.status).toBe(404)
+      expect(calls).toBe(1)
     })
   })
 })

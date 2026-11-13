@@ -41,7 +41,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const matchRoute = useMatchRoute()
-  const isCoinDetailsPage = Boolean(matchRoute({ to: "/coins/$coinId" }))
+  const isCoinDetailsPage = Boolean(
+    matchRoute({ to: "/coins/$coinId" }) ||
+    matchRoute({ to: "/coins/$issuerSlug/$coinSlug" })
+  )
 
   return (
     <html lang="en" className="dark">

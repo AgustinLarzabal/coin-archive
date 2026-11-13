@@ -5,6 +5,7 @@ import {
 import { expect, it } from "vitest"
 
 import { filterQueryToPatch, searchToFilterQuery } from "./explore-filter-query"
+import type { ExploreFilterValue } from "./explore-filter-definitions"
 
 it("turns URL filters into filter rules without including the page", () => {
   expect(
@@ -44,6 +45,22 @@ it("switches Tag mode while keeping selected Tags", () => {
   expect(
     searchToFilterQuery({ ...search, tagMatch: "any" }).rules
   ).toMatchObject([{ operator: "has_any_of", value: ["map", "flag"] }])
+})
+
+it("keeps a new Tag rule local until its mode and value are selected", () => {
+  expect(
+    filterQueryToPatch(
+      createFilterQuery<ExploreFilterValue>([
+        createFilterRule({
+          id: "new-tag",
+          path: ["tag"],
+          operator: "",
+          value: undefined,
+        }),
+      ]),
+      {}
+    )
+  ).toEqual({})
 })
 
 it("round-trips Shape with another selected filter", () => {

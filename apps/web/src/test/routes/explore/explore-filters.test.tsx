@@ -95,6 +95,27 @@ vi.mock("@coin-archive/ui/components/reui/filters/filters", () => ({
       </output>
       <button
         type="button"
+        onClick={() => {
+          const next = {
+            ...query,
+            rules: [
+              ...query.rules,
+              {
+                type: "rule" as const,
+                id: "new-tag",
+                path: ["tag"],
+                operator: "",
+                value: undefined,
+              },
+            ],
+          }
+          if (onBeforeQueryChange(next) !== false) onQueryChange(next)
+        }}
+      >
+        Start Tag filter
+      </button>
+      <button
+        type="button"
         onClick={() =>
           onQueryChange({
             ...query,
@@ -744,6 +765,18 @@ it("switches selected Tags to any, resets the page, and restores the shared URL"
     "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
   )
   expect(screen.getByTestId("tag-operator")).toHaveTextContent("has_any_of")
+})
+
+it("accepts an unfinished Tag rule while its operator is chosen", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(createArchiveFetch({ tags: [{ slug: "map", name: "Map" }] }))
+  )
+  const router = renderArchiveRoute()
+  await screen.findByTestId("fields")
+  fireEvent.click(screen.getByRole("button", { name: "Start Tag filter" }))
+  expect(screen.getByTestId("rule-count")).toHaveTextContent("1")
+  expect(router.state.location.search.tag).toBeUndefined()
 })
 
 it("selects and clears Medal Orientation through the URL", async () => {

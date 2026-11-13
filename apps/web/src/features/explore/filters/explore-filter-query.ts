@@ -183,6 +183,10 @@ export function filterQueryToPatch(
       continue
     }
     if (rule.path[0] === "tag") {
+      if (rule.operator === "" && rule.value === undefined) {
+        hasIncompleteRule = true
+        continue
+      }
       if (rule.operator !== "has_all_of" && rule.operator !== "has_any_of")
         return null
       if (rule.value === undefined) {

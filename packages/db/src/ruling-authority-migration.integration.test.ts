@@ -40,11 +40,11 @@ it("moves existing role and tenure to their Ruling Authority", async () => {
     }
     await migrate(drizzle(pool), { migrationsFolder: oldMigrations })
     await pool.query(
-      "insert into issuers (name, code) values ('Test Issuer', 'TI')"
+      "insert into issuers (name, code) values ('Finland', 'FI')"
     )
     await pool.query(`
-      insert into coins (title, issuer_id, distribution_id, first_issue_year, last_issue_year)
-      select 'Test Coin', issuers.id, distributions.id, 2004, 2004
+      insert into coins (id, title, issuer_id, distribution_id, first_issue_year, last_issue_year)
+      select '00000000-0000-4000-8000-000000000005', 'Test Coin', issuers.id, distributions.id, 2004, 2004
       from issuers cross join distributions
       where distributions.slug = 'standard-circulation'
     `)

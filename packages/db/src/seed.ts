@@ -129,6 +129,8 @@ const seedDocumentSchema = z
   .strict()
   .superRefine((document, context) => {
     const issuerCodes = new Set<string>()
+    const issuerSlugs = new Set<string>()
+    const coinSlugs = new Set<string>()
     const currencySlugs = new Set<string>()
     const engraverSlugs = new Set<string>()
     const authoritySlugs = new Set<string>()
@@ -147,6 +149,14 @@ const seedDocumentSchema = z
     })
 
     document.issuers.forEach((issuer, index) => {
+      if (issuerSlugs.has(issuer.slug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate Issuer Slug: ${issuer.slug}`,
+          path: ["issuers", index, "slug"],
+        })
+      }
+      issuerSlugs.add(issuer.slug)
       if (issuerCodes.has(issuer.code)) {
         context.addIssue({
           code: "custom",
@@ -219,6 +229,14 @@ const seedDocumentSchema = z
     })
 
     document.coins.forEach((coin, index) => {
+      if (coinSlugs.has(coin.slug)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate Coin Slug: ${coin.slug}`,
+          path: ["coins", index, "slug"],
+        })
+      }
+      coinSlugs.add(coin.slug)
       const coinTagSlugs = new Set<string>()
       coin.tagSlugs.forEach((slug, tagIndex) => {
         if (!tagSlugs.has(slug) || coinTagSlugs.has(slug)) {

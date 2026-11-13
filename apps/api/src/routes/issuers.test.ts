@@ -9,10 +9,18 @@ describe("Issuer routes", () => {
     const { issuerResponseSchema } = await import("@coin-archive/api")
 
     expect(
-      issuerResponseSchema.safeParse({ name: " Argentina", code: "AR" }).success
+      issuerResponseSchema.safeParse({
+        name: " Argentina",
+        code: "AR",
+        slug: "argentina",
+      }).success
     ).toBe(false)
     expect(
-      issuerResponseSchema.safeParse({ name: "Argentina", code: "AR" }).success
+      issuerResponseSchema.safeParse({
+        name: "Argentina",
+        code: "AR",
+        slug: "argentina",
+      }).success
     ).toBe(true)
   })
 
@@ -22,7 +30,7 @@ describe("Issuer routes", () => {
         id: "10000000-0000-4000-8000-000000000001",
         name: "Argentina",
         code: "AR",
-        slug: null,
+        slug: "argentina",
         createdAt: new Date("2026-09-16T09:00:00.000Z"),
         updatedAt: new Date("2026-09-16T09:00:00.000Z"),
       },
@@ -30,7 +38,7 @@ describe("Issuer routes", () => {
         id: "10000000-0000-4000-8000-000000000002",
         name: "Roman Empire",
         code: "ROMAN",
-        slug: null,
+        slug: "roman-empire",
         createdAt: new Date("2026-09-17T09:00:00.000Z"),
         updatedAt: new Date("2026-09-17T09:00:00.000Z"),
       },
@@ -47,8 +55,8 @@ describe("Issuer routes", () => {
       expect(response.headers.get("cache-control")).toBe("no-store")
       await expect(response.json()).resolves.toEqual({
         issuers: [
-          { name: "Argentina", code: "AR" },
-          { name: "Roman Empire", code: "ROMAN" },
+          { name: "Argentina", code: "AR", slug: "argentina" },
+          { name: "Roman Empire", code: "ROMAN", slug: "roman-empire" },
         ],
       })
     })

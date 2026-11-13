@@ -14,7 +14,7 @@ it("offers the Explore filters in the filter picker", async () => {
         currencies: [
           { slug: "argentine-peso", name: "Peso", fullName: "Argentine peso" },
         ],
-        issuers: [{ code: "AR", name: "Argentina" }],
+        issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }],
         tags: [{ slug: "map", name: "Map" }],
         shapes: [{ slug: "pentagonal", name: "Pentagonal" }],
       })
@@ -42,7 +42,7 @@ it("restores Technique with Issuer and sends both to the Coin API", async () => 
   const fetchMock = vi.fn(
     createArchiveFetch({
       techniques: [{ slug: "milled", name: "Milled" }],
-      issuers: [{ code: "AR", name: "Argentina" }],
+      issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }],
     })
   )
   vi.stubGlobal("fetch", fetchMock)
@@ -64,7 +64,7 @@ it("restores Technique with Issuer and sends both to the Coin API", async () => 
 it("restores Shape with Issuer and shows a filtered empty result", async () => {
   const fetchMock = vi.fn(
     createArchiveFetch({
-      issuers: [{ code: "AR", name: "Argentina" }],
+      issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }],
       shapes: [{ slug: "oval", name: "Oval" }],
     })
   )

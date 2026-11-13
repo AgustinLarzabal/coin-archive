@@ -554,19 +554,19 @@ it("combines all Explore filters and syncs them with the URL", async () => {
         currencies: [
           { slug: "argentine-peso", name: "Peso", fullName: "Argentine peso" },
         ],
-        issuers: [{ code: "AR", name: "Argentina" }],
+        issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }],
         mints: [
           {
             slug: "buenos-aires",
             name: "National Mint",
             place: "Buenos Aires",
-            country: { code: "AR", name: "Argentina" },
+            country: { slug: "argentina", code: "AR", name: "Argentina" },
           },
           {
             slug: "cordoba",
             name: "National Mint",
             place: "Córdoba",
-            country: { code: "AR", name: "Argentina" },
+            country: { slug: "argentina", code: "AR", name: "Argentina" },
           },
         ],
         distributions: [

@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
-  InvalidCoinIdError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
   InvalidIssuerListResponseError,
@@ -14,7 +13,7 @@ import {
 import { InvalidCoinListFilterError } from "./archive/coins"
 import { Route as ExploreRoute } from "@/routes/_explore"
 import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
-import { Route as CoinRoute } from "@/routes/coins.$coinId"
+import { Route as CoinRoute } from "@/routes/coins.$issuerSlug.$coinSlug"
 import { startInstance } from "@/start"
 import { coinListJsonResponse, jsonResponse } from "@/test/archive-route-test"
 import { coinDetailFixture, coinFaceValueFixture } from "@/test/coin-fixtures"
@@ -23,16 +22,22 @@ const coinId = "00000000-0000-4000-8000-000000000001"
 const coin = {
   id: coinId,
   title: "First coin",
+  slug: "first-coin",
   distribution: "circulating-commemorative" as const,
   firstIssueYear: 2004,
   lastIssueYear: 2004,
-  issuer: { name: "Argentina", code: "AR" },
+  issuer: { slug: "argentina", name: "Argentina", code: "AR" },
   faceValue: null,
   createdAt: "2026-09-16T10:00:00.000Z",
   updatedAt: "2026-09-16T11:00:00.000Z",
 }
 
-function coinResponse(issuer: { code: string; name: string; id?: string }) {
+function coinResponse(issuer: {
+  code: string
+  name: string
+  slug: string
+  id?: string
+}) {
   return jsonResponse(coinDetailFixture({ ...coin, issuer }))
 }
 
@@ -537,8 +542,11 @@ describe("Archive data module", () => {
   )
 
   it.each([
-    ["ISO", { name: "Argentina", code: "AR" }],
-    ["Archive-defined", { name: "Roman Empire", code: "ROMAN" }],
+    ["ISO", { slug: "argentina", name: "Argentina", code: "AR" }],
+    [
+      "Archive-defined",
+      { slug: "roman-empire", name: "Roman Empire", code: "ROMAN" },
+    ],
   ])("accepts an %s Issuer Code", async (_category, issuer) => {
     vi.stubGlobal(
       "fetch",
@@ -558,6 +566,7 @@ describe("Archive data module", () => {
       vi.fn(() =>
         Promise.resolve(
           coinResponse({
+            slug: "roman-empire",
             id: "10000000-0000-4000-8000-000000000001",
             name: "Roman Empire",
             code: "ROMAN",
@@ -574,11 +583,6 @@ describe("Archive data module", () => {
   })
 
   it.each([
-    {
-      ErrorType: InvalidCoinIdError,
-      route: CoinRoute,
-      message: "Invalid coin identifier",
-    },
     {
       ErrorType: InvalidCoinResponseError,
       route: CoinRoute,

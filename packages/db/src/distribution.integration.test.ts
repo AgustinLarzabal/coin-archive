@@ -47,11 +47,16 @@ describe("Coin Distribution catalogue", () => {
       })
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Pattern Coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = ${"pattern-issue"})`,
@@ -109,10 +114,17 @@ describe("Coin Distribution catalogue", () => {
       })
       const coinId = "00000000-0000-4000-8000-000000000077"
       await seedCoins(database, {
-        issuers: [{ code: "AR", name: "Argentina" }],
+        issuers: [
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            code: "AR",
+            name: "Argentina",
+          },
+        ],
         engravers: [],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: coinId,
             title: "Seeded pattern Coin",
             issuerCode: "AR",
@@ -203,11 +215,16 @@ describe("Coin Distribution catalogue", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Test coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = ${"non-circulating"})`,

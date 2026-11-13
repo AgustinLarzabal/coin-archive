@@ -60,7 +60,11 @@ function publicCoin<
 async function insertArgentina(database: ReturnType<typeof createDatabase>) {
   const [issuer] = await database.orm
     .insert(database.schema.issuers)
-    .values({ name: "Argentina", code: "AR" })
+    .values({
+      slug: `test-issuer-${crypto.randomUUID()}`,
+      name: "Argentina",
+      code: "AR",
+    })
     .returning()
   return issuer
 }
@@ -84,11 +88,56 @@ beforeEach(async () => {
 })
 
 describe("Coin persistence", () => {
+  it("requires valid globally unique Coin Slugs and unique Issuer Slugs", async () => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const issuer = await insertArgentina(database)
+      const secondIssuer = await database.orm
+        .insert(database.schema.issuers)
+        .values({ name: "Uruguay", code: "UY", slug: "uruguay" })
+        .returning()
+      await expect(
+        database.orm
+          .insert(database.schema.issuers)
+          .values({ name: "Another", code: "AN", slug: issuer.slug })
+      ).rejects.toThrow()
+      await expect(
+        database.orm.execute(
+          sql`insert into issuers (name, code) values ('Missing', 'MI')`
+        )
+      ).rejects.toThrow()
+      const coin = {
+        title: "First",
+        slug: "shared-coin",
+        issuerId: issuer.id,
+        ...TEST_COIN_REQUIRED_FIELDS,
+      }
+      await database.orm.insert(database.schema.coins).values(coin)
+      await expect(
+        database.orm
+          .insert(database.schema.coins)
+          .values({ ...coin, issuerId: secondIssuer[0].id })
+      ).rejects.toThrow()
+      await expect(
+        database.orm
+          .execute(sql`insert into coins (title, issuer_id, distribution_id, first_issue_year, last_issue_year)
+        values ('Missing Slug', ${issuer.id}, ${TEST_DISTRIBUTION.distributionId}, 2004, 2004)`)
+      ).rejects.toThrow()
+      await expect(
+        database.orm
+          .insert(database.schema.coins)
+          .values({ ...coin, slug: "Bad_Slug" })
+      ).rejects.toThrow()
+    } finally {
+      await database.close()
+    }
+  })
   it("stores Medal, Coin, or unknown Orientation and rejects unsupported values", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
       const issuer = await insertArgentina(database)
       const values = {
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "Oriented Coin",
         issuerId: issuer.id,
         ...TEST_COIN_REQUIRED_FIELDS,
@@ -112,7 +161,11 @@ describe("Coin persistence", () => {
         ).toBe(true)
         const [coin] = await database.orm
           .insert(database.schema.coins)
-          .values({ ...values, orientationId })
+          .values({
+            ...values,
+            slug: `test-coin-${crypto.randomUUID()}`,
+            orientationId,
+          })
           .returning()
         if (orientation === "Medal") medalCoinId = coin.id
         await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
@@ -135,6 +188,7 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values({
           ...values,
+          slug: `test-coin-${crypto.randomUUID()}`,
           orientationId: orientations.find(({ slug }) => slug === "medal")!.id,
         })
         .returning({ id: database.schema.coins.id })
@@ -186,18 +240,21 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Milled one",
             issuerId: issuer.id,
             techniqueId: milled.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Milled two",
             issuerId: issuer.id,
             techniqueId: milled.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Unknown",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -245,6 +302,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Machine struck Coin",
           issuerId: issuer.id,
           techniqueId: milled.id,
@@ -276,6 +334,7 @@ describe("Coin persistence", () => {
       )
       await expect(
         database.orm.insert(database.schema.coins).values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Unsupported Technique",
           issuerId: issuer.id,
           techniqueId: "00000000-0000-4000-8000-000000000099",
@@ -291,6 +350,7 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       const values = {
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "Shaped Coin",
         issuerId: issuer.id,
         ...TEST_COIN_REQUIRED_FIELDS,
@@ -330,7 +390,11 @@ describe("Coin persistence", () => {
         ).toBe(true)
         const [coin] = await database.orm
           .insert(database.schema.coins)
-          .values({ ...values, shapeId })
+          .values({
+            ...values,
+            slug: `test-coin-${crypto.randomUUID()}`,
+            shapeId,
+          })
           .returning()
         await expect(database.findCoinById(coin.id)).resolves.toMatchObject({
           shape,
@@ -338,7 +402,7 @@ describe("Coin persistence", () => {
       }
       const [unknown] = await database.orm
         .insert(database.schema.coins)
-        .values(values)
+        .values({ ...values, slug: `test-coin-${crypto.randomUUID()}` })
         .returning()
       await expect(database.findCoinById(unknown.id)).resolves.toMatchObject({
         shape: null,
@@ -385,30 +449,35 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Square one",
             issuerId: issuer.id,
             shapeId: squareId,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Square two",
             issuerId: issuer.id,
             shapeId: squareId,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Oval",
             issuerId: issuer.id,
             shapeId: ovalId,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Pentagonal",
             issuerId: issuer.id,
             shapeId: newShape.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Unknown",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -463,6 +532,7 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values(
           inputs.map((input, index) => ({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: `Composition ${index}`,
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -534,6 +604,7 @@ describe("Coin persistence", () => {
       ).rejects.toThrow()
       await expect(
         database.orm.insert(database.schema.coins).values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Bad Composition",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -543,6 +614,7 @@ describe("Coin persistence", () => {
       for (const malformed of ["", " Copper", "Copper "]) {
         expect(
           coinInsertSchema.safeParse({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Bad Detail",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -551,6 +623,7 @@ describe("Coin persistence", () => {
         ).toBe(false)
         await expect(
           database.orm.insert(database.schema.coins).values({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Bad Detail",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -568,6 +641,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Exact",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -576,6 +650,7 @@ describe("Coin persistence", () => {
           weight: 8.125,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Heavier",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -583,8 +658,14 @@ describe("Coin persistence", () => {
           thickness: 2.2,
           weight: 8.126,
         },
-        { title: "Unknown", issuerId: issuer.id, ...TEST_COIN_REQUIRED_FIELDS },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
+          title: "Unknown",
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+        },
+        {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Smaller",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -639,6 +720,7 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       const values = {
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "Measured Coin",
         issuerId: issuer.id,
         ...TEST_COIN_REQUIRED_FIELDS,
@@ -684,6 +766,7 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values({
           ...values,
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Partly measured Coin",
           size: 25.75,
           weight: 8.125,
@@ -691,7 +774,12 @@ describe("Coin persistence", () => {
         .returning()
       const [thick] = await database.orm
         .insert(database.schema.coins)
-        .values({ ...values, title: "Thickness Coin", thickness: 2.2 })
+        .values({
+          ...values,
+          slug: `test-coin-${crypto.randomUUID()}`,
+          title: "Thickness Coin",
+          thickness: 2.2,
+        })
         .returning()
       await expect(database.findCoinById(unknown.id)).resolves.toMatchObject({
         size: null,
@@ -758,6 +846,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Distributed Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -805,6 +894,7 @@ describe("Coin persistence", () => {
       ]) {
         await expect(
           database.orm.insert(database.schema.coins).values({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Invalid Issue Period",
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -817,6 +907,7 @@ describe("Coin persistence", () => {
         database.orm
           .insert(database.schema.coins)
           .values({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Valid Issue Period",
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -835,9 +926,11 @@ describe("Coin persistence", () => {
   it("executes the documented Neon staging Coin insert", async () => {
     const database = createDatabase(getDatabaseUrl())
     try {
-      await database.orm
-        .insert(database.schema.issuers)
-        .values({ name: "Italy", code: "IT" })
+      await database.orm.insert(database.schema.issuers).values({
+        slug: `test-issuer-${crypto.randomUUID()}`,
+        name: "Italy",
+        code: "IT",
+      })
 
       const result = await database.orm.execute<{
         id: string
@@ -847,12 +940,13 @@ describe("Coin persistence", () => {
       }>(sql`
         insert into coins (
           title,
+          slug,
           issuer_id,
           distribution_id,
           first_issue_year,
           last_issue_year
         )
-        select 'Manual Neon staging Coin', issuers.id, distributions.id, 2004, 2004
+        select 'Manual Neon staging Coin', 'manual-neon-staging-coin', issuers.id, distributions.id, 2004, 2004
         from issuers cross join distributions
         where code = 'IT'
           and distributions.slug = 'circulating-commemorative'
@@ -886,6 +980,7 @@ describe("Coin persistence", () => {
         const [coin] = await database.orm
           .insert(database.schema.coins)
           .values({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Dated Coin",
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -976,6 +1071,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Credit-only Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1025,6 +1121,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Credited Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1075,6 +1172,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Invariant Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1191,6 +1289,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Concurrent Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1286,6 +1385,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Snapshot Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1372,21 +1472,25 @@ describe("Coin persistence", () => {
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Coin with all surfaces",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Coin with a partial Reverse",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Coin with a partial Edge",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Coin without surfaces",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -1510,6 +1614,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Three surfaces",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1547,6 +1652,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Deferred surface data",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1590,6 +1696,7 @@ describe("Coin persistence", () => {
         const [coin] = await database.orm
           .insert(database.schema.coins)
           .values({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Described Coin",
             issuerId: issuer.id,
             ...TEST_COIN_REQUIRED_FIELDS,
@@ -1626,6 +1733,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Coin image",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1651,6 +1759,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Empty Surface",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1674,6 +1783,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Timestamped Surface",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1737,6 +1847,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Disposable Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -1788,6 +1899,7 @@ describe("Coin persistence", () => {
 
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: olderId,
           title: "Older coin",
           issuerId: issuer.id,
@@ -1795,6 +1907,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: secondTiedId,
           title: "Second tied coin",
           issuerId: issuer.id,
@@ -1802,6 +1915,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: firstTiedId,
           title: "First tied coin",
           issuerId: issuer.id,
@@ -1829,6 +1943,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values(
         Array.from({ length: 5 }, (_, index) => ({
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
           title: `Coin ${index + 1}`,
           issuerId: issuer.id,
@@ -1873,6 +1988,7 @@ describe("Coin persistence", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Coin visible to the page snapshot",
           issuerId: issuer.id,
           denominationId: denomination.id,
@@ -1936,13 +2052,18 @@ describe("Coin persistence", () => {
       const argentina = await insertArgentina(database)
       const [romanEmpire] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Roman Empire", code: "ROMAN" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Roman Empire",
+          code: "ROMAN",
+        })
         .returning()
       const firstTiedId = "00000000-0000-4000-8000-000000000001"
       const secondTiedId = "00000000-0000-4000-8000-000000000002"
 
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: secondTiedId,
           title: "Second Roman coin",
           issuerId: romanEmpire.id,
@@ -1950,12 +2071,14 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Argentine coin",
           issuerId: argentina.id,
           ...TEST_COIN_REQUIRED_FIELDS,
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: firstTiedId,
           title: "First Roman coin",
           issuerId: romanEmpire.id,
@@ -1990,6 +2113,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000002",
           title: "Second non-circulating Coin",
           issuerId: issuer.id,
@@ -1999,6 +2123,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000001",
           title: "First non-circulating Coin",
           issuerId: issuer.id,
@@ -2008,6 +2133,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000003",
           title: "Older non-circulating Coin",
           issuerId: issuer.id,
@@ -2017,6 +2143,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-15T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Standard Coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = ${"standard-circulation"})`,
@@ -2057,6 +2184,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000001",
           title: "Overlaps the first boundary",
           issuerId: issuer.id,
@@ -2066,6 +2194,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000002",
           title: "Contained by requested range",
           issuerId: issuer.id,
@@ -2075,6 +2204,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000003",
           title: "Contains requested range",
           issuerId: issuer.id,
@@ -2084,6 +2214,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000004",
           title: "Overlaps the last boundary",
           issuerId: issuer.id,
@@ -2093,6 +2224,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000005",
           title: "Before requested range",
           issuerId: issuer.id,
@@ -2102,6 +2234,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000006",
           title: "After requested range",
           issuerId: issuer.id,
@@ -2135,6 +2268,7 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values({
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "Stored Issue Year",
         issuerId: issuer.id,
         ...TEST_COIN_REQUIRED_FIELDS,
@@ -2159,6 +2293,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Touches first BCE boundary",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2167,6 +2302,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Contained BCE period",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2175,6 +2311,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Contains BCE range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2183,6 +2320,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Touches last BCE boundary",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2191,6 +2329,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Before BCE range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2199,6 +2338,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "After BCE range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2231,6 +2371,7 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Touches BCE boundary",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2239,6 +2380,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-20T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Contained cross-era period",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2247,6 +2389,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Contains cross-era range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2255,6 +2398,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Touches CE boundary",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2263,6 +2407,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Before cross-era range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2271,6 +2416,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "After cross-era range",
           issuerId: issuer.id,
           ...TEST_DISTRIBUTION,
@@ -2303,7 +2449,11 @@ describe("Coin persistence", () => {
       const argentina = await insertArgentina(database)
       const [romanEmpire] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Roman Empire", code: "ROMAN" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Roman Empire",
+          code: "ROMAN",
+        })
         .returning()
       const [selectedEngraver, otherEngraver] = await database.orm
         .insert(database.schema.engravers)
@@ -2320,6 +2470,7 @@ describe("Coin persistence", () => {
 
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: bothFacesId,
           title: "Both faces",
           issuerId: romanEmpire.id,
@@ -2329,6 +2480,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-17T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: obverseId,
           title: "Obverse credit",
           issuerId: romanEmpire.id,
@@ -2338,6 +2490,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: reverseId,
           title: "Reverse credit",
           issuerId: argentina.id,
@@ -2345,6 +2498,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-18T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: edgeOnlyId,
           title: "Edge only",
           issuerId: romanEmpire.id,
@@ -2352,6 +2506,7 @@ describe("Coin persistence", () => {
           createdAt: new Date("2026-09-19T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: otherEngraverId,
           title: "Other Engraver",
           issuerId: romanEmpire.id,
@@ -2483,6 +2638,7 @@ describe("Coin persistence", () => {
       const [inserted] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "First coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -2524,11 +2680,13 @@ describe("Coin persistence", () => {
       const issuer = await insertArgentina(database)
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Shared title",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Shared title",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -2578,9 +2736,12 @@ describe("Coin persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       await expect(
-        database.orm
-          .insert(database.schema.coins)
-          .values({ title, issuerId: issuer.id, ...TEST_COIN_REQUIRED_FIELDS })
+        database.orm.insert(database.schema.coins).values({
+          title,
+          slug: `test-coin-${crypto.randomUUID()}`,
+          issuerId: issuer.id,
+          ...TEST_COIN_REQUIRED_FIELDS,
+        })
       ).rejects.toThrow()
     } finally {
       await database.close()
@@ -2594,6 +2755,7 @@ describe("Coin persistence", () => {
       const [inserted] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Before",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -2621,19 +2783,37 @@ describe("Issuer persistence", () => {
     try {
       const argentina = await insertArgentina(database)
       await database.orm.insert(database.schema.issuers).values([
-        { name: "Roman Empire", code: "ROMAN" },
-        { name: "Argentina", code: "ARG-HIST" },
+        {
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Roman Empire",
+          code: "ROMAN",
+        },
+        {
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Argentina",
+          code: "ARG-HIST",
+        },
       ])
       await database.orm.insert(database.schema.coins).values({
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "First coin",
         issuerId: argentina.id,
         ...TEST_COIN_REQUIRED_FIELDS,
       })
 
       await expect(database.listIssuers()).resolves.toEqual([
-        expect.objectContaining({ name: "Argentina", code: "AR" }),
-        expect.objectContaining({ name: "Argentina", code: "ARG-HIST" }),
-        expect.objectContaining({ name: "Roman Empire", code: "ROMAN" }),
+        expect.objectContaining({
+          name: "Argentina",
+          code: "AR",
+        }),
+        expect.objectContaining({
+          name: "Argentina",
+          code: "ARG-HIST",
+        }),
+        expect.objectContaining({
+          name: "Roman Empire",
+          code: "ROMAN",
+        }),
       ])
     } finally {
       await database.close()
@@ -2646,11 +2826,16 @@ describe("Issuer persistence", () => {
       const argentina = await insertArgentina(database)
       const [duplicateName] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Argentina", code: "ARG-HIST" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Argentina",
+          code: "ARG-HIST",
+        })
         .returning()
 
       expect(issuerSelectSchema.parse(argentina)).toEqual(argentina)
       expect(argentina).toMatchObject({
+        slug: expect.any(String),
         name: "Argentina",
         code: "AR",
         createdAt: expect.any(Date),
@@ -2671,9 +2856,11 @@ describe("Issuer persistence", () => {
       const database = createDatabase(getDatabaseUrl())
       try {
         await expect(
-          database.orm
-            .insert(database.schema.issuers)
-            .values({ name, code: "AR" })
+          database.orm.insert(database.schema.issuers).values({
+            name,
+            code: "AR",
+            slug: `test-issuer-${crypto.randomUUID()}`,
+          })
         ).rejects.toThrow()
       } finally {
         await database.close()
@@ -2687,9 +2874,11 @@ describe("Issuer persistence", () => {
       const database = createDatabase(getDatabaseUrl())
       try {
         await expect(
-          database.orm
-            .insert(database.schema.issuers)
-            .values({ name: "Invalid code", code })
+          database.orm.insert(database.schema.issuers).values({
+            name: "Invalid code",
+            code,
+            slug: `test-issuer-${crypto.randomUUID()}`,
+          })
         ).rejects.toThrow()
       } finally {
         await database.close()
@@ -2702,12 +2891,15 @@ describe("Issuer persistence", () => {
     try {
       const issuer = await insertArgentina(database)
       await expect(
-        database.orm
-          .insert(database.schema.issuers)
-          .values({ name: "Duplicate code", code: "AR" })
+        database.orm.insert(database.schema.issuers).values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Duplicate code",
+          code: "AR",
+        })
       ).rejects.toThrow()
 
       await database.orm.insert(database.schema.coins).values({
+        slug: `test-coin-${crypto.randomUUID()}`,
         title: "First coin",
         issuerId: issuer.id,
         ...TEST_COIN_REQUIRED_FIELDS,
@@ -2760,6 +2952,7 @@ describe("Engraver list", () => {
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Credited Coin",
           issuerId: issuer.id,
           ...TEST_COIN_REQUIRED_FIELDS,
@@ -2801,13 +2994,20 @@ describe("Engraver list", () => {
 
 describe("Coin seed", () => {
   const validSeed = {
-    issuers: [{ name: "Argentina", code: "AR" }],
+    issuers: [
+      {
+        slug: `test-issuer-${crypto.randomUUID()}`,
+        name: "Argentina",
+        code: "AR",
+      },
+    ],
     engravers: [
       { slug: FIRST_ENGRAVER_SLUG, fullName: "First Engraver" },
       { slug: SECOND_ENGRAVER_SLUG, fullName: "Second Engraver" },
     ],
     coins: [
       {
+        slug: `test-coin-${crypto.randomUUID()}`,
         id: SEEDED_COIN_ID,
         title: "First coin",
         issuerCode: "AR",
@@ -2831,6 +3031,48 @@ describe("Coin seed", () => {
       },
     ],
   }
+
+  it.each([
+    ["missing Issuer", { issuers: [{ name: "Argentina", code: "AR" }] }],
+    [
+      "malformed Issuer",
+      { issuers: [{ ...validSeed.issuers[0], slug: "Bad_Slug" }] },
+    ],
+    [
+      "duplicate Issuer",
+      {
+        issuers: [
+          ...validSeed.issuers,
+          { ...validSeed.issuers[0], code: "ARG-HIST" },
+        ],
+      },
+    ],
+    ["missing Coin", { coins: [{ ...validSeed.coins[0], slug: undefined }] }],
+    [
+      "malformed Coin",
+      { coins: [{ ...validSeed.coins[0], slug: "Bad_Slug" }] },
+    ],
+    [
+      "duplicate Coin",
+      {
+        coins: [
+          ...validSeed.coins,
+          { ...validSeed.coins[0], id: "00000000-0000-4000-8000-000000000002" },
+        ],
+      },
+    ],
+  ])("rejects a %s Slug before writing", async (_case, change) => {
+    const database = createDatabase(getDatabaseUrl())
+    try {
+      const transaction = vi.spyOn(database.orm, "transaction")
+      await expect(
+        seedCoins(database, { ...validSeed, ...change })
+      ).rejects.toThrow()
+      expect(transaction).not.toHaveBeenCalled()
+    } finally {
+      await database.close()
+    }
+  })
 
   it.each([true, false, null] as const)(
     "preserves %s Coin Demonetization Status from seed data",
@@ -2934,16 +3176,19 @@ describe("Coin seed", () => {
           {
             ...validSeed.coins[0],
             id: "00000000-0000-4000-8000-000000000002",
+            slug: "second-composition-coin",
             composition: "bimetallic",
           },
           {
             ...validSeed.coins[0],
             id: "00000000-0000-4000-8000-000000000003",
+            slug: "third-composition-coin",
             compositionDetail: "Copper and nickel",
           },
           {
             ...validSeed.coins[0],
             id: "00000000-0000-4000-8000-000000000004",
+            slug: "fourth-composition-coin",
             composition: "bimetallic",
             compositionDetail: "Copper and nickel",
           },
@@ -3076,6 +3321,7 @@ describe("Coin seed", () => {
         engravers: [validSeed.engravers[0]],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: SEEDED_COIN_ID,
             title: "Credit-only Coin",
             issuerCode: "AR",
@@ -3225,30 +3471,102 @@ describe("Coin seed", () => {
       ).resolves.toMatchObject({ size: null, thickness: null, weight: null })
       const issuers = await database.listIssuers()
       expect(issuers.map(({ name, code }) => ({ name, code }))).toEqual([
-        { name: "Andorra", code: "AD" },
-        { name: "Austria", code: "AT" },
-        { name: "Belgium", code: "BE" },
-        { name: "Croatia", code: "HR" },
-        { name: "Cyprus", code: "CY" },
-        { name: "Estonia", code: "EE" },
-        { name: "Finland", code: "FI" },
-        { name: "France", code: "FR" },
-        { name: "Germany", code: "DE" },
-        { name: "Greece", code: "GR" },
-        { name: "Ireland", code: "IE" },
-        { name: "Italy", code: "IT" },
-        { name: "Latvia", code: "LV" },
-        { name: "Lithuania", code: "LT" },
-        { name: "Luxembourg", code: "LU" },
-        { name: "Malta", code: "MT" },
-        { name: "Monaco", code: "MC" },
-        { name: "Netherlands", code: "NL" },
-        { name: "Portugal", code: "PT" },
-        { name: "San Marino", code: "SM" },
-        { name: "Slovakia", code: "SK" },
-        { name: "Slovenia", code: "SI" },
-        { name: "Spain", code: "ES" },
-        { name: "Vatican City", code: "VA" },
+        {
+          name: "Andorra",
+          code: "AD",
+        },
+        {
+          name: "Austria",
+          code: "AT",
+        },
+        {
+          name: "Belgium",
+          code: "BE",
+        },
+        {
+          name: "Croatia",
+          code: "HR",
+        },
+        {
+          name: "Cyprus",
+          code: "CY",
+        },
+        {
+          name: "Estonia",
+          code: "EE",
+        },
+        {
+          name: "Finland",
+          code: "FI",
+        },
+        {
+          name: "France",
+          code: "FR",
+        },
+        {
+          name: "Germany",
+          code: "DE",
+        },
+        {
+          name: "Greece",
+          code: "GR",
+        },
+        {
+          name: "Ireland",
+          code: "IE",
+        },
+        {
+          name: "Italy",
+          code: "IT",
+        },
+        {
+          name: "Latvia",
+          code: "LV",
+        },
+        {
+          name: "Lithuania",
+          code: "LT",
+        },
+        {
+          name: "Luxembourg",
+          code: "LU",
+        },
+        {
+          name: "Malta",
+          code: "MT",
+        },
+        {
+          name: "Monaco",
+          code: "MC",
+        },
+        {
+          name: "Netherlands",
+          code: "NL",
+        },
+        {
+          name: "Portugal",
+          code: "PT",
+        },
+        {
+          name: "San Marino",
+          code: "SM",
+        },
+        {
+          name: "Slovakia",
+          code: "SK",
+        },
+        {
+          name: "Slovenia",
+          code: "SI",
+        },
+        {
+          name: "Spain",
+          code: "ES",
+        },
+        {
+          name: "Vatican City",
+          code: "VA",
+        },
       ])
       const firstSeededCoinPage = await database.listCoins({ pageSize: 100 })
       const secondSeededCoinPage = await database.listCoins({
@@ -3428,9 +3746,14 @@ describe("Coin seed", () => {
       ).resolves.toMatchObject({
         id: SEEDED_COIN_ID,
         title: "50th Anniversary of the World Food Programme",
+        slug: "50th-anniversary-of-the-world-food-programme-2004-it",
         firstIssueYear: 2004,
         lastIssueYear: 2004,
-        issuer: expect.objectContaining({ name: "Italy", code: "IT" }),
+        issuer: expect.objectContaining({
+          slug: "italy",
+          name: "Italy",
+          code: "IT",
+        }),
         obverse: expect.objectContaining({
           kind: "obverse",
           description: expect.stringContaining("World Food Programme"),
@@ -3516,7 +3839,12 @@ describe("Coin seed", () => {
           engravers: validSeed.engravers,
           coins: [
             validSeed.coins[0],
-            { id: "not-a-uuid", title: "Invalid", issuerCode: "AR" },
+            {
+              slug: `test-coin-${crypto.randomUUID()}`,
+              id: "not-a-uuid",
+              title: "Invalid",
+              issuerCode: "AR",
+            },
           ],
         })
       ).rejects.toThrow()
@@ -3607,7 +3935,11 @@ describe("Coin seed", () => {
       {
         issuers: [
           ...validSeed.issuers,
-          { name: "Argentine Republic", code: "AR" },
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            name: "Argentine Republic",
+            code: "AR",
+          },
         ],
         engravers: validSeed.engravers,
         coins: validSeed.coins,
@@ -3679,6 +4011,7 @@ describe("Coin seed", () => {
     try {
       const duplicateId = "00000000-0000-4000-8000-000000000002"
       await database.orm.insert(database.schema.coins).values({
+        slug: `test-coin-${crypto.randomUUID()}`,
         id: duplicateId,
         title: "Existing",
         issuerId: (await insertArgentina(database)).id,
@@ -3687,11 +4020,18 @@ describe("Coin seed", () => {
 
       await expect(
         seedCoins(database, {
-          issuers: [{ name: "Uruguay", code: "UY" }],
+          issuers: [
+            {
+              slug: `test-issuer-${crypto.randomUUID()}`,
+              name: "Uruguay",
+              code: "UY",
+            },
+          ],
           engravers: validSeed.engravers,
           coins: [
             { ...validSeed.coins[0], issuerCode: "UY" },
             {
+              slug: `test-coin-${crypto.randomUUID()}`,
               id: duplicateId,
               title: "Duplicate",
               issuerCode: "UY",

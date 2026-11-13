@@ -31,7 +31,7 @@ export const coins = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar({ length: 200 }).notNull(),
-    slug: varchar({ length: 64 }),
+    slug: varchar({ length: 64 }).notNull(),
     issuerId: uuid("issuer_id")
       .notNull()
       .references(() => issuers.id, { onDelete: "restrict" }),
@@ -74,11 +74,11 @@ export const coins = pgTable(
     unique("coins_slug_unique").on(table.slug),
     check(
       "coins_slug_min_length",
-      sql`${table.slug} is null or length(${table.slug}) >= 3`
+      sql`length(${table.slug}) >= 3`
     ),
     check(
       "coins_slug_format",
-      sql`${table.slug} is null or ${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
+      sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
     ),
     index("coins_created_at_id_index").on(
       table.createdAt.desc().nullsFirst(),
@@ -196,6 +196,7 @@ export const coinSeedSchema = coinInsertBaseSchema
   .required({
     id: true,
     title: true,
+    slug: true,
     firstIssueYear: true,
     lastIssueYear: true,
     issuerCode: true,

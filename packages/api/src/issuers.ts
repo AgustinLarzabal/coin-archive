@@ -9,7 +9,7 @@ export const issuerCodeSchema = z
 export const issuerResponseSchema = z.strictObject({
   name: displayTextSchema(200),
   code: issuerCodeSchema,
-  slug: slugSchema.nullable().optional(),
+  slug: slugSchema,
 })
 
 export const issuerListResponseSchema = z.strictObject({

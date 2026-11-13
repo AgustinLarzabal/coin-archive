@@ -25,12 +25,17 @@ describe("Coin Tags", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Finland", code: "FI" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Finland",
+          code: "FI",
+        })
         .returning()
       const [first, second, untagged] = await database.orm
         .insert(database.schema.coins)
         .values(
           ["First", "Second", "Untagged"].map((title) => ({
+            slug: `test-coin-${crypto.randomUUID()}`,
             title,
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,

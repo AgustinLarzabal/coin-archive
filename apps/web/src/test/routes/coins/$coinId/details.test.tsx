@@ -105,7 +105,7 @@ describe("Coin viewer route details", () => {
       tags: [{ slug: "map", name: "Map" }],
     })
     const fetchMock = vi.fn((input: string | URL | Request) =>
-      String(input).includes("/v1/coins/00000000-")
+      String(input).includes("/v1/coins/by-slug/first-coin")
         ? Promise.resolve(
             jsonResponse(
               coinDetailFixture({ tags: [{ slug: "map", name: "Map" }] })
@@ -194,31 +194,31 @@ describe("Coin viewer route details", () => {
                   slug: "rome-state-mint-italy",
                   name: "Zecca dello Stato",
                   place: "Rome",
-                  country: { name: "Italy", code: "IT" },
+                  country: { slug: "italy", name: "Italy", code: "IT" },
                 },
                 {
                   slug: "ancient-mint",
                   name: "Ancient Mint",
                   place: "Athens",
-                  country: { name: "Greece", code: "GR" },
+                  country: { slug: "greece", name: "Greece", code: "GR" },
                 },
                 {
                   slug: "closed-mint",
                   name: "Closed Mint",
                   place: "Milan",
-                  country: { name: "Italy", code: "IT" },
+                  country: { slug: "italy", name: "Italy", code: "IT" },
                 },
                 {
                   slug: "unknown-mint",
                   name: "Unknown Mint",
                   place: "Naples",
-                  country: { name: "Italy", code: "IT" },
+                  country: { slug: "italy", name: "Italy", code: "IT" },
                 },
                 {
                   slug: "partly-known-mint",
                   name: "Partly Known Mint",
                   place: "Turin",
-                  country: { name: "Italy", code: "IT" },
+                  country: { slug: "italy", name: "Italy", code: "IT" },
                 },
               ],
             })
@@ -456,14 +456,14 @@ describe("Coin viewer route details", () => {
         jsonResponse(
           coinDetailFixture({
             title: "Roman coin",
-            issuer: { name: "Roman Empire", code: "ROMAN" },
+            issuer: { slug: "roman-empire", name: "Roman Empire", code: "ROMAN" },
           })
         )
       )
     )
     vi.stubGlobal("fetch", fetchMock)
 
-    renderCoinRoute()
+    renderCoinRoute("first-coin", "roman-empire")
 
     expect(await screen.findByText("Roman Empire")).toBeInTheDocument()
     expect(screen.queryByText("ROMAN")).not.toBeInTheDocument()

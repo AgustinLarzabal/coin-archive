@@ -21,16 +21,8 @@ export function ExploreCoin({ className, coin, ...props }: ExploreCoinProps) {
 
   return (
     <Link
-      to={
-        coin.slug && coin.issuer.slug
-          ? "/coins/$issuerSlug/$coinSlug"
-          : "/coins/$coinId"
-      }
-      params={
-        coin.slug && coin.issuer.slug
-          ? { issuerSlug: coin.issuer.slug, coinSlug: coin.slug }
-          : { coinId: coin.id }
-      }
+      to="/coins/$issuerSlug/$coinSlug"
+      params={{ issuerSlug: coin.issuer.slug, coinSlug: coin.slug }}
       search={search}
       state={true}
       aria-label={coin.title}

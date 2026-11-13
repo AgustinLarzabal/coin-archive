@@ -39,7 +39,7 @@ export function registerIssuerRoutes(
       issuers: issuers.map(({ name, code, slug }) => ({
         name,
         code,
-        ...(slug ? { slug } : {}),
+        slug,
       })),
     } satisfies IssuerListResponse
 

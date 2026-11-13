@@ -7,8 +7,10 @@ export { jsonResponse }
 
 export const coinId = "00000000-0000-4000-8000-000000000001"
 
-export function renderCoinRoute(id = coinId) {
-  const history = createMemoryHistory({ initialEntries: [`/coins/${id}`] })
+export function renderCoinRoute(slug = "first-coin", issuerSlug = "argentina") {
+  const history = createMemoryHistory({
+    initialEntries: [`/coins/${issuerSlug}/${slug}`],
+  })
   const router = getRouter({ history })
   render(<RouterProvider router={router} />)
   return router

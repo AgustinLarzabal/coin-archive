@@ -7,7 +7,6 @@ import {
   coinSurfaceWithEngraversFixture,
 } from "@/test/coin-fixtures"
 import {
-  coinId,
   jsonResponse,
   renderCoinRoute,
 } from "@/test/coin-route-test"
@@ -137,7 +136,7 @@ describe("Coin viewer route layout", () => {
     expect(flag).toHaveAttribute("aria-hidden", "true")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `http://localhost:3001/v1/coins/${coinId}`
+      `http://localhost:3001/v1/coins/by-slug/first-coin`
     )
   })
 })

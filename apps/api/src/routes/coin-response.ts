@@ -50,14 +50,14 @@ function toCoinResponseFields(coin: Coin | CoinListItem) {
   return {
     id: coin.id,
     title: coin.title,
-    ...(coin.slug ? { slug: coin.slug } : {}),
+    slug: coin.slug,
     distribution: coin.distribution,
     firstIssueYear: coin.firstIssueYear,
     lastIssueYear: coin.lastIssueYear,
     issuer: {
       name: coin.issuer.name,
       code: coin.issuer.code,
-      ...(coin.issuer.slug ? { slug: coin.issuer.slug } : {}),
+      slug: coin.issuer.slug,
     },
     createdAt: coin.createdAt.toISOString(),
     updatedAt: coin.updatedAt.toISOString(),
@@ -155,7 +155,7 @@ export function toCoinDetailResponse(
       slug,
       name,
       place,
-      country: { name: country.name, code: country.code },
+      country: { name: country.name, code: country.code, slug: country.slug },
     })),
     tags: coin.tags.map(({ slug, name }) => ({ slug, name })),
     obverse: coin.obverse

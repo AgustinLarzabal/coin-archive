@@ -15,6 +15,13 @@ function renderSlugRoute(path: string) {
 }
 
 describe("Coin Slug route", () => {
+  it("does not serve the former UUID detail URL", async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal("fetch", fetchMock)
+    renderSlugRoute("/coins/00000000-0000-4000-8000-000000000001")
+    expect(await screen.findByText("404 - Page not found")).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
   it.each([
     ["hamburg-2008", 2008],
     ["hamburg-2023", 2023],

@@ -27,14 +27,23 @@ describe("confirmed Coin Mints", () => {
       const [italy, vatican] = await database.orm
         .insert(database.schema.issuers)
         .values([
-          { name: "Italy", code: "IT" },
-          { name: "Vatican City", code: "VA" },
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            name: "Italy",
+            code: "IT",
+          },
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            name: "Vatican City",
+            code: "VA",
+          },
         ])
         .returning()
       const [firstCoin, secondCoin, unassignedCoin] = await database.orm
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "First",
             issuerId: vatican.id,
             distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
@@ -42,6 +51,7 @@ describe("confirmed Coin Mints", () => {
             lastIssueYear: 2004,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Second",
             issuerId: italy.id,
             distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
@@ -49,6 +59,7 @@ describe("confirmed Coin Mints", () => {
             lastIssueYear: 2004,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Unassigned",
             issuerId: italy.id,
             distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
@@ -130,11 +141,16 @@ describe("confirmed Coin Mints", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Italy", code: "IT" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Italy",
+          code: "IT",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = 'circulating-commemorative')`,
@@ -187,7 +203,11 @@ describe("confirmed Coin Mints", () => {
       ).rejects.toThrow()
       const [otherIssuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Greece", code: "GR" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Greece",
+          code: "GR",
+        })
         .returning()
       await expect(
         database.orm

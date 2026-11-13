@@ -39,18 +39,16 @@ it("migrates existing Coin Distribution assignments to required catalogue refere
       )
     }
     await migrate(drizzle(pool), { migrationsFolder: oldMigrations })
-    await pool.query(
-      "insert into issuers (name, code) values ('Argentina', 'AR')"
-    )
+    await pool.query("insert into issuers (name, code) values ('Italy', 'IT')")
     await pool.query(`
-      insert into coins (title, issuer_id, distribution, first_issue_year, last_issue_year)
-      select seed.title, issuers.id, seed.distribution::coin_distribution, 2004, 2004
+      insert into coins (id, title, issuer_id, distribution, first_issue_year, last_issue_year)
+      select seed.id::uuid, seed.title, issuers.id, seed.distribution::coin_distribution, 2004, 2004
       from issuers
       cross join (values
-        ('First', 'standard-circulation'),
-        ('Second', 'circulating-commemorative'),
-        ('Third', 'non-circulating')
-      ) as seed(title, distribution)
+        ('00000000-0000-4000-8000-000000000001', 'First', 'standard-circulation'),
+        ('00000000-0000-4000-8000-000000000002', 'Second', 'circulating-commemorative'),
+        ('00000000-0000-4000-8000-000000000003', 'Third', 'non-circulating')
+      ) as seed(id, title, distribution)
     `)
 
     await migrate(drizzle(pool), { migrationsFolder: "drizzle" })

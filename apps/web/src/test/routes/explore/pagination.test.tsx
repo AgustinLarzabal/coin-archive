@@ -12,7 +12,7 @@ import { coinListItemFixture } from "@/test/coin-fixtures"
 
 const coin = coinListItemFixture()
 
-const issuers = [{ name: "Argentina", code: "AR" }]
+const issuers = [{ slug: "argentina", name: "Argentina", code: "AR" }]
 
 function createPageAwareArchiveFetch(totalPages = 3) {
   return (input: string | URL | Request) => {
@@ -83,6 +83,10 @@ describe("Explore pagination", () => {
     )
     expect(router.state.location.href).toBe(
       "/?tag=map&tag=flag&tagMatch=any&page=2"
+    )
+    expect(await screen.findByRole("link", { name: "Coin on page 2" })).toHaveAttribute(
+      "href",
+      "/coins/argentina/first-coin?tag=map&tag=flag&tagMatch=any&page=2"
     )
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=2&pageSize=24"

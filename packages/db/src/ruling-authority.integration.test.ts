@@ -53,7 +53,11 @@ describe("Ruling Authority persistence", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Roman Empire", code: "ROMAN" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Roman Empire",
+          code: "ROMAN",
+        })
         .returning()
       const [engraver] = await database.orm
         .insert(database.schema.engravers)
@@ -74,6 +78,7 @@ describe("Ruling Authority persistence", () => {
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000001",
             title: "First match",
             issuerId: issuer.id,
@@ -83,6 +88,7 @@ describe("Ruling Authority persistence", () => {
             createdAt: new Date("2026-01-02T00:00:00.000Z"),
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000002",
             title: "Second match",
             issuerId: issuer.id,
@@ -92,6 +98,7 @@ describe("Ruling Authority persistence", () => {
             createdAt: new Date("2026-01-01T00:00:00.000Z"),
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000003",
             title: "Other authority",
             issuerId: issuer.id,
@@ -198,12 +205,17 @@ describe("Ruling Authority persistence", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Test Issuer", code: "TI" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Test Issuer",
+          code: "TI",
+        })
         .returning()
       const [attributedCoin, uncuratedCoin] = await database.orm
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Attributed Coin",
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -211,6 +223,7 @@ describe("Ruling Authority persistence", () => {
             lastIssueYear: 2004,
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             title: "Uncurated Coin",
             issuerId: issuer.id,
             distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -282,11 +295,16 @@ describe("Ruling Authority persistence", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ name: "Test Issuer", code: "TI" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          name: "Test Issuer",
+          code: "TI",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Attributed Coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = ${"circulating-commemorative"})`,
@@ -377,7 +395,13 @@ describe("Ruling Authority persistence", () => {
     try {
       const coinId = "00000000-0000-4000-8000-000000000001"
       await seedCoins(database, {
-        issuers: [{ name: "Test Issuer", code: "TI" }],
+        issuers: [
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            name: "Test Issuer",
+            code: "TI",
+          },
+        ],
         engravers: [],
         authorities: [
           {
@@ -394,6 +418,7 @@ describe("Ruling Authority persistence", () => {
         ],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: coinId,
             title: "Seeded Coin",
             issuerCode: "TI",
@@ -463,6 +488,7 @@ describe("Ruling Authority persistence", () => {
         ],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000001",
             title: "Duplicate position",
             issuerCode: "TI",
@@ -486,6 +512,7 @@ describe("Ruling Authority persistence", () => {
         ],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000001",
             title: "Duplicate attribution",
             issuerCode: "TI",
@@ -507,6 +534,7 @@ describe("Ruling Authority persistence", () => {
         authorities: [],
         coins: [
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000001",
             title: "Unknown authority",
             issuerCode: "TI",
@@ -528,7 +556,13 @@ describe("Ruling Authority persistence", () => {
       try {
         await expect(
           seedCoins(database, {
-            issuers: [{ name: "Test Issuer", code: "TI" }],
+            issuers: [
+              {
+                slug: `test-issuer-${crypto.randomUUID()}`,
+                name: "Test Issuer",
+                code: "TI",
+              },
+            ],
             engravers: [],
             ...partialSeed,
           })

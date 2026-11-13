@@ -37,7 +37,7 @@ export function registerMintRoutes(
         slug,
         name,
         place,
-        country: { code: country.code, name: country.name },
+        country: { code: country.code, name: country.name, slug: country.slug },
       })),
     } satisfies MintListResponse
 

@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url"
 import { Pool } from "pg"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
-import { readCoinSeed, rebuildDatabase } from "./index.js"
+import { createDatabase, readCoinSeed, rebuildDatabase } from "./index.js"
 
 const RESET_DATABASE_NAME = "coin_archive_reset_test"
 const repositoryRoot = fileURLToPath(new URL("../../..", import.meta.url))
@@ -138,6 +138,27 @@ describe("database rebuild lifecycle", () => {
         "select id, title, first_issue_year, last_issue_year from coins order by id"
       )
       expect(coins.rows).toHaveLength(587)
+      const slugs = await databaseAfterReset.query<{
+        id: string
+        slug: string
+        issuer_slug: string
+      }>(`select coins.id, coins.slug, issuers.slug as issuer_slug
+          from coins join issuers on issuers.id = coins.issuer_id`)
+      expect(slugs.rows).toHaveLength(587)
+      expect(new Set(slugs.rows.map(({ slug }) => slug)).size).toBe(587)
+      expect(
+        slugs.rows.every(({ slug, issuer_slug }) =>
+          Boolean(slug && issuer_slug)
+        )
+      ).toBe(true)
+      const archive = createDatabase(resetDatabaseUrl)
+      try {
+        for (const { id, slug } of slugs.rows) {
+          expect((await archive.findCoinBySlug(slug))?.id).toBe(id)
+        }
+      } finally {
+        await archive.close()
+      }
       expect(
         coins.rows.map(({ first_issue_year, last_issue_year }) => ({
           first_issue_year,
@@ -424,5 +445,5 @@ describe("database rebuild lifecycle", () => {
     } finally {
       await databaseAfterReset.end()
     }
-  })
+  }, 30_000)
 })

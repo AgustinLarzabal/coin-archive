@@ -7,16 +7,10 @@ import { coinDetailQueryOptions } from "@/data/archive"
 
 export function CoinViewer({
   search,
-  ...identity
-}: { search: ExploreSearch } & (
-  | { coinId: string; coinSlug?: never }
-  | { coinSlug: string; coinId?: never }
-)) {
+  coinSlug,
+}: { search: ExploreSearch; coinSlug: string }) {
   const { data: coin } = useSuspenseQuery(
-    coinDetailQueryOptions(
-      identity.coinSlug !== undefined ? identity.coinSlug : identity.coinId,
-      identity.coinSlug !== undefined
-    )
+    coinDetailQueryOptions(coinSlug, true)
   )
 
   return (

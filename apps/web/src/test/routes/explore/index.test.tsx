@@ -31,9 +31,9 @@ const detailCoin = coinDetailFixture({
   updatedAt: coin.updatedAt,
 })
 const issuers = [
-  { name: "Argentina", code: "AR" },
-  { name: "Roman Empire", code: "ROMAN" },
-  { name: "Uruguay", code: "UY" },
+  { slug: "argentina", name: "Argentina", code: "AR" },
+  { slug: "roman-empire", name: "Roman Empire", code: "ROMAN" },
+  { slug: "uruguay", name: "Uruguay", code: "UY" },
 ]
 
 type CoinListResponseFixture = typeof coin & {
@@ -173,7 +173,7 @@ describe("Archive landing route", () => {
             slug: "buenos-aires",
             name: "Buenos Aires Mint",
             place: "Buenos Aires",
-            country: { code: "AR", name: "Argentina" },
+            country: { slug: "argentina", code: "AR", name: "Argentina" },
           },
         ],
       })
@@ -449,8 +449,8 @@ describe("Archive landing route", () => {
   })
 
   it.each([
-    ["ISO", { name: "Argentina", code: "AR" }],
-    ["Archive-defined", { name: "Roman Empire", code: "ROMAN" }],
+    ["ISO", { slug: "argentina", name: "Argentina", code: "AR" }],
+    ["Archive-defined", { slug: "roman-empire", name: "Roman Empire", code: "ROMAN" }],
   ])(
     "renders one %s Issuer's persisted Coin tile",
     async (_category, issuer) => {
@@ -460,7 +460,7 @@ describe("Archive landing route", () => {
       renderArchiveRoute()
 
       const link = await screen.findByRole("link", { name: "First coin" })
-      expect(link).toHaveAttribute("href", `/coins/${coinId}`)
+      expect(link).toHaveAttribute("href", `/coins/${issuer.slug}/first-coin`)
       expect(screen.queryByText(coinId)).not.toBeInTheDocument()
       expect(screen.getAllByText(issuer.name).length).toBeGreaterThan(0)
       expect(fetchMock).toHaveBeenCalledTimes(12)
@@ -874,7 +874,7 @@ describe("Archive landing route", () => {
                             ? jsonResponse({ techniques: [] })
                             : url.endsWith("/v1/distributions")
                               ? jsonResponse({ distributions: [] })
-                              : url.endsWith(`/v1/coins/${coinId}`)
+                              : url.endsWith(`/v1/coins/by-slug/first-coin`)
                                 ? jsonResponse({
                                     ...detailCoin,
                                     obverse: {
@@ -920,11 +920,11 @@ describe("Archive landing route", () => {
       await screen.findByRole("heading", { name: "First coin" })
     ).toBeInTheDocument()
     expect(screen.getByText("A portrait")).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe(`/coins/${coinId}`)
+    expect(router.state.location.pathname).toBe(`/coins/argentina/first-coin`)
     expect(screen.queryByText("Loading coin…")).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.filter(([input]) =>
-        String(input).endsWith(`/v1/coins/${coinId}`)
+        String(input).endsWith(`/v1/coins/by-slug/first-coin`)
       )
     ).toHaveLength(1)
   })
@@ -935,7 +935,7 @@ describe("Archive landing route", () => {
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
 
-      if (url.endsWith(`/v1/coins/${coinId}`)) {
+      if (url.endsWith(`/v1/coins/by-slug/first-coin`)) {
         detailRequested.resolve()
         return detailResponse.promise
       }
@@ -970,7 +970,7 @@ describe("Archive landing route", () => {
     const router = renderArchiveRoute()
     const coinLink = await screen.findByRole("link", { name: "First coin" })
     router.options.context.queryClient.removeQueries({
-      queryKey: ["coins", "detail", coinId],
+      queryKey: ["coins", "slug", "first-coin"],
     })
     vi.useFakeTimers()
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
@@ -996,7 +996,7 @@ describe("Archive landing route", () => {
       vi.fn((input: string | URL | Request) => {
         const url = String(input)
 
-        if (url.endsWith(`/v1/coins/${coinId}`)) {
+        if (url.endsWith(`/v1/coins/by-slug/first-coin`)) {
           detailRequested.resolve()
           return detailResponse.promise
         }
@@ -1031,7 +1031,7 @@ describe("Archive landing route", () => {
     const router = renderArchiveRoute()
     const coinLink = await screen.findByRole("link", { name: "First coin" })
     router.options.context.queryClient.removeQueries({
-      queryKey: ["coins", "detail", coinId],
+      queryKey: ["coins", "slug", "first-coin"],
     })
     vi.useFakeTimers()
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
@@ -1075,7 +1075,7 @@ describe("Archive landing route", () => {
                             ? jsonResponse({ techniques: [] })
                             : url.endsWith("/v1/distributions")
                               ? jsonResponse({ distributions: [] })
-                              : url.endsWith(`/v1/coins/${coinId}`)
+                              : url.endsWith(`/v1/coins/by-slug/first-coin`)
                                 ? jsonResponse(detailCoin)
                                 : coinListJsonResponse([coin])
       )
@@ -1094,7 +1094,7 @@ describe("Archive landing route", () => {
     expect(screen.queryByText("Loading coin…")).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.filter(([input]) =>
-        String(input).endsWith(`/v1/coins/${coinId}`)
+        String(input).endsWith(`/v1/coins/by-slug/first-coin`)
       )
     ).toHaveLength(1)
   })

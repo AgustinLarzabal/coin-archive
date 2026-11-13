@@ -16,7 +16,7 @@ describe("returning from a coin to Explore", () => {
       const url = new URL(String(input))
       if (url.pathname === "/v1/issuers") {
         return Promise.resolve(
-          jsonResponse({ issuers: [{ code: "AR", name: "Argentina" }] })
+          jsonResponse({ issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }] })
         )
       }
       if (url.pathname === "/v1/compositions") {
@@ -51,7 +51,7 @@ describe("returning from a coin to Explore", () => {
         return Promise.resolve(jsonResponse({ rulers: [] }))
       }
       if (
-        url.pathname.endsWith("/v1/coins/00000000-0000-4000-8000-000000000001")
+        url.pathname.endsWith("/v1/coins/by-slug/first-coin")
       ) {
         return Promise.resolve(jsonResponse(coinDetailFixture()))
       }
@@ -79,8 +79,8 @@ describe("returning from a coin to Explore", () => {
     })
 
     await router.navigate({
-      to: "/coins/$coinId",
-      params: { coinId: "00000000-0000-4000-8000-000000000001" },
+      to: "/coins/$issuerSlug/$coinSlug",
+      params: { issuerSlug: "argentina", coinSlug: "first-coin" },
       search: {
         issuer: "aR",
         tag: ["MaP", "map", "FLAG"],

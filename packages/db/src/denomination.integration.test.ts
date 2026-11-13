@@ -71,8 +71,16 @@ describe("Face Value persistence", () => {
       const [argentina, italy] = await database.orm
         .insert(database.schema.issuers)
         .values([
-          { code: "AR", name: "Argentina" },
-          { code: "IT", name: "Italy" },
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            code: "AR",
+            name: "Argentina",
+          },
+          {
+            slug: `test-issuer-${crypto.randomUUID()}`,
+            code: "IT",
+            name: "Italy",
+          },
         ])
         .returning()
       const [engraver] = await database.orm
@@ -91,6 +99,7 @@ describe("Face Value persistence", () => {
       const secondMatchingId = "00000000-0000-4000-8000-000000000002"
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: firstMatchingId,
           title: "First matching peso",
           issuerId: argentina.id,
@@ -101,6 +110,7 @@ describe("Face Value persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: secondMatchingId,
           title: "Second matching peso",
           issuerId: argentina.id,
@@ -111,6 +121,7 @@ describe("Face Value persistence", () => {
           createdAt: new Date("2026-09-16T10:00:00.000Z"),
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Wrong issuer peso",
           issuerId: italy.id,
           denominationId: pesoDenomination.id,
@@ -119,6 +130,7 @@ describe("Face Value persistence", () => {
           lastIssueYear: 2000,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Euro",
           issuerId: argentina.id,
           denominationId: euroDenomination.id,
@@ -214,10 +226,15 @@ describe("Face Value persistence", () => {
         .returning()
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       await database.orm.insert(database.schema.coins).values([
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000001",
           title: "One peso",
           issuerId: issuer.id,
@@ -227,6 +244,7 @@ describe("Face Value persistence", () => {
           lastIssueYear: 2000,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           id: "00000000-0000-4000-8000-000000000002",
           title: "Alternative peso label",
           issuerId: issuer.id,
@@ -236,6 +254,7 @@ describe("Face Value persistence", () => {
           lastIssueYear: 2000,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Two pesos",
           issuerId: issuer.id,
           denominationId: twoPesos.id,
@@ -244,6 +263,7 @@ describe("Face Value persistence", () => {
           lastIssueYear: 2000,
         },
         {
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "One euro",
           issuerId: issuer.id,
           denominationId: oneEuro.id,
@@ -285,12 +305,17 @@ describe("Face Value persistence", () => {
         .returning()
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       const [withoutFaceValue, withFaceValue] = await database.orm
         .insert(database.schema.coins)
         .values([
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000002",
             title: "Uncurated Coin",
             issuerId: issuer.id,
@@ -300,6 +325,7 @@ describe("Face Value persistence", () => {
             createdAt: new Date("2026-09-16T10:00:00.000Z"),
           },
           {
+            slug: `test-coin-${crypto.randomUUID()}`,
             id: "00000000-0000-4000-8000-000000000001",
             title: "1 peso",
             issuerId: issuer.id,
@@ -350,11 +376,16 @@ describe("Face Value persistence", () => {
         .returning()
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "1 peso",
           issuerId: issuer.id,
           denominationId: denomination.id,
@@ -391,11 +422,16 @@ describe("Face Value persistence", () => {
     try {
       const [issuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "AR", name: "Argentina" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "AR",
+          name: "Argentina",
+        })
         .returning()
       const [coin] = await database.orm
         .insert(database.schema.coins)
         .values({
+          slug: `test-coin-${crypto.randomUUID()}`,
           title: "Uncurated Coin",
           issuerId: issuer.id,
           distributionId: sql`(select id from distributions where slug = ${"standard-circulation"})`,
@@ -435,7 +471,7 @@ describe("Face Value persistence", () => {
       )
       await migrate(drizzle(pool), { migrationsFolder: olderMigrations })
       const issuer = await pool.query<{ id: string }>(`
-        insert into issuers (name, code) values ('Argentina', 'AR') returning id
+        insert into issuers (name, code) values ('Belgium', 'BE') returning id
       `)
       const coinId = "00000000-0000-4000-8000-000000000070"
       await pool.query(
@@ -534,7 +570,13 @@ describe("Face Value persistence", () => {
 
 describe("Face Value seed", () => {
   const validSeed = {
-    issuers: [{ code: "AR", name: "Argentina" }],
+    issuers: [
+      {
+        slug: `test-issuer-${crypto.randomUUID()}`,
+        code: "AR",
+        name: "Argentina",
+      },
+    ],
     currencies: [
       {
         slug: "argentine-peso-convertible",
@@ -552,6 +594,7 @@ describe("Face Value seed", () => {
     engravers: [],
     coins: [
       {
+        slug: `test-coin-${crypto.randomUUID()}`,
         id: "00000000-0000-4000-8000-000000000071",
         title: "Verified Face Value Coin",
         issuerCode: "AR",
@@ -659,9 +702,14 @@ describe("Face Value seed", () => {
     try {
       const [existingIssuer] = await database.orm
         .insert(database.schema.issuers)
-        .values({ code: "XX", name: "Existing Issuer" })
+        .values({
+          slug: `test-issuer-${crypto.randomUUID()}`,
+          code: "XX",
+          name: "Existing Issuer",
+        })
         .returning()
       await database.orm.insert(database.schema.coins).values({
+        slug: `test-coin-${crypto.randomUUID()}`,
         id: validSeed.coins[0].id,
         title: "Existing Coin",
         issuerId: existingIssuer.id,

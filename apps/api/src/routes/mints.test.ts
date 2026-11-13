@@ -19,7 +19,7 @@ describe("GET /v1/mints", () => {
             id: "10000000-0000-4000-8000-000000000001",
             code: "IT",
             name: "Italy",
-            slug: null,
+            slug: "italy",
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -37,7 +37,7 @@ describe("GET /v1/mints", () => {
           slug: "rome-italy",
           name: "Rome Mint",
           place: "Rome",
-          country: { code: "IT", name: "Italy" },
+          country: { code: "IT", name: "Italy", slug: "italy" },
         },
       ],
     })

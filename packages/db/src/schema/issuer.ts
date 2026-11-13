@@ -17,7 +17,7 @@ export const issuers = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     name: varchar({ length: 200 }).notNull(),
     code: varchar({ length: 12 }).notNull(),
-    slug: varchar({ length: 64 }),
+    slug: varchar({ length: 64 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -30,11 +30,11 @@ export const issuers = pgTable(
     unique("issuers_slug_unique").on(table.slug),
     check(
       "issuers_slug_min_length",
-      sql`${table.slug} is null or length(${table.slug}) >= 3`
+      sql`length(${table.slug}) >= 3`
     ),
     check(
       "issuers_slug_format",
-      sql`${table.slug} is null or ${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
+      sql`${table.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`
     ),
     check("issuers_name_not_empty", sql`length(${table.name}) >= 1`),
     check(

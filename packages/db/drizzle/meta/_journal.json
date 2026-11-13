@@ -232,6 +232,13 @@
       "when": 1794579537666,
       "tag": "0032_pink_namorita",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794580595245,
+      "tag": "0033_whole_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

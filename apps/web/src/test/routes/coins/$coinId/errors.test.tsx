@@ -16,14 +16,14 @@ describe("Coin viewer route errors", () => {
     expect(await screen.findByText("Loading coin…")).toBeInTheDocument()
   })
 
-  it("rejects an invalid route identifier without an HTTP request", async () => {
+  it("rejects an invalid Coin Slug without an HTTP request", async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal("fetch", fetchMock)
 
-    renderCoinRoute("not-a-uuid")
+    renderCoinRoute("bad!")
 
     expect(
-      await screen.findByText("Invalid coin identifier")
+      await screen.findByText("Coin not found")
     ).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -45,7 +45,7 @@ describe("Coin viewer route errors", () => {
 
     expect(await screen.findByText("Coin not found")).toBeInTheDocument()
     expect(
-      router.state.matches.find((match) => match.routeId === "/coins/$coinId")
+      router.state.matches.find((match) => match.routeId === "/coins/$issuerSlug/$coinSlug")
         ?.status
     ).toBe("notFound")
   })
@@ -72,7 +72,7 @@ describe("Coin viewer route errors", () => {
     expect(await screen.findByText("Invalid coin response")).toBeInTheDocument()
     expect(screen.queryByText("Coin not found")).not.toBeInTheDocument()
     expect(
-      router.state.matches.find((match) => match.routeId === "/coins/$coinId")
+      router.state.matches.find((match) => match.routeId === "/coins/$issuerSlug/$coinSlug")
         ?.status
     ).not.toBe("notFound")
   })

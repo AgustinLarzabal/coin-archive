@@ -2,6 +2,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000001",
     "title": "50th Anniversary of the World Food Programme",
+    "slug": "50th-anniversary-of-the-world-food-programme-2004-it",
     "tagSlugs": ["map", "globe"],
     "size": 25.75,
     "thickness": 2.2,
@@ -38,6 +39,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000002",
     "title": "75th Anniversary of the Founding of Vatican City State",
+    "slug": "75th-anniversary-of-the-founding-of-vatican-city-state-2004-va",
     "weight": 8.5,
     "issuerCode": "VA",
     "firstIssueYear": 2004,
@@ -60,6 +62,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000003",
     "title": "Bartolomeo Borghesi",
+    "slug": "bartolomeo-borghesi-2004-sm",
     "size": 25.75,
     "weight": 8.501,
     "issuerCode": "SM",
@@ -83,6 +86,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000004",
     "title": "Effigy and Monogram of Grand Duke Henri",
+    "slug": "effigy-and-monogram-of-grand-duke-henri-2004-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2004,
     "lastIssueYear": 2004,
@@ -104,6 +108,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000005",
     "title": "Enlargement of the European Union by Ten New Member States",
+    "slug": "enlargement-of-the-european-union-by-ten-new-member-2004-fi",
     "orientation": "medal",
     "technique": "milled",
     "shape": "circular",
@@ -145,6 +150,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000006",
     "title": "Olympic Games in Athens 2004",
+    "slug": "olympic-games-in-athens-2004-2004-gr",
     "orientation": "medal",
     "technique": "milled",
     "shape": "circular",
@@ -186,6 +192,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000007",
     "title": "20th World Youth Day",
+    "slug": "20th-world-youth-day-2005-va",
     "issuerCode": "VA",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -197,6 +204,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000008",
     "title": "World Year of Physics 2005",
+    "slug": "world-year-of-physics-2005-2005-sm",
     "tagSlugs": ["globe"],
     "issuerCode": "SM",
     "firstIssueYear": 2005,
@@ -209,6 +217,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000009",
     "title": "1st Anniversary of the Signing of the European Constitution",
+    "slug": "1st-anniversary-of-the-signing-of-the-european-2005-it",
     "mintSlugs": ["rome-state-mint-italy"],
     "issuerCode": "IT",
     "firstIssueYear": 2005,
@@ -221,6 +230,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000a",
     "title": "60th Anniversary of the United Nations and 50th Anniversary of Finland's Membership",
+    "slug": "60th-anniversary-of-the-united-nations-and-50th-2005-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -232,6 +242,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000b",
     "title": "50th Anniversary of the Austrian State Treaty",
+    "slug": "50th-anniversary-of-the-austrian-state-treaty-2005-at",
     "issuerCode": "AT",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -243,6 +254,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000c",
     "title": "400th Anniversary of the First Edition of Don Quixote",
+    "slug": "400th-anniversary-of-the-first-edition-of-don-quixote-2005-es",
     "issuerCode": "ES",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -264,6 +276,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000d",
     "title": "Belgium–Luxembourg Economic Union",
+    "slug": "belgium-luxembourg-economic-union-2005-be",
     "issuerCode": "BE",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -275,6 +288,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000e",
     "title": "Anniversaries of Grand Dukes Henri and Adolphe",
+    "slug": "anniversaries-of-grand-dukes-henri-and-adolphe-2005-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -286,6 +300,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000000f",
     "title": "5th Centenary of the Swiss Pontifical Guard",
+    "slug": "5th-centenary-of-the-swiss-pontifical-guard-2006-va",
     "issuerCode": "VA",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -297,6 +312,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000010",
     "title": "500th Anniversary of Christopher Columbus' Death",
+    "slug": "500th-anniversary-of-christopher-columbus-death-2006-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -308,6 +324,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000011",
     "title": "100th Anniversary of Universal and Equal Suffrage",
+    "slug": "100th-anniversary-of-universal-and-equal-suffrage-2006-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -319,6 +336,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000012",
     "title": "Atomium",
+    "slug": "atomium-2006-be",
     "issuerCode": "BE",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -330,6 +348,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000013",
     "title": "Schleswig-Holstein",
+    "slug": "schleswig-holstein-2006-de",
     "issuerCode": "DE",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -341,6 +360,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000014",
     "title": "XX Olympic Winter Games — Turin 2006",
+    "slug": "xx-olympic-winter-games-turin-2006-2006-it",
     "issuerCode": "IT",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -352,6 +372,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000015",
     "title": "25th Birthday of Grand Duke Guillaume",
+    "slug": "25th-birthday-of-grand-duke-guillaume-2006-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2006,
     "lastIssueYear": 2006,
@@ -363,6 +384,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000016",
     "title": "90th Anniversary of Finland's Independence",
+    "slug": "90th-anniversary-of-finland-s-independence-2007-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -374,6 +396,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000017",
     "title": "Bicentenary of the Birth of Giuseppe Garibaldi",
+    "slug": "bicentenary-of-the-birth-of-giuseppe-garibaldi-2007-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -385,6 +408,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000018",
     "title": "80th Birthday of Pope Benedict XVI",
+    "slug": "80th-birthday-of-pope-benedict-xvi-2007-va",
     "issuerCode": "VA",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -396,6 +420,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000019",
     "title": "25th Anniversary of the Death of Princess Grace",
+    "slug": "25th-anniversary-of-the-death-of-princess-grace-2007-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -407,6 +432,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001a",
     "title": "Portuguese Presidency of the European Union",
+    "slug": "portuguese-presidency-of-the-european-union-2007-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -418,6 +444,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001b",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-at",
     "issuerCode": "AT",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -429,6 +456,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001c",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-be",
     "issuerCode": "BE",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -440,6 +468,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001d",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -451,6 +480,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001e",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -462,6 +492,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000001f",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-de",
     "issuerCode": "DE",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -473,6 +504,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000020",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -484,6 +516,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000021",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -495,6 +528,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000022",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-it",
     "issuerCode": "IT",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -506,6 +540,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000023",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -517,6 +552,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000024",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -528,6 +564,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000025",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -539,6 +576,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000026",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-si",
     "issuerCode": "SI",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -550,6 +588,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000027",
     "title": "50th Anniversary of the Treaty of Rome",
+    "slug": "50th-anniversary-of-the-treaty-of-rome-2007-es",
     "issuerCode": "ES",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -561,6 +600,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000028",
     "title": "Mecklenburg-Vorpommern",
+    "slug": "mecklenburg-vorpommern-2007-de",
     "issuerCode": "DE",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -572,6 +612,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000029",
     "title": "Grand Ducal Palace",
+    "slug": "grand-ducal-palace-2007-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2007,
     "lastIssueYear": 2007,
@@ -583,6 +624,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002a",
     "title": "The Year of St Paul — 2000th Anniversary of His Birth",
+    "slug": "the-year-of-st-paul-2000th-anniversary-of-his-birth-2008-va",
     "issuerCode": "VA",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -594,6 +636,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002b",
     "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "slug": "60th-anniversary-of-the-universal-declaration-of-human-2008-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -605,6 +648,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002c",
     "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "slug": "60th-anniversary-of-the-universal-declaration-of-human-2008-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -616,6 +660,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002d",
     "title": "French Presidency of the Council of the European Union",
+    "slug": "french-presidency-of-the-council-of-the-european-union-2008-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -627,6 +672,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002e",
     "title": "500th Anniversary of Primož Trubar's Birth",
+    "slug": "500th-anniversary-of-primoz-trubar-s-birth-2008-si",
     "issuerCode": "SI",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -638,6 +684,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000002f",
     "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "slug": "60th-anniversary-of-the-universal-declaration-of-human-2008-be",
     "issuerCode": "BE",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -649,6 +696,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000030",
     "title": "European Year of Intercultural Dialogue",
+    "slug": "european-year-of-intercultural-dialogue-2008-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -660,6 +708,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000031",
     "title": "60th Anniversary of the Universal Declaration of Human Rights",
+    "slug": "60th-anniversary-of-the-universal-declaration-of-human-2008-it",
     "issuerCode": "IT",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -671,6 +720,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000032",
     "title": "Grand Duke Henri and Château de Berg",
+    "slug": "grand-duke-henri-and-chateau-de-berg-2008-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2008,
     "lastIssueYear": 2008,
@@ -694,6 +744,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000034",
     "title": "20th Anniversary of 17 November 1989",
+    "slug": "20th-anniversary-of-17-november-1989-2009-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -705,6 +756,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000035",
     "title": "200th Anniversary of Finnish Autonomy and the Diet of Porvoo",
+    "slug": "200th-anniversary-of-finnish-autonomy-and-the-diet-of-2009-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -716,6 +768,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000036",
     "title": "International Year of Astronomy",
+    "slug": "international-year-of-astronomy-2009-va",
     "issuerCode": "VA",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -727,6 +780,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000037",
     "title": "200th Anniversary of the Birth of Louis Braille",
+    "slug": "200th-anniversary-of-the-birth-of-louis-braille-2009-it",
     "issuerCode": "IT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -738,6 +792,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000038",
     "title": "200th Anniversary of the Birth of Louis Braille",
+    "slug": "200th-anniversary-of-the-birth-of-louis-braille-2009-be",
     "issuerCode": "BE",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -749,6 +804,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000039",
     "title": "2nd Lusophone Games",
+    "slug": "2nd-lusophone-games-2009-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -760,6 +816,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003a",
     "title": "European Year of Creativity and Innovation",
+    "slug": "european-year-of-creativity-and-innovation-2009-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -771,6 +828,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003b",
     "title": "Saarland",
+    "slug": "saarland-2009-de",
     "issuerCode": "DE",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -782,6 +840,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003c",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-at",
     "issuerCode": "AT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -793,6 +852,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003d",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-be",
     "issuerCode": "BE",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -804,6 +864,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003e",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -815,6 +876,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000003f",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -826,6 +888,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000040",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -837,6 +900,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000041",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-de",
     "issuerCode": "DE",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -848,6 +912,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000042",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -859,6 +924,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000043",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -870,6 +936,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000044",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-it",
     "issuerCode": "IT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -881,6 +948,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000045",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -892,6 +960,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000046",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -903,6 +972,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000047",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -914,6 +984,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000048",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -925,6 +996,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000049",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -936,6 +1008,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004a",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-si",
     "issuerCode": "SI",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -947,6 +1020,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004b",
     "title": "10th Anniversary of Economic and Monetary Union",
+    "slug": "10th-anniversary-of-economic-and-monetary-union-2009-es",
     "issuerCode": "ES",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -969,6 +1043,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004c",
     "title": "Grand Duke Henri and Grand Duchess Charlotte",
+    "slug": "grand-duke-henri-and-grand-duchess-charlotte-2009-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2009,
     "lastIssueYear": 2009,
@@ -980,6 +1055,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004d",
     "title": "2500th Anniversary of the Battle of Marathon",
+    "slug": "2500th-anniversary-of-the-battle-of-marathon-2010-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -991,6 +1067,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004e",
     "title": "Year for Priests",
+    "slug": "year-for-priests-2010-va",
     "issuerCode": "VA",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1002,6 +1079,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000004f",
     "title": "Currency Decree of 1860",
+    "slug": "currency-decree-of-1860-2010-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1013,6 +1091,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000050",
     "title": "500th Anniversary of the Death of Sandro Botticelli",
+    "slug": "500th-anniversary-of-the-death-of-sandro-botticelli-2010-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1024,6 +1103,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000051",
     "title": "100th Anniversary of the Portuguese Republic",
+    "slug": "100th-anniversary-of-the-portuguese-republic-2010-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1035,6 +1115,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000052",
     "title": "70th Anniversary of the Appeal of 18 June",
+    "slug": "70th-anniversary-of-the-appeal-of-18-june-2010-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1046,6 +1127,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000053",
     "title": "Belgian Presidency of the Council of the European Union",
+    "slug": "belgian-presidency-of-the-council-of-the-european-union-2010-be",
     "issuerCode": "BE",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1057,6 +1139,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000054",
     "title": "200th Anniversary of the Botanical Garden in Ljubljana",
+    "slug": "200th-anniversary-of-the-botanical-garden-in-ljubljana-2010-si",
     "issuerCode": "SI",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1068,6 +1151,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000055",
     "title": "Historic Centre of Córdoba",
+    "slug": "historic-centre-of-cordoba-2010-es",
     "issuerCode": "ES",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1079,6 +1163,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000056",
     "title": "200th Anniversary of the Birth of the Count of Cavour",
+    "slug": "200th-anniversary-of-the-birth-of-the-count-of-cavour-2010-it",
     "issuerCode": "IT",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1090,6 +1175,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000057",
     "title": "Coat of Arms of the Grand Duke",
+    "slug": "coat-of-arms-of-the-grand-duke-2010-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1101,6 +1187,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000058",
     "title": "Bremen",
+    "slug": "bremen-2010-de",
     "issuerCode": "DE",
     "firstIssueYear": 2010,
     "lastIssueYear": 2010,
@@ -1112,6 +1199,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000059",
     "title": "Constitutional History — First Election of Representatives in 1849",
+    "slug": "constitutional-history-first-election-of-2011-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1123,6 +1211,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005a",
     "title": "26th World Youth Day",
+    "slug": "26th-world-youth-day-2011-va",
     "issuerCode": "VA",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1134,6 +1223,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005b",
     "title": "200th Anniversary of the Bank of Finland",
+    "slug": "200th-anniversary-of-the-bank-of-finland-2011-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1145,6 +1235,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005c",
     "title": "500th Anniversary of the Birth of Fernão Mendes Pinto",
+    "slug": "500th-anniversary-of-the-birth-of-fernao-mendes-pinto-2011-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1156,6 +1247,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005d",
     "title": "Wedding of Prince Albert and Charlene Wittstock",
+    "slug": "wedding-of-prince-albert-and-charlene-wittstock-2011-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1167,6 +1259,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005e",
     "title": "30th Anniversary of the Day of Music",
+    "slug": "30th-anniversary-of-the-day-of-music-2011-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1178,6 +1271,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000005f",
     "title": "Special Olympics World Summer Games — Athens 2011",
+    "slug": "special-olympics-world-summer-games-athens-2011-2011-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1189,6 +1283,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000060",
     "title": "500th Anniversary of the Birth of Giorgio Vasari",
+    "slug": "500th-anniversary-of-the-birth-of-giorgio-vasari-2011-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1200,6 +1295,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000061",
     "title": "150th Anniversary of the Unification of Italy",
+    "slug": "150th-anniversary-of-the-unification-of-italy-2011-it",
     "tagSlugs": ["flag"],
     "issuerCode": "IT",
     "firstIssueYear": 2011,
@@ -1212,6 +1308,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000062",
     "title": "Court of the Lions, Granada",
+    "slug": "court-of-the-lions-granada-2011-es",
     "issuerCode": "ES",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1223,6 +1320,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000063",
     "title": "100th Anniversary of the Birth of Franc Rozman-Stane",
+    "slug": "100th-anniversary-of-the-birth-of-franc-rozman-stane-2011-si",
     "issuerCode": "SI",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1234,6 +1332,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000064",
     "title": "100th Anniversary of International Women's Day",
+    "slug": "100th-anniversary-of-international-women-s-day-2011-be",
     "issuerCode": "BE",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1245,6 +1344,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000065",
     "title": "20th Anniversary of the Formation of the Visegrad Group",
+    "slug": "20th-anniversary-of-the-formation-of-the-visegrad-group-2011-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1256,6 +1356,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000066",
     "title": "50th Anniversary of the Appointment of Jean as Lieutenant-Représentant",
+    "slug": "50th-anniversary-of-the-appointment-of-jean-as-2011-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1267,6 +1368,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000067",
     "title": "500th Anniversary of the Publication of The Praise of Folly",
+    "slug": "500th-anniversary-of-the-publication-of-the-praise-of-2011-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1278,6 +1380,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000068",
     "title": "North Rhine-Westphalia",
+    "slug": "north-rhine-westphalia-2011-de",
     "issuerCode": "DE",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1289,6 +1392,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000069",
     "title": "Wedding of Prince Guillaume and Countess Stéphanie de Lannoy",
+    "slug": "wedding-of-prince-guillaume-and-countess-stephanie-de-2012-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1300,6 +1404,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006a",
     "title": "Seventh World Meeting of Families",
+    "slug": "seventh-world-meeting-of-families-2012-va",
     "issuerCode": "VA",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1311,6 +1416,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006b",
     "title": "150th Anniversary of the Birth of Helene Schjerfbeck",
+    "slug": "150th-anniversary-of-the-birth-of-helene-schjerfbeck-2012-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1322,6 +1428,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006c",
     "title": "Majority Representation in 1887",
+    "slug": "majority-representation-in-1887-2012-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1333,6 +1440,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006d",
     "title": "500th Anniversary of Monaco's Sovereignty",
+    "slug": "500th-anniversary-of-monaco-s-sovereignty-2012-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1344,6 +1452,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006e",
     "title": "100th Anniversary of the Birth of Abbé Pierre",
+    "slug": "100th-anniversary-of-the-birth-of-abbe-pierre-2012-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1355,6 +1464,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000006f",
     "title": "Guimarães — European Capital of Culture 2012",
+    "slug": "guimaraes-european-capital-of-culture-2012-2012-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1366,6 +1476,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000070",
     "title": "75th Anniversary of the Queen Elisabeth Competition",
+    "slug": "75th-anniversary-of-the-queen-elisabeth-competition-2012-be",
     "issuerCode": "BE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1377,6 +1488,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000071",
     "title": "100th Anniversary of the Death of Giovanni Pascoli",
+    "slug": "100th-anniversary-of-the-death-of-giovanni-pascoli-2012-it",
     "issuerCode": "IT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1388,6 +1500,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000072",
     "title": "Burgos Cathedral",
+    "slug": "burgos-cathedral-2012-es",
     "issuerCode": "ES",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1399,6 +1512,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000073",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-at",
     "issuerCode": "AT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1410,6 +1524,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000074",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-be",
     "issuerCode": "BE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1421,6 +1536,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000075",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1432,6 +1548,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000076",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1443,6 +1560,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000077",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1454,6 +1572,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000078",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1465,6 +1584,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000079",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-de",
     "issuerCode": "DE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1476,6 +1596,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007a",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1487,6 +1608,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007b",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1498,6 +1620,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007c",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-it",
     "issuerCode": "IT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1509,6 +1632,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007d",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1520,6 +1644,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007e",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1531,6 +1656,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000007f",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1542,6 +1668,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000080",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1553,6 +1680,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000081",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1564,6 +1692,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000082",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1575,6 +1704,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000083",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-si",
     "issuerCode": "SI",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1586,6 +1716,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000084",
     "title": "Ten Years of the Euro",
+    "slug": "ten-years-of-the-euro-2012-es",
     "issuerCode": "ES",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1608,6 +1739,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000085",
     "title": "Grand Duke Henri and Grand Duke Guillaume IV",
+    "slug": "grand-duke-henri-and-grand-duke-guillaume-iv-2012-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1619,6 +1751,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000086",
     "title": "Bavaria",
+    "slug": "bavaria-2012-de",
     "issuerCode": "DE",
     "firstIssueYear": 2012,
     "lastIssueYear": 2012,
@@ -1630,6 +1763,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000087",
     "title": "200th Anniversary of the Kingdom of the Netherlands",
+    "slug": "200th-anniversary-of-the-kingdom-of-the-netherlands-2013-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1641,6 +1775,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000088",
     "title": "125th Anniversary of the Birth of F. E. Sillanpää",
+    "slug": "125th-anniversary-of-the-birth-of-f-e-sillanpaa-2013-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1652,6 +1787,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000089",
     "title": "Self-Government Constitution of 1921",
+    "slug": "self-government-constitution-of-1921-2013-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1663,6 +1799,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008a",
     "title": "28th World Youth Day",
+    "slug": "28th-world-youth-day-2013-va",
     "issuerCode": "VA",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1674,6 +1811,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008b",
     "title": "100th Anniversary of the Union of Crete with Greece",
+    "slug": "100th-anniversary-of-the-union-of-crete-with-greece-2013-gr",
     "tagSlugs": ["flag"],
     "issuerCode": "GR",
     "firstIssueYear": 2013,
@@ -1686,6 +1824,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008c",
     "title": "2400th Anniversary of the Founding of Plato's Academy",
+    "slug": "2400th-anniversary-of-the-founding-of-plato-s-academy-2013-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1697,6 +1836,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008d",
     "title": "500th Anniversary of the Death of Pinturicchio",
+    "slug": "500th-anniversary-of-the-death-of-pinturicchio-2013-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1708,6 +1848,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008e",
     "title": "100th Anniversary of the Royal Meteorological Institute",
+    "slug": "100th-anniversary-of-the-royal-meteorological-institute-2013-be",
     "issuerCode": "BE",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1719,6 +1860,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008f",
     "title": "150th Anniversary of the Parliament of 1863",
+    "slug": "150th-anniversary-of-the-parliament-of-1863-2013-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1730,6 +1872,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000090",
     "title": "National Anthem of Luxembourg",
+    "slug": "national-anthem-of-luxembourg-2013-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1741,6 +1884,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000091",
     "title": "1150th Anniversary of the Mission of Constantine and Methodius",
+    "slug": "1150th-anniversary-of-the-mission-of-constantine-and-2013-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1752,6 +1896,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000092",
     "title": "20th Anniversary of Monaco Joining the United Nations",
+    "slug": "20th-anniversary-of-monaco-joining-the-united-nations-2013-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1763,6 +1908,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000093",
     "title": "700th Anniversary of the Birth of Giovanni Boccaccio",
+    "slug": "700th-anniversary-of-the-birth-of-giovanni-boccaccio-2013-it",
     "issuerCode": "IT",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1774,6 +1920,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000094",
     "title": "250th Anniversary of the Clérigos Tower",
+    "slug": "250th-anniversary-of-the-clerigos-tower-2013-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1785,6 +1932,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000095",
     "title": "150th Anniversary of the Birth of Pierre de Coubertin",
+    "slug": "150th-anniversary-of-the-birth-of-pierre-de-coubertin-2013-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1796,6 +1944,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000096",
     "title": "Sede Vacante 2013",
+    "slug": "sede-vacante-2013-2013-va",
     "issuerCode": "VA",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1807,6 +1956,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000097",
     "title": "200th Anniversary of the Birth of Giuseppe Verdi",
+    "slug": "200th-anniversary-of-the-birth-of-giuseppe-verdi-2013-it",
     "issuerCode": "IT",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1818,6 +1968,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000098",
     "title": "Announcement of Queen Beatrix's Abdication",
+    "slug": "announcement-of-queen-beatrix-s-abdication-2013-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1829,6 +1980,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000099",
     "title": "Baden-Württemberg",
+    "slug": "baden-wurttemberg-2013-de",
     "issuerCode": "DE",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1840,6 +1992,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009a",
     "title": "800th Anniversary of Visits to Postojna Cave",
+    "slug": "800th-anniversary-of-visits-to-postojna-cave-2013-si",
     "issuerCode": "SI",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1851,6 +2004,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009b",
     "title": "Monastery of San Lorenzo de El Escorial",
+    "slug": "monastery-of-san-lorenzo-de-el-escorial-2013-es",
     "issuerCode": "ES",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1862,6 +2016,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009c",
     "title": "50th Anniversary of the Élysée Treaty",
+    "slug": "50th-anniversary-of-the-elysee-treaty-2013-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1873,6 +2028,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009d",
     "title": "50th Anniversary of the Élysée Treaty",
+    "slug": "50th-anniversary-of-the-elysee-treaty-2013-de",
     "issuerCode": "DE",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,
@@ -1884,6 +2040,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009e",
     "title": "Change of Head of State",
+    "slug": "change-of-head-of-state-2014-es",
     "issuerCode": "ES",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1909,6 +2066,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000009f",
     "title": "World AIDS Day",
+    "slug": "world-aids-day-2014-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1920,6 +2078,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a0",
     "title": "100th Anniversary of the Birth of Ilmari Tapiovaara",
+    "slug": "100th-anniversary-of-the-birth-of-ilmari-tapiovaara-2014-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1931,6 +2090,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a1",
     "title": "25th Anniversary of the Fall of the Berlin Wall",
+    "slug": "25th-anniversary-of-the-fall-of-the-berlin-wall-2014-va",
     "issuerCode": "VA",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1942,6 +2102,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a2",
     "title": "600th Anniversary of the Coronation of Barbara of Celje",
+    "slug": "600th-anniversary-of-the-coronation-of-barbara-of-celje-2014-si",
     "issuerCode": "SI",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1953,6 +2114,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a3",
     "title": "50th Anniversary of Grand Duke Jean's Accession",
+    "slug": "50th-anniversary-of-grand-duke-jean-s-accession-2014-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1964,6 +2126,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a4",
     "title": "International Year of Family Farming",
+    "slug": "international-year-of-family-farming-2014-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1975,6 +2138,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a5",
     "title": "50th Anniversary of Malta's Independence",
+    "slug": "50th-anniversary-of-malta-s-independence-2014-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1986,6 +2150,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a6",
     "title": "90th Anniversary of the Death of Giacomo Puccini",
+    "slug": "90th-anniversary-of-the-death-of-giacomo-puccini-2014-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -1997,6 +2162,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a7",
     "title": "150th Anniversary of the Belgian Red Cross",
+    "slug": "150th-anniversary-of-the-belgian-red-cross-2014-be",
     "issuerCode": "BE",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2008,6 +2174,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a8",
     "title": "150th Anniversary of the Union of the Ionian Islands with Greece",
+    "slug": "150th-anniversary-of-the-union-of-the-ionian-islands-2014-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2019,6 +2186,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000a9",
     "title": "400th Anniversary of the Death of Domenikos Theotokopoulos",
+    "slug": "400th-anniversary-of-the-death-of-domenikos-2014-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2030,6 +2198,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000aa",
     "title": "Riga — European Capital of Culture 2014",
+    "slug": "riga-european-capital-of-culture-2014-2014-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2041,6 +2210,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ab",
     "title": "200th Anniversary of the Malta Police Force",
+    "slug": "200th-anniversary-of-the-malta-police-force-2014-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2052,6 +2222,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ac",
     "title": "500th Anniversary of the Death of Donato Bramante",
+    "slug": "500th-anniversary-of-the-death-of-donato-bramante-2014-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2063,6 +2234,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ad",
     "title": "100th Anniversary of the Birth of Tove Jansson",
+    "slug": "100th-anniversary-of-the-birth-of-tove-jansson-2014-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2074,6 +2246,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ae",
     "title": "200th Anniversary of the Carabinieri",
+    "slug": "200th-anniversary-of-the-carabinieri-2014-it",
     "issuerCode": "IT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2085,6 +2258,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000af",
     "title": "450th Anniversary of the Birth of Galileo Galilei",
+    "slug": "450th-anniversary-of-the-birth-of-galileo-galilei-2014-it",
     "issuerCode": "IT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2096,6 +2270,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b0",
     "title": "70th Anniversary of the Normandy Landings",
+    "slug": "70th-anniversary-of-the-normandy-landings-2014-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2107,6 +2282,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b1",
     "title": "Official Farewell to Former Queen Beatrix",
+    "slug": "official-farewell-to-former-queen-beatrix-2014-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2118,6 +2294,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b2",
     "title": "10th Anniversary of Slovakia's Accession to the European Union",
+    "slug": "10th-anniversary-of-slovakia-s-accession-to-the-2014-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2129,6 +2306,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b3",
     "title": "40th Anniversary of the Carnation Revolution",
+    "slug": "40th-anniversary-of-the-carnation-revolution-2014-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2140,6 +2318,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b4",
     "title": "Centenary of the Beginning of the First World War",
+    "slug": "centenary-of-the-beginning-of-the-first-world-war-2014-be",
     "issuerCode": "BE",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2151,6 +2330,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b5",
     "title": "Park Güell",
+    "slug": "park-guell-2014-es",
     "issuerCode": "ES",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2162,6 +2342,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b6",
     "title": "20th Anniversary of Andorra Joining the Council of Europe",
+    "slug": "20th-anniversary-of-andorra-joining-the-council-of-2014-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2173,6 +2354,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b7",
     "title": "175th Anniversary of Luxembourg's Independence",
+    "slug": "175th-anniversary-of-luxembourg-s-independence-2014-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2184,6 +2366,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b8",
     "title": "Lower Saxony",
+    "slug": "lower-saxony-2014-de",
     "issuerCode": "DE",
     "firstIssueYear": 2014,
     "lastIssueYear": 2014,
@@ -2195,6 +2378,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000b9",
     "title": "The Lithuanian Language",
+    "slug": "the-lithuanian-language-2015-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2206,6 +2390,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ba",
     "title": "30th Anniversary of Coming of Age at 18",
+    "slug": "30th-anniversary-of-coming-of-age-at-18-2015-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2217,6 +2402,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000bb",
     "title": "25th Anniversary of the Customs Agreement with the European Union",
+    "slug": "25th-anniversary-of-the-customs-agreement-with-the-2015-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2228,6 +2414,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000bc",
     "title": "800th Anniversary of the First Fortress on the Rock of Monaco",
+    "slug": "800th-anniversary-of-the-first-fortress-on-the-rock-of-2015-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2239,6 +2426,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000bd",
     "title": "Eighth World Meeting of Families",
+    "slug": "eighth-world-meeting-of-families-2015-va",
     "issuerCode": "VA",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2250,6 +2438,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000be",
     "title": "150th Anniversary of the Birth of Akseli Gallen-Kallela",
+    "slug": "150th-anniversary-of-the-birth-of-akseli-gallen-kallela-2015-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2261,6 +2450,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000bf",
     "title": "The Black Stork",
+    "slug": "the-black-stork-2015-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2272,6 +2462,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c0",
     "title": "200th Anniversary of the Birth of Ľudovít Štúr",
+    "slug": "200th-anniversary-of-the-birth-of-ludovit-stur-2015-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2283,6 +2474,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c1",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-at",
     "issuerCode": "AT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2294,6 +2486,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c2",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-be",
     "issuerCode": "BE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2305,6 +2498,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c3",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2316,6 +2510,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c4",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2327,6 +2522,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c5",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2338,6 +2534,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c6",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2349,6 +2546,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c7",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-de",
     "issuerCode": "DE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2360,6 +2558,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c8",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2371,6 +2570,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000c9",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2382,6 +2582,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ca",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-it",
     "issuerCode": "IT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2393,6 +2594,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000cb",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2404,6 +2606,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000cc",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2415,6 +2618,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000cd",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2426,6 +2630,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ce",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2437,6 +2642,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000cf",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2448,6 +2654,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d0",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2459,6 +2666,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d1",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2470,6 +2678,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d2",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-si",
     "issuerCode": "SI",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2481,6 +2690,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d3",
     "title": "30th Anniversary of the European Union Flag",
+    "slug": "30th-anniversary-of-the-european-union-flag-2015-es",
     "issuerCode": "ES",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2492,6 +2702,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d4",
     "title": "75th Anniversary of the Death of Spyros Louis",
+    "slug": "75th-anniversary-of-the-death-of-spyros-louis-2015-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2503,6 +2714,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d5",
     "title": "Republic of Malta 1974",
+    "slug": "republic-of-malta-1974-2015-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2514,6 +2726,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d6",
     "title": "25th Anniversary of German Reunification",
+    "slug": "25th-anniversary-of-german-reunification-2015-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2525,6 +2738,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d7",
     "title": "European Year for Development",
+    "slug": "european-year-for-development-2015-be",
     "issuerCode": "BE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2536,6 +2750,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d8",
     "title": "125th Anniversary of the House of Nassau-Weilburg",
+    "slug": "125th-anniversary-of-the-house-of-nassau-weilburg-2015-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2547,6 +2762,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000d9",
     "title": "225th Anniversary of the Fête de la Fédération",
+    "slug": "225th-anniversary-of-the-fete-de-la-federation-2015-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2558,6 +2774,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000da",
     "title": "750th Anniversary of the Birth of Dante Alighieri",
+    "slug": "750th-anniversary-of-the-birth-of-dante-alighieri-2015-it",
     "issuerCode": "IT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2569,6 +2786,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000db",
     "title": "500th Anniversary of the First Contacts with Timor",
+    "slug": "500th-anniversary-of-the-first-contacts-with-timor-2015-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2580,6 +2798,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000dc",
     "title": "150th Anniversary of the Portuguese Red Cross",
+    "slug": "150th-anniversary-of-the-portuguese-red-cross-2015-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2591,6 +2810,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000dd",
     "title": "750th Anniversary of the Birth of Dante Alighieri",
+    "slug": "750th-anniversary-of-the-birth-of-dante-alighieri-2015-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2602,6 +2822,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000de",
     "title": "100th Anniversary of the First Flight from Malta",
+    "slug": "100th-anniversary-of-the-first-flight-from-malta-2015-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2613,6 +2834,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000df",
     "title": "15th Anniversary of Grand Duke Henri's Accession",
+    "slug": "15th-anniversary-of-grand-duke-henri-s-accession-2015-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2624,6 +2846,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e0",
     "title": "Expo Milano 2015",
+    "slug": "expo-milano-2015-2015-it",
     "issuerCode": "IT",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2635,6 +2858,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e1",
     "title": "Cave of Altamira",
+    "slug": "cave-of-altamira-2015-es",
     "issuerCode": "ES",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2646,6 +2870,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e2",
     "title": "25th Anniversary of German Unity",
+    "slug": "25th-anniversary-of-german-unity-2015-de",
     "issuerCode": "DE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2657,6 +2882,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e3",
     "title": "Hesse",
+    "slug": "hesse-2015-de",
     "issuerCode": "DE",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2668,6 +2894,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e4",
     "title": "Emona — Ljubljana",
+    "slug": "emona-ljubljana-2015-si",
     "issuerCode": "SI",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2679,6 +2906,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e5",
     "title": "Europe Building Peace and Security Since 1945",
+    "slug": "europe-building-peace-and-security-since-1945-2015-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2690,6 +2918,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e6",
     "title": "150th Anniversary of the Birth of Jean Sibelius",
+    "slug": "150th-anniversary-of-the-birth-of-jean-sibelius-2015-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2701,6 +2930,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e7",
     "title": "Latvian Presidency of the Council of the European Union",
+    "slug": "latvian-presidency-of-the-council-of-the-european-union-2015-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2015,
     "lastIssueYear": 2015,
@@ -2712,6 +2942,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e8",
     "title": "150th Anniversary of the Burning of Arkadi Monastery",
+    "slug": "150th-anniversary-of-the-burning-of-arkadi-monastery-2016-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2723,6 +2954,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000e9",
     "title": "120th Anniversary of the Birth of Dimitri Mitropoulos",
+    "slug": "120th-anniversary-of-the-birth-of-dimitri-mitropoulos-2016-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2734,6 +2966,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ea",
     "title": "25th Anniversary of Radio and Television of Andorra",
+    "slug": "25th-anniversary-of-radio-and-television-of-andorra-2016-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2745,6 +2978,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000eb",
     "title": "150th Anniversary of the New Reform of 1866",
+    "slug": "150th-anniversary-of-the-new-reform-of-1866-2016-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2756,6 +2990,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ec",
     "title": "The Role of the Malta Community Chest Fund in Society",
+    "slug": "the-role-of-the-malta-community-chest-fund-in-society-2016-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2767,6 +3002,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ed",
     "title": "Vidzeme",
+    "slug": "vidzeme-2016-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2778,6 +3014,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ee",
     "title": "100th Anniversary of the Birth of François Mitterrand",
+    "slug": "100th-anniversary-of-the-birth-of-francois-mitterrand-2016-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2789,6 +3026,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ef",
     "title": "Jubilee of Mercy",
+    "slug": "jubilee-of-mercy-2016-va",
     "issuerCode": "VA",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2800,6 +3038,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f0",
     "title": "100th Anniversary of the Birth of Georg Henrik von Wright",
+    "slug": "100th-anniversary-of-the-birth-of-georg-henrik-von-2016-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2811,6 +3050,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f1",
     "title": "400th Anniversary of the Death of William Shakespeare",
+    "slug": "400th-anniversary-of-the-death-of-william-shakespeare-2016-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2822,6 +3062,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f2",
     "title": "Ġgantija Temples",
+    "slug": "ggantija-temples-2016-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2833,6 +3074,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f3",
     "title": "50th Anniversary of the 25 de Abril Bridge",
+    "slug": "50th-anniversary-of-the-25-de-abril-bridge-2016-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2844,6 +3086,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f4",
     "title": "Baltic Culture",
+    "slug": "baltic-culture-2016-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2855,6 +3098,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f5",
     "title": "200th Anniversary of the Vatican Gendarmerie Corps",
+    "slug": "200th-anniversary-of-the-vatican-gendarmerie-corps-2016-va",
     "issuerCode": "VA",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2866,6 +3110,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f6",
     "title": "Latvian Agricultural Industry",
+    "slug": "latvian-agricultural-industry-2016-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2877,6 +3122,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f7",
     "title": "150th Anniversary of the Founding of Monte Carlo by Charles III",
+    "slug": "150th-anniversary-of-the-founding-of-monte-carlo-by-2016-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2888,6 +3134,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f8",
     "title": "25th Anniversary of the Independence of Slovenia",
+    "slug": "25th-anniversary-of-the-independence-of-slovenia-2016-si",
     "issuerCode": "SI",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2899,6 +3146,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000f9",
     "title": "International Missing Children's Day",
+    "slug": "international-missing-children-s-day-2016-be",
     "issuerCode": "BE",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2910,6 +3158,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000fa",
     "title": "Eino Leino",
+    "slug": "eino-leino-2016-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2921,6 +3170,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000fb",
     "title": "550th Anniversary of the Death of Donatello",
+    "slug": "550th-anniversary-of-the-death-of-donatello-2016-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2932,6 +3182,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000fc",
     "title": "Portuguese Team at the Rio 2016 Olympic Games",
+    "slug": "portuguese-team-at-the-rio-2016-olympic-games-2016-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2943,6 +3194,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000fd",
     "title": "550th Anniversary of the Death of Donatello",
+    "slug": "550th-anniversary-of-the-death-of-donatello-2016-it",
     "issuerCode": "IT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2954,6 +3206,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000fe",
     "title": "2,200th Anniversary of the Death of Plautus",
+    "slug": "2-200th-anniversary-of-the-death-of-plautus-2016-it",
     "issuerCode": "IT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2965,6 +3218,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000000ff",
     "title": "Belgian Olympic Team",
+    "slug": "belgian-olympic-team-2016-be",
     "issuerCode": "BE",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2976,6 +3230,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000100",
     "title": "First Slovak Presidency of the Council of the European Union",
+    "slug": "first-slovak-presidency-of-the-council-of-the-european-2016-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2987,6 +3242,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000101",
     "title": "50th Anniversary of the Grand Duchess Charlotte Bridge",
+    "slug": "50th-anniversary-of-the-grand-duchess-charlotte-bridge-2016-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -2998,6 +3254,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000102",
     "title": "Saxony",
+    "slug": "saxony-2016-de",
     "issuerCode": "DE",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3009,6 +3266,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000103",
     "title": "Aqueduct of Segovia",
+    "slug": "aqueduct-of-segovia-2016-es",
     "issuerCode": "ES",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3020,6 +3278,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000104",
     "title": "200th Anniversary of the Oesterreichische Nationalbank",
+    "slug": "200th-anniversary-of-the-oesterreichische-nationalbank-2016-at",
     "issuerCode": "AT",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3031,6 +3290,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000105",
     "title": "UEFA Euro 2016",
+    "slug": "uefa-euro-2016-2016-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3042,6 +3302,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000106",
     "title": "100th Anniversary of the Birth of Paul Keres",
+    "slug": "100th-anniversary-of-the-birth-of-paul-keres-2016-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3053,6 +3314,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000107",
     "title": "100th Anniversary of the Easter Rising",
+    "slug": "100th-anniversary-of-the-easter-rising-2016-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2016,
     "lastIssueYear": 2016,
@@ -3064,6 +3326,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000108",
     "title": "Andorra — The Pyrenean Country",
+    "slug": "andorra-the-pyrenean-country-2017-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3075,6 +3338,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000109",
     "title": "100th Anniversary of the Anthem of Andorra",
+    "slug": "100th-anniversary-of-the-anthem-of-andorra-2017-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3086,6 +3350,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010a",
     "title": "Solidarity and Peace",
+    "slug": "solidarity-and-peace-2017-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3097,6 +3362,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010b",
     "title": "200th Anniversary of the Prince's Carabiniers",
+    "slug": "200th-anniversary-of-the-prince-s-carabiniers-2017-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3108,6 +3374,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010c",
     "title": "150th Anniversary of the Birth of Raul Brandão",
+    "slug": "150th-anniversary-of-the-birth-of-raul-brandao-2017-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3119,6 +3386,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010d",
     "title": "Latgale",
+    "slug": "latgale-2017-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3130,6 +3398,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010e",
     "title": "200th Anniversary of the Birth of Grand Duke William III",
+    "slug": "200th-anniversary-of-the-birth-of-grand-duke-william-iii-2017-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3141,6 +3410,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000010f",
     "title": "100th Anniversary of the Apparitions of Fátima",
+    "slug": "100th-anniversary-of-the-apparitions-of-fatima-2017-va",
     "issuerCode": "VA",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3152,6 +3422,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000110",
     "title": "Finnish Nature",
+    "slug": "finnish-nature-2017-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3163,6 +3434,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000111",
     "title": "Paphos 2017 — European Capital of Culture",
+    "slug": "paphos-2017-european-capital-of-culture-2017-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3174,6 +3446,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000112",
     "title": "25th Anniversary of the Pink Ribbon",
+    "slug": "25th-anniversary-of-the-pink-ribbon-2017-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3185,6 +3458,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000113",
     "title": "200th Anniversary of Ghent University",
+    "slug": "200th-anniversary-of-ghent-university-2017-be",
     "issuerCode": "BE",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3196,6 +3470,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000114",
     "title": "International Year of Sustainable Tourism for Development",
+    "slug": "international-year-of-sustainable-tourism-for-2017-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3207,6 +3482,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000115",
     "title": "Kurzeme",
+    "slug": "kurzeme-2017-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3218,6 +3494,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000116",
     "title": "Vilnius",
+    "slug": "vilnius-2017-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3229,6 +3506,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000117",
     "title": "Road to Estonia's Independence",
+    "slug": "road-to-estonia-s-independence-2017-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3240,6 +3518,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000118",
     "title": "60th Anniversary of the Death of Nikos Kazantzakis",
+    "slug": "60th-anniversary-of-the-death-of-nikos-kazantzakis-2017-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3251,6 +3530,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000119",
     "title": "Archaeological Site of Philippi",
+    "slug": "archaeological-site-of-philippi-2017-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3262,6 +3542,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011a",
     "title": "150 Years of Public Security",
+    "slug": "150-years-of-public-security-2017-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3273,6 +3554,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011b",
     "title": "1,950th Anniversary of the Martyrdom of Saints Peter and Paul",
+    "slug": "1-950th-anniversary-of-the-martyrdom-of-saints-peter-2017-va",
     "issuerCode": "VA",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3284,6 +3566,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011c",
     "title": "Ħaġar Qim Temples",
+    "slug": "agar-qim-temples-2017-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3295,6 +3578,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011d",
     "title": "100 Years of Finnish Independence",
+    "slug": "100-years-of-finnish-independence-2017-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3306,6 +3590,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011e",
     "title": "2,000th Anniversary of the Death of Livy",
+    "slug": "2-000th-anniversary-of-the-death-of-livy-2017-it",
     "issuerCode": "IT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3317,6 +3602,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000011f",
     "title": "200th Anniversary of the University of Liège",
+    "slug": "200th-anniversary-of-the-university-of-liege-2017-be",
     "issuerCode": "BE",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3328,6 +3614,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000120",
     "title": "750th Anniversary of the Birth of Giotto",
+    "slug": "750th-anniversary-of-the-birth-of-giotto-2017-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3339,6 +3626,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000121",
     "title": "Churches of the Kingdom of Asturias",
+    "slug": "churches-of-the-kingdom-of-asturias-2017-es",
     "issuerCode": "ES",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3350,6 +3638,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000122",
     "title": "Rhineland-Palatinate",
+    "slug": "rhineland-palatinate-2017-de",
     "issuerCode": "DE",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3361,6 +3650,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000123",
     "title": "550th Anniversary of Universitas Istropolitana",
+    "slug": "550th-anniversary-of-universitas-istropolitana-2017-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3372,6 +3662,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000124",
     "title": "10th Anniversary of the Euro in Slovenia",
+    "slug": "10th-anniversary-of-the-euro-in-slovenia-2017-si",
     "issuerCode": "SI",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3383,6 +3674,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000125",
     "title": "100th Anniversary of the Death of Auguste Rodin",
+    "slug": "100th-anniversary-of-the-death-of-auguste-rodin-2017-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3394,6 +3686,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000126",
     "title": "50th Anniversary of Voluntary Service in the Luxembourg Army",
+    "slug": "50th-anniversary-of-voluntary-service-in-the-luxembourg-2017-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3405,6 +3698,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000127",
     "title": "400th Anniversary of the Completion of St Mark's Basilica",
+    "slug": "400th-anniversary-of-the-completion-of-st-mark-s-2017-it",
     "issuerCode": "IT",
     "firstIssueYear": 2017,
     "lastIssueYear": 2017,
@@ -3416,6 +3710,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000128",
     "title": "70th Anniversary of the Universal Declaration of Human Rights",
+    "slug": "70th-anniversary-of-the-universal-declaration-of-human-2018-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3427,6 +3722,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000129",
     "title": "Maltese Cultural Heritage",
+    "slug": "maltese-cultural-heritage-2018-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3438,6 +3734,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012a",
     "title": "Finnish Sauna Culture",
+    "slug": "finnish-sauna-culture-2018-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3449,6 +3746,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012b",
     "title": "50th Anniversary of the ESRO 2B Satellite",
+    "slug": "50th-anniversary-of-the-esro-2b-satellite-2018-be",
     "issuerCode": "BE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3460,6 +3758,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012c",
     "title": "50th Anniversary of the Death of Padre Pio",
+    "slug": "50th-anniversary-of-the-death-of-padre-pio-2018-va",
     "issuerCode": "VA",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3471,6 +3770,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012d",
     "title": "75th Anniversary of the Death of Kostis Palamas",
+    "slug": "75th-anniversary-of-the-death-of-kostis-palamas-2018-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3482,6 +3782,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012e",
     "title": "70th Anniversary of the Union of the Dodecanese with Greece",
+    "slug": "70th-anniversary-of-the-union-of-the-dodecanese-with-2018-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3493,6 +3794,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000012f",
     "title": "Zemgale",
+    "slug": "zemgale-2018-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3504,6 +3806,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000130",
     "title": "175th Anniversary of the Death of Grand Duke William I",
+    "slug": "175th-anniversary-of-the-death-of-grand-duke-william-i-2018-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3515,6 +3818,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000131",
     "title": "420th Anniversary of the Birth of Gian Lorenzo Bernini",
+    "slug": "420th-anniversary-of-the-birth-of-gian-lorenzo-bernini-2018-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3526,6 +3830,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000132",
     "title": "Mnajdra Temples",
+    "slug": "mnajdra-temples-2018-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3537,6 +3842,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000133",
     "title": "250th Anniversary of the Ajuda Botanical Garden",
+    "slug": "250th-anniversary-of-the-ajuda-botanical-garden-2018-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3548,6 +3854,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000134",
     "title": "250th Anniversary of the Birth of François-Joseph Bosio",
+    "slug": "250th-anniversary-of-the-birth-of-francois-joseph-bosio-2018-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3559,6 +3866,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000135",
     "title": "250th Anniversary of the National Printing Office",
+    "slug": "250th-anniversary-of-the-national-printing-office-2018-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3570,6 +3878,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000136",
     "title": "50th Anniversary of the May 1968 Events in Belgium",
+    "slug": "50th-anniversary-of-the-may-1968-events-in-belgium-2018-be",
     "issuerCode": "BE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3581,6 +3890,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000137",
     "title": "Simone Veil",
+    "slug": "simone-veil-2018-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3592,6 +3902,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000138",
     "title": "European Year of Cultural Heritage — The Laocoön Group",
+    "slug": "european-year-of-cultural-heritage-the-laocoon-group-2018-va",
     "issuerCode": "VA",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3603,6 +3914,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000139",
     "title": "500th Anniversary of the Birth of Tintoretto",
+    "slug": "500th-anniversary-of-the-birth-of-tintoretto-2018-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3614,6 +3926,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013a",
     "title": "Koli National Landscape",
+    "slug": "koli-national-landscape-2018-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3625,6 +3938,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013b",
     "title": "Lithuanian Song and Dance Celebration",
+    "slug": "lithuanian-song-and-dance-celebration-2018-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3636,6 +3950,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013c",
     "title": "World Bee Day",
+    "slug": "world-bee-day-2018-si",
     "issuerCode": "SI",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3647,6 +3962,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013d",
     "title": "60th Anniversary of the Italian Ministry of Health",
+    "slug": "60th-anniversary-of-the-italian-ministry-of-health-2018-it",
     "issuerCode": "IT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3658,6 +3974,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013e",
     "title": "50th Birthday of King Felipe VI",
+    "slug": "50th-birthday-of-king-felipe-vi-2018-es",
     "issuerCode": "ES",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3679,6 +3996,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000013f",
     "title": "Santiago de Compostela",
+    "slug": "santiago-de-compostela-2018-es",
     "issuerCode": "ES",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3690,6 +4008,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000140",
     "title": "25th Anniversary of the Constitution of Andorra",
+    "slug": "25th-anniversary-of-the-constitution-of-andorra-2018-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3701,6 +4020,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000141",
     "title": "100th Anniversary of the Baltic States",
+    "slug": "100th-anniversary-of-the-baltic-states-2018-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3712,6 +4032,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000142",
     "title": "100th Anniversary of the Baltic States",
+    "slug": "100th-anniversary-of-the-baltic-states-2018-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3723,6 +4044,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000143",
     "title": "100th Anniversary of the Baltic States",
+    "slug": "100th-anniversary-of-the-baltic-states-2018-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3734,6 +4056,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000144",
     "title": "100th Anniversary of Estonian Independence",
+    "slug": "100th-anniversary-of-estonian-independence-2018-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3745,6 +4068,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000145",
     "title": "100th Anniversary of the Birth of Helmut Schmidt",
+    "slug": "100th-anniversary-of-the-birth-of-helmut-schmidt-2018-de",
     "issuerCode": "DE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3756,6 +4080,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000146",
     "title": "Bleuet de France",
+    "slug": "bleuet-de-france-2018-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3767,6 +4092,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000147",
     "title": "70th Anniversary of the Italian Constitution",
+    "slug": "70th-anniversary-of-the-italian-constitution-2018-it",
     "issuerCode": "IT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3778,6 +4104,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000148",
     "title": "25th Anniversary of the Slovak Republic",
+    "slug": "25th-anniversary-of-the-slovak-republic-2018-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3789,6 +4116,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000149",
     "title": "150th Anniversary of the Constitution of Luxembourg",
+    "slug": "150th-anniversary-of-the-constitution-of-luxembourg-2018-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3800,6 +4128,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014a",
     "title": "Berlin",
+    "slug": "berlin-2018-de",
     "issuerCode": "DE",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3811,6 +4140,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014b",
     "title": "100th Anniversary of the Republic of Austria",
+    "slug": "100th-anniversary-of-the-republic-of-austria-2018-at",
     "issuerCode": "AT",
     "firstIssueYear": 2018,
     "lastIssueYear": 2018,
@@ -3822,6 +4152,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014c",
     "title": "600th Anniversary of the Council of the Land",
+    "slug": "600th-anniversary-of-the-council-of-the-land-2019-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3833,6 +4164,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014d",
     "title": "100th Anniversary of the Estonian-Language University of Tartu",
+    "slug": "100th-anniversary-of-the-estonian-language-university-2019-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3844,6 +4176,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014e",
     "title": "100th Anniversary of the University of Ljubljana",
+    "slug": "100th-anniversary-of-the-university-of-ljubljana-2019-si",
     "issuerCode": "SI",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3855,6 +4188,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000014f",
     "title": "Sutartinės",
+    "slug": "sutartines-2019-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3866,6 +4200,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000150",
     "title": "Samogitia",
+    "slug": "samogitia-2019-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3877,6 +4212,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000151",
     "title": "600th Anniversary of the Discovery of Madeira and Porto Santo",
+    "slug": "600th-anniversary-of-the-discovery-of-madeira-and-porto-2019-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3888,6 +4224,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000152",
     "title": "500th Anniversary of Magellan's Circumnavigation",
+    "slug": "500th-anniversary-of-magellan-s-circumnavigation-2019-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3899,6 +4236,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000153",
     "title": "Nature and Environment",
+    "slug": "nature-and-environment-2019-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3910,6 +4248,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000154",
     "title": "25th Anniversary of the Completion of the Sistine Chapel Restoration",
+    "slug": "25th-anniversary-of-the-completion-of-the-sistine-2019-va",
     "issuerCode": "VA",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3921,6 +4260,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000155",
     "title": "30th Anniversary of the Fall of the Berlin Wall",
+    "slug": "30th-anniversary-of-the-fall-of-the-berlin-wall-2019-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3932,6 +4272,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000156",
     "title": "30th Anniversary of the Fall of the Berlin Wall",
+    "slug": "30th-anniversary-of-the-fall-of-the-berlin-wall-2019-de",
     "issuerCode": "DE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3943,6 +4284,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000157",
     "title": "100th Anniversary of the Constitution Act of Finland",
+    "slug": "100th-anniversary-of-the-constitution-act-of-finland-2019-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3954,6 +4296,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000158",
     "title": "100th Anniversary of Universal Suffrage in Luxembourg",
+    "slug": "100th-anniversary-of-universal-suffrage-in-luxembourg-2019-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3965,6 +4308,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000159",
     "title": "The Rising Sun",
+    "slug": "the-rising-sun-2019-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3976,6 +4320,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015a",
     "title": "550th Anniversary of the Death of Filippo Lippi",
+    "slug": "550th-anniversary-of-the-death-of-filippo-lippi-2019-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3987,6 +4332,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015b",
     "title": "Ta' Ħaġrat Temples",
+    "slug": "ta-agrat-temples-2019-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -3998,6 +4344,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015c",
     "title": "150th Anniversary of the Estonian Song Festival",
+    "slug": "150th-anniversary-of-the-estonian-song-festival-2019-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4009,6 +4356,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015d",
     "title": "150th Anniversary of the Death of Andreas Kalvos",
+    "slug": "150th-anniversary-of-the-death-of-andreas-kalvos-2019-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4020,6 +4368,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015e",
     "title": "100th Anniversary of the Birth of Manolis Andronicos",
+    "slug": "100th-anniversary-of-the-birth-of-manolis-andronicos-2019-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4031,6 +4380,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000015f",
     "title": "200th Anniversary of the Accession of Prince Honoré V",
+    "slug": "200th-anniversary-of-the-accession-of-prince-honore-v-2019-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4042,6 +4392,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000160",
     "title": "60th Anniversary of Asterix",
+    "slug": "60th-anniversary-of-asterix-2019-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4053,6 +4404,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000161",
     "title": "100th Anniversary of the Death of Milan Rastislav Štefánik",
+    "slug": "100th-anniversary-of-the-death-of-milan-rastislav-2019-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4064,6 +4416,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000162",
     "title": "500th Anniversary of the Death of Leonardo da Vinci",
+    "slug": "500th-anniversary-of-the-death-of-leonardo-da-vinci-2019-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4075,6 +4428,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000163",
     "title": "2019 Alpine Skiing World Cup Finals",
+    "slug": "2019-alpine-skiing-world-cup-finals-2019-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4086,6 +4440,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000164",
     "title": "90th Anniversary of Vatican City State",
+    "slug": "90th-anniversary-of-vatican-city-state-2019-va",
     "issuerCode": "VA",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4097,6 +4452,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000165",
     "title": "Old Town of Ávila and Its Churches Outside the Walls",
+    "slug": "old-town-of-avila-and-its-churches-outside-the-walls-2019-es",
     "issuerCode": "ES",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4108,6 +4464,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000166",
     "title": "100th Anniversary of the First Dáil Éireann",
+    "slug": "100th-anniversary-of-the-first-dail-eireann-2019-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4119,6 +4476,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000167",
     "title": "70th Anniversary of the Bundesrat",
+    "slug": "70th-anniversary-of-the-bundesrat-2019-de",
     "issuerCode": "DE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4130,6 +4488,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000168",
     "title": "500th Anniversary of the Death of Leonardo da Vinci",
+    "slug": "500th-anniversary-of-the-death-of-leonardo-da-vinci-2019-it",
     "issuerCode": "IT",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4141,6 +4500,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000169",
     "title": "100th Anniversary of the Accession of Grand Duchess Charlotte",
+    "slug": "100th-anniversary-of-the-accession-of-grand-duchess-2019-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4152,6 +4512,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016a",
     "title": "450th Anniversary of the Death of Pieter Bruegel the Elder",
+    "slug": "450th-anniversary-of-the-death-of-pieter-bruegel-the-2019-be",
     "issuerCode": "BE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4163,6 +4524,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016b",
     "title": "25th Anniversary of the European Monetary Institute",
+    "slug": "25th-anniversary-of-the-european-monetary-institute-2019-be",
     "issuerCode": "BE",
     "firstIssueYear": 2019,
     "lastIssueYear": 2019,
@@ -4174,6 +4536,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016c",
     "title": "Birth of Prince Charles — Engraved Version",
+    "slug": "birth-of-prince-charles-engraved-version-2020-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4185,6 +4548,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016d",
     "title": "730th Anniversary of the University of Coimbra",
+    "slug": "730th-anniversary-of-the-university-of-coimbra-2020-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4196,6 +4560,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016e",
     "title": "20th Anniversary of Slovakia's Accession to the OECD",
+    "slug": "20th-anniversary-of-slovakia-s-accession-to-the-oecd-2020-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4207,6 +4572,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000016f",
     "title": "30th Anniversary of the Cyprus Institute of Neurology and Genetics",
+    "slug": "30th-anniversary-of-the-cyprus-institute-of-neurology-2020-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4218,6 +4584,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000170",
     "title": "Hill of Crosses",
+    "slug": "hill-of-crosses-2020-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4229,6 +4596,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000171",
     "title": "100th Anniversary of the Birth of Väinö Linna",
+    "slug": "100th-anniversary-of-the-birth-of-vaino-linna-2020-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4240,6 +4608,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000172",
     "title": "Children's Games",
+    "slug": "children-s-games-2020-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4251,6 +4620,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000173",
     "title": "50th Anniversary of Willy Brandt's Warsaw Genuflection",
+    "slug": "50th-anniversary-of-willy-brandt-s-warsaw-genuflection-2020-de",
     "issuerCode": "DE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4262,6 +4632,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000174",
     "title": "Medical Research",
+    "slug": "medical-research-2020-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4273,6 +4644,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000175",
     "title": "500th Anniversary of the Death of Raphael",
+    "slug": "500th-anniversary-of-the-death-of-raphael-2020-va",
     "issuerCode": "VA",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4284,6 +4656,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000176",
     "title": "250th Anniversary of the Death of Giambattista Tiepolo",
+    "slug": "250th-anniversary-of-the-death-of-giambattista-tiepolo-2020-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4295,6 +4668,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000177",
     "title": "100th Anniversary of the University of Turku",
+    "slug": "100th-anniversary-of-the-university-of-turku-2020-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4306,6 +4680,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000178",
     "title": "50th Anniversary of Universal Female Suffrage in Andorra",
+    "slug": "50th-anniversary-of-universal-female-suffrage-in-andorra-2020-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4317,6 +4692,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000179",
     "title": "500th Anniversary of the Birth of Adam Bohorič",
+    "slug": "500th-anniversary-of-the-birth-of-adam-bohoric-2020-si",
     "issuerCode": "SI",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4328,6 +4704,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017a",
     "title": "Latgalian Ceramics",
+    "slug": "latgalian-ceramics-2020-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4339,6 +4716,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017b",
     "title": "Charles de Gaulle",
+    "slug": "charles-de-gaulle-2020-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4350,6 +4728,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017c",
     "title": "27th Ibero-American Summit in Andorra",
+    "slug": "27th-ibero-american-summit-in-andorra-2020-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4361,6 +4740,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017d",
     "title": "300th Anniversary of the Birth of Prince Honoré III",
+    "slug": "300th-anniversary-of-the-birth-of-prince-honore-iii-2020-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4372,6 +4752,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017e",
     "title": "150th Anniversary of the Birth of Maria Montessori",
+    "slug": "150th-anniversary-of-the-birth-of-maria-montessori-2020-it",
     "issuerCode": "IT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4383,6 +4764,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000017f",
     "title": "100th Anniversary of the Union of Thrace with Greece",
+    "slug": "100th-anniversary-of-the-union-of-thrace-with-greece-2020-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4394,6 +4776,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000180",
     "title": "Jan van Eyck",
+    "slug": "jan-van-eyck-2020-be",
     "issuerCode": "BE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4405,6 +4788,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000181",
     "title": "75th Anniversary of the United Nations",
+    "slug": "75th-anniversary-of-the-united-nations-2020-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4416,6 +4800,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000182",
     "title": "Skorba Temples",
+    "slug": "skorba-temples-2020-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4427,6 +4812,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000183",
     "title": "100th Anniversary of the Birth of Pope John Paul II",
+    "slug": "100th-anniversary-of-the-birth-of-pope-john-paul-ii-2020-va",
     "issuerCode": "VA",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4438,6 +4824,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000184",
     "title": "500th Anniversary of the Death of Raphael",
+    "slug": "500th-anniversary-of-the-death-of-raphael-2020-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4449,6 +4836,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000185",
     "title": "Aukštaitija",
+    "slug": "aukstaitija-2020-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4460,6 +4848,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000186",
     "title": "200th Anniversary of the Discovery of Antarctica",
+    "slug": "200th-anniversary-of-the-discovery-of-antarctica-2020-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4471,6 +4860,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000187",
     "title": "Mudéjar Architecture of Aragon",
+    "slug": "mudejar-architecture-of-aragon-2020-es",
     "issuerCode": "ES",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4482,6 +4872,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000188",
     "title": "Brandenburg",
+    "slug": "brandenburg-2020-de",
     "issuerCode": "DE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4493,6 +4884,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000189",
     "title": "International Year of Plant Health",
+    "slug": "international-year-of-plant-health-2020-be",
     "issuerCode": "BE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4504,6 +4896,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018a",
     "title": "100th Anniversary of the Tartu Peace Treaty",
+    "slug": "100th-anniversary-of-the-tartu-peace-treaty-2020-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4515,6 +4908,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018b",
     "title": "80th Anniversary of the National Fire Department",
+    "slug": "80th-anniversary-of-the-national-fire-department-2020-it",
     "issuerCode": "IT",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4526,6 +4920,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018c",
     "title": "200th Anniversary of the Birth of Prince Henri of Orange-Nassau",
+    "slug": "200th-anniversary-of-the-birth-of-prince-henri-of-2020-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4537,6 +4932,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018d",
     "title": "2,500th Anniversary of the Battle of Thermopylae",
+    "slug": "2-500th-anniversary-of-the-battle-of-thermopylae-2020-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4548,6 +4944,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018e",
     "title": "Birth of Prince Charles — Photographic Version",
+    "slug": "birth-of-prince-charles-photographic-version-2020-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2020,
     "lastIssueYear": 2020,
@@ -4559,6 +4956,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000018f",
     "title": "Taking Care of Our Seniors",
+    "slug": "taking-care-of-our-seniors-2021-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4570,6 +4968,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000190",
     "title": "Our Lady of Meritxell",
+    "slug": "our-lady-of-meritxell-2021-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4581,6 +4980,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000191",
     "title": "100th Anniversary of the Birth of Alexander Dubček",
+    "slug": "100th-anniversary-of-the-birth-of-alexander-dubcek-2021-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4592,6 +4992,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000192",
     "title": "100th Anniversary of the Autonomy of Åland",
+    "slug": "100th-anniversary-of-the-autonomy-of-aland-2021-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4603,6 +5004,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000193",
     "title": "500th Anniversary of Charles V's Second Coinage Ordinance",
+    "slug": "500th-anniversary-of-charles-v-s-second-coinage-2021-be",
     "issuerCode": "BE",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4614,6 +5016,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000194",
     "title": "The Wolf",
+    "slug": "the-wolf-2021-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4625,6 +5028,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000195",
     "title": "Tarxien Temples",
+    "slug": "tarxien-temples-2021-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4636,6 +5040,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000196",
     "title": "700th Anniversary of the Death of Dante Alighieri",
+    "slug": "700th-anniversary-of-the-death-of-dante-alighieri-2021-va",
     "issuerCode": "VA",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4647,6 +5052,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000197",
     "title": "200th Anniversary of the Provincial Museum for Carniola",
+    "slug": "200th-anniversary-of-the-provincial-museum-for-carniola-2021-si",
     "issuerCode": "SI",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4658,6 +5064,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000198",
     "title": "Paris 2024 Olympic Games",
+    "slug": "paris-2024-olympic-games-2021-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4669,6 +5076,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000199",
     "title": "Finno-Ugric Peoples",
+    "slug": "finno-ugric-peoples-2021-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4680,6 +5088,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019a",
     "title": "550th Anniversary of the Birth of Albrecht Dürer",
+    "slug": "550th-anniversary-of-the-birth-of-albrecht-durer-2021-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4691,6 +5100,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019b",
     "title": "10th Anniversary of the Marriage of Prince Albert II and Princess Charlene",
+    "slug": "10th-anniversary-of-the-marriage-of-prince-albert-ii-2021-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4702,6 +5112,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019c",
     "title": "Dzūkija",
+    "slug": "dzukija-2021-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4713,6 +5124,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019d",
     "title": "450th Anniversary of the Birth of Caravaggio",
+    "slug": "450th-anniversary-of-the-birth-of-caravaggio-2021-va",
     "issuerCode": "VA",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4724,6 +5136,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019e",
     "title": "Heroes of the Pandemic",
+    "slug": "heroes-of-the-pandemic-2021-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4735,6 +5148,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000019f",
     "title": "100th Anniversary of the Belgium–Luxembourg Economic Union",
+    "slug": "100th-anniversary-of-the-belgium-luxembourg-economic-2021-be",
     "issuerCode": "BE",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4746,6 +5160,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a0",
     "title": "Portuguese Participation in the Tokyo 2020 Olympic Games",
+    "slug": "portuguese-participation-in-the-tokyo-2020-olympic-games-2021-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4757,6 +5172,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a1",
     "title": "Journalism and Open Communication Supporting Finnish Democracy",
+    "slug": "journalism-and-open-communication-supporting-finnish-2021-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4768,6 +5184,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a2",
     "title": "Žuvintas Biosphere Reserve",
+    "slug": "zuvintas-biosphere-reserve-2021-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4779,6 +5196,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a3",
     "title": "200th Anniversary of the Greek Revolution",
+    "slug": "200th-anniversary-of-the-greek-revolution-2021-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4790,6 +5208,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a4",
     "title": "100th Anniversary of Latvia's International Recognition",
+    "slug": "100th-anniversary-of-latvia-s-international-recognition-2021-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4801,6 +5220,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a5",
     "title": "450th Anniversary of the Birth of Caravaggio",
+    "slug": "450th-anniversary-of-the-birth-of-caravaggio-2021-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4812,6 +5232,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a6",
     "title": "75th Anniversary of UNICEF",
+    "slug": "75th-anniversary-of-unicef-2021-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4823,6 +5244,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a7",
     "title": "Historic City of Toledo",
+    "slug": "historic-city-of-toledo-2021-es",
     "issuerCode": "ES",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4834,6 +5256,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a8",
     "title": "40th Anniversary of the Marriage of Grand Duke Henri — Engraved Version",
+    "slug": "40th-anniversary-of-the-marriage-of-grand-duke-henri-2021-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4845,6 +5268,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001a9",
     "title": "Saxony-Anhalt",
+    "slug": "saxony-anhalt-2021-de",
     "issuerCode": "DE",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4856,6 +5280,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001aa",
     "title": "150th Anniversary of Rome as Capital of Italy",
+    "slug": "150th-anniversary-of-rome-as-capital-of-italy-2021-it",
     "issuerCode": "IT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4867,6 +5292,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ab",
     "title": "Healthcare Professionals",
+    "slug": "healthcare-professionals-2021-it",
     "issuerCode": "IT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4878,6 +5304,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ac",
     "title": "100th Anniversary of the Birth of Grand Duke Jean — Engraved Version",
+    "slug": "100th-anniversary-of-the-birth-of-grand-duke-jean-2021-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4889,6 +5316,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ad",
     "title": "Portuguese Presidency of the Council of the European Union",
+    "slug": "portuguese-presidency-of-the-council-of-the-european-2021-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4900,6 +5328,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ae",
     "title": "40th Anniversary of the Marriage of Grand Duke Henri — Photographic Version",
+    "slug": "40th-anniversary-of-the-marriage-of-grand-duke-henri-2021-lu-2",
     "issuerCode": "LU",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4911,6 +5340,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001af",
     "title": "100th Anniversary of the Birth of Grand Duke Jean — Photographic Version",
+    "slug": "100th-anniversary-of-the-birth-of-grand-duke-jean-2021-lu-2",
     "issuerCode": "LU",
     "firstIssueYear": 2021,
     "lastIssueYear": 2021,
@@ -4922,6 +5352,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b0",
     "title": "The Legend of Charlemagne",
+    "slug": "the-legend-of-charlemagne-2022-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4933,6 +5364,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b1",
     "title": "10th Anniversary of the Andorra–European Union Monetary Agreement",
+    "slug": "10th-anniversary-of-the-andorra-european-union-monetary-2022-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4944,6 +5376,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b2",
     "title": "Suvalkija",
+    "slug": "suvalkija-2022-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4955,6 +5388,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b3",
     "title": "Ukraine and Freedom",
+    "slug": "ukraine-and-freedom-2022-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4966,6 +5400,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b4",
     "title": "Climate Research in Finland",
+    "slug": "climate-research-in-finland-2022-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4977,6 +5412,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b5",
     "title": "Women, Peace and Security",
+    "slug": "women-peace-and-security-2022-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4988,6 +5424,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b6",
     "title": "530th Anniversary of the Death of Piero della Francesca",
+    "slug": "530th-anniversary-of-the-death-of-piero-della-francesca-2022-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -4999,6 +5436,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b7",
     "title": "200th Anniversary of the Death of Antonio Canova",
+    "slug": "200th-anniversary-of-the-death-of-antonio-canova-2022-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5010,6 +5448,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b8",
     "title": "300th Anniversary of Continental Europe's First Atmospheric Steam Engine",
+    "slug": "300th-anniversary-of-continental-europe-s-first-2022-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5021,6 +5460,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001b9",
     "title": "100th Anniversary of the Death of Prince Albert I",
+    "slug": "100th-anniversary-of-the-death-of-prince-albert-i-2022-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5032,6 +5472,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ba",
     "title": "Paris 2024 Olympic Games",
+    "slug": "paris-2024-olympic-games-2022-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5043,6 +5484,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001bb",
     "title": "25th Anniversary of the Death of Mother Teresa",
+    "slug": "25th-anniversary-of-the-death-of-mother-teresa-2022-va",
     "issuerCode": "VA",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5054,6 +5496,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001bc",
     "title": "200th Anniversary of the First Greek Constitution",
+    "slug": "200th-anniversary-of-the-first-greek-constitution-2022-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5065,6 +5508,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001bd",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-at",
     "issuerCode": "AT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5076,6 +5520,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001be",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-be",
     "issuerCode": "BE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5087,6 +5532,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001bf",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5098,6 +5544,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c0",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5109,6 +5556,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c1",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5120,6 +5568,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c2",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5131,6 +5580,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c3",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-de",
     "issuerCode": "DE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5142,6 +5592,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c4",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5153,6 +5604,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c5",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5164,6 +5616,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c6",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-it",
     "issuerCode": "IT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5175,6 +5628,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c7",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5186,6 +5640,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c8",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5197,6 +5652,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001c9",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5208,6 +5664,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ca",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5219,6 +5676,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001cb",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-nl",
     "issuerCode": "NL",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5230,6 +5688,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001cc",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5241,6 +5700,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001cd",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5252,6 +5712,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ce",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-si",
     "issuerCode": "SI",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5263,6 +5724,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001cf",
     "title": "35th Anniversary of the Erasmus Programme",
+    "slug": "35th-anniversary-of-the-erasmus-programme-2022-es",
     "issuerCode": "ES",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5274,6 +5736,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d0",
     "title": "100th Anniversary of Basketball in Lithuania",
+    "slug": "100th-anniversary-of-basketball-in-lithuania-2022-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5285,6 +5748,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d1",
     "title": "100th Anniversary of the Finnish National Ballet",
+    "slug": "100th-anniversary-of-the-finnish-national-ballet-2022-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5296,6 +5760,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d2",
     "title": "Recognition of the Healthcare Sector During the COVID-19 Pandemic",
+    "slug": "recognition-of-the-healthcare-sector-during-the-covid-2022-be",
     "issuerCode": "BE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5307,6 +5772,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d3",
     "title": "Ħal Saflieni Hypogeum",
+    "slug": "al-saflieni-hypogeum-2022-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5318,6 +5784,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d4",
     "title": "100th Anniversary of Latvijas Banka",
+    "slug": "100th-anniversary-of-latvijas-banka-2022-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5329,6 +5796,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d5",
     "title": "10th Anniversary of the Marriage of Hereditary Grand Duke Guillaume",
+    "slug": "10th-anniversary-of-the-marriage-of-hereditary-grand-2022-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5340,6 +5808,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d6",
     "title": "150th Anniversary of the Society of Estonian Literati",
+    "slug": "150th-anniversary-of-the-society-of-estonian-literati-2022-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5351,6 +5820,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d7",
     "title": "500th Anniversary of the First Circumnavigation",
+    "slug": "500th-anniversary-of-the-first-circumnavigation-2022-es",
     "issuerCode": "ES",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5362,6 +5832,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d8",
     "title": "Garajonay National Park",
+    "slug": "garajonay-national-park-2022-es",
     "issuerCode": "ES",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5373,6 +5844,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001d9",
     "title": "100th Anniversary of the First South Atlantic Aerial Crossing",
+    "slug": "100th-anniversary-of-the-first-south-atlantic-aerial-2022-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5384,6 +5856,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001da",
     "title": "125th Anniversary of the Birth of Pope Paul VI",
+    "slug": "125th-anniversary-of-the-birth-of-pope-paul-vi-2022-va",
     "issuerCode": "VA",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5395,6 +5868,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001db",
     "title": "90th Anniversary of the Birth of Jacques Chirac",
+    "slug": "90th-anniversary-of-the-birth-of-jacques-chirac-2022-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5406,6 +5880,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001dc",
     "title": "30th Anniversary of the Deaths of Giovanni Falcone and Paolo Borsellino",
+    "slug": "30th-anniversary-of-the-deaths-of-giovanni-falcone-and-2022-it",
     "issuerCode": "IT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5417,6 +5892,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001dd",
     "title": "170th Anniversary of the Italian National Police",
+    "slug": "170th-anniversary-of-the-italian-national-police-2022-it",
     "issuerCode": "IT",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5428,6 +5904,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001de",
     "title": "Thuringia",
+    "slug": "thuringia-2022-de",
     "issuerCode": "DE",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5439,6 +5916,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001df",
     "title": "50th Anniversary of the Legal Protection of the Luxembourg Flag",
+    "slug": "50th-anniversary-of-the-legal-protection-of-the-2022-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5450,6 +5928,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e0",
     "title": "150th Anniversary of the Birth of Jože Plečnik",
+    "slug": "150th-anniversary-of-the-birth-of-joze-plecnik-2022-si",
     "issuerCode": "SI",
     "firstIssueYear": 2022,
     "lastIssueYear": 2022,
@@ -5461,6 +5940,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e1",
     "title": "Summer Solstice Fire Festivals in the Pyrenees",
+    "slug": "summer-solstice-fire-festivals-in-the-pyrenees-2023-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5472,6 +5952,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e2",
     "title": "30th Anniversary of Andorra's Membership in the United Nations",
+    "slug": "30th-anniversary-of-andorra-s-membership-in-the-united-2023-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5483,6 +5964,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e3",
     "title": "150th Anniversary of the Birth of Josip Plemelj",
+    "slug": "150th-anniversary-of-the-birth-of-josip-plemelj-2023-si",
     "issuerCode": "SI",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5494,6 +5976,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e4",
     "title": "Peace",
+    "slug": "peace-2023-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5505,6 +5988,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e5",
     "title": "60th Anniversary of the Central Bank of Cyprus",
+    "slug": "60th-anniversary-of-the-central-bank-of-cyprus-2023-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5516,6 +6000,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e6",
     "title": "Social and Health Services",
+    "slug": "social-and-health-services-2023-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5527,6 +6012,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e7",
     "title": "200th Anniversary of the Vienna–Bratislava Express Mail Coach",
+    "slug": "200th-anniversary-of-the-vienna-bratislava-express-mail-2023-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5538,6 +6024,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e8",
     "title": "75th Anniversary of Women's Suffrage in Belgium",
+    "slug": "75th-anniversary-of-women-s-suffrage-in-belgium-2023-be",
     "issuerCode": "BE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5549,6 +6036,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001e9",
     "title": "Introduction of the Euro in Croatia",
+    "slug": "introduction-of-the-euro-in-croatia-2023-hr",
     "issuerCode": "HR",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5560,6 +6048,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ea",
     "title": "500th Anniversary of the Death of Luca Signorelli",
+    "slug": "500th-anniversary-of-the-death-of-luca-signorelli-2023-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5571,6 +6060,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001eb",
     "title": "World Youth Day",
+    "slug": "world-youth-day-2023-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5582,6 +6072,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ec",
     "title": "50th Anniversary of Ireland's Membership in the European Union",
+    "slug": "50th-anniversary-of-ireland-s-membership-in-the-2023-ie",
     "issuerCode": "IE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5593,6 +6084,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ed",
     "title": "100th Anniversary of the Birth of Maria Callas",
+    "slug": "100th-anniversary-of-the-birth-of-maria-callas-2023-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5604,6 +6096,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ee",
     "title": "150th Anniversary of the Birth of Constantin Carathéodory",
+    "slug": "150th-anniversary-of-the-birth-of-constantin-2023-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5615,6 +6108,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ef",
     "title": "The Barn Swallow",
+    "slug": "the-barn-swallow-2023-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5626,6 +6120,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f0",
     "title": "Rugby World Cup France 2023",
+    "slug": "rugby-world-cup-france-2023-2023-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5637,6 +6132,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f1",
     "title": "225th Anniversary of the Arrival of the French in Malta",
+    "slug": "225th-anniversary-of-the-arrival-of-the-french-in-malta-2023-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5648,6 +6144,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f2",
     "title": "550th Anniversary of the Birth of Nicolaus Copernicus",
+    "slug": "550th-anniversary-of-the-birth-of-nicolaus-copernicus-2023-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5659,6 +6156,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f3",
     "title": "100th Anniversary of the Birth of Prince Rainier III",
+    "slug": "100th-anniversary-of-the-birth-of-prince-rainier-iii-2023-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5670,6 +6168,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f4",
     "title": "Year of Art Nouveau",
+    "slug": "year-of-art-nouveau-2023-be",
     "issuerCode": "BE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5681,6 +6180,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f5",
     "title": "Spanish Presidency of the Council of the European Union",
+    "slug": "spanish-presidency-of-the-council-of-the-european-union-2023-es",
     "issuerCode": "ES",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5692,6 +6192,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f6",
     "title": "150th Anniversary of the Death of Alessandro Manzoni",
+    "slug": "150th-anniversary-of-the-death-of-alessandro-manzoni-2023-va",
     "issuerCode": "VA",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5703,6 +6204,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f7",
     "title": "500th Anniversary of the Death of Pietro Perugino",
+    "slug": "500th-anniversary-of-the-death-of-pietro-perugino-2023-va",
     "issuerCode": "VA",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5714,6 +6216,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f8",
     "title": "Ukraine Sunflower",
+    "slug": "ukraine-sunflower-2023-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5725,6 +6228,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001f9",
     "title": "Finland's First Nature Conservation Act",
+    "slug": "finland-s-first-nature-conservation-act-2023-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5736,6 +6240,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001fa",
     "title": "500th Anniversary of the Death of Perugino",
+    "slug": "500th-anniversary-of-the-death-of-perugino-2023-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5747,6 +6252,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001fb",
     "title": "Together with Ukraine",
+    "slug": "together-with-ukraine-2023-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5758,6 +6264,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001fc",
     "title": "Historic City of Cáceres",
+    "slug": "historic-city-of-caceres-2023-es",
     "issuerCode": "ES",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5769,6 +6276,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001fd",
     "title": "1,275th Anniversary of the Birth of Charlemagne",
+    "slug": "1-275th-anniversary-of-the-birth-of-charlemagne-2023-de",
     "issuerCode": "DE",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5780,6 +6288,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001fe",
     "title": "100th Anniversary of the First Blood Transfusion in Slovakia",
+    "slug": "100th-anniversary-of-the-first-blood-transfusion-in-2023-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5791,6 +6300,7 @@
   {
     "id": "00000000-0000-4000-8000-0000000001ff",
     "title": "175th Anniversary of the Luxembourg Parliament",
+    "slug": "175th-anniversary-of-the-luxembourg-parliament-2023-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5802,6 +6312,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000200",
     "title": "25th Anniversary of Grand Duke Henri's Membership in the International Olympic Committee",
+    "slug": "25th-anniversary-of-grand-duke-henri-s-membership-in-2023-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5813,6 +6324,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000201",
     "title": "Paris 2024 Olympic Games",
+    "slug": "paris-2024-olympic-games-2023-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5824,6 +6336,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000202",
     "title": "100th Anniversary of the Italian Air Force",
+    "slug": "100th-anniversary-of-the-italian-air-force-2023-it",
     "issuerCode": "IT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5835,6 +6348,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000203",
     "title": "150th Anniversary of the Death of Alessandro Manzoni",
+    "slug": "150th-anniversary-of-the-death-of-alessandro-manzoni-2023-it",
     "issuerCode": "IT",
     "firstIssueYear": 2023,
     "lastIssueYear": 2023,
@@ -5858,6 +6372,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000205",
     "title": "Lithuanian Straw Gardens",
+    "slug": "lithuanian-straw-gardens-2024-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5869,6 +6384,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000206",
     "title": "20th Anniversary of Cyprus's Accession to the European Union",
+    "slug": "20th-anniversary-of-cyprus-s-accession-to-the-european-2024-cy",
     "issuerCode": "CY",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5880,6 +6396,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000207",
     "title": "100 Years of Skiing in Andorra",
+    "slug": "100-years-of-skiing-in-andorra-2024-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5891,6 +6408,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000208",
     "title": "UCI Mountain Bike World Championships 2024",
+    "slug": "uci-mountain-bike-world-championships-2024-2024-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5902,6 +6420,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000209",
     "title": "Finnish Architecture",
+    "slug": "finnish-architecture-2024-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5913,6 +6432,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020a",
     "title": "Himmeli",
+    "slug": "himmeli-2024-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5924,6 +6444,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020b",
     "title": "250th Anniversary of the National and University Library",
+    "slug": "250th-anniversary-of-the-national-and-university-library-2024-si",
     "issuerCode": "SI",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5935,6 +6456,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020c",
     "title": "750th Anniversary of the Death of Saint Thomas Aquinas",
+    "slug": "750th-anniversary-of-the-death-of-saint-thomas-aquinas-2024-va",
     "issuerCode": "VA",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5946,6 +6468,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020d",
     "title": "500th Anniversary of the Death of Marko Marulić",
+    "slug": "500th-anniversary-of-the-death-of-marko-marulic-2024-hr",
     "issuerCode": "HR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5957,6 +6480,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020e",
     "title": "100th Anniversary of the Košice Peace Marathon",
+    "slug": "100th-anniversary-of-the-kosice-peace-marathon-2024-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5968,6 +6492,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000020f",
     "title": "530th Anniversary of the Death of Ghirlandaio",
+    "slug": "530th-anniversary-of-the-death-of-ghirlandaio-2024-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5979,6 +6504,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000210",
     "title": "Portugal at the Paris 2024 Olympic Games",
+    "slug": "portugal-at-the-paris-2024-olympic-games-2024-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -5990,6 +6516,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000211",
     "title": "50th Anniversary of the Restoration of Democracy in Greece",
+    "slug": "50th-anniversary-of-the-restoration-of-democracy-in-2024-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6001,6 +6528,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000212",
     "title": "150th Anniversary of the Birth of Penelope Delta",
+    "slug": "150th-anniversary-of-the-birth-of-penelope-delta-2024-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6012,6 +6540,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000213",
     "title": "The Maltese Honey Bee",
+    "slug": "the-maltese-honey-bee-2024-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6023,6 +6552,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000214",
     "title": "Elections and Democracy",
+    "slug": "elections-and-democracy-2024-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6034,6 +6564,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000215",
     "title": "The Cornflower",
+    "slug": "the-cornflower-2024-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6045,6 +6576,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000216",
     "title": "500th Anniversary of the Treaty with Charles V",
+    "slug": "500th-anniversary-of-the-treaty-with-charles-v-2024-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6056,6 +6588,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000217",
     "title": "Old Town of Varaždin",
+    "slug": "old-town-of-varazdin-2024-hr",
     "issuerCode": "HR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6067,6 +6600,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000218",
     "title": "The Citadel of Gozo",
+    "slug": "the-citadel-of-gozo-2024-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6078,6 +6612,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000219",
     "title": "Paris 2024 Olympic and Paralympic Games — Eiffel Tower",
+    "slug": "paris-2024-olympic-and-paralympic-games-eiffel-tower-2024-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6089,6 +6624,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021a",
     "title": "150th Anniversary of the Birth of Guglielmo Marconi",
+    "slug": "150th-anniversary-of-the-birth-of-guglielmo-marconi-2024-va",
     "issuerCode": "VA",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6100,6 +6636,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021b",
     "title": "Fight Against Cancer in Belgium",
+    "slug": "fight-against-cancer-in-belgium-2024-be",
     "issuerCode": "BE",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6111,6 +6648,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021c",
     "title": "50th Anniversary of the Carnation Revolution",
+    "slug": "50th-anniversary-of-the-carnation-revolution-2024-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6122,6 +6660,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021d",
     "title": "50th Anniversary of the Declaration of Citizens' Rights",
+    "slug": "50th-anniversary-of-the-declaration-of-citizens-rights-2024-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6133,6 +6672,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021e",
     "title": "200th Anniversary of the Spanish National Police",
+    "slug": "200th-anniversary-of-the-spanish-national-police-2024-es",
     "issuerCode": "ES",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6144,6 +6684,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000021f",
     "title": "Seville",
+    "slug": "seville-2024-es",
     "issuerCode": "ES",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6155,6 +6696,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000220",
     "title": "Belgian Presidency of the Council of the European Union",
+    "slug": "belgian-presidency-of-the-council-of-the-european-union-2024-be",
     "issuerCode": "BE",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6166,6 +6708,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000221",
     "title": "175th Anniversary of the Frankfurt Constitution",
+    "slug": "175th-anniversary-of-the-frankfurt-constitution-2024-de",
     "issuerCode": "DE",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6177,6 +6720,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000222",
     "title": "175th Anniversary of the Death of Grand Duke William II",
+    "slug": "175th-anniversary-of-the-death-of-grand-duke-william-ii-2024-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6188,6 +6732,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000223",
     "title": "100th Anniversary of the Feierstéppler",
+    "slug": "100th-anniversary-of-the-feiersteppler-2024-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6199,6 +6744,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000224",
     "title": "Paris 2024 Olympic Games — Wrestling",
+    "slug": "paris-2024-olympic-games-wrestling-2024-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6210,6 +6756,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000225",
     "title": "250th Anniversary of the Guardia di Finanza",
+    "slug": "250th-anniversary-of-the-guardia-di-finanza-2024-it",
     "issuerCode": "IT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6221,6 +6768,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000226",
     "title": "Rita Levi-Montalcini",
+    "slug": "rita-levi-montalcini-2024-it",
     "issuerCode": "IT",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6232,6 +6780,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000227",
     "title": "Mecklenburg-Vorpommern",
+    "slug": "mecklenburg-vorpommern-2024-de",
     "issuerCode": "DE",
     "firstIssueYear": 2024,
     "lastIssueYear": 2024,
@@ -6243,6 +6792,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000228",
     "title": "Lithuanian Ethnographic Regions — Lithuania Minor",
+    "slug": "lithuanian-ethnographic-regions-lithuania-minor-2025-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6254,6 +6804,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000229",
     "title": "100th Anniversary of the Birth of Miki Muster",
+    "slug": "100th-anniversary-of-the-birth-of-miki-muster-2025-si",
     "issuerCode": "SI",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6265,6 +6816,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022a",
     "title": "Marquisate of Baux",
+    "slug": "marquisate-of-baux-2025-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6276,6 +6828,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022b",
     "title": "City of Pula — Arena",
+    "slug": "city-of-pula-arena-2025-hr",
     "issuerCode": "HR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6287,6 +6840,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022c",
     "title": "100th Anniversary of the Finland–Sweden Athletics International",
+    "slug": "100th-anniversary-of-the-finland-sweden-athletics-2025-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6298,6 +6852,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022d",
     "title": "Notre-Dame de Paris",
+    "slug": "notre-dame-de-paris-2025-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6309,6 +6864,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022e",
     "title": "550th Anniversary of the Birth of Michelangelo",
+    "slug": "550th-anniversary-of-the-birth-of-michelangelo-2025-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6320,6 +6876,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000022f",
     "title": "City of Mdina",
+    "slug": "city-of-mdina-2025-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6331,6 +6888,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000230",
     "title": "200th Anniversary of the Death of Laskarina Bouboulina",
+    "slug": "200th-anniversary-of-the-death-of-laskarina-bouboulina-2025-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6342,6 +6900,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000231",
     "title": "100th Anniversary of the Birth of Mikis Theodorakis",
+    "slug": "100th-anniversary-of-the-birth-of-mikis-theodorakis-2025-gr",
     "issuerCode": "GR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6353,6 +6912,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000232",
     "title": "1,100th Anniversary of the Croatian Kingdom and the Coronation of King Tomislav",
+    "slug": "1-100th-anniversary-of-the-croatian-kingdom-and-the-2025-hr",
     "issuerCode": "HR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6364,6 +6924,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000233",
     "title": "Circuit de Spa-Francorchamps",
+    "slug": "circuit-de-spa-francorchamps-2025-be",
     "issuerCode": "BE",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6375,6 +6936,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000234",
     "title": "Games of the Small States of Europe",
+    "slug": "games-of-the-small-states-of-europe-2025-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6386,6 +6948,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000235",
     "title": "The Bearded Vulture",
+    "slug": "the-bearded-vulture-2025-ad",
     "issuerCode": "AD",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6397,6 +6960,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000236",
     "title": "500 Years of Books in Estonian",
+    "slug": "500-years-of-books-in-estonian-2025-ee",
     "issuerCode": "EE",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6408,6 +6972,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000237",
     "title": "550th Anniversary of the Birth of Michelangelo",
+    "slug": "550th-anniversary-of-the-birth-of-michelangelo-2025-va",
     "issuerCode": "VA",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6419,6 +6984,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000238",
     "title": "Sede Vacante 2025",
+    "slug": "sede-vacante-2025-2025-va",
     "issuerCode": "VA",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6430,6 +6996,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000239",
     "title": "Jubilee 2025",
+    "slug": "jubilee-2025-2025-va",
     "issuerCode": "VA",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6441,6 +7008,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023a",
     "title": "World Scouting",
+    "slug": "world-scouting-2025-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6452,6 +7020,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023b",
     "title": "The Maltese Ox",
+    "slug": "the-maltese-ox-2025-mt",
     "issuerCode": "MT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6463,6 +7032,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023c",
     "title": "County of Carladès",
+    "slug": "county-of-carlades-2025-mc",
     "issuerCode": "MC",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6474,6 +7044,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023d",
     "title": "Finnish State Visits",
+    "slug": "finnish-state-visits-2025-fi",
     "issuerCode": "FI",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6485,6 +7056,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023e",
     "title": "Sustainable Development",
+    "slug": "sustainable-development-2025-pt",
     "issuerCode": "PT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6496,6 +7068,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000023f",
     "title": "Defence",
+    "slug": "defence-2025-lt",
     "issuerCode": "LT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6507,6 +7080,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000240",
     "title": "Salamanca",
+    "slug": "salamanca-2025-es",
     "issuerCode": "ES",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6518,6 +7092,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000241",
     "title": "Jubilee 2025 — Pilgrims of Hope",
+    "slug": "jubilee-2025-pilgrims-of-hope-2025-sm",
     "issuerCode": "SM",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6529,6 +7104,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000242",
     "title": "75th Anniversary of the Schuman Declaration",
+    "slug": "75th-anniversary-of-the-schuman-declaration-2025-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6540,6 +7116,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000243",
     "title": "25th Anniversary of Grand Duke Henri's Accession to the Throne",
+    "slug": "25th-anniversary-of-grand-duke-henri-s-accession-to-the-2025-lu",
     "issuerCode": "LU",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6551,6 +7128,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000244",
     "title": "100th Anniversary of the 1925 Ice Hockey European Championship",
+    "slug": "100th-anniversary-of-the-1925-ice-hockey-european-2025-sk",
     "issuerCode": "SK",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6562,6 +7140,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000245",
     "title": "Jubilee 2025",
+    "slug": "jubilee-2025-2025-it",
     "issuerCode": "IT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6573,6 +7152,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000246",
     "title": "Amerigo Vespucci World Tour 2023–2025",
+    "slug": "amerigo-vespucci-world-tour-2023-2025-2025-it",
     "issuerCode": "IT",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6584,6 +7164,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000247",
     "title": "The Louvre",
+    "slug": "the-louvre-2025-fr",
     "issuerCode": "FR",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6595,6 +7176,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000248",
     "title": "Saarland",
+    "slug": "saarland-2025-de",
     "issuerCode": "DE",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6606,6 +7188,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000249",
     "title": "35 Years of German Unity",
+    "slug": "35-years-of-german-unity-2025-de",
     "issuerCode": "DE",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6617,6 +7200,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000024a",
     "title": "Belgian National Lottery",
+    "slug": "belgian-national-lottery-2025-be",
     "issuerCode": "BE",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,
@@ -6628,6 +7212,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000024b",
     "title": "Sēlija",
+    "slug": "selija-2025-lv",
     "issuerCode": "LV",
     "firstIssueYear": 2025,
     "lastIssueYear": 2025,

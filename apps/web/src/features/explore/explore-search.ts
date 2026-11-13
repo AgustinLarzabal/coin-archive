@@ -14,24 +14,50 @@ import {
 import { z } from "zod"
 import type { CoinListFilters } from "@/data/archive"
 
+const lowerSlug = z.preprocess(
+  (value) =>
+    typeof value === "string"
+      ? value.replace(/[A-Z]/g, (letter) => letter.toLowerCase())
+      : value,
+  slugSchema
+)
+const upperIssuerCode = z.preprocess(
+  (value) =>
+    typeof value === "string"
+      ? value.replace(/[a-z]/g, (letter) => letter.toUpperCase())
+      : value,
+  issuerCodeSchema
+)
+
 export const exploreSearchSchema = z.object({
   amount: faceValueAmountQuerySchema.optional().catch(undefined),
-  composition: slugSchema.optional().catch(undefined),
-  currency: slugSchema.optional().catch(undefined),
-  distribution: slugSchema.optional().catch(undefined),
-  engraver: slugSchema.optional().catch(undefined),
-  issuer: issuerCodeSchema.optional().catch(undefined),
-  mint: slugSchema.optional().catch(undefined),
-  orientation: slugSchema.optional().catch(undefined),
-  ruler: slugSchema.optional().catch(undefined),
-  shape: slugSchema.optional().catch(undefined),
+  composition: lowerSlug.optional().catch(undefined),
+  currency: lowerSlug.optional().catch(undefined),
+  distribution: lowerSlug.optional().catch(undefined),
+  engraver: lowerSlug.optional().catch(undefined),
+  issuer: upperIssuerCode.optional().catch(undefined),
+  mint: lowerSlug.optional().catch(undefined),
+  orientation: lowerSlug.optional().catch(undefined),
+  ruler: lowerSlug.optional().catch(undefined),
+  shape: lowerSlug.optional().catch(undefined),
   size: coinListSizeSchema.optional().catch(undefined),
   tag: z
-    .union([slugSchema, z.array(slugSchema).min(1)])
+    .union([lowerSlug, z.array(lowerSlug).min(1)])
+    .transform((value) => {
+      if (!Array.isArray(value)) return value
+      const tags = [...new Set(value)]
+      return tags.length === 1 ? tags[0] : tags
+    })
     .optional()
     .catch(undefined),
-  tagMatch: z.enum(["all", "any"]).optional().catch(undefined),
-  technique: slugSchema.optional().catch(undefined),
+  tagMatch: z
+    .preprocess(
+      (value) => (typeof value === "string" ? value.toLowerCase() : value),
+      z.enum(["all", "any"])
+    )
+    .optional()
+    .catch(undefined),
+  technique: lowerSlug.optional().catch(undefined),
   thickness: coinListThicknessSchema.optional().catch(undefined),
   weight: coinListWeightSchema.optional().catch(undefined),
   year: z
@@ -45,6 +71,46 @@ export const exploreSearchSchema = z.object({
 })
 
 export type ExploreSearch = z.infer<typeof exploreSearchSchema>
+
+const textFilters = [
+  "composition",
+  "currency",
+  "distribution",
+  "engraver",
+  "issuer",
+  "mint",
+  "orientation",
+  "ruler",
+  "shape",
+  "tag",
+  "tagMatch",
+  "technique",
+] as const
+
+export function canonicalExploreHref(
+  search: ExploreSearch,
+  location: { pathname: string; searchStr: string; hash: string }
+) {
+  const canonical = new URLSearchParams(location.searchStr)
+  let changed = false
+  for (const key of textFilters) {
+    const value = search[key]
+    if (value === undefined) continue
+    const values = Array.isArray(value) ? value : [value]
+    const rawValues = canonical.getAll(key)
+    if (
+      rawValues.length === values.length &&
+      rawValues.every((raw, index) => raw === values[index])
+    )
+      continue
+    canonical.delete(key)
+    values.forEach((item) => canonical.append(key, item))
+    changed = true
+  }
+  return changed
+    ? `${location.pathname}?${canonical.toString()}${location.hash}`
+    : null
+}
 
 export function getExploreCoinListFilters(
   search: ExploreSearch

@@ -77,5 +77,28 @@ describe("returning from a coin to Explore", () => {
       issuer: "AR",
       page: 2,
     })
+
+    await router.navigate({
+      to: "/coins/$coinId",
+      params: { coinId: "00000000-0000-4000-8000-000000000001" },
+      search: {
+        issuer: "aR",
+        tag: ["MaP", "map", "FLAG"],
+        tagMatch: "ALL",
+        page: 2,
+      },
+    })
+    await screen.findByRole("heading", { name: "First coin" })
+    expect(router.state.location.searchStr).toBe(
+      "?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2"
+    )
+    await user.click(screen.getByRole("link", { name: "Archive" }))
+    await screen.findByRole("link", { name: "First coin" })
+    expect(router.state.location.href).toBe(
+      "/?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2"
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2&pageSize=24"
+    )
   })
 })

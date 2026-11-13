@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router"
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router"
 import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
@@ -10,10 +10,17 @@ import {
   validateCoinId,
 } from "@/data/archive"
 import { CoinViewer } from "@/features/coin-viewer/coin-viewer"
-import { exploreSearchSchema } from "@/features/explore/explore-search"
+import {
+  canonicalExploreHref,
+  exploreSearchSchema,
+} from "@/features/explore/explore-search"
 
 export const Route = createFileRoute("/coins/$coinId")({
   validateSearch: exploreSearchSchema,
+  beforeLoad: ({ search, location }) => {
+    const href = canonicalExploreHref(search, location)
+    if (href) throw redirect({ href, replace: true })
+  },
   loader: async ({ context, params }) => {
     const coinId = validateCoinId(params.coinId)
     try {

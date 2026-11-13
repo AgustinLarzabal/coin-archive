@@ -395,7 +395,7 @@ describe("Archive landing route", () => {
     expect(fetchMock).toHaveBeenCalledTimes(13)
   })
 
-  it.each(["", "ar", "A", "ABC_123"])(
+  it.each(["", "A", "ABC_123"])(
     "normalizes malformed Issuer Code %j to the unfiltered route",
     async (issuerCode) => {
       const fetchMock = vi.fn(createArchiveFetch())
@@ -417,6 +417,29 @@ describe("Archive landing route", () => {
       expect(router.state.location.searchStr).toBe("")
     }
   )
+
+  it("canonicalizes text filters and deduplicates Tags before requesting Coins", async () => {
+    const fetchMock = vi.fn(
+      createArchiveFetchFixture({
+        coins: [coin],
+        issuers,
+        pagination: { page: 2, pageSize: 24, totalItems: 48, totalPages: 2 },
+      })
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute(
+      "/?amount=0.5&composition=GoLd&currency=PeSo&distribution=StaNdard&engraver=FiRst&issuer=ar&mint=BuEnOs&orientation=MeDaL&ruler=RoMan&shape=RoUnd&size=25.75&technique=StRuCk&tag=MaP&tag=FLAG&tag=map&tagMatch=ANY&year=1986-1990&page=2"
+    )
+
+    await screen.findByText("Currency not found")
+    expect(router.state.location.searchStr).toBe(
+      "?amount=0.5&composition=gold&currency=peso&distribution=standard&engraver=first&issuer=AR&mint=buenos&orientation=medal&ruler=roman&shape=round&size=25.75&tag=map&tag=flag&tagMatch=any&technique=struck&year=1986-1990&page=2"
+    )
+    expect(router.history.length).toBe(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?composition=gold&currency=peso&distribution=standard&engraver=first&amount=0.5&issuer=AR&year=1986-1990&mint=buenos&orientation=medal&ruler=roman&shape=round&size=25.75&tag=map&tag=flag&tagMatch=any&technique=struck&page=2&pageSize=24"
+    )
+  })
 
   it.each([
     ["ISO", { name: "Argentina", code: "AR" }],

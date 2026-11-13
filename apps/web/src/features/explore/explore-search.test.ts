@@ -55,7 +55,7 @@ describe("Explore search", () => {
     })
   })
 
-  it("drops invalid Explore filters and page values", () => {
+  it("normalizes text filters while dropping invalid values", () => {
     expect(
       exploreSearchSchema.parse({
         amount: "0.50",
@@ -74,19 +74,22 @@ describe("Explore search", () => {
       })
     ).toEqual({
       amount: undefined,
-      currency: undefined,
-      distribution: undefined,
-      composition: undefined,
-      engraver: undefined,
+      currency: "euro",
+      distribution: "bad",
+      composition: "bad",
+      engraver: "bad",
       issuer: undefined,
-      mint: undefined,
-      ruler: undefined,
+      mint: "bad",
+      ruler: "bad",
       year: undefined,
       size: undefined,
       thickness: undefined,
       weight: undefined,
       page: undefined,
     })
+    expect(
+      exploreSearchSchema.parse({ currency: "KILO", issuer: "ıR" })
+    ).toMatchObject({ currency: undefined, issuer: undefined })
     expect(getExploreCoinListFilters({})).toEqual({
       faceValueAmount: undefined,
       currencySlug: undefined,

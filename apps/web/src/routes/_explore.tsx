@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, Outlet } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import { RouteMessage } from "@/components/route-message"
@@ -18,11 +18,18 @@ import {
   tagListQueryOptions,
   techniqueListQueryOptions,
 } from "@/data/archive"
-import { exploreSearchSchema } from "@/features/explore/explore-search"
+import {
+  canonicalExploreHref,
+  exploreSearchSchema,
+} from "@/features/explore/explore-search"
 import { ExploreFilters } from "@/features/explore/filters/explore-filters"
 
 export const Route = createFileRoute("/_explore")({
   validateSearch: exploreSearchSchema,
+  beforeLoad: ({ search, location }) => {
+    const href = canonicalExploreHref(search, location)
+    if (href) throw redirect({ href, replace: true })
+  },
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.query(currencyListQueryOptions()),

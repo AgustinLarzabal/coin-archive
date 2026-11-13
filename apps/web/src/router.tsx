@@ -45,14 +45,16 @@ function stringifySearchWithPaginationLast(search: Record<string, unknown>) {
     const rank = order(left) - order(right)
     return rank || (left < right ? -1 : left > right ? 1 : 0)
   })
-  if (!Array.isArray(search.tag))
-    return defaultStringifySearch(Object.fromEntries(entries))
-
   const parts = entries
     .flatMap(([key, value]) =>
       key === "tag" && Array.isArray(value)
         ? value.map((tag) => defaultStringifySearch({ tag }).slice(1))
-        : [defaultStringifySearch({ [key]: value }).slice(1)]
+        : [
+            ["amount", "size", "thickness", "weight"].includes(key) &&
+            typeof value === "string"
+              ? `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+              : defaultStringifySearch({ [key]: value }).slice(1),
+          ]
     )
     .filter(Boolean)
 

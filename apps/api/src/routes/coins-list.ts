@@ -122,11 +122,11 @@ const coinListQuerySchema = z
         param: { name: "tag", in: "query" },
       }),
     tagMatch: z
-      .literal("any")
+      .enum(["all", "any"])
       .optional()
       .openapi({
         description:
-          "Match any selected Tag. Omit to require all selected Tags. Requires tag; invalid or repeated values return invalid_tag",
+          "Match all or any selected Tags. Omit to require all selected Tags. Requires tag; invalid or repeated values return invalid_tag",
         param: { name: "tagMatch", in: "query" },
       }),
     technique: slugSchema.optional().openapi({

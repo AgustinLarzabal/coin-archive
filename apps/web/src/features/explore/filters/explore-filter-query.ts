@@ -162,7 +162,7 @@ export function filterQueryToPatch(
   let thickness: CoinListThickness | undefined
   let weight: CoinListWeight | undefined
   let tag: string | string[] | undefined
-  let tagMatch: "any" | undefined
+  let tagMatch: "all" | "any" | undefined
   let hasIncompleteRule = false
 
   for (const rule of query.rules) {
@@ -205,7 +205,12 @@ export function filterQueryToPatch(
       )
         return null
       tag = values.length === 1 ? values[0] : values
-      tagMatch = rule.operator === "has_any_of" ? "any" : undefined
+      tagMatch =
+        rule.operator === "has_any_of"
+          ? "any"
+          : search.tagMatch === "all"
+            ? "all"
+            : undefined
       continue
     }
     if (rule.path[0] === "year") {

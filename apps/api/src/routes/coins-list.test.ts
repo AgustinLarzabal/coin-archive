@@ -127,6 +127,21 @@ describe("Coin list route", () => {
     })
   })
   describe("Tag", () => {
+    it("accepts explicit has all of for repeated Tags", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request("/v1/coins?tag=map&tag=flag&tagMatch=all")
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        tagSlugs: ["map", "flag"],
+        page: 1,
+        pageSize: 24,
+      })
+    })
+
     it("passes has any of to the paginated list", async () => {
       const listCoins = vi.fn(emptyCoinPage)
       const response = await createApp({
@@ -146,7 +161,6 @@ describe("Coin list route", () => {
     })
 
     it.each([
-      "tag=map&tagMatch=all",
       "tag=map&tagMatch=ANY",
       "tag=map&tagMatch=any&tagMatch=any",
       "tagMatch=any",
@@ -1535,6 +1549,10 @@ describe("Coin list route", () => {
                 pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
               }),
             }),
+          }),
+          expect.objectContaining({
+            name: "tagMatch",
+            schema: expect.objectContaining({ enum: ["all", "any"] }),
           }),
           expect.objectContaining({
             description: expect.stringContaining("Coin Composition Slug"),

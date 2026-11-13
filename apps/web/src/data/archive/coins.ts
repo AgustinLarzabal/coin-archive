@@ -40,7 +40,7 @@ export type CoinListFilters = Readonly<{
   shape?: string
   size?: CoinListSize
   tagSlugs?: string[]
-  tagMatch?: "any"
+  tagMatch?: "all" | "any"
   technique?: string
   thickness?: CoinListThickness
   weight?: CoinListWeight

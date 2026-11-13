@@ -30,7 +30,7 @@ export const exploreSearchSchema = z.object({
     .union([slugSchema, z.array(slugSchema).min(1)])
     .optional()
     .catch(undefined),
-  tagMatch: z.literal("any").optional().catch(undefined),
+  tagMatch: z.enum(["all", "any"]).optional().catch(undefined),
   technique: slugSchema.optional().catch(undefined),
   thickness: coinListThicknessSchema.optional().catch(undefined),
   weight: coinListWeightSchema.optional().catch(undefined),
@@ -60,8 +60,8 @@ export function getExploreCoinListFilters(
         : Array.isArray(search.tag)
           ? search.tag
           : [search.tag],
-    ...(search.tag !== undefined && search.tagMatch === "any"
-      ? { tagMatch: "any" as const }
+    ...(search.tag !== undefined && search.tagMatch !== undefined
+      ? { tagMatch: search.tagMatch }
       : {}),
     composition: search.composition,
     shape: search.shape,

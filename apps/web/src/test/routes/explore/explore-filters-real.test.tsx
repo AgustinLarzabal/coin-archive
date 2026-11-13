@@ -134,6 +134,28 @@ it("restores has any of and selected Tags from a shared URL", async () => {
   )
 })
 
+it("restores explicit has all of from a shared URL", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      tags: [
+        { slug: "map", name: "Map" },
+        { slug: "flag", name: "Flag" },
+      ],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?tag=map&tag=flag&tagMatch=all")
+  expect(
+    await screen.findByText("No coins match the selected filters.")
+  ).toBeVisible()
+  expect(router.state.location.search.tag).toEqual(["map", "flag"])
+  expect(router.state.location.search.tagMatch).toBe("all")
+  expect(screen.getByText("has all of")).toBeVisible()
+  expect(fetchMock).toHaveBeenCalledWith(
+    "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=all&page=1&pageSize=24"
+  )
+})
+
 it("drops malformed Orientation from Explore search", async () => {
   const fetchMock = vi.fn(createArchiveFetch())
   vi.stubGlobal("fetch", fetchMock)

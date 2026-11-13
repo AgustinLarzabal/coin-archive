@@ -110,6 +110,22 @@ describe("Explore pagination", () => {
       "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=3&pageSize=24"
     )
   })
+  it("keeps explicit all mode when redirecting an out-of-range page", async () => {
+    const fetchMock = vi.fn(createPageAwareArchiveFetch())
+    vi.stubGlobal("fetch", fetchMock)
+    const router = renderArchiveRoute("/?tag=map&tag=flag&tagMatch=all&page=5")
+
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({
+        tag: ["map", "flag"],
+        tagMatch: "all",
+        page: 3,
+      })
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=all&page=3&pageSize=24"
+    )
+  })
   it("keeps Coin Orientation when changing pages", async () => {
     const fetchMock = vi.fn(createPageAwareArchiveFetch())
     vi.stubGlobal("fetch", fetchMock)

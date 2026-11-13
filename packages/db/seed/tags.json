@@ -1,1 +1,5 @@
-[{ "slug": "map", "name": "Map" }]
+[
+  { "slug": "map", "name": "Map" },
+  { "slug": "globe", "name": "Globe" },
+  { "slug": "flag", "name": "Flag" }
+]

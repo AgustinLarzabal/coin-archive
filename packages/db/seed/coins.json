@@ -2,6 +2,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000001",
     "title": "50th Anniversary of the World Food Programme",
+    "tagSlugs": ["map", "globe"],
     "size": 25.75,
     "thickness": 2.2,
     "weight": 8.5,
@@ -196,6 +197,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000008",
     "title": "World Year of Physics 2005",
+    "tagSlugs": ["globe"],
     "issuerCode": "SM",
     "firstIssueYear": 2005,
     "lastIssueYear": 2005,
@@ -1197,6 +1199,7 @@
   {
     "id": "00000000-0000-4000-8000-000000000061",
     "title": "150th Anniversary of the Unification of Italy",
+    "tagSlugs": ["flag"],
     "issuerCode": "IT",
     "firstIssueYear": 2011,
     "lastIssueYear": 2011,
@@ -1670,6 +1673,7 @@
   {
     "id": "00000000-0000-4000-8000-00000000008b",
     "title": "100th Anniversary of the Union of Crete with Greece",
+    "tagSlugs": ["flag"],
     "issuerCode": "GR",
     "firstIssueYear": 2013,
     "lastIssueYear": 2013,

@@ -153,19 +153,39 @@ describe("Coin Tags", () => {
     }
   })
 
-  it("seeds Map on exactly the two curated Coins", async () => {
+  it("seeds overlapping motifs for manual all and any searches", async () => {
     const database = createDatabase(databaseUrl)
     try {
       await seedCoins(database, await readCoinSeed())
       expect(
         (await database.listTags()).map(({ slug, name }) => ({ slug, name }))
-      ).toEqual([{ slug: "map", name: "Map" }])
+      ).toEqual([
+        { slug: "flag", name: "Flag" },
+        { slug: "globe", name: "Globe" },
+        { slug: "map", name: "Map" },
+      ])
       const page = await database.listCoins({ tagSlugs: ["map"] })
-      expect(page.totalItems).toBe(2)
+      expect(page.totalItems).toBe(3)
       expect(page.coins.map(({ title }) => title).sort()).toEqual([
+        "50th Anniversary of the World Food Programme",
         "Enlargement of the European Union by Ten New Member States",
         "Olympic Games in Athens 2004",
       ])
+      expect(
+        await database.listCoins({ tagSlugs: ["map", "globe"] })
+      ).toMatchObject({
+        totalItems: 1,
+        coins: [{ title: "50th Anniversary of the World Food Programme" }],
+      })
+      expect(
+        await database.listCoins({
+          tagSlugs: ["map", "globe"],
+          tagMatch: "any",
+        })
+      ).toMatchObject({ totalItems: 4 })
+      expect(
+        await database.listCoins({ tagSlugs: ["map", "flag"] })
+      ).toMatchObject({ totalItems: 0 })
       const all = await database.listCoins({ pageSize: 100 })
       expect(all.totalItems).toBeGreaterThan(2)
     } finally {

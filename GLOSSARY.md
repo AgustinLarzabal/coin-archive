@@ -12,6 +12,10 @@ _Avoid_: Collection
 A catalogue entry representing a historical kind of coin or coin-like object that collectors can identify as the same issue or type. Every Coin is associated with exactly one Issuer and may be associated with any number of Mints; it is not a physical specimen or an item in a user's collection.
 _Avoid_: Item, Specimen, Collection item
 
+**Coin Slug**:
+A unique, editor-assigned public identifier for a Coin that remains stable independently of its title and Issuer.
+_Avoid_: Coin ID
+
 **Coin Size**:
 A Coin type's curated representative linear size in millimetres, including diameter when applicable. It may be unknown independently of the Coin's other measurements.
 
@@ -100,6 +104,10 @@ _Avoid_: Country, Mint, Manufacturer
 **Issuer Code**:
 A unique, uppercase public identifier for an Issuer. Genuine ISO 3166-1 alpha-2 values contain exactly two ASCII letters; Archive-defined values contain 3–12 ASCII letters, digits, or hyphens.
 _Avoid_: Country Code, ISO Code
+
+**Issuer Slug**:
+A unique, lowercase public identifier for an Issuer that remains stable independently of its name.
+_Avoid_: Issuer Name, Issuer ID
 
 **Mint**:
 A physical facility where Coins were struck, identified by its name and locality under a particular polity. Its country is the existing Issuer representing that polity, which may differ from the Issuer of a Coin struck there; a change of country begins a distinct Mint identity.

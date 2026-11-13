@@ -723,6 +723,7 @@ it("adds and removes individual Tags while resetting pagination", async () => {
   await waitFor(() =>
     expect(router.state.location.search.tag).toEqual(["map", "flag"])
   )
+  expect(router.state.location.href).toBe("/?tag=map&tag=flag")
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
   )
@@ -760,6 +761,7 @@ it("switches selected Tags to any, resets the page, and restores the shared URL"
       tagMatch: "any",
     })
   )
+  expect(router.state.location.href).toBe("/?tag=map&tag=flag&tagMatch=any")
   expect(router.state.location.search.page).toBeUndefined()
   expect(fetchMock).toHaveBeenCalledWith(
     "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"

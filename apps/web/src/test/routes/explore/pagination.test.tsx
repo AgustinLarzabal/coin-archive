@@ -81,6 +81,9 @@ describe("Explore pagination", () => {
         page: 2,
       })
     )
+    expect(router.state.location.href).toBe(
+      "/?tag=map&tag=flag&tagMatch=any&page=2"
+    )
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=2&pageSize=24"
     )

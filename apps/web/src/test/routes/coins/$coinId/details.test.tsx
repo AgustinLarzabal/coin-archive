@@ -6,13 +6,9 @@ import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route details", () => {
-  it.each([
-    [true, "Demonetized"],
-    [false, "Not demonetized"],
-    [null, "Unknown"],
-  ] as const)(
-    "shows %s Coin Demonetization Status as %s",
-    async (demonetized, label) => {
+  it.each([true, false, null] as const)(
+    "shows Demonetized only when status is true (%s)",
+    async (demonetized) => {
       vi.stubGlobal(
         "fetch",
         vi.fn(() =>
@@ -20,10 +16,10 @@ describe("Coin viewer route details", () => {
         )
       )
       renderCoinRoute()
-      expect(
-        await screen.findByText("Coin Demonetization Status")
-      ).toBeInTheDocument()
-      expect(screen.getByText(label)).toBeInTheDocument()
+      await screen.findByRole("heading", { name: "First coin" })
+      expect(Boolean(screen.queryByText("Demonetized"))).toBe(
+        demonetized === true
+      )
     }
   )
   it.each(["Medal", "Coin", null] as const)(

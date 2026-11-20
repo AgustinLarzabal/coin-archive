@@ -1,6 +1,20 @@
 # Coin Archive API
 
-The standalone API serves the public Coin Archive catalogue over HTTP. Its generated OpenAPI 3.1 contract is available at `GET /openapi.json`; use that contract for the exact request and response schemas. This guide covers common requests and behavior that callers need when using the API.
+## Private Worker deployment
+
+The catalogue API also runs as a private Cloudflare Worker. Its Wrangler configuration disables `workers.dev`, preview URLs, and public routes. A trusted Worker calls it through a service binding named `API` targeting `coin-archive-api`. The existing Node server remains available for local development.
+
+Before deployment, create a Hyperdrive configuration for the hosted PostgreSQL database, replace `REPLACE_WITH_HYPERDRIVE_ID` in [wrangler.jsonc](wrangler.jsonc) with its ID, and set `IMAGE_BASE_URL` to the real image origin. Hyperdrive holds the database credentials; do not put `DATABASE_URL` in Worker variables. Set `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` to a local PostgreSQL URL with a password when using `pnpm --filter api dev:worker`; Wrangler requires a password in this connection string even when the dedicated test database uses trust authentication.
+
+Run `pnpm --filter api check:privacy` before deployment. Set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` with Workers Scripts Read and account-wide Zone Read and Workers Routes Read permissions. The token must see every zone in the account; a token scoped to fewer zones cannot detect routes in hidden zones. `pnpm --filter api deploy:worker` checks the repository configuration, deploys the Worker, then checks Cloudflare's live `workers.dev`, preview URL, custom domain, and zone route settings. Run `pnpm --filter api check:deployed-privacy` after any dashboard routing change. Also verify that a configured service binding can fetch `/health`.
+
+Keep `wrangler.jsonc` as strict JSON: the privacy check fails closed on comments or trailing commas.
+
+`pnpm test:db` exercises Coin list, Coin detail, and a reference endpoint through the Worker handler against the dedicated test database. The existing API contract tests also run with `pnpm --filter api test`.
+
+For a real local service binding check, start the dedicated test database and run `pnpm --filter api smoke:binding` with `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` set to `postgresql://coin_archive_test:local-test@127.0.0.1:5433/coin_archive_test`. The `local-test` password is accepted by this database's trust authentication. The smoke caller is local only and exposes Coin list, Coin detail, and Issuers through its `API` binding at `http://localhost:8787`. Stop the Wrangler process and test database afterward.
+
+The local Node API serves the Coin Archive catalogue over HTTP. The deployed Worker serves the same contract through a private service binding. Its generated OpenAPI 3.1 contract is available at `GET /openapi.json`; use that contract for the exact request and response schemas. This guide covers common requests and behavior that callers need when using the API.
 
 ## Quick start
 

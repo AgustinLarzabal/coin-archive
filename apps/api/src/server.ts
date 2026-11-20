@@ -3,7 +3,7 @@ import { createServer } from "node:http"
 import { createDatabase } from "@coin-archive/db"
 import { serve } from "@hono/node-server"
 
-import { createApp } from "./app.js"
+import { createDatabaseApp } from "./app.js"
 import { loadConfig } from "./config.js"
 import { createShutdownHandler } from "./shutdown.js"
 
@@ -35,24 +35,9 @@ const database = createDatabase(config.databaseUrl, {
   },
   statementTimeoutMillis: config.databaseStatementTimeoutMillis,
 })
-const app = createApp({
+const app = createDatabaseApp(database, {
   allowedOrigins: config.allowedOrigins,
-  checkReadiness: database.checkReadiness,
-  findCoinById: database.findCoinById,
-  findCoinBySlug: database.findCoinBySlug,
   imageBaseUrl: config.imageBaseUrl,
-  listCoins: database.listCoins,
-  listShapes: database.listShapes,
-  listOrientations: database.listOrientations,
-  listTechniques: database.listTechniques,
-  listCurrencies: database.listCurrencies,
-  listDistributions: database.listDistributions,
-  listCompositions: database.listCompositions,
-  listEngravers: database.listEngravers,
-  listIssuers: database.listIssuers,
-  listMints: database.listMints,
-  listRulingAuthorities: database.listRulingAuthorities,
-  listTags: database.listTags,
 })
 const server = serve(
   {

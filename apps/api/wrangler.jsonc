@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "coin-archive-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "hyperdrive": [
+    { "binding": "HYPERDRIVE", "id": "REPLACE_WITH_HYPERDRIVE_ID" }
+  ],
+  "vars": {
+    "IMAGE_BASE_URL": "https://images.example.com",
+    "API_DATABASE_CONNECTION_TIMEOUT_MS": "5000",
+    "API_DATABASE_STATEMENT_TIMEOUT_MS": "10000"
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

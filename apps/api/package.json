@@ -4,15 +4,21 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "check:privacy": "node scripts/check-private-worker.mjs",
+    "check:deployed-privacy": "node scripts/check-deployed-private-worker.mjs",
     "predev": "pnpm --filter @coin-archive/api build && pnpm --filter @coin-archive/db build",
     "dev": "node --env-file-if-exists=.env.local --import tsx --watch src/server.ts",
+    "dev:worker": "wrangler dev",
     "dev:staging": "sh scripts/run-with-staging-environment.sh",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint",
     "performance:coin-pagination": "tsx src/coin-pagination-performance.ts",
     "performance:coin-pagination:gate": "tsx src/coin-pagination-performance.ts",
+    "smoke:binding": "wrangler dev -c smoke/wrangler.jsonc -c wrangler.jsonc --port 8787",
     "start": "node --env-file-if-exists=.env.local dist/server.js",
+    "deploy:worker": "node scripts/check-private-worker.mjs --deploy && node scripts/check-deployed-private-worker.mjs --preflight && wrangler deploy && pnpm check:deployed-privacy",
     "test": "vitest run",
+    "test:integration": "pnpm --filter @coin-archive/db db:migrate && vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
@@ -25,12 +31,14 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261120.1",
     "@tanstack/eslint-config": "catalog:",
     "@types/node": "^22",
     "eslint": "^9",
     "prettier": "^3.8.4",
     "tsx": "^4.21.0",
     "typescript": "^6",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "wrangler": "^4.165.0"
   }
 }

@@ -79,9 +79,10 @@ const environmentSchema = z.object({
   API_ALLOWED_ORIGINS: z
     .string()
     .trim()
-    .min(1)
-    .transform((value) => value.split(",").map((origin) => origin.trim()))
-    .pipe(z.array(originSchema).min(1)),
+    .transform((value) =>
+      value ? value.split(",").map((origin) => origin.trim()) : []
+    )
+    .pipe(z.array(originSchema)),
   DATABASE_URL: databaseUrlSchema,
   IMAGE_BASE_URL: imageBaseUrlSchema,
 })

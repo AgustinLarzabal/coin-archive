@@ -27,6 +27,7 @@ import type {
   CoinTechniqueRecord,
   CompositionRecord,
   CurrencyRecord,
+  Database,
   DistributionRecord,
   EngraverRecord,
   IssuerRecord,
@@ -161,4 +162,28 @@ export function createApp(options: AppOptions) {
   })
 
   return app
+}
+
+export function createDatabaseApp(
+  database: Database,
+  options: Pick<AppOptions, "allowedOrigins" | "imageBaseUrl">
+) {
+  return createApp({
+    ...options,
+    checkReadiness: database.checkReadiness,
+    findCoinById: database.findCoinById,
+    findCoinBySlug: database.findCoinBySlug,
+    listCoins: database.listCoins,
+    listShapes: database.listShapes,
+    listOrientations: database.listOrientations,
+    listTechniques: database.listTechniques,
+    listCurrencies: database.listCurrencies,
+    listDistributions: database.listDistributions,
+    listCompositions: database.listCompositions,
+    listEngravers: database.listEngravers,
+    listIssuers: database.listIssuers,
+    listMints: database.listMints,
+    listRulingAuthorities: database.listRulingAuthorities,
+    listTags: database.listTags,
+  })
 }

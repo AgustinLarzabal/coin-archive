@@ -20,6 +20,16 @@ beforeEach(async () => {
 })
 
 describe("Coin Tags", () => {
+  it("rejects more than ten Tag filters", async () => {
+    const database = createDatabase(databaseUrl)
+    try {
+      const tagSlugs = Array.from({ length: 11 }, (_, index) => `tag-${index}`)
+      await expect(database.listCoins({ tagSlugs })).rejects.toThrow(RangeError)
+    } finally {
+      await database.close()
+    }
+  })
+
   it("filters shared and multiple Tags before counting and pagination, and protects attributions", async () => {
     const database = createDatabase(databaseUrl)
     try {

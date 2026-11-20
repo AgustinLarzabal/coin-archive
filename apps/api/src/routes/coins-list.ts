@@ -113,12 +113,12 @@ const coinListQuerySchema = z
     tag: z
       .preprocess(
         (value) => (typeof value === "string" ? [value] : value),
-        z.array(slugSchema).min(1)
+        z.array(slugSchema).min(1).max(10)
       )
       .optional()
       .openapi({
         description:
-          "Repeat tag for multiple exact, case-sensitive Tag Slugs (for example, ?tag=map&tag=flag). Multiple distinct Tags match Coins with all of them by default, or any of them with tagMatch=any. A valid unknown Slug returns an empty successful page when no selected Tag matches; malformed or duplicate values return invalid_tag",
+          "Repeat tag for up to ten distinct, exact, case-sensitive Tag Slugs (for example, ?tag=map&tag=flag). Multiple distinct Tags match Coins with all of them by default, or any of them with tagMatch=any. A valid unknown Slug returns an empty successful page when no selected Tag matches; malformed, duplicate, or excessive values return invalid_tag",
         param: { name: "tag", in: "query" },
       }),
     tagMatch: z

@@ -23,6 +23,10 @@ export function createListCoins(orm: Database["orm"]) {
       throw new RangeError("pageSize must be an integer between 1 and 100")
     }
 
+    if ((listOptions.tagSlugs?.length ?? 0) > 10) {
+      throw new RangeError("tagSlugs must contain at most 10 Tags")
+    }
+
     if (
       listOptions.faceValueAmount !== undefined &&
       listOptions.currencySlug === undefined

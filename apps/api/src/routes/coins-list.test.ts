@@ -127,6 +127,45 @@ describe("Coin list route", () => {
     })
   })
   describe("Tag", () => {
+    it("accepts ten distinct Tags", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const tags = Array.from({ length: 10 }, (_, index) => `tag-${index}`)
+      const query = new URLSearchParams(
+        tags.map((tag): [string, string] => ["tag", tag])
+      )
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+
+      expect(response.status).toBe(200)
+      expect(listCoins).toHaveBeenCalledWith({
+        tagSlugs: tags,
+        page: 1,
+        pageSize: 24,
+      })
+    })
+
+    it("rejects more than ten distinct Tags before listing Coins", async () => {
+      const listCoins = vi.fn(emptyCoinPage)
+      const tags = Array.from({ length: 11 }, (_, index) => `tag-${index}`)
+      const query = new URLSearchParams(
+        tags.map((tag): [string, string] => ["tag", tag])
+      )
+      const response = await createApp({
+        allowedOrigins: [],
+        checkReadiness: successfulReadinessCheck,
+        listCoins,
+      }).request(`/v1/coins?${query}`)
+
+      expect(response.status).toBe(400)
+      expect(listCoins).not.toHaveBeenCalled()
+      await expect(response.json()).resolves.toEqual({
+        error: { code: "invalid_tag", message: "Tag Slug is invalid" },
+      })
+    })
+
     it("accepts explicit has all of for repeated Tags", async () => {
       const listCoins = vi.fn(emptyCoinPage)
       const response = await createApp({

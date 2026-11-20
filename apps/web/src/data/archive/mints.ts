@@ -1,5 +1,6 @@
 import { mintListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { MintListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -31,10 +32,14 @@ async function getMints(): Promise<MintListResponse> {
   }
 }
 
+const getMintsOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getMints()
+)
+
 export function mintListQueryOptions() {
   return queryOptions({
     queryKey: ["mints", "list"] as const,
-    queryFn: getMints,
+    queryFn: () => getMintsOnServer(),
     staleTime: Infinity,
   })
 }

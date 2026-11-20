@@ -1,5 +1,6 @@
 import { issuerListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { IssuerListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getIssuers(): Promise<IssuerListResponse> {
   }
 }
 
+const getIssuersOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getIssuers()
+)
+
 export function issuerListQueryOptions() {
   return queryOptions({
     queryKey: ["issuers", "list"] as const,
-    queryFn: getIssuers,
+    queryFn: () => getIssuersOnServer(),
     staleTime: Infinity,
   })
 }

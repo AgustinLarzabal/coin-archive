@@ -1,5 +1,6 @@
 import { techniqueListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { TechniqueListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getTechniques(): Promise<TechniqueListResponse> {
   }
 }
 
+const getTechniquesOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getTechniques()
+)
+
 export function techniqueListQueryOptions() {
   return queryOptions({
     queryKey: ["techniques", "list"] as const,
-    queryFn: getTechniques,
+    queryFn: () => getTechniquesOnServer(),
     staleTime: Infinity,
   })
 }

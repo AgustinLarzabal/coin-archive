@@ -1,5 +1,6 @@
 import { engraverListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { EngraverListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getEngravers(): Promise<EngraverListResponse> {
   }
 }
 
+const getEngraversOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getEngravers()
+)
+
 export function engraverListQueryOptions() {
   return queryOptions({
     queryKey: ["engravers", "list"] as const,
-    queryFn: getEngravers,
+    queryFn: () => getEngraversOnServer(),
     staleTime: Infinity,
   })
 }

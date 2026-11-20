@@ -1,5 +1,6 @@
 import { orientationListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { OrientationListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getOrientations(): Promise<OrientationListResponse> {
   }
 }
 
+const getOrientationsOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getOrientations()
+)
+
 export function orientationListQueryOptions() {
   return queryOptions({
     queryKey: ["orientations", "list"] as const,
-    queryFn: getOrientations,
+    queryFn: () => getOrientationsOnServer(),
     staleTime: Infinity,
   })
 }

@@ -1,5 +1,6 @@
 import { shapeListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { ShapeListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -27,17 +28,20 @@ async function getShapes(): Promise<ShapeListResponse> {
   try {
     return shapeListResponseSchema.parse(await response.json())
   } catch (error) {
-    throw new InvalidShapeListResponseError(
-      "Shape list response is invalid",
-      { cause: error }
-    )
+    throw new InvalidShapeListResponseError("Shape list response is invalid", {
+      cause: error,
+    })
   }
 }
+
+const getShapesOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getShapes()
+)
 
 export function shapeListQueryOptions() {
   return queryOptions({
     queryKey: ["shapes", "list"] as const,
-    queryFn: getShapes,
+    queryFn: () => getShapesOnServer(),
     staleTime: Infinity,
   })
 }

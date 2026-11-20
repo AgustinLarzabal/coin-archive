@@ -1,5 +1,6 @@
 import { rulingAuthorityListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { RulingAuthorityListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -35,10 +36,14 @@ async function getRulingAuthorities(): Promise<RulingAuthorityListResponse> {
   }
 }
 
+const getRulingAuthoritiesOnServer = createServerFn({ method: "GET" }).handler(
+  () => getRulingAuthorities()
+)
+
 export function rulingAuthorityListQueryOptions() {
   return queryOptions({
     queryKey: ["rulers", "list"] as const,
-    queryFn: getRulingAuthorities,
+    queryFn: () => getRulingAuthoritiesOnServer(),
     staleTime: Infinity,
   })
 }

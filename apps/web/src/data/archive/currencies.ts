@@ -1,5 +1,6 @@
 import { currencyListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { CurrencyListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getCurrencies(): Promise<CurrencyListResponse> {
   }
 }
 
+const getCurrenciesOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getCurrencies()
+)
+
 export function currencyListQueryOptions() {
   return queryOptions({
     queryKey: ["currencies", "list"] as const,
-    queryFn: getCurrencies,
+    queryFn: () => getCurrenciesOnServer(),
     staleTime: Infinity,
   })
 }

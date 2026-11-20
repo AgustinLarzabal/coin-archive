@@ -11,6 +11,7 @@ vi.mock("@tanstack/react-devtools", () => ({
 vi.mock("@tanstack/react-start", async (importOriginal) => ({
   ...(await importOriginal<typeof ReactStart>()),
   createServerFn: () => ({
+    handler: (handle: () => unknown) => handle,
     validator: (validate: (input: unknown) => unknown) => ({
       handler:
         (handle: ({ data }: { data: unknown }) => unknown) =>

@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { expect, it, vi } from "vitest"
 
 import {
@@ -36,6 +36,33 @@ it("offers the Explore filters in the filter picker", async () => {
     0
   )
   expect((await screen.findAllByText("Issue year")).length).toBeGreaterThan(0)
+})
+
+it("keeps reference choices available through Explore navigation and browser history", async () => {
+  const fetchMock = vi.fn(
+    createArchiveFetch({
+      shapes: [{ slug: "oval", name: "Oval" }],
+      tags: [{ slug: "map", name: "Map" }],
+    })
+  )
+  vi.stubGlobal("fetch", fetchMock)
+  const router = renderArchiveRoute("/?shape=oval")
+
+  expect(await screen.findByText("Oval")).toBeVisible()
+  await router.navigate({ to: "/", search: { tag: "map" } })
+  expect(await screen.findByText("Map")).toBeVisible()
+
+  router.history.back()
+  await waitFor(() => expect(router.state.location.search.shape).toBe("oval"))
+  expect(screen.getByText("Oval")).toBeVisible()
+  expect(
+    fetchMock.mock.calls.filter(([input]) =>
+      String(input).endsWith("/v1/shapes")
+    )
+  ).toHaveLength(1)
+  expect(
+    fetchMock.mock.calls.filter(([input]) => String(input).endsWith("/v1/tags"))
+  ).toHaveLength(1)
 })
 
 it("restores Technique with Issuer and sends both to the Coin API", async () => {

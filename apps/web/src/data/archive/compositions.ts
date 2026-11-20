@@ -1,5 +1,6 @@
 import { compositionListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { CompositionListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getCompositions(): Promise<CompositionListResponse> {
   }
 }
 
+const getCompositionsOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getCompositions()
+)
+
 export function compositionListQueryOptions() {
   return queryOptions({
     queryKey: ["compositions", "list"] as const,
-    queryFn: getCompositions,
+    queryFn: () => getCompositionsOnServer(),
     staleTime: Infinity,
   })
 }

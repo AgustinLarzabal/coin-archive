@@ -1,5 +1,6 @@
 import { distributionListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { DistributionListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -34,10 +35,14 @@ async function getDistributions(): Promise<DistributionListResponse> {
   }
 }
 
+const getDistributionsOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getDistributions()
+)
+
 export function distributionListQueryOptions() {
   return queryOptions({
     queryKey: ["distributions", "list"] as const,
-    queryFn: getDistributions,
+    queryFn: () => getDistributionsOnServer(),
     staleTime: Infinity,
   })
 }

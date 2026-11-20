@@ -1,5 +1,6 @@
 import { tagListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
 import type { TagListResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -30,10 +31,14 @@ async function getTags(): Promise<TagListResponse> {
   }
 }
 
+const getTagsOnServer = createServerFn({ method: "GET" }).handler(() =>
+  getTags()
+)
+
 export function tagListQueryOptions() {
   return queryOptions({
     queryKey: ["tags", "list"] as const,
-    queryFn: getTags,
+    queryFn: () => getTagsOnServer(),
     staleTime: Infinity,
   })
 }

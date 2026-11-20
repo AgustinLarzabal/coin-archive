@@ -10,7 +10,7 @@ import {
   InvalidIssuerListResponseError,
   IssuerListRequestError,
 } from "./archive"
-import { InvalidCoinListFilterError } from "./archive/coins"
+import { getCoinsOnServer, InvalidCoinListFilterError } from "./archive/coins"
 import { Route as ExploreRoute } from "@/routes/_explore"
 import { Route as ExploreIndexRoute } from "@/routes/_explore.index"
 import { Route as CoinRoute } from "@/routes/coins.$issuerSlug.$coinSlug"
@@ -48,6 +48,21 @@ function createQueryClient() {
 }
 
 describe("Archive data module", () => {
+  it("rejects unknown Coin list operations and invalid server-function filters", async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(
+      getCoinsOnServer({
+        data: { page: 1, upstreamUrl: "https://example.com" },
+      })
+    ).rejects.toThrow()
+    await expect(getCoinsOnServer({ data: { page: 0 } })).rejects.toThrow(
+      "Invalid Coin List Page"
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it("reuses the Coin list cache for omitted and undefined filters", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)

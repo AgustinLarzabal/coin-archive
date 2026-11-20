@@ -12,6 +12,8 @@ import {
   slugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 import type {
   CoinListResponse,
   CoinListSize,
@@ -48,6 +50,27 @@ export type CoinListFilters = Readonly<{
 }>
 
 type ValidatedCoinListFilters = CoinListFilters & Readonly<{ page: number }>
+
+const serverCoinListFiltersSchema = z.strictObject({
+  composition: z.string().optional(),
+  currencySlug: z.string().optional(),
+  distribution: z.string().optional(),
+  engraverSlug: z.string().optional(),
+  faceValueAmount: z.string().optional(),
+  issuerCode: z.string().optional(),
+  issueYear: coinListYearSchema.optional(),
+  mintSlug: z.string().optional(),
+  orientation: z.string().optional(),
+  rulingAuthoritySlug: z.string().optional(),
+  shape: z.string().optional(),
+  size: z.string().optional(),
+  tagSlugs: z.array(z.string()).optional(),
+  tagMatch: z.enum(["all", "any"]).optional(),
+  technique: z.string().optional(),
+  thickness: z.string().optional(),
+  weight: z.string().optional(),
+  page: z.number().optional(),
+})
 
 async function getCoins({
   composition,
@@ -251,12 +274,18 @@ function validateCoinListFilters(
   }
 }
 
+export const getCoinsOnServer = createServerFn({ method: "GET" })
+  .validator((input: unknown) =>
+    validateCoinListFilters(serverCoinListFiltersSchema.parse(input))
+  )
+  .handler(({ data }) => getCoins(data))
+
 export function coinListQueryOptions(filters: CoinListFilters = {}) {
   const validatedFilters = validateCoinListFilters(filters)
 
   return queryOptions({
     queryKey: ["coins", "list", validatedFilters] as const,
-    queryFn: () => getCoins(validatedFilters),
+    queryFn: () => getCoinsOnServer({ data: validatedFilters }),
     staleTime: 30_000,
   })
 }

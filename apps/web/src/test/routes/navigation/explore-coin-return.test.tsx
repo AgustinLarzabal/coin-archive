@@ -16,7 +16,9 @@ describe("returning from a coin to Explore", () => {
       const url = new URL(String(input))
       if (url.pathname === "/v1/issuers") {
         return Promise.resolve(
-          jsonResponse({ issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }] })
+          jsonResponse({
+            issuers: [{ slug: "argentina", code: "AR", name: "Argentina" }],
+          })
         )
       }
       if (url.pathname === "/v1/compositions") {
@@ -50,9 +52,7 @@ describe("returning from a coin to Explore", () => {
       if (url.pathname === "/v1/rulers") {
         return Promise.resolve(jsonResponse({ rulers: [] }))
       }
-      if (
-        url.pathname.endsWith("/v1/coins/by-slug/first-coin")
-      ) {
+      if (url.pathname.endsWith("/v1/coins/by-slug/first-coin")) {
         return Promise.resolve(jsonResponse(coinDetailFixture()))
       }
       return Promise.resolve(
@@ -69,6 +69,9 @@ describe("returning from a coin to Explore", () => {
     const router = renderArchiveRoute("/?issuer=AR&page=2")
     await user.click(await screen.findByRole("link", { name: "First coin" }))
     await screen.findByRole("heading", { name: "First coin" })
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3001/v1/coins/by-slug/first-coin"
+    )
     await user.click(screen.getByRole("link", { name: "Archive" }))
 
     await screen.findByRole("link", { name: "First coin" })

@@ -5,6 +5,8 @@ import {
   slugSchema,
 } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
+import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
 import { API_BASE_URL } from "@/config"
@@ -57,6 +59,18 @@ export function validateCoinId(coinId: string) {
   return coinId
 }
 
+export const getCoinOnServer = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const { coinId, bySlug } = z
+      .strictObject({ coinId: z.string(), bySlug: z.boolean() })
+      .parse(input)
+    if (bySlug && !slugSchema.safeParse(coinId).success) {
+      throw new CoinNotFoundError("Coin not found")
+    }
+    return bySlug ? `by-slug/${coinId}` : validateCoinId(coinId)
+  })
+  .handler(({ data }) => getCoin(data))
+
 export function coinDetailQueryOptions(coinId: string, bySlug = false) {
   if (bySlug && !slugSchema.safeParse(coinId).success) {
     throw new CoinNotFoundError("Coin not found")
@@ -65,7 +79,7 @@ export function coinDetailQueryOptions(coinId: string, bySlug = false) {
 
   return queryOptions({
     queryKey: ["coins", bySlug ? "slug" : "detail", validCoinId] as const,
-    queryFn: () => getCoin(bySlug ? `by-slug/${validCoinId}` : validCoinId),
+    queryFn: () => getCoinOnServer({ data: { coinId: validCoinId, bySlug } }),
     staleTime: 30_000,
   })
 }

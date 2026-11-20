@@ -28,27 +28,28 @@ describe("Coin Slug route", () => {
   ])(
     "opens %s at the matching detail and retains Explore search",
     async (slug, year) => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn(() =>
-          Promise.resolve(
-            jsonResponse(
-              coinDetailFixture({
-                title: "Hamburg",
-                slug,
-                firstIssueYear: year,
-                lastIssueYear: year,
-                issuer: { name: "Germany", code: "DE", slug: "germany" },
-              })
-            )
+      const fetchMock = vi.fn(() =>
+        Promise.resolve(
+          jsonResponse(
+            coinDetailFixture({
+              title: "Hamburg",
+              slug,
+              firstIssueYear: year,
+              lastIssueYear: year,
+              issuer: { name: "Germany", code: "DE", slug: "germany" },
+            })
           )
         )
       )
+      vi.stubGlobal("fetch", fetchMock)
       const router = renderSlugRoute(`/coins/germany/${slug}?page=2`)
       expect(
         await screen.findByRole("heading", { name: "Hamburg" })
       ).toBeInTheDocument()
       expect(screen.getByText(String(year))).toBeInTheDocument()
+      expect(fetchMock).toHaveBeenCalledWith(
+        `http://localhost:3001/v1/coins/by-slug/${slug}`
+      )
       expect(router.state.location.search).toMatchObject({ page: 2 })
       expect(screen.getByRole("link", { name: "Archive" })).toHaveAttribute(
         "href",

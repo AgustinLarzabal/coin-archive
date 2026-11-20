@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
+  CoinNotFoundError,
   InvalidCoinListResponseError,
   InvalidCoinResponseError,
   InvalidIssuerListResponseError,
@@ -646,6 +647,18 @@ describe("Archive data module", () => {
       expect(screen.getByText(renderedMessage ?? message)).toBeInTheDocument()
     }
   )
+
+  it("preserves a missing Coin across server function serialization", async () => {
+    const { serializationAdapters: adapters } = await startInstance.getOptions()
+    const error = new CoinNotFoundError("Coin not found")
+    const adapter = adapters?.find((candidate) => candidate.test(error))
+    if (!adapter)
+      throw new Error("Missing Coin not found serialization adapter")
+
+    expect(
+      adapter.fromSerializable(adapter.toSerializable(error))
+    ).toBeInstanceOf(CoinNotFoundError)
+  })
 
   it("shows the generic Explore error for an unadapted filter error", async () => {
     const { serializationAdapters: adapters } = await startInstance.getOptions()

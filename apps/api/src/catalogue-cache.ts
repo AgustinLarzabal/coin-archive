@@ -1,3 +1,5 @@
+import { getRequestId } from "./app.js"
+
 const referencePaths = new Set([
   "/v1/compositions",
   "/v1/currencies",
@@ -11,8 +13,6 @@ const referencePaths = new Set([
   "/v1/tags",
   "/v1/techniques",
 ])
-
-const validRequestIdPattern = /^[A-Za-z0-9._:-]{1,128}$/
 
 export async function fetchCatalogue(
   request: Request,
@@ -39,12 +39,9 @@ export async function fetchCatalogue(
   }
   if (cached) {
     const response = new Response(cached.body, cached)
-    const incomingId = request.headers.get("x-request-id")
     response.headers.set(
       "x-request-id",
-      incomingId && validRequestIdPattern.test(incomingId)
-        ? incomingId
-        : crypto.randomUUID()
+      getRequestId(request.headers.get("x-request-id"))
     )
     response.headers.set("Cache-Control", "no-store")
     return response

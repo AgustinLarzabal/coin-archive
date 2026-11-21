@@ -59,6 +59,12 @@ export interface AppOptions {
 
 const validRequestIdPattern = /^[A-Za-z0-9._:-]{1,128}$/
 
+export function getRequestId(incomingRequestId: string | null | undefined) {
+  return incomingRequestId && validRequestIdPattern.test(incomingRequestId)
+    ? incomingRequestId
+    : randomUUID()
+}
+
 export function createApp(options: AppOptions) {
   const app = new OpenAPIHono<AppEnvironment>()
   const log = options.log ?? console.log
@@ -66,10 +72,7 @@ export function createApp(options: AppOptions) {
   app.use("*", async (context, next) => {
     const startedAt = performance.now()
     const incomingRequestId = context.req.header("x-request-id")
-    const requestId =
-      incomingRequestId && validRequestIdPattern.test(incomingRequestId)
-        ? incomingRequestId
-        : randomUUID()
+    const requestId = getRequestId(incomingRequestId)
 
     context.set("requestId", requestId)
     await next()

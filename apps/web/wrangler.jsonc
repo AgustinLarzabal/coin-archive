@@ -1,9 +1,16 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "coin-archive-web",
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/server.ts",
   "compatibility_date": "2026-11-20",
   "compatibility_flags": ["nodejs_compat"],
   "services": [{ "binding": "API", "service": "coin-archive-api" }],
+  "ratelimits": [
+    {
+      "name": "ARCHIVE_RATE_LIMIT",
+      "namespace_id": "116",
+      "simple": { "limit": 120, "period": 60 },
+    },
+  ],
   "observability": { "enabled": true },
 }

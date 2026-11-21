@@ -6,10 +6,7 @@ import {
   coinDetailFixture,
   coinSurfaceWithEngraversFixture,
 } from "@/test/coin-fixtures"
-import {
-  jsonResponse,
-  renderCoinRoute,
-} from "@/test/coin-route-test"
+import { jsonResponse, renderCoinRoute } from "@/test/coin-route-test"
 
 describe("Coin viewer route layout", () => {
   it("renders one responsive Coin viewer tree", async () => {
@@ -114,7 +111,6 @@ describe("Coin viewer route layout", () => {
     )
     expect(screen.getByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Issuer")).not.toBeInTheDocument()
-    expect(screen.getByText("Issue Period")).toBeInTheDocument()
     expect(screen.getByText("2004")).toBeInTheDocument()
     expect(screen.getByText("A portrait of the sovereign")).toBeInTheDocument()
     expect(

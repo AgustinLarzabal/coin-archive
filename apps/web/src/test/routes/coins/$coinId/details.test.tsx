@@ -32,8 +32,8 @@ describe("Coin viewer route details", () => {
         )
       )
       renderCoinRoute()
-      await screen.findByText("Issue Period")
-      expect(Boolean(screen.queryByText("Coin Orientation"))).toBe(
+      await screen.findByText("Argentina")
+      expect(Boolean(screen.queryByText("Orientation"))).toBe(
         orientation !== null
       )
       if (orientation) expect(screen.getByText(orientation)).toBeInTheDocument()
@@ -54,8 +54,8 @@ describe("Coin viewer route details", () => {
         )
       )
       renderCoinRoute()
-      await screen.findByText("Issue Period")
-      expect(Boolean(screen.queryByText("Coin Technique"))).toBe(
+      await screen.findByText("Argentina")
+      expect(Boolean(screen.queryByText("Technique"))).toBe(
         techniqueName !== null
       )
       if (techniqueName)
@@ -80,8 +80,8 @@ describe("Coin viewer route details", () => {
         )
       )
       renderCoinRoute()
-      await screen.findByText("Issue Period")
-      expect(Boolean(screen.queryByText("Coin Shape"))).toBe(label !== null)
+      await screen.findByText("Argentina")
+      expect(Boolean(screen.queryByText("Shape"))).toBe(label !== null)
       if (label) expect(screen.getByText(label)).toBeInTheDocument()
     }
   )
@@ -91,7 +91,7 @@ describe("Coin viewer route details", () => {
       vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
     )
     renderCoinRoute()
-    await screen.findByText("Issue Period")
+    await screen.findByText("Argentina")
     expect(screen.queryByText("Tags")).not.toBeInTheDocument()
   })
 
@@ -145,11 +145,11 @@ describe("Coin viewer route details", () => {
         )
       )
       renderCoinRoute()
-      expect(await screen.findByText("Issue Period")).toBeInTheDocument()
-      expect(Boolean(screen.queryByText("Coin Composition"))).toBe(
+      expect(await screen.findByText("Argentina")).toBeInTheDocument()
+      expect(Boolean(screen.queryByText("Composition"))).toBe(
         compositionName !== null
       )
-      expect(Boolean(screen.queryByText("Coin Composition Detail"))).toBe(
+      expect(Boolean(screen.queryByText("Composition Detail"))).toBe(
         compositionDetail !== null
       )
       if (compositionName)
@@ -171,11 +171,11 @@ describe("Coin viewer route details", () => {
       )
     )
     renderCoinRoute()
-    expect(await screen.findByText("Coin Size")).toBeInTheDocument()
+    expect(await screen.findByText("Size")).toBeInTheDocument()
     expect(screen.getByText("25.75 mm")).toBeInTheDocument()
-    expect(screen.getByText("Coin Weight")).toBeInTheDocument()
+    expect(screen.getByText("Weight")).toBeInTheDocument()
     expect(screen.getByText("8.125 g")).toBeInTheDocument()
-    expect(screen.queryByText("Coin Thickness")).not.toBeInTheDocument()
+    expect(screen.queryByText("Thickness")).not.toBeInTheDocument()
   })
 
   it("shows multiple confirmed Mints with place and country", async () => {
@@ -240,7 +240,7 @@ describe("Coin viewer route details", () => {
       vi.fn(() => Promise.resolve(jsonResponse(coinDetailFixture())))
     )
     renderCoinRoute()
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Mint")).not.toBeInTheDocument()
   })
   it("renders separate Face Value and Currency rows", async () => {
@@ -281,7 +281,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Face Value")).not.toBeInTheDocument()
     expect(screen.queryByText("Currency")).not.toBeInTheDocument()
   })
@@ -305,7 +305,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Coin Distribution")).toBeInTheDocument()
+    expect(await screen.findByText(label)).toBeInTheDocument()
     expect(screen.getByText(label)).toBeInTheDocument()
     expect(screen.queryByText(distribution)).not.toBeInTheDocument()
   })
@@ -370,11 +370,11 @@ describe("Coin viewer route details", () => {
     renderCoinRoute()
 
     expect(await screen.findByText("Argentina")).toBeInTheDocument()
-    expect(screen.getAllByText("King")).toHaveLength(2)
-    expect(screen.getByText("Period")).toBeInTheDocument()
-    const details = screen.getByText("Issue Period").closest("dl")
+    expect(screen.getAllByText("King:")).toHaveLength(2)
+    expect(screen.getByText("Period:")).toBeInTheDocument()
+    const details = screen.getAllByText("King:")[0].parentElement?.parentElement
     expect(details).toHaveTextContent(
-      "KingFirst Co-ruler (2000–2002)Second Co-rulerPeriodShared Period (circa 2001)KingLater King (2003–present)"
+      "King:First Co-ruler (2000–2002)Second Co-rulerPeriod:Shared Period (circa 2001)King:Later King (2003–present)"
     )
     expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "First Co-ruler" })).toBeNull()
@@ -388,7 +388,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.queryByText("Ruler / Period")).not.toBeInTheDocument()
   })
 
@@ -404,7 +404,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.getByText("2004–2007")).toBeInTheDocument()
   })
 
@@ -422,7 +422,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.getByText("2 BCE–2 CE")).toBeInTheDocument()
     expect(screen.queryByText(/-2|year 0/i)).not.toBeInTheDocument()
   })
@@ -441,7 +441,7 @@ describe("Coin viewer route details", () => {
 
     renderCoinRoute()
 
-    expect(await screen.findByText("Issue Period")).toBeInTheDocument()
+    expect(await screen.findByText("Argentina")).toBeInTheDocument()
     expect(screen.getByText("44–42 BCE")).toBeInTheDocument()
     expect(screen.queryByText(/-44|-42/)).not.toBeInTheDocument()
   })
@@ -452,7 +452,11 @@ describe("Coin viewer route details", () => {
         jsonResponse(
           coinDetailFixture({
             title: "Roman coin",
-            issuer: { slug: "roman-empire", name: "Roman Empire", code: "ROMAN" },
+            issuer: {
+              slug: "roman-empire",
+              name: "Roman Empire",
+              code: "ROMAN",
+            },
           })
         )
       )

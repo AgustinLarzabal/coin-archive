@@ -3,6 +3,10 @@
 - Status: Accepted
 - Date: 2026-09-15
 
+ADR 0011 revises the public reachability of this API. The API remains a
+separate service, but its catalogue endpoints will be reached through public
+web and mobile entry points rather than a public API route.
+
 ## Context
 
 Coin Archive's web application needs a stable HTTP boundary that can also serve future

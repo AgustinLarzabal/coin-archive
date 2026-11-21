@@ -4,6 +4,7 @@
   "main": "src/server.ts",
   "compatibility_date": "2026-11-20",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "coinarchive.app", "custom_domain": true }],
   "services": [{ "binding": "API", "service": "coin-archive-api" }],
   "ratelimits": [
     {
@@ -16,6 +17,7 @@
   "env": {
     "staging": {
       "workers_dev": true,
+      "routes": [],
       "services": [{ "binding": "API", "service": "coin-archive-api-staging" }],
       "ratelimits": [
         {

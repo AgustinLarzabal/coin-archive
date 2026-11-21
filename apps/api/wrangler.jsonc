@@ -15,5 +15,21 @@
     "API_DATABASE_CONNECTION_TIMEOUT_MS": "5000",
     "API_DATABASE_STATEMENT_TIMEOUT_MS": "10000"
   },
-  "observability": { "enabled": true, "head_sampling_rate": 1 }
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "env": {
+    "staging": {
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "hyperdrive": [
+        { "binding": "HYPERDRIVE", "id": "7638591840d04712a52bea25016208f4" }
+      ],
+      "vars": {
+        "IMAGE_BASE_URL": "https://mica-images.coinarchive.app",
+        "API_DATABASE_CONNECTION_TIMEOUT_MS": "5000",
+        "API_DATABASE_STATEMENT_TIMEOUT_MS": "10000"
+      },
+      "observability": { "enabled": true, "head_sampling_rate": 1 }
+    }
+  }
 }

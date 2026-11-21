@@ -43,7 +43,7 @@ it("serves Coin list, detail, and reference data through a binding caller", asyn
 
   const env = {
     HYPERDRIVE: { connectionString: databaseUrl },
-    IMAGE_BASE_URL: "https://images.example.com",
+    IMAGE_BASE_URL: "https://mica-images.coinarchive.app",
     API_DATABASE_CONNECTION_TIMEOUT_MS: "5000",
     API_DATABASE_STATEMENT_TIMEOUT_MS: "10000",
   } as Env

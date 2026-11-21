@@ -7,7 +7,9 @@ assert.ok(token, "CLOUDFLARE_API_TOKEN is required")
 
 if (process.argv.includes("--preflight")) process.exit(0)
 
-const worker = "coin-archive-api"
+const worker = process.argv.includes("--staging")
+  ? "coin-archive-api-staging"
+  : "coin-archive-api"
 
 async function get(path) {
   const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
@@ -29,7 +31,10 @@ async function list(path, perPage = 50) {
     assert.ok(Array.isArray(body.result), `Invalid Cloudflare list: ${path}`)
     items.push(...body.result)
     if (body.result_info?.total_pages === undefined) {
-      assert.ok(body.result.length < perPage, `Cannot verify complete list: ${path}`)
+      assert.ok(
+        body.result.length < perPage,
+        `Cannot verify complete list: ${path}`
+      )
       return items
     }
     if (page >= body.result_info.total_pages) return items

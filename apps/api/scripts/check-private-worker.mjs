@@ -4,7 +4,9 @@ import { readFileSync } from "node:fs"
 const config = JSON.parse(
   readFileSync(
     new URL(
-      process.argv.slice(2).find((argument) => argument !== "--deploy") ??
+      process.argv
+        .slice(2)
+        .find((argument) => !["--deploy", "--staging"].includes(argument)) ??
         "../wrangler.jsonc",
       import.meta.url
     ),
@@ -39,13 +41,17 @@ for (const [name, deployment] of [
 }
 
 if (process.argv.includes("--deploy")) {
+  const deployment = process.argv.includes("--staging")
+    ? config.env?.staging
+    : config
+  assert.ok(deployment, "Staging environment is missing")
   assert.match(
-    config.hyperdrive?.[0]?.id ?? "",
+    deployment.hyperdrive?.[0]?.id ?? "",
     /^(?:[0-9a-f]{32}|[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/i,
     "Set the Hyperdrive configuration ID before deployment"
   )
   assert.notEqual(
-    config.vars?.IMAGE_BASE_URL,
+    deployment.vars?.IMAGE_BASE_URL,
     "https://images.example.com",
     "Set the real image origin before deployment"
   )

@@ -43,6 +43,6 @@ export function techniqueListQueryOptions() {
   return queryOptions({
     queryKey: ["techniques", "list"] as const,
     queryFn: () => getTechniquesOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

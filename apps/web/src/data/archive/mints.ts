@@ -40,6 +40,6 @@ export function mintListQueryOptions() {
   return queryOptions({
     queryKey: ["mints", "list"] as const,
     queryFn: () => getMintsOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

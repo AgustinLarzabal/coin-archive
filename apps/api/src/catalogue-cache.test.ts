@@ -4,7 +4,7 @@ import { fetchCatalogue } from "./catalogue-cache.js"
 
 afterEach(() => vi.useRealTimers())
 
-it("reuses catalogue reads by URL for at most 60 seconds without replaying request IDs", async () => {
+it("reuses catalogue reads by URL for at most 30 seconds without replaying request IDs", async () => {
   vi.useFakeTimers()
   const entries = new Map<string, { expiresAt: number; response: Response }>()
   const cache = {
@@ -16,10 +16,10 @@ it("reuses catalogue reads by URL for at most 60 seconds without replaying reque
     },
     async put(request: Request, response: Response) {
       expect(response.headers.get("cache-control")).toBe(
-        "public, max-age=60, must-revalidate"
+        "public, max-age=30, must-revalidate"
       )
       entries.set(request.url, {
-        expiresAt: Date.now() + 60_000,
+        expiresAt: Date.now() + 30_000,
         response: response.clone(),
       })
     },
@@ -52,7 +52,7 @@ it("reuses catalogue reads by URL for at most 60 seconds without replaying reque
   }
   expect(backendCalls).toBe(5)
 
-  vi.advanceTimersByTime(60_000)
+  vi.advanceTimersByTime(30_000)
   await read("/v1/coins?page=1&issuer=AR", "after-expiry")
   expect(backendCalls).toBe(6)
 })

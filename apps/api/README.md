@@ -4,7 +4,7 @@
 
 The catalogue API also runs as a private Cloudflare Worker. Its Wrangler configuration disables `workers.dev`, preview URLs, and public routes. A trusted Worker calls it through a service binding named `API` targeting `coin-archive-api`. The existing Node server remains available for local development.
 
-The Worker caches successful Coin list, Coin detail, and reference GET responses for up to 60 seconds by full request URL. Health, readiness, and error responses remain uncached. The Node server continues to return `Cache-Control: no-store` without a shared cache.
+The Worker caches successful Coin list, Coin detail, and reference GET responses for up to 30 seconds by full request URL. The web browser query cache also waits up to 30 seconds before refetching, so a returning visitor can see catalogue changes within one minute. Health, readiness, and error responses remain uncached. The Node server continues to return `Cache-Control: no-store` without a shared cache.
 
 Before deployment, create a Hyperdrive configuration for the hosted PostgreSQL database, replace `REPLACE_WITH_HYPERDRIVE_ID` in [wrangler.jsonc](wrangler.jsonc) with its ID, and set `IMAGE_BASE_URL` to the real image origin. Hyperdrive holds the database credentials; do not put `DATABASE_URL` in Worker variables. Set `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` to a local PostgreSQL URL with a password when using `pnpm --filter api dev:worker`; Wrangler requires a password in this connection string even when the dedicated test database uses trust authentication.
 

@@ -43,6 +43,6 @@ export function orientationListQueryOptions() {
   return queryOptions({
     queryKey: ["orientations", "list"] as const,
     queryFn: () => getOrientationsOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

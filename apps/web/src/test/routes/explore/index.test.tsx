@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   coinDetailQueryOptions,
   coinListQueryOptions,
-  issuerListQueryOptions,
 } from "@/data/archive"
 import { getRouter } from "@/router"
 import {
@@ -1117,7 +1116,6 @@ describe("Archive landing route", () => {
     ).toBe(30 * 60 * 1_000)
     expect(coinListQueryOptions().staleTime).toBe(30_000)
     expect(coinDetailQueryOptions(coinId).staleTime).toBe(30_000)
-    expect(issuerListQueryOptions().staleTime).toBe(Infinity)
   })
 
   it("enables view transitions for router navigations", () => {

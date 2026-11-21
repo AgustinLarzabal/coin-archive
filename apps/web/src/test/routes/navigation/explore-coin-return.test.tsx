@@ -4,12 +4,51 @@ import { describe, expect, it, vi } from "vitest"
 
 import {
   coinListJsonResponse,
+  createArchiveFetch,
   jsonResponse,
   renderArchiveRoute,
 } from "@/test/archive-route-test"
 import { coinDetailFixture, coinListItemFixture } from "@/test/coin-fixtures"
 
 describe("returning from a coin to Explore", () => {
+  it("shows an updated Issuer on return after the browser cache expires", async () => {
+    const user = userEvent.setup()
+    const now = vi.spyOn(Date, "now")
+    now.mockReturnValue(1_000_000)
+    let issuerName = "Argentina"
+    const fetchMock = vi.fn((input: string | URL | Request) => {
+      const url = new URL(String(input))
+      if (url.pathname === "/v1/coins/by-slug/first-coin") {
+        return Promise.resolve(jsonResponse(coinDetailFixture()))
+      }
+      return createArchiveFetch({
+        coins: [coinListItemFixture()],
+        issuers: [{ slug: "argentina", code: "AR", name: issuerName }],
+      })(input)
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    try {
+      renderArchiveRoute("/?issuer=AR")
+      expect(
+        await screen.findByRole("group", { name: "Issuer is Argentina" })
+      ).toBeVisible()
+      await user.click(screen.getByRole("link", { name: "First coin" }))
+      await screen.findByRole("heading", { name: "First coin" })
+
+      issuerName = "Argentine Republic"
+      now.mockReturnValue(1_031_000)
+      await user.click(screen.getByRole("link", { name: "Archive" }))
+      expect(
+        await screen.findByRole("group", {
+          name: "Issuer is Argentine Republic",
+        })
+      ).toBeVisible()
+    } finally {
+      now.mockRestore()
+    }
+  })
+
   it("keeps Issuer and page through the Archive breadcrumb", async () => {
     const user = userEvent.setup()
     const fetchMock = vi.fn((input: string | URL | Request) => {

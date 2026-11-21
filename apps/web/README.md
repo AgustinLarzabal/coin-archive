@@ -93,12 +93,12 @@ for the check and uses its own rate-limit namespace.
    measurements, update `simple.limit` in `apps/web/wrangler.jsonc`, and
    document the result here before closing issue #116.
 
-5. Confirm the one-minute cache on staging: request the same filtered Explore
-   URL twice within 60 seconds and inspect API Worker requests in Observability.
+5. Confirm the API cache on staging: request the same filtered Explore
+   URL twice within 30 seconds and inspect API Worker requests in Observability.
    The second request should not add catalogue database reads; repeat with a
    different filter and page to confirm distinct results. Update a staging Coin
    or reference value through the normal maintenance path, then verify the new
-   value appears after 60 seconds. Check `/health` through a service binding;
+   value appears within 60 seconds after revisiting the page. Check `/health` through a service binding;
    it must remain uncached. Record the URL, time window, API read counts, and
    observed freshness alongside the traffic measurements. The local cache
    contract test in `apps/api/src/catalogue-cache.test.ts` covers key separation,
@@ -145,6 +145,11 @@ buffer hits; an immediate repeat added 2 commits and 232 hits; a load 62 seconds
 later added 14 commits and 1,867 hits. No buffer reads were recorded. These
 database-wide counters include the probe queries and any concurrent staging
 traffic, so they show a lower warm-read cost and renewed work after expiry,
-not an exact per-request cache-hit count. The cache contract test verifies the
-60-second expiry and filter/page key separation deterministically. A staging
+not an exact per-request cache-hit count. The cache contract test now verifies the
+30-second expiry and filter/page key separation deterministically. A staging
 catalogue mutation and value-freshness observation were not performed.
+
+After this staging run, the API cache was shortened to 30 seconds and browser
+queries to 30 seconds. The historical measurements above used the earlier
+60-second API cache; repeat the staging traffic and freshness checks before
+using them to tune the production limit.

@@ -43,6 +43,6 @@ export function compositionListQueryOptions() {
   return queryOptions({
     queryKey: ["compositions", "list"] as const,
     queryFn: () => getCompositionsOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

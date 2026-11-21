@@ -42,6 +42,6 @@ export function shapeListQueryOptions() {
   return queryOptions({
     queryKey: ["shapes", "list"] as const,
     queryFn: () => getShapesOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

@@ -50,7 +50,7 @@ export async function fetchCatalogue(
   const response = await fetchBackend()
   if (response.status === 200 && !response.headers.has("set-cookie")) {
     const stored = response.clone()
-    stored.headers.set("Cache-Control", "public, max-age=60, must-revalidate")
+    stored.headers.set("Cache-Control", "public, max-age=30, must-revalidate")
     stored.headers.delete("x-request-id")
     try {
       await cache.put(key, stored)

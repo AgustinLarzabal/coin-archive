@@ -43,6 +43,6 @@ export function engraverListQueryOptions() {
   return queryOptions({
     queryKey: ["engravers", "list"] as const,
     queryFn: () => getEngraversOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

@@ -39,6 +39,6 @@ export function tagListQueryOptions() {
   return queryOptions({
     queryKey: ["tags", "list"] as const,
     queryFn: () => getTagsOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

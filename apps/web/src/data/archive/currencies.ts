@@ -43,6 +43,6 @@ export function currencyListQueryOptions() {
   return queryOptions({
     queryKey: ["currencies", "list"] as const,
     queryFn: () => getCurrenciesOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

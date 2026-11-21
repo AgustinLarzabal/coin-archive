@@ -43,6 +43,6 @@ export function distributionListQueryOptions() {
   return queryOptions({
     queryKey: ["distributions", "list"] as const,
     queryFn: () => getDistributionsOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

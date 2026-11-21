@@ -44,6 +44,6 @@ export function rulingAuthorityListQueryOptions() {
   return queryOptions({
     queryKey: ["rulers", "list"] as const,
     queryFn: () => getRulingAuthoritiesOnServer(),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 }

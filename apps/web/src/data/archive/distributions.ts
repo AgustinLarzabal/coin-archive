@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import type { DistributionListResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class InvalidDistributionListResponseError extends Error {}
 export class DistributionListRequestError extends Error {}
@@ -12,7 +12,7 @@ async function getDistributions(): Promise<DistributionListResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/distributions`)
+    response = await fetchArchive(`/v1/distributions`)
   } catch (error) {
     throw new DistributionListRequestError("Distribution list request failed", {
       cause: error,

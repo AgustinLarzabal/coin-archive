@@ -36,7 +36,7 @@ Start the development tasks with:
 pnpm dev
 ```
 
-The web application runs on port 3000, the standalone API on port 3001, and the admin application on port 3002. Browser clients use the API rather than connecting to the database
+The web application runs on port 3000, the standalone API on port 3001, and the admin application on port 3002. Browsers request catalogue data through web server functions rather than connecting to the database
 package directly. See [ADR 0001](docs/adr/0001-standalone-api-boundary.md)
 for the boundary between client runtimes, the API, and persistence.
 
@@ -45,12 +45,15 @@ a physical facility whose public record includes its slug, name, place, and coun
 `GET /v1/mints` lists those records, and `GET /v1/coins?mint=<slug>` finds Coins
 associated with one Mint. A Coin can have multiple confirmed Mints or none.
 
-Local development defaults to `http://localhost:3001` when
-`VITE_API_BASE_URL` is absent. Production builds require an explicit HTTP(S)
-API origin, for example:
+The web Worker reads the private catalogue API through its `API` service
+binding. Configure that binding to target `coin-archive-api` and deploy the web
+Worker after the API Worker. The web build does not need an API origin.
+`pnpm dev` continues to use the local Node API on port 3001 for development.
+After deployment, verify a known Coin appears on both the Archive and detail
+pages and that the API Worker has no public endpoint:
 
 ```bash
-VITE_API_BASE_URL=https://api.example.com pnpm --filter web build
+CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" CLOUDFLARE_API_TOKEN="$API_TOKEN" pnpm --filter web check:deployed-archive https://archive.example.com /coins/argentina/example-coin "Example coin"
 ```
 
 To run the same local processes while the API connects to the personal Neon

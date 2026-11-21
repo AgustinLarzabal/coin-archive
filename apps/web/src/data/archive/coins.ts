@@ -22,7 +22,7 @@ import type {
   CoinListYear,
 } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 class CoinListRequestError extends Error {}
 export class InvalidCoinListFilterError extends Error {}
@@ -120,7 +120,7 @@ async function getCoins({
     search.set("pageSize", String(COIN_LIST_DEFAULT_PAGE_SIZE))
 
     const query = search.size === 0 ? "" : `?${search.toString()}`
-    response = await fetch(`${API_BASE_URL}/v1/coins${query}`)
+    response = await fetchArchive(`/v1/coins${query}`)
   } catch (error) {
     throw new CoinListRequestError("Coin list request failed", {
       cause: error,

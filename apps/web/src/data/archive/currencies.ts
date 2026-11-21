@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import type { CurrencyListResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class InvalidCurrencyListResponseError extends Error {}
 export class CurrencyListRequestError extends Error {}
@@ -12,7 +12,7 @@ async function getCurrencies(): Promise<CurrencyListResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/currencies`)
+    response = await fetchArchive(`/v1/currencies`)
   } catch (error) {
     throw new CurrencyListRequestError("Currency list request failed", {
       cause: error,

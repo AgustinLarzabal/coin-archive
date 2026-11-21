@@ -112,7 +112,7 @@ describe("Archive data module", () => {
     )
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      "http://localhost:3001/v1/coins?distribution=non-circulating&page=1&pageSize=24"
+      "https://api.internal/v1/coins?distribution=non-circulating&page=1&pageSize=24"
     )
     queryClient.clear()
   })
@@ -125,7 +125,7 @@ describe("Archive data module", () => {
     await queryClient.fetchQuery(coinListQueryOptions({ size: "20-25.75" }))
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      "http://localhost:3001/v1/coins?size=20-25.75&page=1&pageSize=24"
+      "https://api.internal/v1/coins?size=20-25.75&page=1&pageSize=24"
     )
     expect(() => coinListQueryOptions({ size: "30-20" })).toThrow(
       "Invalid Coin Size"
@@ -143,7 +143,7 @@ describe("Archive data module", () => {
     )
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      "http://localhost:3001/v1/coins?thickness=1.5-2.25&page=1&pageSize=24"
+      "https://api.internal/v1/coins?thickness=1.5-2.25&page=1&pageSize=24"
     )
     expect(() => coinListQueryOptions({ thickness: "2.25-1.5" })).toThrow(
       "Invalid Coin Thickness"
@@ -159,7 +159,7 @@ describe("Archive data module", () => {
     await queryClient.fetchQuery(coinListQueryOptions({ weight: "8.125-8.5" }))
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      "http://localhost:3001/v1/coins?weight=8.125-8.5&page=1&pageSize=24"
+      "https://api.internal/v1/coins?weight=8.125-8.5&page=1&pageSize=24"
     )
     expect(() => coinListQueryOptions({ weight: "8.5-8.125" })).toThrow(
       "Invalid Coin Weight"
@@ -186,7 +186,7 @@ describe("Archive data module", () => {
     )
 
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-      "http://localhost:3001/v1/coins?currency=euro&distribution=non-circulating&engraver=first-engraver&amount=0.5&issuer=AR&year=1986&ruler=selected-authority&page=3&pageSize=24"
+      "https://api.internal/v1/coins?currency=euro&distribution=non-circulating&engraver=first-engraver&amount=0.5&issuer=AR&year=1986&ruler=selected-authority&page=3&pageSize=24"
     )
     queryClient.clear()
   })

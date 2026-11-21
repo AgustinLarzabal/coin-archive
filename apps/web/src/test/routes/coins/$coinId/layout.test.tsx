@@ -136,7 +136,7 @@ describe("Coin viewer route layout", () => {
     expect(flag).toHaveAttribute("aria-hidden", "true")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `http://localhost:3001/v1/coins/by-slug/first-coin`
+      `https://api.internal/v1/coins/by-slug/first-coin`
     )
   })
 })

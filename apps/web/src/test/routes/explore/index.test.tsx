@@ -79,7 +79,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?page=3&pageSize=24"
+      "https://api.internal/v1/coins?page=3&pageSize=24"
     )
     expect(
       router.options.context.queryClient.getQueryState([
@@ -102,7 +102,7 @@ describe("Archive landing route", () => {
 
     expect(router.state.location.searchStr).toBe("?issuer=ROMAN")
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=ROMAN&page=1&pageSize=24"
+      "https://api.internal/v1/coins?issuer=ROMAN&page=1&pageSize=24"
     )
 
     await router.navigate({ to: "/", search: {} })
@@ -129,7 +129,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
+      "https://api.internal/v1/coins?distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
     )
     expect(router.state.location.searchStr).toBe(
       "?distribution=standard-circulation&issuer=AR"
@@ -158,7 +158,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?currency=argentine-peso&distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
+      "https://api.internal/v1/coins?currency=argentine-peso&distribution=standard-circulation&issuer=AR&page=1&pageSize=24"
     )
     expect(router.state.location.search.currency).toBe("argentine-peso")
   })
@@ -185,7 +185,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&mint=buenos-aires&page=1&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&mint=buenos-aires&page=1&pageSize=24"
     )
     expect(router.state.location.search.mint).toBe("buenos-aires")
   })
@@ -205,7 +205,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
+      "https://api.internal/v1/coins?engraver=first-engraver&issuer=AR&page=1&pageSize=24"
     )
     expect(router.state.location.search.engraver).toBe("first-engraver")
   })
@@ -232,7 +232,7 @@ describe("Archive landing route", () => {
       await screen.findByRole("link", { name: "First coin" })
     ).toBeVisible()
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&ruler=roman-republic&page=1&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&ruler=roman-republic&page=1&pageSize=24"
     )
     expect(router.state.location.search.ruler).toBe("roman-republic")
   })
@@ -394,10 +394,10 @@ describe("Archive landing route", () => {
     await router.navigate({ to: "/", search: {} })
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=1&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?page=1&pageSize=24"
+      "https://api.internal/v1/coins?page=1&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledTimes(13)
   })
@@ -415,10 +415,10 @@ describe("Archive landing route", () => {
         await screen.findByRole("link", { name: "First coin" })
       ).toBeVisible()
       expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:3001/v1/coins?page=1&pageSize=24"
+        "https://api.internal/v1/coins?page=1&pageSize=24"
       )
       expect(fetchMock).not.toHaveBeenCalledWith(
-        `http://localhost:3001/v1/coins?issuer=${encodeURIComponent(issuerCode)}&page=1&pageSize=24`
+        `https://api.internal/v1/coins?issuer=${encodeURIComponent(issuerCode)}&page=1&pageSize=24`
       )
       expect(screen.queryByRole("combobox", { name: "Issuer" })).toBeNull()
       expect(router.state.location.searchStr).toBe("")
@@ -444,7 +444,7 @@ describe("Archive landing route", () => {
     )
     expect(router.history.length).toBe(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?composition=gold&currency=peso&distribution=standard&engraver=first&amount=0.5&issuer=AR&year=1986-1990&mint=buenos&orientation=medal&ruler=roman&shape=round&size=25.75&tag=map&tag=flag&tagMatch=any&technique=struck&page=2&pageSize=24"
+      "https://api.internal/v1/coins?composition=gold&currency=peso&distribution=standard&engraver=first&amount=0.5&issuer=AR&year=1986-1990&mint=buenos&orientation=medal&ruler=roman&shape=round&size=25.75&tag=map&tag=flag&tagMatch=any&technique=struck&page=2&pageSize=24"
     )
   })
 

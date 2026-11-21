@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import type { RulingAuthorityListResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class InvalidRulingAuthorityListResponseError extends Error {}
 export class RulingAuthorityListRequestError extends Error {}
@@ -12,7 +12,7 @@ async function getRulingAuthorities(): Promise<RulingAuthorityListResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/rulers`)
+    response = await fetchArchive(`/v1/rulers`)
   } catch (error) {
     throw new RulingAuthorityListRequestError(
       "Ruling Authority list request failed",

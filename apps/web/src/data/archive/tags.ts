@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import type { TagListResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class InvalidTagListResponseError extends Error {}
 export class TagListRequestError extends Error {}
@@ -12,7 +12,7 @@ async function getTags(): Promise<TagListResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/tags`)
+    response = await fetchArchive(`/v1/tags`)
   } catch (error) {
     throw new TagListRequestError("Tag list request failed", { cause: error })
   }

@@ -10,6 +10,9 @@ export default defineConfig({
   plugins: [viteReact()],
   resolve: {
     alias: {
+      "cloudflare:workers": fileURLToPath(
+        new URL("./src/test/cloudflare-workers.ts", import.meta.url)
+      ),
       "@coin-archive/api": fileURLToPath(
         new URL("../../packages/api/src/index.ts", import.meta.url)
       ),

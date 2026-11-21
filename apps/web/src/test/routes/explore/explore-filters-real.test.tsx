@@ -81,7 +81,7 @@ it("restores Technique with Issuer and sends both to the Coin API", async () => 
     issuer: "AR",
   })
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&technique=milled&page=1&pageSize=24"
+    "https://api.internal/v1/coins?issuer=AR&technique=milled&page=1&pageSize=24"
   )
   expect(
     await screen.findByText("No coins match the selected filters.")
@@ -107,7 +107,7 @@ it("restores Shape with Issuer and shows a filtered empty result", async () => {
     issuer: "AR",
   })
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?issuer=AR&shape=oval&page=1&pageSize=24"
+    "https://api.internal/v1/coins?issuer=AR&shape=oval&page=1&pageSize=24"
   )
 })
 
@@ -118,7 +118,7 @@ it("restores Medal Orientation from the URL", async () => {
   expect(await screen.findByText("Medal")).toBeVisible()
   expect(router.state.location.search.orientation).toBe("medal")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?orientation=medal&page=1&pageSize=24"
+    "https://api.internal/v1/coins?orientation=medal&page=1&pageSize=24"
   )
 })
 
@@ -133,7 +133,7 @@ it("restores an Orientation added to the catalogue", async () => {
   expect(await screen.findByText("Diagonal")).toBeVisible()
   expect(router.state.location.search.orientation).toBe("diagonal")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?orientation=diagonal&page=1&pageSize=24"
+    "https://api.internal/v1/coins?orientation=diagonal&page=1&pageSize=24"
   )
 })
 
@@ -157,7 +157,7 @@ it("restores has any of and selected Tags from a shared URL", async () => {
   })
   expect(screen.getByText("has any of")).toBeVisible()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
   )
 })
 
@@ -179,7 +179,7 @@ it("restores explicit has all of from a shared URL", async () => {
   expect(router.state.location.search.tagMatch).toBe("all")
   expect(screen.getByText("has all of")).toBeVisible()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=all&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=all&page=1&pageSize=24"
   )
 })
 
@@ -190,7 +190,7 @@ it("drops malformed Orientation from Explore search", async () => {
   await screen.findByRole("button", { name: "Add filter" })
   expect(router.state.location.search.orientation).toBeUndefined()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?page=1&pageSize=24"
+    "https://api.internal/v1/coins?page=1&pageSize=24"
   )
 })
 
@@ -202,7 +202,7 @@ it("loads a restored issue year range from the URL", async () => {
   await screen.findByRole("button", { name: "Add filter" })
   expect(router.state.location.search.year).toBe("-25-19")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?year=-25-19&page=1&pageSize=24"
+    "https://api.internal/v1/coins?year=-25-19&page=1&pageSize=24"
   )
 })
 
@@ -216,7 +216,7 @@ it("restores Map from the Tag catalogue and filters Explore", async () => {
   expect(await screen.findByText("Map")).toBeVisible()
   expect(router.state.location.search.tag).toBe("map")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&page=1&pageSize=24"
   )
 })
 
@@ -236,7 +236,7 @@ it("restores multiple Tags from a shared URL and sends both to the Coin API", as
   ).toBeVisible()
   expect(router.state.location.search.tag).toEqual(["map", "flag"])
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
   )
 })
 
@@ -256,6 +256,6 @@ it("restores Composition with another filter and sends both to the Coin API", as
     issuer: "AR",
   })
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?composition=bimetallic&issuer=AR&page=1&pageSize=24"
+    "https://api.internal/v1/coins?composition=bimetallic&issuer=AR&page=1&pageSize=24"
   )
 })

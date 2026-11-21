@@ -89,7 +89,7 @@ describe("Explore pagination", () => {
       "/coins/argentina/first-coin?tag=map&tag=flag&tagMatch=any&page=2"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=2&pageSize=24"
+      "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=any&page=2&pageSize=24"
     )
     router.history.back()
     await waitFor(() =>
@@ -114,7 +114,7 @@ describe("Explore pagination", () => {
       })
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=3&pageSize=24"
+      "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=any&page=3&pageSize=24"
     )
   })
   it("keeps explicit all mode when redirecting an out-of-range page", async () => {
@@ -130,7 +130,7 @@ describe("Explore pagination", () => {
       })
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=all&page=3&pageSize=24"
+      "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=all&page=3&pageSize=24"
     )
   })
   it("keeps Coin Orientation when changing pages", async () => {
@@ -148,7 +148,7 @@ describe("Explore pagination", () => {
       })
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?orientation=coin&page=2&pageSize=24"
+      "https://api.internal/v1/coins?orientation=coin&page=2&pageSize=24"
     )
   })
   it("keeps Technique and Issuer when changing pages", async () => {
@@ -168,7 +168,7 @@ describe("Explore pagination", () => {
       })
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&technique=milled&page=2&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&technique=milled&page=2&pageSize=24"
     )
   })
   it("keeps Shape and Issuer when changing pages", async () => {
@@ -186,7 +186,7 @@ describe("Explore pagination", () => {
       )
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&shape=square&page=2&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&shape=square&page=2&pageSize=24"
     )
   })
 
@@ -412,10 +412,10 @@ describe("Explore pagination", () => {
       page: 3,
     })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=9&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&page=9&pageSize=24"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&page=3&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&page=3&pageSize=24"
     )
 
     router.history.back()

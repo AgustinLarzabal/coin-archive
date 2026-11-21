@@ -48,7 +48,7 @@ describe("Coin Slug route", () => {
       ).toBeInTheDocument()
       expect(screen.getByText(String(year))).toBeInTheDocument()
       expect(fetchMock).toHaveBeenCalledWith(
-        `http://localhost:3001/v1/coins/by-slug/${slug}`
+        `https://api.internal/v1/coins/by-slug/${slug}`
       )
       expect(router.state.location.search).toMatchObject({ page: 2 })
       expect(screen.getByRole("link", { name: "Archive" })).toHaveAttribute(

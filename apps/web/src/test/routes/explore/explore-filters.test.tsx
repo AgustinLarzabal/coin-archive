@@ -716,7 +716,7 @@ it("adds and removes individual Tags while resetting pagination", async () => {
   expect(router.state.location.search.page).toBeUndefined()
   expect(screen.getByTestId("tag-value")).toHaveTextContent("map")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&page=1&pageSize=24"
   )
 
   fireEvent.click(screen.getByRole("button", { name: "Add Flag" }))
@@ -725,7 +725,7 @@ it("adds and removes individual Tags while resetting pagination", async () => {
   )
   expect(router.state.location.href).toBe("/?tag=map&tag=flag")
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&tag=flag&page=1&pageSize=24"
   )
   fireEvent.click(screen.getByRole("button", { name: "Remove Flag" }))
   await waitFor(() => expect(router.state.location.search.tag).toBe("map"))
@@ -764,7 +764,7 @@ it("switches selected Tags to any, resets the page, and restores the shared URL"
   expect(router.state.location.href).toBe("/?tag=map&tag=flag&tagMatch=any")
   expect(router.state.location.search.page).toBeUndefined()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
+    "https://api.internal/v1/coins?tag=map&tag=flag&tagMatch=any&page=1&pageSize=24"
   )
   expect(screen.getByTestId("tag-operator")).toHaveTextContent("has_any_of")
 })
@@ -795,13 +795,13 @@ it("selects and clears Medal Orientation through the URL", async () => {
   )
   expect(router.state.location.search.page).toBeUndefined()
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?orientation=medal&page=1&pageSize=24"
+    "https://api.internal/v1/coins?orientation=medal&page=1&pageSize=24"
   )
   fireEvent.click(screen.getByRole("button", { name: "Clear Orientation" }))
   await waitFor(() =>
     expect(router.state.location.search.orientation).toBeUndefined()
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    "http://localhost:3001/v1/coins?page=1&pageSize=24"
+    "https://api.internal/v1/coins?page=1&pageSize=24"
   )
 })

@@ -70,7 +70,7 @@ describe("returning from a coin to Explore", () => {
     await user.click(await screen.findByRole("link", { name: "First coin" }))
     await screen.findByRole("heading", { name: "First coin" })
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins/by-slug/first-coin"
+      "https://api.internal/v1/coins/by-slug/first-coin"
     )
     await user.click(screen.getByRole("link", { name: "Archive" }))
 
@@ -101,7 +101,7 @@ describe("returning from a coin to Explore", () => {
       "/?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2"
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3001/v1/coins?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2&pageSize=24"
+      "https://api.internal/v1/coins?issuer=AR&tag=map&tag=flag&tagMatch=all&page=2&pageSize=24"
     )
   })
 })

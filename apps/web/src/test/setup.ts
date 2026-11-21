@@ -4,6 +4,8 @@ import { cleanup } from "@testing-library/react"
 import { afterEach, vi } from "vitest"
 import type * as ReactStart from "@tanstack/react-start"
 
+vi.stubEnv("DEV", false)
+
 vi.mock("@tanstack/react-devtools", () => ({
   TanStackDevtools: () => null,
 }))

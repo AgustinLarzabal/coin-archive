@@ -9,7 +9,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 import type { CoinDetailResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class CoinNotFoundError extends Error {}
 export class InvalidCoinResponseError extends Error {}
@@ -20,7 +20,7 @@ async function getCoin(path: string): Promise<CoinDetailResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/coins/${path}`)
+    response = await fetchArchive(`/v1/coins/${path}`)
   } catch (error) {
     throw new CoinRequestError("Coin request failed", { cause: error })
   }

@@ -117,7 +117,7 @@ describe("Coin viewer route details", () => {
     expect(router.state.location.search).toMatchObject({ tag: "map" })
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:3001/v1/coins?tag=map&page=1&pageSize=24"
+        "https://api.internal/v1/coins?tag=map&page=1&pageSize=24"
       )
     )
   })

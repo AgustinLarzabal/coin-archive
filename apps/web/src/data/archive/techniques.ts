@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import type { TechniqueListResponse } from "@coin-archive/api"
 
-import { API_BASE_URL } from "@/config"
+import { fetchArchive } from "./fetch.server"
 
 export class InvalidTechniqueListResponseError extends Error {}
 export class TechniqueListRequestError extends Error {}
@@ -12,7 +12,7 @@ async function getTechniques(): Promise<TechniqueListResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/v1/techniques`)
+    response = await fetchArchive(`/v1/techniques`)
   } catch (error) {
     throw new TechniqueListRequestError("Technique list request failed", {
       cause: error,

@@ -1,12 +1,8 @@
 import { Flag } from "@coin-archive/ui/components/flags/flag"
-import { Separator } from "@coin-archive/ui/components/separator"
 import { cn } from "@coin-archive/ui/lib/utils"
 import { Link, useSearch } from "@tanstack/react-router"
-import { isIsoIssuerCode } from "../issuer"
 import type { CoinListItemResponse } from "@coin-archive/api"
 import type { ComponentProps } from "react"
-
-import { formatIssuePeriod } from "@/features/issue-period"
 
 type ExploreCoinProps = Omit<ComponentProps<"a">, "children" | "href"> & {
   coin: CoinListItemResponse

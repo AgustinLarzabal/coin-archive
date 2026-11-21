@@ -68,25 +68,23 @@ for the check and uses its own rate-limit namespace.
    `CLOUDFLARE_ACCOUNT_ID` set locally, run
    `pnpm --filter api exec node scripts/check-deployed-private-worker.mjs --staging`
    to verify the deployed staging API remains private. Run
-   `pnpm --filter web check:deployed-archive <web-origin> <coin-path> <coin-title> --staging`
-   for the existing HTML and private API smoke check.
+   `pnpm --filter web check:deployed-archive <web-origin> <coin-path> <coin-title> <issuer-code> <issuer-name> --staging`
+   for the deployed browser and privacy smoke check. Choose a Coin shown on
+   Explore's first page, and an Issuer with at least two pages of results (for
+   example `IT` and `Italy`). The check opens Explore and Coin detail, navigates
+   back, selects an Issuer from reference choices, paginates, reloads the
+   filtered view directly, and fails if browser fetch/XHR traffic reaches
+   another origin. It also checks
+   that the API has no public endpoint and that the staging HTML and captured
+   server-function requests receive 429 with `Retry-After: 60`. Install the
+   Playwright browser once with `pnpm --filter web exec playwright install chromium`,
+   or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to an installed Chromium binary.
 
 3. Browse the staging web URL: load Explore and Coin detail directly, then
    navigate, change a filter, and paginate. In browser developer tools, confirm
    each public request succeeds and that browser traffic stays on the web
    origin. Repeat ordinary browsing on two devices sharing one network.
-4. Set `STAGING_COIN_URL` to a valid Coin detail URL on the staging web Worker.
-   From one machine, run the burst below within one minute; run it only against
-   this staging URL. It reports response status counts. Then inspect one 429
-   response for `Retry-After: 60`, and try a filter change in the browser while
-   the caller is limited to check the server-function path.
-
-   ```bash
-   for i in {1..140}; do curl -sS -o /dev/null -w '%{http_code}\n' "$STAGING_COIN_URL"; done | sort | uniq -c
-   curl -i "$STAGING_COIN_URL"
-   ```
-
-5. In Cloudflare Workers Observability for both staging Workers, compare
+4. In Cloudflare Workers Observability for both staging Workers, compare
    `archive_request` 429s, `archive_backend` counts and duration, and API errors.
    In Neon Monitoring, inspect CPU and connections over the same interval.
    Record the ordinary per-IP peak, 429 count, backend request rate and latency,
@@ -94,6 +92,17 @@ for the check and uses its own rate-limit namespace.
    occur on exactly request 121. Choose the production threshold from those
    measurements, update `simple.limit` in `apps/web/wrangler.jsonc`, and
    document the result here before closing issue #116.
+
+5. Confirm the one-minute cache on staging: request the same filtered Explore
+   URL twice within 60 seconds and inspect API Worker requests in Observability.
+   The second request should not add catalogue database reads; repeat with a
+   different filter and page to confirm distinct results. Update a staging Coin
+   or reference value through the normal maintenance path, then verify the new
+   value appears after 60 seconds. Check `/health` through a service binding;
+   it must remain uncached. Record the URL, time window, API read counts, and
+   observed freshness alongside the traffic measurements. The local cache
+   contract test in `apps/api/src/catalogue-cache.test.ts` covers key separation,
+   expiry, and health/error behavior without changing staging data.
 
 ### Initial check, 2026-11-21
 
@@ -119,3 +128,23 @@ Keep 120 requests per 60 seconds as the initial per-IP threshold: ordinary
 staging browsing and the varied page check succeeded, while a sustained single
 caller was limited before private API work. Recheck 429s and database load
 after launch, especially for visitors sharing a network.
+
+The issue #117 browser smoke check later on 2026-11-21 passed against the
+deployed staging Workers with `issuer=IT`: Explore initial load, Coin detail,
+return navigation, filtered Explore, pagination, reference choices, and
+same-origin browser fetch/XHR. The private API had no public endpoint. A paced
+staging run observed one HTML 429 and one server-function 429, both with
+`Retry-After: 60`. The configured limit remained 120 requests per IP per 60
+seconds. The database load sample above is the preproduction measurement used
+for this threshold; this later smoke run did not collect a separate database
+sample.
+
+A staging cache probe on `/?issuer=IT&page=2` compared PostgreSQL counters
+around three successful HTML loads. The first load added 7 commits and 652
+buffer hits; an immediate repeat added 2 commits and 232 hits; a load 62 seconds
+later added 14 commits and 1,867 hits. No buffer reads were recorded. These
+database-wide counters include the probe queries and any concurrent staging
+traffic, so they show a lower warm-read cost and renewed work after expiry,
+not an exact per-request cache-hit count. The cache contract test verifies the
+60-second expiry and filter/page key separation deterministically. A staging
+catalogue mutation and value-freshness observation were not performed.

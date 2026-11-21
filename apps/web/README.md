@@ -151,5 +151,22 @@ catalogue mutation and value-freshness observation were not performed.
 
 After this staging run, the API cache was shortened to 30 seconds and browser
 queries to 30 seconds. The historical measurements above used the earlier
-60-second API cache; repeat the staging traffic and freshness checks before
-using them to tune the production limit.
+60-second API cache; the later check below covers the updated configuration.
+
+### Post-change check, 2026-11-21
+
+Deployed the 30-second API cache and web query settings to the isolated staging
+Workers. The browser smoke check passed Explore initial load, Coin detail,
+navigation, Issuer filtering, pagination, and same-origin fetch/XHR. The staging
+API had no public endpoint: its direct `workers.dev` URL returned 404, and the
+deployed privacy check found no preview URL, custom domain, or route. Both HTML
+and server-function traffic received 429 with `Retry-After: 60` when limited.
+
+A staging Issuer name changed from `Italy` to `Italy freshness probe` appeared
+through `/?issuer=IT` after 31.6 seconds; the original name was restored. A
+separate sample of 36 ordinary requests across three Explore URLs returned 36
+responses with 200 and no 429. Client-side p95 was 334 ms. PostgreSQL recorded
+9 more commits, 648 buffer hits, no buffer reads, and 18 backends after the
+sample. These database-wide counters include the measurement queries and any
+concurrent staging traffic. Keep the initial limit at 120 requests per IP per
+60 seconds; review 429s and database load after production launch.

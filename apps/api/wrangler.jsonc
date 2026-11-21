@@ -8,10 +8,10 @@
   "preview_urls": false,
   "routes": [],
   "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "REPLACE_WITH_HYPERDRIVE_ID" }
+    { "binding": "HYPERDRIVE", "id": "04f35fd7a8d8438e97d5c3564f8c9537" }
   ],
   "vars": {
-    "IMAGE_BASE_URL": "https://images.example.com",
+    "IMAGE_BASE_URL": "https://mica-images.coinarchive.app",
     "API_DATABASE_CONNECTION_TIMEOUT_MS": "5000",
     "API_DATABASE_STATEMENT_TIMEOUT_MS": "10000"
   },

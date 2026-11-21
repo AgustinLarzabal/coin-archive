@@ -41,7 +41,7 @@ for (const [name, deployment] of [
 if (process.argv.includes("--deploy")) {
   assert.match(
     config.hyperdrive?.[0]?.id ?? "",
-    /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
+    /^(?:[0-9a-f]{32}|[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/i,
     "Set the Hyperdrive configuration ID before deployment"
   )
   assert.notEqual(

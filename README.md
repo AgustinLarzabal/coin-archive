@@ -46,19 +46,62 @@ a physical facility whose public record includes its slug, name, place, and coun
 associated with one Mint. A Coin can have multiple confirmed Mints or none.
 
 The web Worker reads the private catalogue API through its `API` service
-binding. Configure that binding to target `coin-archive-api` and deploy the web
-Worker after the API Worker. The web build does not need an API origin.
-`pnpm dev` continues to use the local Node API on port 3001 for development.
-After deployment, verify a known Coin appears on both the Archive and detail
-pages and that the API Worker has no public endpoint:
-
-```bash
-CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" CLOUDFLARE_API_TOKEN="$API_TOKEN" pnpm --filter web check:deployed-archive https://archive.example.com /coins/argentina/example-coin "Example coin"
-```
+binding. The web build does not need an API origin. `pnpm dev` continues to use
+the local Node API on port 3001 for development.
 
 To run the same local processes while the API connects to the personal Neon
 Staging Database, follow the [Neon staging workflow](docs/neon-staging.md) and
 use `pnpm dev:staging`.
+
+## Manual deployment
+
+Deploy the private API Worker before the web Worker that binds to it. Worker
+startup does not apply database migrations. Run commands from the repository
+root with Cloudflare credentials configured. The privacy and deployed Archive
+checks require `CLOUDFLARE_ACCOUNT_ID` and an account-scoped
+`CLOUDFLARE_API_TOKEN`; see the [API deployment guide](apps/api/README.md#private-worker-deployment)
+for the required permissions.
+
+### Staging
+
+Apply new migrations with `pnpm db:migrate:staging`, using the direct Neon URL
+in the root `.env.staging.local`. Do not repeat `pnpm db:seed:staging` on an
+already seeded database. Then follow the [staging Worker deployment commands](apps/web/README.md#staging-verification)
+to check privacy, dry-run and deploy both Workers, and verify the deployed web
+app. `pnpm dev:staging` starts local processes; it does not deploy Workers.
+
+### Production
+
+When the release includes migrations, first set `PRODUCTION_DATABASE_URL` from
+the production database's **direct** connection string in your secret manager.
+Check the credential-free host and database name before applying migrations:
+
+```bash
+DATABASE_URL="$PRODUCTION_DATABASE_URL" node -e 'const url = new URL(process.env.DATABASE_URL); console.log(`${url.hostname}/${decodeURIComponent(url.pathname.slice(1))}`)'
+DATABASE_URL="$PRODUCTION_DATABASE_URL" pnpm db:migrate
+```
+
+Without `DATABASE_URL`, `pnpm db:migrate` targets the local database. Deploy the
+production Workers after migrations:
+
+```bash
+pnpm --filter api deploy:worker
+pnpm --filter web build
+pnpm --filter web exec wrangler deploy --dry-run
+pnpm --filter web exec wrangler deploy
+```
+
+Confirm the web dry run targets `coin-archive-web` and binds to
+`coin-archive-api` before deploying. Then verify a Coin on the first Archive
+page and an Issuer with at least two result pages; the check also confirms the
+API Worker has no public endpoint:
+
+```bash
+pnpm --filter web check:deployed-archive https://coinarchive.app '/coins/<issuer>/<coin-slug>' '<coin-title>' '<ISSUER_CODE>' '<issuer-name>'
+```
+
+The check requires a Playwright Chromium browser. Install it with
+`pnpm --filter web exec playwright install chromium` if needed.
 
 ## Testing
 

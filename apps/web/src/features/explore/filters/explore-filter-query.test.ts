@@ -47,6 +47,20 @@ it("switches Tag mode while keeping selected Tags", () => {
   ).toMatchObject([{ operator: "has_any_of", value: ["map", "flag"] }])
 })
 
+it("rejects an eleventh Tag selection", () => {
+  const tags = Array.from({ length: 11 }, (_, index) => `tag-${index}`)
+  const query = createFilterQuery([
+    createFilterRule({
+      id: "explore-tag",
+      path: ["tag"],
+      operator: "has_all_of",
+      value: tags,
+    }),
+  ])
+
+  expect(filterQueryToPatch(query, { tag: tags.slice(0, 10) })).toBeNull()
+})
+
 it("keeps a new Tag rule local until its mode and value are selected", () => {
   expect(
     filterQueryToPatch(

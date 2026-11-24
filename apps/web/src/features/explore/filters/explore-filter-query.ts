@@ -196,6 +196,7 @@ export function filterQueryToPatch(
       if (Array.isArray(rule.value) && rule.value.length === 0) continue
       const values = Array.isArray(rule.value) ? rule.value : [rule.value]
       if (
+        values.length > 10 ||
         !values.every(
           (value): value is string =>
             typeof value === "string" &&

@@ -116,12 +116,23 @@ export function getExploreFilterFields(
     }
 
     if (definition.id === "tag") {
+      const selectedTags = query.rules.find(
+        (rule) => rule.type === "rule" && rule.path[0] === "tag"
+      )
+      const tags =
+        selectedTags?.type === "rule" && Array.isArray(selectedTags.value)
+          ? selectedTags.value
+          : []
       return {
         id: definition.id,
         label: definition.label,
         icon: definition.icon,
         type: "multiselect",
-        options: definition.options(lists),
+        options: definition.options(lists).map((option) => ({
+          ...option,
+          disabled:
+            tags.length >= 10 && !tags.some((tag) => tag === option.value),
+        })),
         pinSelected: true,
         operators: [
           { value: "has_all_of", label: "has all of", arity: "many" },

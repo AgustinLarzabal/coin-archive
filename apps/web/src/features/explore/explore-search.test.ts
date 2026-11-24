@@ -136,4 +136,12 @@ describe("Explore search", () => {
     expect(search.tag).toEqual(tags)
     expect(getExploreCoinListFilters(search).tagSlugs).toEqual(tags)
   })
+
+  it("counts distinct URL tags after removing duplicates", () => {
+    const tags = Array.from({ length: 10 }, (_, index) => `tag-${index}`)
+    const search = exploreSearchSchema.parse({ tag: [...tags, tags[0]] })
+
+    expect(search.tag).toEqual(tags)
+    expect(getExploreCoinListFilters(search).tagSlugs).toEqual(tags)
+  })
 })

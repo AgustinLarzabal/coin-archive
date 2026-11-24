@@ -64,7 +64,7 @@ const serverCoinListFiltersSchema = z.strictObject({
   rulingAuthoritySlug: z.string().optional(),
   shape: z.string().optional(),
   size: z.string().optional(),
-  tagSlugs: z.array(z.string()).optional(),
+  tagSlugs: z.array(z.string()).max(10).optional(),
   tagMatch: z.enum(["all", "any"]).optional(),
   technique: z.string().optional(),
   thickness: z.string().optional(),

@@ -64,6 +64,34 @@ describe("Archive data module", () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it("rejects eleven tags before requesting the Coin list", async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(
+      getCoinsOnServer({
+        data: {
+          tagSlugs: Array.from({ length: 11 }, (_, index) => `tag-${index}`),
+        },
+      })
+    ).rejects.toThrow()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("accepts ten tags in the Coin list server function", async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(
+      getCoinsOnServer({
+        data: {
+          tagSlugs: Array.from({ length: 10 }, (_, index) => `tag-${index}`),
+        },
+      })
+    ).resolves.toMatchObject({ coins: [] })
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
   it("reuses the Coin list cache for omitted and undefined filters", async () => {
     const fetchMock = vi.fn(() => Promise.resolve(coinListJsonResponse([])))
     vi.stubGlobal("fetch", fetchMock)

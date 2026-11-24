@@ -42,7 +42,7 @@ export const exploreSearchSchema = z.object({
   shape: lowerSlug.optional().catch(undefined),
   size: coinListSizeSchema.optional().catch(undefined),
   tag: z
-    .union([lowerSlug, z.array(lowerSlug).min(1)])
+    .union([lowerSlug, z.array(lowerSlug).min(1).max(10)])
     .transform((value) => {
       if (!Array.isArray(value)) return value
       const tags = [...new Set(value)]

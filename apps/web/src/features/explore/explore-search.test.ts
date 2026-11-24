@@ -119,4 +119,21 @@ describe("Explore search", () => {
         .faceValueAmount
     ).toBeUndefined()
   })
+
+  it("drops eleven URL tags before mapping Coin list filters", () => {
+    const search = exploreSearchSchema.parse({
+      tag: Array.from({ length: 11 }, (_, index) => `tag-${index}`),
+    })
+
+    expect(search.tag).toBeUndefined()
+    expect(getExploreCoinListFilters(search).tagSlugs).toBeUndefined()
+  })
+
+  it("keeps ten URL tags in Coin list filters", () => {
+    const tags = Array.from({ length: 10 }, (_, index) => `tag-${index}`)
+    const search = exploreSearchSchema.parse({ tag: tags })
+
+    expect(search.tag).toEqual(tags)
+    expect(getExploreCoinListFilters(search).tagSlugs).toEqual(tags)
+  })
 })

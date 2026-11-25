@@ -53,7 +53,18 @@ To run the same local processes while the API connects to the personal Neon
 Staging Database, follow the [Neon staging workflow](docs/neon-staging.md) and
 use `pnpm dev:staging`.
 
-## Manual deployment
+## Releases
+
+Each push to `main` runs the
+[staging release](docs/neon-staging.md#automated-staging-releases-on-merges-to-main).
+After it succeeds, start the
+[production promotion](docs/production-release.md) manually from GitHub
+Actions. Production requires environment approval and promotes only the current
+`main` commit that passed staging. Configure the GitHub environments before
+using either workflow, and review migration compatibility with the currently
+deployed Workers before merging.
+
+### Manual deployment and recovery
 
 Deploy the private API Worker before the web Worker that binds to it. Worker
 startup does not apply database migrations. Run commands from the repository

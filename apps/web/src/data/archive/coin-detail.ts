@@ -7,9 +7,8 @@ import {
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
-import type { CoinDetailResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { CoinDetailResponse } from "@coin-archive/api"
 
 export class CoinNotFoundError extends Error {}
 export class InvalidCoinResponseError extends Error {}

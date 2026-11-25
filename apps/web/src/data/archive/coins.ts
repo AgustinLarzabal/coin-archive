@@ -14,6 +14,7 @@ import {
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
+import { fetchArchive } from "./fetch.server"
 import type {
   CoinListResponse,
   CoinListSize,
@@ -21,8 +22,6 @@ import type {
   CoinListWeight,
   CoinListYear,
 } from "@coin-archive/api"
-
-import { fetchArchive } from "./fetch.server"
 
 class CoinListRequestError extends Error {}
 export class InvalidCoinListFilterError extends Error {}

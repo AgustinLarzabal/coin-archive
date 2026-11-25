@@ -1,9 +1,8 @@
 import { mintListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { MintListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { MintListResponse } from "@coin-archive/api"
 
 export class InvalidMintListResponseError extends Error {}
 export class MintListRequestError extends Error {}

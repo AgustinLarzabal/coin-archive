@@ -1,9 +1,8 @@
 import { compositionListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { CompositionListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { CompositionListResponse } from "@coin-archive/api"
 
 export class InvalidCompositionListResponseError extends Error {}
 export class CompositionListRequestError extends Error {}

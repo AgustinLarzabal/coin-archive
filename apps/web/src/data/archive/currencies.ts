@@ -1,9 +1,8 @@
 import { currencyListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { CurrencyListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { CurrencyListResponse } from "@coin-archive/api"
 
 export class InvalidCurrencyListResponseError extends Error {}
 export class CurrencyListRequestError extends Error {}

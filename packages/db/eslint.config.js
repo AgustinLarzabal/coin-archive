@@ -5,6 +5,7 @@ import { tanstackConfig } from "@tanstack/eslint-config"
 export default [
   ...tanstackConfig,
   {
+    files: ["**/*.{js,ts,tsx}"],
     rules: {
       "import/no-cycle": "off",
       "import/order": [

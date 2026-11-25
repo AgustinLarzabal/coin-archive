@@ -1,9 +1,8 @@
 import { distributionListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { DistributionListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { DistributionListResponse } from "@coin-archive/api"
 
 export class InvalidDistributionListResponseError extends Error {}
 export class DistributionListRequestError extends Error {}

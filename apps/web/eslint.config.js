@@ -7,6 +7,7 @@ export default [
   ...tanstackConfig,
   ...pluginRouter.configs["flat/recommended"],
   {
+    files: ["**/*.{js,ts,tsx}"],
     rules: {
       "import/no-cycle": "off",
       "import/order": [

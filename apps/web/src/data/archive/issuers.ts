@@ -1,9 +1,8 @@
 import { issuerListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { IssuerListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { IssuerListResponse } from "@coin-archive/api"
 
 export class InvalidIssuerListResponseError extends Error {}
 export class IssuerListRequestError extends Error {}

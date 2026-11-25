@@ -1,9 +1,8 @@
 import { techniqueListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { TechniqueListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { TechniqueListResponse } from "@coin-archive/api"
 
 export class InvalidTechniqueListResponseError extends Error {}
 export class TechniqueListRequestError extends Error {}

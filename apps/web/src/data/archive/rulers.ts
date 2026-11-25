@@ -1,9 +1,8 @@
 import { rulingAuthorityListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { RulingAuthorityListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { RulingAuthorityListResponse } from "@coin-archive/api"
 
 export class InvalidRulingAuthorityListResponseError extends Error {}
 export class RulingAuthorityListRequestError extends Error {}

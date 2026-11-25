@@ -1,9 +1,8 @@
 import { tagListResponseSchema } from "@coin-archive/api"
 import { queryOptions } from "@tanstack/react-query"
 import { createServerFn } from "@tanstack/react-start"
-import type { TagListResponse } from "@coin-archive/api"
-
 import { fetchArchive } from "./fetch.server"
+import type { TagListResponse } from "@coin-archive/api"
 
 export class InvalidTagListResponseError extends Error {}
 export class TagListRequestError extends Error {}

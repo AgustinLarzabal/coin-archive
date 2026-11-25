@@ -5,6 +5,7 @@ import { tanstackConfig } from "@tanstack/eslint-config"
 export default [
   ...tanstackConfig,
   {
+    files: ["**/*.{js,ts,tsx}"],
     rules: {
       "import/no-cycle": "off",
       "import/order": [
@@ -32,6 +33,10 @@ export default [
       "@typescript-eslint/require-await": "off",
       "pnpm/json-enforce-catalog": "off",
     },
+  },
+  {
+    files: ["**/*.test.ts"],
+    rules: { "@typescript-eslint/no-unnecessary-type-assertion": "off" },
   },
   {
     ignores: ["dist/**", "eslint.config.js"],

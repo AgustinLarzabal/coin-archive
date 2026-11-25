@@ -1,8 +1,14 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*.ts", "vitest.config.ts", "worker-configuration.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "smoke/binding-caller.js",
+    "vitest*.config.ts",
+    "worker-configuration.d.ts"
+  ],
   "compilerOptions": {
     "lib": ["ES2022"],
+    "allowJs": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "noEmit": true,

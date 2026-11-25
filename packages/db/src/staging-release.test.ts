@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 const releaseScript = fileURLToPath(
-  new URL("../scripts/staging-release.mjs", import.meta.url)
+  new URL("../scripts/release.mjs", import.meta.url)
 )
 const host = "ep-example.eu-central-1.aws.neon.tech"
 
@@ -105,7 +105,9 @@ describe("staging release", () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain("staging API deployment failed")
     expect(calls).toContain("db:migrate")
-    expect(calls).not.toContain("--filter web exec wrangler deploy --env staging")
+    expect(calls).not.toContain(
+      "--filter web exec wrangler deploy --env staging"
+    )
     expect(result.stdout).not.toContain("Staging release verified")
   })
 

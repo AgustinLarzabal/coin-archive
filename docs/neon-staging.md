@@ -44,11 +44,10 @@ Both private `*.local` files are ignored by Git. Never put either Neon URL in
 `apps/web`: the browser continues to call the local API at
 `http://localhost:3001` and must not receive a database credential.
 
-## Automated migrations on merges to main
+## Automated staging releases on merges to main
 
-The `Staging migrations` GitHub Actions workflow runs on each push to `main`.
-Configure the GitHub `staging` environment with these values before merging a
-migration:
+The `Staging release` GitHub Actions workflow runs on each push to `main`.
+Configure the GitHub `staging` environment with these values before merging:
 
 - Secret `STAGING_DATABASE_URL`: the direct, unpooled Neon PostgreSQL URL for
   the intended staging branch and database, including its database role and
@@ -57,15 +56,30 @@ migration:
 - Variable `STAGING_DATABASE_HOST`: the exact hostname of that direct URL,
   without credentials or a port.
 - Variable `STAGING_DATABASE_NAME`: the exact database name in that URL.
+- Variable `STAGING_WEB_ORIGIN`: the deployed staging web Worker URL, such as
+  `https://coin-archive-web-staging.<subdomain>.workers.dev`.
+- Secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`: the account and
+  token used by Wrangler and the deployed privacy check. The token needs Worker
+  deployment access, Workers Scripts Read, and account-wide Zone Read and
+  Workers Routes Read permissions so the privacy check sees every route.
 
 Copy the host and database name from the intended branch's direct connection
 details in the Neon Console. Keep the URL in a GitHub secret and rotate it if it
 is exposed. Missing or mismatched values stop the run before migration. The
-workflow builds and runs `pnpm test` first, then applies only checked-in
-migrations. It does not reset, seed, or automatically roll back the database.
+workflow builds and runs `pnpm test` first, checks the staging Worker bindings
+and Cloudflare credentials, builds the staging web Worker, and dry-runs both
+deployments. It then applies only checked-in migrations, deploys the private
+API Worker followed by the web Worker, and runs the deployed API privacy and
+unattended Archive browser checks. It does not reset, seed, or automatically
+roll back the database.
 The `staging-release` concurrency group lets only one staging run proceed at a
-time. A failed build, test, target check, or migration fails the run at that
-stage; inspect its Actions log before retrying or recovering manually.
+time. The successful Actions run and its summary identify the exact commit that
+passed all deployed checks. A failed stage makes the run unsuccessful; inspect
+the named stage in its Actions log before retrying. A migration that completed
+before a failed deployment or check remains applied. Verify the live database
+and both Workers, then fix the failure and rerun the same commit if it is still
+current, or release a newer commit. Do not assume the deployed Workers or
+database were rolled back.
 
 Before merging any migration, a human must review whether the SQL remains
 compatible with the Workers currently deployed to staging until replacement
@@ -73,8 +87,9 @@ Workers are live. In particular, keep columns and behavior those Workers use
 available through this interval. A successful migration is not reversed by
 the workflow.
 
-The current workflow applies migrations only. Worker deployment and deployed
-checks are covered by separate release work in ADR 0012.
+The automated browser check needs live catalogue records suitable for its
+Explore, Coin detail, Issuer filter, and pagination flow. Missing records fail
+the release; add or repair staging data explicitly before rerunning.
 
 ## Commands
 

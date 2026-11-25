@@ -1,6 +1,6 @@
 # ADR 0012: Promote tested staging releases to production
 
-- Status: Accepted; implementation planned
+- Status: Accepted; staging implemented, production promotion planned
 - Date: 2026-11-24
 
 ## Context
@@ -44,4 +44,5 @@ start a new promotion after the newer commit passes staging. A deployment can
 leave the database migrated when a later step fails, so migrations must be safe
 for the old Workers and operators must decide how to recover. This ADR records
 the target process; the current manual deployment commands remain in effect
-until the workflows are implemented.
+until production promotion is implemented. The staging workflow now deploys and
+verifies both Workers for each `main` commit.

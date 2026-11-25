@@ -68,11 +68,11 @@ for the check and uses its own rate-limit namespace.
    `CLOUDFLARE_ACCOUNT_ID` set locally, run
    `pnpm --filter api exec node scripts/check-deployed-private-worker.mjs --staging`
    to verify the deployed staging API remains private. Run
-   `pnpm --filter web check:deployed-archive <web-origin> <coin-path> <coin-title> <issuer-code> <issuer-name> --staging`
-   for the deployed browser and privacy smoke check. Choose a Coin shown on
-   Explore's first page, and an Issuer with at least two pages of results (for
-   example `IT` and `Italy`). The check opens Explore and Coin detail, navigates
-   back, selects an Issuer from reference choices, paginates, reloads the
+   `pnpm --filter web check:deployed-archive <web-origin> --staging`
+   for the deployed browser and privacy smoke check. It discovers a Coin shown
+   on Explore's first page and an Issuer with at least two pages of results,
+   failing if either is unavailable. The check opens Explore and Coin detail,
+   navigates back, selects an Issuer from reference choices, paginates, reloads the
    filtered view directly, and fails if browser fetch/XHR traffic reaches
    another origin. It also checks
    that the API has no public endpoint and that the staging HTML and captured

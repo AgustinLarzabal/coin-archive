@@ -92,12 +92,12 @@ pnpm --filter web exec wrangler deploy
 ```
 
 Confirm the web dry run targets `coin-archive-web` and binds to
-`coin-archive-api` before deploying. Then verify a Coin on the first Archive
-page and an Issuer with at least two result pages; the check also confirms the
-API Worker has no public endpoint:
+`coin-archive-api` before deploying. Then run the Archive check. It discovers a
+Coin on Explore's first page and an Issuer with at least two result pages, and
+confirms the API Worker has no public endpoint:
 
 ```bash
-pnpm --filter web check:deployed-archive https://coinarchive.app '/coins/<issuer>/<coin-slug>' '<coin-title>' '<ISSUER_CODE>' '<issuer-name>'
+pnpm --filter web check:deployed-archive https://coinarchive.app
 ```
 
 The check requires a Playwright Chromium browser. Install it with

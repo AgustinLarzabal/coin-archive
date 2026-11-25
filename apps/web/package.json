@@ -12,7 +12,7 @@
     "preview": "wrangler dev",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/discover-archive.test.mjs",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

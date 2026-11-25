@@ -1,16 +1,14 @@
 import assert from "node:assert/strict"
 import { chromium } from "playwright"
+import { discoverArchive } from "./discover-archive.mjs"
 
-const [webOrigin, coinPath, coinTitle, issuerCode, issuerName] =
-  process.argv.slice(2)
+const [webOrigin, mode] = process.argv.slice(2)
 assert.ok(
-  webOrigin && coinPath && coinTitle && issuerCode && issuerName,
-  "Usage: node scripts/check-deployed-archive.mjs <web-origin> <coin-path> <coin-title> <issuer-code> <issuer-name> [--staging]"
+  webOrigin && (!mode || mode === "--staging") && process.argv.length <= 4,
+  "Usage: node scripts/check-deployed-archive.mjs <web-origin> [--staging]"
 )
-assert.match(coinPath, /^\/coins\/[a-z0-9-]+\/[a-z0-9-]+$/)
-assert.match(issuerCode, /^[A-Z]{2}$/)
 const origin = new URL(webOrigin).origin
-const staging = process.argv.includes("--staging")
+const staging = mode === "--staging"
 if (staging) {
   assert.match(
     origin,
@@ -23,6 +21,7 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
 })
 let serverFunctionUrl
+let coinPath
 const externalApiRequests = []
 try {
   const page = await browser.newPage()
@@ -40,6 +39,9 @@ try {
     assert.equal(await page.getByText("Unable to load coins").count(), 0)
   }
 
+  const discovered = await discoverArchive(page, open)
+  coinPath = discovered.coinPath
+  const { coinTitle, issuerCode, issuerName } = discovered
   await open("/")
   await page.getByRole("link", { name: coinTitle }).first().click()
   await page.getByRole("heading", { name: coinTitle }).waitFor()

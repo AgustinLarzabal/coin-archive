@@ -5,7 +5,7 @@ import { resolveDatabaseUrl } from "../database-url.js"
 
 const databaseUrl = resolveDatabaseUrl(process.env)
 
-const database = createDatabase(databaseUrl)
+const database = createDatabase(databaseUrl, { connectionTimeoutMillis: 30_000 })
 
 try {
   await migrate(database.orm, { migrationsFolder: "drizzle" })

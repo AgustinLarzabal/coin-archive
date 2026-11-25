@@ -35,6 +35,7 @@ try {
   async function open(path) {
     const response = await page.goto(new URL(path, origin).href)
     assert.equal(response?.status(), 200, `${path}: web Worker request failed`)
+    await page.waitForLoadState("networkidle")
     await page.getByRole("button", { name: "Add filter" }).waitFor()
     assert.equal(await page.getByText("Unable to load coins").count(), 0)
   }

@@ -12,9 +12,10 @@
     "db:reset:staging": "sh scripts/run-with-staging-environment.sh src/cli/reset-staging.ts",
     "db:seed": "node --env-file-if-exists=../../.env.local --import tsx src/cli/seed.ts",
     "db:seed:staging": "sh scripts/run-with-staging-environment.sh src/cli/seed.ts",
+    "staging:release": "node scripts/staging-release.mjs",
     "format": "prettier --write \"**/*.{ts,json}\"",
     "lint": "eslint",
-    "test": "vitest run src/database-url.test.ts src/integration-target.test.ts src/reset.test.ts",
+    "test": "vitest run src/database-url.test.ts src/integration-target.test.ts src/reset.test.ts src/staging-release.test.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit"
   },

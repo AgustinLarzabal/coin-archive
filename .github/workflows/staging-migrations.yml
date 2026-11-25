@@ -1,0 +1,28 @@
+name: Staging migrations
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: staging-release
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build, test, and migrate staging
+        run: pnpm --filter @coin-archive/db staging:release
+        env:
+          STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_DATABASE_HOST: ${{ vars.STAGING_DATABASE_HOST }}
+          STAGING_DATABASE_NAME: ${{ vars.STAGING_DATABASE_NAME }}

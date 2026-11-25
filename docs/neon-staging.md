@@ -44,6 +44,38 @@ Both private `*.local` files are ignored by Git. Never put either Neon URL in
 `apps/web`: the browser continues to call the local API at
 `http://localhost:3001` and must not receive a database credential.
 
+## Automated migrations on merges to main
+
+The `Staging migrations` GitHub Actions workflow runs on each push to `main`.
+Configure the GitHub `staging` environment with these values before merging a
+migration:
+
+- Secret `STAGING_DATABASE_URL`: the direct, unpooled Neon PostgreSQL URL for
+  the intended staging branch and database, including its database role and
+  password. Grant that role only the access needed to apply migrations. Do not
+  use the pooled API URL.
+- Variable `STAGING_DATABASE_HOST`: the exact hostname of that direct URL,
+  without credentials or a port.
+- Variable `STAGING_DATABASE_NAME`: the exact database name in that URL.
+
+Copy the host and database name from the intended branch's direct connection
+details in the Neon Console. Keep the URL in a GitHub secret and rotate it if it
+is exposed. Missing or mismatched values stop the run before migration. The
+workflow builds and runs `pnpm test` first, then applies only checked-in
+migrations. It does not reset, seed, or automatically roll back the database.
+The `staging-release` concurrency group lets only one staging run proceed at a
+time. A failed build, test, target check, or migration fails the run at that
+stage; inspect its Actions log before retrying or recovering manually.
+
+Before merging any migration, a human must review whether the SQL remains
+compatible with the Workers currently deployed to staging until replacement
+Workers are live. In particular, keep columns and behavior those Workers use
+available through this interval. A successful migration is not reversed by
+the workflow.
+
+The current workflow applies migrations only. Worker deployment and deployed
+checks are covered by separate release work in ADR 0012.
+
 ## Commands
 
 Apply checked-in migrations to an empty or existing Staging Database, then load

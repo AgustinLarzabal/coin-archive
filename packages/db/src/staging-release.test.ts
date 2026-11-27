@@ -56,14 +56,21 @@ describe("staging release", () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain("staging target check failed")
     expect(result.stderr).not.toContain("credential-sentinel")
-    expect(calls).toEqual(["build", "test"])
+    expect(calls).toEqual(["build", "typecheck", "lint", "test"])
   })
 
   it("stops before migration when a check fails", () => {
     const { result, calls } = runRelease({ STAGING_TEST_FAIL: "test" })
     expect(result.status).toBe(1)
     expect(result.stderr).toContain("deterministic tests failed")
-    expect(calls).toEqual(["build", "test"])
+    expect(calls).toEqual(["build", "typecheck", "lint", "test"])
+  })
+
+  it("stops before migration and deployment when typecheck fails", () => {
+    const { result, calls } = runRelease({ STAGING_TEST_FAIL: "typecheck" })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain("typecheck failed")
+    expect(calls).toEqual(["build", "typecheck"])
   })
 
   it("deploys and checks the staging Workers in order after migration", () => {
@@ -71,6 +78,8 @@ describe("staging release", () => {
     expect(result.status).toBe(0)
     expect(calls).toEqual([
       "build",
+      "typecheck",
+      "lint",
       "test",
       "--filter api exec node scripts/check-private-worker.mjs --deploy --staging",
       "--filter api exec node scripts/check-deployed-private-worker.mjs --preflight",

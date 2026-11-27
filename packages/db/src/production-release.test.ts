@@ -119,7 +119,14 @@ describe("production promotion", () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain("production target check failed")
     expect(result.stderr).not.toContain("credential-sentinel")
-    expect(calls).toEqual(["build", "test"])
+    expect(calls).toEqual(["build", "typecheck", "lint", "test"])
+  })
+
+  it("stops before migration and deployment when lint fails", () => {
+    const { result, calls } = runRelease({ TEST_FAIL: "lint" })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain("lint failed")
+    expect(calls).toEqual(["build", "typecheck", "lint"])
   })
 
   it("stops after a failed API deployment without deploying web", () => {
@@ -138,6 +145,8 @@ describe("production promotion", () => {
     expect(result.status).toBe(0)
     expect(calls).toEqual([
       "build",
+      "typecheck",
+      "lint",
       "test",
       "--filter api exec node scripts/check-private-worker.mjs --deploy",
       "--filter api exec node scripts/check-deployed-private-worker.mjs --preflight",

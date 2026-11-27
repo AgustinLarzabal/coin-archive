@@ -107,6 +107,8 @@ try {
   delete checkEnvironment.STAGING_DATABASE_URL
   delete checkEnvironment.PRODUCTION_DATABASE_URL
   run("build", ["build"], checkEnvironment)
+  run("typecheck", ["typecheck"], checkEnvironment)
+  run("lint", ["lint"], checkEnvironment)
   run("deterministic tests", ["test"], checkEnvironment)
 
   const databaseUrl = process.env[`${prefix}_DATABASE_URL`]

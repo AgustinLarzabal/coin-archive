@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { chromium } from "playwright"
 import { discoverArchive } from "./discover-archive.mjs"
+import { checkPrivateApiResponse } from "./check-private-api-response.mjs"
 
 const [webOrigin, mode] = process.argv.slice(2)
 assert.ok(
@@ -105,7 +106,7 @@ assert.ok(subdomain, "Workers subdomain is missing")
 const directResponse = await fetch(
   `https://coin-archive-api${staging ? "-staging" : ""}.${subdomain}.workers.dev/v1/coins`
 )
-assert.notEqual(directResponse.status, 200, "Private API is publicly reachable")
+await checkPrivateApiResponse(directResponse)
 
 if (staging) {
   let limited = false
